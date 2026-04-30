@@ -64,7 +64,42 @@ Parasolid 语义下，Tag 是会话内唯一标识，调用方只看见整数型
 - 不允许在对外 API 上暴露内部 index。
 - 不允许让 Tag 直接编码为数组下标并永久绑定存储位置；Tag 必须表示稳定的逻辑句柄，而不是脆弱的物理位置。
 
-### 3.2 Arena Memory Architecture
+### 3.2 API Dispatch and Concurrency Model
+
+对外 API 层与内核实现之间必须插入一层 **API 调度层**。该层不是可选优化，而是 Parasolid 风格执行语义的一部分。
+
+基本原则：
+
+- 所有外部 `PK_*` 调用默认先进入 session 级命令队列。
+- 默认执行模型是串行调度：即使多个线程并发进入 API，内核默认也按入队顺序逐个执行。
+- 外部线程并发不等于内核状态并发修改；默认情况下，只允许一个命令在 session 写路径上执行。
+- 调度层负责统一处理：
+  - session 绑定
+  - 参数校验前置
+  - 并发级别判定
+  - partition 锁定与 guard 协调
+  - 错误出口统一化
+
+并发分级按 Parasolid 风格定义三类：
+
+- `Exclusive`：独占命令，不可与任何其他内核命令并发执行。
+- `Concurrent`：并发命令，可在满足前置条件时与其他并发命令同时执行。
+- `Local`：局部命令，只有在相关 partition 被正确锁定或隔离时才允许并发执行。
+
+额外原则：
+
+- 内部算法并发与外部 API 并发必须分层。布尔、求交、分类等算法可以在单个命令内部做受控并行，但不能破坏外层 session 调度纪律。
+- 并发权限必须是 API 元数据的一部分，而不是调用点的经验约定。
+- local 并发必须显式依赖 partition guard / lock / cloning 之类的隔离机制，禁止无锁直接进入共享拓扑写路径。
+- 默认实现先保证串行正确性，再逐步开放 `Concurrent` 与 `Local` 两类执行。
+
+建议模型：
+
+- `ApiEntry -> CommandDescriptor -> SessionCommandQueue -> Dispatcher -> KernelOp`
+- `CommandDescriptor = { api_id, concurrency_kind, session, partition_span, flags }`
+- `Dispatcher` 基于 `concurrency_kind` 和 partition 锁状态决定串行执行、可并行放行或拒绝执行。
+
+### 3.3 Arena Memory Architecture
 
 目标不是“少 GC”，而是 **建模主路径零 GC 压力**。
 
@@ -88,6 +123,24 @@ Parasolid 语义下，Tag 是会话内唯一标识，调用方只看见整数型
 - 禁止在热点路径分配托管数组后依赖 GC 回收。
 - 禁止 `Dictionary<object, object>`、装箱、LINQ、反射遍历、异常驱动正常流程。
 - 禁止以 class 层层包装 struct 池，重新引入对象图和间接寻址。
+
+### 3.4 Complete Definition First
+
+对“定义性质”的内核层，不允许长期维持半套模型。凡是决定系统语义边界的数据定义，都必须一次性定义完整，再进入具体算子实现。
+
+这里的“定义性质”至少包括：
+
+- 拓扑类谱系与记录结构
+- 几何类谱系与记录结构
+- Tag / class / token / entity category 映射
+- session / partition / mark / pmark / guard 的状态模型
+- 返回结构、数组结构、错误码与 ABI 对齐表达
+
+原则：
+
+- 可以延后具体算法实现，但不能长期保留“只有部分类型存在、其余靠占位想象”的数据模型。
+- 必须先把拓扑和几何的完整定义层搭起来，再在其上填充创建、查询、布尔、求交等算子。
+- 完整定义不等于一次实现所有功能，而是一次冻结语义边界、记录布局、状态转移与依赖关系。
 
 ## 4. OCC Translation Strategy
 
@@ -153,6 +206,7 @@ OCCT 只作为算法参考源，不作为架构模板。
 ## 6. Success Criteria
 
 - 宿主可按 Parasolid 风格启动 session、调用 `PK_*` 接口、获取整数 Tag、基于 Tag 再次查询实体。
+- 宿主从多线程进入 API 时，默认仍能得到串行一致的 session 级执行语义。
 - 主建模路径无可观测 GC 分配。
 - 基础实体创建、查询、删除、回滚在语义上满足 Parasolid 风格预期。
 - 从 `docs/occt` 选取的首批算法样本可以稳定翻译为 `.NET 10` AOT 兼容、零分配导向的 C# 实现。
