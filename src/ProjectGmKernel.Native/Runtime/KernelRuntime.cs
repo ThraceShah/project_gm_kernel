@@ -1,3 +1,5 @@
+using ProjectGmKernel.Native.Generated;
+
 namespace ProjectGmKernel.Native.Runtime;
 
 internal enum EntityClass : int
@@ -26,7 +28,7 @@ internal struct PointRecord
 {
     public int Generation;
     public byte Alive;
-    public PK_VECTOR_t Position;
+    public PK_VECTOR_s Position;
 }
 
 internal static unsafe class KernelRuntime
@@ -44,7 +46,7 @@ internal static unsafe class KernelRuntime
     private static int nextPointSlot;
     private static bool started;
 
-    public static int SessionStart(PK_SESSION_start_o_t* options)
+    public static int SessionStart(PK_SESSION_start_o_s* options)
     {
         if (options is null)
         {
@@ -84,7 +86,7 @@ internal static unsafe class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int PointCreate(PK_POINT_sf_t* pointSf, int* pointTag)
+    public static int PointCreate(PK_POINT_sf_s* pointSf, int* pointTag)
     {
         if (pointSf is null || pointTag is null)
         {

@@ -1,12 +1,13 @@
 using System.Runtime.InteropServices;
+using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
 
 namespace ProjectGmKernel.Native;
 
-public static unsafe class KernelExports
+internal static unsafe class KernelExports
 {
     [UnmanagedCallersOnly(EntryPoint = "PK_SESSION_start")]
-    public static int PK_SESSION_start(PK_SESSION_start_o_t* options)
+    public static int PK_SESSION_start(PK_SESSION_start_o_s* options)
     {
         return KernelRuntime.Dispatch(
             ApiId.SessionStart,
@@ -26,7 +27,7 @@ public static unsafe class KernelExports
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_POINT_create")]
-    public static int PK_POINT_create(PK_POINT_sf_t* pointSf, int* point)
+    public static int PK_POINT_create(PK_POINT_sf_s* pointSf, int* point)
     {
         return KernelRuntime.Dispatch(
             ApiId.PointCreate,
