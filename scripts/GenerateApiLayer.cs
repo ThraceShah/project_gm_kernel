@@ -392,6 +392,19 @@ static int GetAbiSize(string csType) => csType switch
     _ => -1
 };
 
+// ABI size of a generated field (used for offset calculation in pre-scan)
+static long GetFieldAbiSize(string csType, bool isPtr, bool isArray, long arrSize)
+{
+    if (isPtr) return 8;
+    if (isArray && arrSize > 0)
+    {
+        var elem = GetAbiSize(csType);
+        return elem > 0 ? elem * arrSize : arrSize; // byte[] fallback
+    }
+    var s = GetAbiSize(csType);
+    return s > 0 ? s : 8; // fallback to pointer size for unknown types
+}
+
 // Resolve a pointer's pointee type to the correct C# pointer type string.
 // Preserves signedness: int* vs uint*, short* vs ushort*, etc.
 static string ResolvePointerType(CXTypeKind pointeeKind, string pointeeSpelling)
@@ -569,6 +582,8 @@ var structs = new List<(string Name, List<(string Name, string Type, bool IsPtr,
 var unions = new List<(string Name, List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsArray, long ArrSize, string Comment)> Fields)>();
 var functions = new List<(string Name, string RetType, List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsDoublePtr)> Params)>();
 var constants = new List<(string Name, string Value, long IntValue)>();
+// Per-struct anonymous union member offsets: structName -> (fieldName -> offset)
+var structUnionOffsets = new Dictionary<string, Dictionary<string, long>>();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Parsing
@@ -708,30 +723,74 @@ unsafe
                 return CXChildVisitResult.CXChildVisit_Continue;
 
             var fields = new List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsArray, long ArrSize, string Comment)>();
+            var unionMemberOffsets = new Dictionary<string, long>(); // union member name -> shared FieldOffset
 
             CXCursorVisitor fieldVisitor = (fieldCursor, _, _) =>
             {
                 var fieldKind = clang.getCursorKind(fieldCursor);
 
-                // Handle union children in structs
+                // Handle anonymous union: collect members, record their shared offset, add placeholder
                 if (fieldKind == CXCursor_UnionDecl)
                 {
-                    var unionFieldName = NormalizeTypeName(GetSpelling(fieldCursor));
-                    if (string.IsNullOrEmpty(unionFieldName) || unionFieldName.Contains(' ') || unionFieldName.Contains('('))
-                        unionFieldName = $"_union_{fields.Count}";
+                    // Calculate offset: sum of all non-union fields so far, aligned to union's alignment
+                    long rawOffset = 0;
+                    foreach (var f in fields)
+                    {
+                        if (!unionMemberOffsets.ContainsKey(f.Name))
+                            rawOffset += GetFieldAbiSize(f.Type, f.IsPtr, f.IsArray, f.ArrSize);
+                    }
+                    // Align to union's natural alignment
+                    var unionAlign = clang.Type_getAlignOf(clang.getCursorType(fieldCursor));
+                    var unionOffset = unionAlign > 0 ? (rawOffset + unionAlign - 1) / unionAlign * unionAlign : rawOffset;
 
-                    var unionType = clang.getCursorType(fieldCursor);
-                    if (TryGetClangTypeSize(unionType, out var unionSize))
+                    // Collect union members and add them as typed fields with shared offset
+                    CXCursorVisitor memberCollector = (member, _, _) =>
                     {
-                        fields.Add((unionFieldName, "byte", false, false, true, unionSize,
-                            $"ABI storage for anonymous union ({unionSize} bytes)"));
-                    }
-                    else
-                    {
-                        fields.Add((unionFieldName, "nint", true, false, false, 0, ""));
-                        RecordUnresolved(GetTypeSpelling(unionType), $"{spelling}.{unionFieldName}", "struct-field");
-                    }
+                        if (clang.getCursorKind(member) == CXCursor_FieldDecl)
+                        {
+                            var mname = GetSpelling(member);
+                            var mtype = clang.getCursorType(member);
+                            var mkind = mtype.kind;
+                            var mIsConst = clang.isConstQualifiedType(mtype) != 0;
+                            if (mkind == CXType_Elaborated) { mtype = clang.Type_getNamedType(mtype); mkind = mtype.kind; }
+
+                            if (mkind == CXType_Pointer)
+                            {
+                                var pointee = clang.getPointeeType(mtype);
+                                var ptCs = NormalizeTypeName(ResolveCType(pointee, true, $"{spelling}.{mname}"));
+                                if (ptCs.Length == 0) ptCs = "nint";
+                                var ptSpell = NormalizeTypeName(GetTypeSpelling(pointee));
+                                if (ptSpell == "void") ptCs = "nint";
+                                fields.Add((mname, ptCs, true, mIsConst, false, 0, ""));
+                            }
+                            else
+                            {
+                                var csType = NormalizeTypeName(ResolveCType(mtype, true, $"{spelling}.{mname}"));
+                                if (csType.Length == 0) csType = "nint";
+                                fields.Add((mname, csType, false, mIsConst, false, 0, ""));
+                            }
+                            unionMemberOffsets[mname] = unionOffset;
+                        }
+                        return CXChildVisitResult.CXChildVisit_Continue;
+                    };
+                    fieldCursor.VisitChildren(memberCollector, default);
+
                     return CXChildVisitResult.CXChildVisit_Continue;
+                }
+
+                // Skip the named FieldDecl for an anonymous union (e.g. "record" in PK_REPORT_record_s)
+                // The union members are already collected above and will be emitted with [FieldOffset].
+                if (fieldKind == CXCursor_FieldDecl)
+                {
+                    var ft = clang.getCursorType(fieldCursor);
+                    if (ft.kind == CXType_Elaborated) ft = clang.Type_getNamedType(ft);
+                    if (ft.kind == CXType_Record)
+                    {
+                        var rt = clang.getTypeDeclaration(ft);
+                        var rtSpelling = NormalizeTypeName(GetSpelling(rt));
+                        if (string.IsNullOrEmpty(rtSpelling) || rtSpelling.Contains(' ') || rtSpelling.Contains('('))
+                            return CXChildVisitResult.CXChildVisit_Continue;
+                    }
                 }
 
                 if (fieldKind != CXCursor_FieldDecl)
@@ -891,7 +950,11 @@ unsafe
             child.VisitChildren(fieldVisitor, default);
 
             if (kind == CXCursor_StructDecl)
+            {
                 structs.Add((spelling, fields));
+                if (unionMemberOffsets.Count > 0)
+                    structUnionOffsets[spelling] = new Dictionary<string, long>(unionMemberOffsets);
+            }
             else
                 unions.Add((spelling, fields));
         }
@@ -1259,30 +1322,70 @@ void GenerateStructs(StringBuilder sb, string access)
     foreach (var s in structs.OrderBy(s => StructSortKeyByName(s.Name)).ThenBy(s => s.Name))
     {
         var isUnsafe = s.Fields.Exists(f => RequiresUnsafeFieldType(f.Type, f.IsArray));
-        sb.AppendLine("    [StructLayout(LayoutKind.Sequential)]");
+        var hasUnionMembers = structUnionOffsets.TryGetValue(s.Name, out var unionOffsets);
+
+        if (hasUnionMembers)
+            sb.AppendLine("    [StructLayout(LayoutKind.Explicit)]");
+        else
+            sb.AppendLine("    [StructLayout(LayoutKind.Sequential)]");
         sb.AppendLine(isUnsafe ? $"    {access} unsafe struct {s.Name}" : $"    {access} struct {s.Name}");
         sb.AppendLine("    {");
-        foreach (var f in s.Fields)
+
+        if (hasUnionMembers)
         {
-            var fname = SanitizeName(f.Name);
-            if (f.IsArray && f.ArrSize > 0)
+            // Explicit layout: calculate offsets, union members share the same offset
+            long offset = 0;
+            long maxUnionEnd = 0;
+            foreach (var f in s.Fields)
             {
-                var commentSuffix = string.IsNullOrEmpty(f.Comment) ? "" : $" // {f.Comment}";
-                sb.AppendLine($"        public fixed {f.Type} {fname}[{f.ArrSize}];{commentSuffix}");
-            }
-            else if (f.IsPtr)
-            {
-                sb.AppendLine(f.IsConst
-                    ? $"        public readonly {f.Type} {fname};"
-                    : $"        public {f.Type} {fname};");
-            }
-            else
-            {
-                sb.AppendLine($"        public {f.Type} {fname};");
+                var fname = SanitizeName(f.Name);
+                long fieldOffset;
+                if (unionOffsets!.TryGetValue(f.Name, out var uo))
+                {
+                    fieldOffset = uo; // union member — use pre-computed shared offset
+                    var memberSize = GetFieldAbiSize(f.Type, f.IsPtr, f.IsArray, f.ArrSize);
+                    maxUnionEnd = Math.Max(maxUnionEnd, uo + memberSize);
+                }
+                else
+                {
+                    offset = Math.Max(offset, maxUnionEnd);
+                    fieldOffset = offset;
+                    offset += GetFieldAbiSize(f.Type, f.IsPtr, f.IsArray, f.ArrSize);
+                }
+                sb.AppendLine($"        [FieldOffset({fieldOffset})]");
+                EmitField(sb, f, fname);
             }
         }
+        else
+        {
+            foreach (var f in s.Fields)
+            {
+                var fname = SanitizeName(f.Name);
+                EmitField(sb, f, fname);
+            }
+        }
+
         sb.AppendLine("    }");
         sb.AppendLine();
+    }
+}
+
+static void EmitField(StringBuilder sb, (string Name, string Type, bool IsPtr, bool IsConst, bool IsArray, long ArrSize, string Comment) f, string fname)
+{
+    if (f.IsArray && f.ArrSize > 0)
+    {
+        var commentSuffix = string.IsNullOrEmpty(f.Comment) ? "" : $" // {f.Comment}";
+        sb.AppendLine($"        public fixed {f.Type} {fname}[{f.ArrSize}];{commentSuffix}");
+    }
+    else if (f.IsPtr)
+    {
+        sb.AppendLine(f.IsConst
+            ? $"        public readonly {f.Type} {fname};"
+            : $"        public {f.Type} {fname};");
+    }
+    else
+    {
+        sb.AppendLine($"        public {f.Type} {fname};");
     }
 }
 

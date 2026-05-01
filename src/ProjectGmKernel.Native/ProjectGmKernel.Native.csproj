@@ -11,4 +11,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <StripSymbols>false</StripSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="AbiCheck" />
+  </ItemGroup>
 </Project>

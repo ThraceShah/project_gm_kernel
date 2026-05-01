@@ -8129,13 +8129,15 @@ namespace ProjectGmKernel.Native.Generated;
         public int n_components;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_LATTICE_ask_core_r_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_LATTICE_ask_core_r_s
     {
+        [FieldOffset(0)]
         public int r_t_version;
+        [FieldOffset(4)]
         public int type;
-        public fixed byte _union_2[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte data[8]; // ABI storage for union PK_LATTICE_ask_core_r_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:30433:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_LATTICE_core_implicit_r_t implicit_volume;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -8488,12 +8490,15 @@ namespace ProjectGmKernel.Native.Generated;
         public int reps_per_period;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_pattern_form_r_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_pattern_form_r_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte form[8]; // ABI storage for union PK_pattern_form_r_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:12518:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_pattern_rectilinear_r_t rectilinear;
+        [FieldOffset(8)]
+        public PK_pattern_axial_r_t axial;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -8653,12 +8658,13 @@ namespace ProjectGmKernel.Native.Generated;
         public int fault;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_SURF_implicit_r_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_SURF_implicit_r_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte data[8]; // ABI storage for union PK_SURF_implicit_r_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:14246:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_SURF_implicit_tpms_r_t tpms;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -9420,12 +9426,15 @@ namespace ProjectGmKernel.Native.Generated;
         public double achieved_tol;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_CURVE_general_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_CURVE_general_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[40]; // ABI storage for anonymous union (40 bytes)
-        public fixed byte curve[40]; // ABI storage for union PK_CURVE_general_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:24336:5) (40 bytes)
+        [FieldOffset(8)]
+        public int parasolid_curve;
+        [FieldOffset(8)]
+        public PK_CURVE_general_user_t user_curve;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -9492,13 +9501,17 @@ namespace ProjectGmKernel.Native.Generated;
         public PK_hole_component_t* components;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct PK_detail_def_s
     {
+        [FieldOffset(0)]
         public int detail_type;
+        [FieldOffset(4)]
         public PK_FACE_array_t faces;
-        public fixed byte _union_2[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte detail[8]; // ABI storage for union PK_detail_def_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:20548:5) (8 bytes)
+        [FieldOffset(16)]
+        public PK_detail_def_hole_t hole;
+        [FieldOffset(16)]
+        public nint unknown;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -9598,12 +9611,21 @@ namespace ProjectGmKernel.Native.Generated;
         public fixed double unused[12];
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_EXPR_value_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_EXPR_value_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[96]; // ABI storage for anonymous union (96 bytes)
-        public fixed byte data[96]; // ABI storage for union PK_EXPR_value_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:14102:5) (96 bytes)
+        [FieldOffset(8)]
+        public PK_EXPR_largest_value_t claimed_space;
+        [FieldOffset(8)]
+        public int integer;
+        [FieldOffset(8)]
+        public double real;
+        [FieldOffset(8)]
+        public PK_VECTOR_t vector;
+        [FieldOffset(8)]
+        public int entity;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -9799,12 +9821,15 @@ namespace ProjectGmKernel.Native.Generated;
         public fixed double value[2];
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_LATTICE_graph_data_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_LATTICE_graph_data_s
     {
+        [FieldOffset(0)]
         public int graph_type;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte graph[8]; // ABI storage for union PK_LATTICE_graph_data_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:30047:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_LATTICE_graph_cyl_o_t cyl;
+        [FieldOffset(8)]
+        public PK_LATTICE_graph_cone_o_t cone;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -9828,20 +9853,24 @@ namespace ProjectGmKernel.Native.Generated;
         public double duplicate_tolerance;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_LATTICE_pattern_core_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_LATTICE_pattern_core_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte data[8]; // ABI storage for union PK_LATTICE_pattern_core_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:30239:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_LATTICE_core_implicit_o_t implicit_volume;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_LROD_shape_opts_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_LROD_shape_opts_s
     {
+        [FieldOffset(0)]
         public int lrod_shape;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte opt[8]; // ABI storage for union PK_LROD_shape_opts_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:30123:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_LROD_shape_cyl_o_t cyl;
+        [FieldOffset(8)]
+        public PK_LROD_shape_cone_o_t cone;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -9924,12 +9953,19 @@ namespace ProjectGmKernel.Native.Generated;
         public int* facet_indices;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_MESH_facet_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_MESH_facet_s
     {
+        [FieldOffset(0)]
         public int facet_type;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte facet[8]; // ABI storage for union PK_MESH_facet_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:11150:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_MESH_facet_index_t index;
+        [FieldOffset(8)]
+        public PK_MESH_facet_strip_t strip;
+        [FieldOffset(8)]
+        public PK_MESH_facet_fan_t fan;
+        [FieldOffset(8)]
+        public PK_MESH_facet_vector_t vector;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -10017,12 +10053,15 @@ namespace ProjectGmKernel.Native.Generated;
         public int* target_faces;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_pattern_form_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_pattern_form_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte form[8]; // ABI storage for union PK_pattern_form_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:12493:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_pattern_rectilinear_o_t rectilinear;
+        [FieldOffset(8)]
+        public PK_pattern_axial_o_t axial;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -10073,13 +10112,17 @@ namespace ProjectGmKernel.Native.Generated;
         public PK_VECTOR_t vector;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_range_param_bound_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_range_param_bound_s
     {
+        [FieldOffset(0)]
         public byte have_param_bound;
+        [FieldOffset(1)]
         public int param_bound_class;
-        public fixed byte _union_2[32]; // ABI storage for anonymous union (32 bytes)
-        public fixed byte param_bound[32]; // ABI storage for union PK_range_param_bound_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:12096:5) (32 bytes)
+        [FieldOffset(8)]
+        public PK_INTERVAL_t interval;
+        [FieldOffset(8)]
+        public PK_UVBOX_t uvbox;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -10197,13 +10240,21 @@ namespace ProjectGmKernel.Native.Generated;
         public PK_ITEM_array_t* item_arrays;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct PK_REPORT_record_s
     {
+        [FieldOffset(0)]
         public fixed byte function[32];
+        [FieldOffset(32)]
         public int type;
-        public fixed byte _union_2[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte record[8]; // ABI storage for union PK_REPORT_record_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:9571:5) (8 bytes)
+        [FieldOffset(40)]
+        public PK_REPORT_record_1_t type_1;
+        [FieldOffset(40)]
+        public PK_REPORT_record_2_t type_2;
+        [FieldOffset(40)]
+        public PK_REPORT_record_3_t type_3;
+        [FieldOffset(40)]
+        public PK_REPORT_record_4_t type_4;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -10328,12 +10379,15 @@ namespace ProjectGmKernel.Native.Generated;
         public double achieved_tol;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_SURF_general_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_SURF_general_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[56]; // ABI storage for anonymous union (56 bytes)
-        public fixed byte surf[56]; // ABI storage for union PK_SURF_general_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:25589:5) (56 bytes)
+        [FieldOffset(8)]
+        public int parasolid_surf;
+        [FieldOffset(8)]
+        public PK_SURF_general_user_t user_surf;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -10353,12 +10407,13 @@ namespace ProjectGmKernel.Native.Generated;
         public double* v_discontinuities;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_SURF_implicit_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_SURF_implicit_s
     {
+        [FieldOffset(0)]
         public int type;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte data[8]; // ABI storage for union PK_SURF_implicit_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:14222:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_SURF_implicit_tpms_o_t tpms;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -10452,12 +10507,61 @@ namespace ProjectGmKernel.Native.Generated;
         public int clash_type;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PK_TOPOL_facet_table_s
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct PK_TOPOL_facet_table_s
     {
+        [FieldOffset(0)]
         public int fctab;
-        public fixed byte _union_1[8]; // ABI storage for anonymous union (8 bytes)
-        public fixed byte table[8]; // ABI storage for union PK_TOPOL_facet_table_s::(unnamed at docs/parasolid_inc/parasolid_kernel.h:11048:5) (8 bytes)
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_facet_fin_t facet_fin;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_strip_boundary_t strip_boundary;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_strip_zigzag_t strip_zigzag;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_fin_fin_t fin_fin;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_fin_data_t fin_data;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_data_point_t data_point_idx;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_data_normal_t data_normal_idx;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_data_param_t data_param_idx;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_data_deriv_t data_deriv_idx;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_data_curv_t data_curv_idx;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_point_vec_t point_vec;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_normal_vec_t normal_vec;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_param_uv_t param_uv;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_deriv_dp_t deriv_dp;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_deriv_d2p_t deriv_d2p;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_curv_dirs_t curv_dirs;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_facet_face_t facet_face;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_facet_topol_t facet_topol;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_strip_face_t strip_face;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_strip_topol_t strip_topol;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_fin_edge_t fin_edge;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_point_topol_t point_topol;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_fin_topol_t fin_topol;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_error_object_t error_object;
+        [FieldOffset(8)]
+        public PK_TOPOL_fctab_incr_faces_t incr_faces;
     }
 
     [StructLayout(LayoutKind.Sequential)]
