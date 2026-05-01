@@ -4,7 +4,7 @@ using ProjectGmKernel.Native.Runtime;
 
 namespace ProjectGmKernel.Native;
 
-internal static unsafe class KernelExports
+internal static unsafe partial class KernelExports
 {
     [UnmanagedCallersOnly(EntryPoint = "PK_SESSION_start")]
     public static int PK_SESSION_start(PK_SESSION_start_o_s* options)

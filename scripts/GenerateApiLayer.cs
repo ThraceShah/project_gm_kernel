@@ -1,12 +1,18 @@
 #!/usr/bin/env dotnet run
+#:package ClangSharp.Interop@18.1.0
+#:package libclang@21.1.8
+#:property AllowUnsafeBlocks=true
 // Parse Parasolid C headers via libclang and generate the complete C# API layer.
 //
 // Generates:
-//   src/ProjectGmKernel.Native/Generated/ParasolidHeader.generated.cs  (export types, NO DllImport)
-//   src/ProjectGmKernel.Interop/Generated/ParasolidNative.generated.cs (test/validation DllImport)
+//   src/ProjectGmKernel.Native/Generated/ParasolidHeader.generated.cs   (ABI types/constants)
+//   src/ProjectGmKernel.Native/Generated/KernelExports.generated.cs     (export stubs)
+//   temp_docs/unresolved.md                                              (generation diagnostics)
 //
 // Usage: dotnet run scripts/GenerateApiLayer.cs -p:AllowUnsafeBlocks=true [-- --allow-partial]
 
+using ClangSharp.Interop;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,13 +25,16 @@ var cmdLineArgs = Environment.GetCommandLineArgs();
 var allowPartial = Array.Exists(cmdLineArgs, a => a == "--allow-partial");
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Paths (relative to repo root = cwd)
+// Paths (relative to script file)
 // ─────────────────────────────────────────────────────────────────────────────
 
-var repoRoot = Directory.GetCurrentDirectory();
+static string GetScriptPath([CallerFilePath] string path = "") => path;
+
+var scriptDir = Path.GetDirectoryName(GetScriptPath()) ?? ".";
+var repoRoot = Path.GetFullPath(Path.Combine(scriptDir, ".."));
 var incDir = Path.Combine(repoRoot, "docs", "parasolid_inc");
 var nativeOut = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "ParasolidHeader.generated.cs");
-var interopOut = Path.Combine(repoRoot, "src", "ProjectGmKernel.Interop", "Generated", "ParasolidNative.generated.cs");
+var exportsOut = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "KernelExports.generated.cs");
 var unresolvedPath = Path.Combine(repoRoot, "temp_docs", "unresolved.md");
 var abiCheckDir = Path.Combine(repoRoot, "temp_docs", "abi_check");
 
@@ -37,41 +46,11 @@ string[] tokenHeaders = [
     Path.Combine(incDir, "frustrum_ifails.h"),
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// libclang discovery
-// ─────────────────────────────────────────────────────────────────────────────
-
-static string FindLibClang()
-{
-    // Environment variable takes priority
-    var envPath = Environment.GetEnvironmentVariable("LIBCLANG_PATH");
-    if (!string.IsNullOrEmpty(envPath))
-    {
-        if (File.Exists(envPath)) return envPath;
-        // If it's a directory, look for the library inside
-        if (Directory.Exists(envPath))
-        {
-            var dylib = Path.Combine(envPath, "libclang.dylib");
-            var so = Path.Combine(envPath, "libclang.so");
-            if (File.Exists(dylib)) return dylib;
-            if (File.Exists(so)) return so;
-        }
-    }
-
-    string[] candidates = [
-        "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib",
-        "/opt/homebrew/Cellar/llvm/22.1.4/lib/libclang.dylib",
-        "/opt/homebrew/Cellar/llvm@21/21.1.8/lib/libclang.dylib",
-        "/opt/homebrew/Cellar/llvm@20/20.1.8/lib/libclang.dylib",
-    ];
-    foreach (var c in candidates)
-        if (File.Exists(c)) return c;
-    throw new FileNotFoundException(
-        "libclang not found. Set LIBCLANG_PATH environment variable or install LLVM.");
-}
-
 static string FindSysroot()
 {
+    if (!OperatingSystem.IsMacOS())
+        return "";
+
     var psi = new System.Diagnostics.ProcessStartInfo("xcrun", "--show-sdk-path")
     {
         RedirectStandardOutput = true,
@@ -81,67 +60,63 @@ static string FindSysroot()
     proc.WaitForExit();
     return proc.StandardOutput.ReadToEnd().Trim();
 }
-
-var libclangPath = FindLibClang();
 var sysroot = FindSysroot();
-
-NativeLibrary.Load(libclangPath);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Cursor kind & type kind constants (from libclang C API)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const int CXCursor_StructDecl = 2;
-const int CXCursor_UnionDecl = 3;
-const int CXCursor_FieldDecl = 6;
-const int CXCursor_FunctionDecl = 8;
-const int CXCursor_ParmDecl = 10;
-const int CXCursor_TypedefDecl = 20;
+const CXCursorKind CXCursor_StructDecl = CXCursorKind.CXCursor_StructDecl;
+const CXCursorKind CXCursor_UnionDecl = CXCursorKind.CXCursor_UnionDecl;
+const CXCursorKind CXCursor_FieldDecl = CXCursorKind.CXCursor_FieldDecl;
+const CXCursorKind CXCursor_FunctionDecl = CXCursorKind.CXCursor_FunctionDecl;
+const CXCursorKind CXCursor_ParmDecl = CXCursorKind.CXCursor_ParmDecl;
+const CXCursorKind CXCursor_TypedefDecl = CXCursorKind.CXCursor_TypedefDecl;
 
-const int CXType_Void = 2;
-const int CXType_Bool = 3;
-const int CXType_Char_U = 4;
-const int CXType_UChar = 5;
-const int CXType_UShort = 8;
-const int CXType_UInt = 9;
-const int CXType_ULong = 10;
-const int CXType_ULongLong = 11;
-const int CXType_Char_S = 13;
-const int CXType_SChar = 14;
-const int CXType_Short = 16;
-const int CXType_Int = 17;
-const int CXType_Long = 18;      // 8 bytes on LP64 (macOS arm64)
-const int CXType_LongLong = 19;
-const int CXType_Float = 21;
-const int CXType_Double = 22;
-const int CXType_LongDouble = 23;
-const int CXType_Pointer = 101;
-const int CXType_Record = 105;
-const int CXType_Enum = 106;
-const int CXType_Typedef = 107;
-const int CXType_FunctionNoProto = 110;
-const int CXType_FunctionProto = 111;
-const int CXType_ConstantArray = 112;
-const int CXType_IncompleteArray = 114;
-const int CXType_Elaborated = 119;
+const CXTypeKind CXType_Void = CXTypeKind.CXType_Void;
+const CXTypeKind CXType_Bool = CXTypeKind.CXType_Bool;
+const CXTypeKind CXType_Char_U = CXTypeKind.CXType_Char_U;
+const CXTypeKind CXType_UChar = CXTypeKind.CXType_UChar;
+const CXTypeKind CXType_UShort = CXTypeKind.CXType_UShort;
+const CXTypeKind CXType_UInt = CXTypeKind.CXType_UInt;
+const CXTypeKind CXType_ULong = CXTypeKind.CXType_ULong;
+const CXTypeKind CXType_ULongLong = CXTypeKind.CXType_ULongLong;
+const CXTypeKind CXType_Char_S = CXTypeKind.CXType_Char_S;
+const CXTypeKind CXType_SChar = CXTypeKind.CXType_SChar;
+const CXTypeKind CXType_Short = CXTypeKind.CXType_Short;
+const CXTypeKind CXType_Int = CXTypeKind.CXType_Int;
+const CXTypeKind CXType_Long = CXTypeKind.CXType_Long;
+const CXTypeKind CXType_LongLong = CXTypeKind.CXType_LongLong;
+const CXTypeKind CXType_Float = CXTypeKind.CXType_Float;
+const CXTypeKind CXType_Double = CXTypeKind.CXType_Double;
+const CXTypeKind CXType_LongDouble = CXTypeKind.CXType_LongDouble;
+const CXTypeKind CXType_Pointer = CXTypeKind.CXType_Pointer;
+const CXTypeKind CXType_Record = CXTypeKind.CXType_Record;
+const CXTypeKind CXType_Enum = CXTypeKind.CXType_Enum;
+const CXTypeKind CXType_Typedef = CXTypeKind.CXType_Typedef;
+const CXTypeKind CXType_FunctionNoProto = CXTypeKind.CXType_FunctionNoProto;
+const CXTypeKind CXType_FunctionProto = CXTypeKind.CXType_FunctionProto;
+const CXTypeKind CXType_ConstantArray = CXTypeKind.CXType_ConstantArray;
+const CXTypeKind CXType_IncompleteArray = CXTypeKind.CXType_IncompleteArray;
+const CXTypeKind CXType_Elaborated = CXTypeKind.CXType_Elaborated;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-static string ToManagedString(CXString cx)
+static unsafe string ToManagedString(CXString cx)
 {
-    var ptr = LibClang.clang_getCString(cx);
-    var result = ptr == IntPtr.Zero ? "" : Marshal.PtrToStringAnsi(ptr) ?? "";
-    LibClang.clang_disposeString(cx);
+    var ptr = clang.getCString(cx);
+    var result = ptr == null ? "" : Marshal.PtrToStringAnsi((nint)ptr) ?? "";
+    clang.disposeString(cx);
     return result;
 }
 
-static string GetSpelling(CXCursor cursor) => ToManagedString(LibClang.clang_getCursorSpelling(cursor));
+static string GetSpelling(CXCursor cursor) => ToManagedString(clang.getCursorSpelling(cursor));
 
 static string GetTypeSpelling(CXType type)
 {
-    var s = ToManagedString(LibClang.clang_getTypeSpelling(type));
+    var s = ToManagedString(clang.getTypeSpelling(type));
     s = Regex.Replace(s, @"\bconst\b\s*", "");
     s = s.Replace("*[]", "*");
     return s;
@@ -149,11 +124,30 @@ static string GetTypeSpelling(CXType type)
 
 static string StripAggregateKeyword(string typeName)
 {
+    typeName = typeName.Trim();
     if (typeName.StartsWith("struct "))
         return typeName[7..];
     if (typeName.StartsWith("union "))
         return typeName[6..];
     return typeName;
+}
+
+static string NormalizeTypeName(string typeName)
+{
+    if (string.IsNullOrWhiteSpace(typeName))
+        return typeName;
+
+    typeName = Regex.Replace(typeName.Trim(), @"\s+", " ");
+    typeName = Regex.Replace(typeName, @"\s*\*\s*", "*");
+    return StripAggregateKeyword(typeName);
+}
+
+static int CountPointerDepth(string typeName)
+{
+    var count = 0;
+    for (var i = typeName.Length - 1; i >= 0 && typeName[i] == '*'; i--)
+        count++;
+    return count;
 }
 
 static string SanitizeName(string name)
@@ -185,6 +179,75 @@ static string NormalizeReportText(string text, string repoRoot)
 {
     return text.Replace(repoRoot + Path.DirectorySeparatorChar, "")
                .Replace(repoRoot + Path.AltDirectorySeparatorChar, "");
+}
+
+static void PreloadLibClang()
+{
+    var env = Environment.GetEnvironmentVariable("LIBCLANG_PATH");
+    if (!string.IsNullOrWhiteSpace(env))
+    {
+        if (Directory.Exists(env))
+        {
+            foreach (var fileName in CandidateFileNames())
+            {
+                var candidate = Path.Combine(env, fileName);
+                if (NativeLibrary.TryLoad(candidate, out _))
+                    return;
+            }
+        }
+        else if (NativeLibrary.TryLoad(env, out _))
+        {
+            return;
+        }
+    }
+
+    foreach (var candidate in CandidateLibraryPaths())
+    {
+        if (NativeLibrary.TryLoad(candidate, out _))
+            return;
+    }
+}
+
+static IEnumerable<string> CandidateFileNames()
+{
+    if (OperatingSystem.IsMacOS())
+        return ["libclang.dylib"];
+    if (OperatingSystem.IsWindows())
+        return ["libclang.dll", "clang.dll"];
+    return ["libclang.so", "libclang-21.so", "libclang-20.so", "libclang-18.so"];
+}
+
+static IEnumerable<string> CandidateLibraryPaths()
+{
+    if (OperatingSystem.IsMacOS())
+    {
+        return [
+            "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib",
+            "/opt/homebrew/opt/llvm/lib/libclang.dylib",
+            "/opt/homebrew/Cellar/llvm/22.1.4/lib/libclang.dylib",
+            "/opt/homebrew/Cellar/llvm@21/21.1.8/lib/libclang.dylib",
+            "/opt/homebrew/Cellar/llvm@20/20.1.8/lib/libclang.dylib",
+        ];
+    }
+
+    if (OperatingSystem.IsWindows())
+    {
+        return [
+            "libclang.dll",
+            @"C:\Program Files\LLVM\bin\libclang.dll",
+            @"C:\LLVM\bin\libclang.dll",
+        ];
+    }
+
+    return [
+        "libclang.so",
+        "/usr/lib/llvm-21/lib/libclang.so",
+        "/usr/lib/llvm-20/lib/libclang.so",
+        "/usr/lib/llvm-18/lib/libclang.so",
+        "/usr/lib/x86_64-linux-gnu/libclang.so",
+        "/usr/lib/aarch64-linux-gnu/libclang.so",
+        "/usr/local/lib/libclang.so",
+    ];
 }
 
 static FileSnapshot CaptureSnapshot(string path)
@@ -242,9 +305,9 @@ static bool TryGetClangTypeSize(CXType type, out long size)
 {
     var current = type;
     if (current.kind == CXType_Elaborated)
-        current = LibClang.clang_Type_getNamedType(current);
+        current = clang.Type_getNamedType(current);
 
-    var value = LibClang.clang_Type_getSizeOf(current);
+    var value = clang.Type_getSizeOf(current);
     if (value >= 0)
     {
         size = value;
@@ -299,7 +362,7 @@ var directFuncPtrs = new List<(string Name, string RetType, List<(string Name, s
 //   enum              → int       4
 //
 
-static string CTypeKindToCSharp(int kind) => kind switch
+static string CTypeKindToCSharp(CXTypeKind kind) => kind switch
 {
     CXType_Void => "void",
     CXType_Bool => "byte",
@@ -331,7 +394,7 @@ static int GetAbiSize(string csType) => csType switch
 
 // Resolve a pointer's pointee type to the correct C# pointer type string.
 // Preserves signedness: int* vs uint*, short* vs ushort*, etc.
-static string ResolvePointerType(int pointeeKind, string pointeeSpelling)
+static string ResolvePointerType(CXTypeKind pointeeKind, string pointeeSpelling)
 {
     var scalar = CTypeKindToCSharp(pointeeKind);
     if (scalar.Length > 0 && scalar != "void")
@@ -351,7 +414,7 @@ string ResolveCType(CXType type, bool inField, string context = "")
 
     if (kind == CXType_Elaborated)
     {
-        var named = LibClang.clang_Type_getNamedType(type);
+        var named = clang.Type_getNamedType(type);
         return ResolveCType(named, inField, context);
     }
 
@@ -367,7 +430,7 @@ string ResolveCType(CXType type, bool inField, string context = "")
         if (funcPtrTypedefs.Exists(f => f.Name == spelling))
             return spelling;
 
-        var canonical = LibClang.clang_getCanonicalType(type);
+        var canonical = clang.getCanonicalType(type);
 
         // Scalar typedef: preserve exact signedness
         if (canonical.kind is CXType_Int or CXType_UInt or CXType_UShort
@@ -394,7 +457,7 @@ string ResolveCType(CXType type, bool inField, string context = "")
     // Pointer
     if (kind == CXType_Pointer)
     {
-        var pointee = LibClang.clang_getPointeeType(type);
+        var pointee = clang.getPointeeType(type);
 
         // Pointer to function → delegate type or nint
         if (pointee.kind is CXType_FunctionProto or CXType_FunctionNoProto)
@@ -427,7 +490,7 @@ string ResolveCType(CXType type, bool inField, string context = "")
             if (funcPtrTypedefs.Exists(f => f.Name == ptSpell))
                 return ptSpell; // named delegate type
 
-            var ptCanon = LibClang.clang_getCanonicalType(pointee);
+            var ptCanon = clang.getCanonicalType(pointee);
 
             // Canonical is a scalar → preserve signedness
             var scalarPtr = ResolvePointerType(ptCanon.kind, "");
@@ -451,7 +514,7 @@ string ResolveCType(CXType type, bool inField, string context = "")
 
         if (pointee.kind == CXType_Elaborated)
         {
-            var inner = LibClang.clang_Type_getNamedType(pointee);
+            var inner = clang.Type_getNamedType(pointee);
             return ResolveCType(inner, inField, context) + "*";
         }
 
@@ -468,14 +531,14 @@ string ResolveCType(CXType type, bool inField, string context = "")
     // Constant array — resolved at field level (not here)
     if (kind == CXType_ConstantArray)
     {
-        var elemType = LibClang.clang_getArrayElementType(type);
+        var elemType = clang.getArrayElementType(type);
         return ResolveCType(elemType, inField, context);
     }
 
     // Incomplete array (pointer semantics)
     if (kind == CXType_IncompleteArray)
     {
-        var elemType = LibClang.clang_getArrayElementType(type);
+        var elemType = clang.getArrayElementType(type);
         return ResolveCType(elemType, inField, context) + "*";
     }
 
@@ -512,125 +575,117 @@ var constants = new List<(string Name, string Value, long IntValue)>();
 // ─────────────────────────────────────────────────────────────────────────────
 
 Console.WriteLine("=== Parasolid Header -> C# API Layer Generator ===");
-Console.WriteLine($"libclang: {libclangPath}");
-Console.WriteLine($"sysroot:  {sysroot}");
+Console.WriteLine("libclang: ClangSharp.Interop");
+if (!string.IsNullOrEmpty(sysroot))
+    Console.WriteLine($"sysroot:  {sysroot}");
 Console.WriteLine($"partial:  {allowPartial}");
 Console.WriteLine();
 
+PreloadLibClang();
+
 Console.Write("Parsing parasolid_kernel.h ... ");
 
-var idx = LibClang.clang_createIndex(0, 0);
+nint idx;
+unsafe
+{
+    idx = (nint)clang.createIndex(0, 0);
+}
 
 unsafe
 {
-    var arg0 = Marshal.StringToHGlobalAnsi("-xc");
-    var arg1 = Marshal.StringToHGlobalAnsi("-std=c11");
-    var arg2 = Marshal.StringToHGlobalAnsi("-isysroot");
-    var arg3 = Marshal.StringToHGlobalAnsi(sysroot);
-    var arg4 = Marshal.StringToHGlobalAnsi("-I" + incDir);
-    var arg5 = Marshal.StringToHGlobalAnsi("-Wno-everything");
+    var parseArgs = new List<string>
+    {
+        "-xc",
+        "-std=c11",
+        "-I" + incDir,
+        "-Wno-everything",
+    };
+    if (!string.IsNullOrEmpty(sysroot))
+    {
+        parseArgs.Add("-isysroot");
+        parseArgs.Add(sysroot);
+    }
 
-    var cmdArgs = stackalloc byte*[6];
-    cmdArgs[0] = (byte*)arg0;
-    cmdArgs[1] = (byte*)arg1;
-    cmdArgs[2] = (byte*)arg2;
-    cmdArgs[3] = (byte*)arg3;
-    cmdArgs[4] = (byte*)arg4;
-    cmdArgs[5] = (byte*)arg5;
+    var argHandles = parseArgs.Select(Marshal.StringToHGlobalAnsi).ToArray();
+    var headerPtr = Marshal.StringToHGlobalAnsi(mainHeader);
 
-    var tu = LibClang.clang_parseTranslationUnit(idx, mainHeader, cmdArgs, 6, IntPtr.Zero, 0, 0);
-    if (tu == IntPtr.Zero)
+    var cmdArgs = stackalloc sbyte*[argHandles.Length];
+    for (var i = 0; i < argHandles.Length; i++)
+        cmdArgs[i] = (sbyte*)argHandles[i];
+
+    var tu = clang.parseTranslationUnit((void*)idx, (sbyte*)headerPtr, cmdArgs, argHandles.Length, null, 0, 0);
+    if (tu == null)
     {
         Console.WriteLine("FAILED to parse translation unit");
         return 1;
     }
 
-    var cursor = LibClang.clang_getTranslationUnitCursor(tu);
+    var cursor = clang.getTranslationUnitCursor(tu);
 
     // Pass 1: Collect all function pointer typedefs first (struct fields may reference them)
     CXCursorVisitor funcPtrCollector = (child, parent, _) =>
     {
-        var kind = LibClang.clang_getCursorKind(child);
-        if (kind != CXCursor_TypedefDecl) return CXChildVisitResult.Continue;
+        var kind = clang.getCursorKind(child);
+        if (kind != CXCursor_TypedefDecl) return CXChildVisitResult.CXChildVisit_Continue;
 
-        var underlying = LibClang.clang_getTypedefDeclUnderlyingType(child);
+        var underlying = clang.getTypedefDeclUnderlyingType(child);
         var funcType = underlying;
         if (underlying.kind == CXType_Pointer)
         {
-            var pt = LibClang.clang_getPointeeType(underlying);
+            var pt = clang.getPointeeType(underlying);
             if (pt.kind is CXType_FunctionProto or CXType_FunctionNoProto)
                 funcType = pt;
         }
 
         if (funcType.kind is CXType_FunctionProto or CXType_FunctionNoProto)
         {
-            var name = GetSpelling(child);
-            var retType = LibClang.clang_getResultType(funcType);
-            var csRet = CTypeKindToCSharp(retType.kind);
-            if (csRet.Length == 0)
-            {
-                var retSpell = GetTypeSpelling(retType);
-                csRet = retSpell.Length > 0 ? retSpell : "void";
-            }
+            var name = NormalizeTypeName(GetSpelling(child));
+            var retType = clang.getResultType(funcType);
+            var csRet = NormalizeTypeName(ResolveCType(retType, false, $"{name}(return)"));
 
             var fparams = new List<(string Name, string Type)>();
-            var numArgs = LibClang.clang_getNumArgTypes(funcType);
+            var numArgs = clang.getNumArgTypes(funcType);
 
             var paramNames = new List<string>();
             CXCursorVisitor fpParamVisitor = (pc, _, _) =>
             {
-                if (LibClang.clang_getCursorKind(pc) == CXCursor_ParmDecl)
+                if (clang.getCursorKind(pc) == CXCursor_ParmDecl)
                     paramNames.Add(GetSpelling(pc));
-                return CXChildVisitResult.Continue;
+                return CXChildVisitResult.CXChildVisit_Continue;
             };
-            LibClang.clang_visitChildren(child, fpParamVisitor, IntPtr.Zero);
+            child.VisitChildren(fpParamVisitor, default);
 
             for (uint i = 0; i < (uint)numArgs; i++)
             {
-                var argType = LibClang.clang_getArgType(funcType, i);
+                var argType = clang.getArgType(funcType, i);
                 var pname = i < paramNames.Count ? paramNames[(int)i] : $"arg{i}";
                 if (string.IsNullOrEmpty(pname)) pname = $"arg{i}";
-                var csType = CTypeKindToCSharp(argType.kind);
-                if (csType.Length == 0)
-                {
-                    // Array params in C are pointers; resolve element type
-                    if (argType.kind is CXType_ConstantArray or CXType_IncompleteArray)
-                    {
-                        var elemType = LibClang.clang_getArrayElementType(argType);
-                        var elemCs = CTypeKindToCSharp(elemType.kind);
-                        csType = elemCs.Length > 0 ? elemCs + "*" : "nint";
-                    }
-                    else
-                    {
-                        var argSpell = GetTypeSpelling(argType);
-                        csType = argSpell.Length > 0 ? argSpell : "nint";
-                    }
-                }
+                var csType = NormalizeTypeName(ResolveCType(argType, false, $"{name}({pname})"));
                 fparams.Add((pname, csType));
             }
 
             funcPtrTypedefs.Add((name, csRet, fparams));
         }
-        return CXChildVisitResult.Continue;
+        return CXChildVisitResult.CXChildVisit_Continue;
     };
-    LibClang.clang_visitChildren(cursor, funcPtrCollector, IntPtr.Zero);
+    cursor.VisitChildren(funcPtrCollector, default);
 
     // Pass 2: Collect typedefs, structs, functions, and constants
     CXCursorVisitor topLevelVisitor = (child, parent, _) =>
     {
-        var kind = LibClang.clang_getCursorKind(child);
-        var spelling = GetSpelling(child);
+        var kind = clang.getCursorKind(child);
+        var spelling = NormalizeTypeName(GetSpelling(child));
 
         if (kind == CXCursor_TypedefDecl)
         {
-            var underlying = LibClang.clang_getTypedefDeclUnderlyingType(child);
+            var underlying = clang.getTypedefDeclUnderlyingType(child);
 
             // Skip function pointer typedefs — already collected in Pass 1
             if (funcPtrTypedefs.Exists(f => f.Name == spelling))
-                return CXChildVisitResult.Continue;
+                return CXChildVisitResult.CXChildVisit_Continue;
 
-            var canonical = LibClang.clang_getCanonicalType(underlying);
-            var underlyingSp = GetTypeSpelling(underlying);
+            var canonical = clang.getCanonicalType(underlying);
+            var underlyingSp = NormalizeTypeName(GetTypeSpelling(underlying));
 
             if (canonical.kind == CXType_Pointer)
             {
@@ -644,28 +699,28 @@ unsafe
             else
             {
                 var csType = CTypeKindToCSharp(canonical.kind);
-                typedefs.Add((spelling, csType.Length > 0 ? csType : underlyingSp));
+                typedefs.Add((spelling, NormalizeTypeName(csType.Length > 0 ? csType : underlyingSp)));
             }
         }
         else if (kind == CXCursor_StructDecl || kind == CXCursor_UnionDecl)
         {
             if (spelling.Length == 0)
-                return CXChildVisitResult.Continue;
+                return CXChildVisitResult.CXChildVisit_Continue;
 
             var fields = new List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsArray, long ArrSize, string Comment)>();
 
             CXCursorVisitor fieldVisitor = (fieldCursor, _, _) =>
             {
-                var fieldKind = LibClang.clang_getCursorKind(fieldCursor);
+                var fieldKind = clang.getCursorKind(fieldCursor);
 
                 // Handle union children in structs
                 if (fieldKind == CXCursor_UnionDecl)
                 {
-                    var unionFieldName = GetSpelling(fieldCursor);
+                    var unionFieldName = NormalizeTypeName(GetSpelling(fieldCursor));
                     if (string.IsNullOrEmpty(unionFieldName) || unionFieldName.Contains(' ') || unionFieldName.Contains('('))
                         unionFieldName = $"_union_{fields.Count}";
 
-                    var unionType = LibClang.clang_getCursorType(fieldCursor);
+                    var unionType = clang.getCursorType(fieldCursor);
                     if (TryGetClangTypeSize(unionType, out var unionSize))
                     {
                         fields.Add((unionFieldName, "byte", false, false, true, unionSize,
@@ -676,20 +731,20 @@ unsafe
                         fields.Add((unionFieldName, "nint", true, false, false, 0, ""));
                         RecordUnresolved(GetTypeSpelling(unionType), $"{spelling}.{unionFieldName}", "struct-field");
                     }
-                    return CXChildVisitResult.Continue;
+                    return CXChildVisitResult.CXChildVisit_Continue;
                 }
 
                 if (fieldKind != CXCursor_FieldDecl)
-                    return CXChildVisitResult.Continue;
+                    return CXChildVisitResult.CXChildVisit_Continue;
 
-                var fname = GetSpelling(fieldCursor);
-                var ftype = LibClang.clang_getCursorType(fieldCursor);
+                var fname = NormalizeTypeName(GetSpelling(fieldCursor));
+                var ftype = clang.getCursorType(fieldCursor);
                 var fkind = ftype.kind;
-                var isConst = LibClang.clang_isConstQualifiedType(ftype) != 0;
+                var isConst = clang.isConstQualifiedType(ftype) != 0;
 
                 if (fkind == CXType_Elaborated)
                 {
-                    ftype = LibClang.clang_Type_getNamedType(ftype);
+                    ftype = clang.Type_getNamedType(ftype);
                     fkind = ftype.kind;
                 }
 
@@ -700,13 +755,13 @@ unsafe
                     var currentType = ftype;
                     while (currentType.kind == CXType_ConstantArray)
                     {
-                        totalSize *= LibClang.clang_getArraySize(currentType);
-                        currentType = LibClang.clang_getArrayElementType(currentType);
+                        totalSize *= clang.getArraySize(currentType);
+                        currentType = clang.getArrayElementType(currentType);
                     }
                     // Unwrap elaborated element type
                     if (currentType.kind == CXType_Elaborated)
-                        currentType = LibClang.clang_Type_getNamedType(currentType);
-                    var csElem = ResolveCType(currentType, true, $"{spelling}.{fname}");
+                        currentType = clang.Type_getNamedType(currentType);
+                    var csElem = NormalizeTypeName(ResolveCType(currentType, true, $"{spelling}.{fname}"));
                     if (TryGetClangTypeSize(currentType, out var elementSize))
                     {
                         var primitiveSize = GetAbiSize(csElem);
@@ -720,7 +775,7 @@ unsafe
                             fields.Add((fname, "byte", false, false, true, byteCount,
                                 $"ABI storage for {csElem}[{totalSize}] ({elementSize} bytes/element)"));
                         }
-                        return CXChildVisitResult.Continue;
+                        return CXChildVisitResult.CXChildVisit_Continue;
                     }
 
                     if (csElem.Contains("union") || csElem.Contains("unnamed") || csElem.Contains('('))
@@ -733,42 +788,37 @@ unsafe
                     }
                     fields.Add((fname, "byte", false, false, true, 1,
                         $"ABI-BLOCKING FALLBACK for {csElem}[{totalSize}]"));
-                    return CXChildVisitResult.Continue;
+                    return CXChildVisitResult.CXChildVisit_Continue;
                 }
 
                 // Check for function pointer field (pointer to function or pointer to function typedef)
                 if (fkind == CXType_Pointer)
                 {
-                    var pointee = LibClang.clang_getPointeeType(ftype);
+                    var pointee = clang.getPointeeType(ftype);
 
                     // Direct function pointer: void (*)(int) — generate a named delegate
                     if (pointee.kind is CXType_FunctionProto or CXType_FunctionNoProto)
                     {
                         var delegateName = $"{spelling}_{fname}_f_t";
-                        var retType = LibClang.clang_getResultType(pointee);
-                        var csRet = CTypeKindToCSharp(retType.kind);
-                        if (csRet.Length == 0)
-                        {
-                            var retSpell = GetTypeSpelling(retType);
-                            csRet = retSpell.Length > 0 ? retSpell : "void";
-                        }
+                        var retType = clang.getResultType(pointee);
+                        var csRet = NormalizeTypeName(ResolveCType(retType, false, $"{delegateName}(return)"));
 
                         var fpParams = new List<(string Name, string Type)>();
-                        var numArgs = LibClang.clang_getNumArgTypes(pointee);
+                        var numArgs = clang.getNumArgTypes(pointee);
 
                         // Collect parameter names from cursor children
                         var paramNames = new List<string>();
                         CXCursorVisitor fpParamVisitor = (pc, _, _) =>
                         {
-                            if (LibClang.clang_getCursorKind(pc) == CXCursor_ParmDecl)
+                            if (clang.getCursorKind(pc) == CXCursor_ParmDecl)
                                 paramNames.Add(GetSpelling(pc));
-                            return CXChildVisitResult.Continue;
+                            return CXChildVisitResult.CXChildVisit_Continue;
                         };
-                        LibClang.clang_visitChildren(fieldCursor, fpParamVisitor, IntPtr.Zero);
+                        fieldCursor.VisitChildren(fpParamVisitor, default);
 
                         for (uint ai = 0; ai < (uint)numArgs; ai++)
                         {
-                            var argType = LibClang.clang_getArgType(pointee, ai);
+                            var argType = clang.getArgType(pointee, ai);
                             var pname = ai < paramNames.Count ? paramNames[(int)ai] : $"arg{ai}";
                             if (string.IsNullOrEmpty(pname)) pname = $"arg{ai}";
                             var csArgType = CTypeKindToCSharp(argType.kind);
@@ -776,22 +826,21 @@ unsafe
                             {
                                 if (argType.kind is CXType_ConstantArray or CXType_IncompleteArray)
                                 {
-                                    var elemType = LibClang.clang_getArrayElementType(argType);
+                                    var elemType = clang.getArrayElementType(argType);
                                     var elemCs = CTypeKindToCSharp(elemType.kind);
                                     csArgType = elemCs.Length > 0 ? elemCs + "*" : "nint";
                                 }
                                 else if (argType.kind == CXType_Pointer)
                                 {
-                                    var pt = LibClang.clang_getPointeeType(argType);
+                                    var pt = clang.getPointeeType(argType);
                                     if (pt.kind is CXType_FunctionProto or CXType_FunctionNoProto)
                                         csArgType = "nint";
                                     else
-                                        csArgType = ResolveCType(argType, false, $"{spelling}.{fname}");
+                                        csArgType = NormalizeTypeName(ResolveCType(argType, false, $"{spelling}.{fname}"));
                                 }
                                 else
                                 {
-                                    var argSpell = GetTypeSpelling(argType);
-                                    csArgType = argSpell.Length > 0 ? argSpell : "nint";
+                                    csArgType = NormalizeTypeName(ResolveCType(argType, false, $"{delegateName}(arg{ai})"));
                                 }
                             }
                             fpParams.Add((pname, csArgType));
@@ -799,36 +848,36 @@ unsafe
 
                         directFuncPtrs.Add((delegateName, csRet, fpParams));
                         fields.Add((fname, delegateName, true, isConst, false, 0, ""));
-                        return CXChildVisitResult.Continue;
+                        return CXChildVisitResult.CXChildVisit_Continue;
                     }
 
                     // Typedef'd function pointer: PK_SESSION_start_f_t
                     if (pointee.kind == CXType_Typedef)
                     {
-                        var ptSpell = GetTypeSpelling(pointee);
+                        var ptSpell = NormalizeTypeName(GetTypeSpelling(pointee));
                         if (funcPtrTypedefs.Exists(f => f.Name == ptSpell))
                         {
                             fields.Add((fname, ptSpell, true, isConst, false, 0, ""));
-                            return CXChildVisitResult.Continue;
+                            return CXChildVisitResult.CXChildVisit_Continue;
                         }
                         // Typedef resolves to function pointer?
-                        var ptCanon = LibClang.clang_getCanonicalType(pointee);
+                        var ptCanon = clang.getCanonicalType(pointee);
                         if (ptCanon.kind is CXType_FunctionProto or CXType_FunctionNoProto)
                         {
                             fields.Add((fname, ptSpell, true, isConst, false, 0, ""));
-                            return CXChildVisitResult.Continue;
+                            return CXChildVisitResult.CXChildVisit_Continue;
                         }
                     }
                 }
 
-                var csType = ResolveCType(ftype, true, $"{spelling}.{fname}");
+                var csType = NormalizeTypeName(ResolveCType(ftype, true, $"{spelling}.{fname}"));
                 if (csType.Contains("union") || csType.Contains("unnamed") || csType.Contains('('))
                 {
                     if (TryGetClangTypeSize(ftype, out var unionSize))
                     {
                         fields.Add((fname, "byte", false, isConst, true, unionSize,
                             $"ABI storage for {NormalizeReportText(GetTypeSpelling(ftype), repoRoot)} ({unionSize} bytes)"));
-                        return CXChildVisitResult.Continue;
+                        return CXChildVisitResult.CXChildVisit_Continue;
                     }
 
                     RecordUnresolved(GetTypeSpelling(ftype), $"{spelling}.{fname}", "struct-field");
@@ -837,9 +886,9 @@ unsafe
                 var isPtr = csType.Contains('*') || csType == "nint";
                 fields.Add((fname, csType, isPtr, isConst, false, 0, ""));
 
-                return CXChildVisitResult.Continue;
+                return CXChildVisitResult.CXChildVisit_Continue;
             };
-            LibClang.clang_visitChildren(child, fieldVisitor, IntPtr.Zero);
+            child.VisitChildren(fieldVisitor, default);
 
             if (kind == CXCursor_StructDecl)
                 structs.Add((spelling, fields));
@@ -849,47 +898,44 @@ unsafe
         else if (kind == CXCursor_FunctionDecl)
         {
             if (!spelling.StartsWith("PK_"))
-                return CXChildVisitResult.Continue;
+                return CXChildVisitResult.CXChildVisit_Continue;
 
-            var funcType = LibClang.clang_getCursorType(child);
-            var retType = LibClang.clang_getResultType(funcType);
-            var csRet = CTypeKindToCSharp(retType.kind);
-            if (csRet.Length == 0)
-            {
-                var retSpell = GetTypeSpelling(retType);
-                csRet = retSpell.Length > 0 ? retSpell : "int";
-            }
+            var funcType = clang.getCursorType(child);
+            var retType = clang.getResultType(funcType);
+            var csRet = NormalizeTypeName(ResolveCType(retType, false, $"{spelling}(return)"));
 
-            var numArgs = LibClang.clang_getNumArgTypes(funcType);
+            var numArgs = clang.getNumArgTypes(funcType);
 
             var paramNames = new List<string>();
             CXCursorVisitor paramVisitor = (paramCursor, _, _) =>
             {
-                if (LibClang.clang_getCursorKind(paramCursor) == CXCursor_ParmDecl)
+                if (clang.getCursorKind(paramCursor) == CXCursor_ParmDecl)
                     paramNames.Add(GetSpelling(paramCursor));
-                return CXChildVisitResult.Continue;
+                return CXChildVisitResult.CXChildVisit_Continue;
             };
-            LibClang.clang_visitChildren(child, paramVisitor, IntPtr.Zero);
+            child.VisitChildren(paramVisitor, default);
 
             var parameters = new List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsDoublePtr)>();
 
             for (uint i = 0; i < (uint)numArgs; i++)
             {
-                var argType = LibClang.clang_getArgType(funcType, i);
+                var argType = clang.getArgType(funcType, i);
                 var pname = i < paramNames.Count ? paramNames[(int)i] : $"arg{i}";
                 if (string.IsNullOrEmpty(pname)) pname = $"arg{i}";
 
-                var isConst = LibClang.clang_isConstQualifiedType(argType) != 0;
+                var isConst = clang.isConstQualifiedType(argType) != 0;
                 var isDoublePtr = false;
 
                 if (argType.kind == CXType_Pointer)
                 {
-                    var pointee = LibClang.clang_getPointeeType(argType);
+                    var pointee = clang.getPointeeType(argType);
                     if (pointee.kind == CXType_Pointer)
                         isDoublePtr = true;
                 }
 
-                var pCsType = ResolveCType(argType, false, $"{spelling}({pname})");
+                var pCsType = NormalizeTypeName(ResolveCType(argType, false, $"{spelling}({pname})"));
+                if (isDoublePtr)
+                    pCsType = "nint*";
                 if (pCsType.Contains("union") || pCsType.Contains("unnamed") || pCsType.Contains('('))
                 {
                     RecordUnresolved(GetTypeSpelling(argType), $"{spelling}({pname})", "func-param");
@@ -903,21 +949,21 @@ unsafe
             functions.Add((spelling, csRet, parameters));
         }
 
-        return CXChildVisitResult.Continue;
+        return CXChildVisitResult.CXChildVisit_Continue;
     };
-    LibClang.clang_visitChildren(cursor, topLevelVisitor, IntPtr.Zero);
+    cursor.VisitChildren(topLevelVisitor, default);
 
-    LibClang.clang_disposeTranslationUnit(tu);
+    clang.disposeTranslationUnit(tu);
 
-    Marshal.FreeHGlobal(arg0);
-    Marshal.FreeHGlobal(arg1);
-    Marshal.FreeHGlobal(arg2);
-    Marshal.FreeHGlobal(arg3);
-    Marshal.FreeHGlobal(arg4);
-    Marshal.FreeHGlobal(arg5);
+    foreach (var argHandle in argHandles)
+        Marshal.FreeHGlobal(argHandle);
+    Marshal.FreeHGlobal(headerPtr);
 }
 
-LibClang.clang_disposeIndex(idx);
+unsafe
+{
+    clang.disposeIndex((void*)idx);
+}
 
 Console.WriteLine($"OK  typedefs={typedefs.Count}  funcPtrs={funcPtrTypedefs.Count}  structs={structs.Count}  functions={functions.Count}");
 
@@ -1085,8 +1131,10 @@ Console.WriteLine($"\nAfter dedup: typedefs={typedefs.Count}  funcPtrs={funcPtrT
 
 string ResolveChain(string name, int depth = 0)
 {
+    name = NormalizeTypeName(name);
     if (depth > 10) return name;
     if (!typedefMap.TryGetValue(name, out var target)) return name;
+    target = NormalizeTypeName(target);
     if (target is "int" or "uint" or "nuint" or "byte" or "short" or "ushort"
         or "long" or "ulong" or "float" or "double" or "nint")
         return target;
@@ -1099,56 +1147,110 @@ string ResolveChain(string name, int depth = 0)
 // Code generation helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-void GenerateUsingAliases(StringBuilder sb)
+bool IsGeneratedAggregateTypeName(string typeName)
+{
+    typeName = NormalizeTypeName(typeName);
+    return structs.Any(s => s.Name == typeName) || unions.Any(u => u.Name == typeName);
+}
+
+string QualifyForGlobalAlias(string typeName, string ns)
+{
+    typeName = NormalizeTypeName(typeName);
+    if (typeName.EndsWith('*'))
+    {
+        var depth = CountPointerDepth(typeName);
+        var core = NormalizeTypeName(typeName[..^depth]);
+        return $"{QualifyForGlobalAlias(core, ns)}{new string('*', depth)}";
+    }
+
+    return IsGeneratedAggregateTypeName(typeName) ? $"{ns}.{typeName}" : typeName;
+}
+
+void GenerateUsingAliases(StringBuilder sb, string? ns)
 {
     foreach (var td in typedefs)
     {
         var target = ResolveChain(td.Name);
         if (target == td.Name) continue;
+        var emittedTarget = ns is null ? target : QualifyForGlobalAlias(target, ns);
 
         if (target is "int" or "uint" or "nuint" or "byte" or "short" or "ushort"
             or "long" or "ulong" or "float" or "double" or "nint")
         {
-            sb.AppendLine($"using {td.Name} = {target};");
+            sb.AppendLine($"global using {td.Name} = {emittedTarget};");
         }
         else if (!target.Contains('*'))
         {
             if (target.Contains(' ') || target.Contains("union") || target.Contains("unnamed") || target.Contains('(')
                 || target.StartsWith("struct "))
             {
-                sb.AppendLine($"using {td.Name} = nint;");
+                sb.AppendLine($"global using {td.Name} = nint;");
                 RecordUnresolved(target, td.Name, "typedef-alias");
             }
             else
             {
-                sb.AppendLine($"using {td.Name} = {target};");
+                sb.AppendLine($"global using {td.Name} = {emittedTarget};");
             }
         }
     }
 }
 
-void GenerateDelegates(StringBuilder sb, string access)
+string QualifySignatureType(string typeName, string ns)
 {
-    // Typedef'd function pointers
-    foreach (var fp in funcPtrTypedefs)
+    typeName = NormalizeTypeName(typeName);
+    if (typeName.EndsWith('*'))
     {
-        sb.AppendLine($"    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]");
-        var parms = string.Join(", ", fp.Params.Select(p => $"{p.Type} {SanitizeName(p.Name)}"));
-        var hasPtr = fp.RetType.Contains('*') || fp.Params.Any(p => p.Type.Contains('*'));
-        var unsafeKw = hasPtr ? "unsafe " : "";
-        sb.AppendLine($"    {access} {unsafeKw}delegate {fp.RetType} {fp.Name}({parms});");
-        sb.AppendLine();
+        var depth = CountPointerDepth(typeName);
+        var core = NormalizeTypeName(typeName[..^depth]);
+        return $"{QualifySignatureType(core, ns)}{new string('*', depth)}";
     }
 
-    // Direct function pointer delegates (generated for struct fields)
+    var resolved = ResolveChain(typeName);
+    if (resolved is "void" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or "ulong" or "nint" or "nuint" or "float" or "double")
+        return resolved;
+
+    if (IsGeneratedAggregateTypeName(resolved))
+        return $"{ns}.{resolved}";
+
+    return resolved;
+}
+
+string ToFunctionPointerSignature(string retType, List<(string Name, string Type)> parameters, string ns)
+{
+    var types = parameters.Select(p => QualifySignatureType(p.Type, ns)).Append(QualifySignatureType(retType, ns));
+    return $"delegate* unmanaged[Cdecl]<{string.Join(", ", types)}>";
+}
+
+bool IsFunctionPointerAlias(string typeName)
+{
+    typeName = NormalizeTypeName(typeName);
+    return funcPtrTypedefs.Any(f => f.Name == typeName) || directFuncPtrs.Any(f => f.Name == typeName);
+}
+
+bool RequiresUnsafeFieldType(string typeName, bool isArray)
+{
+    typeName = NormalizeTypeName(typeName);
+    if (isArray)
+        return true;
+    if (typeName.Contains('*'))
+        return true;
+    if (typeName == "nint")
+        return true;
+    if (IsFunctionPointerAlias(typeName))
+        return true;
+    return false;
+}
+
+void GenerateFunctionPointerAliases(StringBuilder sb, string ns)
+{
+    foreach (var fp in funcPtrTypedefs)
+    {
+        sb.AppendLine($"global using unsafe {fp.Name} = {ToFunctionPointerSignature(fp.RetType, fp.Params, ns)};");
+    }
+
     foreach (var fp in directFuncPtrs)
     {
-        sb.AppendLine($"    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]");
-        var parms = string.Join(", ", fp.Params.Select(p => $"{p.Type} {SanitizeName(p.Name)}"));
-        var hasPtr = fp.RetType.Contains('*') || fp.Params.Any(p => p.Type.Contains('*'));
-        var unsafeKw = hasPtr ? "unsafe " : "";
-        sb.AppendLine($"    {access} {unsafeKw}delegate {fp.RetType} {fp.Name}({parms});");
-        sb.AppendLine();
+        sb.AppendLine($"global using unsafe {fp.Name} = {ToFunctionPointerSignature(fp.RetType, fp.Params, ns)};");
     }
 }
 
@@ -1156,7 +1258,7 @@ void GenerateStructs(StringBuilder sb, string access)
 {
     foreach (var s in structs.OrderBy(s => StructSortKeyByName(s.Name)).ThenBy(s => s.Name))
     {
-        var isUnsafe = s.Fields.Exists(f => f.IsPtr || f.IsArray);
+        var isUnsafe = s.Fields.Exists(f => RequiresUnsafeFieldType(f.Type, f.IsArray));
         sb.AppendLine("    [StructLayout(LayoutKind.Sequential)]");
         sb.AppendLine(isUnsafe ? $"    {access} unsafe struct {s.Name}" : $"    {access} struct {s.Name}");
         sb.AppendLine("    {");
@@ -1188,7 +1290,7 @@ void GenerateUnions(StringBuilder sb, string access)
 {
     foreach (var u in unions.OrderBy(u => u.Name))
     {
-        var isUnsafe = u.Fields.Exists(f => f.IsPtr || f.IsArray);
+        var isUnsafe = u.Fields.Exists(f => RequiresUnsafeFieldType(f.Type, f.IsArray));
         sb.AppendLine("    [StructLayout(LayoutKind.Explicit)]");
         sb.AppendLine(isUnsafe ? $"    {access} unsafe struct {u.Name}" : $"    {access} struct {u.Name}");
         sb.AppendLine("    {");
@@ -1236,25 +1338,22 @@ void GenerateNativeFile(string outputPath, string ns)
 {
     var sb = new StringBuilder(1 << 20);
     sb.AppendLine("// <auto-generated />");
-    sb.AppendLine("// Parasolid ABI types, delegates, constants, and export metadata.");
+    sb.AppendLine("// Parasolid ABI types, function pointer aliases, and constants.");
     sb.AppendLine("// This file is the primary generated artifact for the NativeAOT shared library.");
-    sb.AppendLine("// It does NOT contain DllImport — the Native project IS the native library.");
     sb.AppendLine();
+
+    // Using aliases
+    GenerateUsingAliases(sb, ns);
+    if (funcPtrTypedefs.Count > 0 || directFuncPtrs.Count > 0)
+    {
+        GenerateFunctionPointerAliases(sb, ns);
+        sb.AppendLine();
+    }
+
     sb.AppendLine("using System.Runtime.InteropServices;");
     sb.AppendLine();
     sb.AppendLine($"namespace {ns};");
     sb.AppendLine();
-
-    // Using aliases
-    GenerateUsingAliases(sb);
-    sb.AppendLine();
-
-    // Delegate types for function pointers
-    if (funcPtrTypedefs.Count > 0 || directFuncPtrs.Count > 0)
-    {
-        sb.AppendLine("    // Function pointer delegate types");
-        GenerateDelegates(sb, "internal");
-    }
 
     if (unions.Count > 0)
     {
@@ -1265,17 +1364,6 @@ void GenerateNativeFile(string outputPath, string ns)
     // Structs
     sb.AppendLine("    // ABI struct definitions");
     GenerateStructs(sb, "internal");
-
-    // Export metadata (function name constants)
-    sb.AppendLine("    // Export function name metadata");
-    sb.AppendLine("    internal static class ParasolidExports");
-    sb.AppendLine("    {");
-    sb.AppendLine($"        public const int FunctionCount = {functions.Count};");
-    sb.AppendLine();
-    foreach (var func in functions.OrderBy(f => f.Name))
-        sb.AppendLine($"        public const string {func.Name} = \"{func.Name}\";");
-    sb.AppendLine("    }");
-    sb.AppendLine();
 
     // Constants
     GenerateConstants(sb, "internal");
@@ -1304,26 +1392,21 @@ void GenerateInteropFile(string outputPath, string ns)
 {
     var sb = new StringBuilder(1 << 20);
     sb.AppendLine("// <auto-generated />");
-    sb.AppendLine("// Parasolid API bindings with DllImport wrappers.");
-    sb.AppendLine("// THIS FILE IS FOR TEST/VALIDATION PURPOSES ONLY.");
-    sb.AppendLine("// The Native project exports these functions directly via [UnmanagedCallersOnly].");
-    sb.AppendLine("// Use this file to P/Invoke into the native library from managed test code.");
+    sb.AppendLine("// Parasolid ABI types, function pointer aliases, and constants for managed consumers.");
     sb.AppendLine();
+
+    // Using aliases
+    GenerateUsingAliases(sb, ns);
+    if (funcPtrTypedefs.Count > 0 || directFuncPtrs.Count > 0)
+    {
+        GenerateFunctionPointerAliases(sb, ns);
+        sb.AppendLine();
+    }
+
     sb.AppendLine("using System.Runtime.InteropServices;");
     sb.AppendLine();
     sb.AppendLine($"namespace {ns};");
     sb.AppendLine();
-
-    // Using aliases
-    GenerateUsingAliases(sb);
-    sb.AppendLine();
-
-    // Delegate types for function pointers
-    if (funcPtrTypedefs.Count > 0 || directFuncPtrs.Count > 0)
-    {
-        sb.AppendLine("    // Function pointer delegate types");
-        GenerateDelegates(sb, "public");
-    }
 
     if (unions.Count > 0)
     {
@@ -1335,27 +1418,92 @@ void GenerateInteropFile(string outputPath, string ns)
     sb.AppendLine("    // ABI struct definitions");
     GenerateStructs(sb, "public");
 
-    // DllImport function declarations
-    sb.AppendLine("    // DllImport wrappers (test/validation only)");
-    sb.AppendLine("    public static unsafe class ParasolidNative");
-    sb.AppendLine("    {");
-    foreach (var func in functions.OrderBy(f => f.Name))
-    {
-        var parms = string.Join(", ", func.Params.Select(p =>
-        {
-            var pt = p.IsDoublePtr ? "nint" : p.Type;
-            return $"{pt} {SanitizeName(p.Name)}";
-        }));
-        sb.AppendLine($"        [DllImport(\"ProjectGmKernel.Native\", EntryPoint = \"{func.Name}\")]");
-        sb.AppendLine($"        public static extern {func.RetType} {func.Name}({parms});");
-        sb.AppendLine();
-    }
-    sb.AppendLine("    }");
-    sb.AppendLine();
-
     // Constants
     GenerateConstants(sb, "public");
 
+    File.WriteAllText(outputPath, sb.ToString(), new UTF8Encoding(false));
+    Console.WriteLine($"  {Path.GetRelativePath(repoRoot, outputPath)} ({sb.Length / 1024}KB)");
+}
+
+static bool IsReadOnlyApi(string functionName)
+{
+    return functionName.Contains("_ask_")
+        || functionName.Contains("_is_")
+        || functionName.Contains("_eval_")
+        || functionName.Contains("_find_")
+        || functionName.Contains("_contains_")
+        || functionName.Contains("_range_");
+}
+
+bool IsUnmanagedCallersOnlyType(string typeName)
+{
+    if (typeName.EndsWith('*'))
+        return true;
+
+    var resolved = ResolveChain(typeName);
+    return resolved is "void" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or "ulong" or "nint" or "nuint" or "float" or "double";
+}
+
+bool CanGenerateExportStub((string Name, string RetType, List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsDoublePtr)> Params) func)
+{
+    if (!IsUnmanagedCallersOnlyType(func.RetType))
+        return false;
+
+    foreach (var parameter in func.Params)
+    {
+        if (!IsUnmanagedCallersOnlyType(parameter.Type))
+            return false;
+    }
+
+    return true;
+}
+
+void GenerateExportsFile(string outputPath)
+{
+    var implemented = new HashSet<string>(
+        Regex.Matches(File.ReadAllText(Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "KernelExports.cs")),
+            @"EntryPoint\s*=\s*""(PK_[A-Za-z0-9_]+)""")
+        .Select(m => m.Groups[1].Value));
+
+    var sb = new StringBuilder(1 << 20);
+    sb.AppendLine("// <auto-generated />");
+    sb.AppendLine("// Parasolid export stubs for APIs not yet manually implemented.");
+    sb.AppendLine("using System.Runtime.InteropServices;");
+    sb.AppendLine("using ProjectGmKernel.Native.Generated;");
+    sb.AppendLine("using ProjectGmKernel.Native.Runtime;");
+    sb.AppendLine();
+    sb.AppendLine("namespace ProjectGmKernel.Native;");
+    sb.AppendLine();
+    sb.AppendLine("internal static unsafe partial class KernelExports");
+    sb.AppendLine("{");
+
+    foreach (var func in functions.OrderBy(f => f.Name))
+    {
+        if (implemented.Contains(func.Name))
+            continue;
+        if (!CanGenerateExportStub(func))
+            continue;
+
+        var parms = string.Join(", ", func.Params.Select(p =>
+        {
+            return $"{p.Type} {SanitizeName(p.Name)}";
+        }));
+        var concurrency = IsReadOnlyApi(func.Name) ? "ConcurrencyKind.Concurrent" : "ConcurrencyKind.Exclusive";
+        var access = IsReadOnlyApi(func.Name) ? "AccessKind.ReadOnly" : "AccessKind.GlobalWrite";
+
+        sb.AppendLine($"    [UnmanagedCallersOnly(EntryPoint = \"{func.Name}\")]");
+        sb.AppendLine($"    public static {func.RetType} {func.Name}({parms})");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return KernelRuntime.Dispatch(");
+        sb.AppendLine("            ApiId.GeneratedStub,");
+        sb.AppendLine($"            {concurrency},");
+        sb.AppendLine($"            {access},");
+        sb.AppendLine("            static () => KernelRuntime.NotImplemented());");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+    }
+
+    sb.AppendLine("}");
     File.WriteAllText(outputPath, sb.ToString(), new UTF8Encoding(false));
     Console.WriteLine($"  {Path.GetRelativePath(repoRoot, outputPath)} ({sb.Length / 1024}KB)");
 }
@@ -1422,10 +1570,12 @@ ObserveSize(nameof(PK_SESSION_indexio_s), Marshal.SizeOf<PK_SESSION_indexio_s>()
 // ─────────────────────────────────────────────────────────────────────────────
 
 var nativeTmp = nativeOut + ".tmp";
+var exportsTmp = exportsOut + ".tmp";
 var interopTmp = interopOut + ".tmp";
 
 Console.WriteLine("\nGenerating to temp files:");
 GenerateNativeFile(nativeTmp, "ProjectGmKernel.Native.Generated");
+GenerateExportsFile(exportsTmp);
 GenerateInteropFile(interopTmp, "ProjectGmKernel.Interop.Generated");
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1509,9 +1659,11 @@ Console.WriteLine($"\n  {Path.GetRelativePath(repoRoot, unresolvedPath)}");
 
 Console.WriteLine("\n=== Validation Staging ===");
 var nativeSnapshot = CaptureSnapshot(nativeOut);
+var exportsSnapshot = CaptureSnapshot(exportsOut);
 var interopSnapshot = CaptureSnapshot(interopOut);
 
 File.Copy(nativeTmp, nativeOut, true);
+File.Copy(exportsTmp, exportsOut, true);
 File.Copy(interopTmp, interopOut, true);
 Console.WriteLine("  Promoted temp outputs for validation build.");
 
@@ -1568,14 +1720,17 @@ var canCommit = allowPartial || (abiBlocking.Count == 0 && buildOk && abiValidat
 if (canCommit)
 {
     File.Delete(nativeTmp);
+    File.Delete(exportsTmp);
     File.Delete(interopTmp);
     Console.WriteLine("  Validation passed commit gate; promoted outputs kept.");
 }
 else
 {
     RestoreSnapshot(nativeSnapshot);
+    RestoreSnapshot(exportsSnapshot);
     RestoreSnapshot(interopSnapshot);
     File.Delete(nativeTmp);
+    File.Delete(exportsTmp);
     File.Delete(interopTmp);
     Console.WriteLine("  Validation failed commit gate; restored formal generated outputs.");
 }
@@ -1637,118 +1792,10 @@ Console.WriteLine(canCommit
     : "Generated files were not committed; formal outputs were restored.");
 return 0;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// libclang P/Invoke types & bindings (must come AFTER top-level statements)
-// ─────────────────────────────────────────────────────────────────────────────
-
-[StructLayout(LayoutKind.Sequential)]
-struct CXString
-{
-    public IntPtr data;
-    public uint private_flags;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-struct CXCursor
-{
-    public int kind;
-    public int xdata;
-    public IntPtr data0, data1, data2;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-struct CXType
-{
-    public int kind;
-    public IntPtr data0, data1;
-}
-
-enum CXChildVisitResult : int { Break = 0, Continue = 1, Recurse = 2 }
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-delegate CXChildVisitResult CXCursorVisitor(CXCursor cursor, CXCursor parent, IntPtr clientData);
-
 sealed class FileSnapshot
 {
     public required string Path { get; init; }
     public required bool Existed { get; init; }
     public string? Content { get; init; }
     public DateTime LastWriteTimeUtc { get; init; }
-}
-
-static partial class LibClang
-{
-    const string Dll = "libclang";
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr clang_createIndex(int excludeDeclarationsFromPCH, int displayDiagnostics);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void clang_disposeIndex(IntPtr index);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern unsafe IntPtr clang_parseTranslationUnit(
-        IntPtr cxIdx, string sourceFilename,
-        byte** commandLineArgs, int numCommandLineArgs,
-        IntPtr unsavedFiles, uint numUnsavedFiles, uint options);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void clang_disposeTranslationUnit(IntPtr tu);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXCursor clang_getTranslationUnitCursor(IntPtr tu);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern uint clang_visitChildren(CXCursor parent, CXCursorVisitor visitor, IntPtr clientData);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXString clang_getCursorSpelling(CXCursor cursor);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int clang_getCursorKind(CXCursor cursor);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_getCursorType(CXCursor cursor);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_getTypedefDeclUnderlyingType(CXCursor cursor);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXString clang_getTypeSpelling(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_getPointeeType(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_getArrayElementType(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern long clang_getArraySize(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int clang_getNumArgTypes(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_getArgType(CXType type, uint index);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_getResultType(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern uint clang_isConstQualifiedType(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_getCanonicalType(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern CXType clang_Type_getNamedType(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern long clang_Type_getSizeOf(CXType type);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr clang_getCString(CXString str);
-
-    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void clang_disposeString(CXString str);
 }

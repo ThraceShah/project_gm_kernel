@@ -6,6 +6,7 @@ internal enum ApiId : ushort
     SessionStop = 2,
     PointCreate = 3,
     EntityAskClass = 4,
+    GeneratedStub = 65535,
 }
 
 internal enum ConcurrencyKind : byte

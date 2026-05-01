@@ -165,4 +165,9 @@ internal static unsafe class KernelRuntime
 
         return DispatchState.Execute(ref descriptor, action);
     }
+
+    public static int NotImplemented()
+    {
+        return ParasolidConstants.PK_ERROR_not_implemented;
+    }
 }
