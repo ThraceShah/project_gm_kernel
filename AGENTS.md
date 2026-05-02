@@ -10,6 +10,7 @@
 - 所有 C# 代码都必须优先考虑 AOT 兼容性。
 - 所有 C# 代码都必须优先考虑零分配。
 - 所有脚本统一使用 C# 编写，并使用 `.NET 10` 的 `dotnet run file.cs` 方式运行。
+- 所有 `int` 语义类型必须通过 `global using` 创建类型别名（如 `BodySlot`、`CurveTag`），禁止在 record/struct 中使用裸 `int` 表示不同含义的实体索引或句柄。定义见 `src/ProjectGmKernel.Native/Runtime/KernelTypes.cs`。
 
 ## 1. Think Before Coding
 
@@ -49,7 +50,19 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-## 4. Goal-Driven Execution
+## 4. dotnet Process Management
+
+**dotnet CLI 的 MSBuild worker 和 testhost 进程会在后台驻留，导致 CPU 占用 100% 或资源泄漏。必须遵守以下规则：**
+
+- 所有 `dotnet build` / `dotnet test` 命令必须加 `MSBUILDDISABLENODEREUSE=1` 前缀，防止 MSBuild worker 进程驻留后台。
+- `dotnet test` 执行完毕后，必须用 `pkill -f testhost.dll 2>/dev/null; true` 清理残留 testhost 进程。
+- 推荐写法：
+  ```
+  MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests && pkill -f testhost.dll 2>/dev/null; true
+  ```
+- 禁止不带 `MSBUILDDISABLENODEREUSE=1` 直接运行 `dotnet build` 或 `dotnet test`。
+
+## 5. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
 

@@ -1088,26 +1088,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_edges")]
-    public static int PK_BODY_ask_edges(int arg0, int* arg1, nint* arg2)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_faces")]
-    public static int PK_BODY_ask_faces(int arg0, int* arg1, nint* arg2)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_fins")]
     public static int PK_BODY_ask_fins(int arg0, int* arg1, nint* arg2)
     {
@@ -1188,16 +1168,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_shells")]
-    public static int PK_BODY_ask_shells(int arg0, int* arg1, nint* arg2)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_topology")]
     public static int PK_BODY_ask_topology(int arg0, PK_BODY_ask_topology_o_t* arg1, int* arg2, nint* arg3, nint* arg4, int* arg5, nint* arg6, nint* arg7, nint* arg8)
     {
@@ -1210,16 +1180,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_type")]
     public static int PK_BODY_ask_type(int arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_vertices")]
-    public static int PK_BODY_ask_vertices(int arg0, int* arg1, nint* arg2)
     {
         return KernelRuntime.Dispatch(
             ApiId.GeneratedStub,
@@ -1378,16 +1338,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_block")]
-    public static int PK_BODY_create_solid_block(double arg0, double arg1, double arg2, PK_AXIS2_sf_t* arg3, int* arg4)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Exclusive,
-            AccessKind.GlobalWrite,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_cone")]
     public static int PK_BODY_create_solid_cone(double arg0, double arg1, double arg2, PK_AXIS2_sf_t* arg3, int* arg4)
     {
@@ -1450,16 +1400,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_topology")]
     public static int PK_BODY_create_topology(int arg0, int* arg1, int arg2, int* arg3, int* arg4, int* arg5, PK_BODY_create_topology_o_t* arg6, int* arg7, int* arg8, int* arg9, int* arg10)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Exclusive,
-            AccessKind.GlobalWrite,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_topology_2")]
-    public static int PK_BODY_create_topology_2(int arg0, int* arg1, int arg2, int* arg3, int* arg4, int* arg5, PK_BODY_create_topology_2_o_t* arg6, PK_BODY_create_topology_2_r_t* arg7)
     {
         return KernelRuntime.Dispatch(
             ApiId.GeneratedStub,
@@ -2968,16 +2908,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_ask_curve")]
-    public static int PK_EDGE_ask_curve(int arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_ask_curve_nmnl")]
     public static int PK_EDGE_ask_curve_nmnl(int arg0, int* arg1)
     {
@@ -2990,16 +2920,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_ask_faces")]
     public static int PK_EDGE_ask_faces(int arg0, int* arg1, nint* arg2)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_ask_fins")]
-    public static int PK_EDGE_ask_fins(int arg0, int* arg1, nint* arg2)
     {
         return KernelRuntime.Dispatch(
             ApiId.GeneratedStub,
@@ -3688,16 +3608,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_ENTITY_delete")]
-    public static int PK_ENTITY_delete(int arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Exclusive,
-            AccessKind.GlobalWrite,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_ENTITY_delete_attribs")]
     public static int PK_ENTITY_delete_attribs(int arg0, int arg1, int* arg2)
     {
@@ -3938,16 +3848,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_FACE_ask_loops")]
-    public static int PK_FACE_ask_loops(int arg0, int* arg1, nint* arg2)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_FACE_ask_next_in_body")]
     public static int PK_FACE_ask_next_in_body(int arg0, int* arg1)
     {
@@ -3970,16 +3870,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_FACE_ask_shells")]
     public static int PK_FACE_ask_shells(int arg0, int arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_FACE_ask_surf")]
-    public static int PK_FACE_ask_surf(int arg0, int* arg1)
     {
         return KernelRuntime.Dispatch(
             ApiId.GeneratedStub,
@@ -4940,36 +4830,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_FIN_ask_curve")]
     public static int PK_FIN_ask_curve(int arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_FIN_ask_edge")]
-    public static int PK_FIN_ask_edge(int arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_FIN_ask_face")]
-    public static int PK_FIN_ask_face(int arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_FIN_ask_loop")]
-    public static int PK_FIN_ask_loop(int arg0, int* arg1)
     {
         return KernelRuntime.Dispatch(
             ApiId.GeneratedStub,
@@ -6118,26 +5978,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_LOOP_ask_face")]
-    public static int PK_LOOP_ask_face(int arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_LOOP_ask_fins")]
-    public static int PK_LOOP_ask_fins(int arg0, int* arg1, nint* arg2)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_LOOP_ask_first_fin")]
     public static int PK_LOOP_ask_first_fin(int arg0, int* arg1)
     {
@@ -6408,16 +6248,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_MARK_create")]
-    public static int PK_MARK_create(int* arg0)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Exclusive,
-            AccessKind.GlobalWrite,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_MARK_create_2")]
     public static int PK_MARK_create_2(PK_MARK_create_o_t* arg0, PK_MARK_create_r_t* arg1)
     {
@@ -6438,16 +6268,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_MARK_delete")]
-    public static int PK_MARK_delete(int arg0)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Exclusive,
-            AccessKind.GlobalWrite,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_MARK_delete_2")]
     public static int PK_MARK_delete_2(int arg0, PK_MARK_delete_o_t* arg1, PK_MARK_delete_r_t* arg2)
     {
@@ -6460,16 +6280,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_MARK_delete_r_f")]
     public static int PK_MARK_delete_r_f(PK_MARK_delete_r_t* arg0)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Exclusive,
-            AccessKind.GlobalWrite,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_MARK_goto")]
-    public static int PK_MARK_goto(int arg0)
     {
         return KernelRuntime.Dispatch(
             ApiId.GeneratedStub,
@@ -10008,16 +9818,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_TRANSF_create")]
-    public static int PK_TRANSF_create(PK_TRANSF_sf_t* arg0, int* arg1)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Exclusive,
-            AccessKind.GlobalWrite,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_TRANSF_enlarge")]
     public static int PK_TRANSF_enlarge(int arg0, int arg1, PK_TRANSF_enlarge_o_t* arg2, PK_TRANSF_enlarge_r_t* arg3)
     {
@@ -10130,16 +9930,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_VERTEX_ask_oriented_edges")]
     public static int PK_VERTEX_ask_oriented_edges(int arg0, int* arg1, nint* arg2, nint* arg3)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_VERTEX_ask_point")]
-    public static int PK_VERTEX_ask_point(int arg0, int* arg1)
     {
         return KernelRuntime.Dispatch(
             ApiId.GeneratedStub,

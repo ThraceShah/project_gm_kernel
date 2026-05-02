@@ -64,6 +64,18 @@ Parasolid 语义下，Tag 是会话内唯一标识，调用方只看见整数型
 - 不允许在对外 API 上暴露内部 index。
 - 不允许让 Tag 直接编码为数组下标并永久绑定存储位置；Tag 必须表示稳定的逻辑句柄，而不是脆弱的物理位置。
 
+### 3.1.1 Type Alias Convention for Integer Handles and Indices
+
+内核 record 中大量使用 `int` 表示不同语义的值：pool 槽位索引、实体 Tag、generation 计数器等。裸 `int` 无法区分这些语义，容易导致误用（例如把 `FaceSlot` 传给期望 `BodySlot` 的参数）。
+
+约束：
+
+- 所有 `int` 语义类型必须通过 `global using` 创建类型别名。
+- 命名约定：`*Slot` = pool 内部索引，`*Tag` = 外部实体句柄。
+- 别名定义集中于 `src/ProjectGmKernel.Native/Runtime/KernelTypes.cs`。
+- 生成代码中的 `PK_*_t` 别名（如 `PK_ENTITY_t = int`）保持不变，用于 ABI 层。
+- 内核 record 中的 Tag 字段使用 `PointTag`、`CurveTag`、`SurfTag` 等别名，而非裸 `int`。
+
 ### 3.2 API Dispatch and Concurrency Model
 
 对外 API 层与内核实现之间必须插入一层 **API 调度层**。该层不是可选优化，而是 Parasolid 风格执行语义的一部分。
