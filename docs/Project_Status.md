@@ -14,14 +14,17 @@ Verified capabilities:
 - Minimal body topology creation works.
 - Solid block creation works.
 - Basic topology queries work for body, face, loop, edge, fin, and vertex links.
+- `PK_BODY_ask_topology` exposes the implemented topology graph for body debugging.
 - Entity delete works for the implemented entity pools.
 - Single active mark rollback works for the covered delete and allocation cases.
 - Return arena query results stay valid across repeated queries until session reset or rollback.
+- External ABI smoke coverage loads the published NativeAOT library and calls implemented exports.
+- Allocation baseline reporting covers the implemented hot paths.
 
 Current implementation surface:
 
-- Manual implemented exports: 25.
-- Generated export stubs: 1006.
+- Manual implemented exports: 26.
+- Generated export stubs: 1005.
 - Generated stubs currently return `PK_ERROR_not_implemented`.
 
 ## Verification
@@ -49,21 +52,24 @@ Use the host RID for the publish command. On this machine the verified RID is `o
 - `MarkGoto` restores retired slots; `MarkDelete` recycles retired slots.
 - Mark pool-count snapshots use inline fixed storage instead of allocating a managed array on first mark.
 - Return arena block metadata uses a fixed table instead of resizing managed arrays during repeated queries.
+- Manual exports use struct commands instead of per-call `Func<int>` closures.
+- Dispatch now has an explicit bounded enqueue/run/complete queue shape while preserving serial execution.
+- Solid block shell linkage now terminates its sibling chain, so topology traversal does not walk stale slots.
 
 ## Remaining Gaps
 
 - API coverage is intentionally small. Most generated `PK_*` exports are ABI stubs only.
-- The dispatch layer serializes with a lock and records command descriptors, but it is not yet a real session command queue with concurrent/local scheduling.
+- The dispatch layer still serializes execution with a lock; concurrent/local scheduling is not implemented.
 - Only one active mark is supported.
 - Rollback is still a minimal slot-state rollback, not a full transaction delta system for complex topology edits.
 - No OCC algorithm translation has started.
-- No cylinder primitive, C host ABI smoke test, topology dump, visual debug bridge, or allocation profiler baseline has been added yet.
+- No cylinder primitive, visual debug bridge, or enforcing allocation profiler threshold has been added yet.
 - NativeAOT publish requires an explicit RID unless the project later defines one.
 
 ## Recommended Next Work
 
-1. Add a small external ABI smoke test that loads the published native library and calls implemented `PK_*` exports.
-2. Replace `Func<int>` dispatch with a zero-allocation command execution shape.
-3. Add allocation measurement around implemented API paths.
-4. Promote the dispatch layer from lock-serialized execution to an explicit bounded session command queue.
-5. Implement the next narrow API cluster instead of broadening the generated stub surface.
+1. Add an enforcing allocation threshold once the baseline is stable across machines.
+2. Promote the dispatch queue from serial execution to real concurrent/local scheduling.
+3. Implement cylinder primitive as the next narrow geometry cluster.
+4. Add a visual debug bridge or topology text dump command for developer workflows.
+5. Continue implementing narrow API clusters instead of broadening the generated stub surface.

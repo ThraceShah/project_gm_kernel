@@ -30,6 +30,14 @@ var publishExit = Run("dotnet", $"publish src/ProjectGmKernel.Native/ProjectGmKe
 if (publishExit != 0)
     return publishExit;
 
+var abiSmokeExit = Run("dotnet", "run scripts/AbiSmoke.cs", cleanupTesthost: false);
+if (abiSmokeExit != 0)
+    return abiSmokeExit;
+
+var allocationBaselineExit = Run("dotnet", "run scripts/AllocationBaseline.cs", cleanupTesthost: false);
+if (allocationBaselineExit != 0)
+    return allocationBaselineExit;
+
 var manualExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "KernelExports.cs");
 var generatedExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "KernelExports.generated.cs");
 var manualExports = Count(manualExportsPath, @"UnmanagedCallersOnly\(EntryPoint");

@@ -1,0 +1,227 @@
+using ProjectGmKernel.Native.Generated;
+
+namespace ProjectGmKernel.Native.Runtime;
+
+internal unsafe struct SessionStartCommand : IKernelCommand
+{
+    public PK_SESSION_start_o_s* Options;
+
+    public int Execute() => KernelRuntime.SessionStart(Options);
+}
+
+internal unsafe struct SessionStopCommand : IKernelCommand
+{
+    public int Execute() => KernelRuntime.SessionStop();
+}
+
+internal unsafe struct PointCreateCommand : IKernelCommand
+{
+    public PK_POINT_sf_s* PointSf;
+    public PointTag* Point;
+
+    public int Execute() => KernelRuntime.PointCreate(PointSf, Point);
+}
+
+internal unsafe struct EntityAskClassCommand : IKernelCommand
+{
+    public EntityTag Entity;
+    public int* Class;
+
+    public int Execute() => KernelRuntime.EntityAskClass(Entity, Class);
+}
+
+internal unsafe struct EntityDeleteCommand : IKernelCommand
+{
+    public int EntityCount;
+    public EntityTag* Entities;
+
+    public int Execute() => KernelRuntime.EntityDelete(EntityCount, Entities);
+}
+
+internal unsafe struct BodyCreateTopology2Command : IKernelCommand
+{
+    public int TopologyCount;
+    public PK_CLASS_t* Classes;
+    public int RelationCount;
+    public int* Parents;
+    public int* Children;
+    public int* Senses;
+    public PK_BODY_create_topology_2_o_s* Options;
+    public PK_BODY_create_topology_2_r_s* Results;
+
+    public int Execute() => KernelRuntime.BodyCreateTopology2(TopologyCount, Classes, RelationCount, Parents, Children, Senses, Options, Results);
+}
+
+internal unsafe struct BodyAskShellsCommand : IKernelCommand
+{
+    public EntityTag Body;
+    public int* ShellCount;
+    public EntityTag** Shells;
+
+    public int Execute() => KernelRuntime.BodyAskShells(Body, ShellCount, Shells);
+}
+
+internal unsafe struct BodyAskFacesCommand : IKernelCommand
+{
+    public EntityTag Body;
+    public int* FaceCount;
+    public EntityTag** Faces;
+
+    public int Execute() => KernelRuntime.BodyAskFaces(Body, FaceCount, Faces);
+}
+
+internal unsafe struct BodyAskEdgesCommand : IKernelCommand
+{
+    public EntityTag Body;
+    public int* EdgeCount;
+    public EntityTag** Edges;
+
+    public int Execute() => KernelRuntime.BodyAskEdges(Body, EdgeCount, Edges);
+}
+
+internal unsafe struct BodyAskVerticesCommand : IKernelCommand
+{
+    public EntityTag Body;
+    public int* VertexCount;
+    public EntityTag** Vertices;
+
+    public int Execute() => KernelRuntime.BodyAskVertices(Body, VertexCount, Vertices);
+}
+
+internal unsafe struct BodyAskTopologyCommand : IKernelCommand
+{
+    public EntityTag Body;
+    public PK_BODY_ask_topology_o_s* Options;
+    public int* TopologyCount;
+    public nint* Topologies;
+    public nint* Classes;
+    public int* RelationCount;
+    public nint* Parents;
+    public nint* Children;
+    public nint* Senses;
+
+    public int Execute() => KernelRuntime.BodyAskTopology(Body, Options, TopologyCount, Topologies, Classes, RelationCount, Parents, Children, Senses);
+}
+
+internal unsafe struct FaceAskLoopsCommand : IKernelCommand
+{
+    public EntityTag Face;
+    public int* LoopCount;
+    public EntityTag** Loops;
+
+    public int Execute() => KernelRuntime.FaceAskLoops(Face, LoopCount, Loops);
+}
+
+internal unsafe struct FaceAskSurfCommand : IKernelCommand
+{
+    public EntityTag Face;
+    public SurfTag* Surf;
+
+    public int Execute() => KernelRuntime.FaceAskSurf(Face, Surf);
+}
+
+internal unsafe struct LoopAskFaceCommand : IKernelCommand
+{
+    public EntityTag Loop;
+    public EntityTag* Face;
+
+    public int Execute() => KernelRuntime.LoopAskFace(Loop, Face);
+}
+
+internal unsafe struct LoopAskFinsCommand : IKernelCommand
+{
+    public EntityTag Loop;
+    public int* FinCount;
+    public EntityTag** Fins;
+
+    public int Execute() => KernelRuntime.LoopAskFins(Loop, FinCount, Fins);
+}
+
+internal unsafe struct EdgeAskFinsCommand : IKernelCommand
+{
+    public EntityTag Edge;
+    public int* FinCount;
+    public EntityTag** Fins;
+
+    public int Execute() => KernelRuntime.EdgeAskFins(Edge, FinCount, Fins);
+}
+
+internal unsafe struct EdgeAskCurveCommand : IKernelCommand
+{
+    public EntityTag Edge;
+    public CurveTag* Curve;
+
+    public int Execute() => KernelRuntime.EdgeAskCurve(Edge, Curve);
+}
+
+internal unsafe struct VertexAskPointCommand : IKernelCommand
+{
+    public EntityTag Vertex;
+    public PointTag* Point;
+
+    public int Execute() => KernelRuntime.VertexAskPoint(Vertex, Point);
+}
+
+internal unsafe struct FinAskEdgeCommand : IKernelCommand
+{
+    public EntityTag Fin;
+    public EntityTag* Edge;
+
+    public int Execute() => KernelRuntime.FinAskEdge(Fin, Edge);
+}
+
+internal unsafe struct FinAskLoopCommand : IKernelCommand
+{
+    public EntityTag Fin;
+    public EntityTag* Loop;
+
+    public int Execute() => KernelRuntime.FinAskLoop(Fin, Loop);
+}
+
+internal unsafe struct FinAskFaceCommand : IKernelCommand
+{
+    public EntityTag Fin;
+    public EntityTag* Face;
+
+    public int Execute() => KernelRuntime.FinAskFace(Fin, Face);
+}
+
+internal unsafe struct TransfCreateCommand : IKernelCommand
+{
+    public PK_TRANSF_sf_s* TransfSf;
+    public TransfTag* Transf;
+
+    public int Execute() => KernelRuntime.TransfCreate(TransfSf, Transf);
+}
+
+internal unsafe struct BodyCreateSolidBlockCommand : IKernelCommand
+{
+    public double X;
+    public double Y;
+    public double Z;
+    public PK_AXIS2_sf_s* BasisSet;
+    public EntityTag* Body;
+
+    public int Execute() => KernelRuntime.BodyCreateSolidBlock(X, Y, Z, BasisSet, Body);
+}
+
+internal unsafe struct MarkCreateCommand : IKernelCommand
+{
+    public int* Mark;
+
+    public int Execute() => KernelRuntime.MarkCreate(Mark);
+}
+
+internal unsafe struct MarkGotoCommand : IKernelCommand
+{
+    public int Mark;
+
+    public int Execute() => KernelRuntime.MarkGoto(Mark);
+}
+
+internal unsafe struct MarkDeleteCommand : IKernelCommand
+{
+    public int Mark;
+
+    public int Execute() => KernelRuntime.MarkDelete(Mark);
+}

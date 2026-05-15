@@ -381,6 +381,94 @@ public unsafe class KernelRegressionTests : IDisposable
         Assert.Equal(shellTag, shells[0]);
     }
 
+    [Fact]
+    public void BodyAskTopology_DumpsImplementedTopologyGraph()
+    {
+        int bodyTag = CreateSimpleBody(out _, out _, out _, out _, out _, out _);
+
+        int nTopols;
+        nint topolsRaw;
+        nint classesRaw;
+        int nRelations;
+        nint parentsRaw;
+        nint childrenRaw;
+        nint sensesRaw;
+
+        Assert.Equal(0, KernelRuntime.BodyAskTopology(
+            bodyTag,
+            null,
+            &nTopols,
+            &topolsRaw,
+            &classesRaw,
+            &nRelations,
+            &parentsRaw,
+            &childrenRaw,
+            &sensesRaw));
+
+        Assert.Equal(7, nTopols);
+        Assert.Equal(5, nRelations);
+
+        var topols = (int*)topolsRaw;
+        var classes = (int*)classesRaw;
+        var parents = (int*)parentsRaw;
+        var children = (int*)childrenRaw;
+        var senses = (int*)sensesRaw;
+
+        Assert.Equal(bodyTag, topols[0]);
+        Assert.Equal(ParasolidConstants.PK_CLASS_body, classes[0]);
+        Assert.Contains(ParasolidConstants.PK_CLASS_shell, Enumerable.Range(0, nTopols).Select(i => classes[i]));
+        Assert.Contains(ParasolidConstants.PK_CLASS_face, Enumerable.Range(0, nTopols).Select(i => classes[i]));
+        Assert.Contains(ParasolidConstants.PK_CLASS_loop, Enumerable.Range(0, nTopols).Select(i => classes[i]));
+        Assert.Contains(ParasolidConstants.PK_CLASS_fin, Enumerable.Range(0, nTopols).Select(i => classes[i]));
+        Assert.Contains(ParasolidConstants.PK_CLASS_edge, Enumerable.Range(0, nTopols).Select(i => classes[i]));
+        Assert.Contains(ParasolidConstants.PK_CLASS_vertex, Enumerable.Range(0, nTopols).Select(i => classes[i]));
+
+        for (int i = 0; i < nRelations; i++)
+        {
+            Assert.InRange(parents[i], 0, nTopols - 1);
+            Assert.InRange(children[i], 0, nTopols - 1);
+            Assert.Equal(ParasolidConstants.PK_TOPOL_sense_none_c, senses[i]);
+        }
+    }
+
+    [Fact]
+    public void BodyAskTopology_DumpsSolidBlockGraph()
+    {
+        int bodyTag;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &bodyTag));
+
+        int nTopols;
+        nint topolsRaw;
+        nint classesRaw;
+        int nRelations;
+        nint parentsRaw;
+        nint childrenRaw;
+        nint sensesRaw;
+
+        Assert.Equal(0, KernelRuntime.BodyAskTopology(
+            bodyTag,
+            null,
+            &nTopols,
+            &topolsRaw,
+            &classesRaw,
+            &nRelations,
+            &parentsRaw,
+            &childrenRaw,
+            &sensesRaw));
+
+        Assert.Equal(58, nTopols);
+        Assert.Equal(61, nRelations);
+
+        var classes = (int*)classesRaw;
+        Assert.Equal(1, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_body));
+        Assert.Equal(1, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_shell));
+        Assert.Equal(6, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_face));
+        Assert.Equal(6, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_loop));
+        Assert.Equal(24, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_fin));
+        Assert.Equal(12, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_edge));
+        Assert.Equal(8, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_vertex));
+    }
+
     // ── Helper: Create a simple body ──────────────────────────────
 
     private int CreateSimpleBody(

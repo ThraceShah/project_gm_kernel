@@ -27,6 +27,7 @@ internal enum ApiId : ushort
     EntityDelete = 23,
     TransfCreate = 24,
     BodyCreateSolidBlock = 25,
+    BodyAskTopology = 26,
     GeneratedStub = 65535,
 }
 
@@ -68,6 +69,11 @@ internal struct CommandQueueSlot
     public CommandDescriptor Descriptor;
 }
 
+internal interface IKernelCommand
+{
+    int Execute();
+}
+
 internal sealed class SessionDispatchState
 {
     private readonly System.Threading.Lock sync = new();
@@ -75,16 +81,29 @@ internal sealed class SessionDispatchState
     private long nextSequence;
     private int tail;
 
-    public T Execute<T>(ref CommandDescriptor descriptor, Func<T> action)
+    public int Execute<TCommand>(ref CommandDescriptor descriptor, ref TCommand command)
+        where TCommand : struct, IKernelCommand
     {
         using var scope = sync.EnterScope();
 
-        descriptor.SequenceNo = ++nextSequence;
-        descriptor.CallerThreadId = Environment.CurrentManagedThreadId;
+        ref var slot = ref Enqueue(ref descriptor);
 
-        ref var slot = ref slots[tail];
-        slot.Descriptor = descriptor;
-        slot.State = CommandState.Queued;
+        slot.State = CommandState.Running;
+        try
+        {
+            return command.Execute();
+        }
+        finally
+        {
+            Complete(ref slot);
+        }
+    }
+
+    public int Execute(ref CommandDescriptor descriptor, Func<int> action)
+    {
+        using var scope = sync.EnterScope();
+
+        ref var slot = ref Enqueue(ref descriptor);
 
         slot.State = CommandState.Running;
         try
@@ -93,12 +112,26 @@ internal sealed class SessionDispatchState
         }
         finally
         {
-            slot.State = CommandState.Completed;
-            tail++;
-            if (tail == slots.Length)
-            {
-                tail = 0;
-            }
+            Complete(ref slot);
         }
+    }
+
+    private ref CommandQueueSlot Enqueue(ref CommandDescriptor descriptor)
+    {
+        descriptor.SequenceNo = ++nextSequence;
+        descriptor.CallerThreadId = Environment.CurrentManagedThreadId;
+
+        ref var slot = ref slots[tail];
+        slot.Descriptor = descriptor;
+        slot.State = CommandState.Queued;
+        return ref slot;
+    }
+
+    private void Complete(ref CommandQueueSlot slot)
+    {
+        slot.State = CommandState.Completed;
+        tail++;
+        if (tail == slots.Length)
+            tail = 0;
     }
 }

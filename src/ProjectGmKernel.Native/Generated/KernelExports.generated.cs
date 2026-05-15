@@ -1168,16 +1168,6 @@ internal static unsafe partial class KernelExports
             static () => KernelRuntime.NotImplemented());
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_topology")]
-    public static int PK_BODY_ask_topology(int arg0, PK_BODY_ask_topology_o_t* arg1, int* arg2, nint* arg3, nint* arg4, int* arg5, nint* arg6, nint* arg7, nint* arg8)
-    {
-        return KernelRuntime.Dispatch(
-            ApiId.GeneratedStub,
-            ConcurrencyKind.Concurrent,
-            AccessKind.ReadOnly,
-            static () => KernelRuntime.NotImplemented());
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_type")]
     public static int PK_BODY_ask_type(int arg0, int* arg1)
     {

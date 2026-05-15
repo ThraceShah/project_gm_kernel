@@ -755,6 +755,178 @@ internal static unsafe class KernelRuntime
         return 0;
     }
 
+    private static int WriteBodyTopologyList(
+        BodySlot bodySlot,
+        int* topols,
+        int* classes,
+        int maxTopols)
+    {
+        int index = 0;
+        if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Body, PoolKind.Body, bodySlot))
+            return -1;
+
+        for (int shellSlot = Bodies[bodySlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        {
+            if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Shell, PoolKind.Shell, shellSlot))
+                return -1;
+
+            for (int faceSlot = Shells[shellSlot].FirstFaceShell; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInShell)
+            {
+                if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Face, PoolKind.Face, faceSlot))
+                    return -1;
+
+                for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+                {
+                    if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Loop, PoolKind.Loop, loopSlot))
+                        return -1;
+
+                    for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
+                    {
+                        if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Fin, PoolKind.Fin, finSlot))
+                            return -1;
+                    }
+                }
+            }
+        }
+
+        for (int edgeSlot = Bodies[bodySlot].FirstEdgeBody; edgeSlot >= 0; edgeSlot = Edges[edgeSlot].NextInBody)
+        {
+            if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Edge, PoolKind.Edge, edgeSlot))
+                return -1;
+        }
+
+        for (int vertexSlot = Bodies[bodySlot].FirstVertexBody; vertexSlot >= 0; vertexSlot = Vertices[vertexSlot].NextInBody)
+        {
+            if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Vertex, PoolKind.Vertex, vertexSlot))
+                return -1;
+        }
+
+        return index;
+    }
+
+    private static bool AppendTopology(
+        ref int index,
+        int maxTopols,
+        int* topols,
+        int* classes,
+        EntityClass entityClass,
+        PoolKind pool,
+        int slot)
+    {
+        if (index == maxTopols)
+            return false;
+
+        topols[index] = GetOrAllocateTag(entityClass, pool, slot);
+        if (topols[index] <= 0)
+            return false;
+
+        classes[index] = ToPkClass(entityClass);
+        index++;
+        return true;
+    }
+
+    private static int WriteBodyTopologyRelations(
+        BodySlot bodySlot,
+        int* topols,
+        int topolCount,
+        int* parents,
+        int* children,
+        int* senses,
+        int maxRelations)
+    {
+        int relation = 0;
+        int bodyTag = GetOrAllocateTag(EntityClass.Body, PoolKind.Body, bodySlot);
+        if (bodyTag <= 0)
+            return -1;
+
+        for (int shellSlot = Bodies[bodySlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        {
+            if (!AppendRelation(ref relation, maxRelations, parents, children, senses, bodyTag, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), topols, topolCount))
+                return -1;
+
+            for (int faceSlot = Shells[shellSlot].FirstFaceShell; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInShell)
+            {
+                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot), topols, topolCount))
+                    return -1;
+
+                for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+                {
+                    if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot), GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), topols, topolCount))
+                        return -1;
+
+                    for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
+                    {
+                        if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), GetOrAllocateTag(EntityClass.Fin, PoolKind.Fin, finSlot), topols, topolCount))
+                            return -1;
+
+                        int edgeTag = GetOrAllocateTag(EntityClass.Edge, PoolKind.Edge, Fins[finSlot].Edge);
+                        int finTag = GetOrAllocateTag(EntityClass.Fin, PoolKind.Fin, finSlot);
+                        if (!AppendRelation(ref relation, maxRelations, parents, children, senses, edgeTag, finTag, topols, topolCount))
+                            return -1;
+                    }
+                }
+            }
+        }
+
+        return relation;
+    }
+
+    private static bool AppendRelation(
+        ref int relation,
+        int maxRelations,
+        int* parents,
+        int* children,
+        int* senses,
+        int parentTag,
+        int childTag,
+        int* topols,
+        int topolCount)
+    {
+        if (parentTag <= 0 || childTag <= 0 || relation == maxRelations)
+            return false;
+
+        int parentIndex = FindTagIndex(topols, topolCount, parentTag);
+        int childIndex = FindTagIndex(topols, topolCount, childTag);
+        if (parentIndex < 0 || childIndex < 0)
+            return false;
+
+        parents[relation] = parentIndex;
+        children[relation] = childIndex;
+        senses[relation] = ParasolidConstants.PK_TOPOL_sense_none_c;
+        relation++;
+        return true;
+    }
+
+    private static int FindTagIndex(int* topols, int count, int tag)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (topols[i] == tag)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static int ToPkClass(EntityClass entityClass)
+    {
+        return entityClass switch
+        {
+            EntityClass.Body => ParasolidConstants.PK_CLASS_body,
+            EntityClass.Shell => ParasolidConstants.PK_CLASS_shell,
+            EntityClass.Face => ParasolidConstants.PK_CLASS_face,
+            EntityClass.Loop => ParasolidConstants.PK_CLASS_loop,
+            EntityClass.Fin => ParasolidConstants.PK_CLASS_fin,
+            EntityClass.Edge => ParasolidConstants.PK_CLASS_edge,
+            EntityClass.Vertex => ParasolidConstants.PK_CLASS_vertex,
+            EntityClass.Region => ParasolidConstants.PK_CLASS_region,
+            EntityClass.Point => ParasolidConstants.PK_CLASS_point,
+            EntityClass.Curve => ParasolidConstants.PK_CLASS_curve,
+            EntityClass.Surface => ParasolidConstants.PK_CLASS_surf,
+            _ => (int)entityClass,
+        };
+    }
+
     /// <summary>
     /// Follow the sibling chain for a pool type.
     /// </summary>
@@ -838,6 +1010,71 @@ internal static unsafe class KernelRuntime
         if (WriteTagList(vertices, body.VertexCountBody, body.FirstVertexBody, PoolKind.Vertex, EntityClass.Vertex, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
 
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    public static int BodyAskTopology(
+        int bodyTag,
+        PK_BODY_ask_topology_o_s* options,
+        int* nTopols,
+        nint* topols,
+        nint* classes,
+        int* nRelations,
+        nint* parents,
+        nint* children,
+        nint* senses)
+    {
+        if (nTopols is null || topols is null || classes is null || nRelations is null || parents is null || children is null || senses is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+            return ParasolidConstants.PK_ERROR_unknown_class;
+
+        int bodySlot = Handles[bodyTag].SlotIndex;
+        ref var body = ref Bodies[bodySlot];
+        int topolCount = 1 + body.ShellCount + body.FaceCountBody + body.EdgeCountBody + body.VertexCountBody;
+        int finCount = 0;
+        for (int faceSlot = body.FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        {
+            for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+            {
+                topolCount += 1 + Loops[loopSlot].FinCount;
+                finCount += Loops[loopSlot].FinCount;
+            }
+        }
+
+        int relationCount = body.ShellCount + body.FaceCountBody + finCount + finCount;
+        for (int faceSlot = body.FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        {
+            ref var face = ref Faces[faceSlot];
+            relationCount += face.LoopCount;
+        }
+
+        int* topolBuffer = AllocateReturnSlice(topolCount);
+        int* classBuffer = AllocateReturnSlice(topolCount);
+        int* parentBuffer = AllocateReturnSlice(relationCount);
+        int* childBuffer = AllocateReturnSlice(relationCount);
+        int* senseBuffer = AllocateReturnSlice(relationCount);
+        if (topolBuffer is null || classBuffer is null || parentBuffer is null || childBuffer is null || senseBuffer is null)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        int writtenTopols = WriteBodyTopologyList(bodySlot, topolBuffer, classBuffer, topolCount);
+        if (writtenTopols != topolCount)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        int writtenRelations = WriteBodyTopologyRelations(bodySlot, topolBuffer, topolCount, parentBuffer, childBuffer, senseBuffer, relationCount);
+        if (writtenRelations != relationCount)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        *nTopols = topolCount;
+        *topols = (nint)topolBuffer;
+        *classes = (nint)classBuffer;
+        *nRelations = relationCount;
+        *parents = (nint)parentBuffer;
+        *children = (nint)childBuffer;
+        *senses = (nint)senseBuffer;
+        _ = options;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -1038,6 +1275,7 @@ internal static unsafe class KernelRuntime
         ref var shell = ref Shells[shellSlot];
         shell.Body = bodySlot;
         shell.ShellType = 0; // outer
+        shell.NextInBody = -1;
         body.FirstShell = shellSlot;
         body.ShellCount = 1;
 
@@ -1489,6 +1727,19 @@ internal static unsafe class KernelRuntime
     }
 
     // ── Dispatch ─────────────────────────────────────────────────
+
+    public static int Dispatch<TCommand>(ApiId apiId, ConcurrencyKind concurrencyKind, AccessKind accessKind, ref TCommand command)
+        where TCommand : struct, IKernelCommand
+    {
+        var descriptor = new CommandDescriptor
+        {
+            ApiId = apiId,
+            ConcurrencyKind = concurrencyKind,
+            AccessKind = accessKind,
+            SessionId = DefaultSessionId,
+        };
+        return DispatchState.Execute(ref descriptor, ref command);
+    }
 
     public static int Dispatch(ApiId apiId, ConcurrencyKind concurrencyKind, AccessKind accessKind, Func<int> action)
     {
