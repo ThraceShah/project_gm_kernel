@@ -11,7 +11,7 @@ internal static class PoolConstants
 /// Snapshot of all pool states at mark creation time.
 /// Uses pre-allocated array to avoid GC allocation on mark creation.
 /// </summary>
-internal struct MarkRecord
+internal unsafe struct MarkRecord
 {
     public int SequenceNo;
     public int RollbackStamp;
@@ -22,7 +22,7 @@ internal struct MarkRecord
     /// [5]=Faces, [6]=Loops, [7]=Edges, [8]=Fins, [9]=Vertices,
     /// [10]=Regions, [11]=Curves, [12]=Surfaces, [13]=Transforms
     /// </summary>
-    public int[] PoolCounts;
+    public fixed int PoolCounts[PoolConstants.PoolCount];
 }
 
 /// <summary>

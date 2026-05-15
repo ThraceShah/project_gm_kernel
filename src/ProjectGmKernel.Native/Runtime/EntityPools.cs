@@ -72,6 +72,32 @@ internal struct EntityPool<T> where T : struct
     }
 
     /// <summary>
+    /// Mark a slot dead without adding it to the free list.
+    /// Used for deletes inside an active mark, where rollback may restore the slot.
+    /// </summary>
+    public void Retire(int slot)
+    {
+        Debug.Assert((uint)slot < (uint)_arena.Count);
+        ref var header = ref GetHeader(slot);
+        Debug.Assert(header.Alive == 1);
+
+        header.Alive = 0;
+        _aliveCount--;
+    }
+
+    /// <summary>
+    /// Add a retired dead slot to the free list after the active mark is deleted.
+    /// </summary>
+    public void RecycleRetired(int slot)
+    {
+        Debug.Assert((uint)slot < (uint)_arena.Count);
+        ref var header = ref GetHeader(slot);
+        Debug.Assert(header.Alive == 0);
+
+        _freeList[_freeCount++] = slot;
+    }
+
+    /// <summary>
     /// Check if a slot is alive.
     /// </summary>
     public bool IsAlive(int slot)
@@ -153,12 +179,6 @@ internal struct EntityPool<T> where T : struct
                 _freeList[writeIdx++] = _freeList[i];
         }
         _freeCount = writeIdx;
-
-        // Add newly freed slots (mark..currentCount-1) to free list
-        for (int i = mark; i < currentCount; i++)
-        {
-            _freeList[_freeCount++] = i;
-        }
 
         _arena.RestoreMark(mark);
     }

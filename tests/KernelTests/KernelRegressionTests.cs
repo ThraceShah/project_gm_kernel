@@ -95,13 +95,114 @@ public unsafe class KernelRegressionTests : IDisposable
         Assert.Equal((int)EntityClass.Point, cls);
 
         // Allocate a new point — should NOT reuse point 2's slot
+        int nextTagBefore = GetNextTag();
+        int pointTag3;
+        var sf3 = new PK_POINT_sf_s();
+        sf3.position.coord[0] = 3.0;
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf3, &pointTag3));
+        Assert.Equal(nextTagBefore, pointTag3);
+
+        // Point 2 should still be alive (not reused)
+        Assert.Equal(0, KernelRuntime.EntityAskClass(pointTag2, &cls));
+        Assert.Equal((int)EntityClass.Point, cls);
+    }
+
+    [Fact]
+    public void DeleteDuringMark_DoesNotReuseRetiredSlotBeforeMarkResolved()
+    {
+        int pointTag1;
+        var sf1 = new PK_POINT_sf_s();
+        sf1.position.coord[0] = 1.0;
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf1, &pointTag1));
+
+        int mark;
+        Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &pointTag1));
+
+        int pointTag2;
+        var sf2 = new PK_POINT_sf_s();
+        sf2.position.coord[0] = 2.0;
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf2, &pointTag2));
+        Assert.NotEqual(pointTag1, pointTag2);
+
+        Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+
+        int cls;
+        Assert.Equal(0, KernelRuntime.EntityAskClass(pointTag1, &cls));
+        Assert.Equal((int)EntityClass.Point, cls);
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(pointTag2, &cls));
+    }
+
+    [Fact]
+    public void DeletedTag_InvalidAfterSlotReuse()
+    {
+        int pointTag1;
+        var sf1 = new PK_POINT_sf_s();
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf1, &pointTag1));
+
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &pointTag1));
+
+        int pointTag2;
+        var sf2 = new PK_POINT_sf_s();
+        sf2.position.coord[0] = 2.0;
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf2, &pointTag2));
+
+        int cls;
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(pointTag1, &cls));
+        Assert.Equal(0, KernelRuntime.EntityAskClass(pointTag2, &cls));
+        Assert.Equal((int)EntityClass.Point, cls);
+    }
+
+    [Fact]
+    public void MarkDelete_RecyclesRetiredSlotAndKeepsDeletedTagInvalid()
+    {
+        int pointTag1;
+        var sf1 = new PK_POINT_sf_s();
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf1, &pointTag1));
+
+        int mark;
+        Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &pointTag1));
+        Assert.Equal(0, KernelRuntime.MarkDelete(mark));
+
+        int pointTag2;
+        var sf2 = new PK_POINT_sf_s();
+        sf2.position.coord[0] = 2.0;
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf2, &pointTag2));
+
+        int cls;
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(pointTag1, &cls));
+        Assert.Equal(0, KernelRuntime.EntityAskClass(pointTag2, &cls));
+        Assert.Equal((int)EntityClass.Point, cls);
+    }
+
+    [Fact]
+    public void MarkGoto_TruncatesNewAllocationsAndNextAllocationStaysValid()
+    {
+        int pointTag1;
+        var sf1 = new PK_POINT_sf_s();
+        sf1.position.coord[0] = 1.0;
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf1, &pointTag1));
+
+        int mark;
+        Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+
+        int pointTag2;
+        var sf2 = new PK_POINT_sf_s();
+        sf2.position.coord[0] = 2.0;
+        Assert.Equal(0, KernelRuntime.PointCreate(&sf2, &pointTag2));
+
+        Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+
         int pointTag3;
         var sf3 = new PK_POINT_sf_s();
         sf3.position.coord[0] = 3.0;
         Assert.Equal(0, KernelRuntime.PointCreate(&sf3, &pointTag3));
 
-        // Point 2 should still be alive (not reused)
-        Assert.Equal(0, KernelRuntime.EntityAskClass(pointTag2, &cls));
+        int cls;
+        Assert.Equal(0, KernelRuntime.EntityAskClass(pointTag1, &cls));
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(pointTag2, &cls));
+        Assert.Equal(0, KernelRuntime.EntityAskClass(pointTag3, &cls));
         Assert.Equal((int)EntityClass.Point, cls);
     }
 

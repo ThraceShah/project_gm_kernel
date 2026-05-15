@@ -1,6 +1,7 @@
 temp_docs
 **/bin/
 **/obj/
+*.lscache
 tests/abi_smoke/abi_smoke
 docs/parasolid_inc/
 docs/parasolid_online_docs/

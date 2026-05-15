@@ -53,8 +53,9 @@ internal static unsafe class KernelRuntime
     // Session-managed unmanaged buffers. Each query allocates a contiguous
     // slice, and returned pointers remain valid until the arena is reset.
     private const int InitialReturnBlockCapacity = 256;
-    private static nint[] ReturnBlocks = new nint[8];
-    private static int[] ReturnBlockCapacities = new int[8];
+    private const int MaxReturnBlocks = 64;
+    private static readonly nint[] ReturnBlocks = new nint[MaxReturnBlocks];
+    private static readonly int[] ReturnBlockCapacities = new int[MaxReturnBlocks];
     private static int returnBlockCount;
     private static int returnBlockIndex = -1;
     private static int returnCursor;
@@ -231,11 +232,8 @@ internal static unsafe class KernelRuntime
             if (nextCapacity < count)
                 nextCapacity = count;
 
-            if (returnBlockCount == ReturnBlocks.Length)
-            {
-                Array.Resize(ref ReturnBlocks, returnBlockCount * 2);
-                Array.Resize(ref ReturnBlockCapacities, returnBlockCount * 2);
-            }
+            if (returnBlockCount == MaxReturnBlocks)
+                return null;
 
             ReturnBlocks[returnBlockCount] = (nint)NativeMemory.Alloc((nuint)nextCapacity, (nuint)sizeof(int));
             ReturnBlockCapacities[returnBlockCount] = nextCapacity;
@@ -254,7 +252,9 @@ internal static unsafe class KernelRuntime
         if (tag <= 0 || tag >= nextTag)
             return false;
         var h = Handles[tag];
-        return h.Alive != 0 && h.SessionId == DefaultSessionId;
+        return h.Alive != 0 &&
+            h.SessionId == DefaultSessionId &&
+            IsValidSlot(h.Pool, h.SlotIndex, h.Generation);
     }
 
     private static ref HandleRecord ResolveTag(int tag)
@@ -262,6 +262,27 @@ internal static unsafe class KernelRuntime
         if (!IsValidTag(tag))
             throw new InvalidOperationException($"Invalid tag {tag}");
         return ref Handles[tag];
+    }
+
+    private static bool IsValidSlot(PoolKind pool, int slot, int generation)
+    {
+        return pool switch
+        {
+            PoolKind.Point => Points.IsValid(slot, generation),
+            PoolKind.Vector => Vectors.IsValid(slot, generation),
+            PoolKind.Body => Bodies.IsValid(slot, generation),
+            PoolKind.Shell => Shells.IsValid(slot, generation),
+            PoolKind.Face => Faces.IsValid(slot, generation),
+            PoolKind.Loop => Loops.IsValid(slot, generation),
+            PoolKind.Edge => Edges.IsValid(slot, generation),
+            PoolKind.Fin => Fins.IsValid(slot, generation),
+            PoolKind.Vertex => Vertices.IsValid(slot, generation),
+            PoolKind.Region => Regions.IsValid(slot, generation),
+            PoolKind.Curve => Curves.IsValid(slot, generation),
+            PoolKind.Surface => Surfaces.IsValid(slot, generation),
+            PoolKind.Transform => Transforms.IsValid(slot, generation),
+            _ => false,
+        };
     }
 
     // ── Session lifecycle ────────────────────────────────────────
@@ -1222,7 +1243,6 @@ internal static unsafe class KernelRuntime
         ref var m = ref session.CurrentMark;
         m.SequenceNo = session.NextRollbackStamp++;
         m.HandleCount = nextTag;
-        m.PoolCounts ??= new int[PoolConstants.PoolCount];
         m.PoolCounts[PoolHandles] = nextTag;
         m.PoolCounts[PoolPoints] = Points.AllocatedCount;
         m.PoolCounts[PoolVectors] = Vectors.AllocatedCount;
@@ -1257,9 +1277,7 @@ internal static unsafe class KernelRuntime
 
         ref var m = ref session.CurrentMark;
 
-        // Restore handle table
-        nextTag = m.HandleCount;
-        Array.Clear(Handles, nextTag, MaxHandles - nextTag);
+        Array.Clear(Handles, m.HandleCount, nextTag - m.HandleCount);
 
         // Restore all entity pools
         Points.RestoreMark(m.PoolCounts[PoolPoints]);
@@ -1303,6 +1321,12 @@ internal static unsafe class KernelRuntime
         if (!session.HasMark || session.CurrentMark.SequenceNo != mark)
             return ParasolidConstants.PK_ERROR_bad_mark;
 
+        for (int i = 0; i < session.TombstoneCount; i++)
+        {
+            ref var ts = ref session.Tombstones[i];
+            RecycleRetiredEntity(ts.PoolIndex, ts.Slot);
+        }
+
         session.HasMark = false;
         session.ClearTombstones();
         return ParasolidConstants.PK_ERROR_no_errors;
@@ -1334,8 +1358,10 @@ internal static unsafe class KernelRuntime
             if (session.HasMark)
                 session.AddTombstone(poolIndex, slot, generation, tag);
 
-            // Kill the entity in its pool
-            KillEntity(poolIndex, slot);
+            if (session.HasMark)
+                RetireEntity(poolIndex, slot);
+            else
+                KillEntity(poolIndex, slot);
 
             // Kill the handle
             handle.Alive = 0;
@@ -1364,24 +1390,64 @@ internal static unsafe class KernelRuntime
         }
     }
 
+    private static void RetireEntity(int poolIndex, int slot)
+    {
+        switch ((PoolKind)poolIndex)
+        {
+            case PoolKind.Point: Points.Retire(slot); break;
+            case PoolKind.Vector: Vectors.Retire(slot); break;
+            case PoolKind.Body: Bodies.Retire(slot); break;
+            case PoolKind.Shell: Shells.Retire(slot); break;
+            case PoolKind.Face: Faces.Retire(slot); break;
+            case PoolKind.Loop: Loops.Retire(slot); break;
+            case PoolKind.Edge: Edges.Retire(slot); break;
+            case PoolKind.Fin: Fins.Retire(slot); break;
+            case PoolKind.Vertex: Vertices.Retire(slot); break;
+            case PoolKind.Region: Regions.Retire(slot); break;
+            case PoolKind.Curve: Curves.Retire(slot); break;
+            case PoolKind.Surface: Surfaces.Retire(slot); break;
+            case PoolKind.Transform: Transforms.Retire(slot); break;
+        }
+    }
+
+    private static void RecycleRetiredEntity(int poolIndex, int slot)
+    {
+        switch ((PoolKind)poolIndex)
+        {
+            case PoolKind.Point: Points.RecycleRetired(slot); break;
+            case PoolKind.Vector: Vectors.RecycleRetired(slot); break;
+            case PoolKind.Body: Bodies.RecycleRetired(slot); break;
+            case PoolKind.Shell: Shells.RecycleRetired(slot); break;
+            case PoolKind.Face: Faces.RecycleRetired(slot); break;
+            case PoolKind.Loop: Loops.RecycleRetired(slot); break;
+            case PoolKind.Edge: Edges.RecycleRetired(slot); break;
+            case PoolKind.Fin: Fins.RecycleRetired(slot); break;
+            case PoolKind.Vertex: Vertices.RecycleRetired(slot); break;
+            case PoolKind.Region: Regions.RecycleRetired(slot); break;
+            case PoolKind.Curve: Curves.RecycleRetired(slot); break;
+            case PoolKind.Surface: Surfaces.RecycleRetired(slot); break;
+            case PoolKind.Transform: Transforms.RecycleRetired(slot); break;
+        }
+    }
+
     private static void RestoreEntity(int poolIndex, int slot, int handleTag)
     {
         // Restore the entity's alive bit
         switch ((PoolKind)poolIndex)
         {
-            case PoolKind.Point: RestoreSlot(Points, slot); break;
-            case PoolKind.Vector: RestoreSlot(Vectors, slot); break;
-            case PoolKind.Body: RestoreSlot(Bodies, slot); break;
-            case PoolKind.Shell: RestoreSlot(Shells, slot); break;
-            case PoolKind.Face: RestoreSlot(Faces, slot); break;
-            case PoolKind.Loop: RestoreSlot(Loops, slot); break;
-            case PoolKind.Edge: RestoreSlot(Edges, slot); break;
-            case PoolKind.Fin: RestoreSlot(Fins, slot); break;
-            case PoolKind.Vertex: RestoreSlot(Vertices, slot); break;
-            case PoolKind.Region: RestoreSlot(Regions, slot); break;
-            case PoolKind.Curve: RestoreSlot(Curves, slot); break;
-            case PoolKind.Surface: RestoreSlot(Surfaces, slot); break;
-            case PoolKind.Transform: RestoreSlot(Transforms, slot); break;
+            case PoolKind.Point: RestoreSlot(ref Points, slot); break;
+            case PoolKind.Vector: RestoreSlot(ref Vectors, slot); break;
+            case PoolKind.Body: RestoreSlot(ref Bodies, slot); break;
+            case PoolKind.Shell: RestoreSlot(ref Shells, slot); break;
+            case PoolKind.Face: RestoreSlot(ref Faces, slot); break;
+            case PoolKind.Loop: RestoreSlot(ref Loops, slot); break;
+            case PoolKind.Edge: RestoreSlot(ref Edges, slot); break;
+            case PoolKind.Fin: RestoreSlot(ref Fins, slot); break;
+            case PoolKind.Vertex: RestoreSlot(ref Vertices, slot); break;
+            case PoolKind.Region: RestoreSlot(ref Regions, slot); break;
+            case PoolKind.Curve: RestoreSlot(ref Curves, slot); break;
+            case PoolKind.Surface: RestoreSlot(ref Surfaces, slot); break;
+            case PoolKind.Transform: RestoreSlot(ref Transforms, slot); break;
         }
 
         // Restore the handle
@@ -1389,14 +1455,8 @@ internal static unsafe class KernelRuntime
             Handles[handleTag].Alive = 1;
     }
 
-    private static void RestoreSlot<T>(EntityPool<T> pool, int slot) where T : struct
+    private static void RestoreSlot<T>(ref EntityPool<T> pool, int slot) where T : struct
     {
-        // The slot was freed by KillEntity, which zeroed it and bumped generation.
-        // We need to mark it alive again. Since Free() preserved the generation,
-        // we just set Alive=1.
-        // However, the pool's free list now chains through this slot.
-        // For simplicity in Phase 2, we just mark it alive — the free list
-        // will have a stale entry, but Allocate() checks Alive before reusing.
         pool.MarkAlive(slot);
     }
 
