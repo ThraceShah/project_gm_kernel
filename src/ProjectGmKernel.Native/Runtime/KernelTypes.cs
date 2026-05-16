@@ -52,3 +52,11 @@ global using KernelKnotType = int;       // PK_knot_type_t
 global using KernelSelfIntersect = int;  // PK_self_intersect_t
 global using KernelConvexity = int;      // PK_convexity_t
 global using KernelLogical = byte;       // PK_LOGICAL_t
+
+// XT schema metadata aliases.
+global using XtNodeType = int;
+global using XtFieldCount = int;
+global using XtFieldIndex = int;
+global using XtFieldElementCount = int;
+global using XtNodeClass = int;
+global using XtNodeIndex = int;

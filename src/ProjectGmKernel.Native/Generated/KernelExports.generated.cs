@@ -3782,18 +3782,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_MEMORY_block_f")]
-    public static int PK_MEMORY_block_f(PK_MEMORY_block_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_MEMORY_free")]
-    public static int PK_MEMORY_free(nint arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_MEMORY_set_block_size")]
     public static int PK_MEMORY_set_block_size(nuint arg0)
     {
@@ -4090,12 +4078,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_PART_transmit")]
     public static int PK_PART_transmit(int arg0, int* arg1, byte* arg2, PK_PART_transmit_o_t* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_PART_transmit_b")]
-    public static int PK_PART_transmit_b(int arg0, int* arg1, PK_PART_transmit_o_t* arg2, PK_MEMORY_block_t* arg3)
     {
         return KernelRuntime.NotImplemented();
     }

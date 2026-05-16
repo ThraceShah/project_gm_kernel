@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 const int PK_CLASS_point = 2501;
 const int PK_TOPOL_sense_negative_c = 18541;
 const int PK_TOPOL_sense_positive_c = 18542;
+const int PK_transmit_format_text_c = 18220;
 
 static string GetScriptPath([CallerFilePath] string path = "") => path;
 
@@ -53,6 +54,10 @@ try
         var faceAskShells = (delegate* unmanaged[Cdecl]<int, int*, int>)NativeLibrary.GetExport(handle, "PK_FACE_ask_shells");
         var cylCreate = (delegate* unmanaged[Cdecl]<PK_CYL_sf_s*, int*, int>)NativeLibrary.GetExport(handle, "PK_CYL_create");
         var cylAsk = (delegate* unmanaged[Cdecl]<int, PK_CYL_sf_s*, int>)NativeLibrary.GetExport(handle, "PK_CYL_ask");
+        var partTransmitB = (delegate* unmanaged[Cdecl]<int, int*, PK_PART_transmit_o_s*, PK_MEMORY_block_s*, int>)NativeLibrary.GetExport(handle, "PK_PART_transmit_b");
+        var partReceiveB = (delegate* unmanaged[Cdecl]<PK_MEMORY_block_s, PK_PART_receive_o_s*, int*, nint*, int>)NativeLibrary.GetExport(handle, "PK_PART_receive_b");
+        var memoryBlockFree = (delegate* unmanaged[Cdecl]<PK_MEMORY_block_s*, int>)NativeLibrary.GetExport(handle, "PK_MEMORY_block_f");
+        var memoryFree = (delegate* unmanaged[Cdecl]<void*, int>)NativeLibrary.GetExport(handle, "PK_MEMORY_free");
 
         var startOptions = new PK_SESSION_start_o_s { o_t_version = 1 };
         Check(sessionStart(&startOptions), "PK_SESSION_start");
@@ -122,6 +127,34 @@ try
         Require(faceCount == 2, "cylinder edge count");
         Check(bodyAskVertices(cylBody, &faceCount, &faces), "PK_BODY_ask_vertices(cylinder)");
         Require(faceCount == 0, "cylinder vertex count");
+
+        var transmitOptions = new PK_PART_transmit_o_s
+        {
+            o_t_version = 10,
+            transmit_format = PK_transmit_format_text_c,
+        };
+        var memoryBlock = new PK_MEMORY_block_s();
+        Check(partTransmitB(1, &cylBody, &transmitOptions, &memoryBlock), "PK_PART_transmit_b(cylinder)");
+        Require(memoryBlock.n_bytes > 0, "transmit memory block size");
+        Require(memoryBlock.bytes != null, "transmit memory block bytes");
+
+        var receiveOptions = new PK_PART_receive_o_s
+        {
+            o_t_version = 14,
+            transmit_format = PK_transmit_format_text_c,
+        };
+        int receivedCount;
+        nint receivedParts;
+        Check(partReceiveB(memoryBlock, &receiveOptions, &receivedCount, &receivedParts), "PK_PART_receive_b(cylinder)");
+        Require(receivedCount == 1, "received part count");
+        int receivedBody = ((int*)receivedParts)[0];
+        Check(bodyAskFaces(receivedBody, &faceCount, &faces), "PK_BODY_ask_faces(received cylinder)");
+        Require(faceCount == 3, "received cylinder face count");
+        Check(bodyAskVertices(receivedBody, &faceCount, &faces), "PK_BODY_ask_vertices(received cylinder)");
+        Require(faceCount == 0, "received cylinder vertex count");
+        Check(memoryFree((void*)receivedParts), "PK_MEMORY_free(received parts)");
+        Check(memoryBlockFree(&memoryBlock), "PK_MEMORY_block_f");
+        Require(memoryBlock.n_bytes == 0, "freed memory block size");
 
         var cylSf = new PK_CYL_sf_s();
         cylSf.basis_set.location.coord0 = 1;
@@ -222,4 +255,43 @@ struct PK_CYL_sf_s
 {
     public PK_AXIS2_sf_s basis_set;
     public double radius;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+unsafe struct PK_MEMORY_block_s
+{
+    public PK_MEMORY_block_s* next;
+    public nuint n_bytes;
+    public byte* bytes;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+unsafe struct PK_PART_transmit_o_s
+{
+    public int o_t_version;
+    public int transmit_format;
+    public byte transmit_user_fields;
+    public int transmit_version;
+    public byte transmit_nmnl_geometry;
+    public nint transmit_indexed_context;
+    public int transmit_meshes;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+unsafe struct PK_PART_receive_o_s
+{
+    public int o_t_version;
+    public int transmit_format;
+    public byte receive_user_fields;
+    public int attdef_mismatch;
+    public int part_index;
+    public int n_part_indices;
+    public int* part_indices;
+    public int n_identifiers;
+    public int* identifiers;
+    public nint receive_indexed_context;
+    public byte key_is_partition;
+    public int receive_compound;
+    public int receive_using_seek;
+    public int receive_mixed;
 }

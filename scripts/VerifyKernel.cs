@@ -26,6 +26,10 @@ var testExit = Run("dotnet", "test tests/KernelTests", cleanupTesthost: true);
 if (testExit != 0)
     return testExit;
 
+var xtSchemaExit = Run("dotnet", "run scripts/GenerateXtSchema.cs -- --check", cleanupTesthost: false);
+if (xtSchemaExit != 0)
+    return xtSchemaExit;
+
 var publishExit = Run("dotnet", $"publish src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj -c Release -r {rid}", cleanupTesthost: false);
 if (publishExit != 0)
     return publishExit;
@@ -41,6 +45,10 @@ if (topologyDumpExit != 0)
 var allocationBaselineExit = Run("dotnet", "run scripts/AllocationBaseline.cs", cleanupTesthost: false);
 if (allocationBaselineExit != 0)
     return allocationBaselineExit;
+
+var parasolidOracleExit = Run("dotnet", "run scripts/ParasolidOracleSmoke.cs", cleanupTesthost: false);
+if (parasolidOracleExit != 0)
+    return parasolidOracleExit;
 
 var manualExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "KernelExports.cs");
 var generatedExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "KernelExports.generated.cs");

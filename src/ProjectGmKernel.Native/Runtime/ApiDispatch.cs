@@ -34,6 +34,10 @@ internal enum ApiId : ushort
     BodyCreateSolidCyl = 30,
     CylCreate = 31,
     CylAsk = 32,
+    PartTransmitB = 33,
+    PartReceiveB = 34,
+    MemoryBlockFree = 35,
+    MemoryFree = 36,
     GeneratedStub = 65535,
 }
 

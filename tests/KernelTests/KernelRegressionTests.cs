@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
 
@@ -612,6 +613,97 @@ public unsafe class KernelRegressionTests : IDisposable
         Assert.NotEqual(0, KernelRuntime.EntityAskClass(curve, &cls));
     }
 
+    [Fact]
+    public void PartTransmitReceiveB_RoundTripsCylinderTopology()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCyl(2, 5, null, &body));
+
+        var options = new PK_PART_transmit_o_s
+        {
+            o_t_version = 10,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        };
+        var block = new PK_MEMORY_block_s();
+        Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        Assert.True(block.n_bytes > 0);
+        Assert.NotEqual(0, (nint)block.bytes);
+
+        var receiveOptions = new PK_PART_receive_o_s
+        {
+            o_t_version = 14,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        };
+        int nParts;
+        int* parts;
+        Assert.Equal(0, KernelRuntime.PartReceiveB(block, &receiveOptions, &nParts, &parts));
+        Assert.Equal(1, nParts);
+
+        AssertCylinderCounts(parts[0]);
+        int* faces;
+        int faceCount;
+        Assert.Equal(0, KernelRuntime.BodyAskFaces(parts[0], &faceCount, &faces));
+        int surf;
+        Assert.Equal(0, KernelRuntime.FaceAskSurf(faces[0], &surf));
+        var cylSf = new PK_CYL_sf_s();
+        Assert.Equal(0, KernelRuntime.CylAsk(surf, &cylSf));
+        Assert.Equal(2, cylSf.radius);
+        Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+        Assert.Equal((nuint)0, block.n_bytes);
+        Assert.Equal(0, (nint)block.bytes);
+        Assert.Equal(0, KernelRuntime.MemoryFree(parts));
+    }
+
+    [Fact]
+    public void PartTransmitReceiveB_RoundTripsBlockTopology()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+
+        var options = new PK_PART_transmit_o_s
+        {
+            o_t_version = 10,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        };
+        var block = new PK_MEMORY_block_s();
+        Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+
+        var receiveOptions = new PK_PART_receive_o_s
+        {
+            o_t_version = 14,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        };
+        int nParts;
+        int* parts;
+        Assert.Equal(0, KernelRuntime.PartReceiveB(block, &receiveOptions, &nParts, &parts));
+        Assert.Equal(1, nParts);
+
+        AssertBodyCounts(parts[0], 2, 2, 6, 12, 8);
+        Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+        Assert.Equal(0, KernelRuntime.MemoryFree(parts));
+    }
+
+    [Fact]
+    public void PartReceiveB_RejectsBadSchemaAndUnsupportedFormat()
+    {
+        var bytes = "T51 : TRANSMIT FILE created by modeller version 350112717 SCH_0000000_000000 "u8;
+        fixed (byte* text = bytes)
+        {
+            var block = new PK_MEMORY_block_s { n_bytes = (nuint)bytes.Length, bytes = text };
+            var receiveOptions = new PK_PART_receive_o_s
+            {
+                o_t_version = 14,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            };
+            int nParts;
+            int* parts;
+            Assert.Equal(ParasolidConstants.PK_ERROR_corrupt_file, KernelRuntime.PartReceiveB(block, &receiveOptions, &nParts, &parts));
+
+            receiveOptions.transmit_format = ParasolidConstants.PK_transmit_format_binary_c;
+            Assert.Equal(ParasolidConstants.PK_ERROR_wrong_format, KernelRuntime.PartReceiveB(block, &receiveOptions, &nParts, &parts));
+        }
+    }
+
     // ── Helper: Create a simple body ──────────────────────────────
 
     private int CreateSimpleBody(
@@ -694,6 +786,44 @@ public unsafe class KernelRegressionTests : IDisposable
         vertexTag = vertices[0];
 
         return bodyTag;
+    }
+
+    private static void AssertCylinderCounts(int body)
+    {
+        AssertBodyCounts(body, 2, 2, 3, 2, 0);
+    }
+
+    private static void AssertBodyCounts(int body, int expectedRegions, int expectedShells, int expectedFaces, int expectedEdges, int expectedVertices)
+    {
+        int count;
+        int* entities;
+        Assert.Equal(0, KernelRuntime.BodyAskRegions(body, &count, &entities));
+        Assert.Equal(expectedRegions, count);
+        if (expectedRegions == 2)
+        {
+            byte isSolid;
+            Assert.Equal(0, KernelRuntime.RegionIsSolid(entities[0], &isSolid));
+            Assert.Equal(0, isSolid);
+            Assert.Equal(0, KernelRuntime.RegionIsSolid(entities[1], &isSolid));
+            Assert.Equal(1, isSolid);
+        }
+
+        Assert.Equal(0, KernelRuntime.BodyAskShells(body, &count, &entities));
+        Assert.Equal(expectedShells, count);
+        Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &count, &entities));
+        Assert.Equal(expectedFaces, count);
+        if (expectedFaces > 0)
+        {
+            int* shells = stackalloc int[2];
+            Assert.Equal(0, KernelRuntime.FaceAskShells(entities[0], shells));
+            Assert.True(shells[0] > 0);
+            Assert.True(shells[1] > 0);
+        }
+
+        Assert.Equal(0, KernelRuntime.BodyAskEdges(body, &count, &entities));
+        Assert.Equal(expectedEdges, count);
+        Assert.Equal(0, KernelRuntime.BodyAskVertices(body, &count, &entities));
+        Assert.Equal(expectedVertices, count);
     }
 
     // ── Reflection helper to access nextTag ───────────────────────

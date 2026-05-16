@@ -256,6 +256,40 @@ internal unsafe struct CylAskCommand : IKernelCommand
     public int Execute() => KernelRuntime.CylAsk(Cylinder, CylinderSf);
 }
 
+internal unsafe struct PartTransmitBCommand : IKernelCommand
+{
+    public int PartCount;
+    public EntityTag* Parts;
+    public PK_PART_transmit_o_s* Options;
+    public PK_MEMORY_block_t* Block;
+
+    public int Execute() => KernelRuntime.PartTransmitB(PartCount, Parts, Options, Block);
+}
+
+internal unsafe struct PartReceiveBCommand : IKernelCommand
+{
+    public PK_MEMORY_block_t Block;
+    public PK_PART_receive_o_s* Options;
+    public int* PartCount;
+    public EntityTag** Parts;
+
+    public int Execute() => KernelRuntime.PartReceiveB(Block, Options, PartCount, Parts);
+}
+
+internal unsafe struct MemoryBlockFreeCommand : IKernelCommand
+{
+    public PK_MEMORY_block_t* Block;
+
+    public int Execute() => KernelRuntime.MemoryBlockFree(Block);
+}
+
+internal unsafe struct MemoryFreeCommand : IKernelCommand
+{
+    public void* Pointer;
+
+    public int Execute() => KernelRuntime.MemoryFree(Pointer);
+}
+
 internal unsafe struct MarkCreateCommand : IKernelCommand
 {
     public int* Mark;

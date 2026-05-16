@@ -261,6 +261,36 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.Dispatch(ApiId.BodyCreateSolidCyl, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
     }
 
+    // ── XT transmit / receive ───────────────────────────────────
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_PART_transmit_b")]
+    public static int PK_PART_transmit_b(int nParts, int* parts, PK_PART_transmit_o_s* options, PK_MEMORY_block_t* block)
+    {
+        var command = new PartTransmitBCommand { PartCount = nParts, Parts = parts, Options = options, Block = block };
+        return KernelRuntime.Dispatch(ApiId.PartTransmitB, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_PART_receive_b")]
+    public static int PK_PART_receive_b(PK_MEMORY_block_t block, PK_PART_receive_o_s* options, int* nParts, int** parts)
+    {
+        var command = new PartReceiveBCommand { Block = block, Options = options, PartCount = nParts, Parts = parts };
+        return KernelRuntime.Dispatch(ApiId.PartReceiveB, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_MEMORY_block_f")]
+    public static int PK_MEMORY_block_f(PK_MEMORY_block_t* block)
+    {
+        var command = new MemoryBlockFreeCommand { Block = block };
+        return KernelRuntime.Dispatch(ApiId.MemoryBlockFree, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_MEMORY_free")]
+    public static int PK_MEMORY_free(void* pointer)
+    {
+        var command = new MemoryFreeCommand { Pointer = pointer };
+        return KernelRuntime.Dispatch(ApiId.MemoryFree, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command);
+    }
+
     // ── Mark / Rollback ──────────────────────────────────────────
 
     [UnmanagedCallersOnly(EntryPoint = "PK_MARK_create")]

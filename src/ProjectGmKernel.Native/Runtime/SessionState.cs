@@ -4,7 +4,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static class PoolConstants
 {
-    public const int PoolCount = 18;
+    public const int PoolCount = 19;
 }
 
 /// <summary>
@@ -21,7 +21,8 @@ internal unsafe struct MarkRecord
     /// [0]=Handles, [1]=Points, [2]=Vectors, [3]=Bodies, [4]=Shells,
     /// [5]=FaceUses, [6]=Faces, [7]=Loops, [8]=Edges, [9]=Fins,
     /// [10]=Vertices, [11]=Regions, [12]=Curves, [13]=Surfaces,
-    /// [14]=Transforms, [15]=CircleData, [16]=CylinderData, [17]=PlaneData
+    /// [14]=Transforms, [15]=CircleData, [16]=CylinderData, [17]=PlaneData,
+    /// [18]=LineData
     /// </summary>
     public fixed int PoolCounts[PoolConstants.PoolCount];
 }

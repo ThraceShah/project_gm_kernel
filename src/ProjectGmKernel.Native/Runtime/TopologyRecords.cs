@@ -110,6 +110,8 @@ internal struct EdgeRecord
     public RecordHeader Header;
     public KernelEdgeType EdgeType;
     public BodySlot Body;
+    public VertexSlot StartVertex; // -1 for ring/vertexless edges
+    public VertexSlot EndVertex;   // -1 for ring/vertexless edges
     public FinSlot FirstFinEdge;
     public int FinCount;
     public CurveTag CurveTag;
