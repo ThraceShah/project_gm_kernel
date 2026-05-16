@@ -47,8 +47,38 @@ unsafe
         int count;
         int* tags;
         Check(KernelRuntime.BodyAskFaces(body, &count, &tags), "BodyAskFaces");
+        Check(KernelRuntime.BodyAskRegions(body, &count, &tags), "BodyAskRegions");
         Check(KernelRuntime.BodyAskEdges(body, &count, &tags), "BodyAskEdges");
         Check(KernelRuntime.BodyAskVertices(body, &count, &tags), "BodyAskVertices");
+        Check(KernelRuntime.SessionStop(), "SessionStop");
+    });
+
+    Measure("cylinder + topology queries", static () =>
+    {
+        RestartSession();
+        int body;
+        Check(KernelRuntime.BodyCreateSolidCyl(1, 2, null, &body), "BodyCreateSolidCyl");
+        int count;
+        int* tags;
+        Check(KernelRuntime.BodyAskRegions(body, &count, &tags), "BodyAskRegions");
+        Check(KernelRuntime.BodyAskShells(body, &count, &tags), "BodyAskShells");
+        Check(KernelRuntime.BodyAskFaces(body, &count, &tags), "BodyAskFaces");
+        Check(KernelRuntime.BodyAskEdges(body, &count, &tags), "BodyAskEdges");
+        Check(KernelRuntime.BodyAskVertices(body, &count, &tags), "BodyAskVertices");
+        Check(KernelRuntime.SessionStop(), "SessionStop");
+    });
+
+    Measure("cylinder standard-form round trip", static () =>
+    {
+        RestartSession();
+        var sf = new PK_CYL_sf_s();
+        sf.basis_set.axis.coord[2] = 1;
+        sf.basis_set.ref_direction.coord[0] = 1;
+        sf.radius = 1;
+        int cyl;
+        Check(KernelRuntime.CylCreate(&sf, &cyl), "CylCreate");
+        var asked = new PK_CYL_sf_s();
+        Check(KernelRuntime.CylAsk(cyl, &asked), "CylAsk");
         Check(KernelRuntime.SessionStop(), "SessionStop");
     });
 

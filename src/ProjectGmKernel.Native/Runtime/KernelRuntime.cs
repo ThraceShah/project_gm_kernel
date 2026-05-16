@@ -14,6 +14,7 @@ internal static unsafe class KernelRuntime
     private const int MaxVectors = 2048;
     private const int MaxBodies = 512;
     private const int MaxShells = 1024;
+    private const int MaxFaceUses = 8192;
     private const int MaxFaces = 4096;
     private const int MaxLoops = 8192;
     private const int MaxEdges = 8192;
@@ -23,6 +24,9 @@ internal static unsafe class KernelRuntime
     private const int MaxCurves = 4096;
     private const int MaxSurfaces = 4096;
     private const int MaxTransforms = 256;
+    private const int MaxCircleData = 4096;
+    private const int MaxCylinderData = 1024;
+    private const int MaxPlaneData = 1024;
 
     // ── Shared state ─────────────────────────────────────────────
     private static readonly System.Threading.Lock RuntimeLock = new();
@@ -65,6 +69,7 @@ internal static unsafe class KernelRuntime
     internal static EntityPool<VectorRecord> Vectors;
     internal static EntityPool<BodyRecord> Bodies;
     internal static EntityPool<ShellRecord> Shells;
+    internal static EntityPool<FaceUseRecord> FaceUses;
     internal static EntityPool<FaceRecord> Faces;
     internal static EntityPool<LoopRecord> Loops;
     internal static EntityPool<EdgeRecord> Edges;
@@ -74,6 +79,9 @@ internal static unsafe class KernelRuntime
     internal static EntityPool<CurveRecord> Curves;
     internal static EntityPool<SurfaceRecord> Surfaces;
     internal static EntityPool<TransformRecord> Transforms;
+    internal static EntityPool<CircleData> CircleDataPool;
+    internal static EntityPool<CylinderData> CylinderDataPool;
+    internal static EntityPool<PlaneData> PlaneDataPool;
 
     // Pool index constants for mark/rollback
     private const int PoolHandles = 0;
@@ -81,15 +89,19 @@ internal static unsafe class KernelRuntime
     private const int PoolVectors = 2;
     private const int PoolBodies = 3;
     private const int PoolShells = 4;
-    private const int PoolFaces = 5;
-    private const int PoolLoops = 6;
-    private const int PoolEdges = 7;
-    private const int PoolFins = 8;
-    private const int PoolVertices = 9;
-    private const int PoolRegions = 10;
-    private const int PoolCurves = 11;
-    private const int PoolSurfaces = 12;
-    private const int PoolTransforms = 13;
+    private const int PoolFaceUses = 5;
+    private const int PoolFaces = 6;
+    private const int PoolLoops = 7;
+    private const int PoolEdges = 8;
+    private const int PoolFins = 9;
+    private const int PoolVertices = 10;
+    private const int PoolRegions = 11;
+    private const int PoolCurves = 12;
+    private const int PoolSurfaces = 13;
+    private const int PoolTransforms = 14;
+    private const int PoolCircleData = 15;
+    private const int PoolCylinderData = 16;
+    private const int PoolPlaneData = 17;
 
     static KernelRuntime()
     {
@@ -97,6 +109,7 @@ internal static unsafe class KernelRuntime
         Vectors = new EntityPool<VectorRecord>(MaxVectors);
         Bodies = new EntityPool<BodyRecord>(MaxBodies);
         Shells = new EntityPool<ShellRecord>(MaxShells);
+        FaceUses = new EntityPool<FaceUseRecord>(MaxFaceUses);
         Faces = new EntityPool<FaceRecord>(MaxFaces);
         Loops = new EntityPool<LoopRecord>(MaxLoops);
         Edges = new EntityPool<EdgeRecord>(MaxEdges);
@@ -106,6 +119,9 @@ internal static unsafe class KernelRuntime
         Curves = new EntityPool<CurveRecord>(MaxCurves);
         Surfaces = new EntityPool<SurfaceRecord>(MaxSurfaces);
         Transforms = new EntityPool<TransformRecord>(MaxTransforms);
+        CircleDataPool = new EntityPool<CircleData>(MaxCircleData);
+        CylinderDataPool = new EntityPool<CylinderData>(MaxCylinderData);
+        PlaneDataPool = new EntityPool<PlaneData>(MaxPlaneData);
     }
 
     // ── Tag allocation ───────────────────────────────────────────
@@ -308,6 +324,7 @@ internal static unsafe class KernelRuntime
         Vectors.Reset();
         Bodies.Reset();
         Shells.Reset();
+        FaceUses.Reset();
         Faces.Reset();
         Loops.Reset();
         Edges.Reset();
@@ -317,6 +334,9 @@ internal static unsafe class KernelRuntime
         Curves.Reset();
         Surfaces.Reset();
         Transforms.Reset();
+        CircleDataPool.Reset();
+        CylinderDataPool.Reset();
+        PlaneDataPool.Reset();
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -338,6 +358,7 @@ internal static unsafe class KernelRuntime
         Vectors.Reset();
         Bodies.Reset();
         Shells.Reset();
+        FaceUses.Reset();
         Faces.Reset();
         Loops.Reset();
         Edges.Reset();
@@ -347,6 +368,9 @@ internal static unsafe class KernelRuntime
         Curves.Reset();
         Surfaces.Reset();
         Transforms.Reset();
+        CircleDataPool.Reset();
+        CylinderDataPool.Reset();
+        PlaneDataPool.Reset();
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -436,16 +460,20 @@ internal static unsafe class KernelRuntime
                 case ParasolidConstants.PK_CLASS_shell:
                     slots[i] = Shells.Allocate();
                     Shells[slots[i]].Body = -1;
-                    Shells[slots[i]].FirstFaceShell = -1;
+                    Shells[slots[i]].Region = -1;
+                    Shells[slots[i]].FirstFaceUseShell = -1;
                     Shells[slots[i]].AcornVertex = -1;
                     Shells[slots[i]].NextInBody = -1;
+                    Shells[slots[i]].NextInRegion = -1;
                     poolKinds[i] = (byte)PoolKind.Shell;
                     break;
                 case ParasolidConstants.PK_CLASS_face:
                     slots[i] = Faces.Allocate();
-                    Faces[slots[i]].Shell = -1;
+                    Faces[slots[i]].BackShell = -1;
+                    Faces[slots[i]].FrontShell = -1;
+                    Faces[slots[i]].BackFaceUse = -1;
+                    Faces[slots[i]].FrontFaceUse = -1;
                     Faces[slots[i]].FirstLoop = -1;
-                    Faces[slots[i]].NextInShell = -1;
                     Faces[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Face;
                     break;
@@ -483,7 +511,8 @@ internal static unsafe class KernelRuntime
                 case ParasolidConstants.PK_CLASS_region:
                     slots[i] = Regions.Allocate();
                     Regions[slots[i]].Body = -1;
-                    Regions[slots[i]].Shell = -1;
+                    Regions[slots[i]].IsSolid = 0;
+                    Regions[slots[i]].FirstShell = -1;
                     Regions[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Region;
                     break;
@@ -546,6 +575,7 @@ internal static unsafe class KernelRuntime
                     ref var shell = ref Shells[childSlot];
                     shell.NextInBody = -1;
                     shell.Body = parentSlot;
+                    shell.Region = -1;
                     if (body.FirstShell < 0)
                     {
                         body.FirstShell = childSlot;
@@ -580,23 +610,30 @@ internal static unsafe class KernelRuntime
                 }
                 break;
 
-            case PoolKind.Shell when childPool == (byte)PoolKind.Face:
+            case PoolKind.Region when childPool == (byte)PoolKind.Shell:
                 {
-                    ref var shell = ref Shells[parentSlot];
-                    ref var face = ref Faces[childSlot];
-                    face.NextInShell = -1;
-                    face.Shell = parentSlot;
-                    if (shell.FirstFaceShell < 0)
+                    ref var region = ref Regions[parentSlot];
+                    ref var shell = ref Shells[childSlot];
+                    shell.Body = region.Body;
+                    shell.Region = parentSlot;
+                    shell.NextInRegion = -1;
+                    if (region.FirstShell < 0)
                     {
-                        shell.FirstFaceShell = childSlot;
+                        region.FirstShell = childSlot;
                     }
                     else
                     {
-                        int cur = shell.FirstFaceShell;
-                        while (Faces[cur].NextInShell >= 0) cur = Faces[cur].NextInShell;
-                        Faces[cur].NextInShell = childSlot;
+                        int cur = region.FirstShell;
+                        while (Shells[cur].NextInRegion >= 0) cur = Shells[cur].NextInRegion;
+                        Shells[cur].NextInRegion = childSlot;
                     }
-                    shell.FaceCount++;
+                    region.ShellCount++;
+                }
+                break;
+
+            case PoolKind.Shell when childPool == (byte)PoolKind.Face:
+                {
+                    AddFaceUse(parentSlot, childSlot, sense);
                 }
                 break;
 
@@ -665,6 +702,110 @@ internal static unsafe class KernelRuntime
                 Fins[parentSlot].Edge = childSlot;
                 break;
         }
+    }
+
+    private static FaceUseSlot AddFaceUse(ShellSlot shellSlot, FaceSlot faceSlot, KernelSense sense)
+    {
+        var faceUseSlot = FaceUses.Allocate();
+        ref var faceUse = ref FaceUses[faceUseSlot];
+        faceUse.Shell = shellSlot;
+        faceUse.Face = faceSlot;
+        faceUse.Sense = NormalizeFaceUseSense(sense);
+        faceUse.NextInShell = -1;
+
+        ref var shell = ref Shells[shellSlot];
+        if (shell.FirstFaceUseShell < 0)
+        {
+            shell.FirstFaceUseShell = faceUseSlot;
+        }
+        else
+        {
+            int cur = shell.FirstFaceUseShell;
+            while (FaceUses[cur].NextInShell >= 0) cur = FaceUses[cur].NextInShell;
+            FaceUses[cur].NextInShell = faceUseSlot;
+        }
+        shell.FaceUseCount++;
+
+        ref var face = ref Faces[faceSlot];
+        if (faceUse.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c)
+        {
+            face.BackShell = shellSlot;
+            face.BackFaceUse = faceUseSlot;
+        }
+        else
+        {
+            face.FrontShell = shellSlot;
+            face.FrontFaceUse = faceUseSlot;
+        }
+
+        return faceUseSlot;
+    }
+
+    private static KernelSense NormalizeFaceUseSense(KernelSense sense)
+    {
+        return sense == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? ParasolidConstants.PK_TOPOL_sense_negative_c
+            : ParasolidConstants.PK_TOPOL_sense_positive_c;
+    }
+
+    private static void AppendRegionToBody(BodySlot bodySlot, RegionSlot regionSlot)
+    {
+        ref var body = ref Bodies[bodySlot];
+        ref var region = ref Regions[regionSlot];
+        region.Body = bodySlot;
+        region.NextInBody = -1;
+
+        if (body.FirstRegion < 0)
+        {
+            body.FirstRegion = regionSlot;
+        }
+        else
+        {
+            int cur = body.FirstRegion;
+            while (Regions[cur].NextInBody >= 0) cur = Regions[cur].NextInBody;
+            Regions[cur].NextInBody = regionSlot;
+        }
+        body.RegionCount++;
+    }
+
+    private static void AppendShellToBody(BodySlot bodySlot, ShellSlot shellSlot)
+    {
+        ref var body = ref Bodies[bodySlot];
+        ref var shell = ref Shells[shellSlot];
+        shell.Body = bodySlot;
+        shell.NextInBody = -1;
+
+        if (body.FirstShell < 0)
+        {
+            body.FirstShell = shellSlot;
+        }
+        else
+        {
+            int cur = body.FirstShell;
+            while (Shells[cur].NextInBody >= 0) cur = Shells[cur].NextInBody;
+            Shells[cur].NextInBody = shellSlot;
+        }
+        body.ShellCount++;
+    }
+
+    private static void AppendShellToRegion(RegionSlot regionSlot, ShellSlot shellSlot)
+    {
+        ref var region = ref Regions[regionSlot];
+        ref var shell = ref Shells[shellSlot];
+        shell.Region = regionSlot;
+        shell.NextInRegion = -1;
+
+        if (region.FirstShell < 0)
+        {
+            region.FirstShell = shellSlot;
+        }
+        else
+        {
+            int cur = region.FirstShell;
+            while (Shells[cur].NextInRegion >= 0) cur = Shells[cur].NextInRegion;
+            Shells[cur].NextInRegion = shellSlot;
+        }
+        region.ShellCount++;
     }
 
     /// <summary>
@@ -765,26 +906,33 @@ internal static unsafe class KernelRuntime
         if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Body, PoolKind.Body, bodySlot))
             return -1;
 
+        for (int regionSlot = Bodies[bodySlot].FirstRegion; regionSlot >= 0; regionSlot = Regions[regionSlot].NextInBody)
+        {
+            if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Region, PoolKind.Region, regionSlot))
+                return -1;
+        }
+
         for (int shellSlot = Bodies[bodySlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
         {
             if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Shell, PoolKind.Shell, shellSlot))
                 return -1;
 
-            for (int faceSlot = Shells[shellSlot].FirstFaceShell; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInShell)
+        }
+
+        for (int faceSlot = Bodies[bodySlot].FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        {
+            if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Face, PoolKind.Face, faceSlot))
+                return -1;
+
+            for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
             {
-                if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Face, PoolKind.Face, faceSlot))
+                if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Loop, PoolKind.Loop, loopSlot))
                     return -1;
 
-                for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+                for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
                 {
-                    if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Loop, PoolKind.Loop, loopSlot))
+                    if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Fin, PoolKind.Fin, finSlot))
                         return -1;
-
-                    for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
-                    {
-                        if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Fin, PoolKind.Fin, finSlot))
-                            return -1;
-                    }
                 }
             }
         }
@@ -839,29 +987,53 @@ internal static unsafe class KernelRuntime
         if (bodyTag <= 0)
             return -1;
 
-        for (int shellSlot = Bodies[bodySlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        for (int regionSlot = Bodies[bodySlot].FirstRegion; regionSlot >= 0; regionSlot = Regions[regionSlot].NextInBody)
         {
-            if (!AppendRelation(ref relation, maxRelations, parents, children, senses, bodyTag, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), topols, topolCount))
+            int regionTag = GetOrAllocateTag(EntityClass.Region, PoolKind.Region, regionSlot);
+            if (!AppendRelation(ref relation, maxRelations, parents, children, senses, bodyTag, regionTag, ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                 return -1;
 
-            for (int faceSlot = Shells[shellSlot].FirstFaceShell; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInShell)
+            for (int shellSlot = Regions[regionSlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInRegion)
             {
-                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot), topols, topolCount))
+                int shellTag = GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot);
+                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, regionTag, shellTag, ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
+                    return -1;
+            }
+        }
+
+        for (int shellSlot = Bodies[bodySlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        {
+            if (Shells[shellSlot].Region < 0)
+            {
+                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, bodyTag, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
+                    return -1;
+            }
+
+            for (int faceUseSlot = Shells[shellSlot].FirstFaceUseShell; faceUseSlot >= 0; faceUseSlot = FaceUses[faceUseSlot].NextInShell)
+            {
+                ref var faceUse = ref FaceUses[faceUseSlot];
+                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceUse.Face), faceUse.Sense, topols, topolCount))
+                    return -1;
+            }
+        }
+
+        for (int faceSlot = Bodies[bodySlot].FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        {
+            for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+            {
+                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot), GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                     return -1;
 
-                for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+                for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
                 {
-                    if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot), GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), topols, topolCount))
+                    if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), GetOrAllocateTag(EntityClass.Fin, PoolKind.Fin, finSlot), ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                         return -1;
 
-                    for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
+                    if (Fins[finSlot].Edge >= 0)
                     {
-                        if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), GetOrAllocateTag(EntityClass.Fin, PoolKind.Fin, finSlot), topols, topolCount))
-                            return -1;
-
                         int edgeTag = GetOrAllocateTag(EntityClass.Edge, PoolKind.Edge, Fins[finSlot].Edge);
                         int finTag = GetOrAllocateTag(EntityClass.Fin, PoolKind.Fin, finSlot);
-                        if (!AppendRelation(ref relation, maxRelations, parents, children, senses, edgeTag, finTag, topols, topolCount))
+                        if (!AppendRelation(ref relation, maxRelations, parents, children, senses, edgeTag, finTag, ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                             return -1;
                     }
                 }
@@ -879,6 +1051,7 @@ internal static unsafe class KernelRuntime
         int* senses,
         int parentTag,
         int childTag,
+        KernelSense sense,
         int* topols,
         int topolCount)
     {
@@ -892,7 +1065,7 @@ internal static unsafe class KernelRuntime
 
         parents[relation] = parentIndex;
         children[relation] = childIndex;
-        senses[relation] = ParasolidConstants.PK_TOPOL_sense_none_c;
+        senses[relation] = sense;
         relation++;
         return true;
     }
@@ -1013,6 +1186,36 @@ internal static unsafe class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
+    public static int BodyAskRegions(int bodyTag, int* nRegions, int** regions)
+    {
+        if (nRegions is null || regions is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+            return ParasolidConstants.PK_ERROR_unknown_class;
+
+        ref var body = ref Bodies[Handles[bodyTag].SlotIndex];
+        *nRegions = body.RegionCount;
+        if (WriteTagList(regions, body.RegionCount, body.FirstRegion, PoolKind.Region, EntityClass.Region, 0) < 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    public static int RegionIsSolid(int regionTag, KernelLogical* isSolid)
+    {
+        if (isSolid is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (!IsValidTag(regionTag) || Handles[regionTag].Class != EntityClass.Region)
+            return ParasolidConstants.PK_ERROR_unknown_class;
+
+        *isSolid = Regions[Handles[regionTag].SlotIndex].IsSolid;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
     public static int BodyAskTopology(
         int bodyTag,
         PK_BODY_ask_topology_o_s* options,
@@ -1033,8 +1236,13 @@ internal static unsafe class KernelRuntime
 
         int bodySlot = Handles[bodyTag].SlotIndex;
         ref var body = ref Bodies[bodySlot];
-        int topolCount = 1 + body.ShellCount + body.FaceCountBody + body.EdgeCountBody + body.VertexCountBody;
+        int topolCount = 1 + body.RegionCount + body.ShellCount + body.FaceCountBody + body.EdgeCountBody + body.VertexCountBody;
         int finCount = 0;
+        int faceUseCount = 0;
+        for (int shellSlot = body.FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        {
+            faceUseCount += Shells[shellSlot].FaceUseCount;
+        }
         for (int faceSlot = body.FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
         {
             for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
@@ -1044,7 +1252,13 @@ internal static unsafe class KernelRuntime
             }
         }
 
-        int relationCount = body.ShellCount + body.FaceCountBody + finCount + finCount;
+        int edgeFinRelationCount = 0;
+        for (int edgeSlot = body.FirstEdgeBody; edgeSlot >= 0; edgeSlot = Edges[edgeSlot].NextInBody)
+        {
+            edgeFinRelationCount += Edges[edgeSlot].FinCount;
+        }
+
+        int relationCount = body.RegionCount + body.ShellCount + faceUseCount + finCount + edgeFinRelationCount;
         for (int faceSlot = body.FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
         {
             ref var face = ref Faces[faceSlot];
@@ -1106,6 +1320,21 @@ internal static unsafe class KernelRuntime
 
         ref var face = ref Faces[Handles[faceTag].SlotIndex];
         *surfTag = face.SurfTag;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    public static int FaceAskShells(int faceTag, int* shells)
+    {
+        if (shells is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (!IsValidTag(faceTag) || Handles[faceTag].Class != EntityClass.Face)
+            return ParasolidConstants.PK_ERROR_unknown_class;
+
+        ref var face = ref Faces[Handles[faceTag].SlotIndex];
+        shells[0] = face.BackShell >= 0 ? GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, face.BackShell) : 0;
+        shells[1] = face.FrontShell >= 0 ? GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, face.FrontShell) : 0;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -1252,6 +1481,65 @@ internal static unsafe class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
+    public static int CylCreate(PK_CYL_sf_s* cylSf, int* cylTag)
+    {
+        if (cylSf is null || cylTag is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+        if (cylSf->radius <= 0)
+            return ParasolidConstants.PK_ERROR_distance_le_0;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (session is null || !session.Started)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+
+        ReadAxis2(&cylSf->basis_set, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
+        int dataSlot = CylinderDataPool.Allocate();
+        ref var data = ref CylinderDataPool[dataSlot];
+        data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
+        data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
+        data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
+        data.Radius = cylSf->radius;
+
+        int surfSlot = Surfaces.Allocate();
+        ref var surf = ref Surfaces[surfSlot];
+        surf.Class = SurfaceClass.Cylinder;
+        surf.DataIndex = dataSlot;
+
+        int tag = AllocateTag(EntityClass.Surface, PoolKind.Surface, surfSlot, surf.Header.Generation);
+        if (tag < 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        *cylTag = tag;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    public static int CylAsk(int cylTag, PK_CYL_sf_s* cylSf)
+    {
+        if (cylSf is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (!IsValidTag(cylTag) || Handles[cylTag].Class != EntityClass.Surface)
+            return ParasolidConstants.PK_ERROR_unknown_class;
+
+        ref var surf = ref Surfaces[Handles[cylTag].SlotIndex];
+        if (surf.Class != SurfaceClass.Cylinder)
+            return ParasolidConstants.PK_ERROR_unknown_class;
+
+        ref var data = ref CylinderDataPool[surf.DataIndex];
+        cylSf->basis_set.location.coord[0] = data.LocationX;
+        cylSf->basis_set.location.coord[1] = data.LocationY;
+        cylSf->basis_set.location.coord[2] = data.LocationZ;
+        cylSf->basis_set.axis.coord[0] = data.AxisX;
+        cylSf->basis_set.axis.coord[1] = data.AxisY;
+        cylSf->basis_set.axis.coord[2] = data.AxisZ;
+        cylSf->basis_set.ref_direction.coord[0] = data.RefDirX;
+        cylSf->basis_set.ref_direction.coord[1] = data.RefDirY;
+        cylSf->basis_set.ref_direction.coord[2] = data.RefDirZ;
+        cylSf->radius = data.Radius;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
     // ── PK_BODY_create_solid_block ─────────────────────────────────
 
     public static int BodyCreateSolidBlock(double x, double y, double z, PK_AXIS2_sf_s* basisSet, int* bodyTag)
@@ -1265,41 +1553,14 @@ internal static unsafe class KernelRuntime
         if (session is null || !session.Started)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
-        // Allocate body
         var bodySlot = Bodies.Allocate();
         ref var body = ref Bodies[bodySlot];
-        body.BodyType = 0; // solid
+        InitializeBody(ref body);
 
-        // Allocate shell
-        var shellSlot = Shells.Allocate();
-        ref var shell = ref Shells[shellSlot];
-        shell.Body = bodySlot;
-        shell.ShellType = 0; // outer
-        shell.NextInBody = -1;
-        body.FirstShell = shellSlot;
-        body.ShellCount = 1;
+        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
 
-        // Determine origin and axes from basis_set (or defaults)
-        double ox = 0, oy = 0, oz = 0;
-        double axX = 0, axY = 0, axZ = 1;
-        double refX = 1, refY = 0, refZ = 0;
-        if (basisSet is not null)
-        {
-            ox = basisSet->location.coord[0];
-            oy = basisSet->location.coord[1];
-            oz = basisSet->location.coord[2];
-            axX = basisSet->axis.coord[0];
-            axY = basisSet->axis.coord[1];
-            axZ = basisSet->axis.coord[2];
-            refX = basisSet->ref_direction.coord[0];
-            refY = basisSet->ref_direction.coord[1];
-            refZ = basisSet->ref_direction.coord[2];
-        }
-
-        // Compute third axis = cross(axis, ref_direction)
-        double thirdX = axY * refZ - axZ * refY;
-        double thirdY = axZ * refX - axX * refZ;
-        double thirdZ = axX * refY - axY * refX;
+        ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
+        Cross(axX, axY, axZ, refX, refY, refZ, out double thirdX, out double thirdY, out double thirdZ);
 
         // 8 corner points of the block
         // p0 = origin
@@ -1375,8 +1636,6 @@ internal static unsafe class KernelRuntime
         Span<int> faceSlots = stackalloc int[6];
         Span<int> loopSlots = stackalloc int[6];
 
-        shell.FirstFaceShell = -1;
-        int lastFace = -1;
         int lastBodyFace = -1;
 
         for (int f = 0; f < 6; f++)
@@ -1387,18 +1646,11 @@ internal static unsafe class KernelRuntime
             ref var face = ref Faces[faceSlots[f]];
             ref var loop = ref Loops[loopSlots[f]];
 
-            face.Shell = shellSlot;
+            InitializeFace(ref face);
             face.SurfTag = 0; // no standalone surface entity yet
             face.FirstLoop = loopSlots[f];
             face.LoopCount = 1;
-            face.NextInShell = -1;
             face.NextInBody = -1;
-
-            if (lastFace >= 0)
-                Faces[lastFace].NextInShell = faceSlots[f];
-            else
-                shell.FirstFaceShell = faceSlots[f];
-            lastFace = faceSlots[f];
 
             if (lastBodyFace >= 0)
                 Faces[lastBodyFace].NextInBody = faceSlots[f];
@@ -1449,13 +1701,115 @@ internal static unsafe class KernelRuntime
 
             loop.FirstFin = firstFinSlot;
             loop.FinCount = 4;
-            shell.FaceCount++;
+
+            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
+            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
         }
 
         body.FirstFaceBody = faceSlots[0];
         body.FaceCountBody = 6;
 
         // Build result tag
+        var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, body.Header.Generation);
+        if (tag < 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        *bodyTag = tag;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    public static int BodyCreateSolidCyl(double radius, double height, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        if (bodyTag is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+        if (radius <= 0 || height <= 0)
+            return ParasolidConstants.PK_ERROR_distance_le_0;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (session is null || !session.Started)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+
+        var bodySlot = Bodies.Allocate();
+        ref var body = ref Bodies[bodySlot];
+        InitializeBody(ref body);
+
+        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
+
+        int sideSurf = CreateCylinderSurfaceTag(ox, oy, oz, axX, axY, axZ, refX, refY, refZ, radius);
+        int bottomSurf = CreatePlaneSurfaceTag(ox, oy, oz, -axX, -axY, -axZ, refX, refY, refZ);
+        int topSurf = CreatePlaneSurfaceTag(ox + height * axX, oy + height * axY, oz + height * axZ, axX, axY, axZ, refX, refY, refZ);
+        if (sideSurf <= 0 || bottomSurf <= 0 || topSurf <= 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        Span<int> edgeSlots = stackalloc int[2];
+        Span<int> edgeCurves = stackalloc int[2];
+        edgeCurves[0] = CreateCircleCurveTag(ox, oy, oz, axX, axY, axZ, refX, refY, refZ, radius);
+        edgeCurves[1] = CreateCircleCurveTag(ox + height * axX, oy + height * axY, oz + height * axZ, axX, axY, axZ, refX, refY, refZ, radius);
+        if (edgeCurves[0] <= 0 || edgeCurves[1] <= 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        for (int i = 0; i < 2; i++)
+        {
+            edgeSlots[i] = Edges.Allocate();
+        }
+        for (int i = 0; i < 2; i++)
+        {
+            ref var edge = ref Edges[edgeSlots[i]];
+            edge.Body = bodySlot;
+            edge.CurveTag = edgeCurves[i];
+            edge.FirstFinEdge = -1;
+            edge.NextInBody = i == 0 ? edgeSlots[1] : -1;
+        }
+        body.FirstEdgeBody = edgeSlots[0];
+        body.EdgeCountBody = 2;
+        body.FirstVertexBody = -1;
+        body.VertexCountBody = 0;
+
+        Span<int> faceSlots = stackalloc int[3];
+        Span<int> surfTags = stackalloc int[3] { sideSurf, bottomSurf, topSurf };
+        Span<int> loopCounts = stackalloc int[3] { 2, 1, 1 };
+
+        for (int f = 0; f < 3; f++)
+        {
+            faceSlots[f] = Faces.Allocate();
+        }
+        for (int f = 0; f < 3; f++)
+        {
+            ref var face = ref Faces[faceSlots[f]];
+            InitializeFace(ref face);
+            face.SurfTag = surfTags[f];
+            face.NextInBody = f < 2 ? faceSlots[f + 1] : -1;
+
+            int previousLoop = -1;
+            for (int l = 0; l < loopCounts[f]; l++)
+            {
+                int loopSlot = Loops.Allocate();
+                ref var loop = ref Loops[loopSlot];
+                loop.Face = faceSlots[f];
+                loop.FirstFin = -1;
+                loop.NextInFace = -1;
+
+                int edgeIndex = f == 0 ? l : f - 1;
+                int finSlot = AddFinToLoopAndEdge(loopSlot, faceSlots[f], edgeSlots[edgeIndex]);
+                loop.FirstFin = finSlot;
+                loop.FinCount = 1;
+
+                if (previousLoop >= 0)
+                    Loops[previousLoop].NextInFace = loopSlot;
+                else
+                    face.FirstLoop = loopSlot;
+                previousLoop = loopSlot;
+                face.LoopCount++;
+            }
+
+            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
+            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
+        }
+
+        body.FirstFaceBody = faceSlots[0];
+        body.FaceCountBody = 3;
+
         var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, body.Header.Generation);
         if (tag < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -1486,6 +1840,7 @@ internal static unsafe class KernelRuntime
         m.PoolCounts[PoolVectors] = Vectors.AllocatedCount;
         m.PoolCounts[PoolBodies] = Bodies.AllocatedCount;
         m.PoolCounts[PoolShells] = Shells.AllocatedCount;
+        m.PoolCounts[PoolFaceUses] = FaceUses.AllocatedCount;
         m.PoolCounts[PoolFaces] = Faces.AllocatedCount;
         m.PoolCounts[PoolLoops] = Loops.AllocatedCount;
         m.PoolCounts[PoolEdges] = Edges.AllocatedCount;
@@ -1495,6 +1850,9 @@ internal static unsafe class KernelRuntime
         m.PoolCounts[PoolCurves] = Curves.AllocatedCount;
         m.PoolCounts[PoolSurfaces] = Surfaces.AllocatedCount;
         m.PoolCounts[PoolTransforms] = Transforms.AllocatedCount;
+        m.PoolCounts[PoolCircleData] = CircleDataPool.AllocatedCount;
+        m.PoolCounts[PoolCylinderData] = CylinderDataPool.AllocatedCount;
+        m.PoolCounts[PoolPlaneData] = PlaneDataPool.AllocatedCount;
         m.RollbackStamp = session.NextRollbackStamp;
 
         session.HasMark = true;
@@ -1522,6 +1880,7 @@ internal static unsafe class KernelRuntime
         Vectors.RestoreMark(m.PoolCounts[PoolVectors]);
         Bodies.RestoreMark(m.PoolCounts[PoolBodies]);
         Shells.RestoreMark(m.PoolCounts[PoolShells]);
+        FaceUses.RestoreMark(m.PoolCounts[PoolFaceUses]);
         Faces.RestoreMark(m.PoolCounts[PoolFaces]);
         Loops.RestoreMark(m.PoolCounts[PoolLoops]);
         Edges.RestoreMark(m.PoolCounts[PoolEdges]);
@@ -1531,6 +1890,9 @@ internal static unsafe class KernelRuntime
         Curves.RestoreMark(m.PoolCounts[PoolCurves]);
         Surfaces.RestoreMark(m.PoolCounts[PoolSurfaces]);
         Transforms.RestoreMark(m.PoolCounts[PoolTransforms]);
+        CircleDataPool.RestoreMark(m.PoolCounts[PoolCircleData]);
+        CylinderDataPool.RestoreMark(m.PoolCounts[PoolCylinderData]);
+        PlaneDataPool.RestoreMark(m.PoolCounts[PoolPlaneData]);
 
         // Restore deleted entities (tombstones)
         for (int i = 0; i < session.TombstoneCount; i++)
@@ -1726,6 +2088,186 @@ internal static unsafe class KernelRuntime
         return AllocateTag(entityClass, pool, slotIndex, generation);
     }
 
+    private static void InitializeBody(ref BodyRecord body)
+    {
+        body.BodyType = ParasolidConstants.PK_BODY_type_solid_c;
+        body.BodyConfig = ParasolidConstants.PK_BODY_config_standard_c;
+        body.FirstShell = -1;
+        body.ShellCount = 0;
+        body.FirstRegion = -1;
+        body.RegionCount = 0;
+        body.FirstFaceBody = -1;
+        body.FaceCountBody = 0;
+        body.FirstEdgeBody = -1;
+        body.EdgeCountBody = 0;
+        body.FirstVertexBody = -1;
+        body.VertexCountBody = 0;
+    }
+
+    private static void InitializeShell(ref ShellRecord shell, BodySlot bodySlot)
+    {
+        shell.Body = bodySlot;
+        shell.Region = -1;
+        shell.ShellType = 0;
+        shell.FirstFaceUseShell = -1;
+        shell.FaceUseCount = 0;
+        shell.AcornVertex = -1;
+        shell.NextInBody = -1;
+        shell.NextInRegion = -1;
+    }
+
+    private static void InitializeFace(ref FaceRecord face)
+    {
+        face.BackShell = -1;
+        face.FrontShell = -1;
+        face.BackFaceUse = -1;
+        face.FrontFaceUse = -1;
+        face.FirstLoop = -1;
+        face.LoopCount = 0;
+        face.SurfTag = 0;
+        face.Orientation = ParasolidConstants.PK_TOPOL_sense_none_c;
+        face.NextInBody = -1;
+    }
+
+    private static void CreateSolidRegionsAndShells(BodySlot bodySlot, out ShellSlot voidShellSlot, out ShellSlot solidShellSlot)
+    {
+        RegionSlot voidRegionSlot = Regions.Allocate();
+        RegionSlot solidRegionSlot = Regions.Allocate();
+        ref var voidRegion = ref Regions[voidRegionSlot];
+        ref var solidRegion = ref Regions[solidRegionSlot];
+        voidRegion.IsSolid = 0;
+        voidRegion.FirstShell = -1;
+        voidRegion.ShellCount = 0;
+        solidRegion.IsSolid = 1;
+        solidRegion.FirstShell = -1;
+        solidRegion.ShellCount = 0;
+
+        AppendRegionToBody(bodySlot, voidRegionSlot);
+        AppendRegionToBody(bodySlot, solidRegionSlot);
+
+        voidShellSlot = Shells.Allocate();
+        solidShellSlot = Shells.Allocate();
+        InitializeShell(ref Shells[voidShellSlot], bodySlot);
+        InitializeShell(ref Shells[solidShellSlot], bodySlot);
+
+        AppendShellToBody(bodySlot, voidShellSlot);
+        AppendShellToRegion(voidRegionSlot, voidShellSlot);
+        AppendShellToBody(bodySlot, solidShellSlot);
+        AppendShellToRegion(solidRegionSlot, solidShellSlot);
+    }
+
+    private static int AddFinToLoopAndEdge(LoopSlot loopSlot, FaceSlot faceSlot, EdgeSlot edgeSlot)
+    {
+        int finSlot = Fins.Allocate();
+        ref var fin = ref Fins[finSlot];
+        fin.Edge = edgeSlot;
+        fin.Loop = loopSlot;
+        fin.Face = faceSlot;
+        fin.NextInLoop = -1;
+        fin.PrevInLoop = -1;
+        fin.NextOfEdge = -1;
+        fin.PrevOfEdge = -1;
+
+        ref var edge = ref Edges[edgeSlot];
+        if (edge.FirstFinEdge < 0)
+        {
+            edge.FirstFinEdge = finSlot;
+        }
+        else
+        {
+            int cur = edge.FirstFinEdge;
+            while (Fins[cur].NextOfEdge >= 0) cur = Fins[cur].NextOfEdge;
+            Fins[cur].NextOfEdge = finSlot;
+            fin.PrevOfEdge = cur;
+        }
+        edge.FinCount++;
+        return finSlot;
+    }
+
+    private static int CreateCircleCurveTag(double cx, double cy, double cz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius)
+    {
+        int dataSlot = CircleDataPool.Allocate();
+        ref var data = ref CircleDataPool[dataSlot];
+        data.CenterX = cx; data.CenterY = cy; data.CenterZ = cz;
+        data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
+        data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
+        data.Radius = radius;
+
+        int curveSlot = Curves.Allocate();
+        ref var curve = ref Curves[curveSlot];
+        curve.Class = CurveClass.Circle;
+        curve.DataIndex = dataSlot;
+        curve.TMin = 0;
+        curve.TMax = Math.Tau;
+        curve.Sense = ParasolidConstants.PK_TOPOL_sense_positive_c;
+        return AllocateTag(EntityClass.Curve, PoolKind.Curve, curveSlot, curve.Header.Generation);
+    }
+
+    private static int CreateCylinderSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius)
+    {
+        int dataSlot = CylinderDataPool.Allocate();
+        ref var data = ref CylinderDataPool[dataSlot];
+        data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
+        data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
+        data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
+        data.Radius = radius;
+
+        int surfSlot = Surfaces.Allocate();
+        ref var surf = ref Surfaces[surfSlot];
+        surf.Class = SurfaceClass.Cylinder;
+        surf.DataIndex = dataSlot;
+        surf.UMin = 0;
+        surf.UMax = Math.Tau;
+        surf.VMin = 0;
+        surf.VMax = 0;
+        return AllocateTag(EntityClass.Surface, PoolKind.Surface, surfSlot, surf.Header.Generation);
+    }
+
+    private static int CreatePlaneSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ)
+    {
+        int dataSlot = PlaneDataPool.Allocate();
+        ref var data = ref PlaneDataPool[dataSlot];
+        data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
+        data.NormalX = axX; data.NormalY = axY; data.NormalZ = axZ;
+        data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
+
+        int surfSlot = Surfaces.Allocate();
+        ref var surf = ref Surfaces[surfSlot];
+        surf.Class = SurfaceClass.Plane;
+        surf.DataIndex = dataSlot;
+        surf.UMin = 0;
+        surf.UMax = 0;
+        surf.VMin = 0;
+        surf.VMax = 0;
+        return AllocateTag(EntityClass.Surface, PoolKind.Surface, surfSlot, surf.Header.Generation);
+    }
+
+    private static void ReadAxis2(PK_AXIS2_sf_s* basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ)
+    {
+        ox = 0; oy = 0; oz = 0;
+        axX = 0; axY = 0; axZ = 1;
+        refX = 1; refY = 0; refZ = 0;
+        if (basisSet is null)
+            return;
+
+        ox = basisSet->location.coord[0];
+        oy = basisSet->location.coord[1];
+        oz = basisSet->location.coord[2];
+        axX = basisSet->axis.coord[0];
+        axY = basisSet->axis.coord[1];
+        axZ = basisSet->axis.coord[2];
+        refX = basisSet->ref_direction.coord[0];
+        refY = basisSet->ref_direction.coord[1];
+        refZ = basisSet->ref_direction.coord[2];
+    }
+
+    private static void Cross(double ax, double ay, double az, double bx, double by, double bz, out double cx, out double cy, out double cz)
+    {
+        cx = ay * bz - az * by;
+        cy = az * bx - ax * bz;
+        cz = ax * by - ay * bx;
+    }
+
     // ── Dispatch ─────────────────────────────────────────────────
 
     public static int Dispatch<TCommand>(ApiId apiId, ConcurrencyKind concurrencyKind, AccessKind accessKind, ref TCommand command)
@@ -1739,18 +2281,6 @@ internal static unsafe class KernelRuntime
             SessionId = DefaultSessionId,
         };
         return DispatchState.Execute(ref descriptor, ref command);
-    }
-
-    public static int Dispatch(ApiId apiId, ConcurrencyKind concurrencyKind, AccessKind accessKind, Func<int> action)
-    {
-        var descriptor = new CommandDescriptor
-        {
-            ApiId = apiId,
-            ConcurrencyKind = concurrencyKind,
-            AccessKind = accessKind,
-            SessionId = DefaultSessionId,
-        };
-        return DispatchState.Execute(ref descriptor, action);
     }
 
     public static int NotImplemented()

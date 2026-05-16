@@ -88,6 +88,15 @@ internal unsafe struct BodyAskVerticesCommand : IKernelCommand
     public int Execute() => KernelRuntime.BodyAskVertices(Body, VertexCount, Vertices);
 }
 
+internal unsafe struct BodyAskRegionsCommand : IKernelCommand
+{
+    public EntityTag Body;
+    public int* RegionCount;
+    public EntityTag** Regions;
+
+    public int Execute() => KernelRuntime.BodyAskRegions(Body, RegionCount, Regions);
+}
+
 internal unsafe struct BodyAskTopologyCommand : IKernelCommand
 {
     public EntityTag Body;
@@ -118,6 +127,22 @@ internal unsafe struct FaceAskSurfCommand : IKernelCommand
     public SurfTag* Surf;
 
     public int Execute() => KernelRuntime.FaceAskSurf(Face, Surf);
+}
+
+internal unsafe struct FaceAskShellsCommand : IKernelCommand
+{
+    public EntityTag Face;
+    public EntityTag* Shells;
+
+    public int Execute() => KernelRuntime.FaceAskShells(Face, Shells);
+}
+
+internal unsafe struct RegionIsSolidCommand : IKernelCommand
+{
+    public EntityTag Region;
+    public KernelLogical* IsSolid;
+
+    public int Execute() => KernelRuntime.RegionIsSolid(Region, IsSolid);
 }
 
 internal unsafe struct LoopAskFaceCommand : IKernelCommand
@@ -203,6 +228,32 @@ internal unsafe struct BodyCreateSolidBlockCommand : IKernelCommand
     public EntityTag* Body;
 
     public int Execute() => KernelRuntime.BodyCreateSolidBlock(X, Y, Z, BasisSet, Body);
+}
+
+internal unsafe struct BodyCreateSolidCylCommand : IKernelCommand
+{
+    public double Radius;
+    public double Height;
+    public PK_AXIS2_sf_s* BasisSet;
+    public EntityTag* Body;
+
+    public int Execute() => KernelRuntime.BodyCreateSolidCyl(Radius, Height, BasisSet, Body);
+}
+
+internal unsafe struct CylCreateCommand : IKernelCommand
+{
+    public PK_CYL_sf_s* CylinderSf;
+    public EntityTag* Cylinder;
+
+    public int Execute() => KernelRuntime.CylCreate(CylinderSf, Cylinder);
+}
+
+internal unsafe struct CylAskCommand : IKernelCommand
+{
+    public EntityTag Cylinder;
+    public PK_CYL_sf_s* CylinderSf;
+
+    public int Execute() => KernelRuntime.CylAsk(Cylinder, CylinderSf);
 }
 
 internal unsafe struct MarkCreateCommand : IKernelCommand

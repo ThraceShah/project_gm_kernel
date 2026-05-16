@@ -90,6 +90,13 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.Dispatch(ApiId.BodyAskVertices, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_regions")]
+    public static int PK_BODY_ask_regions(int body, int* nRegions, int** regions)
+    {
+        var command = new BodyAskRegionsCommand { Body = body, RegionCount = nRegions, Regions = regions };
+        return KernelRuntime.Dispatch(ApiId.BodyAskRegions, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_ask_topology")]
     public static int PK_BODY_ask_topology(
         int body,
@@ -131,6 +138,22 @@ internal static unsafe partial class KernelExports
     {
         var command = new FaceAskSurfCommand { Face = face, Surf = surf };
         return KernelRuntime.Dispatch(ApiId.FaceAskSurf, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_FACE_ask_shells")]
+    public static int PK_FACE_ask_shells(int face, int* shells)
+    {
+        var command = new FaceAskShellsCommand { Face = face, Shells = shells };
+        return KernelRuntime.Dispatch(ApiId.FaceAskShells, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
+    // ── Region queries ───────────────────────────────────────────
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_REGION_is_solid")]
+    public static int PK_REGION_is_solid(int region, byte* isSolid)
+    {
+        var command = new RegionIsSolidCommand { Region = region, IsSolid = isSolid };
+        return KernelRuntime.Dispatch(ApiId.RegionIsSolid, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
     }
 
     // ── Loop queries ─────────────────────────────────────────────
@@ -206,6 +229,22 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.Dispatch(ApiId.TransfCreate, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
     }
 
+    // ── Analytic geometry ────────────────────────────────────────
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_CYL_create")]
+    public static int PK_CYL_create(PK_CYL_sf_s* cylSf, int* cyl)
+    {
+        var command = new CylCreateCommand { CylinderSf = cylSf, Cylinder = cyl };
+        return KernelRuntime.Dispatch(ApiId.CylCreate, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_CYL_ask")]
+    public static int PK_CYL_ask(int cyl, PK_CYL_sf_s* cylSf)
+    {
+        var command = new CylAskCommand { Cylinder = cyl, CylinderSf = cylSf };
+        return KernelRuntime.Dispatch(ApiId.CylAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
     // ── Body creation primitives ─────────────────────────────────
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_block")]
@@ -213,6 +252,13 @@ internal static unsafe partial class KernelExports
     {
         var command = new BodyCreateSolidBlockCommand { X = x, Y = y, Z = z, BasisSet = basisSet, Body = body };
         return KernelRuntime.Dispatch(ApiId.BodyCreateSolidBlock, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_cyl")]
+    public static int PK_BODY_create_solid_cyl(double radius, double height, PK_AXIS2_sf_s* basisSet, int* body)
+    {
+        var command = new BodyCreateSolidCylCommand { Radius = radius, Height = height, BasisSet = basisSet, Body = body };
+        return KernelRuntime.Dispatch(ApiId.BodyCreateSolidCyl, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
     }
 
     // ── Mark / Rollback ──────────────────────────────────────────

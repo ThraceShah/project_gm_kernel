@@ -34,6 +34,10 @@ var abiSmokeExit = Run("dotnet", "run scripts/AbiSmoke.cs", cleanupTesthost: fal
 if (abiSmokeExit != 0)
     return abiSmokeExit;
 
+var topologyDumpExit = Run("dotnet", "run scripts/TopologyDump.cs", cleanupTesthost: false);
+if (topologyDumpExit != 0)
+    return topologyDumpExit;
+
 var allocationBaselineExit = Run("dotnet", "run scripts/AllocationBaseline.cs", cleanupTesthost: false);
 if (allocationBaselineExit != 0)
     return allocationBaselineExit;

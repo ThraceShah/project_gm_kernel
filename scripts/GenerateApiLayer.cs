@@ -1550,17 +1550,10 @@ void GenerateExportsFile(string outputPath)
         {
             return $"{p.Type} {SanitizeName(p.Name)}";
         }));
-        var concurrency = IsReadOnlyApi(func.Name) ? "ConcurrencyKind.Concurrent" : "ConcurrencyKind.Exclusive";
-        var access = IsReadOnlyApi(func.Name) ? "AccessKind.ReadOnly" : "AccessKind.GlobalWrite";
-
         sb.AppendLine($"    [UnmanagedCallersOnly(EntryPoint = \"{func.Name}\")]");
         sb.AppendLine($"    public static {func.RetType} {func.Name}({parms})");
         sb.AppendLine("    {");
-        sb.AppendLine("        return KernelRuntime.Dispatch(");
-        sb.AppendLine("            ApiId.GeneratedStub,");
-        sb.AppendLine($"            {concurrency},");
-        sb.AppendLine($"            {access},");
-        sb.AppendLine("            static () => KernelRuntime.NotImplemented());");
+        sb.AppendLine("        return KernelRuntime.NotImplemented();");
         sb.AppendLine("    }");
         sb.AppendLine();
     }

@@ -15,5 +15,6 @@
     <InternalsVisibleTo Include="AbiCheck" />
     <InternalsVisibleTo Include="AllocationBaseline" />
     <InternalsVisibleTo Include="KernelTests" />
+    <InternalsVisibleTo Include="TopologyDump" />
   </ItemGroup>
 </Project>

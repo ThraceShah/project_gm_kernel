@@ -427,7 +427,9 @@ public unsafe class KernelRegressionTests : IDisposable
         {
             Assert.InRange(parents[i], 0, nTopols - 1);
             Assert.InRange(children[i], 0, nTopols - 1);
-            Assert.Equal(ParasolidConstants.PK_TOPOL_sense_none_c, senses[i]);
+            Assert.True(
+                senses[i] == ParasolidConstants.PK_TOPOL_sense_none_c ||
+                senses[i] == ParasolidConstants.PK_TOPOL_sense_positive_c);
         }
     }
 
@@ -456,17 +458,158 @@ public unsafe class KernelRegressionTests : IDisposable
             &childrenRaw,
             &sensesRaw));
 
-        Assert.Equal(58, nTopols);
-        Assert.Equal(61, nRelations);
+        Assert.Equal(61, nTopols);
+        Assert.Equal(70, nRelations);
 
         var classes = (int*)classesRaw;
         Assert.Equal(1, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_body));
-        Assert.Equal(1, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_shell));
+        Assert.Equal(2, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_region));
+        Assert.Equal(2, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_shell));
         Assert.Equal(6, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_face));
         Assert.Equal(6, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_loop));
         Assert.Equal(24, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_fin));
         Assert.Equal(12, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_edge));
         Assert.Equal(8, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_vertex));
+
+        var senses = (int*)sensesRaw;
+        Assert.Equal(6, Enumerable.Range(0, nRelations).Count(i => senses[i] == ParasolidConstants.PK_TOPOL_sense_negative_c));
+        Assert.Equal(6, Enumerable.Range(0, nRelations).Count(i => senses[i] == ParasolidConstants.PK_TOPOL_sense_positive_c));
+    }
+
+    [Fact]
+    public void SolidBlock_UsesParasolidRegionsShellsAndSharedFaces()
+    {
+        int bodyTag;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &bodyTag));
+
+        int nRegions;
+        int* regions;
+        Assert.Equal(0, KernelRuntime.BodyAskRegions(bodyTag, &nRegions, &regions));
+        Assert.Equal(2, nRegions);
+
+        byte isSolid;
+        Assert.Equal(0, KernelRuntime.RegionIsSolid(regions[0], &isSolid));
+        Assert.Equal(0, isSolid);
+        Assert.Equal(0, KernelRuntime.RegionIsSolid(regions[1], &isSolid));
+        Assert.Equal(1, isSolid);
+
+        int nShells;
+        int* shells;
+        Assert.Equal(0, KernelRuntime.BodyAskShells(bodyTag, &nShells, &shells));
+        Assert.Equal(2, nShells);
+
+        int nFaces;
+        int* faces;
+        Assert.Equal(0, KernelRuntime.BodyAskFaces(bodyTag, &nFaces, &faces));
+        Assert.Equal(6, nFaces);
+
+        int* faceShells = stackalloc int[2];
+        for (int i = 0; i < nFaces; i++)
+        {
+            Assert.Equal(0, KernelRuntime.FaceAskShells(faces[i], faceShells));
+            Assert.Equal(shells[1], faceShells[0]);
+            Assert.Equal(shells[0], faceShells[1]);
+        }
+    }
+
+    [Fact]
+    public void SolidCylinder_UsesParasolidPrimitiveTopology()
+    {
+        int bodyTag;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCyl(2, 5, null, &bodyTag));
+
+        int count;
+        int* tags;
+        Assert.Equal(0, KernelRuntime.BodyAskRegions(bodyTag, &count, &tags));
+        Assert.Equal(2, count);
+
+        Assert.Equal(0, KernelRuntime.BodyAskShells(bodyTag, &count, &tags));
+        Assert.Equal(2, count);
+
+        Assert.Equal(0, KernelRuntime.BodyAskFaces(bodyTag, &count, &tags));
+        Assert.Equal(3, count);
+
+        int* faces = tags;
+        int* faceShells = stackalloc int[2];
+        for (int i = 0; i < count; i++)
+        {
+            Assert.Equal(0, KernelRuntime.FaceAskShells(faces[i], faceShells));
+            Assert.NotEqual(0, faceShells[0]);
+            Assert.NotEqual(0, faceShells[1]);
+            Assert.NotEqual(faceShells[0], faceShells[1]);
+        }
+
+        Assert.Equal(0, KernelRuntime.BodyAskEdges(bodyTag, &count, &tags));
+        Assert.Equal(2, count);
+
+        Assert.Equal(0, KernelRuntime.BodyAskVertices(bodyTag, &count, &tags));
+        Assert.Equal(0, count);
+    }
+
+    [Fact]
+    public void CylCreateAsk_RoundTripsStandardForm()
+    {
+        var cylSf = new PK_CYL_sf_s();
+        cylSf.basis_set.location.coord[0] = 1;
+        cylSf.basis_set.location.coord[1] = 2;
+        cylSf.basis_set.location.coord[2] = 3;
+        cylSf.basis_set.axis.coord[0] = 0;
+        cylSf.basis_set.axis.coord[1] = 1;
+        cylSf.basis_set.axis.coord[2] = 0;
+        cylSf.basis_set.ref_direction.coord[0] = 1;
+        cylSf.basis_set.ref_direction.coord[1] = 0;
+        cylSf.basis_set.ref_direction.coord[2] = 0;
+        cylSf.radius = 4;
+
+        int cyl;
+        Assert.Equal(0, KernelRuntime.CylCreate(&cylSf, &cyl));
+
+        var asked = new PK_CYL_sf_s();
+        Assert.Equal(0, KernelRuntime.CylAsk(cyl, &asked));
+        Assert.Equal(1, asked.basis_set.location.coord[0]);
+        Assert.Equal(2, asked.basis_set.location.coord[1]);
+        Assert.Equal(3, asked.basis_set.location.coord[2]);
+        Assert.Equal(0, asked.basis_set.axis.coord[0]);
+        Assert.Equal(1, asked.basis_set.axis.coord[1]);
+        Assert.Equal(0, asked.basis_set.axis.coord[2]);
+        Assert.Equal(1, asked.basis_set.ref_direction.coord[0]);
+        Assert.Equal(0, asked.basis_set.ref_direction.coord[1]);
+        Assert.Equal(0, asked.basis_set.ref_direction.coord[2]);
+        Assert.Equal(4, asked.radius);
+    }
+
+    [Fact]
+    public void MarkGoto_InvalidatesCylinderBodyAndChildren()
+    {
+        int mark;
+        Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCyl(1, 2, null, &body));
+
+        int nFaces;
+        int* faces;
+        Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &nFaces, &faces));
+        int face = faces[0];
+
+        int nEdges;
+        int* edges;
+        Assert.Equal(0, KernelRuntime.BodyAskEdges(body, &nEdges, &edges));
+        int edge = edges[0];
+
+        int surf;
+        Assert.Equal(0, KernelRuntime.FaceAskSurf(face, &surf));
+        int curve;
+        Assert.Equal(0, KernelRuntime.EdgeAskCurve(edge, &curve));
+
+        Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+
+        int cls;
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(body, &cls));
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(face, &cls));
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(edge, &cls));
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(surf, &cls));
+        Assert.NotEqual(0, KernelRuntime.EntityAskClass(curve, &cls));
     }
 
     // ── Helper: Create a simple body ──────────────────────────────

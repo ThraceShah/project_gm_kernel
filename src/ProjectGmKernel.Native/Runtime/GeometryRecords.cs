@@ -165,6 +165,7 @@ internal struct SurfaceRecord
 [StructLayout(LayoutKind.Sequential)]
 internal struct LineData
 {
+    public RecordHeader Header;
     public double LocationX, LocationY, LocationZ;
     public double AxisX, AxisY, AxisZ;
 }
@@ -176,6 +177,7 @@ internal struct LineData
 [StructLayout(LayoutKind.Sequential)]
 internal struct CircleData
 {
+    public RecordHeader Header;
     public double CenterX, CenterY, CenterZ;
     public double AxisX, AxisY, AxisZ;
     public double RefDirX, RefDirY, RefDirZ;
@@ -189,6 +191,7 @@ internal struct CircleData
 [StructLayout(LayoutKind.Sequential)]
 internal struct EllipseData
 {
+    public RecordHeader Header;
     public double CenterX, CenterY, CenterZ;
     public double AxisX, AxisY, AxisZ;
     public double RefDirX, RefDirY, RefDirZ;
@@ -205,6 +208,7 @@ internal struct EllipseData
 [StructLayout(LayoutKind.Sequential)]
 internal struct PlaneData
 {
+    public RecordHeader Header;
     public double LocationX, LocationY, LocationZ;
     public double NormalX, NormalY, NormalZ;
     public double RefDirX, RefDirY, RefDirZ;
@@ -217,6 +221,7 @@ internal struct PlaneData
 [StructLayout(LayoutKind.Sequential)]
 internal struct CylinderData
 {
+    public RecordHeader Header;
     public double LocationX, LocationY, LocationZ;
     public double AxisX, AxisY, AxisZ;
     public double RefDirX, RefDirY, RefDirZ;
@@ -230,6 +235,7 @@ internal struct CylinderData
 [StructLayout(LayoutKind.Sequential)]
 internal struct ConeData
 {
+    public RecordHeader Header;
     public double LocationX, LocationY, LocationZ;
     public double AxisX, AxisY, AxisZ;
     public double RefDirX, RefDirY, RefDirZ;
@@ -244,6 +250,7 @@ internal struct ConeData
 [StructLayout(LayoutKind.Sequential)]
 internal struct SphereData
 {
+    public RecordHeader Header;
     public double CenterX, CenterY, CenterZ;
     public double AxisX, AxisY, AxisZ;
     public double RefDirX, RefDirY, RefDirZ;
@@ -257,6 +264,7 @@ internal struct SphereData
 [StructLayout(LayoutKind.Sequential)]
 internal struct TorusData
 {
+    public RecordHeader Header;
     public double LocationX, LocationY, LocationZ;
     public double AxisX, AxisY, AxisZ;
     public double RefDirX, RefDirY, RefDirZ;

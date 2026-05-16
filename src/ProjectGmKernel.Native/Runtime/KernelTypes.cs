@@ -14,6 +14,7 @@
 // Pool slot indices — used in adjacency fields of topology/geometry records.
 global using BodySlot = int;
 global using ShellSlot = int;
+global using FaceUseSlot = int;
 global using FaceSlot = int;
 global using LoopSlot = int;
 global using EdgeSlot = int;

@@ -64,7 +64,7 @@ public unsafe class SessionTests
         int* shells; int* faces; int* edges; int* vertices;
 
         Assert.Equal(0, KernelRuntime.BodyAskShells(bodyTag, &nShells, &shells));
-        Assert.Equal(1, nShells);
+        Assert.Equal(2, nShells);
 
         Assert.Equal(0, KernelRuntime.BodyAskFaces(bodyTag, &nFaces, &faces));
         Assert.Equal(6, nFaces);

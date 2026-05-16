@@ -77,23 +77,29 @@ internal static class IntegrityChecker
                 continue;
             }
 
-            int faceCount = CountChain(KernelRuntime.Faces, shell.FirstFaceShell,
+            int faceUseCount = CountChain(KernelRuntime.FaceUses, shell.FirstFaceUseShell,
                 s => s.NextInShell);
-            if (faceCount != shell.FaceCount)
+            if (faceUseCount != shell.FaceUseCount)
             {
-                Debug.WriteLine($"Shell {i}: FaceCount mismatch: expected {shell.FaceCount}, counted {faceCount}");
+                Debug.WriteLine($"Shell {i}: FaceUseCount mismatch: expected {shell.FaceUseCount}, counted {faceUseCount}");
                 errors++;
             }
 
-            int faceSlot = shell.FirstFaceShell;
-            while (faceSlot >= 0)
+            int faceUseSlot = shell.FirstFaceUseShell;
+            while (faceUseSlot >= 0)
             {
-                if (KernelRuntime.Faces[faceSlot].Shell != i)
+                ref var faceUse = ref KernelRuntime.FaceUses[faceUseSlot];
+                if (faceUse.Shell != i)
                 {
-                    Debug.WriteLine($"Shell {i}: Face {faceSlot} has wrong shell link");
+                    Debug.WriteLine($"Shell {i}: FaceUse {faceUseSlot} has wrong shell link");
                     errors++;
                 }
-                faceSlot = KernelRuntime.Faces[faceSlot].NextInShell;
+                if (faceUse.Face < 0 || !KernelRuntime.Faces.IsAlive(faceUse.Face))
+                {
+                    Debug.WriteLine($"Shell {i}: FaceUse {faceUseSlot} has invalid face link {faceUse.Face}");
+                    errors++;
+                }
+                faceUseSlot = faceUse.NextInShell;
             }
         }
         return errors;
@@ -108,9 +114,10 @@ internal static class IntegrityChecker
             if (!faces.IsAlive(i)) continue;
             ref var face = ref faces[i];
 
-            if (face.Shell < 0 || !KernelRuntime.Shells.IsAlive(face.Shell))
+            if ((face.BackShell < 0 || !KernelRuntime.Shells.IsAlive(face.BackShell)) &&
+                (face.FrontShell < 0 || !KernelRuntime.Shells.IsAlive(face.FrontShell)))
             {
-                Debug.WriteLine($"Face {i}: invalid shell link {face.Shell}");
+                Debug.WriteLine($"Face {i}: invalid shell links back={face.BackShell} front={face.FrontShell}");
                 errors++;
                 continue;
             }

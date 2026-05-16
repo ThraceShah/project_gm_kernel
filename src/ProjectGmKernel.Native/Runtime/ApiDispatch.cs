@@ -28,6 +28,12 @@ internal enum ApiId : ushort
     TransfCreate = 24,
     BodyCreateSolidBlock = 25,
     BodyAskTopology = 26,
+    BodyAskRegions = 27,
+    RegionIsSolid = 28,
+    FaceAskShells = 29,
+    BodyCreateSolidCyl = 30,
+    CylCreate = 31,
+    CylAsk = 32,
     GeneratedStub = 65535,
 }
 
@@ -92,23 +98,6 @@ internal sealed class SessionDispatchState
         try
         {
             return command.Execute();
-        }
-        finally
-        {
-            Complete(ref slot);
-        }
-    }
-
-    public int Execute(ref CommandDescriptor descriptor, Func<int> action)
-    {
-        using var scope = sync.EnterScope();
-
-        ref var slot = ref Enqueue(ref descriptor);
-
-        slot.State = CommandState.Running;
-        try
-        {
-            return action();
         }
         finally
         {

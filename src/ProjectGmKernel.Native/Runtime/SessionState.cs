@@ -4,7 +4,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static class PoolConstants
 {
-    public const int PoolCount = 14;
+    public const int PoolCount = 18;
 }
 
 /// <summary>
@@ -19,8 +19,9 @@ internal unsafe struct MarkRecord
     /// <summary>
     /// Saved allocation counts per pool. Index matches pool order:
     /// [0]=Handles, [1]=Points, [2]=Vectors, [3]=Bodies, [4]=Shells,
-    /// [5]=Faces, [6]=Loops, [7]=Edges, [8]=Fins, [9]=Vertices,
-    /// [10]=Regions, [11]=Curves, [12]=Surfaces, [13]=Transforms
+    /// [5]=FaceUses, [6]=Faces, [7]=Loops, [8]=Edges, [9]=Fins,
+    /// [10]=Vertices, [11]=Regions, [12]=Curves, [13]=Surfaces,
+    /// [14]=Transforms, [15]=CircleData, [16]=CylinderData, [17]=PlaneData
     /// </summary>
     public fixed int PoolCounts[PoolConstants.PoolCount];
 }

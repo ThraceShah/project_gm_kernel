@@ -17,7 +17,7 @@ internal struct RecordHeader
 // ── Topology Records ──────────────────────────────────────────────
 
 /// <summary>
-/// Body: top-level owning entity. Contains shells, and direct references
+/// Body: top-level owning entity. Contains regions/shells, and direct references
 /// to all faces/edges/vertices for flat iteration.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
@@ -40,7 +40,7 @@ internal struct BodyRecord
 }
 
 /// <summary>
-/// Shell: a connected set of faces. Contains faces and optionally an acorn vertex.
+/// Shell: a connected region boundary. Contains directed face uses.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct ShellRecord
@@ -48,25 +48,42 @@ internal struct ShellRecord
     public RecordHeader Header;
     public KernelShellType ShellType;
     public BodySlot Body;
-    public FaceSlot FirstFaceShell;
-    public int FaceCount;
+    public RegionSlot Region;
+    public FaceUseSlot FirstFaceUseShell;
+    public int FaceUseCount;
     public VertexSlot AcornVertex;       // -1 if none
     public ShellSlot NextInBody;         // sibling chain
+    public ShellSlot NextInRegion;       // sibling chain
 }
 
 /// <summary>
-/// Face: a bounded region on a surface. Contains loops.
+/// FaceUse: a directed use of a shared face by one shell.
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct FaceUseRecord
+{
+    public RecordHeader Header;
+    public ShellSlot Shell;
+    public FaceSlot Face;
+    public KernelSense Sense;
+    public FaceUseSlot NextInShell;
+}
+
+/// <summary>
+/// Face: a bounded region on a surface. Contains loops and back/front shell use links.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct FaceRecord
 {
     public RecordHeader Header;
-    public ShellSlot Shell;
+    public ShellSlot BackShell;
+    public ShellSlot FrontShell;
+    public FaceUseSlot BackFaceUse;
+    public FaceUseSlot FrontFaceUse;
     public LoopSlot FirstLoop;
     public int LoopCount;
     public SurfTag SurfTag;
     public KernelSense Orientation;
-    public FaceSlot NextInShell;  // sibling chain in shell
     public FaceSlot NextInBody;   // sibling chain in body
 }
 
@@ -132,13 +149,15 @@ internal struct VertexRecord
 }
 
 /// <summary>
-/// Region: a void space inside a body. Contains one shell.
+/// Region: a solid or void space inside a body. Contains shells.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct RegionRecord
 {
     public RecordHeader Header;
     public BodySlot Body;
-    public ShellSlot Shell;       // -1 if none
+    public KernelLogical IsSolid;
+    public ShellSlot FirstShell;  // -1 if none
+    public int ShellCount;
     public RegionSlot NextInBody; // sibling chain
 }
