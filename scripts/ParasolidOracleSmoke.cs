@@ -19,6 +19,7 @@ const string HarnessSource = """
 #include <stdio.h>
 #include <stdlib.h>
 #include "parasolid_kernel.h"
+#include "parasolid_debug.h"
 
 static void trace(const char *message)
 {
@@ -119,6 +120,109 @@ static int assert_body_counts(PK_BODY_t body, int regions_expected, int shells_e
     return 1;
 }
 
+static const char *diff_name(PK_DEBUG_diff_t diff);
+static void print_body_compare_diffs(const PK_DEBUG_BODY_compare_r_t *results);
+
+static int assert_body_compare(PK_BODY_t master, PK_BODY_t similar, const char *label)
+{
+    PK_DEBUG_BODY_compare_o_t options;
+    PK_DEBUG_BODY_compare_r_t results;
+    int ok = 0;
+
+    PK_DEBUG_BODY_compare_o_m(options);
+    options.max_diffs = 64;
+    /* Keep exact parameterisation/face-pairing differences diagnostic, not a receive gate. */
+    options.all_tests = PK_LOGICAL_false;
+    options.acc_dev_tests = PK_LOGICAL_false;
+    options.non_match_tests = PK_LOGICAL_false;
+
+    if (!check(PK_DEBUG_BODY_compare(master, similar, &options, &results), "PK_DEBUG_BODY_compare"))
+        return 0;
+
+    ok = results.global_result == PK_DEBUG_global_res_no_diffs_c
+        && results.local_result == PK_DEBUG_local_res_no_diffs_c;
+    if (!ok)
+    {
+        printf(
+            "%s body compare mismatch: global=%d local=%d global_diffs=%d face_pairs=%d\n",
+            label,
+            results.global_result,
+            results.local_result,
+            results.n_global_diffs,
+            results.n_face_pairs);
+        print_body_compare_diffs(&results);
+    }
+
+    (void)PK_DEBUG_BODY_compare_r_f(&results);
+    return ok;
+}
+
+static const char *diff_name(PK_DEBUG_diff_t diff)
+{
+    switch (diff)
+    {
+        case PK_DEBUG_diff_n_shells_c: return "n_shells";
+        case PK_DEBUG_diff_n_faces_c: return "n_faces";
+        case PK_DEBUG_diff_n_loops_c: return "n_loops";
+        case PK_DEBUG_diff_n_acc_edges_c: return "n_acc_edges";
+        case PK_DEBUG_diff_n_tol_edges_c: return "n_tol_edges";
+        case PK_DEBUG_diff_n_fins_c: return "n_fins";
+        case PK_DEBUG_diff_n_acc_vxs_c: return "n_acc_vxs";
+        case PK_DEBUG_diff_n_tol_vxs_c: return "n_tol_vxs";
+        case PK_DEBUG_diff_n_vxs_c: return "n_vxs";
+        case PK_DEBUG_diff_n_cht_pts_c: return "n_cht_pts";
+        case PK_DEBUG_diff_surf_dev_c: return "surf_dev";
+        case PK_DEBUG_diff_curve_dev_c: return "curve_dev";
+        case PK_DEBUG_diff_vx_dev_c: return "vx_dev";
+        case PK_DEBUG_diff_surf_class_c: return "surf_class";
+        case PK_DEBUG_diff_curve_class_c: return "curve_class";
+        case PK_DEBUG_diff_edge_tol_c: return "edge_tol";
+        case PK_DEBUG_diff_vx_tol_c: return "vx_tol";
+        case PK_DEBUG_diff_face_sense_c: return "face_sense";
+        case PK_DEBUG_diff_surf_sense_c: return "surf_sense";
+        case PK_DEBUG_diff_curve_sense_c: return "curve_sense";
+        case PK_DEBUG_diff_vx_missing_c: return "vx_missing";
+        case PK_DEBUG_diff_face_match_c: return "face_match";
+        case PK_DEBUG_diff_fin_match_c: return "fin_match";
+        case PK_DEBUG_diff_vx_match_c: return "vx_match";
+        default: return "unknown";
+    }
+}
+
+static void print_body_compare_diffs(const PK_DEBUG_BODY_compare_r_t *results)
+{
+    int i;
+    int j;
+
+    for (i = 0; i < results->n_global_diffs; i++)
+    {
+        PK_DEBUG_global_diffs_r_t *diff = &results->global_diffs[i];
+        printf("  global diff %d: %s(%d) master=%d similar=%d\n", i, diff_name(diff->diff), diff->diff, diff->n_masters, diff->n_similars);
+    }
+
+    for (i = 0; i < results->n_face_pairs; i++)
+    {
+        PK_DEBUG_face_pair_r_t *pair = &results->face_pairs[i];
+        for (j = 0; j < pair->n_local_diffs; j++)
+        {
+            PK_DEBUG_local_diffs_r_t *diff = &pair->local_diffs[j];
+            printf(
+                "  local diff face_pair=%d diff=%s(%d) master_entity=%d similar_entity=%d master_int=%d similar_int=%d master_double=%.17g similar_double=%.17g master_logical=%d similar_logical=%d\n",
+                i,
+                diff_name(diff->diff),
+                diff->diff,
+                diff->master_entity,
+                diff->similar_entity,
+                diff->master_int,
+                diff->similar_int,
+                diff->master_double,
+                diff->similar_double,
+                diff->master_logical,
+                diff->similar_logical);
+        }
+    }
+}
+
 static int read_file_block(const char *path, PK_MEMORY_block_t *block)
 {
     FILE *file = fopen(path, "rb");
@@ -165,7 +269,7 @@ static int read_file_block(const char *path, PK_MEMORY_block_t *block)
     return 1;
 }
 
-static int receive_file_and_check(const char *path, int regions_expected, int shells_expected, int faces_expected, int edges_expected, int vertices_expected)
+static int receive_file_and_check(const char *path, PK_BODY_t expected_body, int regions_expected, int shells_expected, int faces_expected, int edges_expected, int vertices_expected, const char *label)
 {
     PK_MEMORY_block_t block;
     PK_PART_receive_o_t receive_options;
@@ -181,7 +285,8 @@ static int receive_file_and_check(const char *path, int regions_expected, int sh
     if (check(PK_PART_receive_b(block, &receive_options, &n_received, &received), "PK_PART_receive_b")
         && n_received == 1)
     {
-        ok = assert_body_counts((PK_BODY_t)received[0], regions_expected, shells_expected, faces_expected, edges_expected, vertices_expected);
+        ok = assert_body_counts((PK_BODY_t)received[0], regions_expected, shells_expected, faces_expected, edges_expected, vertices_expected)
+            && assert_body_compare(expected_body, (PK_BODY_t)received[0], label);
     }
     else if (n_received != 1)
     {
@@ -308,10 +413,10 @@ int main(int argc, char **argv)
         return 2;
 
     trace("oracle: receive our block x_t");
-    record_result(receive_file_and_check(argv[1], 2, 2, 6, 12, 8), "our block -> Parasolid receive", &failures);
+    record_result(receive_file_and_check(argv[1], block, 2, 2, 6, 12, 8, "our block"), "our block -> Parasolid receive", &failures);
 
     trace("oracle: receive our cylinder x_t");
-    record_result(receive_file_and_check(argv[2], 2, 2, 3, 2, 0), "our cylinder -> Parasolid receive", &failures);
+    record_result(receive_file_and_check(argv[2], cylinder, 2, 2, 3, 2, 0, "our cylinder"), "our cylinder -> Parasolid receive", &failures);
 
     (void)PK_SESSION_stop();
     if (failures == 0)

@@ -2084,20 +2084,17 @@ internal static unsafe class KernelRuntime
         ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
         Cross(axX, axY, axZ, refX, refY, refZ, out double thirdX, out double thirdY, out double thirdZ);
 
-        // 8 corner points of the block
-        // p0 = origin
-        // p1 = origin + x*ref
-        // p2 = origin + x*ref + y*third
-        // p3 = origin + y*third
-        // p4..p7 = p0..p3 + z*axis
+        // Parasolid centres the base rectangle at the local origin.
         Span<double> px = stackalloc double[8];
         Span<double> py = stackalloc double[8];
         Span<double> pz = stackalloc double[8];
 
-        px[0] = ox; py[0] = oy; pz[0] = oz;
-        px[1] = ox + x * refX; py[1] = oy + x * refY; pz[1] = oz + x * refZ;
-        px[2] = px[1] + y * thirdX; py[2] = py[1] + y * thirdY; pz[2] = pz[1] + y * thirdZ;
-        px[3] = ox + y * thirdX; py[3] = oy + y * thirdY; pz[3] = oz + y * thirdZ;
+        var hx = x * 0.5;
+        var hy = y * 0.5;
+        px[0] = ox - hx * refX - hy * thirdX; py[0] = oy - hx * refY - hy * thirdY; pz[0] = oz - hx * refZ - hy * thirdZ;
+        px[1] = ox + hx * refX - hy * thirdX; py[1] = oy + hx * refY - hy * thirdY; pz[1] = oz + hx * refZ - hy * thirdZ;
+        px[2] = ox + hx * refX + hy * thirdX; py[2] = oy + hx * refY + hy * thirdY; pz[2] = oz + hx * refZ + hy * thirdZ;
+        px[3] = ox - hx * refX + hy * thirdX; py[3] = oy - hx * refY + hy * thirdY; pz[3] = oz - hx * refZ + hy * thirdZ;
         for (int i = 0; i < 4; i++)
         {
             px[i + 4] = px[i] + z * axX;
