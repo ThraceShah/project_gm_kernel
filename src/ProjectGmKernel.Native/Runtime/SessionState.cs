@@ -32,11 +32,14 @@ internal unsafe struct MarkRecord
 /// </summary>
 internal struct PartitionRecord
 {
-    public int PartitionId;
+    public PartitionSlot PartitionId;
     public int LockState;     // PartitionLockState
     public int LockOwner;     // thread id of lock owner
     public int GuardState;
     public int ActiveCommandCount;
+    public BodySlot FirstBody;
+    public BodySlot LastBody;
+    public int BodyCount;
 }
 
 internal enum PartitionLockState : int
@@ -77,8 +80,9 @@ internal sealed class SessionState
     public bool HasMark;
     public MarkRecord CurrentMark;
 
-    // Default partition
-    public PartitionRecord DefaultPartition;
+    public PartitionSlot CurrentPartition;
+    public int PartitionCount;
+    public readonly PartitionRecord[] Partitions = new PartitionRecord[MaxPartitions];
 
     // Pre-allocated tombstone array — avoids List<T> allocation
     public readonly Tombstone[] Tombstones = new Tombstone[MaxTombstones];
@@ -87,7 +91,20 @@ internal sealed class SessionState
     public SessionState(int sessionId)
     {
         SessionId = sessionId;
-        DefaultPartition = new PartitionRecord { PartitionId = 0 };
+        ResetPartitions();
+    }
+
+    public void ResetPartitions()
+    {
+        Array.Clear(Partitions);
+        CurrentPartition = 0;
+        PartitionCount = 1;
+        Partitions[0] = new PartitionRecord
+        {
+            PartitionId = 0,
+            FirstBody = -1,
+            LastBody = -1,
+        };
     }
 
     /// <summary>

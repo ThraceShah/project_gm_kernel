@@ -684,6 +684,72 @@ public unsafe class KernelRegressionTests : IDisposable
     }
 
     [Fact]
+    public void PartTransmitReceiveB_RoundTripsMultipleBodies()
+    {
+        int blockBody;
+        int cylinderBody;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &blockBody));
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCyl(2, 5, null, &cylinderBody));
+
+        var partsToTransmit = stackalloc int[2] { blockBody, cylinderBody };
+        var options = new PK_PART_transmit_o_s
+        {
+            o_t_version = 10,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        };
+        var block = new PK_MEMORY_block_s();
+        Assert.Equal(0, KernelRuntime.PartTransmitB(2, partsToTransmit, &options, &block));
+
+        var receiveOptions = new PK_PART_receive_o_s
+        {
+            o_t_version = 14,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        };
+        int nParts;
+        int* parts;
+        Assert.Equal(0, KernelRuntime.PartReceiveB(block, &receiveOptions, &nParts, &parts));
+        Assert.Equal(2, nParts);
+
+        AssertBodyCounts(parts[0], 2, 2, 6, 12, 8);
+        AssertCylinderCounts(parts[1]);
+        Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+        Assert.Equal(0, KernelRuntime.MemoryFree(parts));
+    }
+
+    [Fact]
+    public void IntrusiveTopologyRings_PassIntegrityChecks()
+    {
+        int blockBody;
+        int cylinderBody;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &blockBody));
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCyl(2, 5, null, &cylinderBody));
+
+        Assert.Equal(0, IntegrityChecker.CheckAll());
+    }
+
+    [Fact]
+    public void EntityAskPartition_ReturnsDefaultPartitionForCreatedBody()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+
+        int currentPartition;
+        Assert.Equal(0, KernelRuntime.SessionAskCurrentPartition(&currentPartition));
+        Assert.Equal(0, currentPartition);
+
+        int bodyPartition;
+        Assert.Equal(0, KernelRuntime.EntityAskPartition(body, &bodyPartition));
+        Assert.Equal(currentPartition, bodyPartition);
+
+        int* faces;
+        int faceCount;
+        Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &faceCount, &faces));
+        int facePartition;
+        Assert.Equal(0, KernelRuntime.EntityAskPartition(faces[0], &facePartition));
+        Assert.Equal(currentPartition, facePartition);
+    }
+
+    [Fact]
     public void PartReceiveB_RejectsBadSchemaAndUnsupportedFormat()
     {
         var bytes = "T51 : TRANSMIT FILE created by modeller version 350112717 SCH_0000000_000000 "u8;

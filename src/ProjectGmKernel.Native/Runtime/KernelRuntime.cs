@@ -114,6 +114,13 @@ internal static unsafe class KernelRuntime
         return Surfaces[Handles[surfaceTag].SlotIndex];
     }
 
+    internal static SurfaceSlot GetSurfaceSlotByTag(SurfTag surfaceTag)
+    {
+        return IsValidTag(surfaceTag) && Handles[surfaceTag].Class == EntityClass.Surface
+            ? Handles[surfaceTag].SlotIndex
+            : -1;
+    }
+
     internal static PointRecord GetPointByTag(PointTag pointTag)
     {
         if (!IsValidTag(pointTag) || Handles[pointTag].Class != EntityClass.Point)
@@ -121,11 +128,25 @@ internal static unsafe class KernelRuntime
         return Points[Handles[pointTag].SlotIndex];
     }
 
+    internal static PointSlot GetPointSlotByTag(PointTag pointTag)
+    {
+        return IsValidTag(pointTag) && Handles[pointTag].Class == EntityClass.Point
+            ? Handles[pointTag].SlotIndex
+            : -1;
+    }
+
     internal static CurveRecord GetCurveByTag(CurveTag curveTag)
     {
         if (!IsValidTag(curveTag) || Handles[curveTag].Class != EntityClass.Curve)
             return default;
         return Curves[Handles[curveTag].SlotIndex];
+    }
+
+    internal static CurveSlot GetCurveSlotByTag(CurveTag curveTag)
+    {
+        return IsValidTag(curveTag) && Handles[curveTag].Class == EntityClass.Curve
+            ? Handles[curveTag].SlotIndex
+            : -1;
     }
 
     internal static CylinderData GetCylinderData(DataSlot dataSlot) => CylinderDataPool[dataSlot];
@@ -367,6 +388,7 @@ internal static unsafe class KernelRuntime
             return ParasolidConstants.PK_ERROR_rollback_started;
 
         session = new SessionState(DefaultSessionId) { Started = true };
+        session.ResetPartitions();
         nextTag = 1;
         Array.Clear(Handles);
         ClearSlotToTagMaps();
@@ -442,6 +464,7 @@ internal static unsafe class KernelRuntime
 
         var slot = Points.Allocate();
         ref var rec = ref Points[slot];
+        AssignPartition(ref rec.Header, CurrentPartition);
         // Zero-cost reinterpret: PK_VECTOR_s and KernelVector3 have identical layout
         rec.Position = Unsafe.As<PK_VECTOR_s, KernelVector3>(ref pointSf->position);
 
@@ -490,11 +513,17 @@ internal static unsafe class KernelRuntime
         var bodySlot = Bodies.Allocate();
         ref var body = ref Bodies[bodySlot];
         body.BodyType = ParasolidConstants.PK_BODY_type_general_c;
+        AssignPartition(ref body.Header, CurrentPartition);
         body.FirstShell = -1;
+        body.LastShell = -1;
         body.FirstRegion = -1;
+        body.LastRegion = -1;
         body.FirstFaceBody = -1;
+        body.LastFaceBody = -1;
         body.FirstEdgeBody = -1;
+        body.LastEdgeBody = -1;
         body.FirstVertexBody = -1;
+        body.LastVertexBody = -1;
 
         // Allocate topology entities and record their pool slots
         // We use stack-allocated arrays for the slot mapping (max 256 topologies)
@@ -513,42 +542,56 @@ internal static unsafe class KernelRuntime
             {
                 case ParasolidConstants.PK_CLASS_shell:
                     slots[i] = Shells.Allocate();
+                    AssignPartition(ref Shells[slots[i]].Header, CurrentPartition);
                     Shells[slots[i]].Body = -1;
                     Shells[slots[i]].Region = -1;
                     Shells[slots[i]].FirstFaceUseShell = -1;
+                    Shells[slots[i]].LastFaceUseShell = -1;
                     Shells[slots[i]].AcornVertex = -1;
+                    Shells[slots[i]].PrevInBody = -1;
                     Shells[slots[i]].NextInBody = -1;
+                    Shells[slots[i]].PrevInRegion = -1;
                     Shells[slots[i]].NextInRegion = -1;
                     poolKinds[i] = (byte)PoolKind.Shell;
                     break;
                 case ParasolidConstants.PK_CLASS_face:
                     slots[i] = Faces.Allocate();
+                    AssignPartition(ref Faces[slots[i]].Header, CurrentPartition);
                     Faces[slots[i]].BackShell = -1;
                     Faces[slots[i]].FrontShell = -1;
                     Faces[slots[i]].BackFaceUse = -1;
                     Faces[slots[i]].FrontFaceUse = -1;
                     Faces[slots[i]].FirstLoop = -1;
+                    Faces[slots[i]].LastLoop = -1;
+                    Faces[slots[i]].PrevInBody = -1;
                     Faces[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Face;
                     break;
                 case ParasolidConstants.PK_CLASS_loop:
                     slots[i] = Loops.Allocate();
+                    AssignPartition(ref Loops[slots[i]].Header, CurrentPartition);
                     Loops[slots[i]].Face = -1;
                     Loops[slots[i]].FirstFin = -1;
+                    Loops[slots[i]].LastFin = -1;
+                    Loops[slots[i]].PrevInFace = -1;
                     Loops[slots[i]].NextInFace = -1;
                     poolKinds[i] = (byte)PoolKind.Loop;
                     break;
                 case ParasolidConstants.PK_CLASS_edge:
                     slots[i] = Edges.Allocate();
+                    AssignPartition(ref Edges[slots[i]].Header, CurrentPartition);
                     Edges[slots[i]].Body = -1;
                     Edges[slots[i]].StartVertex = -1;
                     Edges[slots[i]].EndVertex = -1;
                     Edges[slots[i]].FirstFinEdge = -1;
+                    Edges[slots[i]].LastFinEdge = -1;
+                    Edges[slots[i]].PrevInBody = -1;
                     Edges[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Edge;
                     break;
                 case ParasolidConstants.PK_CLASS_fin:
                     slots[i] = Fins.Allocate();
+                    AssignPartition(ref Fins[slots[i]].Header, CurrentPartition);
                     Fins[slots[i]].Edge = -1;
                     Fins[slots[i]].Loop = -1;
                     Fins[slots[i]].Face = -1;
@@ -556,19 +599,29 @@ internal static unsafe class KernelRuntime
                     Fins[slots[i]].PrevInLoop = -1;
                     Fins[slots[i]].NextOfEdge = -1;
                     Fins[slots[i]].PrevOfEdge = -1;
+                    Fins[slots[i]].Vertex = -1;
+                    Fins[slots[i]].NextAtVertex = -1;
+                    Fins[slots[i]].PrevAtVertex = -1;
                     poolKinds[i] = (byte)PoolKind.Fin;
                     break;
                 case ParasolidConstants.PK_CLASS_vertex:
                     slots[i] = Vertices.Allocate();
+                    AssignPartition(ref Vertices[slots[i]].Header, CurrentPartition);
                     Vertices[slots[i]].Body = -1;
+                    Vertices[slots[i]].FirstFinVertex = -1;
+                    Vertices[slots[i]].LastFinVertex = -1;
+                    Vertices[slots[i]].PrevInBody = -1;
                     Vertices[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Vertex;
                     break;
                 case ParasolidConstants.PK_CLASS_region:
                     slots[i] = Regions.Allocate();
+                    AssignPartition(ref Regions[slots[i]].Header, CurrentPartition);
                     Regions[slots[i]].Body = -1;
                     Regions[slots[i]].IsSolid = 0;
                     Regions[slots[i]].FirstShell = -1;
+                    Regions[slots[i]].LastShell = -1;
+                    Regions[slots[i]].PrevInBody = -1;
                     Regions[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Region;
                     break;
@@ -608,6 +661,7 @@ internal static unsafe class KernelRuntime
 
         // Assign body-level flat iteration (all faces/edges/vertices)
         AssignBodyFlatIteration(bodySlot, nTopols, classes, slots, poolKinds);
+        AppendBodyToPartition(CurrentPartition, bodySlot);
 
         // Build result tags
         if (results is not null)
@@ -627,42 +681,16 @@ internal static unsafe class KernelRuntime
         {
             case PoolKind.Body when childPool == (byte)PoolKind.Shell:
                 {
-                    ref var body = ref Bodies[parentSlot];
                     ref var shell = ref Shells[childSlot];
-                    shell.NextInBody = -1;
                     shell.Body = parentSlot;
                     shell.Region = -1;
-                    if (body.FirstShell < 0)
-                    {
-                        body.FirstShell = childSlot;
-                    }
-                    else
-                    {
-                        int cur = body.FirstShell;
-                        while (Shells[cur].NextInBody >= 0) cur = Shells[cur].NextInBody;
-                        Shells[cur].NextInBody = childSlot;
-                    }
-                    body.ShellCount++;
+                    AppendShellToBody(parentSlot, childSlot);
                 }
                 break;
 
             case PoolKind.Body when childPool == (byte)PoolKind.Region:
                 {
-                    ref var body = ref Bodies[parentSlot];
-                    ref var region = ref Regions[childSlot];
-                    region.NextInBody = -1;
-                    region.Body = parentSlot;
-                    if (body.FirstRegion < 0)
-                    {
-                        body.FirstRegion = childSlot;
-                    }
-                    else
-                    {
-                        int cur = body.FirstRegion;
-                        while (Regions[cur].NextInBody >= 0) cur = Regions[cur].NextInBody;
-                        Regions[cur].NextInBody = childSlot;
-                    }
-                    body.RegionCount++;
+                    AppendRegionToBody(parentSlot, childSlot);
                 }
                 break;
 
@@ -671,19 +699,7 @@ internal static unsafe class KernelRuntime
                     ref var region = ref Regions[parentSlot];
                     ref var shell = ref Shells[childSlot];
                     shell.Body = region.Body;
-                    shell.Region = parentSlot;
-                    shell.NextInRegion = -1;
-                    if (region.FirstShell < 0)
-                    {
-                        region.FirstShell = childSlot;
-                    }
-                    else
-                    {
-                        int cur = region.FirstShell;
-                        while (Shells[cur].NextInRegion >= 0) cur = Shells[cur].NextInRegion;
-                        Shells[cur].NextInRegion = childSlot;
-                    }
-                    region.ShellCount++;
+                    AppendShellToRegion(parentSlot, childSlot);
                 }
                 break;
 
@@ -697,19 +713,8 @@ internal static unsafe class KernelRuntime
                 {
                     ref var face = ref Faces[parentSlot];
                     ref var loop = ref Loops[childSlot];
-                    loop.NextInFace = -1;
                     loop.Face = parentSlot;
-                    if (face.FirstLoop < 0)
-                    {
-                        face.FirstLoop = childSlot;
-                    }
-                    else
-                    {
-                        int cur = face.FirstLoop;
-                        while (Loops[cur].NextInFace >= 0) cur = Loops[cur].NextInFace;
-                        Loops[cur].NextInFace = childSlot;
-                    }
-                    face.LoopCount++;
+                    AppendLoopToFace(parentSlot, childSlot);
                 }
                 break;
 
@@ -717,40 +722,17 @@ internal static unsafe class KernelRuntime
                 {
                     ref var loop = ref Loops[parentSlot];
                     ref var fin = ref Fins[childSlot];
-                    fin.NextInLoop = -1;
                     fin.Loop = parentSlot;
                     fin.Face = loop.Face;  // derive face from parent loop
-                    if (loop.FirstFin < 0)
-                    {
-                        loop.FirstFin = childSlot;
-                    }
-                    else
-                    {
-                        int cur = loop.FirstFin;
-                        while (Fins[cur].NextInLoop >= 0) cur = Fins[cur].NextInLoop;
-                        Fins[cur].NextInLoop = childSlot;
-                    }
-                    loop.FinCount++;
+                    AppendFinToLoop(parentSlot, childSlot);
                 }
                 break;
 
             case PoolKind.Edge when childPool == (byte)PoolKind.Fin:
                 {
-                    ref var edge = ref Edges[parentSlot];
                     ref var fin = ref Fins[childSlot];
-                    fin.NextOfEdge = -1;
                     fin.Edge = parentSlot;
-                    if (edge.FirstFinEdge < 0)
-                    {
-                        edge.FirstFinEdge = childSlot;
-                    }
-                    else
-                    {
-                        int cur = edge.FirstFinEdge;
-                        while (Fins[cur].NextOfEdge >= 0) cur = Fins[cur].NextOfEdge;
-                        Fins[cur].NextOfEdge = childSlot;
-                    }
-                    edge.FinCount++;
+                    AppendFinToEdge(parentSlot, childSlot);
                 }
                 break;
 
@@ -767,18 +749,26 @@ internal static unsafe class KernelRuntime
         faceUse.Shell = shellSlot;
         faceUse.Face = faceSlot;
         faceUse.Sense = NormalizeFaceUseSense(sense);
+        faceUse.PrevInShell = -1;
         faceUse.NextInShell = -1;
 
         ref var shell = ref Shells[shellSlot];
         if (shell.FirstFaceUseShell < 0)
         {
             shell.FirstFaceUseShell = faceUseSlot;
+            shell.LastFaceUseShell = faceUseSlot;
+            faceUse.PrevInShell = faceUseSlot;
+            faceUse.NextInShell = faceUseSlot;
         }
         else
         {
-            int cur = shell.FirstFaceUseShell;
-            while (FaceUses[cur].NextInShell >= 0) cur = FaceUses[cur].NextInShell;
-            FaceUses[cur].NextInShell = faceUseSlot;
+            var first = shell.FirstFaceUseShell;
+            var last = shell.LastFaceUseShell;
+            faceUse.PrevInShell = last;
+            faceUse.NextInShell = first;
+            FaceUses[last].NextInShell = faceUseSlot;
+            FaceUses[first].PrevInShell = faceUseSlot;
+            shell.LastFaceUseShell = faceUseSlot;
         }
         shell.FaceUseCount++;
 
@@ -809,17 +799,23 @@ internal static unsafe class KernelRuntime
         ref var body = ref Bodies[bodySlot];
         ref var region = ref Regions[regionSlot];
         region.Body = bodySlot;
-        region.NextInBody = -1;
 
         if (body.FirstRegion < 0)
         {
             body.FirstRegion = regionSlot;
+            body.LastRegion = regionSlot;
+            region.PrevInBody = regionSlot;
+            region.NextInBody = regionSlot;
         }
         else
         {
-            int cur = body.FirstRegion;
-            while (Regions[cur].NextInBody >= 0) cur = Regions[cur].NextInBody;
-            Regions[cur].NextInBody = regionSlot;
+            var first = body.FirstRegion;
+            var last = body.LastRegion;
+            region.PrevInBody = last;
+            region.NextInBody = first;
+            Regions[last].NextInBody = regionSlot;
+            Regions[first].PrevInBody = regionSlot;
+            body.LastRegion = regionSlot;
         }
         body.RegionCount++;
     }
@@ -829,17 +825,23 @@ internal static unsafe class KernelRuntime
         ref var body = ref Bodies[bodySlot];
         ref var shell = ref Shells[shellSlot];
         shell.Body = bodySlot;
-        shell.NextInBody = -1;
 
         if (body.FirstShell < 0)
         {
             body.FirstShell = shellSlot;
+            body.LastShell = shellSlot;
+            shell.PrevInBody = shellSlot;
+            shell.NextInBody = shellSlot;
         }
         else
         {
-            int cur = body.FirstShell;
-            while (Shells[cur].NextInBody >= 0) cur = Shells[cur].NextInBody;
-            Shells[cur].NextInBody = shellSlot;
+            var first = body.FirstShell;
+            var last = body.LastShell;
+            shell.PrevInBody = last;
+            shell.NextInBody = first;
+            Shells[last].NextInBody = shellSlot;
+            Shells[first].PrevInBody = shellSlot;
+            body.LastShell = shellSlot;
         }
         body.ShellCount++;
     }
@@ -849,19 +851,431 @@ internal static unsafe class KernelRuntime
         ref var region = ref Regions[regionSlot];
         ref var shell = ref Shells[shellSlot];
         shell.Region = regionSlot;
-        shell.NextInRegion = -1;
 
         if (region.FirstShell < 0)
         {
             region.FirstShell = shellSlot;
+            region.LastShell = shellSlot;
+            shell.PrevInRegion = shellSlot;
+            shell.NextInRegion = shellSlot;
         }
         else
         {
-            int cur = region.FirstShell;
-            while (Shells[cur].NextInRegion >= 0) cur = Shells[cur].NextInRegion;
-            Shells[cur].NextInRegion = shellSlot;
+            var first = region.FirstShell;
+            var last = region.LastShell;
+            shell.PrevInRegion = last;
+            shell.NextInRegion = first;
+            Shells[last].NextInRegion = shellSlot;
+            Shells[first].PrevInRegion = shellSlot;
+            region.LastShell = shellSlot;
         }
         region.ShellCount++;
+    }
+
+    private static void AppendFaceToBody(BodySlot bodySlot, FaceSlot faceSlot)
+    {
+        ref var body = ref Bodies[bodySlot];
+        ref var face = ref Faces[faceSlot];
+        if (body.FirstFaceBody < 0)
+        {
+            body.FirstFaceBody = faceSlot;
+            body.LastFaceBody = faceSlot;
+            face.PrevInBody = faceSlot;
+            face.NextInBody = faceSlot;
+        }
+        else
+        {
+            var first = body.FirstFaceBody;
+            var last = body.LastFaceBody;
+            face.PrevInBody = last;
+            face.NextInBody = first;
+            Faces[last].NextInBody = faceSlot;
+            Faces[first].PrevInBody = faceSlot;
+            body.LastFaceBody = faceSlot;
+        }
+        body.FaceCountBody++;
+    }
+
+    private static void AppendEdgeToBody(BodySlot bodySlot, EdgeSlot edgeSlot)
+    {
+        ref var body = ref Bodies[bodySlot];
+        ref var edge = ref Edges[edgeSlot];
+        edge.Body = bodySlot;
+        if (body.FirstEdgeBody < 0)
+        {
+            body.FirstEdgeBody = edgeSlot;
+            body.LastEdgeBody = edgeSlot;
+            edge.PrevInBody = edgeSlot;
+            edge.NextInBody = edgeSlot;
+        }
+        else
+        {
+            var first = body.FirstEdgeBody;
+            var last = body.LastEdgeBody;
+            edge.PrevInBody = last;
+            edge.NextInBody = first;
+            Edges[last].NextInBody = edgeSlot;
+            Edges[first].PrevInBody = edgeSlot;
+            body.LastEdgeBody = edgeSlot;
+        }
+        body.EdgeCountBody++;
+    }
+
+    private static void AppendVertexToBody(BodySlot bodySlot, VertexSlot vertexSlot)
+    {
+        ref var body = ref Bodies[bodySlot];
+        ref var vertex = ref Vertices[vertexSlot];
+        vertex.Body = bodySlot;
+        if (body.FirstVertexBody < 0)
+        {
+            body.FirstVertexBody = vertexSlot;
+            body.LastVertexBody = vertexSlot;
+            vertex.PrevInBody = vertexSlot;
+            vertex.NextInBody = vertexSlot;
+        }
+        else
+        {
+            var first = body.FirstVertexBody;
+            var last = body.LastVertexBody;
+            vertex.PrevInBody = last;
+            vertex.NextInBody = first;
+            Vertices[last].NextInBody = vertexSlot;
+            Vertices[first].PrevInBody = vertexSlot;
+            body.LastVertexBody = vertexSlot;
+        }
+        body.VertexCountBody++;
+    }
+
+    private static void AppendLoopToFace(FaceSlot faceSlot, LoopSlot loopSlot)
+    {
+        ref var face = ref Faces[faceSlot];
+        ref var loop = ref Loops[loopSlot];
+        loop.Face = faceSlot;
+        if (face.FirstLoop < 0)
+        {
+            face.FirstLoop = loopSlot;
+            face.LastLoop = loopSlot;
+            loop.PrevInFace = loopSlot;
+            loop.NextInFace = loopSlot;
+        }
+        else
+        {
+            var first = face.FirstLoop;
+            var last = face.LastLoop;
+            loop.PrevInFace = last;
+            loop.NextInFace = first;
+            Loops[last].NextInFace = loopSlot;
+            Loops[first].PrevInFace = loopSlot;
+            face.LastLoop = loopSlot;
+        }
+        face.LoopCount++;
+    }
+
+    private static void AppendFinToLoop(LoopSlot loopSlot, FinSlot finSlot)
+    {
+        ref var loop = ref Loops[loopSlot];
+        ref var fin = ref Fins[finSlot];
+        fin.Loop = loopSlot;
+        fin.Face = loop.Face;
+        if (loop.FirstFin < 0)
+        {
+            loop.FirstFin = finSlot;
+            loop.LastFin = finSlot;
+            fin.PrevInLoop = finSlot;
+            fin.NextInLoop = finSlot;
+        }
+        else
+        {
+            var first = loop.FirstFin;
+            var last = loop.LastFin;
+            fin.PrevInLoop = last;
+            fin.NextInLoop = first;
+            Fins[last].NextInLoop = finSlot;
+            Fins[first].PrevInLoop = finSlot;
+            loop.LastFin = finSlot;
+        }
+        loop.FinCount++;
+    }
+
+    private static void AppendFinToEdge(EdgeSlot edgeSlot, FinSlot finSlot)
+    {
+        ref var edge = ref Edges[edgeSlot];
+        ref var fin = ref Fins[finSlot];
+        fin.Edge = edgeSlot;
+        if (edge.FirstFinEdge < 0)
+        {
+            edge.FirstFinEdge = finSlot;
+            edge.LastFinEdge = finSlot;
+            fin.PrevOfEdge = finSlot;
+            fin.NextOfEdge = finSlot;
+        }
+        else
+        {
+            var first = edge.FirstFinEdge;
+            var last = edge.LastFinEdge;
+            fin.PrevOfEdge = last;
+            fin.NextOfEdge = first;
+            Fins[last].NextOfEdge = finSlot;
+            Fins[first].PrevOfEdge = finSlot;
+            edge.LastFinEdge = finSlot;
+        }
+        edge.FinCount++;
+    }
+
+    private static void AppendFinToVertex(VertexSlot vertexSlot, FinSlot finSlot)
+    {
+        if (vertexSlot < 0)
+            return;
+
+        ref var vertex = ref Vertices[vertexSlot];
+        ref var fin = ref Fins[finSlot];
+        fin.Vertex = vertexSlot;
+        if (vertex.FirstFinVertex < 0)
+        {
+            vertex.FirstFinVertex = finSlot;
+            vertex.LastFinVertex = finSlot;
+            fin.PrevAtVertex = finSlot;
+            fin.NextAtVertex = finSlot;
+        }
+        else
+        {
+            var first = vertex.FirstFinVertex;
+            var last = vertex.LastFinVertex;
+            fin.PrevAtVertex = last;
+            fin.NextAtVertex = first;
+            Fins[last].NextAtVertex = finSlot;
+            Fins[first].PrevAtVertex = finSlot;
+            vertex.LastFinVertex = finSlot;
+        }
+    }
+
+    private static void AppendBodyToPartition(PartitionSlot partitionSlot, BodySlot bodySlot)
+    {
+        if (session is null)
+            return;
+
+        ref var partition = ref session.Partitions[partitionSlot];
+        ref var body = ref Bodies[bodySlot];
+        AssignPartition(ref body.Header, partitionSlot);
+
+        if (partition.FirstBody < 0)
+        {
+            partition.FirstBody = bodySlot;
+            partition.LastBody = bodySlot;
+            body.PrevInPartition = bodySlot;
+            body.NextInPartition = bodySlot;
+        }
+        else
+        {
+            var first = partition.FirstBody;
+            var last = partition.LastBody;
+            body.PrevInPartition = last;
+            body.NextInPartition = first;
+            Bodies[last].NextInPartition = bodySlot;
+            Bodies[first].PrevInPartition = bodySlot;
+            partition.LastBody = bodySlot;
+        }
+
+        partition.BodyCount++;
+        PropagateBodyPartition(bodySlot, partitionSlot);
+    }
+
+    private static void PropagateBodyPartition(BodySlot bodySlot, PartitionSlot partitionSlot)
+    {
+        AssignPartition(ref Bodies[bodySlot].Header, partitionSlot);
+        var body = Bodies[bodySlot];
+
+        var regionSlot = body.FirstRegion;
+        for (var i = 0; i < body.RegionCount; i++, regionSlot = Regions[regionSlot].NextInBody)
+            AssignPartition(ref Regions[regionSlot].Header, partitionSlot);
+
+        var shellSlot = body.FirstShell;
+        for (var i = 0; i < body.ShellCount; i++, shellSlot = Shells[shellSlot].NextInBody)
+        {
+            AssignPartition(ref Shells[shellSlot].Header, partitionSlot);
+            var shell = Shells[shellSlot];
+            var faceUseSlot = shell.FirstFaceUseShell;
+            for (var j = 0; j < shell.FaceUseCount; j++, faceUseSlot = FaceUses[faceUseSlot].NextInShell)
+                AssignPartition(ref FaceUses[faceUseSlot].Header, partitionSlot);
+        }
+
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
+        {
+            AssignPartition(ref Faces[faceSlot].Header, partitionSlot);
+            var face = Faces[faceSlot];
+            if (face.SurfTag > 0)
+            {
+                var surfaceSlot = GetSurfaceSlotByTag(face.SurfTag);
+                if (surfaceSlot >= 0)
+                    AssignPartition(ref Surfaces[surfaceSlot].Header, partitionSlot);
+            }
+
+            var loopSlot = face.FirstLoop;
+            for (var j = 0; j < face.LoopCount; j++, loopSlot = Loops[loopSlot].NextInFace)
+            {
+                AssignPartition(ref Loops[loopSlot].Header, partitionSlot);
+                var loop = Loops[loopSlot];
+                var finSlot = loop.FirstFin;
+                for (var k = 0; k < loop.FinCount; k++, finSlot = Fins[finSlot].NextInLoop)
+                    AssignPartition(ref Fins[finSlot].Header, partitionSlot);
+            }
+        }
+
+        var edgeSlot = body.FirstEdgeBody;
+        for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
+        {
+            AssignPartition(ref Edges[edgeSlot].Header, partitionSlot);
+            if (Edges[edgeSlot].CurveTag > 0)
+            {
+                var curveSlot = GetCurveSlotByTag(Edges[edgeSlot].CurveTag);
+                if (curveSlot >= 0)
+                    AssignPartition(ref Curves[curveSlot].Header, partitionSlot);
+            }
+        }
+
+        var vertexSlot = body.FirstVertexBody;
+        for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = Vertices[vertexSlot].NextInBody)
+        {
+            AssignPartition(ref Vertices[vertexSlot].Header, partitionSlot);
+            if (Vertices[vertexSlot].PointTag > 0)
+            {
+                var pointSlot = GetPointSlotByTag(Vertices[vertexSlot].PointTag);
+                if (pointSlot >= 0)
+                    AssignPartition(ref Points[pointSlot].Header, partitionSlot);
+            }
+        }
+    }
+
+    private static VertexSlot EdgeFinVertex(FinSlot finSlot, EdgeRecord edge)
+    {
+        if (edge.StartVertex < 0 || edge.EndVertex < 0)
+            return -1;
+
+        return finSlot == edge.FirstFinEdge ? edge.StartVertex : edge.EndVertex;
+    }
+
+    private static void SetPointOwner(PointTag pointTag, VertexSlot ownerVertex)
+    {
+        var pointSlot = GetPointSlotByTag(pointTag);
+        if (pointSlot < 0)
+            return;
+
+        ref var point = ref Points[pointSlot];
+        point.OwnerVertex = ownerVertex;
+        var bodySlot = Vertices[ownerVertex].Body;
+        if (bodySlot < 0)
+            return;
+
+        var vertexSlot = Bodies[bodySlot].FirstVertexBody;
+        for (var i = 0; i < Bodies[bodySlot].VertexCountBody; i++, vertexSlot = Vertices[vertexSlot].NextInBody)
+        {
+            if (vertexSlot == ownerVertex)
+            {
+                point.PrevInBody = VertexPointTag(Vertices[vertexSlot].PrevInBody);
+                point.NextInBody = VertexPointTag(Vertices[vertexSlot].NextInBody);
+                return;
+            }
+        }
+    }
+
+    private static void SetCurveOwner(CurveTag curveTag, EdgeSlot ownerEdge)
+    {
+        var curveSlot = GetCurveSlotByTag(curveTag);
+        if (curveSlot < 0)
+            return;
+
+        ref var curve = ref Curves[curveSlot];
+        curve.OwnerEdge = ownerEdge;
+        var bodySlot = Edges[ownerEdge].Body;
+        if (bodySlot < 0)
+            return;
+
+        var edgeSlot = Bodies[bodySlot].FirstEdgeBody;
+        for (var i = 0; i < Bodies[bodySlot].EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
+        {
+            if (edgeSlot == ownerEdge)
+            {
+                curve.PrevInBody = EdgeCurveTag(Edges[edgeSlot].PrevInBody);
+                curve.NextInBody = EdgeCurveTag(Edges[edgeSlot].NextInBody);
+                return;
+            }
+        }
+    }
+
+    private static void SetSurfaceOwner(SurfTag surfaceTag, FaceSlot ownerFace)
+    {
+        var surfaceSlot = GetSurfaceSlotByTag(surfaceTag);
+        if (surfaceSlot < 0)
+            return;
+
+        ref var surface = ref Surfaces[surfaceSlot];
+        surface.OwnerFace = ownerFace;
+        var bodySlot = Shells[Faces[ownerFace].BackShell >= 0 ? Faces[ownerFace].BackShell : Faces[ownerFace].FrontShell].Body;
+        if (bodySlot < 0)
+            return;
+
+        var faceSlot = Bodies[bodySlot].FirstFaceBody;
+        for (var i = 0; i < Bodies[bodySlot].FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
+        {
+            if (faceSlot == ownerFace)
+            {
+                surface.PrevInBody = FaceSurfaceTag(Faces[faceSlot].PrevInBody);
+                surface.NextInBody = FaceSurfaceTag(Faces[faceSlot].NextInBody);
+                return;
+            }
+        }
+    }
+
+    private static PointTag VertexPointTag(VertexSlot vertexSlot) => vertexSlot >= 0 ? Vertices[vertexSlot].PointTag : 0;
+    private static CurveTag EdgeCurveTag(EdgeSlot edgeSlot) => edgeSlot >= 0 ? Edges[edgeSlot].CurveTag : 0;
+    private static SurfTag FaceSurfaceTag(FaceSlot faceSlot) => faceSlot >= 0 ? Faces[faceSlot].SurfTag : 0;
+
+    private static void RebuildBoundaryGeometryLinks(BodySlot bodySlot)
+    {
+        var body = Bodies[bodySlot];
+
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
+        {
+            var surfTag = Faces[faceSlot].SurfTag;
+            var surfaceSlot = GetSurfaceSlotByTag(surfTag);
+            if (surfaceSlot < 0)
+                continue;
+
+            ref var surface = ref Surfaces[surfaceSlot];
+            surface.OwnerFace = faceSlot;
+            surface.PrevInBody = FaceSurfaceTag(Faces[faceSlot].PrevInBody);
+            surface.NextInBody = FaceSurfaceTag(Faces[faceSlot].NextInBody);
+        }
+
+        var edgeSlot = body.FirstEdgeBody;
+        for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
+        {
+            var curveTag = Edges[edgeSlot].CurveTag;
+            var curveSlot = GetCurveSlotByTag(curveTag);
+            if (curveSlot < 0)
+                continue;
+
+            ref var curve = ref Curves[curveSlot];
+            curve.OwnerEdge = edgeSlot;
+            curve.PrevInBody = EdgeCurveTag(Edges[edgeSlot].PrevInBody);
+            curve.NextInBody = EdgeCurveTag(Edges[edgeSlot].NextInBody);
+        }
+
+        var vertexSlot = body.FirstVertexBody;
+        for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = Vertices[vertexSlot].NextInBody)
+        {
+            var pointTag = Vertices[vertexSlot].PointTag;
+            var pointSlot = GetPointSlotByTag(pointTag);
+            if (pointSlot < 0)
+                continue;
+
+            ref var point = ref Points[pointSlot];
+            point.OwnerVertex = vertexSlot;
+            point.PrevInBody = VertexPointTag(Vertices[vertexSlot].PrevInBody);
+            point.NextInBody = VertexPointTag(Vertices[vertexSlot].NextInBody);
+        }
     }
 
     /// <summary>
@@ -875,34 +1289,21 @@ internal static unsafe class KernelRuntime
         body.FirstEdgeBody = -1;
         body.FirstVertexBody = -1;
 
-        int lastFace = -1, lastEdge = -1, lastVertex = -1;
-
         for (int i = 0; i < nTopols; i++)
         {
             var slot = slots[i];
             switch ((PoolKind)poolKinds[i])
             {
                 case PoolKind.Face:
-                    if (body.FirstFaceBody < 0) body.FirstFaceBody = slot;
-                    if (lastFace >= 0) Faces[lastFace].NextInBody = slot;
-                    lastFace = slot;
-                    body.FaceCountBody++;
+                    AppendFaceToBody(bodySlot, slot);
                     break;
 
                 case PoolKind.Edge:
-                    if (body.FirstEdgeBody < 0) body.FirstEdgeBody = slot;
-                    if (lastEdge >= 0) Edges[lastEdge].NextInBody = slot;
-                    lastEdge = slot;
-                    body.EdgeCountBody++;
-                    Edges[slot].Body = bodySlot;
+                    AppendEdgeToBody(bodySlot, slot);
                     break;
 
                 case PoolKind.Vertex:
-                    if (body.FirstVertexBody < 0) body.FirstVertexBody = slot;
-                    if (lastVertex >= 0) Vertices[lastVertex].NextInBody = slot;
-                    lastVertex = slot;
-                    body.VertexCountBody++;
-                    Vertices[slot].Body = bodySlot;
+                    AppendVertexToBody(bodySlot, slot);
                     break;
 
                 case PoolKind.Region:
@@ -942,6 +1343,8 @@ internal static unsafe class KernelRuntime
         int slot = startSlot;
         for (int i = 0; i < count; i++)
         {
+            if (slot < 0)
+                return -1;
             int tag = GetOrAllocateTag(entityClass, pool, slot);
             if (tag <= 0)
                 return -1;
@@ -962,30 +1365,38 @@ internal static unsafe class KernelRuntime
         if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Body, PoolKind.Body, bodySlot))
             return -1;
 
-        for (int regionSlot = Bodies[bodySlot].FirstRegion; regionSlot >= 0; regionSlot = Regions[regionSlot].NextInBody)
+        var body = Bodies[bodySlot];
+        var regionSlot = body.FirstRegion;
+        for (var i = 0; i < body.RegionCount; i++, regionSlot = Regions[regionSlot].NextInBody)
         {
             if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Region, PoolKind.Region, regionSlot))
                 return -1;
         }
 
-        for (int shellSlot = Bodies[bodySlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        var shellSlot = body.FirstShell;
+        for (var i = 0; i < body.ShellCount; i++, shellSlot = Shells[shellSlot].NextInBody)
         {
             if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Shell, PoolKind.Shell, shellSlot))
                 return -1;
 
         }
 
-        for (int faceSlot = Bodies[bodySlot].FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
         {
             if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Face, PoolKind.Face, faceSlot))
                 return -1;
 
-            for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+            var face = Faces[faceSlot];
+            var loopSlot = face.FirstLoop;
+            for (var j = 0; j < face.LoopCount; j++, loopSlot = Loops[loopSlot].NextInFace)
             {
                 if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Loop, PoolKind.Loop, loopSlot))
                     return -1;
 
-                for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
+                var loop = Loops[loopSlot];
+                var finSlot = loop.FirstFin;
+                for (var k = 0; k < loop.FinCount; k++, finSlot = Fins[finSlot].NextInLoop)
                 {
                     if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Fin, PoolKind.Fin, finSlot))
                         return -1;
@@ -993,13 +1404,15 @@ internal static unsafe class KernelRuntime
             }
         }
 
-        for (int edgeSlot = Bodies[bodySlot].FirstEdgeBody; edgeSlot >= 0; edgeSlot = Edges[edgeSlot].NextInBody)
+        var edgeSlot = body.FirstEdgeBody;
+        for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
         {
             if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Edge, PoolKind.Edge, edgeSlot))
                 return -1;
         }
 
-        for (int vertexSlot = Bodies[bodySlot].FirstVertexBody; vertexSlot >= 0; vertexSlot = Vertices[vertexSlot].NextInBody)
+        var vertexSlot = body.FirstVertexBody;
+        for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = Vertices[vertexSlot].NextInBody)
         {
             if (!AppendTopology(ref index, maxTopols, topols, classes, EntityClass.Vertex, PoolKind.Vertex, vertexSlot))
                 return -1;
@@ -1043,13 +1456,17 @@ internal static unsafe class KernelRuntime
         if (bodyTag <= 0)
             return -1;
 
-        for (int regionSlot = Bodies[bodySlot].FirstRegion; regionSlot >= 0; regionSlot = Regions[regionSlot].NextInBody)
+        var body = Bodies[bodySlot];
+        var regionSlot = body.FirstRegion;
+        for (var i = 0; i < body.RegionCount; i++, regionSlot = Regions[regionSlot].NextInBody)
         {
             int regionTag = GetOrAllocateTag(EntityClass.Region, PoolKind.Region, regionSlot);
             if (!AppendRelation(ref relation, maxRelations, parents, children, senses, bodyTag, regionTag, ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                 return -1;
 
-            for (int shellSlot = Regions[regionSlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInRegion)
+            var region = Regions[regionSlot];
+            var shellSlot = region.FirstShell;
+            for (var j = 0; j < region.ShellCount; j++, shellSlot = Shells[shellSlot].NextInRegion)
             {
                 int shellTag = GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot);
                 if (!AppendRelation(ref relation, maxRelations, parents, children, senses, regionTag, shellTag, ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
@@ -1057,30 +1474,38 @@ internal static unsafe class KernelRuntime
             }
         }
 
-        for (int shellSlot = Bodies[bodySlot].FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        var bodyShellSlot = body.FirstShell;
+        for (var i = 0; i < body.ShellCount; i++, bodyShellSlot = Shells[bodyShellSlot].NextInBody)
         {
-            if (Shells[shellSlot].Region < 0)
+            if (Shells[bodyShellSlot].Region < 0)
             {
-                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, bodyTag, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
+                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, bodyTag, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, bodyShellSlot), ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                     return -1;
             }
 
-            for (int faceUseSlot = Shells[shellSlot].FirstFaceUseShell; faceUseSlot >= 0; faceUseSlot = FaceUses[faceUseSlot].NextInShell)
+            var shell = Shells[bodyShellSlot];
+            var faceUseSlot = shell.FirstFaceUseShell;
+            for (var j = 0; j < shell.FaceUseCount; j++, faceUseSlot = FaceUses[faceUseSlot].NextInShell)
             {
                 ref var faceUse = ref FaceUses[faceUseSlot];
-                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot), GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceUse.Face), faceUse.Sense, topols, topolCount))
+                if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, bodyShellSlot), GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceUse.Face), faceUse.Sense, topols, topolCount))
                     return -1;
             }
         }
 
-        for (int faceSlot = Bodies[bodySlot].FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
         {
-            for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+            var face = Faces[faceSlot];
+            var loopSlot = face.FirstLoop;
+            for (var j = 0; j < face.LoopCount; j++, loopSlot = Loops[loopSlot].NextInFace)
             {
                 if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot), GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                     return -1;
 
-                for (int finSlot = Loops[loopSlot].FirstFin; finSlot >= 0; finSlot = Fins[finSlot].NextInLoop)
+                var loop = Loops[loopSlot];
+                var finSlot = loop.FirstFin;
+                for (var k = 0; k < loop.FinCount; k++, finSlot = Fins[finSlot].NextInLoop)
                 {
                     if (!AppendRelation(ref relation, maxRelations, parents, children, senses, GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot), GetOrAllocateTag(EntityClass.Fin, PoolKind.Fin, finSlot), ParasolidConstants.PK_TOPOL_sense_none_c, topols, topolCount))
                         return -1;
@@ -1272,6 +1697,33 @@ internal static unsafe class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
+    public static int EntityAskPartition(EntityTag entityTag, PartitionSlot* partition)
+    {
+        if (partition is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        using var scope = RuntimeLock.EnterScope();
+        var entityPartition = GetEntityPartition(entityTag);
+        if (entityPartition < 0)
+            return ParasolidConstants.PK_ERROR_unknown_class;
+
+        *partition = entityPartition;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    public static int SessionAskCurrentPartition(PartitionSlot* partition)
+    {
+        if (partition is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (session is null || !session.Started)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+
+        *partition = session.CurrentPartition;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
     public static int BodyAskTopology(
         int bodyTag,
         PK_BODY_ask_topology_o_s* options,
@@ -1295,13 +1747,17 @@ internal static unsafe class KernelRuntime
         int topolCount = 1 + body.RegionCount + body.ShellCount + body.FaceCountBody + body.EdgeCountBody + body.VertexCountBody;
         int finCount = 0;
         int faceUseCount = 0;
-        for (int shellSlot = body.FirstShell; shellSlot >= 0; shellSlot = Shells[shellSlot].NextInBody)
+        var shellSlot = body.FirstShell;
+        for (var i = 0; i < body.ShellCount; i++, shellSlot = Shells[shellSlot].NextInBody)
         {
             faceUseCount += Shells[shellSlot].FaceUseCount;
         }
-        for (int faceSlot = body.FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
         {
-            for (int loopSlot = Faces[faceSlot].FirstLoop; loopSlot >= 0; loopSlot = Loops[loopSlot].NextInFace)
+            var face = Faces[faceSlot];
+            var loopSlot = face.FirstLoop;
+            for (var j = 0; j < face.LoopCount; j++, loopSlot = Loops[loopSlot].NextInFace)
             {
                 topolCount += 1 + Loops[loopSlot].FinCount;
                 finCount += Loops[loopSlot].FinCount;
@@ -1309,13 +1765,15 @@ internal static unsafe class KernelRuntime
         }
 
         int edgeFinRelationCount = 0;
-        for (int edgeSlot = body.FirstEdgeBody; edgeSlot >= 0; edgeSlot = Edges[edgeSlot].NextInBody)
+        var edgeSlot = body.FirstEdgeBody;
+        for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
         {
             edgeFinRelationCount += Edges[edgeSlot].FinCount;
         }
 
         int relationCount = body.RegionCount + body.ShellCount + faceUseCount + finCount + edgeFinRelationCount;
-        for (int faceSlot = body.FirstFaceBody; faceSlot >= 0; faceSlot = Faces[faceSlot].NextInBody)
+        faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
         {
             ref var face = ref Faces[faceSlot];
             relationCount += face.LoopCount;
@@ -1525,6 +1983,7 @@ internal static unsafe class KernelRuntime
 
         var slot = Transforms.Allocate();
         ref var rec = ref Transforms[slot];
+        AssignPartition(ref rec.Header, CurrentPartition);
         Unsafe.CopyBlock(ref Unsafe.As<double, byte>(ref rec.Matrix[0]),
                           ref Unsafe.As<double, byte>(ref transfSf->matrix[0]),
                           16 * sizeof(double));
@@ -1558,6 +2017,7 @@ internal static unsafe class KernelRuntime
 
         int surfSlot = Surfaces.Allocate();
         ref var surf = ref Surfaces[surfSlot];
+        AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Cylinder;
         surf.DataIndex = dataSlot;
 
@@ -1617,6 +2077,7 @@ internal static unsafe class KernelRuntime
         var bodySlot = Bodies.Allocate();
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
+        AssignPartition(ref body.Header, CurrentPartition);
 
         CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
 
@@ -1658,11 +2119,10 @@ internal static unsafe class KernelRuntime
         {
             ref var vtx = ref Vertices[vtxSlots[i]];
             vtx.PointTag = pointTags[i];
-            vtx.Body = bodySlot;
-            vtx.NextInBody = i < 7 ? vtxSlots[i + 1] : -1;
+            vtx.FirstFinVertex = -1;
+            vtx.LastFinVertex = -1;
+            AppendVertexToBody(bodySlot, vtxSlots[i]);
         }
-        body.FirstVertexBody = vtxSlots[0];
-        body.VertexCountBody = 8;
 
         // Allocate 12 edges
         Span<int> edgeSlots = stackalloc int[12];
@@ -1699,10 +2159,9 @@ internal static unsafe class KernelRuntime
             edge.EndVertex = vtxSlots[edgeVertexPairs[i * 2 + 1]];
             edge.CurveTag = edgeCurveTags[i];
             edge.FirstFinEdge = -1;
-            edge.NextInBody = i < 11 ? edgeSlots[i + 1] : -1;
+            edge.LastFinEdge = -1;
+            AppendEdgeToBody(bodySlot, edgeSlots[i]);
         }
-        body.FirstEdgeBody = edgeSlots[0];
-        body.EdgeCountBody = 12;
 
         // Face definitions: 6 faces, each with 4 edge indices
         // Face 0: bottom (z=0)  edges 0,1,2,3
@@ -1736,8 +2195,6 @@ internal static unsafe class KernelRuntime
                 return ParasolidConstants.PK_ERROR_general_body;
         }
 
-        int lastBodyFace = -1;
-
         for (int f = 0; f < 6; f++)
         {
             faceSlots[f] = Faces.Allocate();
@@ -1748,22 +2205,16 @@ internal static unsafe class KernelRuntime
 
             InitializeFace(ref face);
             face.SurfTag = faceSurfTags[f];
-            face.FirstLoop = loopSlots[f];
-            face.LoopCount = 1;
-            face.NextInBody = -1;
-
-            if (lastBodyFace >= 0)
-                Faces[lastBodyFace].NextInBody = faceSlots[f];
-            lastBodyFace = faceSlots[f];
+            AppendFaceToBody(bodySlot, faceSlots[f]);
 
             loop.Face = faceSlots[f];
             loop.FirstFin = -1;
+            loop.LastFin = -1;
+            loop.PrevInFace = -1;
             loop.NextInFace = -1;
+            AppendLoopToFace(faceSlots[f], loopSlots[f]);
 
             // Allocate 4 fins per loop
-            int firstFinSlot = -1;
-            int prevFinSlot = -1;
-
             for (int e = 0; e < 4; e++)
             {
                 int ei = faceEdgeIndices[f * 4 + e];
@@ -1773,41 +2224,26 @@ internal static unsafe class KernelRuntime
                 fin.Edge = edgeSlots[ei];
                 fin.Loop = loopSlots[f];
                 fin.Face = faceSlots[f];
-                fin.NextInLoop = -1;
-                fin.PrevInLoop = prevFinSlot;
-                fin.NextOfEdge = -1;
-                fin.PrevOfEdge = -1;
+                fin.NextInLoop = fin.PrevInLoop = -1;
+                fin.NextOfEdge = fin.PrevOfEdge = -1;
+                fin.Vertex = -1;
+                fin.NextAtVertex = fin.PrevAtVertex = -1;
 
-                // Wire into edge's fin chain
-                ref var edge = ref Edges[edgeSlots[ei]];
-                if (edge.FirstFinEdge < 0)
-                    edge.FirstFinEdge = finSlot;
-                else
-                {
-                    int cur = edge.FirstFinEdge;
-                    while (Fins[cur].NextOfEdge >= 0) cur = Fins[cur].NextOfEdge;
-                    Fins[cur].NextOfEdge = finSlot;
-                    fin.PrevOfEdge = cur;
-                }
-                edge.FinCount++;
+                AppendFinToLoop(loopSlots[f], finSlot);
+                AppendFinToEdge(edgeSlots[ei], finSlot);
 
-                if (prevFinSlot >= 0)
-                    Fins[prevFinSlot].NextInLoop = finSlot;
-                if (firstFinSlot < 0)
-                    firstFinSlot = finSlot;
-
-                prevFinSlot = finSlot;
+                var nextEi = faceEdgeIndices[f * 4 + ((e + 1) & 3)];
+                var edgeStart = edgeVertexPairs[ei * 2];
+                var edgeEnd = edgeVertexPairs[ei * 2 + 1];
+                var nextStart = edgeVertexPairs[nextEi * 2];
+                var nextEnd = edgeVertexPairs[nextEi * 2 + 1];
+                var finVertex = edgeEnd == nextStart || edgeEnd == nextEnd ? edgeEnd : edgeStart;
+                AppendFinToVertex(vtxSlots[finVertex], finSlot);
             }
-
-            loop.FirstFin = firstFinSlot;
-            loop.FinCount = 4;
 
             AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
             AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
         }
-
-        body.FirstFaceBody = faceSlots[0];
-        body.FaceCountBody = 6;
 
         // Build result tag
         var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, body.Header.Generation);
@@ -1815,6 +2251,8 @@ internal static unsafe class KernelRuntime
             return ParasolidConstants.PK_ERROR_general_body;
 
         *bodyTag = tag;
+        RebuildBoundaryGeometryLinks(bodySlot);
+        AppendBodyToPartition(CurrentPartition, bodySlot);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -1836,8 +2274,6 @@ internal static unsafe class KernelRuntime
     {
         if (nParts <= 0 || parts is null || block is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
-        if (nParts != 1)
-            return ParasolidConstants.PK_ERROR_bad_file_format;
 
         using var scope = RuntimeLock.EnterScope();
         if (session is null || !session.Started)
@@ -1963,6 +2399,7 @@ internal static unsafe class KernelRuntime
         var bodySlot = Bodies.Allocate();
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
+        AssignPartition(ref body.Header, CurrentPartition);
 
         CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
         ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
@@ -1992,11 +2429,11 @@ internal static unsafe class KernelRuntime
             edge.EndVertex = -1;
             edge.CurveTag = edgeCurves[i];
             edge.FirstFinEdge = -1;
-            edge.NextInBody = i == 0 ? edgeSlots[1] : -1;
+            edge.LastFinEdge = -1;
+            AppendEdgeToBody(bodySlot, edgeSlots[i]);
         }
-        body.FirstEdgeBody = edgeSlots[0];
-        body.EdgeCountBody = 2;
         body.FirstVertexBody = -1;
+        body.LastVertexBody = -1;
         body.VertexCountBody = 0;
 
         Span<int> faceSlots = stackalloc int[3];
@@ -2012,42 +2449,34 @@ internal static unsafe class KernelRuntime
             ref var face = ref Faces[faceSlots[f]];
             InitializeFace(ref face);
             face.SurfTag = surfTags[f];
-            face.NextInBody = f < 2 ? faceSlots[f + 1] : -1;
+            AppendFaceToBody(bodySlot, faceSlots[f]);
 
-            int previousLoop = -1;
             for (int l = 0; l < loopCounts[f]; l++)
             {
                 int loopSlot = Loops.Allocate();
                 ref var loop = ref Loops[loopSlot];
                 loop.Face = faceSlots[f];
                 loop.FirstFin = -1;
+                loop.LastFin = -1;
+                loop.PrevInFace = -1;
                 loop.NextInFace = -1;
+                AppendLoopToFace(faceSlots[f], loopSlot);
 
                 int edgeIndex = f == 0 ? l : f - 1;
-                int finSlot = AddFinToLoopAndEdge(loopSlot, faceSlots[f], edgeSlots[edgeIndex]);
-                loop.FirstFin = finSlot;
-                loop.FinCount = 1;
-
-                if (previousLoop >= 0)
-                    Loops[previousLoop].NextInFace = loopSlot;
-                else
-                    face.FirstLoop = loopSlot;
-                previousLoop = loopSlot;
-                face.LoopCount++;
+                AddFinToLoopAndEdge(loopSlot, faceSlots[f], edgeSlots[edgeIndex]);
             }
 
             AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
             AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
         }
 
-        body.FirstFaceBody = faceSlots[0];
-        body.FaceCountBody = 3;
-
         var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, body.Header.Generation);
         if (tag < 0)
             return ParasolidConstants.PK_ERROR_general_body;
 
         *bodyTag = tag;
+        RebuildBoundaryGeometryLinks(bodySlot);
+        AppendBodyToPartition(CurrentPartition, bodySlot);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -2328,15 +2757,54 @@ internal static unsafe class KernelRuntime
         body.BodyType = ParasolidConstants.PK_BODY_type_solid_c;
         body.BodyConfig = ParasolidConstants.PK_BODY_config_standard_c;
         body.FirstShell = -1;
+        body.LastShell = -1;
         body.ShellCount = 0;
         body.FirstRegion = -1;
+        body.LastRegion = -1;
         body.RegionCount = 0;
         body.FirstFaceBody = -1;
+        body.LastFaceBody = -1;
         body.FaceCountBody = 0;
         body.FirstEdgeBody = -1;
+        body.LastEdgeBody = -1;
         body.EdgeCountBody = 0;
         body.FirstVertexBody = -1;
+        body.LastVertexBody = -1;
         body.VertexCountBody = 0;
+        body.PrevInPartition = -1;
+        body.NextInPartition = -1;
+    }
+
+    private static PartitionSlot CurrentPartition => session?.CurrentPartition ?? 0;
+
+    private static void AssignPartition(ref RecordHeader header, PartitionSlot partition)
+    {
+        header.Partition = (short)partition;
+    }
+
+    private static PartitionSlot GetEntityPartition(EntityTag entityTag)
+    {
+        if (!IsValidTag(entityTag))
+            return -1;
+
+        var handle = Handles[entityTag];
+        return handle.Pool switch
+        {
+            PoolKind.Point => Points[handle.SlotIndex].Header.Partition,
+            PoolKind.Vector => Vectors[handle.SlotIndex].Header.Partition,
+            PoolKind.Body => Bodies[handle.SlotIndex].Header.Partition,
+            PoolKind.Shell => Shells[handle.SlotIndex].Header.Partition,
+            PoolKind.Face => Faces[handle.SlotIndex].Header.Partition,
+            PoolKind.Loop => Loops[handle.SlotIndex].Header.Partition,
+            PoolKind.Edge => Edges[handle.SlotIndex].Header.Partition,
+            PoolKind.Fin => Fins[handle.SlotIndex].Header.Partition,
+            PoolKind.Vertex => Vertices[handle.SlotIndex].Header.Partition,
+            PoolKind.Region => Regions[handle.SlotIndex].Header.Partition,
+            PoolKind.Curve => Curves[handle.SlotIndex].Header.Partition,
+            PoolKind.Surface => Surfaces[handle.SlotIndex].Header.Partition,
+            PoolKind.Transform => Transforms[handle.SlotIndex].Header.Partition,
+            _ => -1,
+        };
     }
 
     private static void InitializeShell(ref ShellRecord shell, BodySlot bodySlot)
@@ -2345,9 +2813,12 @@ internal static unsafe class KernelRuntime
         shell.Region = -1;
         shell.ShellType = 0;
         shell.FirstFaceUseShell = -1;
+        shell.LastFaceUseShell = -1;
         shell.FaceUseCount = 0;
         shell.AcornVertex = -1;
+        shell.PrevInBody = -1;
         shell.NextInBody = -1;
+        shell.PrevInRegion = -1;
         shell.NextInRegion = -1;
     }
 
@@ -2358,9 +2829,11 @@ internal static unsafe class KernelRuntime
         face.BackFaceUse = -1;
         face.FrontFaceUse = -1;
         face.FirstLoop = -1;
+        face.LastLoop = -1;
         face.LoopCount = 0;
         face.SurfTag = 0;
         face.Orientation = ParasolidConstants.PK_TOPOL_sense_none_c;
+        face.PrevInBody = -1;
         face.NextInBody = -1;
     }
 
@@ -2372,9 +2845,11 @@ internal static unsafe class KernelRuntime
         ref var solidRegion = ref Regions[solidRegionSlot];
         voidRegion.IsSolid = 0;
         voidRegion.FirstShell = -1;
+        voidRegion.LastShell = -1;
         voidRegion.ShellCount = 0;
         solidRegion.IsSolid = 1;
         solidRegion.FirstShell = -1;
+        solidRegion.LastShell = -1;
         solidRegion.ShellCount = 0;
 
         AppendRegionToBody(bodySlot, voidRegionSlot);
@@ -2398,24 +2873,14 @@ internal static unsafe class KernelRuntime
         fin.Edge = edgeSlot;
         fin.Loop = loopSlot;
         fin.Face = faceSlot;
-        fin.NextInLoop = -1;
-        fin.PrevInLoop = -1;
-        fin.NextOfEdge = -1;
-        fin.PrevOfEdge = -1;
+        fin.NextInLoop = fin.PrevInLoop = -1;
+        fin.NextOfEdge = fin.PrevOfEdge = -1;
+        fin.Vertex = -1;
+        fin.NextAtVertex = fin.PrevAtVertex = -1;
 
-        ref var edge = ref Edges[edgeSlot];
-        if (edge.FirstFinEdge < 0)
-        {
-            edge.FirstFinEdge = finSlot;
-        }
-        else
-        {
-            int cur = edge.FirstFinEdge;
-            while (Fins[cur].NextOfEdge >= 0) cur = Fins[cur].NextOfEdge;
-            Fins[cur].NextOfEdge = finSlot;
-            fin.PrevOfEdge = cur;
-        }
-        edge.FinCount++;
+        AppendFinToLoop(loopSlot, finSlot);
+        AppendFinToEdge(edgeSlot, finSlot);
+        AppendFinToVertex(EdgeFinVertex(finSlot, Edges[edgeSlot]), finSlot);
         return finSlot;
     }
 
@@ -2430,6 +2895,7 @@ internal static unsafe class KernelRuntime
 
         int curveSlot = Curves.Allocate();
         ref var curve = ref Curves[curveSlot];
+        AssignPartition(ref curve.Header, CurrentPartition);
         curve.Class = CurveClass.Circle;
         curve.DataIndex = dataSlot;
         curve.TMin = 0;
@@ -2440,17 +2906,22 @@ internal static unsafe class KernelRuntime
 
     private static int CreateLineCurveTag(double ox, double oy, double oz, double axX, double axY, double axZ)
     {
+        var length = Math.Sqrt(axX * axX + axY * axY + axZ * axZ);
+        if (length <= 0)
+            return 0;
+
         int dataSlot = LineDataPool.Allocate();
         ref var data = ref LineDataPool[dataSlot];
         data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
-        data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
+        data.AxisX = axX / length; data.AxisY = axY / length; data.AxisZ = axZ / length;
 
         int curveSlot = Curves.Allocate();
         ref var curve = ref Curves[curveSlot];
+        AssignPartition(ref curve.Header, CurrentPartition);
         curve.Class = CurveClass.Line;
         curve.DataIndex = dataSlot;
         curve.TMin = 0;
-        curve.TMax = 0;
+        curve.TMax = length;
         curve.Sense = ParasolidConstants.PK_TOPOL_sense_positive_c;
         return AllocateTag(EntityClass.Curve, PoolKind.Curve, curveSlot, curve.Header.Generation);
     }
@@ -2459,6 +2930,7 @@ internal static unsafe class KernelRuntime
     {
         int pointSlot = Points.Allocate();
         ref var point = ref Points[pointSlot];
+        AssignPartition(ref point.Header, CurrentPartition);
         point.Position.X = x;
         point.Position.Y = y;
         point.Position.Z = z;
@@ -2476,6 +2948,7 @@ internal static unsafe class KernelRuntime
 
         int surfSlot = Surfaces.Allocate();
         ref var surf = ref Surfaces[surfSlot];
+        AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Cylinder;
         surf.DataIndex = dataSlot;
         surf.UMin = 0;
@@ -2495,6 +2968,7 @@ internal static unsafe class KernelRuntime
 
         int surfSlot = Surfaces.Allocate();
         ref var surf = ref Surfaces[surfSlot];
+        AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Plane;
         surf.DataIndex = dataSlot;
         surf.UMin = 0;
@@ -2541,6 +3015,7 @@ internal static unsafe class KernelRuntime
             ConcurrencyKind = concurrencyKind,
             AccessKind = accessKind,
             SessionId = DefaultSessionId,
+            PartitionId = CurrentPartition,
         };
         return DispatchState.Execute(ref descriptor, ref command);
     }

@@ -38,7 +38,7 @@ internal static class IntegrityChecker
             ref var body = ref bodies[i];
 
             // Check shell chain length matches ShellCount
-            int shellCount = CountChain(KernelRuntime.Shells, body.FirstShell,
+            int shellCount = CountChain(KernelRuntime.Shells, body.FirstShell, body.ShellCount,
                 s => s.NextInBody);
             if (shellCount != body.ShellCount)
             {
@@ -48,14 +48,13 @@ internal static class IntegrityChecker
 
             // Check all shells point back to this body
             int shellSlot = body.FirstShell;
-            while (shellSlot >= 0)
+            for (var j = 0; j < body.ShellCount; j++, shellSlot = KernelRuntime.Shells[shellSlot].NextInBody)
             {
                 if (KernelRuntime.Shells[shellSlot].Body != i)
                 {
                     Debug.WriteLine($"Body {i}: Shell {shellSlot} has wrong body link");
                     errors++;
                 }
-                shellSlot = KernelRuntime.Shells[shellSlot].NextInBody;
             }
         }
         return errors;
@@ -77,7 +76,7 @@ internal static class IntegrityChecker
                 continue;
             }
 
-            int faceUseCount = CountChain(KernelRuntime.FaceUses, shell.FirstFaceUseShell,
+            int faceUseCount = CountChain(KernelRuntime.FaceUses, shell.FirstFaceUseShell, shell.FaceUseCount,
                 s => s.NextInShell);
             if (faceUseCount != shell.FaceUseCount)
             {
@@ -86,7 +85,7 @@ internal static class IntegrityChecker
             }
 
             int faceUseSlot = shell.FirstFaceUseShell;
-            while (faceUseSlot >= 0)
+            for (var j = 0; j < shell.FaceUseCount; j++, faceUseSlot = KernelRuntime.FaceUses[faceUseSlot].NextInShell)
             {
                 ref var faceUse = ref KernelRuntime.FaceUses[faceUseSlot];
                 if (faceUse.Shell != i)
@@ -99,7 +98,6 @@ internal static class IntegrityChecker
                     Debug.WriteLine($"Shell {i}: FaceUse {faceUseSlot} has invalid face link {faceUse.Face}");
                     errors++;
                 }
-                faceUseSlot = faceUse.NextInShell;
             }
         }
         return errors;
@@ -122,7 +120,7 @@ internal static class IntegrityChecker
                 continue;
             }
 
-            int loopCount = CountChain(KernelRuntime.Loops, face.FirstLoop,
+            int loopCount = CountChain(KernelRuntime.Loops, face.FirstLoop, face.LoopCount,
                 s => s.NextInFace);
             if (loopCount != face.LoopCount)
             {
@@ -131,14 +129,13 @@ internal static class IntegrityChecker
             }
 
             int loopSlot = face.FirstLoop;
-            while (loopSlot >= 0)
+            for (var j = 0; j < face.LoopCount; j++, loopSlot = KernelRuntime.Loops[loopSlot].NextInFace)
             {
                 if (KernelRuntime.Loops[loopSlot].Face != i)
                 {
                     Debug.WriteLine($"Face {i}: Loop {loopSlot} has wrong face link");
                     errors++;
                 }
-                loopSlot = KernelRuntime.Loops[loopSlot].NextInFace;
             }
         }
         return errors;
@@ -160,7 +157,7 @@ internal static class IntegrityChecker
                 continue;
             }
 
-            int finCount = CountChain(KernelRuntime.Fins, loop.FirstFin,
+            int finCount = CountChain(KernelRuntime.Fins, loop.FirstFin, loop.FinCount,
                 s => s.NextInLoop);
             if (finCount != loop.FinCount)
             {
@@ -187,7 +184,7 @@ internal static class IntegrityChecker
                 continue;
             }
 
-            int finCount = CountChain(KernelRuntime.Fins, edge.FirstFinEdge,
+            int finCount = CountChain(KernelRuntime.Fins, edge.FirstFinEdge, edge.FinCount,
                 s => s.NextOfEdge);
             if (finCount != edge.FinCount)
             {
@@ -258,19 +255,22 @@ internal static class IntegrityChecker
     /// <summary>
     /// Count the length of a sibling chain in an entity pool.
     /// </summary>
-    private static int CountChain<T>(EntityPool<T> pool, int first, Func<T, int> nextLink) where T : struct
+    private static int CountChain<T>(EntityPool<T> pool, int first, int expectedCount, Func<T, int> nextLink) where T : struct
     {
+        if (expectedCount == 0)
+            return first < 0 ? 0 : -1;
+        if (first < 0)
+            return -1;
+
         int count = 0;
         int current = first;
-        while (current >= 0)
+        for (; count < expectedCount; count++)
         {
             if ((uint)current >= (uint)pool.AllocatedCount)
-                break; // dangling index
-            count++;
+                return -1;
             current = nextLink(pool[current]);
-            if (count > 100000)
-                break; // safety limit
         }
-        return count;
+
+        return current == first ? count : -1;
     }
 }

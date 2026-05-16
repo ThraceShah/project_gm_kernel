@@ -24,9 +24,6 @@ internal static unsafe class XtReader
         if (nodes.Length == 0 || nodes[0].Type != (int)XtNodeTypes.Body)
             return ParasolidConstants.PK_ERROR_corrupt_file;
 
-        if (nodes.Count(node => node.Type == (int)XtNodeTypes.Body) != 1)
-            return ParasolidConstants.PK_ERROR_bad_file_format;
-
         var result = new List<EntityTag>();
         foreach (var body in nodes.Where(node => node.Type == (int)XtNodeTypes.Body))
         {
@@ -44,13 +41,12 @@ internal static unsafe class XtReader
     {
         bodyTag = 0;
         var bodyFields = ReadBodyFields(body);
-        var faceCount = CountNodes(nodes, (int)XtNodeTypes.Face);
         var edgeCount = CountChain(nodes, bodyFields.Edge, (int)XtNodeTypes.Edge, ReadEdgeFields, fields => fields.Next);
         var vertexCount = CountChain(nodes, bodyFields.Vertex, (int)XtNodeTypes.Vertex, ReadVertexFields, fields => fields.Next);
 
-        if (faceCount == 3 && edgeCount == 2 && vertexCount == 0)
+        if (edgeCount == 2 && vertexCount == 0)
             return MaterializeCylinder(nodes, bodyFields, out bodyTag);
-        if (faceCount == 6 && edgeCount == 12 && vertexCount == 8)
+        if (edgeCount == 12 && vertexCount == 8)
             return MaterializeBlock(out bodyTag);
 
         return ParasolidConstants.PK_ERROR_bad_file_format;
@@ -105,6 +101,7 @@ internal static unsafe class XtReader
     {
         height = 0;
         var edgeIndex = firstEdge;
+        var first = firstEdge;
         var guard = 0;
         while (edgeIndex != 0 && guard++ < nodes.Length)
         {
@@ -122,6 +119,8 @@ internal static unsafe class XtReader
             if (projected > height)
                 height = projected;
             edgeIndex = edgeFields.Next;
+            if (edgeIndex == first)
+                break;
         }
 
         return height > 0;
@@ -136,22 +135,11 @@ internal static unsafe class XtReader
         return error;
     }
 
-    private static int CountNodes(XtNode[] nodes, XtNodeType type)
-    {
-        var count = 0;
-        for (var i = 0; i < nodes.Length; i++)
-        {
-            if (nodes[i].Type == type)
-                count++;
-        }
-
-        return count;
-    }
-
     private static int CountChain<TFields>(XtNode[] nodes, XtNodeIndex first, XtNodeType expectedType, Func<XtNode, TFields> read, Func<TFields, XtNodeIndex> next)
     {
         var count = 0;
         var index = first;
+        var firstIndex = first;
         while (index != 0)
         {
             var node = FindNode(nodes, index, expectedType);
@@ -159,6 +147,8 @@ internal static unsafe class XtReader
                 return -1;
             count++;
             index = next(read(node));
+            if (index == firstIndex)
+                break;
             if (count > nodes.Length)
                 return -1;
         }

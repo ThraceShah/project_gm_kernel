@@ -113,6 +113,9 @@ internal struct PointRecord
 {
     public RecordHeader Header;
     public KernelVector3 Position;
+    public VertexSlot OwnerVertex;
+    public PointTag PrevInBody;
+    public PointTag NextInBody;
 }
 
 /// <summary>
@@ -139,6 +142,9 @@ internal struct CurveRecord
     public double TMin;           // parameter interval start
     public double TMax;           // parameter interval end
     public KernelSense Sense;
+    public EdgeSlot OwnerEdge;
+    public CurveTag PrevInBody;
+    public CurveTag NextInBody;
 }
 
 /// <summary>
@@ -154,6 +160,9 @@ internal struct SurfaceRecord
     public double UMax;           // u parameter interval end
     public double VMin;           // v parameter interval start
     public double VMax;           // v parameter interval end
+    public FaceSlot OwnerFace;
+    public SurfTag PrevInBody;
+    public SurfTag NextInBody;
 }
 
 // ── Analytic Curve Data ───────────────────────────────────────────

@@ -38,6 +38,21 @@ internal unsafe struct EntityDeleteCommand : IKernelCommand
     public int Execute() => KernelRuntime.EntityDelete(EntityCount, Entities);
 }
 
+internal unsafe struct EntityAskPartitionCommand : IKernelCommand
+{
+    public EntityTag Entity;
+    public PartitionSlot* Partition;
+
+    public int Execute() => KernelRuntime.EntityAskPartition(Entity, Partition);
+}
+
+internal unsafe struct SessionAskCurrentPartitionCommand : IKernelCommand
+{
+    public PartitionSlot* Partition;
+
+    public int Execute() => KernelRuntime.SessionAskCurrentPartition(Partition);
+}
+
 internal unsafe struct BodyCreateTopology2Command : IKernelCommand
 {
     public int TopologyCount;

@@ -2108,12 +2108,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_ENTITY_ask_partition")]
-    public static int PK_ENTITY_ask_partition(int arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_ENTITY_ask_user_field")]
     public static int PK_ENTITY_ask_user_field(int arg0, int* arg1)
     {
@@ -4762,12 +4756,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_SESSION_ask_close_knots")]
     public static int PK_SESSION_ask_close_knots(byte* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_SESSION_ask_curr_partition")]
-    public static int PK_SESSION_ask_curr_partition(int* arg0)
     {
         return KernelRuntime.NotImplemented();
     }

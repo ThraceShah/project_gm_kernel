@@ -13,6 +13,8 @@
 
 // Pool slot indices — used in adjacency fields of topology/geometry records.
 global using BodySlot = int;
+global using PointSlot = int;
+global using VectorSlot = int;
 global using ShellSlot = int;
 global using FaceUseSlot = int;
 global using FaceSlot = int;
@@ -25,6 +27,7 @@ global using CurveSlot = int;
 global using SurfaceSlot = int;
 global using TransformSlot = int;
 global using DataSlot = int;
+global using PartitionSlot = int;
 
 // Tag handles — external entity references (PK_*_t are already defined in generated code).
 // These aliases are for kernel code that needs to explicitly distinguish tags from slots.

@@ -27,16 +27,23 @@ internal struct BodyRecord
     public KernelBodyType BodyType;
     public KernelBodyConfig BodyConfig;
     public ShellSlot FirstShell;
+    public ShellSlot LastShell;
     public int ShellCount;
     public RegionSlot FirstRegion;
+    public RegionSlot LastRegion;
     public int RegionCount;
     // Flat iteration: body directly references all its faces/edges/vertices
     public FaceSlot FirstFaceBody;
+    public FaceSlot LastFaceBody;
     public int FaceCountBody;
     public EdgeSlot FirstEdgeBody;
+    public EdgeSlot LastEdgeBody;
     public int EdgeCountBody;
     public VertexSlot FirstVertexBody;
+    public VertexSlot LastVertexBody;
     public int VertexCountBody;
+    public BodySlot PrevInPartition;
+    public BodySlot NextInPartition;
 }
 
 /// <summary>
@@ -50,9 +57,12 @@ internal struct ShellRecord
     public BodySlot Body;
     public RegionSlot Region;
     public FaceUseSlot FirstFaceUseShell;
+    public FaceUseSlot LastFaceUseShell;
     public int FaceUseCount;
     public VertexSlot AcornVertex;       // -1 if none
+    public ShellSlot PrevInBody;         // sibling ring
     public ShellSlot NextInBody;         // sibling chain
+    public ShellSlot PrevInRegion;       // sibling ring
     public ShellSlot NextInRegion;       // sibling chain
 }
 
@@ -66,6 +76,7 @@ internal struct FaceUseRecord
     public ShellSlot Shell;
     public FaceSlot Face;
     public KernelSense Sense;
+    public FaceUseSlot PrevInShell;
     public FaceUseSlot NextInShell;
 }
 
@@ -84,7 +95,9 @@ internal struct FaceRecord
     public int LoopCount;
     public SurfTag SurfTag;
     public KernelSense Orientation;
+    public FaceSlot PrevInBody;   // sibling ring in body
     public FaceSlot NextInBody;   // sibling chain in body
+    public LoopSlot LastLoop;
 }
 
 /// <summary>
@@ -97,7 +110,9 @@ internal struct LoopRecord
     public KernelLoopType LoopType;
     public FaceSlot Face;
     public FinSlot FirstFin;
+    public FinSlot LastFin;
     public int FinCount;
+    public LoopSlot PrevInFace;   // sibling ring
     public LoopSlot NextInFace;   // sibling chain
 }
 
@@ -113,9 +128,11 @@ internal struct EdgeRecord
     public VertexSlot StartVertex; // -1 for ring/vertexless edges
     public VertexSlot EndVertex;   // -1 for ring/vertexless edges
     public FinSlot FirstFinEdge;
+    public FinSlot LastFinEdge;
     public int FinCount;
     public CurveTag CurveTag;
     public KernelEdgeConvexity Convexity;
+    public EdgeSlot PrevInBody;   // sibling ring
     public EdgeSlot NextInBody;   // sibling chain
 }
 
@@ -135,6 +152,9 @@ internal struct FinRecord
     public FinSlot PrevInLoop;
     public FinSlot NextOfEdge;
     public FinSlot PrevOfEdge;
+    public VertexSlot Vertex;
+    public FinSlot NextAtVertex;
+    public FinSlot PrevAtVertex;
 }
 
 /// <summary>
@@ -147,6 +167,9 @@ internal struct VertexRecord
     public KernelVertexType VertexType;
     public BodySlot Body;
     public PointTag PointTag;
+    public FinSlot FirstFinVertex;
+    public FinSlot LastFinVertex;
+    public VertexSlot PrevInBody; // sibling ring
     public VertexSlot NextInBody; // sibling chain
 }
 
@@ -160,6 +183,8 @@ internal struct RegionRecord
     public BodySlot Body;
     public KernelLogical IsSolid;
     public ShellSlot FirstShell;  // -1 if none
+    public ShellSlot LastShell;   // -1 if none
     public int ShellCount;
+    public RegionSlot PrevInBody; // sibling ring
     public RegionSlot NextInBody; // sibling chain
 }

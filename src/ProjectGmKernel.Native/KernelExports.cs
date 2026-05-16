@@ -47,6 +47,20 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.Dispatch(ApiId.EntityDelete, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "PK_ENTITY_ask_partition")]
+    public static int PK_ENTITY_ask_partition(int entity, int* partition)
+    {
+        var command = new EntityAskPartitionCommand { Entity = entity, Partition = partition };
+        return KernelRuntime.Dispatch(ApiId.EntityAskPartition, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_SESSION_ask_curr_partition")]
+    public static int PK_SESSION_ask_curr_partition(int* partition)
+    {
+        var command = new SessionAskCurrentPartitionCommand { Partition = partition };
+        return KernelRuntime.Dispatch(ApiId.SessionAskCurrentPartition, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
     // ── Body topology creation ───────────────────────────────────
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_topology_2")]

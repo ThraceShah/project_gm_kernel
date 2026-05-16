@@ -38,6 +38,8 @@ internal enum ApiId : ushort
     PartReceiveB = 34,
     MemoryBlockFree = 35,
     MemoryFree = 36,
+    EntityAskPartition = 37,
+    SessionAskCurrentPartition = 38,
     GeneratedStub = 65535,
 }
 
@@ -69,6 +71,7 @@ internal struct CommandDescriptor
     public ConcurrencyKind ConcurrencyKind;
     public AccessKind AccessKind;
     public int SessionId;
+    public PartitionSlot PartitionId;
     public long SequenceNo;
     public int CallerThreadId;
 }
