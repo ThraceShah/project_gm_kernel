@@ -1,6 +1,6 @@
 # Project Status
 
-Generated: 2026-05-15
+Generated: 2026-05-16
 
 ## Current State
 
@@ -20,11 +20,12 @@ Verified capabilities:
 - Return arena query results stay valid across repeated queries until session reset or rollback.
 - External ABI smoke coverage loads the published NativeAOT library and calls implemented exports.
 - Allocation baseline reporting covers the implemented hot paths.
+- Block and cylinder `x_t` transmit can be received by Parasolid; multi-body roundtrip coverage is verified.
 
 Current implementation surface:
 
-- Manual implemented exports: 26.
-- Generated export stubs: 1005.
+- Manual implemented exports: 38.
+- Generated export stubs: 994.
 - Generated stubs currently return `PK_ERROR_not_implemented`.
 
 ## Verification
@@ -63,13 +64,12 @@ Use the host RID for the publish command. On this machine the verified RID is `o
 - Only one active mark is supported.
 - Rollback is still a minimal slot-state rollback, not a full transaction delta system for complex topology edits.
 - No OCC algorithm translation has started.
-- No cylinder primitive, visual debug bridge, or enforcing allocation profiler threshold has been added yet.
+- No visual debug bridge or enforcing allocation profiler threshold has been added yet.
 - NativeAOT publish requires an explicit RID unless the project later defines one.
 
 ## Recommended Next Work
 
 1. Add an enforcing allocation threshold once the baseline is stable across machines.
 2. Promote the dispatch queue from serial execution to real concurrent/local scheduling.
-3. Implement cylinder primitive as the next narrow geometry cluster.
-4. Add a visual debug bridge or topology text dump command for developer workflows.
-5. Continue implementing narrow API clusters instead of broadening the generated stub surface.
+3. Add a visual debug bridge or topology text dump command for developer workflows.
+4. Continue implementing narrow API clusters instead of broadening the generated stub surface.
