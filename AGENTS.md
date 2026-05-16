@@ -80,6 +80,21 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 6. Parasolid Oracle Tests
+
+**新增或修改会影响 Parasolid 兼容 API、B-rep、几何、`x_t` transmit/receive 的接口时，必须补充 Parasolid oracle 测试。**
+
+测试流程必须覆盖：
+- 实现目标 API。
+- 在测试中调用我们的 API，用目标参数创建或修改 body。
+- 通过我们的 `PK_PART_transmit_b` 导出并保存 text `x_t`。
+- 使用真实 Parasolid 加载我们导出的 `x_t`。
+- 在真实 Parasolid 中使用同样 API、同样参数创建或修改对应 body。
+- 调用 `PK_DEBUG_BODY_compare` 比较 Parasolid 基准 body 和从我们 `x_t` 加载出的 body。
+- 比较失败时必须输出可定位的差异信息，例如 `global_result`、`local_result`、diff 类型、相关 face/entity。
+
+如果 `PK_DEBUG_BODY_compare` 的 full local deviation / face matching 检查会把 Parasolid 内部参数化或 transmit 排序差异误判成失败，允许把这些项目降级为诊断输出；但 receive、拓扑计数、region/shell 语义、类型/sense/容差/missing 等结构一致性必须作为通过条件。
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
