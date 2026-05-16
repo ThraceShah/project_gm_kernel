@@ -3,5 +3,6 @@ temp_docs
 **/obj/
 *.lscache
 tests/abi_smoke/abi_smoke
+third_party/
 docs/parasolid_inc/
 docs/parasolid_online_docs/
