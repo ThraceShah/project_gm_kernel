@@ -5,6 +5,7 @@ namespace ProjectGmKernel.Native.Runtime;
 internal enum XtNodeTypes : XtNodeType
 {
     Terminator = 1,
+    PartTransmitBlock = 176,
     Body = 12,
     Shell = 13,
     Face = 14,

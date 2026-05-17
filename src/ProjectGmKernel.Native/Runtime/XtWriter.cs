@@ -12,25 +12,37 @@ internal static unsafe class XtWriter
         text = "";
         var nodes = new List<XtNode>(128);
         var graph = new TransmitGraph();
+        var bodyIndexes = parts.Count > 1 ? new XtNodeIndex[parts.Count] : [];
+        if (parts.Count > 1)
+        {
+            nodes.Add(PartTransmitBlockNode(1, bodyIndexes));
+            graph.NextNodeIndex = 2;
+        }
 
         for (var i = 0; i < parts.Count; i++)
         {
             if (!KernelRuntime.TryResolveBodySlot(parts[i], out var bodySlot))
                 return ParasolidConstants.PK_ERROR_unsuitable_entity;
 
-            if (!BuildBody(bodySlot, nodes, ref graph))
+            if (!BuildBody(bodySlot, nodes, ref graph, out var bodyIndex))
                 return ParasolidConstants.PK_ERROR_bad_field_conversion;
+            if (parts.Count > 1)
+                bodyIndexes[i] = bodyIndex;
         }
+
+        if (parts.Count > 1)
+            nodes[0] = PartTransmitBlockNode(1, bodyIndexes);
 
         text = XtText.Encode(nodes);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static bool BuildBody(BodySlot bodySlot, List<XtNode> nodes, ref TransmitGraph graph)
+    private static bool BuildBody(BodySlot bodySlot, List<XtNode> nodes, ref TransmitGraph graph, out XtNodeIndex bodyIndex)
     {
         var map = new NodeMap();
         var body = KernelRuntime.GetBodyRecord(bodySlot);
         map.Body = AddIndex(nodes, ref graph, ref map);
+        bodyIndex = map.Body;
         map.FirstRegionSlot = body.FirstRegion;
         map.FirstFaceSlot = body.FirstFaceBody;
         map.FirstEdgeSlot = body.FirstEdgeBody;
@@ -104,6 +116,25 @@ internal static unsafe class XtWriter
 
         WriteGeometryNodes(ref map, nodes);
         return true;
+    }
+
+    private static XtNode PartTransmitBlockNode(XtNodeIndex index, XtNodeIndex[] bodyIndexes)
+    {
+        var fields = new XtFieldValue[5 + bodyIndexes.Length];
+        fields[0] = XtFieldValue.Int(bodyIndexes.Length);
+        fields[1] = XtFieldValue.Int(0);
+        fields[2] = XtFieldValue.Ptr(0);
+        fields[3] = XtFieldValue.Ptr(0);
+        fields[4] = XtFieldValue.Ptr(0);
+        for (var i = 0; i < bodyIndexes.Length; i++)
+            fields[5 + i] = XtFieldValue.Ptr(bodyIndexes[i]);
+
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.PartTransmitBlock,
+            Index = index,
+            Fields = fields,
+        };
     }
 
     private static XtNodeIndex AddIndex(List<XtNode> nodes, ref TransmitGraph graph, ref NodeMap map)

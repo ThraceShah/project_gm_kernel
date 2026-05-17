@@ -21,11 +21,11 @@ internal static unsafe class XtReader
             return ParasolidConstants.PK_ERROR_bad_file_format;
         }
 
-        if (nodes.Length == 0 || nodes[0].Type != (int)XtNodeTypes.Body)
+        if (nodes.Length == 0 || (nodes[0].Type != (int)XtNodeTypes.Body && nodes[0].Type != (int)XtNodeTypes.PartTransmitBlock))
             return ParasolidConstants.PK_ERROR_corrupt_file;
 
         var result = new List<EntityTag>();
-        foreach (var body in nodes.Where(node => node.Type == (int)XtNodeTypes.Body))
+        foreach (var body in GetBodyNodes(nodes))
         {
             var error = MaterializeBody(nodes, body, out var tag);
             if (error != ParasolidConstants.PK_ERROR_no_errors)
@@ -35,6 +35,32 @@ internal static unsafe class XtReader
 
         parts = result.ToArray();
         return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    private static IEnumerable<XtNode> GetBodyNodes(XtNode[] nodes)
+    {
+        if (nodes[0].Type == (int)XtNodeTypes.PartTransmitBlock)
+        {
+            var fields = nodes[0].Fields;
+            if (fields.Length < 5)
+                throw new FormatException("Invalid XT part transmit block.");
+
+            var count = checked((int)fields[0].Integer);
+            if (count < 0 || fields.Length != 5 + count)
+                throw new FormatException("Invalid XT part transmit block entries.");
+
+            for (var i = 0; i < count; i++)
+            {
+                var body = FindNode(nodes, fields[5 + i].Pointer, (int)XtNodeTypes.Body);
+                if (body is null)
+                    throw new FormatException("XT part transmit block references a missing body.");
+                yield return body;
+            }
+            yield break;
+        }
+
+        foreach (var body in nodes.Where(node => node.Type == (int)XtNodeTypes.Body))
+            yield return body;
     }
 
     private static int MaterializeBody(XtNode[] nodes, XtNode body, out EntityTag bodyTag)

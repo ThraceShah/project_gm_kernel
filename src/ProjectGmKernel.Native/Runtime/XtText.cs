@@ -30,7 +30,7 @@ internal static class XtText
 
             sb.Append(node.Type).Append(' ');
             if (descriptor.Variable)
-                throw new NotSupportedException("Variable-length XT nodes are not supported by the v1 writer.");
+                sb.Append(VariableLength(node)).Append(' ');
             sb.Append(node.Index).Append(' ');
             var fields = XtSchema.Fields.Slice(descriptor.FieldOffset, descriptor.ParsedFieldCount);
             var valueIndex = 0;
@@ -39,7 +39,9 @@ internal static class XtText
                 if (!fields[i].Transmit)
                     continue;
 
-                WriteField(sb, fields[i].Type, node.Fields[valueIndex++]);
+                var count = descriptor.Variable && fields[i].ElementCount == 1 ? VariableLength(node) : 1;
+                for (var j = 0; j < count; j++)
+                    WriteField(sb, fields[i].Type, node.Fields[valueIndex++]);
             }
         }
 
@@ -81,12 +83,11 @@ internal static class XtText
             var descriptor = XtSchema.GetNode(type);
             if (descriptor.Type == 0)
                 throw new FormatException($"Unsupported XT node type {type} at token position {tokenizer.Position}.");
-            if (descriptor.Variable)
-                throw new FormatException($"Unsupported variable XT node type {type} at token position {tokenizer.Position}.");
+            var variableLength = descriptor.Variable ? tokenizer.NextInt() : 0;
 
             var node = new XtNode { Type = type, Index = tokenizer.NextInt() };
             var fields = XtSchema.Fields.Slice(descriptor.FieldOffset, descriptor.ParsedFieldCount);
-            var transmitted = CountTransmitted(fields);
+            var transmitted = CountTransmitted(fields, variableLength);
             node.Fields = new XtFieldValue[transmitted];
             var valueIndex = 0;
             for (var i = 0; i < fields.Length; i++)
@@ -94,7 +95,9 @@ internal static class XtText
                 if (!fields[i].Transmit)
                     continue;
 
-                node.Fields[valueIndex++] = ReadField(ref tokenizer, fields[i].Type);
+                var count = fields[i].ElementCount == 1 ? Math.Max(1, variableLength) : 1;
+                for (var j = 0; j < count; j++)
+                    node.Fields[valueIndex++] = ReadField(ref tokenizer, fields[i].Type);
             }
             nodes.Add(node);
         }
@@ -102,16 +105,23 @@ internal static class XtText
         return nodes.ToArray();
     }
 
-    private static int CountTransmitted(ReadOnlySpan<XtFieldDescriptor> fields)
+    private static int CountTransmitted(ReadOnlySpan<XtFieldDescriptor> fields, int variableLength)
     {
         var count = 0;
         foreach (var field in fields)
         {
             if (field.Transmit)
-                count++;
+                count += field.ElementCount == 1 ? Math.Max(1, variableLength) : 1;
         }
 
         return count;
+    }
+
+    private static int VariableLength(XtNode node)
+    {
+        return node.Type == (int)XtNodeTypes.PartTransmitBlock
+            ? node.Fields.Length - 5
+            : node.Fields.Length;
     }
 
     private static bool IsSupportedSchema(string schema)

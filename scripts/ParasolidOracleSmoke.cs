@@ -298,6 +298,43 @@ static int receive_file_and_check(const char *path, PK_BODY_t expected_body, int
     return ok;
 }
 
+static int receive_file_and_check_many(const char *path, int expected_count, const PK_BODY_t *expected_bodies, const int *regions_expected, const int *shells_expected, const int *faces_expected, const int *edges_expected, const int *vertices_expected, const char **labels)
+{
+    PK_MEMORY_block_t block;
+    PK_PART_receive_o_t receive_options;
+    int n_received = 0;
+    PK_PART_t *received = NULL;
+    int ok = 0;
+    int i;
+
+    if (!read_file_block(path, &block))
+        return 0;
+
+    PK_PART_receive_o_m(receive_options);
+    receive_options.transmit_format = PK_transmit_format_text_c;
+    if (check(PK_PART_receive_b(block, &receive_options, &n_received, &received), "PK_PART_receive_b")
+        && n_received == expected_count)
+    {
+        ok = 1;
+        for (i = 0; i < expected_count; i++)
+        {
+            if (!assert_body_counts((PK_BODY_t)received[i], regions_expected[i], shells_expected[i], faces_expected[i], edges_expected[i], vertices_expected[i])
+                || !assert_body_compare(expected_bodies[i], (PK_BODY_t)received[i], labels[i]))
+            {
+                ok = 0;
+            }
+        }
+    }
+    else if (n_received != expected_count)
+    {
+        printf("receive count mismatch: expected=%d actual=%d\n", expected_count, n_received);
+    }
+
+    free_array(received);
+    free((void*)block.bytes);
+    return ok;
+}
+
 static int write_memory_block_to_file(const PK_MEMORY_block_t *block, const char *path)
 {
     FILE *file = fopen(path, "wb");
@@ -325,7 +362,7 @@ static int write_memory_block_to_file(const PK_MEMORY_block_t *block, const char
     return 1;
 }
 
-static int transmit_part_to_file(PK_PART_t part, const char *path)
+static int transmit_parts_to_file(int n_parts, PK_PART_t *parts, const char *path)
 {
     PK_PART_transmit_o_t transmit_options;
     PK_MEMORY_block_t block;
@@ -336,12 +373,17 @@ static int transmit_part_to_file(PK_PART_t part, const char *path)
     transmit_options.transmit_user_fields = PK_LOGICAL_false;
     transmit_options.transmit_version = 371;
 
-    if (!check(PK_PART_transmit_b(1, &part, &transmit_options, &block), "PK_PART_transmit_b"))
+    if (!check(PK_PART_transmit_b(n_parts, parts, &transmit_options, &block), "PK_PART_transmit_b"))
         return 0;
 
     ok = write_memory_block_to_file(&block, path);
     (void)PK_MEMORY_block_f(&block);
     return ok;
+}
+
+static int transmit_part_to_file(PK_PART_t part, const char *path)
+{
+    return transmit_parts_to_file(1, &part, path);
 }
 
 static void record_result(int condition, const char *name, int *failures)
@@ -360,9 +402,9 @@ static void record_result(int condition, const char *name, int *failures)
 int main(int argc, char **argv)
 {
     int failures = 0;
-    if (argc != 5)
+    if (argc != 7)
     {
-        printf("usage: parasolid_oracle_smoke OUR_BLOCK OUR_CYL PS_BLOCK PS_CYL\n");
+        printf("usage: parasolid_oracle_smoke OUR_BLOCK OUR_CYL OUR_MULTI PS_BLOCK PS_CYL PS_MULTI\n");
         return 2;
     }
 
@@ -404,12 +446,24 @@ int main(int argc, char **argv)
     if (!assert_body_counts(cylinder, 2, 2, 3, 2, 0))
         return 2;
 
+    PK_BODY_t expected_bodies[2] = { block, cylinder };
+    int expected_regions[2] = { 2, 2 };
+    int expected_shells[2] = { 2, 2 };
+    int expected_faces[2] = { 6, 3 };
+    int expected_edges[2] = { 12, 2 };
+    int expected_vertices[2] = { 8, 0 };
+    const char *expected_labels[2] = { "our multi block", "our multi cylinder" };
+
     trace("oracle: write parasolid block x_t");
-    if (!transmit_part_to_file(block, argv[3]))
+    if (!transmit_part_to_file(block, argv[4]))
         return 2;
 
     trace("oracle: write parasolid cylinder x_t");
-    if (!transmit_part_to_file(cylinder, argv[4]))
+    if (!transmit_part_to_file(cylinder, argv[5]))
+        return 2;
+
+    trace("oracle: write parasolid multi-body x_t");
+    if (!transmit_parts_to_file(2, expected_bodies, argv[6]))
         return 2;
 
     trace("oracle: receive our block x_t");
@@ -417,6 +471,9 @@ int main(int argc, char **argv)
 
     trace("oracle: receive our cylinder x_t");
     record_result(receive_file_and_check(argv[2], cylinder, 2, 2, 3, 2, 0, "our cylinder"), "our cylinder -> Parasolid receive", &failures);
+
+    trace("oracle: receive our multi-body x_t");
+    record_result(receive_file_and_check_many(argv[3], 2, expected_bodies, expected_regions, expected_shells, expected_faces, expected_edges, expected_vertices, expected_labels), "our multi-body -> Parasolid receive", &failures);
 
     (void)PK_SESSION_stop();
     if (failures == 0)
@@ -483,10 +540,12 @@ try
 {
     var ourBlockPath = Path.Combine(tempDir, "our_block.x_t");
     var ourCylinderPath = Path.Combine(tempDir, "our_cylinder.x_t");
+    var ourMultiPath = Path.Combine(tempDir, "our_multi.x_t");
     var parasolidBlockPath = Path.Combine(tempDir, "parasolid_block.x_t");
     var parasolidCylinderPath = Path.Combine(tempDir, "parasolid_cylinder.x_t");
+    var parasolidMultiPath = Path.Combine(tempDir, "parasolid_multi.x_t");
 
-    var nativeExportResult = WriteOurXtFiles(repoRoot, ourBlockPath, ourCylinderPath);
+    var nativeExportResult = WriteOurXtFiles(repoRoot, ourBlockPath, ourCylinderPath, ourMultiPath);
     if (!nativeExportResult.Success)
     {
         Console.WriteLine(nativeExportResult.Message);
@@ -519,7 +578,7 @@ try
 
     var run = Run(
         exePath,
-        new[] { ourBlockPath, ourCylinderPath, parasolidBlockPath, parasolidCylinderPath },
+        new[] { ourBlockPath, ourCylinderPath, ourMultiPath, parasolidBlockPath, parasolidCylinderPath, parasolidMultiPath },
         tempDir,
         timeoutMilliseconds: 10000,
         schemaDir);
@@ -551,7 +610,7 @@ try
     {
         try
         {
-            var nativeImportResult = ReadParasolidXtFiles(repoRoot, parasolidBlockPath, parasolidCylinderPath);
+            var nativeImportResult = ReadParasolidXtFiles(repoRoot, parasolidBlockPath, parasolidCylinderPath, parasolidMultiPath);
             if (!nativeImportResult.Success)
             {
                 Console.WriteLine(nativeImportResult.Message);
@@ -623,7 +682,7 @@ static string GetNativeLibraryPath(string repoRoot)
         : Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "bin", "Release", "net10.0", rid, "publish", libraryName);
 }
 
-static unsafe OracleStepResult WriteOurXtFiles(string repoRoot, string blockPath, string cylinderPath)
+static unsafe OracleStepResult WriteOurXtFiles(string repoRoot, string blockPath, string cylinderPath, string multiPath)
 {
     var libraryPath = GetNativeLibraryPath(repoRoot);
     if (libraryPath.Length == 0 || !File.Exists(libraryPath))
@@ -651,6 +710,9 @@ static unsafe OracleStepResult WriteOurXtFiles(string repoRoot, string blockPath
             int cylinder;
             CheckNative(bodyCreateSolidCyl(2, 5, null, &cylinder), "our PK_BODY_create_solid_cyl");
             WritePartToFile(partTransmitB, memoryBlockFree, cylinder, cylinderPath, "our cylinder");
+
+            var parts = stackalloc int[2] { block, cylinder };
+            WritePartsToFile(partTransmitB, memoryBlockFree, 2, parts, multiPath, "our multi-body");
         }
         finally
         {
@@ -669,7 +731,7 @@ static unsafe OracleStepResult WriteOurXtFiles(string repoRoot, string blockPath
     return OracleStepResult.Ok();
 }
 
-static unsafe OracleStepResult ReadParasolidXtFiles(string repoRoot, string blockPath, string cylinderPath)
+static unsafe OracleStepResult ReadParasolidXtFiles(string repoRoot, string blockPath, string cylinderPath, string multiPath)
 {
     var libraryPath = GetNativeLibraryPath(repoRoot);
     if (libraryPath.Length == 0 || !File.Exists(libraryPath))
@@ -697,6 +759,8 @@ static unsafe OracleStepResult ReadParasolidXtFiles(string repoRoot, string bloc
             if (!TryReadFileAndCheck(partReceiveB, bodyAskRegions, bodyAskShells, bodyAskFaces, bodyAskEdges, bodyAskVertices, memoryFree, blockPath, 2, 2, 6, 12, 8, "parasolid block"))
                 failures++;
             if (!TryReadFileAndCheck(partReceiveB, bodyAskRegions, bodyAskShells, bodyAskFaces, bodyAskEdges, bodyAskVertices, memoryFree, cylinderPath, 2, 2, 3, 2, 0, "parasolid cylinder"))
+                failures++;
+            if (!TryReadFileAndCheckMany(partReceiveB, bodyAskRegions, bodyAskShells, bodyAskFaces, bodyAskEdges, bodyAskVertices, memoryFree, multiPath, "parasolid multi-body"))
                 failures++;
 
             if (failures != 0)
@@ -726,6 +790,17 @@ static unsafe void WritePartToFile(
     string path,
     string label)
 {
+    WritePartsToFile(partTransmitB, memoryBlockFree, 1, &part, path, label);
+}
+
+static unsafe void WritePartsToFile(
+    delegate* unmanaged[Cdecl]<int, int*, PK_PART_transmit_o_s*, PK_MEMORY_block_s*, int> partTransmitB,
+    delegate* unmanaged[Cdecl]<PK_MEMORY_block_s*, int> memoryBlockFree,
+    int partCount,
+    int* parts,
+    string path,
+    string label)
+{
     var options = new PK_PART_transmit_o_s
     {
         o_t_version = 10,
@@ -734,7 +809,7 @@ static unsafe void WritePartToFile(
         transmit_version = 371,
     };
     var block = new PK_MEMORY_block_s();
-    CheckNative(partTransmitB(1, &part, &options, &block), "our PK_PART_transmit_b " + label);
+    CheckNative(partTransmitB(partCount, parts, &options, &block), "our PK_PART_transmit_b " + label);
     try
     {
         using var output = File.Create(path);
@@ -747,6 +822,68 @@ static unsafe void WritePartToFile(
     finally
     {
         CheckNative(memoryBlockFree(&block), "our PK_MEMORY_block_f " + label);
+    }
+}
+
+static unsafe bool TryReadFileAndCheckMany(
+    delegate* unmanaged[Cdecl]<PK_MEMORY_block_s, PK_PART_receive_o_s*, int*, nint*, int> partReceiveB,
+    delegate* unmanaged[Cdecl]<int, int*, nint*, int> bodyAskRegions,
+    delegate* unmanaged[Cdecl]<int, int*, nint*, int> bodyAskShells,
+    delegate* unmanaged[Cdecl]<int, int*, nint*, int> bodyAskFaces,
+    delegate* unmanaged[Cdecl]<int, int*, nint*, int> bodyAskEdges,
+    delegate* unmanaged[Cdecl]<int, int*, nint*, int> bodyAskVertices,
+    delegate* unmanaged[Cdecl]<void*, int> memoryFree,
+    string path,
+    string label)
+{
+    try
+    {
+        var bytes = File.ReadAllBytes(path);
+        fixed (byte* bytesPtr = bytes)
+        {
+            var block = new PK_MEMORY_block_s
+            {
+                next = null,
+                n_bytes = (nuint)bytes.Length,
+                bytes = bytesPtr,
+            };
+            var options = new PK_PART_receive_o_s
+            {
+                o_t_version = 14,
+                transmit_format = PK_transmit_format_text_c,
+            };
+            int nParts;
+            nint parts;
+            CheckNative(partReceiveB(block, &options, &nParts, &parts), "our PK_PART_receive_b " + label);
+            try
+            {
+                RequireNative(nParts == 2, label + " received part count");
+                var bodyParts = (int*)parts;
+                CheckCount(bodyAskRegions, bodyParts[0], 2, label + " block regions");
+                CheckCount(bodyAskShells, bodyParts[0], 2, label + " block shells");
+                CheckCount(bodyAskFaces, bodyParts[0], 6, label + " block faces");
+                CheckCount(bodyAskEdges, bodyParts[0], 12, label + " block edges");
+                CheckCount(bodyAskVertices, bodyParts[0], 8, label + " block vertices");
+                CheckCount(bodyAskRegions, bodyParts[1], 2, label + " cylinder regions");
+                CheckCount(bodyAskShells, bodyParts[1], 2, label + " cylinder shells");
+                CheckCount(bodyAskFaces, bodyParts[1], 3, label + " cylinder faces");
+                CheckCount(bodyAskEdges, bodyParts[1], 2, label + " cylinder edges");
+                CheckCount(bodyAskVertices, bodyParts[1], 0, label + " cylinder vertices");
+            }
+            finally
+            {
+                if (parts != 0)
+                    CheckNative(memoryFree((void*)parts), "our PK_MEMORY_free " + label);
+            }
+        }
+
+        Console.WriteLine("PASS Parasolid " + label + " -> native receive");
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("FAIL Parasolid " + label + " -> native receive: " + ex.Message);
+        return false;
     }
 }
 
