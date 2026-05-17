@@ -1,0 +1,4 @@
+[submodule "third_party/PKToy"]
+	path = third_party/PKToy
+	url = https://github.com/ThraceShah/PKToy.git
+	branch = project-gm-kernel-adapter

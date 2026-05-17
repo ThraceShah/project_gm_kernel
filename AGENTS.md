@@ -10,6 +10,7 @@
 - 所有 C# 代码都必须优先考虑 AOT 兼容性。
 - 所有 C# 代码都必须优先考虑零分配。
 - 所有脚本统一使用 C# 编写，并使用 `.NET 10` 的 `dotnet run file.cs` 方式运行。
+- `scripts/` 下的单文件 C# 脚本如果需要从 C# 调用真实 Parasolid `pskernel`，必须优先通过 `#:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj` 引用 PKToy 的 P/Invoke 绑定，并声明 `#:property UsePskernelSharpUsings=true` 复用 `third_party/PKToy/PskernelSharp/Using.cs` 中的全局别名，同时声明 `#:property UseParasolidScriptHost=true` 复用 `scripts/ParasolidScriptHost.cs` 做动态库探查、`P_SCHEMA` 设置、frustrum/memory callback 注册和 session start/stop；禁止在脚本里复制 `PK_*` 类型别名、手写 C# P/Invoke 函数声明、手写 ABI 结构体或重复 Parasolid session 初始化样板。脚本调用当前项目内核时，默认必须通过 `#:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj` 直接调用托管 API、`KernelRuntime` 或测试目标对应的项目接口；只有脚本目标明确是验证 C export/ABI 时才允许加载当前项目发布出的 native library 并 P/Invoke（当前为 `scripts/AbiSmoke.cs`）。禁止把 `PskernelSharp` 的 `"pskernel"` 重定向到当前项目 native kernel，以免把 Parasolid oracle 退化成自我对比。例外：生成器模板或专门测试 ABI/export 的脚本。
 - 所有 `int` 语义类型必须通过 `global using` 创建类型别名（如 `BodySlot`、`CurveTag`），禁止在 record/struct 中使用裸 `int` 表示不同含义的实体索引或句柄。定义见 `src/ProjectGmKernel.Native/Runtime/KernelTypes.cs`。
 
 ## 1. Think Before Coding

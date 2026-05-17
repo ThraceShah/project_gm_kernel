@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup Condition="'$(UsePskernelSharpUsings)' == 'true'">
+    <Compile Include="../third_party/PKToy/PskernelSharp/Using.cs" Link="PskernelSharp.Using.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseParasolidScriptHost)' == 'true'">
+    <Compile Include="ParasolidScriptHost.cs" Link="ParasolidScriptHost.cs" />
+  </ItemGroup>
+</Project>
