@@ -794,32 +794,8 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_cone")]
-    public static int PK_BODY_create_solid_cone(double arg0, double arg1, double arg2, PK_AXIS2_sf_t* arg3, int* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_prism")]
-    public static int PK_BODY_create_solid_prism(double arg0, double arg1, int arg2, PK_AXIS2_sf_t* arg3, int* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_sphere")]
-    public static int PK_BODY_create_solid_sphere(double arg0, PK_AXIS2_sf_t* arg1, int* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_topology")]
     public static int PK_BODY_create_solid_topology(int arg0, int* arg1, int arg2, int* arg3, int* arg4, int* arg5, int* arg6, int* arg7, int* arg8, int* arg9)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_torus")]
-    public static int PK_BODY_create_solid_torus(double arg0, double arg1, PK_AXIS2_sf_t* arg2, int* arg3)
     {
         return KernelRuntime.NotImplemented();
     }

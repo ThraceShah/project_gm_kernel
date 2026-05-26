@@ -275,6 +275,34 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.Dispatch(ApiId.BodyCreateSolidCyl, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_cone")]
+    public static int PK_BODY_create_solid_cone(double radius, double height, double semiAngle, PK_AXIS2_sf_s* basisSet, int* body)
+    {
+        var command = new BodyCreateSolidConeCommand { Radius = radius, Height = height, SemiAngle = semiAngle, BasisSet = basisSet, Body = body };
+        return KernelRuntime.Dispatch(ApiId.BodyCreateSolidCone, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_prism")]
+    public static int PK_BODY_create_solid_prism(double radius, double height, int nSides, PK_AXIS2_sf_s* basisSet, int* body)
+    {
+        var command = new BodyCreateSolidPrismCommand { Radius = radius, Height = height, SideCount = nSides, BasisSet = basisSet, Body = body };
+        return KernelRuntime.Dispatch(ApiId.BodyCreateSolidPrism, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_sphere")]
+    public static int PK_BODY_create_solid_sphere(double radius, PK_AXIS2_sf_s* basisSet, int* body)
+    {
+        var command = new BodyCreateSolidSphereCommand { Radius = radius, BasisSet = basisSet, Body = body };
+        return KernelRuntime.Dispatch(ApiId.BodyCreateSolidSphere, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_torus")]
+    public static int PK_BODY_create_solid_torus(double majorRadius, double minorRadius, PK_AXIS2_sf_s* basisSet, int* body)
+    {
+        var command = new BodyCreateSolidTorusCommand { MajorRadius = majorRadius, MinorRadius = minorRadius, BasisSet = basisSet, Body = body };
+        return KernelRuntime.Dispatch(ApiId.BodyCreateSolidTorus, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
     // ── XT transmit / receive ───────────────────────────────────
 
     [UnmanagedCallersOnly(EntryPoint = "PK_PART_transmit_b")]

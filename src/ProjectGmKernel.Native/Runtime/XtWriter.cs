@@ -187,6 +187,9 @@ internal static unsafe class XtWriter
             {
                 SurfaceClass.Plane => PlaneNode(pair.Value, pair.Key, surface, map),
                 SurfaceClass.Cylinder => CylinderNode(pair.Value, pair.Key, surface, map),
+                SurfaceClass.Cone => ConeNode(pair.Value, pair.Key, surface, map),
+                SurfaceClass.Sphere => SphereNode(pair.Value, pair.Key, surface, map),
+                SurfaceClass.Torus => TorusNode(pair.Value, pair.Key, surface, map),
                 _ => throw new NotSupportedException("Unsupported surface class for XT writer."),
             };
             SetNode(nodes, map, pair.Value, node);
@@ -495,6 +498,81 @@ internal static unsafe class XtWriter
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
                 XtFieldValue.RealValue(data.Radius),
+                XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
+            ],
+        };
+    }
+
+    private static XtNode ConeNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
+    {
+        var data = KernelRuntime.GetConeData(surface.DataIndex);
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.Cone,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(NextSurface(tag, map)),
+                XtFieldValue.Ptr(PreviousSurface(tag, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
+                XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
+                XtFieldValue.RealValue(data.Radius),
+                XtFieldValue.RealValue(Math.Sin(data.SemiAngle)),
+                XtFieldValue.RealValue(Math.Cos(data.SemiAngle)),
+                XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
+            ],
+        };
+    }
+
+    private static XtNode SphereNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
+    {
+        var data = KernelRuntime.GetSphereData(surface.DataIndex);
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.Sphere,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(NextSurface(tag, map)),
+                XtFieldValue.Ptr(PreviousSurface(tag, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Vec(data.CenterX, data.CenterY, data.CenterZ),
+                XtFieldValue.RealValue(data.Radius),
+                XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
+                XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
+            ],
+        };
+    }
+
+    private static XtNode TorusNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
+    {
+        var data = KernelRuntime.GetTorusData(surface.DataIndex);
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.Torus,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(NextSurface(tag, map)),
+                XtFieldValue.Ptr(PreviousSurface(tag, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
+                XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
+                XtFieldValue.RealValue(data.MajorRadius),
+                XtFieldValue.RealValue(data.MinorRadius),
                 XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
             ],
         };

@@ -6,6 +6,12 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe class KernelRuntime
 {
+    private enum CreatePrimitiveKind
+    {
+        Sphere,
+        Torus,
+    }
+
     private const int DefaultSessionId = 1;
     private const int MaxHandles = 4096;
 
@@ -28,6 +34,9 @@ internal static unsafe class KernelRuntime
     private const int MaxLineData = 4096;
     private const int MaxCylinderData = 1024;
     private const int MaxPlaneData = 1024;
+    private const int MaxConeData = 1024;
+    private const int MaxSphereData = 1024;
+    private const int MaxTorusData = 1024;
 
     // ── Shared state ─────────────────────────────────────────────
     private static readonly System.Threading.Lock RuntimeLock = new();
@@ -84,6 +93,9 @@ internal static unsafe class KernelRuntime
     internal static EntityPool<LineData> LineDataPool;
     internal static EntityPool<CylinderData> CylinderDataPool;
     internal static EntityPool<PlaneData> PlaneDataPool;
+    internal static EntityPool<ConeData> ConeDataPool;
+    internal static EntityPool<SphereData> SphereDataPool;
+    internal static EntityPool<TorusData> TorusDataPool;
 
     internal static bool IsSessionStarted => session is not null && session.Started;
 
@@ -153,6 +165,9 @@ internal static unsafe class KernelRuntime
     internal static PlaneData GetPlaneData(DataSlot dataSlot) => PlaneDataPool[dataSlot];
     internal static CircleData GetCircleData(DataSlot dataSlot) => CircleDataPool[dataSlot];
     internal static LineData GetLineData(DataSlot dataSlot) => LineDataPool[dataSlot];
+    internal static ConeData GetConeData(DataSlot dataSlot) => ConeDataPool[dataSlot];
+    internal static SphereData GetSphereData(DataSlot dataSlot) => SphereDataPool[dataSlot];
+    internal static TorusData GetTorusData(DataSlot dataSlot) => TorusDataPool[dataSlot];
 
     // Pool index constants for mark/rollback
     private const int PoolHandles = 0;
@@ -174,6 +189,9 @@ internal static unsafe class KernelRuntime
     private const int PoolCylinderData = 16;
     private const int PoolPlaneData = 17;
     private const int PoolLineData = 18;
+    private const int PoolConeData = 19;
+    private const int PoolSphereData = 20;
+    private const int PoolTorusData = 21;
 
     static KernelRuntime()
     {
@@ -195,6 +213,9 @@ internal static unsafe class KernelRuntime
         LineDataPool = new EntityPool<LineData>(MaxLineData);
         CylinderDataPool = new EntityPool<CylinderData>(MaxCylinderData);
         PlaneDataPool = new EntityPool<PlaneData>(MaxPlaneData);
+        ConeDataPool = new EntityPool<ConeData>(MaxConeData);
+        SphereDataPool = new EntityPool<SphereData>(MaxSphereData);
+        TorusDataPool = new EntityPool<TorusData>(MaxTorusData);
     }
 
     // ── Tag allocation ───────────────────────────────────────────
@@ -412,6 +433,9 @@ internal static unsafe class KernelRuntime
         LineDataPool.Reset();
         CylinderDataPool.Reset();
         PlaneDataPool.Reset();
+        ConeDataPool.Reset();
+        SphereDataPool.Reset();
+        TorusDataPool.Reset();
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -447,6 +471,9 @@ internal static unsafe class KernelRuntime
         LineDataPool.Reset();
         CylinderDataPool.Reset();
         PlaneDataPool.Reset();
+        ConeDataPool.Reset();
+        SphereDataPool.Reset();
+        TorusDataPool.Reset();
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -2267,6 +2294,70 @@ internal static unsafe class KernelRuntime
         return CreateSolidCylinderCore(radius, height, basisSet, bodyTag);
     }
 
+    public static int BodyCreateSolidCone(double radius, double height, double semiAngle, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        if (bodyTag is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+        if (height <= 0)
+            return ParasolidConstants.PK_ERROR_distance_le_0;
+        if (semiAngle <= 0 || semiAngle >= Math.PI * 0.5)
+            return ParasolidConstants.PK_ERROR_bad_angle;
+        if (radius < 0)
+            return ParasolidConstants.PK_ERROR_distance_le_0;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (session is null || !session.Started)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+
+        return CreateSolidConeCore(radius, height, semiAngle, basisSet, bodyTag);
+    }
+
+    public static int BodyCreateSolidPrism(double radius, double height, int nSides, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        if (bodyTag is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+        if (radius <= 0 || height <= 0)
+            return ParasolidConstants.PK_ERROR_distance_le_0;
+        if (nSides < 3)
+            return ParasolidConstants.PK_ERROR_lt_3_sides;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (session is null || !session.Started)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+
+        return CreateSolidPrismCore(radius, height, nSides, basisSet, bodyTag);
+    }
+
+    public static int BodyCreateSolidSphere(double radius, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        if (bodyTag is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+        if (radius <= 0)
+            return ParasolidConstants.PK_ERROR_distance_le_0;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (session is null || !session.Started)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+
+        return CreateSingleFaceSolidCore(CreatePrimitiveKind.Sphere, radius, 0, basisSet, bodyTag);
+    }
+
+    public static int BodyCreateSolidTorus(double majorRadius, double minorRadius, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        if (bodyTag is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+        if (minorRadius <= 0 || majorRadius == 0)
+            return ParasolidConstants.PK_ERROR_distance_le_0;
+        if (majorRadius == minorRadius || majorRadius + minorRadius <= 0)
+            return ParasolidConstants.PK_ERROR_majrad_minrad_mismatch;
+
+        using var scope = RuntimeLock.EnterScope();
+        if (session is null || !session.Started)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+
+        return CreateSingleFaceSolidCore(CreatePrimitiveKind.Torus, majorRadius, minorRadius, basisSet, bodyTag);
+    }
+
     public static int PartTransmitB(int nParts, EntityTag* parts, PK_PART_transmit_o_s* options, PK_MEMORY_block_t* block)
     {
         if (nParts <= 0 || parts is null || block is null)
@@ -2477,6 +2568,185 @@ internal static unsafe class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
+    private static int CreateSolidConeCore(double radius, double height, double semiAngle, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        var bodySlot = Bodies.Allocate();
+        ref var body = ref Bodies[bodySlot];
+        InitializeBody(ref body);
+        AssignPartition(ref body.Header, CurrentPartition);
+
+        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
+        var topRadius = radius + height * Math.Tan(semiAngle);
+
+        int sideSurf = CreateConeSurfaceTag(ox, oy, oz, axX, axY, axZ, refX, refY, refZ, radius, semiAngle);
+        int topSurf = CreatePlaneSurfaceTag(ox + height * axX, oy + height * axY, oz + height * axZ, axX, axY, axZ, refX, refY, refZ);
+        if (sideSurf <= 0 || topSurf <= 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        Span<int> edgeSlots = stackalloc int[2];
+        Span<int> edgeCurves = stackalloc int[2];
+        edgeCurves[0] = topRadius > 0 ? CreateCircleCurveTag(ox + height * axX, oy + height * axY, oz + height * axZ, -axX, -axY, -axZ, refX, refY, refZ, topRadius) : 0;
+        edgeCurves[1] = radius > 0 ? CreateCircleCurveTag(ox, oy, oz, axX, axY, axZ, refX, refY, refZ, radius) : 0;
+        var edgeCount = radius > 0 ? 2 : 1;
+        for (int i = 0; i < edgeCount; i++)
+        {
+            if (edgeCurves[i] <= 0)
+                return ParasolidConstants.PK_ERROR_general_body;
+
+            edgeSlots[i] = Edges.Allocate();
+            ref var edge = ref Edges[edgeSlots[i]];
+            edge.Body = bodySlot;
+            edge.StartVertex = -1;
+            edge.EndVertex = -1;
+            edge.CurveTag = edgeCurves[i];
+            edge.FirstFinEdge = -1;
+            edge.LastFinEdge = -1;
+            AppendEdgeToBody(bodySlot, edgeSlots[i]);
+        }
+
+        if (radius == 0)
+            AddVertex(bodySlot, ox, oy, oz, out _);
+
+        int faceCount = radius > 0 ? 3 : 2;
+        Span<int> faceSlots = stackalloc int[3];
+        Span<int> surfTags = stackalloc int[3];
+        surfTags[0] = sideSurf;
+        surfTags[1] = topSurf;
+        if (radius > 0)
+        {
+            surfTags[2] = CreatePlaneSurfaceTag(ox, oy, oz, -axX, -axY, -axZ, refX, refY, refZ);
+            if (surfTags[2] <= 0)
+                return ParasolidConstants.PK_ERROR_general_body;
+        }
+
+        for (int f = 0; f < faceCount; f++)
+            faceSlots[f] = AddFace(bodySlot, surfTags[f]);
+
+        AddLoopWithEdges(faceSlots[0], edgeSlots, edgeCount);
+        if (radius == 0)
+            AddLoopWithEdges(faceSlots[1], edgeSlots, 1);
+        else
+        {
+            AddLoopWithEdges(faceSlots[1], edgeSlots, 1);
+            AddLoopWithEdges(faceSlots[2], edgeSlots[1], 1);
+        }
+
+        for (int f = 0; f < faceCount; f++)
+        {
+            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
+            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
+        }
+
+        return FinishCreatedBody(bodySlot, bodyTag);
+    }
+
+    private static int CreateSolidPrismCore(double radius, double height, int nSides, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        if (nSides > 1024)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+
+        var bodySlot = Bodies.Allocate();
+        ref var body = ref Bodies[bodySlot];
+        InitializeBody(ref body);
+        AssignPartition(ref body.Header, CurrentPartition);
+
+        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
+        Cross(axX, axY, axZ, refX, refY, refZ, out double yX, out double yY, out double yZ);
+
+        Span<double> px = stackalloc double[nSides * 2];
+        Span<double> py = stackalloc double[nSides * 2];
+        Span<double> pz = stackalloc double[nSides * 2];
+        for (int i = 0; i < nSides; i++)
+        {
+            var angle = Math.Tau * i / nSides;
+            var cx = Math.Cos(angle) * radius;
+            var cy = Math.Sin(angle) * radius;
+            px[i] = ox + cx * refX + cy * yX;
+            py[i] = oy + cx * refY + cy * yY;
+            pz[i] = oz + cx * refZ + cy * yZ;
+            px[i + nSides] = px[i] + height * axX;
+            py[i + nSides] = py[i] + height * axY;
+            pz[i + nSides] = pz[i] + height * axZ;
+        }
+
+        Span<int> vertexSlots = stackalloc int[nSides * 2];
+        for (int i = 0; i < vertexSlots.Length; i++)
+        {
+            if (!AddVertex(bodySlot, px[i], py[i], pz[i], out vertexSlots[i]))
+                return ParasolidConstants.PK_ERROR_general_body;
+        }
+
+        Span<int> edgeSlots = stackalloc int[nSides * 3];
+        for (int i = 0; i < nSides; i++)
+        {
+            if (!AddLineEdge(bodySlot, vertexSlots[i], vertexSlots[(i + 1) % nSides], px[i], py[i], pz[i], px[(i + 1) % nSides], py[(i + 1) % nSides], pz[(i + 1) % nSides], out edgeSlots[i]))
+                return ParasolidConstants.PK_ERROR_general_body;
+            if (!AddLineEdge(bodySlot, vertexSlots[i + nSides], vertexSlots[((i + 1) % nSides) + nSides], px[i + nSides], py[i + nSides], pz[i + nSides], px[((i + 1) % nSides) + nSides], py[((i + 1) % nSides) + nSides], pz[((i + 1) % nSides) + nSides], out edgeSlots[i + nSides]))
+                return ParasolidConstants.PK_ERROR_general_body;
+            if (!AddLineEdge(bodySlot, vertexSlots[i], vertexSlots[i + nSides], px[i], py[i], pz[i], px[i + nSides], py[i + nSides], pz[i + nSides], out edgeSlots[i + nSides * 2]))
+                return ParasolidConstants.PK_ERROR_general_body;
+        }
+
+        Span<int> faceSlots = stackalloc int[nSides + 2];
+        int bottomSurf = CreatePlaneSurfaceTag(ox, oy, oz, -axX, -axY, -axZ, refX, refY, refZ);
+        int topSurf = CreatePlaneSurfaceTag(ox + height * axX, oy + height * axY, oz + height * axZ, axX, axY, axZ, refX, refY, refZ);
+        if (bottomSurf <= 0 || topSurf <= 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+        faceSlots[0] = AddFace(bodySlot, bottomSurf);
+        faceSlots[1] = AddFace(bodySlot, topSurf);
+        AddLoopWithEdges(faceSlots[0], edgeSlots, nSides);
+        AddLoopWithEdges(faceSlots[1], edgeSlots[nSides..], nSides);
+
+        Span<int> sideEdges = stackalloc int[4];
+        for (int i = 0; i < nSides; i++)
+        {
+            int next = (i + 1) % nSides;
+            Cross(px[next] - px[i], py[next] - py[i], pz[next] - pz[i], axX, axY, axZ, out double normalX, out double normalY, out double normalZ);
+            var sideSurf = CreatePlaneSurfaceTag(px[i], py[i], pz[i], normalX, normalY, normalZ, axX, axY, axZ);
+            if (sideSurf <= 0)
+                return ParasolidConstants.PK_ERROR_general_body;
+            faceSlots[i + 2] = AddFace(bodySlot, sideSurf);
+
+            sideEdges[0] = edgeSlots[i];
+            sideEdges[1] = edgeSlots[nSides * 2 + next];
+            sideEdges[2] = edgeSlots[nSides + i];
+            sideEdges[3] = edgeSlots[nSides * 2 + i];
+            AddLoopWithEdges(faceSlots[i + 2], sideEdges, 4);
+        }
+
+        for (int f = 0; f < faceSlots.Length; f++)
+        {
+            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
+            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
+        }
+
+        return FinishCreatedBody(bodySlot, bodyTag);
+    }
+
+    private static int CreateSingleFaceSolidCore(CreatePrimitiveKind kind, double value0, double value1, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    {
+        var bodySlot = Bodies.Allocate();
+        ref var body = ref Bodies[bodySlot];
+        InitializeBody(ref body);
+        AssignPartition(ref body.Header, CurrentPartition);
+
+        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
+
+        var surfTag = kind == CreatePrimitiveKind.Sphere
+            ? CreateSphereSurfaceTag(ox, oy, oz, axX, axY, axZ, refX, refY, refZ, value0)
+            : CreateTorusSurfaceTag(ox, oy, oz, axX, axY, axZ, refX, refY, refZ, value0, value1);
+        if (surfTag <= 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        var faceSlot = AddFace(bodySlot, surfTag);
+        AddFaceUse(solidShellSlot, faceSlot, ParasolidConstants.PK_TOPOL_sense_negative_c);
+        AddFaceUse(voidShellSlot, faceSlot, ParasolidConstants.PK_TOPOL_sense_positive_c);
+        return FinishCreatedBody(bodySlot, bodyTag);
+    }
+
     // ── Mark / Rollback ──────────────────────────────────────────
 
     public static int MarkCreate(int* mark)
@@ -2513,6 +2783,9 @@ internal static unsafe class KernelRuntime
         m.PoolCounts[PoolCylinderData] = CylinderDataPool.AllocatedCount;
         m.PoolCounts[PoolPlaneData] = PlaneDataPool.AllocatedCount;
         m.PoolCounts[PoolLineData] = LineDataPool.AllocatedCount;
+        m.PoolCounts[PoolConeData] = ConeDataPool.AllocatedCount;
+        m.PoolCounts[PoolSphereData] = SphereDataPool.AllocatedCount;
+        m.PoolCounts[PoolTorusData] = TorusDataPool.AllocatedCount;
         m.RollbackStamp = session.NextRollbackStamp;
 
         session.HasMark = true;
@@ -2554,6 +2827,9 @@ internal static unsafe class KernelRuntime
         CylinderDataPool.RestoreMark(m.PoolCounts[PoolCylinderData]);
         PlaneDataPool.RestoreMark(m.PoolCounts[PoolPlaneData]);
         LineDataPool.RestoreMark(m.PoolCounts[PoolLineData]);
+        ConeDataPool.RestoreMark(m.PoolCounts[PoolConeData]);
+        SphereDataPool.RestoreMark(m.PoolCounts[PoolSphereData]);
+        TorusDataPool.RestoreMark(m.PoolCounts[PoolTorusData]);
 
         // Restore deleted entities (tombstones)
         for (int i = 0; i < session.TombstoneCount; i++)
@@ -2881,6 +3157,88 @@ internal static unsafe class KernelRuntime
         return finSlot;
     }
 
+    private static FaceSlot AddFace(BodySlot bodySlot, SurfTag surfTag)
+    {
+        var faceSlot = Faces.Allocate();
+        ref var face = ref Faces[faceSlot];
+        InitializeFace(ref face);
+        face.SurfTag = surfTag;
+        AppendFaceToBody(bodySlot, faceSlot);
+        return faceSlot;
+    }
+
+    private static LoopSlot AddLoop(FaceSlot faceSlot)
+    {
+        var loopSlot = Loops.Allocate();
+        ref var loop = ref Loops[loopSlot];
+        loop.Face = faceSlot;
+        loop.FirstFin = -1;
+        loop.LastFin = -1;
+        loop.PrevInFace = -1;
+        loop.NextInFace = -1;
+        AppendLoopToFace(faceSlot, loopSlot);
+        return loopSlot;
+    }
+
+    private static void AddLoopWithEdges(FaceSlot faceSlot, ReadOnlySpan<int> edgeSlots, int edgeCount)
+    {
+        var loopSlot = AddLoop(faceSlot);
+        for (int i = 0; i < edgeCount; i++)
+            AddFinToLoopAndEdge(loopSlot, faceSlot, edgeSlots[i]);
+    }
+
+    private static void AddLoopWithEdges(FaceSlot faceSlot, EdgeSlot edgeSlot, int edgeCount)
+    {
+        var loopSlot = AddLoop(faceSlot);
+        for (int i = 0; i < edgeCount; i++)
+            AddFinToLoopAndEdge(loopSlot, faceSlot, edgeSlot);
+    }
+
+    private static bool AddVertex(BodySlot bodySlot, double x, double y, double z, out VertexSlot vertexSlot)
+    {
+        vertexSlot = Vertices.Allocate();
+        var pointTag = CreatePointTag(x, y, z);
+        if (pointTag <= 0)
+            return false;
+
+        ref var vertex = ref Vertices[vertexSlot];
+        vertex.PointTag = pointTag;
+        vertex.FirstFinVertex = -1;
+        vertex.LastFinVertex = -1;
+        AppendVertexToBody(bodySlot, vertexSlot);
+        return true;
+    }
+
+    private static bool AddLineEdge(BodySlot bodySlot, VertexSlot startVertex, VertexSlot endVertex, double x0, double y0, double z0, double x1, double y1, double z1, out EdgeSlot edgeSlot)
+    {
+        edgeSlot = Edges.Allocate();
+        var curveTag = CreateLineCurveTag(x0, y0, z0, x1 - x0, y1 - y0, z1 - z0);
+        if (curveTag <= 0)
+            return false;
+
+        ref var edge = ref Edges[edgeSlot];
+        edge.Body = bodySlot;
+        edge.StartVertex = startVertex;
+        edge.EndVertex = endVertex;
+        edge.CurveTag = curveTag;
+        edge.FirstFinEdge = -1;
+        edge.LastFinEdge = -1;
+        AppendEdgeToBody(bodySlot, edgeSlot);
+        return true;
+    }
+
+    private static int FinishCreatedBody(BodySlot bodySlot, EntityTag* bodyTag)
+    {
+        var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, Bodies[bodySlot].Header.Generation);
+        if (tag < 0)
+            return ParasolidConstants.PK_ERROR_general_body;
+
+        *bodyTag = tag;
+        RebuildBoundaryGeometryLinks(bodySlot);
+        AppendBodyToPartition(CurrentPartition, bodySlot);
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
     private static int CreateCircleCurveTag(double cx, double cy, double cz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius)
     {
         int dataSlot = CircleDataPool.Allocate();
@@ -2952,6 +3310,71 @@ internal static unsafe class KernelRuntime
         surf.UMax = Math.Tau;
         surf.VMin = 0;
         surf.VMax = 0;
+        return AllocateTag(EntityClass.Surface, PoolKind.Surface, surfSlot, surf.Header.Generation);
+    }
+
+    private static int CreateConeSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius, double semiAngle)
+    {
+        int dataSlot = ConeDataPool.Allocate();
+        ref var data = ref ConeDataPool[dataSlot];
+        data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
+        data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
+        data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
+        data.Radius = radius;
+        data.SemiAngle = semiAngle;
+
+        int surfSlot = Surfaces.Allocate();
+        ref var surf = ref Surfaces[surfSlot];
+        AssignPartition(ref surf.Header, CurrentPartition);
+        surf.Class = SurfaceClass.Cone;
+        surf.DataIndex = dataSlot;
+        surf.UMin = 0;
+        surf.UMax = Math.Tau;
+        surf.VMin = 0;
+        surf.VMax = 0;
+        return AllocateTag(EntityClass.Surface, PoolKind.Surface, surfSlot, surf.Header.Generation);
+    }
+
+    private static int CreateSphereSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius)
+    {
+        int dataSlot = SphereDataPool.Allocate();
+        ref var data = ref SphereDataPool[dataSlot];
+        data.CenterX = ox; data.CenterY = oy; data.CenterZ = oz;
+        data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
+        data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
+        data.Radius = radius;
+
+        int surfSlot = Surfaces.Allocate();
+        ref var surf = ref Surfaces[surfSlot];
+        AssignPartition(ref surf.Header, CurrentPartition);
+        surf.Class = SurfaceClass.Sphere;
+        surf.DataIndex = dataSlot;
+        surf.UMin = 0;
+        surf.UMax = Math.Tau;
+        surf.VMin = -Math.PI * 0.5;
+        surf.VMax = Math.PI * 0.5;
+        return AllocateTag(EntityClass.Surface, PoolKind.Surface, surfSlot, surf.Header.Generation);
+    }
+
+    private static int CreateTorusSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double majorRadius, double minorRadius)
+    {
+        int dataSlot = TorusDataPool.Allocate();
+        ref var data = ref TorusDataPool[dataSlot];
+        data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
+        data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
+        data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
+        data.MajorRadius = majorRadius;
+        data.MinorRadius = minorRadius;
+
+        int surfSlot = Surfaces.Allocate();
+        ref var surf = ref Surfaces[surfSlot];
+        AssignPartition(ref surf.Header, CurrentPartition);
+        surf.Class = SurfaceClass.Torus;
+        surf.DataIndex = dataSlot;
+        surf.UMin = 0;
+        surf.UMax = Math.Tau;
+        surf.VMin = -Math.PI;
+        surf.VMax = Math.PI;
         return AllocateTag(EntityClass.Surface, PoolKind.Surface, surfSlot, surf.Header.Generation);
     }
 

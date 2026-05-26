@@ -50,6 +50,10 @@ var parasolidOracleExit = Run("dotnet", "run scripts/ParasolidOracleSmoke.cs", c
 if (parasolidOracleExit != 0)
     return parasolidOracleExit;
 
+var parasolidPrimitiveOracleExit = Run("dotnet", "run scripts/ParasolidPrimitiveOracle.cs", cleanupTesthost: false);
+if (parasolidPrimitiveOracleExit != 0)
+    return parasolidPrimitiveOracleExit;
+
 var manualExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "KernelExports.cs");
 var generatedExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "KernelExports.generated.cs");
 var manualExports = Count(manualExportsPath, @"UnmanagedCallersOnly\(EntryPoint");

@@ -16,6 +16,7 @@
     <InternalsVisibleTo Include="AllocationBaseline" />
     <InternalsVisibleTo Include="KernelTests" />
     <InternalsVisibleTo Include="ParasolidOracleSmoke" />
+    <InternalsVisibleTo Include="ParasolidPrimitiveOracle" />
     <InternalsVisibleTo Include="TopologyDump" />
   </ItemGroup>
 </Project>

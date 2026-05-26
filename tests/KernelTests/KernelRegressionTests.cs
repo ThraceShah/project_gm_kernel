@@ -728,6 +728,32 @@ public unsafe class KernelRegressionTests : IDisposable
     }
 
     [Fact]
+    public void SolidPrimitiveCreation_MatchesParasolidTopologyCounts()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+        AssertBodyCounts(body, 2, 2, 6, 12, 8);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCyl(2, 5, null, &body));
+        AssertBodyCounts(body, 2, 2, 3, 2, 0);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCone(1, 5, 0.25, null, &body));
+        AssertBodyCounts(body, 2, 2, 3, 2, 0);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCone(0, 5, 0.25, null, &body));
+        AssertBodyCounts(body, 2, 2, 2, 1, 1);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidPrism(2, 5, 5, null, &body));
+        AssertBodyCounts(body, 2, 2, 7, 15, 10);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidSphere(2, null, &body));
+        AssertBodyCounts(body, 2, 2, 1, 0, 0);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidTorus(5, 1, null, &body));
+        AssertBodyCounts(body, 2, 2, 1, 0, 0);
+    }
+
+    [Fact]
     public void EntityAskPartition_ReturnsDefaultPartitionForCreatedBody()
     {
         int body;
@@ -878,12 +904,28 @@ public unsafe class KernelRegressionTests : IDisposable
         Assert.Equal(expectedShells, count);
         Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &count, &entities));
         Assert.Equal(expectedFaces, count);
+        var faceCount = count;
+        var faces = entities;
         if (expectedFaces > 0)
         {
             int* shells = stackalloc int[2];
-            Assert.Equal(0, KernelRuntime.FaceAskShells(entities[0], shells));
+            Assert.Equal(0, KernelRuntime.FaceAskShells(faces[0], shells));
             Assert.True(shells[0] > 0);
             Assert.True(shells[1] > 0);
+        }
+
+        for (int i = 0; i < faceCount; i++)
+        {
+            int loopCount;
+            int* loops;
+            Assert.Equal(0, KernelRuntime.FaceAskLoops(faces[i], &loopCount, &loops));
+            for (int j = 0; j < loopCount; j++)
+            {
+                int finCount;
+                int* fins;
+                Assert.Equal(0, KernelRuntime.LoopAskFins(loops[j], &finCount, &fins));
+                Assert.True(finCount > 0);
+            }
         }
 
         Assert.Equal(0, KernelRuntime.BodyAskEdges(body, &count, &entities));

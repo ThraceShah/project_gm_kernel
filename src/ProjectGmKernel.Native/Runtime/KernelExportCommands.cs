@@ -255,6 +255,47 @@ internal unsafe struct BodyCreateSolidCylCommand : IKernelCommand
     public int Execute() => KernelRuntime.BodyCreateSolidCyl(Radius, Height, BasisSet, Body);
 }
 
+internal unsafe struct BodyCreateSolidConeCommand : IKernelCommand
+{
+    public double Radius;
+    public double Height;
+    public double SemiAngle;
+    public PK_AXIS2_sf_s* BasisSet;
+    public EntityTag* Body;
+
+    public int Execute() => KernelRuntime.BodyCreateSolidCone(Radius, Height, SemiAngle, BasisSet, Body);
+}
+
+internal unsafe struct BodyCreateSolidPrismCommand : IKernelCommand
+{
+    public double Radius;
+    public double Height;
+    public int SideCount;
+    public PK_AXIS2_sf_s* BasisSet;
+    public EntityTag* Body;
+
+    public int Execute() => KernelRuntime.BodyCreateSolidPrism(Radius, Height, SideCount, BasisSet, Body);
+}
+
+internal unsafe struct BodyCreateSolidSphereCommand : IKernelCommand
+{
+    public double Radius;
+    public PK_AXIS2_sf_s* BasisSet;
+    public EntityTag* Body;
+
+    public int Execute() => KernelRuntime.BodyCreateSolidSphere(Radius, BasisSet, Body);
+}
+
+internal unsafe struct BodyCreateSolidTorusCommand : IKernelCommand
+{
+    public double MajorRadius;
+    public double MinorRadius;
+    public PK_AXIS2_sf_s* BasisSet;
+    public EntityTag* Body;
+
+    public int Execute() => KernelRuntime.BodyCreateSolidTorus(MajorRadius, MinorRadius, BasisSet, Body);
+}
+
 internal unsafe struct CylCreateCommand : IKernelCommand
 {
     public PK_CYL_sf_s* CylinderSf;

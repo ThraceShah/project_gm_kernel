@@ -40,6 +40,10 @@ internal enum ApiId : ushort
     MemoryFree = 36,
     EntityAskPartition = 37,
     SessionAskCurrentPartition = 38,
+    BodyCreateSolidCone = 39,
+    BodyCreateSolidPrism = 40,
+    BodyCreateSolidSphere = 41,
+    BodyCreateSolidTorus = 42,
     GeneratedStub = 65535,
 }
 

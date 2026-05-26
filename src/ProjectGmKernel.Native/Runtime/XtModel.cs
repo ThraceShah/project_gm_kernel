@@ -19,6 +19,9 @@ internal enum XtNodeTypes : XtNodeType
     Circle = 31,
     Plane = 50,
     Cylinder = 51,
+    Cone = 52,
+    Sphere = 53,
+    Torus = 54,
 }
 
 internal enum XtFieldKind : byte
