@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "group": "body-types",
+  "entries": [
+    {
+      "caseId": "body.type.unspecified-sentinel",
+      "status": "rejected",
+      "typeId": "body.type.unspecified",
+      "api": ["PK_BODY_ask_type"],
+      "entity": "BODY",
+      "parameters": { "requestedType": "unspecified" },
+      "result": "sentinel-only",
+      "reason": "PK_BODY_type_unspecified_c is an options sentinel; PK_BODY_ask_type returns a concrete type for every valid body and cannot produce this value.",
+      "recheckWhen": "A documented public API returns unspecified for a valid body."
+    },
+    {
+      "caseId": "body.empty.topology-zero",
+      "status": "rejected",
+      "typeId": "body.type.empty",
+      "api": ["PK_BODY_create_topology"],
+      "entity": "BODY",
+      "parameters": { "nTopols": 0, "requestedType": "empty" },
+      "result": "PK_ERROR_bad_option=9999",
+      "reason": "The public zero-topology constructor rejects the requested empty body before a body tag is returned.",
+      "recheckWhen": "A documented public empty-body producer or legal delete-to-empty sequence is available."
+    }
+  ]
+}

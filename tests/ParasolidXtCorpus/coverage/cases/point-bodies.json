@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "group": "point-bodies",
+  "cases": [
+    {
+      "caseId": "body.minimum.point",
+      "status": "success",
+      "producer": "PK_POINT_make_minimum_body + PK_POINT_create",
+      "parameters": { "point": [1.25, -0.5, 2.0], "operation": "make-minimum-body" },
+      "coverage": ["body/minimum", "point", "topology/vertex", "producer"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 0, "edges": 0, "vertices": 1 },
+      "output": "body.minimum.point/model.x_t"
+    }
+  ]
+}

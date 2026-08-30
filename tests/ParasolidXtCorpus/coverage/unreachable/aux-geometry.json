@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "group": "aux-geometry",
+  "entries": [
+    {
+      "caseId": "geometry.vector-direction-axis-standalone",
+      "status": "unreachable",
+      "api": ["PK_VECTOR_create", "PK_DIRECTION_create", "PK_AXIS1_create", "PK_AXIS2_create"],
+      "reason": "These standard forms are value inputs rather than standalone persistent producer APIs in the checked-in public binding.",
+      "evidence": "No corresponding create entry point exists in PKToy parasolid.g.cs; vectors and axes are exercised as inputs to the analytic geometry and transform cases.",
+      "recheckWhen": "A persistent producer or transmit-owning entity for standalone vector/direction/axis values is added to the API inventory."
+    },
+    {
+      "caseId": "geometry.geom-transform-options",
+      "status": "unreachable",
+      "api": ["PK_GEOM_transform_2"],
+      "reason": "The option-bearing geometry transform returned a handle that could not be attached as persistent construction geometry in the tested runtime.",
+      "evidence": "PK_GEOM_transform_2 completed, but PK_PART_add_geoms for its returned point failed with error 22; no fixture was promoted.",
+      "recheckWhen": "The runtime clarifies ownership/lifetime of PK_GEOM_transform_2 output handles."
+    },
+    {
+      "caseId": "geometry.pline-construction",
+      "status": "unreachable",
+      "api": ["PK_PLINE_create"],
+      "reason": "The checked-in runtime rejects the documented four-position open polyline standard form before a persistent polyline handle is returned.",
+      "evidence": "PK_PLINE_create returned error 5237 for distinct finite positions with closed=false and base_parameter=0; no geometry handle or x_t was retained.",
+      "recheckWhen": "A runtime-compatible polyline parameterization and base-parameter convention are identified."
+    }
+  ]
+}

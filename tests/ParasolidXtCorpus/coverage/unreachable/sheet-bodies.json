@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "group": "sheet-bodies",
+  "entries": [
+    {
+      "caseId": "body.sheet.planar-and-topology",
+      "status": "unreachable",
+      "api": [
+        "PK_BODY_create_sheet_topology"
+      ],
+      "reason": "No stable minimal topology input has yet been promoted; the explicit planar vector-loop producer is covered by body.sheet.planar.rectangle.",
+      "evidence": "PK_BODY_create_sheet_planar is covered by the body.sheet.planar.rectangle case; only sheet-topology relation construction remains pending.",
+      "recheckWhen": "A topology case-group provides a verified vector/relations seed and real Parasolid self-receive passes."
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "group": "face-blends",
+  "scope": "Face-face rolling-ball blends created by PK_FACE_make_blend. The planar seed is a deterministic separate-face sheet pair with an offset line spine, so the returned blend is a complete, self-contained sheet body.",
+  "cases": [
+    {
+      "caseId": "blend.fxf.plane-plane.rolling-ball.1",
+      "status": "success",
+      "producer": "PK_FACE_make_blend",
+      "entity": "CYLINDER (canonical rolling-ball blend between planar walls)",
+      "owner": "sheet-body",
+      "parameters": {
+        "leftWall": "plane(x=0)",
+        "rightWall": "plane(y=0)",
+        "spine": "line(x=0.25,y=0.25)",
+        "radius": 0.05,
+        "leftSense": true,
+        "rightSense": true,
+        "trim": "to-walls",
+        "walls": "trim-both",
+        "depth": 1
+      },
+      "coverage": ["blend", "blend/face-face", "blend/rolling-ball", "geometry.blend.depth.1", "geometry.surface.cylinder"],
+      "requiredSchemaNodes": ["CYLINDER"],
+      "output": "blend.fxf.plane-plane.rolling-ball.1/model.x_t",
+      "verification": "typed-body-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "blend.fxf.plane-plane.rolling-ball.1-reversed",
+      "status": "success",
+      "producer": "PK_FACE_make_blend",
+      "entity": "CYLINDER (canonical rolling-ball blend between planar walls)",
+      "owner": "sheet-body",
+      "parameters": {
+        "leftWall": "plane(x=0)",
+        "rightWall": "plane(y=0)",
+        "spine": "line(x=0.25,y=0.25)",
+        "radius": 0.05,
+        "leftSense": true,
+        "rightSense": false,
+        "trim": "to-walls",
+        "walls": "trim-both",
+        "depth": 1
+      },
+      "coverage": ["blend", "blend/face-face", "blend/rolling-ball", "blend/sense/reversed", "geometry.blend.depth.1", "geometry.surface.cylinder"],
+      "requiredSchemaNodes": ["CYLINDER"],
+      "output": "blend.fxf.plane-plane.rolling-ball.1-reversed/model.x_t",
+      "verification": "typed-body-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "icurve.bsurf-plane.depth1",
+      "status": "success",
+      "producer": "PK_FACE_intersect_face",
+      "entity": "ICURVE",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "leftWall": "bounded B-surface patch",
+        "rightWall": "plane(z=0.2)",
+        "depth": 1
+      },
+      "coverage": ["icurve", "icurve/face-face", "geometry.icurve.depth.1", "geometry.surface.bsurf", "geometry.surface.plane"],
+      "requiredSchemaNodes": ["INTERSECTION"],
+      "requiredSchemaDependencies": ["INTERSECTION->B_SURFACE", "INTERSECTION->PLANE"],
+      "output": "icurve.bsurf-plane.depth1/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "blend.fxf.bsurf-plane.rolling-ball.1",
+      "status": "success",
+      "producer": "PK_FACE_make_blend",
+      "entity": "BLENDSF",
+      "owner": "sheet-body",
+      "parameters": {
+        "leftWall": "bounded B-surface patch",
+        "rightWall": "plane(z=0.2)",
+        "spine": "deterministic line seed",
+        "radius": 0.05,
+        "trim": "to-walls",
+        "walls": "trim-both",
+        "depth": 1
+      },
+      "coverage": ["blend", "blend/face-face", "blend/rolling-ball", "geometry.blend.depth.1", "geometry.surface.bsurf", "geometry.surface.plane", "schema.node.BLENDED_EDGE", "schema.node.BLEND_BOUND"],
+      "requiredSchemaNodes": ["BLENDED_EDGE", "BLEND_BOUND", "INTERSECTION"],
+      "requiredSchemaDependencies": ["BLENDED_EDGE->B_SURFACE", "BLENDED_EDGE->PLANE", "BLENDED_EDGE->INTERSECTION", "BLEND_BOUND->BLENDED_EDGE", "BLEND_BOUND->PLANE"],
+      "output": "blend.fxf.bsurf-plane.rolling-ball.1/model.x_t",
+      "verification": "PK_BLENDSF_ask-schema-and-self-receive"
+    }
+  ]
+}

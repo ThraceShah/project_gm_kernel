@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "group": "assembly",
+  "entries": [
+    {
+      "caseId": "assembly.nested-child",
+      "status": "unreachable",
+      "typeId": "assembly.nested",
+      "api": ["PK_INSTANCE_create"],
+      "reason": "The current runtime rejects an assembly that is already parented as an instance when it is used as an owning nested assembly.",
+      "evidence": "PK_INSTANCE_create returned PK_ERROR_has_parent (28) for both construction orders tried; no nested fixture was retained.",
+      "recheckWhen": "A runtime-supported nested-assembly ownership operation is available."
+    }
+  ],
+  "notes": [
+    "The empty assembly case is verified; instance, nested assembly and transform branches require separate cases.",
+    "An assembly is validated as a PK_PART with assembly-specific instance/part counts, never as a body."
+  ]
+}

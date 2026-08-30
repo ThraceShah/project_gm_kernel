@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "group": "attribute-matrix",
+  "entries": [
+    {
+      "caseId": "attribute.body.group-closing",
+      "status": "rejected",
+      "api": ["PK_ATTDEF_set_group_closing", "PK_ATTDEF_is_group_closing"],
+      "observedError": "PK_ERROR_unsuitable_entity (914)",
+      "reason": "The v38 runtime rejects group-closing on a standard integer body definition; no stable group-closing fixture is retained."
+    }
+  ]
+}

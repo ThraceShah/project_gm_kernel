@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "group": "user-fields-mesh",
+  "entries": [
+    {
+      "caseId": "user-field.payload.zero-and-nonzero",
+      "status": "partial",
+      "api": [
+        "PK_SESSION_start",
+        "PK_SESSION_ask_user_field_len",
+        "PK_ENTITY_set_user_field",
+        "PK_ENTITY_ask_user_field"
+      ],
+      "parameters": {
+        "requiredSessionUserFieldLength": ">=1",
+        "payloadClasses": ["zero-length", "single-int", "multi-int", "boundary-length"]
+      },
+      "reason": "The shared corpus host now supports an explicit non-zero user-field session and covers four-slot integer round trips on a body alone and independently on a body plus face. Zero-length, multi-slot boundary and callback/error classes remain separate cases.",
+      "evidence": {
+        "host": "scripts/ParasolidXtCorpusHost.cs:RunGroup sessionUserFieldLength",
+        "runtime": "A four-slot session accepts PK_ENTITY_set_user_field and survives text transmit/receive; a fresh default zero-slot session returns PK_ERROR_no_user_fields (949).",
+        "header": "third_party/parasolid/include/parasolid_kernel.h:29285-29306,33822-33830,33980-33988"
+      },
+      "recheckWhen": "Add zero-length, boundary-size and callback/error cases and verify their receive semantics under fresh sessions."
+    },
+    {
+      "caseId": "lattice.implicit-tpms",
+      "status": "unreachable",
+      "api": [
+        "PK_LATTICE_create_by_core",
+        "PK_REGION_embed_lattices",
+        "PK_REGION_ask_lattices",
+        "PK_PART_transmit_b"
+      ],
+      "parameters": {
+        "core": "implicit TPMS gyroid",
+        "basis": "identity",
+        "cell": "unit skew box",
+        "owner": "region"
+      },
+      "reason": "The current checked-in runtime rejects the smallest implicit TPMS lattice construction with PK_ERROR_lattice_geometry (5277), before a lattice can be embedded in a region or transmitted as a part.",
+      "evidence": {
+        "runtime": "PK_LATTICE_create_by_core returned PK_ERROR_lattice_geometry (5277), lattice=0.",
+        "header": "third_party/parasolid/include/parasolid_kernel.h:42604-42622,38525-38544",
+        "binding": "third_party/PKToy/PskernelSharp/parasolid.g.cs:6646-6672"
+      },
+      "recheckWhen": "Obtain a runtime/license with lattice geometry enabled or a documented seed lattice, then repeat create, region embed, ask and x_t self-receive."
+    },
+    {
+      "caseId": "indexed-context.indexio",
+      "status": "unreachable",
+      "api": [
+        "PK_SESSION_register_indexio",
+        "PK_SESSION_ask_indexio",
+        "PK_PART_transmit_b",
+        "PK_PART_receive_b"
+      ],
+      "parameters": {
+        "transmitFormat": "PK_transmit_format_indexio_c",
+        "indexedContext": null
+      },
+      "reason": "The frozen corpus host intentionally uses text transmit and does not register an indexed frustrum or pass an indexed context. A direct runtime probe of PK_PART_transmit_b with indexio format and no registered callbacks returned PK_ERROR_not_implemented (5000), so no indexed-context x_t is claimed.",
+      "evidence": {
+        "runtime": "PK_PART_transmit_b(... transmit_format=PK_transmit_format_indexio_c, transmit_indexed_context=null) returned PK_ERROR_not_implemented (5000).",
+        "host": "scripts/ParasolidXtCorpusHost.cs:567-573 uses PK_transmit_format_text_c and transmit_indexed_context=null.",
+        "header": "third_party/parasolid/include/parasolid_kernel.h:32999-33016,36142-36178"
+      },
+      "recheckWhen": "Add a dedicated indexed-I/O host contract that registers all PK_SESSION_indexio_t callbacks and supplies a context, then verify deterministic transmit/receive and key/index semantics."
+    }
+  ],
+  "notes": [
+    "Facet-body conversion is the only mesh-related producer currently proven to create a persistent body and pass host self-receive checks.",
+    "The named real, string, vector, integer and axis Attribute cases prove PK_ATTDEF_create_2 field naming and named setter/ask payload semantics; named Unicode-string and pointer fields remain separate coverage.",
+    "MESH_create_from_facets was not promoted to a case because the callback ABI probe was not stable; no hand-written mesh x_t is used as evidence.",
+    "Unreachable entries are not counted as covered and must be re-audited when host/runtime capabilities change."
+  ],
+  "recheckWhen": [
+    "PKToy binding, Parasolid header, schema, runtime or license changes.",
+    "The shared corpus host gains session user-field, embedded mesh, lattice and indexed-I/O options."
+  ]
+}

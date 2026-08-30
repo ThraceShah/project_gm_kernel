@@ -23,4 +23,10 @@
     <ProjectReference Include="..\..\src\ProjectGmKernel.Native\ProjectGmKernel.Native.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\ParasolidXtCorpus\Fixtures\**\*"
+          Link="Fixtures\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

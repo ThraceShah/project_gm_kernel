@@ -1,0 +1,6 @@
+{
+  "caseId": "assembly.single-block-identity-instance",
+  "status": "pass",
+  "summary": "assembly self-receive and structural checks passed",
+  "exception": null
+}

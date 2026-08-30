@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "group": "spline-standard-forms",
+  "owner": "spline-standard-forms",
+  "scope": "Direct PK_BCURVE_create and PK_BSURF_create standard-form representatives. Every successful case is one independent x_t and is checked with typed ask before transmit.",
+  "cases": [
+    {
+      "caseId": "standard-form.bcurve.rational",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 2, "nVertices": 3, "vertexDim": 4, "rational": true, "knotType": "bezier-ends", "form": "arbitrary", "periodic": false, "closed": false },
+      "typeCoverage": ["bcurve.sf.rational.true", "bcurve.sf.vertex-dim-4", "bcurve.sf.periodic.false", "bcurve.sf.closed.false", "bcurve.sf.knot.bezier_ends"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.rational/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.uniform",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 2, "nVertices": 5, "vertexDim": 3, "rational": false, "knotType": "uniform", "knots": [0.0, 1.0, 2.0, 3.0] },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.false", "bcurve.sf.closed.false", "bcurve.sf.knot.uniform"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.uniform/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.quasi-uniform",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "nVertices": 6, "vertexDim": 3, "rational": false, "knotType": "quasi-uniform", "knots": [0.0, 1.0, 2.0, 3.0] },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.false", "bcurve.sf.closed.false", "bcurve.sf.knot.quasi_uniform"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.quasi-uniform/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.piecewise-bezier-knots",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 2, "nVertices": 5, "vertexDim": 3, "rational": false, "knotType": "piecewise-bezier", "multiplicities": [3, 2, 3] },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.false", "bcurve.sf.closed.false", "bcurve.sf.knot.piecewise_bezier"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.piecewise-bezier-knots/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.bezier-ends",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "nVertices": 4, "vertexDim": 3, "rational": false, "knotType": "bezier-ends", "multiplicities": [4, 4] },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.false", "bcurve.sf.closed.false", "bcurve.sf.knot.bezier_ends"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.bezier-ends/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.polyline",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 1, "nVertices": 4, "vertexDim": 3, "vertexForm": "polyline", "rational": false, "knotType": "uniform" },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.false", "bcurve.sf.closed.false", "bcurve.sf.form.polyline", "bcurve.sf.knot.uniform"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.polyline/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.closed",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "nVertices": 5, "vertexDim": 3, "rational": false, "periodic": false, "closed": true },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.false", "bcurve.sf.closed.true", "bcurve.sf.knot.non_uniform"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.closed/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.periodic",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "nVertices": 9, "vertexDim": 3, "rational": false, "periodic": true, "closed": true, "knotType": "uniform" },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.true", "bcurve.sf.closed.true", "bcurve.sf.knot.uniform"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.periodic/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.smooth-seam",
+      "status": "success",
+      "producer": "PK_BCURVE_create_splinewise + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "nVertices": 9, "vertexDim": 3, "rational": false, "periodic": true, "closed": true, "knotType": "smooth-seam" },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.true", "bcurve.sf.closed.true", "bcurve.sf.knot.smooth_seam"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.smooth-seam/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bcurve.self-intersecting",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_ask",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "nVertices": 4, "vertexDim": 3, "rational": false, "periodic": false, "closed": false, "selfIntersecting": true },
+      "typeCoverage": ["bcurve.sf.rational.false", "bcurve.sf.periodic.false", "bcurve.sf.closed.false", "bcurve.sf.self-intersecting.true"],
+      "requiredSchemaNodes": ["B_CURVE", "NURBS_CURVE"],
+      "output": "standard-form.bcurve.self-intersecting/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bsurf.rational",
+      "status": "success",
+      "producer": "PK_BSURF_create + PK_BSURF_ask",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "uDegree": 2, "vDegree": 2, "nUVertices": 3, "nVVertices": 3, "vertexDim": 4, "rational": true, "uKnotType": "non-uniform", "vKnotType": "non-uniform" },
+      "typeCoverage": ["bsurf.sf.rational.true", "bsurf.sf.vertex-dim-4", "bsurf.sf.periodic-u.false", "bsurf.sf.periodic-v.false", "bsurf.sf.closed-u.false", "bsurf.sf.closed-v.false", "bsurf.sf.knot.non_uniform", "bsurf.sf.convexity.arbitrary"],
+      "requiredSchemaNodes": ["B_SURFACE", "NURBS_SURF"],
+      "output": "standard-form.bsurf.rational/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bsurf.periodic-u",
+      "status": "success",
+      "producer": "PK_BSURF_create + PK_BSURF_ask",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "uDegree": 2, "vDegree": 2, "nUVertices": 5, "nVVertices": 3, "vertexDim": 3, "rational": false, "isUPeriodic": true, "isUClosed": true, "isVPeriodic": false, "isVClosed": false },
+      "typeCoverage": ["bsurf.sf.rational.false", "bsurf.sf.periodic-u.true", "bsurf.sf.periodic-v.false", "bsurf.sf.closed-u.true", "bsurf.sf.closed-v.false", "bsurf.sf.knot.uniform"],
+      "requiredSchemaNodes": ["B_SURFACE", "NURBS_SURF"],
+      "output": "standard-form.bsurf.periodic-u/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bsurf.uniform-mixed",
+      "status": "success",
+      "producer": "PK_BSURF_create + PK_BSURF_ask",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "uDegree": 2, "vDegree": 2, "nUVertices": 3, "nVVertices": 3, "vertexDim": 3, "rational": false, "uKnotType": "uniform", "vKnotType": "quasi-uniform" },
+      "typeCoverage": ["bsurf.sf.rational.false", "bsurf.sf.periodic-u.false", "bsurf.sf.periodic-v.false", "bsurf.sf.closed-u.false", "bsurf.sf.closed-v.false", "bsurf.sf.knot.uniform", "bsurf.sf.knot.quasi_uniform"],
+      "requiredSchemaNodes": ["B_SURFACE", "NURBS_SURF"],
+      "output": "standard-form.bsurf.uniform-mixed/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bsurf.piecewise-bezier",
+      "status": "success",
+      "producer": "PK_BSURF_create + PK_BSURF_ask",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "uDegree": 2, "vDegree": 2, "nUVertices": 3, "nVVertices": 3, "vertexDim": 3, "rational": false, "uKnotType": "piecewise-bezier", "vKnotType": "piecewise-bezier" },
+      "typeCoverage": ["bsurf.sf.rational.false", "bsurf.sf.periodic-u.false", "bsurf.sf.periodic-v.false", "bsurf.sf.closed-u.false", "bsurf.sf.closed-v.false", "bsurf.sf.knot.piecewise_bezier"],
+      "requiredSchemaNodes": ["B_SURFACE", "NURBS_SURF"],
+      "output": "standard-form.bsurf.piecewise-bezier/model.x_t"
+    },
+    {
+      "caseId": "standard-form.bsurf.convex",
+      "status": "success",
+      "producer": "PK_BSURF_create + PK_BSURF_ask",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "uDegree": 2, "vDegree": 2, "nUVertices": 3, "nVVertices": 3, "vertexDim": 3, "rational": false, "convexity": "convex", "selfIntersecting": false },
+      "typeCoverage": ["bsurf.sf.rational.false", "bsurf.sf.periodic-u.false", "bsurf.sf.periodic-v.false", "bsurf.sf.closed-u.false", "bsurf.sf.closed-v.false", "bsurf.sf.convexity.convex", "bsurf.sf.knot.non_uniform"],
+      "requiredSchemaNodes": ["B_SURFACE", "NURBS_SURF"],
+      "output": "standard-form.bsurf.convex/model.x_t"
+    },
+    { "caseId": "standard-form.bcurve.circular", "status": "success", "producer": "PK_BCURVE_create + PK_BCURVE_ask", "entity": "BCURVE", "parameters": { "form": "circular", "rational": true }, "typeCoverage": ["bcurve.sf.form.circular", "bcurve.sf.rational.true"], "output": "standard-form.bcurve.circular/model.x_t" },
+    { "caseId": "standard-form.bcurve.elliptic", "status": "success", "producer": "PK_BCURVE_create + PK_BCURVE_ask", "entity": "BCURVE", "parameters": { "form": "elliptic", "rational": true }, "typeCoverage": ["bcurve.sf.form.elliptic", "bcurve.sf.rational.true"], "output": "standard-form.bcurve.elliptic/model.x_t" },
+    { "caseId": "standard-form.bcurve.parabolic", "status": "success", "producer": "PK_BCURVE_create + PK_BCURVE_ask", "entity": "BCURVE", "parameters": { "form": "parabolic", "rational": false }, "typeCoverage": ["bcurve.sf.form.parabolic", "bcurve.sf.rational.false"], "output": "standard-form.bcurve.parabolic/model.x_t" },
+    { "caseId": "standard-form.bcurve.hyperbolic", "status": "success", "producer": "PK_BCURVE_create + PK_BCURVE_ask", "entity": "BCURVE", "parameters": { "form": "hyperbolic", "rational": true }, "typeCoverage": ["bcurve.sf.form.hyperbolic", "bcurve.sf.rational.true"], "output": "standard-form.bcurve.hyperbolic/model.x_t" },
+    { "caseId": "standard-form.bsurf.periodic-v", "status": "success", "producer": "PK_BSURF_create + PK_BSURF_ask", "entity": "BSURF", "parameters": { "isVPeriodic": true, "isVClosed": true }, "typeCoverage": ["bsurf.sf.periodic-v.true", "bsurf.sf.closed-v.true"], "output": "standard-form.bsurf.periodic-v/model.x_t" },
+    { "caseId": "standard-form.bsurf.self-intersecting", "status": "success", "producer": "PK_BSURF_create + PK_BSURF_ask", "entity": "BSURF", "parameters": { "selfIntersecting": true }, "typeCoverage": ["bsurf.sf.self-intersecting.true"], "output": "standard-form.bsurf.self-intersecting/model.x_t" },
+    { "caseId": "standard-form.bsurf.concave", "status": "success", "producer": "PK_BSURF_create + PK_BSURF_ask", "entity": "BSURF", "parameters": { "convexity": "concave" }, "typeCoverage": ["bsurf.sf.convexity.concave"], "output": "standard-form.bsurf.concave/model.x_t" },
+    { "caseId": "standard-form.bcurve.unset-sentinels", "status": "success", "producer": "PK_BCURVE_create + PK_BCURVE_ask", "entity": "BCURVE", "parameters": { "form": "unset", "knotType": "unset", "selfIntersecting": "unset" }, "typeCoverage": ["bcurve.sf.form.unset", "bcurve.sf.knot.unset", "bcurve.sf.self-intersecting.unset"], "output": "standard-form.bcurve.unset-sentinels/model.x_t" },
+    { "caseId": "standard-form.bsurf.unset-sentinels", "status": "success", "producer": "PK_BSURF_create + PK_BSURF_ask", "entity": "BSURF", "parameters": { "form": "unset", "uKnotType": "unset", "vKnotType": "unset", "selfIntersecting": "unset", "convexity": "unset" }, "typeCoverage": ["bsurf.sf.form.unset", "bsurf.sf.knot.unset", "bsurf.sf.self-intersecting.unset", "bsurf.sf.convexity.unset"], "output": "standard-form.bsurf.unset-sentinels/model.x_t"
+    }
+  ]
+}

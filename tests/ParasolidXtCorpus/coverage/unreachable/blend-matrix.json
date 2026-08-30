@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "group": "blend-matrix",
+  "entries": [
+    {
+      "caseId": "blend.fxf.sphere-spun.rolling-ball",
+      "status": "needs-recipe",
+      "api": ["PK_SPHERE_create", "PK_SPUN_create", "PK_FACE_make_blend"],
+      "typeCoverage": ["geometry.blend.pair.sphere-spun"],
+      "parameters": { "pair": "sphere-spun", "xsection": "rolling-ball", "walls": "trim-both", "radius": 0.05 },
+      "reason": "The fixed analytic sphere/spun seed does not produce a stable face-face blend.",
+      "evidence": "PK_FACE_make_blend reported fxf fault 17462 on the deterministic seed.",
+      "recheckWhen": "A valid sphere/spun rolling-ball seed is available."
+    },
+    {
+      "caseId": "blend.fxf.bsurf-plane.notch",
+      "status": "rejected",
+      "typeId": "blend.option.notch",
+      "api": ["PK_BSURF_create", "PK_FACE_make_blend"],
+      "typeCoverage": ["blend.option.notch"],
+      "parameters": { "pair": "bsurf-plane", "notch": true },
+      "observedError": "notch fault=0",
+      "reason": "The v38 runtime rejects the notch option for the fixed B-surface/plane seed without returning a blend body."
+    },
+    {
+      "caseId": "blend.fxf.plane-plane.rolling-ball.attach",
+      "status": "rejected",
+      "api": ["PK_FACE_make_blend"],
+      "entity": "FACE-FACE blend",
+      "parameters": { "pair": "plane-plane", "walls": "attach", "radius": 0.05 },
+      "result": "PK_ERROR_no_errors with n_sheet_bodies=0",
+      "reason": "The separate-sheet planar seed is stable with trim-both output, but the attach wall mode produces no returned sheet body for this detached face-face workflow.",
+      "evidence": "PK_FACE_make_blend returned PK_ERROR_no_errors but no sheet body or blend topology; no fixture was retained.",
+      "recheckWhen": "A documented attach-mode result contract for detached sheet walls is available."
+    },
+    {
+      "caseId": "blend.options.edge-and-three-face",
+      "status": "out-of-scope",
+      "api": ["PK_EDGE_set_blend_constant", "PK_FACE_make_3_face_blend"],
+      "entity": "EDGE/THREE-FACE blend",
+      "parameters": {},
+      "result": "excluded-by-plan",
+      "reason": "The current corpus gate covers face-face PK_FACE_make_blend only.",
+      "recheckWhen": "The blend scope is explicitly expanded."
+    },
+    {
+      "caseId": "blend.fxf.cone-swept.rolling-ball",
+      "status": "needs-recipe",
+      "api": ["PK_CONE_create", "PK_SWEPT_create", "PK_FACE_make_blend"],
+      "typeCoverage": ["geometry.blend.pair.cone-swept"],
+      "parameters": { "pair": "cone-swept", "xsection": "rolling-ball", "walls": "trim-both", "radius": 0.05 },
+      "reason": "The fixed seed produces a valid sheet body and self-receive, but the current XT text inspector cannot decode the emitted derived surface payload.",
+      "evidence": "Generation stops in XtText.Decode with numeric token 5439.46031003095 while inspecting the model.x_t graph.",
+      "recheckWhen": "The XT decoder accepts this derived surface payload or a stable alternate seed avoids the encoding form."
+    },
+    {
+      "caseId": "blend.fxf.bsurf-plane.shape-g2",
+      "status": "needs-recipe",
+      "api": ["PK_BSURF_create", "PK_FACE_make_blend"],
+      "typeCoverage": ["blend.option.shape.g2"],
+      "parameters": { "pair": "bsurf-plane", "shape": "g2", "radius": 0.05 },
+      "reason": "PK_FACE_make_blend returns a valid B-surface result and self-receive succeeds, but the current XT inspector rejects its B-surface payload.",
+      "evidence": "Generation stops in XtText.Decode with numeric token -1.346261147721886.",
+      "recheckWhen": "The XT decoder accepts this valid B-surface encoding."
+    },
+    {
+      "caseId": "blend.fxf.bsurf-plane.shape-chamfer",
+      "status": "needs-recipe",
+      "api": ["PK_BSURF_create", "PK_FACE_make_blend"],
+      "typeCoverage": ["blend.option.shape.chamfer"],
+      "parameters": { "pair": "bsurf-plane", "shape": "chamfer", "radius": 0.05 },
+      "reason": "PK_FACE_make_blend returns a valid B-surface result and self-receive succeeds, but the current XT inspector rejects its B-surface payload.",
+      "evidence": "Generation stops in XtText.Decode with numeric token -1.346261147721886.",
+      "recheckWhen": "The XT decoder accepts this valid B-surface encoding."
+    },
+    {
+      "caseId": "blend.fxf.bsurf-plane.width",
+      "status": "rejected",
+      "api": ["PK_BSURF_create", "PK_FACE_make_blend"],
+      "typeCoverage": ["blend.option.width"],
+      "parameters": { "pair": "bsurf-plane", "shape": "conic", "width": 0.1 },
+      "observedError": "PK_fxf_fault_inconsistent (17455)",
+      "reason": "The width-only conic shape is incompatible with the fixed B-surface/plane wall seed and produces no valid returned blend body."
+    },
+    {
+      "caseId": "blend.fxf.bsurf-plane.ratio",
+      "status": "rejected",
+      "api": ["PK_BSURF_create", "PK_FACE_make_blend"],
+      "typeCoverage": ["blend.option.ratio"],
+      "parameters": { "pair": "bsurf-plane", "shape": "conic", "ratio": 0.75 },
+      "observedError": "PK_fxf_fault_inconsistent (17455)",
+      "reason": "The ratio-only conic shape is incompatible with the fixed B-surface/plane wall seed and produces no valid returned blend body."
+    }
+  ]
+}

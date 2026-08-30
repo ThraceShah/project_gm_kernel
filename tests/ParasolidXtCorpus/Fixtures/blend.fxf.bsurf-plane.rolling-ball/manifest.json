@@ -1,0 +1,673 @@
+{
+  "caseId": "blend.fxf.bsurf-plane.rolling-ball",
+  "group": "blend-matrix",
+  "producer": "PK_FACE_make_blend",
+  "description": "B-surface/plane rolling-ball blend with dependent supporting geometry.",
+  "parameters": "{\u0022pair\u0022:\u0022bsurf-plane\u0022,\u0022xsection\u0022:\u0022rolling-ball\u0022,\u0022walls\u0022:\u0022trim-both\u0022,\u0022radius\u0022:0.05}",
+  "coverage": [
+    "blend",
+    "blend/face-face",
+    "blend/rolling-ball",
+    "option/walls-trim-both",
+    "surface-pair/bsurf-plane"
+  ],
+  "schemaVersion": 37102,
+  "transmitVersion": 371,
+  "entityCounts": {
+    "regions": 1,
+    "shells": 1,
+    "faces": 1,
+    "edges": 2,
+    "vertices": 0,
+    "loops": 2,
+    "fins": 2
+  },
+  "semanticHash": "8ffe3685c3359658555b0cf6aa1b5f83290d358a28a4e83d155f626f480e0768",
+  "generatorVersion": "corpus-host-v1",
+  "verification": "ParasolidVerified",
+  "managedVerification": "not-requested",
+  "schemaNodes": [
+    {
+      "name": "BLENDED_EDGE",
+      "count": 1
+    },
+    {
+      "name": "BLEND_BOUND",
+      "count": 2
+    },
+    {
+      "name": "BODY",
+      "count": 1
+    },
+    {
+      "name": "BSPLINE_VERTICES",
+      "count": 1
+    },
+    {
+      "name": "B_SURFACE",
+      "count": 1
+    },
+    {
+      "name": "CHART",
+      "count": 3
+    },
+    {
+      "name": "EDGE",
+      "count": 2
+    },
+    {
+      "name": "FACE",
+      "count": 1
+    },
+    {
+      "name": "GEOMETRIC_OWNER",
+      "count": 12
+    },
+    {
+      "name": "HALFEDGE",
+      "count": 4
+    },
+    {
+      "name": "INTERSECTION",
+      "count": 3
+    },
+    {
+      "name": "INTERSECTION_DATA",
+      "count": 3
+    },
+    {
+      "name": "KNOT_MULT",
+      "count": 2
+    },
+    {
+      "name": "KNOT_SET",
+      "count": 2
+    },
+    {
+      "name": "LIMIT",
+      "count": 3
+    },
+    {
+      "name": "LOOP",
+      "count": 2
+    },
+    {
+      "name": "NURBS_SURF",
+      "count": 1
+    },
+    {
+      "name": "OFFSET_SURF",
+      "count": 1
+    },
+    {
+      "name": "PLANE",
+      "count": 2
+    },
+    {
+      "name": "REGION",
+      "count": 1
+    },
+    {
+      "name": "SHELL",
+      "count": 1
+    },
+    {
+      "name": "SURFACE_DATA",
+      "count": 1
+    }
+  ],
+  "schemaDependencies": [
+    {
+      "from": "BLENDED_EDGE#35",
+      "to": "BLEND_BOUND#22"
+    },
+    {
+      "from": "BLENDED_EDGE#35",
+      "to": "BLEND_BOUND#30"
+    },
+    {
+      "from": "BLENDED_EDGE#35",
+      "to": "B_SURFACE#29"
+    },
+    {
+      "from": "BLENDED_EDGE#35",
+      "to": "FACE#8"
+    },
+    {
+      "from": "BLENDED_EDGE#35",
+      "to": "GEOMETRIC_OWNER#38"
+    },
+    {
+      "from": "BLENDED_EDGE#35",
+      "to": "INTERSECTION#5"
+    },
+    {
+      "from": "BLENDED_EDGE#35",
+      "to": "PLANE#23"
+    },
+    {
+      "from": "BLEND_BOUND#22",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "BLEND_BOUND#22",
+      "to": "BODY#1"
+    },
+    {
+      "from": "BLEND_BOUND#22",
+      "to": "GEOMETRIC_OWNER#32"
+    },
+    {
+      "from": "BLEND_BOUND#22",
+      "to": "PLANE#23"
+    },
+    {
+      "from": "BLEND_BOUND#30",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "BLEND_BOUND#30",
+      "to": "BODY#1"
+    },
+    {
+      "from": "BLEND_BOUND#30",
+      "to": "GEOMETRIC_OWNER#37"
+    },
+    {
+      "from": "BODY#1",
+      "to": "EDGE#7"
+    },
+    {
+      "from": "BODY#1",
+      "to": "INTERSECTION#5"
+    },
+    {
+      "from": "BODY#1",
+      "to": "PLANE#4"
+    },
+    {
+      "from": "BODY#1",
+      "to": "REGION#6"
+    },
+    {
+      "from": "BODY#1",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "B_SURFACE#29",
+      "to": "BODY#1"
+    },
+    {
+      "from": "B_SURFACE#29",
+      "to": "GEOMETRIC_OWNER#31"
+    },
+    {
+      "from": "B_SURFACE#29",
+      "to": "NURBS_SURF#39"
+    },
+    {
+      "from": "B_SURFACE#29",
+      "to": "OFFSET_SURF#9"
+    },
+    {
+      "from": "B_SURFACE#29",
+      "to": "PLANE#23"
+    },
+    {
+      "from": "B_SURFACE#29",
+      "to": "SURFACE_DATA#36"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "EDGE#7"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "INTERSECTION#21"
+    },
+    {
+      "from": "EDGE#7",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#7",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "EDGE#7",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "EDGE#7",
+      "to": "INTERSECTION#11"
+    },
+    {
+      "from": "FACE#8",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "FACE#8",
+      "to": "LOOP#18"
+    },
+    {
+      "from": "FACE#8",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#10",
+      "to": "GEOMETRIC_OWNER#10"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#10",
+      "to": "INTERSECTION#5"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#10",
+      "to": "PLANE#4"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#12",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#12",
+      "to": "GEOMETRIC_OWNER#12"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#12",
+      "to": "INTERSECTION#5"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#31",
+      "to": "B_SURFACE#29"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#31",
+      "to": "GEOMETRIC_OWNER#44"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#31",
+      "to": "GEOMETRIC_OWNER#47"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#31",
+      "to": "INTERSECTION#21"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#32",
+      "to": "BLEND_BOUND#22"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#32",
+      "to": "GEOMETRIC_OWNER#32"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#32",
+      "to": "INTERSECTION#11"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#33",
+      "to": "GEOMETRIC_OWNER#40"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#33",
+      "to": "INTERSECTION#11"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#33",
+      "to": "PLANE#23"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#37",
+      "to": "BLEND_BOUND#30"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#37",
+      "to": "GEOMETRIC_OWNER#37"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#37",
+      "to": "INTERSECTION#21"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#38",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#38",
+      "to": "BLEND_BOUND#30"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#38",
+      "to": "GEOMETRIC_OWNER#41"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#40",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#40",
+      "to": "GEOMETRIC_OWNER#33"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#40",
+      "to": "PLANE#23"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#41",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#41",
+      "to": "BLEND_BOUND#22"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#41",
+      "to": "GEOMETRIC_OWNER#38"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#42",
+      "to": "GEOMETRIC_OWNER#42"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#42",
+      "to": "INTERSECTION#5"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#42",
+      "to": "OFFSET_SURF#9"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#44",
+      "to": "B_SURFACE#29"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#44",
+      "to": "GEOMETRIC_OWNER#31"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#44",
+      "to": "GEOMETRIC_OWNER#47"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#44",
+      "to": "OFFSET_SURF#9"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#47",
+      "to": "BLENDED_EDGE#35"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#47",
+      "to": "B_SURFACE#29"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#47",
+      "to": "GEOMETRIC_OWNER#31"
+    },
+    {
+      "from": "GEOMETRIC_OWNER#47",
+      "to": "GEOMETRIC_OWNER#44"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "EDGE#7"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "HALFEDGE#19"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "LOOP#18"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "EDGE#7"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "HALFEDGE#43"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "LOOP#45"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "BLEND_BOUND#22"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "CHART#24"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "EDGE#7"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "INTERSECTION#21"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "INTERSECTION#5"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "INTERSECTION_DATA#27"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "LIMIT#25"
+    },
+    {
+      "from": "INTERSECTION#11",
+      "to": "PLANE#23"
+    },
+    {
+      "from": "INTERSECTION#21",
+      "to": "BLEND_BOUND#30"
+    },
+    {
+      "from": "INTERSECTION#21",
+      "to": "B_SURFACE#29"
+    },
+    {
+      "from": "INTERSECTION#21",
+      "to": "CHART#26"
+    },
+    {
+      "from": "INTERSECTION#21",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "INTERSECTION#21",
+      "to": "INTERSECTION#11"
+    },
+    {
+      "from": "INTERSECTION#21",
+      "to": "INTERSECTION_DATA#34"
+    },
+    {
+      "from": "INTERSECTION#21",
+      "to": "LIMIT#28"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "BODY#1"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "CHART#13"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "GEOMETRIC_OWNER#12"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "INTERSECTION#11"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "INTERSECTION_DATA#15"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "LIMIT#14"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "OFFSET_SURF#9"
+    },
+    {
+      "from": "INTERSECTION#5",
+      "to": "PLANE#4"
+    },
+    {
+      "from": "LOOP#18",
+      "to": "FACE#8"
+    },
+    {
+      "from": "LOOP#18",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "LOOP#18",
+      "to": "LOOP#45"
+    },
+    {
+      "from": "LOOP#45",
+      "to": "FACE#8"
+    },
+    {
+      "from": "LOOP#45",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "NURBS_SURF#39",
+      "to": "BSPLINE_VERTICES#50"
+    },
+    {
+      "from": "NURBS_SURF#39",
+      "to": "KNOT_MULT#46"
+    },
+    {
+      "from": "NURBS_SURF#39",
+      "to": "KNOT_MULT#49"
+    },
+    {
+      "from": "NURBS_SURF#39",
+      "to": "KNOT_SET#48"
+    },
+    {
+      "from": "NURBS_SURF#39",
+      "to": "KNOT_SET#52"
+    },
+    {
+      "from": "OFFSET_SURF#9",
+      "to": "BODY#1"
+    },
+    {
+      "from": "OFFSET_SURF#9",
+      "to": "B_SURFACE#29"
+    },
+    {
+      "from": "OFFSET_SURF#9",
+      "to": "GEOMETRIC_OWNER#42"
+    },
+    {
+      "from": "OFFSET_SURF#9",
+      "to": "PLANE#4"
+    },
+    {
+      "from": "PLANE#23",
+      "to": "BLEND_BOUND#22"
+    },
+    {
+      "from": "PLANE#23",
+      "to": "BODY#1"
+    },
+    {
+      "from": "PLANE#23",
+      "to": "B_SURFACE#29"
+    },
+    {
+      "from": "PLANE#23",
+      "to": "GEOMETRIC_OWNER#33"
+    },
+    {
+      "from": "PLANE#4",
+      "to": "BODY#1"
+    },
+    {
+      "from": "PLANE#4",
+      "to": "GEOMETRIC_OWNER#10"
+    },
+    {
+      "from": "PLANE#4",
+      "to": "OFFSET_SURF#9"
+    },
+    {
+      "from": "REGION#6",
+      "to": "BODY#1"
+    },
+    {
+      "from": "REGION#6",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "SHELL#3",
+      "to": "BODY#1"
+    },
+    {
+      "from": "SHELL#3",
+      "to": "FACE#8"
+    },
+    {
+      "from": "SHELL#3",
+      "to": "REGION#6"
+    }
+  ],
+  "typeCoverage": [
+    "blend.option.walls.trim-both",
+    "geometry.blend.depth.1",
+    "geometry.surface.bsurf",
+    "geometry.surface.plane",
+    "schema.node.BLENDED_EDGE",
+    "schema.node.BLEND_BOUND"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "group": "attributes",
+  "cases": [
+    { "caseId": "attribute.body.axis", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_axes", "parameters": { "definition": { "name": "corpus_body_axis", "ownerTypes": ["body"], "fields": ["axis"] }, "value": { "location": [0.0, 0.0, 0.0], "direction": [0.0, 0.0, 1.0] } }, "coverage": ["action/transmit", "attribute", "attdef", "custom", "field/axis", "owner/body"], "output": "attribute.body.axis/model.x_t" },
+    { "caseId": "attribute.part.delete", "status": "success", "producer": "PK_ATTRIB_create_empty + PK_ATTRIB_set_ints + PK_PART_delete_attribs", "parameters": { "definition": "corpus_part_delete", "field": "integer", "operation": "create-set-delete", "owner": "part" }, "coverage": ["attribute", "delete", "field/integer", "mutator", "owner/part"], "output": "attribute.part.delete/model.x_t" },
+    { "caseId": "attribute.body.delete", "status": "success", "producer": "PK_ATTRIB_create_empty + PK_ATTRIB_set_ints + PK_ENTITY_delete_attribs", "parameters": { "definition": "corpus_body_delete", "field": "integer", "operation": "create-set-delete" }, "coverage": ["attribute", "delete", "field/integer", "mutator", "owner/body"], "output": "attribute.body.delete/model.x_t" },
+    { "caseId": "attribute.body.real", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_doubles", "parameters": { "definition": { "name": "corpus_body_real", "ownerTypes": ["body"], "fields": ["real"] }, "value": 3.141592653589793 }, "coverage": ["action/transmit", "attribute", "attdef", "custom", "field/real", "owner/body"], "output": "attribute.body.real/model.x_t" },
+    { "caseId": "attribute.body.string", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_string", "parameters": { "definition": { "name": "corpus_body_string", "ownerTypes": ["body"], "fields": ["string"] }, "value": "parasolid-corpus" }, "coverage": ["action/transmit", "attribute", "attdef", "custom", "field/string", "owner/body"], "output": "attribute.body.string/model.x_t" },
+    { "caseId": "attribute.body.vector", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_vectors", "parameters": { "definition": { "name": "corpus_body_vector", "ownerTypes": ["body"], "fields": ["vector"] }, "value": [1.0, 2.0, 3.0] }, "coverage": ["action/transmit", "attribute", "attdef", "custom", "field/vector", "owner/body"], "output": "attribute.body.vector/model.x_t" },
+    {
+      "caseId": "attribute.body.integer",
+      "status": "success",
+      "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_ints",
+      "parameters": { "owner": "body", "field": "integer", "value": 42 },
+      "coverage": ["attribute", "attdef", "custom", "owner/body", "field/integer", "action/transmit"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "attribute.body.integer/model.x_t"
+    },
+    { "caseId": "attribute.body.coordinate", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_vectors", "parameters": { "owner": "body", "field": "coordinate", "value": [1.0, 2.0, 3.0] }, "coverage": ["attribute", "field/coordinate", "owner/body"], "output": "attribute.body.coordinate/model.x_t" },
+    { "caseId": "attribute.body.direction", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_vectors", "parameters": { "owner": "body", "field": "direction", "value": [0.0, 0.0, 1.0] }, "coverage": ["attribute", "field/direction", "owner/body"], "output": "attribute.body.direction/model.x_t" },
+    { "caseId": "attribute.body.pointer", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_pointers", "parameters": { "owner": "body", "field": "pointer" }, "coverage": ["attribute", "field/pointer", "owner/body"], "output": "attribute.body.pointer/model.x_t" },
+    { "caseId": "attribute.body.ustring", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_ustring", "parameters": { "owner": "body", "field": "ustring", "value": "几何" }, "coverage": ["attribute", "field/ustring", "owner/body"], "output": "attribute.body.ustring/model.x_t" },
+    { "caseId": "attribute.body.multi-field", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_ints + PK_ATTRIB_set_doubles", "parameters": { "owner": "body", "fields": ["integer", "real"], "values": [42, 3.5] }, "coverage": ["attribute", "attdef", "multi-field", "owner/body", "field/integer", "field/real"], "output": "attribute.body.multi-field/model.x_t" },
+    { "caseId": "attribute.face.integer", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_ints", "parameters": { "owner": "face", "field": "integer", "value": 17 }, "coverage": ["attribute", "field/integer", "owner/face"], "output": "attribute.face.integer/model.x_t" },
+    { "caseId": "attribute.edge.integer", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_ints", "parameters": { "owner": "edge", "field": "integer", "value": 19 }, "coverage": ["attribute", "field/integer", "owner/edge"], "output": "attribute.edge.integer/model.x_t" },
+    { "caseId": "attribute.loop.integer", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_ints", "parameters": { "owner": "loop", "field": "integer", "value": 23 }, "coverage": ["attribute", "field/integer", "owner/loop"], "output": "attribute.loop.integer/model.x_t" },
+    { "caseId": "attribute.vertex.integer", "status": "success", "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty + PK_ATTRIB_set_ints", "parameters": { "owner": "vertex", "field": "integer", "value": 29 }, "coverage": ["attribute", "field/integer", "owner/vertex"], "output": "attribute.vertex.integer/model.x_t"
+    }
+  ]
+}

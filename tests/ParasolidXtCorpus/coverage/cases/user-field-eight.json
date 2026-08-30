@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "group": "user-field-eight",
+  "cases": [
+    {
+      "caseId": "user-field.body.eight-slot",
+      "status": "success",
+      "producer": "PK_SESSION_start(user_field=8) + PK_ENTITY_set_user_field",
+      "entity": "BODY user-field",
+      "parameters": { "sessionUserFieldLength": 8, "value": [1, 2, 3, 5, 8, 13, 21, 34] },
+      "coverage": ["user-field", "boundary-length", "eight-slot", "owner/body"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "user-field.body.eight-slot/model.x_t",
+      "verification": "ask-and-self-receive-body-compare"
+    },
+    {
+      "caseId": "user-field.face.eight-slot",
+      "status": "success",
+      "producer": "PK_SESSION_start(user_field=8) + PK_ENTITY_set_user_field",
+      "entity": "FACE user-field",
+      "parameters": { "sessionUserFieldLength": 8, "owner": "face", "value": [8, 7, 6, 5, 4, 3, 2, 1] },
+      "coverage": ["user-field", "boundary-length", "eight-slot", "owner/face"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "user-field.face.eight-slot/model.x_t",
+      "verification": "ask-and-self-receive-body-compare"
+    }
+  ]
+}

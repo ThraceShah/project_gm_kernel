@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "group": "helical-curves",
+  "cases": [
+    {
+      "caseId": "body.wire.helical-curve.right-handed",
+      "status": "success",
+      "producer": "PK_POINT_make_helical_curve + PK_CURVE_make_wire_body",
+      "parameters": {
+        "point": [2.0, 0.0, 0.0],
+        "axis": { "location": [0.0, 0.0, 0.0], "direction": [0.0, 0.0, 1.0] },
+        "hand": "right",
+        "turns": [0.0, 1.0],
+        "helicalPitch": 2.0,
+        "spiralPitch": 0.0,
+        "tolerance": 0.00001
+      },
+      "coverage": ["body/wire", "curve/helical", "hand/right", "parameters/one-turn"],
+      "output": "body.wire.helical-curve.right-handed/model.x_t"
+    },
+    {
+      "caseId": "body.wire.helical-curve.left-tapered",
+      "status": "success",
+      "producer": "PK_POINT_make_helical_curve + PK_CURVE_make_wire_body",
+      "parameters": {
+        "point": [2.0, 0.0, 0.0],
+        "axis": { "location": [0.0, 0.0, 0.0], "direction": [0.0, 0.0, 1.0] },
+        "hand": "left",
+        "turns": [0.0, 2.0],
+        "helicalPitch": 1.5,
+        "spiralPitch": 0.5,
+        "tolerance": 0.00001
+      },
+      "coverage": ["body/wire", "curve/helical", "hand/left", "parameters/multi-turn", "parameters/tapered"],
+      "output": "body.wire.helical-curve.left-tapered/model.x_t"
+    }
+  ]
+}

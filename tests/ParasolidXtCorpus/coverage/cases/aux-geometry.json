@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "group": "aux-geometry",
+  "cases": [
+    {
+      "caseId": "geometry.body-outline",
+      "status": "success",
+      "producer": "PK_BODY_make_curves_outline + PK_TRANSF_create",
+      "parameters": { "source": "body.solid.block.typical", "viewDirection": [0.0, 0.0, 1.0], "operation": "curves-outline" },
+      "coverage": ["body", "construction-geometry", "curve", "geometry", "outline"],
+      "output": "geometry.body-outline/model.x_t"
+    },
+    {
+      "caseId": "geometry.body-perspective-outline",
+      "status": "success",
+      "producer": "PK_BODY_make_persp_outline + PK_CURVE_make_wire_body",
+      "parameters": { "source": "body.solid.block.typical", "eyePosition": [10.0, 10.0, 10.0], "operation": "perspective-outline" },
+      "coverage": ["curve", "geometry", "outline", "perspective", "wire-body"],
+      "output": "geometry.body-perspective-outline/model.x_t"
+    },
+    {
+      "caseId": "geometry.body-spun-outline",
+      "status": "success",
+      "producer": "PK_BODY_make_spun_outline + PK_CURVE_make_wire_body",
+      "parameters": { "source": "body.solid.block.typical", "spinAxis": { "location": [0.0, 0.0, 0.0], "direction": [0.0, 0.0, 1.0] }, "operation": "spun-outline" },
+      "coverage": ["curve", "geometry", "outline", "spun", "wire-body"],
+      "output": "geometry.body-spun-outline/model.x_t"
+    },
+    {
+      "caseId": "geometry.entity-delete-temporary",
+      "status": "success",
+      "producer": "PK_ENTITY_delete",
+      "parameters": { "temporary": "point", "operation": "delete-before-transmit" },
+      "coverage": ["delete", "entity", "geometry", "lifecycle", "point"],
+      "output": "geometry.entity-delete-temporary/model.x_t"
+    },
+    {
+      "caseId": "geometry.geom-copy-construction",
+      "status": "success",
+      "producer": "PK_GEOM_copy + PK_PART_add_geoms",
+      "parameters": { "source": "point", "copyDependents": "always", "owner": "part.construction-geometry" },
+      "coverage": ["construction-geometry", "copy", "geometry", "owner/part", "point"],
+      "output": "geometry.geom-copy-construction/model.x_t"
+    },
+    {
+      "caseId": "geometry.geom-transform",
+      "status": "success",
+      "producer": "PK_GEOM_transform + PK_TRANSF_create_translation",
+      "parameters": { "source": "point", "translation": [2.0, -1.0, 0.5], "mode": "new" },
+      "coverage": ["construction-geometry", "geometry", "point", "transform", "translation"],
+      "output": "geometry.geom-transform/model.x_t"
+    },
+    {
+      "caseId": "geometry.part-remove-construction",
+      "status": "success",
+      "producer": "PK_PART_add_geoms + PK_PART_remove_geoms",
+      "parameters": { "geometry": "circle", "operation": "add-then-remove" },
+      "coverage": ["circle", "geometry", "mutator", "part", "remove"],
+      "output": "geometry.part-remove-construction/model.x_t"
+    },
+    {
+      "caseId": "geometry.point.construction",
+      "status": "success",
+      "producer": "PK_POINT_create + PK_PART_add_geoms",
+      "parameters": { "position": [1.25, -0.5, 2.0], "owner": "part.construction-geometry" },
+      "coverage": ["geometry", "point", "construction-geometry", "owner/part"],
+      "output": "geometry.point.construction/model.x_t"
+    },
+    {
+      "caseId": "geometry.geom-delete-single",
+      "status": "success",
+      "producer": "PK_GEOM_delete_single",
+      "parameters": { "temporary": "line", "operation": "delete-single-before-transmit" },
+      "coverage": ["delete", "geometry", "lifecycle", "line", "mutator"],
+      "output": "geometry.geom-delete-single/model.x_t"
+    },
+    {
+      "caseId": "geometry.lsq-plane",
+      "status": "success",
+      "producer": "PK_VECTOR_make_lsq_plane + PK_PART_add_geoms",
+      "parameters": { "positions": [[0.0, 0.0, 0.0], [1.0, 0.0, 0.1], [0.0, 1.0, -0.1]], "owner": "part.construction-geometry" },
+      "coverage": ["construction-geometry", "geometry", "least-squares", "owner/part", "plane"],
+      "output": "geometry.lsq-plane/model.x_t"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "group": "attributes",
+  "entries": [
+    {
+      "caseId": "attribute.body.entity-field",
+      "status": "rejected",
+      "typeId": "attribute.field.entity",
+      "api": ["PK_ATTDEF_create"],
+      "reason": "The checked-in runtime rejects the public entity-field definition/owner combination before an attribute is created.",
+      "evidence": "PK_ATTDEF_create returned PK_ERROR_wrong_entity_in_list (357) for the body and part owner contracts; no legal entity-field fixture was produced.",
+      "recheckWhen": "A documented legal owner/field combination for PK_ATTRIB_field_entity_c is available."
+    },
+    {
+      "caseId": "attribute.definition-v2-field-sizes",
+      "status": "unreachable",
+      "api": ["PK_ATTDEF_create_2"],
+      "reason": "The tested version-2 definition with an explicit one-element field-size array is rejected before an attribute definition is returned.",
+      "evidence": "PK_ATTDEF_create_2 returned error 350 for a body-owned real field; the legacy PK_ATTDEF_create path is the stable producer used by the successful cases.",
+      "recheckWhen": "The runtime documents the required field-name/size encoding for PK_ATTDEF_sf_2_t."
+    },
+    {
+      "caseId": "attribute.group-closing",
+      "status": "unreachable",
+      "api": ["PK_ATTDEF_set_group_closing"],
+      "reason": "Setting group-closing on the standard body-owned definition is rejected by the checked-in runtime.",
+      "evidence": "PK_ATTDEF_set_group_closing returned error 914 after PK_ATTDEF_create; no persistent attribute fixture was retained.",
+      "recheckWhen": "A documented grouped-attribute definition and compatible owner are available."
+    }
+  ],
+  "notes": [
+    "The body-owned integer attribute case is currently the first verified custom attribute branch.",
+    "Additional owner classes, field types, arrays and action combinations remain separate cases and must not be inferred from this case."
+  ]
+}

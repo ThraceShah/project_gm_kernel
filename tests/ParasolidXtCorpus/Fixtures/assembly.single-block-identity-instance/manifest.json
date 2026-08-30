@@ -1,0 +1,26 @@
+{
+  "caseId": "assembly.single-block-identity-instance",
+  "group": "assembly",
+  "producer": "PK_ASSEMBLY_create_empty \u002B PK_TRANSF_create \u002B PK_INSTANCE_create",
+  "description": "A one-level assembly containing one solid block through an identity transform.",
+  "parameters": "{\u0022instances\u0022:[{\u0022part\u0022:\u0022body.solid.block.typical\u0022,\u0022transform\u0022:\u0022identity\u0022}]}",
+  "coverage": [
+    "assembly",
+    "assembly/one-level",
+    "instance/single",
+    "part/shared",
+    "transform/identity"
+  ],
+  "schemaVersion": 37102,
+  "transmitVersion": 371,
+  "entityCounts": {
+    "instances": 1,
+    "parts": 1
+  },
+  "semanticHash": "23eba47b7889dcfc37c72749d8df0d47520a457e6adf3e73ef8b587042fadcdc",
+  "generatorVersion": "corpus-host-v1",
+  "verification": "ParasolidVerified",
+  "typeCoverage": [
+    "assembly.shared-part"
+  ]
+}

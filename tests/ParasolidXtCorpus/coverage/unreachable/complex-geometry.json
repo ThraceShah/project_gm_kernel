@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "group": "complex-geometry",
+  "entries": [
+    {
+      "caseId": "complex-curve-bcurve-rational",
+      "status": "unreachable",
+      "api": ["PK_BCURVE_create"],
+      "entity": "BCURVE",
+      "parameters": {
+        "degree": 2,
+        "nVertices": 3,
+        "vertexDim": 4,
+        "isRational": true,
+        "knots": [0.0, 1.0],
+        "knotMultiplicities": [3, 3]
+      },
+      "reason": "The checked-in runtime rejects this rational standard form before an entity is returned.",
+      "evidence": "PK_BCURVE_create returned PK_ERROR_bad_dimension (135) for the positive homogeneous-control-point probe; no body or fixture was retained.",
+      "recheckWhen": "A runtime or API documentation update clarifies the rational vertex layout and supplies a stable public construction path."
+    },
+    {
+      "caseId": "complex-surface-bsurf-rational",
+      "status": "unreachable",
+      "api": ["PK_BSURF_create"],
+      "entity": "BSURF",
+      "parameters": {
+        "uDegree": 2,
+        "vDegree": 2,
+        "nUVertices": 3,
+        "nVVertices": 3,
+        "vertexDim": 4,
+        "isRational": true,
+        "uKnots": [0.0, 1.0],
+        "vKnots": [0.0, 1.0],
+        "uKnotMultiplicities": [3, 3],
+        "vKnotMultiplicities": [3, 3]
+      },
+      "reason": "The checked-in runtime rejects this rational standard form before an entity is returned.",
+      "evidence": "PK_BSURF_create returned PK_ERROR_bad_dimension (135) for the positive homogeneous-control-point probe; no body or fixture was retained.",
+      "recheckWhen": "A runtime or API documentation update clarifies the rational vertex layout and supplies a stable public construction path."
+    },
+    {
+      "caseId": "complex-surface-bsurf-sheet-body",
+      "status": "unreachable",
+      "api": ["PK_BSURF_create", "PK_SURF_make_sheet_body"],
+      "entity": "BSURF",
+      "parameters": { "uvBox": [0.0, 1.0, 0.0, 1.0] },
+      "reason": "The direct B-surface can be retained as construction geometry, but this runtime rejects the attempted conversion to a sheet body for the same finite UV box.",
+      "evidence": "PK_SURF_make_sheet_body returned PK_ERROR_bad_uvbox (5038) after PK_BSURF_create succeeded; the accepted case therefore records owner part.construction-geometry rather than claiming face.surface.",
+      "recheckWhen": "A stable B-surface parameter-domain query or a runtime that accepts the corresponding UV box becomes available."
+    },
+    {
+      "caseId": "complex-surface-offset-plane",
+      "status": "unreachable",
+      "api": ["PK_OFFSET_create"],
+      "entity": "OFFSET",
+      "parameters": { "underlying": "plane", "offsetDistance": 0.5 },
+      "reason": "The current runtime does not create an offset-surface entity from the tested analytic plane standard form.",
+      "evidence": "PK_OFFSET_create returned PK_ERROR_cant_offset (1037); no sheet body or fixture was retained.",
+      "recheckWhen": "A supported underlying surface and documented offset construction path are identified."
+    },
+    {
+      "caseId": "complex-surface-make-bsurf",
+      "status": "unreachable",
+      "api": ["PK_SURF_make_bsurf"],
+      "entity": "BSURF",
+      "parameters": { "sourceSurface": "cylinder", "uvBox": [0.0, 6.283185307179586, 0.0, 5.0], "cubic": false, "nonRational": true, "tolerance": 0.00001 },
+      "reason": "The approximation producer did not return a stable B-surface for the tested analytic surface parameter box.",
+      "evidence": "PK_SURF_make_bsurf returned error 9999 for a finite cylinder UV box; the probe did not retain a geometry handle.",
+      "recheckWhen": "A supported surface parameter domain and documented approximation options are identified."
+    },
+    {
+      "caseId": "complex-surface-helical",
+      "status": "unreachable",
+      "api": ["PK_CURVE_make_helical_surf"],
+      "entity": "HELICAL surface",
+      "parameters": { "profile": "line", "turns": [0.0, 1.0], "helicalPitch": 1.0, "spiralPitch": 0.0 },
+      "reason": "The helical surface producer returned a surface handle but no stable finite UV box could be accepted by the sheet-body owner contract.",
+      "evidence": "PK_SURF_make_sheet_body returned PK_ERROR_bad_uvbox (5038) for the tested line/axis/pitch probe; no fixture was retained.",
+      "recheckWhen": "A parameter-domain query and supported finite UV box for helical surfaces are available."
+    },
+    {
+      "caseId": "complex-curve-icurve-cpcurve-trcurve",
+      "status": "unreachable",
+      "api": ["ICURVE", "CPCURVE", "TRCURVE"],
+      "entity": "ICURVE/CPCURVE/TRCURVE",
+      "parameters": {},
+      "reason": "The checked-in public header exposes handles and ask/query forms for these representations but no direct create producer; no stable public operation was found that returns them as a persistent independent geometry case.",
+      "evidence": "parasolid_kernel.h has no PK_ICURVE_create, PK_CPCURVE_create or PK_TRCURVE_create declaration. PK_TRCURVE_ask is query-only; intersection/parameter-curve producers were probed only where they returned a supported SPCURVE.",
+      "recheckWhen": "A producer API, documented seed model, or runtime operation that returns one of these entities is added to the inventory."
+    },
+    {
+      "caseId": "complex-curve.cpcurve-producer",
+      "status": "deferred",
+      "typeId": "curve.cpcurve-producer",
+      "api": ["CPCURVE"],
+      "entity": "CPCURVE",
+      "parameters": { "producer": "none identified" },
+      "result": "no-public-producer",
+      "reason": "The current header exposes CPCurve handles/asks but no public producer that returns an independent persistent CPCurve.",
+      "recheckWhen": "A documented CPCurve producer or an operation returning a CPCurve is available."
+    },
+    {
+      "caseId": "complex-geometry-foreign-and-blend",
+      "status": "unreachable",
+      "api": ["PK_FCURVE_create", "PK_FSURF_create", "PK_BLENDSF"],
+      "entity": "FCURVE/FSURF/BLENDSF",
+      "parameters": {},
+      "reason": "Foreign geometry requires an opaque application key/callback contract not available in this corpus runtime, and BLENDSF is produced by topology blend operations rather than a standalone create API.",
+      "evidence": "PK_FCURVE_create and PK_FSURF_create are present but their key/int/double payload is application-defined; PK_BLENDSF has no create declaration in the checked-in header. No guessed opaque payload is promoted to legal corpus data.",
+      "recheckWhen": "Foreign evaluator/key ownership is documented and executable, or a supported blend producer returns a stable persistent surface."
+    },
+    {
+      "caseId": "complex-surface-make-bsurf-2",
+      "status": "unreachable",
+      "api": ["PK_SURF_make_bsurf_2"],
+      "entity": "BSURF",
+      "parameters": { "sourceSurface": "plane", "uvBox": [-1.0, 1.0, -1.0, 1.0], "options": "default" },
+      "reason": "The option-bearing approximation producer rejects the finite analytic-plane UV box in the checked-in runtime.",
+      "evidence": "PK_SURF_make_bsurf_2 returned PK_ERROR_bad_uvbox (5038); no B-surface handle or fixture was retained.",
+      "recheckWhen": "A runtime-compatible finite UV parameter domain is identified for PK_SURF_make_bsurf_2."
+    }
+  ],
+  "notes": [
+    "The nineteen success cases are independently generated and self-received by the real Parasolid runtime.",
+    "Construction geometry is explicitly owned by part.construction-geometry; face-surface is used only for surfaces made through PK_SURF_make_sheet_body.",
+    "Unreachable entries record exact probes and error codes and are not counted as covered."
+  ]
+}

@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "group": "user-fields-mesh",
+  "scope": "Stable facet-body mesh producers, named Attribute fields, and a non-zero-session user-field round trip available through the current corpus host; lattice and indexed-context producers remain audited separately.",
+  "cases": [
+    {
+      "caseId": "user-field.body.integer",
+      "status": "success",
+      "producer": "PK_ENTITY_set_user_field + PK_PART_transmit_b",
+      "entity": "BODY user-field",
+      "owner": "body",
+      "parameters": { "source": "body.solid.block.typical", "sessionUserFieldLength": 4, "value": [12345, 0, 0, 0], "transmitUserFields": true },
+      "coverage": ["body", "integer", "session/user-field-length", "transmit", "user-field"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "user-field.body.integer/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "user-field.body-and-face.integer",
+      "status": "success",
+      "producer": "PK_ENTITY_set_user_field + PK_ENTITY_ask_user_field + PK_PART_transmit_b",
+      "entity": "BODY/FACE user-field",
+      "owner": "body and face",
+      "parameters": {
+        "source": "body.solid.block.typical",
+        "sessionUserFieldLength": 4,
+        "values": {
+          "body": [12345, 0, 0, 0],
+          "firstFace": [54321, 0, 0, 0]
+        },
+        "transmitUserFields": true
+      },
+      "coverage": ["body", "face", "integer", "multiple-entities", "session/user-field-length", "transmit", "user-field"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "user-field.body-and-face.integer/model.x_t",
+      "verification": "entity-ask-and-self-receive-body-compare"
+    },
+    {
+      "caseId": "user-field.body.zero",
+      "status": "success",
+      "producer": "PK_ENTITY_set_user_field + PK_PART_transmit_b",
+      "entity": "BODY user-field",
+      "owner": "body",
+      "parameters": { "source": "body.solid.block.typical", "sessionUserFieldLength": 0, "value": [], "transmitUserFields": true },
+      "coverage": ["body", "session/user-field-length-zero", "transmit", "user-field"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "user-field.body.zero/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "mesh.facet-body.block.distance-tolerance",
+      "status": "success",
+      "producer": "PK_BODY_make_facet_body",
+      "entity": "MESH/MFACET/MVERTEX",
+      "owner": "body",
+      "parameters": {
+        "source": "body.solid.block.typical",
+        "distanceTolerance": 0.01,
+        "angularTolerance": null,
+        "maxFacetWidth": null,
+        "maxChordLength": null,
+        "retainAttributes": false,
+        "retainGroups": false,
+        "trackFaces": false,
+        "trackEdges": "no",
+        "partialConversion": "any"
+      },
+      "coverage": [
+        "mesh",
+        "mesh/facet-body",
+        "mesh/mfacet",
+        "mesh/mvertex",
+        "body/solid/block",
+        "parameters/distance-tolerance",
+        "owner/body"
+      ],
+      "expectedEntityCounts": {
+        "regions": 2,
+        "shells": 2,
+        "faces": 6,
+        "edges": 12,
+        "vertices": 8,
+        "loops": 6,
+        "fins": 24
+      },
+      "output": "mesh.facet-body.block.distance-tolerance/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "mesh.facet-body.sphere.angular-tolerance",
+      "status": "success",
+      "producer": "PK_BODY_make_facet_body",
+      "entity": "MESH/MFACET/MVERTEX",
+      "owner": "body",
+      "parameters": {
+        "source": "body.solid.sphere.typical",
+        "distanceTolerance": null,
+        "angularTolerance": 0.2,
+        "maxFacetWidth": null,
+        "maxChordLength": null,
+        "retainAttributes": false,
+        "retainGroups": false,
+        "trackFaces": false,
+        "trackEdges": "no",
+        "partialConversion": "any"
+      },
+      "coverage": [
+        "mesh",
+        "mesh/facet-body",
+        "mesh/mfacet",
+        "mesh/mvertex",
+        "body/solid/sphere",
+        "parameters/angular-tolerance",
+        "owner/body"
+      ],
+      "expectedEntityCounts": {
+        "regions": 2,
+        "shells": 2,
+        "faces": 1,
+        "edges": 0,
+        "vertices": 0,
+        "loops": 0,
+        "fins": 0
+      },
+      "output": "mesh.facet-body.sphere.angular-tolerance/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "attribute.body.named-real",
+      "status": "success",
+      "producer": "PK_ATTDEF_create_2 + PK_ATTRIB_set_named_doubles + PK_ATTRIB_ask_named_doubles",
+      "entity": "ATTRIBUTE",
+      "owner": "body",
+      "parameters": {
+        "definition": {
+          "name": "corpus_named_real",
+          "ownerTypes": ["body"],
+          "fields": [{"name": "temperature", "type": "real"}]
+        },
+        "value": 273.15
+      },
+      "coverage": ["attribute", "attdef", "named-field", "owner/body", "field/real", "action/transmit"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "attribute.body.named-real/model.x_t",
+      "verification": "named-field-ask-and-self-receive-body-compare"
+    },
+    {
+      "caseId": "attribute.body.named-string",
+      "status": "success",
+      "producer": "PK_ATTDEF_create_2 + PK_ATTRIB_set_named_string + PK_ATTRIB_ask_named_string",
+      "entity": "ATTRIBUTE",
+      "owner": "body",
+      "parameters": {
+        "definition": {
+          "name": "corpus_named_string",
+          "ownerTypes": ["body"],
+          "fields": [{"name": "label", "type": "string"}]
+        },
+        "value": "parasolid-named"
+      },
+      "coverage": ["attribute", "attdef", "named-field", "owner/body", "field/string", "action/transmit"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "attribute.body.named-string/model.x_t",
+      "verification": "named-field-ask-and-self-receive-body-compare"
+    },
+    {
+      "caseId": "attribute.body.named-vector",
+      "status": "success",
+      "producer": "PK_ATTDEF_create_2 + PK_ATTRIB_set_named_vectors + PK_ATTRIB_ask_named_vectors",
+      "entity": "ATTRIBUTE",
+      "owner": "body",
+      "parameters": {
+        "definition": {
+          "name": "corpus_named_vector",
+          "ownerTypes": ["body"],
+          "fields": [{"name": "direction", "type": "vector"}]
+        },
+        "value": [1.0, 2.0, 3.0]
+      },
+      "coverage": ["attribute", "attdef", "named-field", "owner/body", "field/vector", "action/transmit"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "attribute.body.named-vector/model.x_t",
+      "verification": "named-field-ask-and-self-receive-body-compare"
+    },
+    {
+      "caseId": "attribute.body.named-integer",
+      "status": "success",
+      "producer": "PK_ATTDEF_create_2 + PK_ATTRIB_set_named_ints + PK_ATTRIB_ask_named_ints",
+      "entity": "ATTRIBUTE",
+      "owner": "body",
+      "parameters": {
+        "definition": {
+          "name": "corpus_named_integer",
+          "ownerTypes": ["body"],
+          "fields": [{"name": "code", "type": "integer"}]
+        },
+        "value": 37
+      },
+      "coverage": ["attribute", "attdef", "named-field", "owner/body", "field/integer", "action/transmit"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "attribute.body.named-integer/model.x_t",
+      "verification": "named-field-ask-and-self-receive-body-compare"
+    },
+    {
+      "caseId": "attribute.body.named-axis",
+      "status": "success",
+      "producer": "PK_ATTDEF_create_2 + PK_ATTRIB_set_named_axes + PK_ATTRIB_ask_named_axes",
+      "entity": "ATTRIBUTE",
+      "owner": "body",
+      "parameters": {
+        "definition": {
+          "name": "corpus_named_axis",
+          "ownerTypes": ["body"],
+          "fields": [{"name": "axis", "type": "axis"}]
+        },
+        "value": {"location": [0.0, 0.0, 0.0], "direction": [0.0, 0.0, 1.0]}
+      },
+      "coverage": ["attribute", "attdef", "named-field", "owner/body", "field/axis", "action/transmit"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "attribute.body.named-axis/model.x_t",
+      "verification": "named-field-ask-and-self-receive-body-compare"
+    }
+  ]
+}

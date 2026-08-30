@@ -1,0 +1,114 @@
+[
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_ERROR_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 23
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_KI_LIST_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 50
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_3_face_blend_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 3152
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_LOOP_3_space_gap_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 4682
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_LOOP_2_space_gap_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 4693
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_REPORT_1_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 4888
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_REPORT_2_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 5276
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_REPORT_3_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 5432
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_GROUP_split_empty_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 5977
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_GROUP_merge_empty_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 5994
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_REPORT_4_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 7137
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_MFIN_index_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 9212
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_THREAD_id_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 9301
+  },
+  {
+    "severity": "info",
+    "code": "header_only_type",
+    "message": "No PKToy type binding was found for PK_FACE_change_data_blend_t.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 20010
+  },
+  {
+    "severity": "warning",
+    "code": "binding_only_api",
+    "message": "PKToy binding has no matching header declaration for PK_FACE_create_neutral_sheet.",
+    "source": null,
+    "line": null
+  },
+  {
+    "severity": "warning",
+    "code": "header_only_api",
+    "message": "No PKToy P/Invoke binding was found for PK_SESSION_register_polling_cb.",
+    "source": "third_party/parasolid/include/parasolid_kernel.h",
+    "line": 32685
+  }
+]

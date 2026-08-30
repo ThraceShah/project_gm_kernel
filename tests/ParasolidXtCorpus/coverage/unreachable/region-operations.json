@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "group": "region-operations",
+  "entries": [
+    {
+      "caseId": "region.imprint-point",
+      "status": "unreachable",
+      "api": ["PK_REGION_imprint_point"],
+      "reason": "A point placed on or inside the solid block region is rejected by the region imprint contract in the checked-in runtime.",
+      "evidence": "PK_REGION_imprint_point returned error 5064 for points at [0.5,1.0,0.0] and [0.5,1.0,1.5]; no new vertex or x_t was retained.",
+      "recheckWhen": "A documented region point placement convention is available for this Parasolid version."
+    },
+    {
+      "caseId": "region.imprint-curve",
+      "status": "unreachable",
+      "api": ["PK_REGION_imprint_curve"],
+      "reason": "The finite analytic line probe is rejected before a new region edge is returned.",
+      "evidence": "PK_REGION_imprint_curve returned error 547 for a line crossing the block interior with bounds [0.0,1.0]; no fixture was retained.",
+      "recheckWhen": "A runtime-compatible curve placement and bounds convention is identified."
+    }
+  ],
+  "notes": ["Both region type mutators are legal on the solid seed in the checked-in runtime."]
+}

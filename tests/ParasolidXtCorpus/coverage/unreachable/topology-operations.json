@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "group": "topology-operations",
+  "entries": [
+    {
+      "caseId": "topology.face.reverse-solid-or-sheet",
+      "status": "unreachable",
+      "api": "PK_FACE_reverse",
+      "parameters": { "input": "single face returned by PK_BODY_ask_faces", "body": "solid-block and sheet-rectangle" },
+      "reason": "The checked-in Parasolid runtime rejects PK_FACE_reverse for the direct face handles returned by both legal body constructors.",
+      "evidence": "Both probes returned PK_ERROR_wrong_entity (10); no fixture was retained.",
+      "recheckWhen": "The runtime contract for face orientation mutation changes or a supported face ownership route is documented."
+    },
+    {
+      "caseId": "topology.face.delete-solid-face",
+      "status": "unreachable",
+      "api": "PK_FACE_delete",
+      "parameters": { "input": "one face from solid-block", "healAction": "shrink", "healLoops": "auto", "localCheck": true },
+      "reason": "Deleting a single face from the block cannot heal the resulting wound under the stable default parameters.",
+      "evidence": "The runtime returned PK_ERROR_cant_heal_wound (525); no output body was promoted.",
+      "recheckWhen": "A documented healing configuration produces a valid returned body with zero local faults."
+    },
+    {
+      "caseId": "topology.face.attach-existing-surface",
+      "status": "unreachable",
+      "api": "PK_FACE_attach_surfs",
+      "parameters": { "input": "sheet-rectangle face", "surface": "the face's existing surface", "sense": true },
+      "reason": "Reattaching an already attached surface is rejected as an unnecessary geometry operation.",
+      "evidence": "The runtime returned PK_ERROR_geom_not_needed (64); no fixture was retained.",
+      "recheckWhen": "A legal replacement surface with distinct ownership is available."
+    },
+    {
+      "caseId": "topology.face.euler-make-loop",
+      "status": "diagnostic",
+      "api": "PK_FACE_euler_make_loop",
+      "parameters": { "input": "sole face of sheet-rectangle" },
+      "reason": "The candidate Euler operation does not return a stable process result in the checked-in runtime, so it is excluded from the generated case list.",
+      "evidence": "The isolated probe terminated with process exit code 139 before a body or x_t could be verified; no fixture was retained.",
+      "recheckWhen": "The operation can be isolated behind a supported Euler topology contract and returns without a native crash."
+    }
+  ],
+  "notes": ["These probes are intentionally excluded from successful cases because they do not produce a verified independent body fixture."]
+}

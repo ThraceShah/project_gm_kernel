@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "group": "user-field-single",
+  "cases": [
+    {
+      "caseId": "user-field.body.single-slot",
+      "status": "success",
+      "producer": "PK_SESSION_start(user_field=1) + PK_ENTITY_set_user_field",
+      "entity": "BODY user-field",
+      "parameters": { "sessionUserFieldLength": 1, "value": [31415] },
+      "coverage": ["user-field", "boundary-length", "single-slot", "owner/body"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "user-field.body.single-slot/model.x_t",
+      "verification": "ask-and-self-receive-body-compare"
+    }
+  ]
+}

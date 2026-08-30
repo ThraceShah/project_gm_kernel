@@ -1,0 +1,1883 @@
+{
+  "schemaVersion": 1,
+  "group": "residual-api-audit",
+  "scope": "Explicit audit of persistent Producer/Mutator API branches that have no verified canonical x_t in the current runtime/host.",
+  "entries": [
+    {
+      "caseId": "audit.attrib-set-named-pointers",
+      "status": "audited",
+      "api": [
+        "PK_ATTRIB_set_named_pointers"
+      ],
+      "entity": "ATTRIB",
+      "classification": "Mutator",
+      "reason": "This branch depends on opaque application pointers, callbacks or nominal-curve ownership whose lifetime and text-transmit semantics are not frozen by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.attrib-set-named-ustring",
+      "status": "audited",
+      "api": [
+        "PK_ATTRIB_set_named_ustring"
+      ],
+      "entity": "ATTRIB",
+      "classification": "Mutator",
+      "reason": "This branch depends on opaque application pointers, callbacks or nominal-curve ownership whose lifetime and text-transmit semantics are not frozen by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.bcurve-create-by-fitting",
+      "status": "audited",
+      "api": [
+        "PK_BCURVE_create_by_fitting"
+      ],
+      "entity": "BCURVE",
+      "classification": "Producer",
+      "reason": "This fitting/spline branch requires an option and parameter-domain contract beyond the stable standard forms currently retained.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.bcurve-make-bsurf-lofted",
+      "status": "audited",
+      "api": [
+        "PK_BCURVE_make_bsurf_lofted"
+      ],
+      "entity": "BCURVE",
+      "classification": "Producer",
+      "reason": "This fitting/spline branch requires an option and parameter-domain contract beyond the stable standard forms currently retained.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.bcurve-make-matched",
+      "status": "audited",
+      "api": [
+        "PK_BCURVE_make_matched"
+      ],
+      "entity": "BCURVE",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-add-to-compound",
+      "status": "audited",
+      "api": [
+        "PK_BODY_add_to_compound"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-apply-knit-pattern",
+      "status": "audited",
+      "api": [
+        "PK_BODY_apply_knit_pattern"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-boolean-2",
+      "status": "audited",
+      "api": [
+        "PK_BODY_boolean_2"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-create-solid-topology",
+      "status": "audited",
+      "api": [
+        "PK_BODY_create_solid_topology"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-fix-blends",
+      "status": "audited",
+      "api": [
+        "PK_BODY_fix_blends"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-body",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_body"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-curves-normal",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_curves_normal"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-curves-vector",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_curves_vector"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-cus-normal",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_cus_normal"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-cus-shadow",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_cus_shadow"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-cus-vec",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_cus_vec"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-cus-vector",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_cus_vector"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-faces",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_faces"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-faces-2",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_faces_2"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-plane",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_plane"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-imprint-plane-2",
+      "status": "audited",
+      "api": [
+        "PK_BODY_imprint_plane_2"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-knit",
+      "status": "audited",
+      "api": [
+        "PK_BODY_knit"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-lofted-body",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_lofted_body"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "This fitting/spline branch requires an option and parameter-domain contract beyond the stable standard forms currently retained.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-patterned",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_patterned"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-section",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_section"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-section-with-surfs",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_section_with_surfs"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-swept-body",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_swept_body"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-swept-body-2",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_swept_body_2"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-swept-profiles",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_swept_profiles"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-make-swept-tool",
+      "status": "audited",
+      "api": [
+        "PK_BODY_make_swept_tool"
+      ],
+      "entity": "BODY",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-offset-2",
+      "status": "audited",
+      "api": [
+        "PK_BODY_offset_2"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-offset-planar-wire",
+      "status": "audited",
+      "api": [
+        "PK_BODY_offset_planar_wire"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-set-curve-nmnl-state",
+      "status": "audited",
+      "api": [
+        "PK_BODY_set_curve_nmnl_state"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-set-type",
+      "status": "audited",
+      "api": [
+        "PK_BODY_set_type"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-sew-bodies",
+      "status": "audited",
+      "api": [
+        "PK_BODY_sew_bodies"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-spin",
+      "status": "audited",
+      "api": [
+        "PK_BODY_spin"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-taper",
+      "status": "audited",
+      "api": [
+        "PK_BODY_taper"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-thicken-2",
+      "status": "audited",
+      "api": [
+        "PK_BODY_thicken_2"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.body-thicken-3",
+      "status": "audited",
+      "api": [
+        "PK_BODY_thicken_3"
+      ],
+      "entity": "BODY",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.bsurf-create-constrained",
+      "status": "audited",
+      "api": [
+        "PK_BSURF_create_constrained"
+      ],
+      "entity": "BSURF",
+      "classification": "Producer",
+      "reason": "This fitting/spline branch requires an option and parameter-domain contract beyond the stable standard forms currently retained.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.bsurf-create-fitted",
+      "status": "audited",
+      "api": [
+        "PK_BSURF_create_fitted"
+      ],
+      "entity": "BSURF",
+      "classification": "Producer",
+      "reason": "This fitting/spline branch requires an option and parameter-domain contract beyond the stable standard forms currently retained.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-attach-curve-nmnl",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_attach_curve_nmnl"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This branch depends on opaque application pointers, callbacks or nominal-curve ownership whose lifetime and text-transmit semantics are not frozen by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-attach-curves",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_attach_curves"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This branch depends on opaque application pointers, callbacks or nominal-curve ownership whose lifetime and text-transmit semantics are not frozen by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-attach-curves-2",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_attach_curves_2"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This branch depends on opaque application pointers, callbacks or nominal-curve ownership whose lifetime and text-transmit semantics are not frozen by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-detach-curve-nmnl",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_detach_curve_nmnl"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-euler-delete-make-loop",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_euler_delete_make_loop"
+      ],
+      "entity": "EDGE",
+      "classification": "Producer",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-euler-delete-ring-face",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_euler_delete_ring_face"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-euler-delete-ring-loop",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_euler_delete_ring_loop"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-euler-delete-with-face",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_euler_delete_with_face"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-euler-delete-with-loop",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_euler_delete_with_loop"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-offset-on-body",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_offset_on_body"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-remove-blend",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_remove_blend"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-remove-to-bodies",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_remove_to_bodies"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-set-blend-chain",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_set_blend_chain"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-set-blend-chamfer",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_set_blend_chamfer"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.edge-set-blend-variable",
+      "status": "audited",
+      "api": [
+        "PK_EDGE_set_blend_variable"
+      ],
+      "entity": "EDGE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-attach-surf-fitting",
+      "status": "audited",
+      "api": [
+        "PK_FACE_attach_surf_fitting"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This fitting/spline branch requires an option and parameter-domain contract beyond the stable standard forms currently retained.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-boolean",
+      "status": "audited",
+      "api": [
+        "PK_FACE_boolean"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-boolean-2",
+      "status": "audited",
+      "api": [
+        "PK_FACE_boolean_2"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-delete-2",
+      "status": "audited",
+      "api": [
+        "PK_FACE_delete_2"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-delete-blends",
+      "status": "audited",
+      "api": [
+        "PK_FACE_delete_blends"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-delete-facesets",
+      "status": "audited",
+      "api": [
+        "PK_FACE_delete_facesets"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-delete-from-gen-body",
+      "status": "audited",
+      "api": [
+        "PK_FACE_delete_from_gen_body"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-delete-from-sheet",
+      "status": "audited",
+      "api": [
+        "PK_FACE_delete_from_sheet"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-delete-from-sheet-body",
+      "status": "audited",
+      "api": [
+        "PK_FACE_delete_from_sheet_body"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-identify-blends",
+      "status": "audited",
+      "api": [
+        "PK_FACE_identify_blends"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-identify-blends-2",
+      "status": "audited",
+      "api": [
+        "PK_FACE_identify_blends_2"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-imprint-cus-normal",
+      "status": "audited",
+      "api": [
+        "PK_FACE_imprint_cus_normal"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-imprint-cus-vec",
+      "status": "audited",
+      "api": [
+        "PK_FACE_imprint_cus_vec"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-imprint-cus-vector",
+      "status": "audited",
+      "api": [
+        "PK_FACE_imprint_cus_vector"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-imprint-faces",
+      "status": "audited",
+      "api": [
+        "PK_FACE_imprint_faces"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-imprint-faces-2",
+      "status": "audited",
+      "api": [
+        "PK_FACE_imprint_faces_2"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-make-neutral-sheet",
+      "status": "audited",
+      "api": [
+        "PK_FACE_make_neutral_sheet"
+      ],
+      "entity": "FACE",
+      "classification": "Producer",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-make-neutral-sheet-2",
+      "status": "audited",
+      "api": [
+        "PK_FACE_make_neutral_sheet_2"
+      ],
+      "entity": "FACE",
+      "classification": "Producer",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-make-sect-with-sfs",
+      "status": "audited",
+      "api": [
+        "PK_FACE_make_sect_with_sfs"
+      ],
+      "entity": "FACE",
+      "classification": "Producer",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-make-solid-bodies",
+      "status": "audited",
+      "api": [
+        "PK_FACE_make_solid_bodies"
+      ],
+      "entity": "FACE",
+      "classification": "Producer",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-remove-to-solid-bodies",
+      "status": "audited",
+      "api": [
+        "PK_FACE_remove_to_solid_bodies"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-replace-surfs",
+      "status": "audited",
+      "api": [
+        "PK_FACE_replace_surfs"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-replace-surfs-2",
+      "status": "audited",
+      "api": [
+        "PK_FACE_replace_surfs_2"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-replace-surfs-3",
+      "status": "audited",
+      "api": [
+        "PK_FACE_replace_surfs_3"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-replace-with-sheet",
+      "status": "audited",
+      "api": [
+        "PK_FACE_replace_with_sheet"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-spin",
+      "status": "audited",
+      "api": [
+        "PK_FACE_spin"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-sweep",
+      "status": "audited",
+      "api": [
+        "PK_FACE_sweep"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.face-taper",
+      "status": "audited",
+      "api": [
+        "PK_FACE_taper"
+      ],
+      "entity": "FACE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.fin-attach-curves",
+      "status": "audited",
+      "api": [
+        "PK_FIN_attach_curves"
+      ],
+      "entity": "FIN",
+      "classification": "Mutator",
+      "reason": "This branch depends on opaque application pointers, callbacks or nominal-curve ownership whose lifetime and text-transmit semantics are not frozen by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.frame-attach-geoms",
+      "status": "audited",
+      "api": [
+        "PK_FRAME_attach_geoms"
+      ],
+      "entity": "FRAME",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.frame-reverse",
+      "status": "audited",
+      "api": [
+        "PK_FRAME_reverse"
+      ],
+      "entity": "FRAME",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.lattice-create-by-graph",
+      "status": "audited",
+      "api": [
+        "PK_LATTICE_create_by_graph"
+      ],
+      "entity": "LATTICE",
+      "classification": "Producer",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.lattice-make-bodies",
+      "status": "audited",
+      "api": [
+        "PK_LATTICE_make_bodies"
+      ],
+      "entity": "LATTICE",
+      "classification": "Producer",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.lattice-make-patterned",
+      "status": "audited",
+      "api": [
+        "PK_LATTICE_make_patterned"
+      ],
+      "entity": "LATTICE",
+      "classification": "Producer",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.lattice-offset",
+      "status": "audited",
+      "api": [
+        "PK_LATTICE_offset"
+      ],
+      "entity": "LATTICE",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.loop-euler-create-edge",
+      "status": "audited",
+      "api": [
+        "PK_LOOP_euler_create_edge"
+      ],
+      "entity": "LOOP",
+      "classification": "Producer",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.loop-euler-delete-make-edge",
+      "status": "audited",
+      "api": [
+        "PK_LOOP_euler_delete_make_edge"
+      ],
+      "entity": "LOOP",
+      "classification": "Producer",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.mesh-create-from-facets",
+      "status": "audited",
+      "api": [
+        "PK_MESH_create_from_facets"
+      ],
+      "entity": "MESH",
+      "classification": "Producer",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.mesh-imprint-vectors",
+      "status": "audited",
+      "api": [
+        "PK_MESH_imprint_vectors"
+      ],
+      "entity": "MESH",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.mesh-make-bodies",
+      "status": "audited",
+      "api": [
+        "PK_MESH_make_bodies"
+      ],
+      "entity": "MESH",
+      "classification": "Producer",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.mesh-make-surf-trimmed",
+      "status": "audited",
+      "api": [
+        "PK_MESH_make_surf_trimmed"
+      ],
+      "entity": "MESH",
+      "classification": "Producer",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.mtopol-make-meshes",
+      "status": "audited",
+      "api": [
+        "PK_MTOPOL_make_meshes"
+      ],
+      "entity": "MTOPOL",
+      "classification": "Producer",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.mvertex-set-positions",
+      "status": "audited",
+      "api": [
+        "PK_MVERTEX_set_positions"
+      ],
+      "entity": "MVERTEX",
+      "classification": "Mutator",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.region-remove-lattice",
+      "status": "audited",
+      "api": [
+        "PK_REGION_remove_lattice"
+      ],
+      "entity": "REGION",
+      "classification": "Mutator",
+      "reason": "This mesh/lattice branch requires a callback-backed facet or lattice contract and a dedicated receive verifier not provided by the current host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.surf-create-blend",
+      "status": "audited",
+      "api": [
+        "PK_SURF_create_blend"
+      ],
+      "entity": "SURF",
+      "classification": "Producer",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.surf-make-bsurf-array",
+      "status": "audited",
+      "api": [
+        "PK_SURF_make_bsurf_array"
+      ],
+      "entity": "SURF",
+      "classification": "Producer",
+      "reason": "This fitting/spline branch requires an option and parameter-domain contract beyond the stable standard forms currently retained.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.surf-make-sheet-trimmed",
+      "status": "audited",
+      "api": [
+        "PK_SURF_make_sheet_trimmed"
+      ],
+      "entity": "SURF",
+      "classification": "Producer",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-delete-redundant",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_delete_redundant"
+      ],
+      "entity": "TOPOL",
+      "classification": "Mutator",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-delete-redundant-2",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_delete_redundant_2"
+      ],
+      "entity": "TOPOL",
+      "classification": "Mutator",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-detach-geom",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_detach_geom"
+      ],
+      "entity": "TOPOL",
+      "classification": "Mutator",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-imprint-frames",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_imprint_frames"
+      ],
+      "entity": "TOPOL",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-make-facet-topol",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_make_facet_topol"
+      ],
+      "entity": "TOPOL",
+      "classification": "Producer",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-make-general-body",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_make_general_body"
+      ],
+      "entity": "TOPOL",
+      "classification": "Producer",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-make-new",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_make_new"
+      ],
+      "entity": "TOPOL",
+      "classification": "Producer",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.topol-remove-body-component",
+      "status": "audited",
+      "api": [
+        "PK_TOPOL_remove_body_component"
+      ],
+      "entity": "TOPOL",
+      "classification": "Mutator",
+      "reason": "No stable legal input contract and receive verifier is available in the current runtime/host for this persistent branch.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.vertex-delete-acorn",
+      "status": "audited",
+      "api": [
+        "PK_VERTEX_delete_acorn"
+      ],
+      "entity": "VERTEX",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.vertex-euler-delete",
+      "status": "audited",
+      "api": [
+        "PK_VERTEX_euler_delete"
+      ],
+      "entity": "VERTEX",
+      "classification": "Mutator",
+      "reason": "This low-level topology graph operation needs documented relation ordering and fault-free receive semantics before a legal fixture can be promoted.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.vertex-make-blend",
+      "status": "audited",
+      "api": [
+        "PK_VERTEX_make_blend"
+      ],
+      "entity": "VERTEX",
+      "classification": "Producer",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.vertex-remove-edge",
+      "status": "audited",
+      "api": [
+        "PK_VERTEX_remove_edge"
+      ],
+      "entity": "VERTEX",
+      "classification": "Mutator",
+      "reason": "This topology entity branch depends on owner/sense and healing preconditions not yet represented by a stable independent case.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.vertex-spin",
+      "status": "audited",
+      "api": [
+        "PK_VERTEX_spin"
+      ],
+      "entity": "VERTEX",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    },
+    {
+      "caseId": "audit.vertex-sweep",
+      "status": "audited",
+      "api": [
+        "PK_VERTEX_sweep"
+      ],
+      "entity": "VERTEX",
+      "classification": "Mutator",
+      "reason": "This advanced geometry/topology operation needs a stable seed, option matrix and result verifier that are not available in the current corpus host.",
+      "evidence": {
+        "inventory": "third_party/parasolid/include/parasolid_kernel.h",
+        "runtime": "No successful canonical case is retained for this API branch; promoting a guessed input would create unverified x_t data.",
+        "review": "The work-package probe/contract review identified the requirement below and recorded it for re-audit."
+      },
+      "recheckWhen": "When the required seed, callback/option contract, or dedicated verifier is available, add a successful independent case and remove this audit entry."
+    }
+  ],
+  "notes": [
+    "These records are audit-only and intentionally do not claim legal x_t coverage.",
+    "Each API remains visible in coverage-report.uncoveredApis; strict gaps are closed only because the branch has a documented recheck condition."
+  ]
+}

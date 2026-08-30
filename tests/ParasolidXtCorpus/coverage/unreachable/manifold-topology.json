@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "group": "manifold-topology",
+  "entries": [
+    {
+      "caseId": "topology.loop.hole.legacy-token",
+      "status": "needs-recipe",
+      "typeId": "topology.loop.hole",
+      "api": ["PK_LOOP_ask_type"],
+      "entity": "LOOP",
+      "parameters": { "seeds": ["sheet-rectangle", "solid-cylinder", "boolean-through-hole", "imprint-line", "cone-apex"] },
+      "result": "current-v38-emits-inner=5413",
+      "reason": "The current v38 runtime classifies face holes as PK_LOOP_type_inner_c; the legacy PK_LOOP_type_hole_c token is not emitted by the deterministic manifold seeds.",
+      "recheckWhen": "A fixed public-API recipe produces PK_LOOP_type_hole_c and survives transmit/receive."
+    },
+    {
+      "caseId": "topology.loop.peripheral.legacy-token",
+      "status": "needs-recipe",
+      "typeId": "topology.loop.peripheral",
+      "api": ["PK_LOOP_ask_type"],
+      "entity": "LOOP",
+      "parameters": { "seeds": ["sheet-rectangle", "solid-cylinder", "boolean-through-hole", "imprint-line", "cone-apex"] },
+      "result": "current-v38-emits-outer=5412-or-winding=5414",
+      "reason": "The current v38 runtime uses outer/winding classifications for peripheral boundaries; the legacy PK_LOOP_type_peripheral_c token is not emitted by deterministic manifold seeds.",
+      "recheckWhen": "A fixed public-API recipe produces PK_LOOP_type_peripheral_c and survives transmit/receive."
+    },
+    {
+      "caseId": "topology.loop.inner-sing.ring",
+      "status": "unreachable",
+      "typeId": "topology.loop.inner_sing",
+      "api": ["PK_FACE_euler_make_ring_loop", "PK_LOOP_ask_type"],
+      "entity": "LOOP",
+      "parameters": { "seed": "PK_BODY_create_sheet_rectangle(2,3)", "operation": "PK_FACE_euler_make_ring_loop" },
+      "result": "PK_LOOP_type_error_c=5419",
+      "reason": "The deterministic ring-loop seed creates an empty loop classified as error rather than inner_sing; no legal inner-singular manifold fixture is retained.",
+      "recheckWhen": "A face-with-hole or degenerate-face seed produces PK_LOOP_type_inner_sing_c and passes receive/body comparison."
+    },
+    {
+      "caseId": "topology.edge.valence.one",
+      "status": "unreachable",
+      "typeId": "topology.edge.valence.1",
+      "api": ["PK_EDGE_ask_vertices"],
+      "entity": "EDGE",
+      "parameters": { "targetEndpointVertexCount": 1, "seeds": ["solid-cone(radius=0)", "solid-cylinder", "sheet-rectangle"] },
+      "result": "no-successful-seed",
+      "reason": "The degenerate cone apex is represented by a vertex loop and its edge has zero endpoint vertices; the tested cylinder and sheet edges are ring/two-endpoint edges.",
+      "recheckWhen": "A legal manifold seed with exactly one edge endpoint is available."
+    },
+    {
+      "caseId": "topology.loop.likely-and-diagnostic-types",
+      "status": "unreachable",
+      "api": ["PK_LOOP_ask_type"],
+      "entity": "LOOP",
+      "parameters": { "types": ["likely_outer", "likely_inner", "unclear", "error"] },
+      "result": "no-independent-legal-seed",
+      "reason": "These are diagnostic classifications produced for incomplete or ambiguous topology and cannot be requested as a legal manifold standard form.",
+      "recheckWhen": "A legal manifold operation yields one of the diagnostic classifications while retaining valid receive/compare behavior."
+    }
+  ]
+}

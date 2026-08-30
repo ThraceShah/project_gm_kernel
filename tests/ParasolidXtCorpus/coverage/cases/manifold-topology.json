@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "group": "manifold-topology",
+  "scope": "Typed manifold topology classifications and edge endpoint valences retained in independent x_t fixtures.",
+  "cases": [
+    {
+      "caseId": "topology.loop.outer.rectangle",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_LOOP_ask_type",
+      "entity": "LOOP",
+      "owner": "sheet-body.face",
+      "parameters": { "source": "PK_BODY_create_sheet_rectangle(2,3)", "loopType": "outer" },
+      "coverage": ["topology", "topology.loop.outer", "topology.loop.fin-count.multi", "topology.vertex.endpoint"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "topology.loop.outer.rectangle/model.x_t",
+      "verification": "typed-loop-ask-self-receive"
+    },
+    {
+      "caseId": "topology.loop.vertex.cone-apex",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_cone + PK_LOOP_ask_type",
+      "entity": "LOOP",
+      "owner": "solid-cone.face",
+      "parameters": { "radius": 0.0, "height": 5.0, "semiAngle": 0.25, "loopType": "vertex" },
+      "coverage": ["topology", "topology.loop.vertex", "topology.edge.valence.0", "topology.vertex.apex"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 2, "loops": 3, "fins": 2, "edges": 1, "vertices": 1 },
+      "output": "topology.loop.vertex.cone-apex/model.x_t",
+      "verification": "typed-loop-ask-self-receive"
+    },
+    {
+      "caseId": "topology.edge.valence.zero.cylinder",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_cyl + PK_EDGE_ask_vertices",
+      "entity": "EDGE",
+      "owner": "solid-cylinder",
+      "parameters": { "radius": 2.0, "height": 5.0, "endpointVertexCount": 0 },
+      "coverage": ["topology", "topology.edge.valence.0", "topology.edge.ring", "topology.loop.fin-count.one"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 3, "loops": 4, "fins": 4, "edges": 2, "vertices": 0 },
+      "output": "topology.edge.valence.zero.cylinder/model.x_t",
+      "verification": "typed-edge-ask-self-receive"
+    },
+    {
+      "caseId": "topology.face.inner-loop.block-cylinder-hole",
+      "status": "success",
+      "producer": "PK_BODY_boolean_2(PK_boolean_subtract)",
+      "entity": "FACE/LOOP",
+      "owner": "solid-block-with-through-hole",
+      "parameters": { "target": "block(10,10,10)", "tool": "coaxial-cylinder(radius=2,height=10)", "operation": "subtract" },
+      "coverage": ["topology.face.inner-loop", "topology.loop.inner", "topology.loop.winding", "topology.region.multiple", "topology.shell.multiple"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 7, "loops": 10, "fins": 28, "edges": 14, "vertices": 8 },
+      "output": "topology.face.inner-loop.block-cylinder-hole/model.x_t",
+      "verification": "typed-loop-ask-self-receive"
+    },
+    {
+      "caseId": "topology.loop.wire.imprint-line",
+      "status": "success",
+      "producer": "PK_FACE_imprint_curve(PK_BCURVE)",
+      "entity": "LOOP",
+      "owner": "sheet-body.face",
+      "parameters": { "surface": "sheet-rectangle(5,5)", "curve": "degree-1-polyline", "interval": [0, 1], "endpointVertices": 2 },
+      "coverage": ["topology.loop.wire", "topology.loop.fin-count.two"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 2, "fins": 6, "edges": 5, "vertices": 6 },
+      "output": "topology.loop.wire.imprint-line/model.x_t",
+      "verification": "typed-loop-ask-self-receive"
+    },
+    {
+      "caseId": "topology.face.multiple-holes",
+      "status": "success",
+      "producer": "PK_BODY_boolean_2(PK_boolean_subtract) × 2",
+      "entity": "FACE/LOOP",
+      "owner": "solid-block-with-two-through-holes",
+      "parameters": { "target": "block(12,10,10)", "tools": "two cylinders(radius=1.5,height=10)", "operation": "subtract" },
+      "coverage": ["topology.face.inner-loop", "topology.loop.inner", "topology.manifold.multiple-holes"],
+      "output": "topology.face.multiple-holes/model.x_t",
+      "verification": "typed-loop-ask-self-receive"
+    },
+    {
+      "caseId": "topology.edge.valence.two.rectangle",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_EDGE_ask_vertices",
+      "entity": "EDGE",
+      "owner": "sheet-body",
+      "parameters": { "source": "PK_BODY_create_sheet_rectangle(2,3)", "endpointVertexCount": 2 },
+      "coverage": ["topology", "topology.edge.valence.2"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "topology.edge.valence.two.rectangle/model.x_t",
+      "verification": "typed-edge-ask-self-receive"
+    },
+    {
+      "caseId": "topology.vertex.shared.rectangle",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_VERTEX_ask_oriented_edges",
+      "entity": "VERTEX",
+      "owner": "sheet-body",
+      "parameters": { "source": "PK_BODY_create_sheet_rectangle(2,3)", "minimumOrientedEdgeCount": 2 },
+      "coverage": ["topology", "topology.vertex.shared"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "topology.vertex.shared.rectangle/model.x_t",
+      "verification": "typed-vertex-ask-self-receive"
+    },
+    {
+      "caseId": "topology.loop.ring-classification",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_FACE_euler_make_ring_loop + PK_LOOP_ask_type",
+      "entity": "LOOP",
+      "owner": "sheet-body.face",
+      "parameters": { "source": "PK_BODY_create_sheet_rectangle(2,3)", "operation": "PK_FACE_euler_make_ring_loop", "observedTypes": ["error", "outer"] },
+      "coverage": ["topology", "topology.loop", "loop/ring", "diagnostic-probe"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 3, "fins": 6, "edges": 5, "vertices": 4 },
+      "output": "topology.loop.ring-classification/model.x_t",
+      "verification": "typed-loop-ask-self-receive"
+    }
+  ]
+}

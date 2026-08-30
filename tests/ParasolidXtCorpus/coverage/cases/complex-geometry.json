@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "group": "complex-geometry",
+  "owner": "complex-geometry",
+  "scope": "Stable complex curve and surface producers verified against the checked-in Parasolid runtime; every success case is one independent x_t.",
+  "cases": [
+    {
+      "caseId": "complex-surface-curve-spin",
+      "status": "success",
+      "producer": "PK_CURVE_spin + PK_SURF_make_sheet_body",
+      "entity": "SPUN",
+      "owner": "face.surface",
+      "parameters": { "profile": "line", "axisLocation": [0.0, 0.0, 0.0], "axisDirection": [0.0, 0.0, 1.0], "uvBox": [-1.0, 1.0, 0.0, 6.283185307179586] },
+      "coverage": ["derived-surface", "face-surface", "line-profile", "spun", "surface"],
+      "output": "complex-surface-curve-spin/model.x_t"
+    },
+    {
+      "caseId": "complex-surface-curve-spin-2",
+      "status": "success",
+      "producer": "PK_CURVE_spin_2 + PK_SURF_make_sheet_body",
+      "entity": "SPUN",
+      "owner": "face.surface",
+      "parameters": { "profile": "line", "axisLocation": [0.0, 0.0, 0.0], "axisDirection": [0.0, 0.0, 1.0], "options": "default", "uvBox": [-1.0, 1.0, 0.0, 6.283185307179586] },
+      "coverage": ["derived-surface", "face-surface", "line-profile", "options", "spun", "surface"],
+      "output": "complex-surface-curve-spin-2/model.x_t"
+    },
+    {
+      "caseId": "complex-surface-curve-sweep",
+      "status": "success",
+      "producer": "PK_CURVE_sweep + PK_SURF_make_sheet_body",
+      "entity": "SWEPT",
+      "owner": "face.surface",
+      "parameters": { "profile": "line", "direction": [0.0, 0.0, 1.0], "uvBox": [-2.0, 2.0, 0.0, 3.0] },
+      "coverage": ["derived-surface", "face-surface", "line-profile", "surface", "swept"],
+      "output": "complex-surface-curve-sweep/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-make-bcurve",
+      "status": "success",
+      "producer": "PK_CURVE_make_bcurve + PK_LINE_create",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "sourceCurve": "line", "range": [-2.0, 2.0], "cubic": true, "nonRational": true, "tolerance": 0.00001 },
+      "coverage": ["analytic-input", "approximation", "bcurve", "construction-geometry", "curve"],
+      "output": "complex-curve-make-bcurve/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-make-bcurve-2",
+      "status": "success",
+      "producer": "PK_CURVE_make_bcurve_2 + PK_LINE_create",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "sourceCurve": "line", "range": [-2.0, 2.0], "options": "default", "tolerance": 0.00001 },
+      "coverage": ["approximation", "bcurve", "construction-geometry", "curve", "options"],
+      "output": "complex-curve-make-bcurve-2/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-make-spcurves",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves + PK_LINE_create + PK_PLANE_create",
+      "entity": "SPCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "curve": "line", "surface": "plane", "range": [-1.5, 1.5], "degenerate": false, "sense": false, "tolerance": 0.00001 },
+      "coverage": ["construction-geometry", "curve", "parameter-curve", "plane", "spcurve"],
+      "output": "complex-curve-make-spcurves/model.x_t"
+    },
+    {
+      "caseId": "complex-surface-bsurf-add-knots",
+      "status": "success",
+      "producer": "PK_BSURF_create + PK_BSURF_add_u_knot + PK_BSURF_add_v_knot + PK_BSURF_remove_knots + PK_BSURF_raise_degree + PK_BSURF_lower_degree + PK_BSURF_set_approx",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "source": "non-rational-bsurf", "insertU": 0.5, "insertV": 0.5 },
+      "coverage": ["bsurf", "construction-geometry", "knot-insertion", "spline", "surface"],
+      "output": "complex-surface-bsurf-add-knots/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-bcurve-add-knot",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_add_knot",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "source": "non-rational-bcurve", "insertKnot": 0.5 },
+      "coverage": ["bcurve", "construction-geometry", "curve", "knot-insertion", "spline"],
+      "output": "complex-curve-bcurve-add-knot/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-bcurve-remove-knot",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_add_knot + PK_BCURVE_remove_knots",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "source": "non-rational-bcurve", "insertKnot": 0.5, "removeKnots": "default" },
+      "coverage": ["bcurve", "construction-geometry", "curve", "knot-removal", "spline"],
+      "output": "complex-curve-bcurve-remove-knot/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-bcurve-set-approx",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_set_approx",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "source": "non-rational-bcurve", "segments": 1, "derivatives": 1 },
+      "coverage": ["approximation", "bcurve", "construction-geometry", "curve", "spline"],
+      "output": "complex-curve-bcurve-set-approx/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-make-bcurve-array",
+      "status": "success",
+      "producer": "PK_CURVE_make_bcurve_array + PK_LINE_create",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "count": 1, "sourceCurve": "line", "range": [-2.0, 2.0], "tolerance": 0.00001 },
+      "coverage": ["approximation", "array-api", "bcurve", "construction-geometry", "curve"],
+      "output": "complex-curve-make-bcurve-array/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-make-approx",
+      "status": "success",
+      "producer": "PK_CURVE_make_approx + PK_LINE_create",
+      "entity": "CURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "sourceCurve": "line", "range": [-2.0, 2.0], "approxType": "arclength", "tolerance": 0.00001, "continuity": "c1" },
+      "coverage": ["approximation", "construction-geometry", "curve", "line", "options"],
+      "output": "complex-curve-make-approx/model.x_t"
+    },
+    {
+      "caseId": "complex-surface-bcurve-spin",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_spin",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "profile": "non-rational-bcurve", "axisDirection": [0.0, 0.0, 1.0], "angle": 0.5 },
+      "coverage": ["bcurve", "bsurf", "construction-geometry", "derived-surface", "spin", "surface"],
+      "output": "complex-surface-bcurve-spin/model.x_t"
+    },
+    {
+      "caseId": "complex-surface-bcurve-sweep",
+      "status": "success",
+      "producer": "PK_BCURVE_create + PK_BCURVE_sweep",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "profile": "non-rational-bcurve", "path": [0.0, 0.0, 2.0] },
+      "coverage": ["bcurve", "bsurf", "construction-geometry", "derived-surface", "surface", "sweep"],
+      "output": "complex-surface-bcurve-sweep/model.x_t"
+    },
+    {
+      "caseId": "complex-curve-bcurve",
+      "status": "success",
+      "producer": "PK_BCURVE_create",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "degree": 3,
+        "nVertices": 4,
+        "vertexDim": 3,
+        "isRational": false,
+        "vertices": [[0.0, 0.0, 0.0], [1.0, 2.0, 0.5], [2.0, -1.0, 1.0], [4.0, 0.0, 0.0]],
+        "knots": [0.0, 1.0],
+        "knotMultiplicities": [4, 4],
+        "knotType": "non-uniform",
+        "isPeriodic": false,
+        "isClosed": false,
+        "selfIntersecting": "false"
+      },
+      "equivalenceClasses": ["spline", "degree/3", "non-rational", "open", "non-periodic", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-curve-bcurve/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-surface-bsurf",
+      "status": "success",
+      "producer": "PK_BSURF_create",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "uDegree": 2,
+        "vDegree": 2,
+        "nUVertices": 3,
+        "nVVertices": 3,
+        "vertexDim": 3,
+        "isRational": false,
+        "uKnots": [0.0, 1.0],
+        "vKnots": [0.0, 1.0],
+        "uKnotMultiplicities": [3, 3],
+        "vKnotMultiplicities": [3, 3],
+        "uKnotType": "non-uniform",
+        "vKnotType": "non-uniform",
+        "isUPeriodic": false,
+        "isVPeriodic": false,
+        "isUClosed": false,
+        "isVClosed": false,
+        "uvBox": [0.0, 1.0, 0.0, 1.0]
+      },
+      "equivalenceClasses": ["spline", "degree/u2-v2", "non-rational", "open", "non-periodic", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-surface-bsurf/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-surface-swept",
+      "status": "success",
+      "producer": "PK_SWEPT_create + PK_SURF_make_sheet_body",
+      "entity": "SWEPT",
+      "owner": "face.surface",
+      "parameters": {
+        "profile": "line",
+        "profileLocation": [-2.0, 0.0, 0.0],
+        "profileDirection": [1.0, 0.0, 0.0],
+        "direction": [0.0, 0.0, 1.0],
+        "uvBox": [-2.0, 2.0, 0.0, 3.0]
+      },
+      "equivalenceClasses": ["derived-surface", "line-profile", "finite-parameter-domain", "face-surface"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-surface-swept/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-surface-spun",
+      "status": "success",
+      "producer": "PK_SPUN_create + PK_SURF_make_sheet_body",
+      "entity": "SPUN",
+      "owner": "face.surface",
+      "parameters": {
+        "profile": "line",
+        "profileLocation": [2.0, 0.0, 0.0],
+        "profileDirection": [0.0, 0.0, 1.0],
+        "axisLocation": [0.0, 0.0, 0.0],
+        "axisDirection": [0.0, 0.0, 1.0],
+        "uvBox": [-1.0, 1.0, 0.0, 6.283185307179586]
+      },
+      "equivalenceClasses": ["derived-surface", "line-profile", "finite-parameter-domain", "face-surface"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-surface-spun/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-curve-spcurve",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2",
+      "entity": "SPCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "curve": "line",
+        "curveLocation": [-1.5, 0.0, 0.0],
+        "curveDirection": [1.0, 0.0, 0.0],
+        "surface": "plane",
+        "surfaceNormal": [0.0, 0.0, 1.0],
+        "range": [-1.5, 1.5],
+        "tolerance": 0.00001
+      },
+      "equivalenceClasses": ["parameter-curve", "finite-interval", "planar-surface", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-curve-spcurve/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-curve-bcurve-piecewise",
+      "status": "success",
+      "producer": "PK_BCURVE_create_piecewise",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "segments": 1, "representation": "bezier", "rational": false },
+      "equivalenceClasses": ["piecewise", "bezier", "non-rational", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-curve-bcurve-piecewise/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-curve-bcurve-splinewise",
+      "status": "success",
+      "producer": "PK_BCURVE_create_splinewise",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "positions": 4, "knot": "auto", "endConditions": "natural" },
+      "equivalenceClasses": ["splinewise", "interpolation", "non-rational", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-curve-bcurve-splinewise/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-curve-bcurve-spline",
+      "status": "success",
+      "producer": "PK_BCURVE_create_spline",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "positions": 4, "paramInterval": [0.0, 1.0], "periodic": false },
+      "equivalenceClasses": ["spline", "interpolation", "non-periodic", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-curve-bcurve-spline/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-curve-bcurve-spline-2",
+      "status": "success",
+      "producer": "PK_BCURVE_create_spline_2",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "degree": 3, "positions": 4, "paramInterval": [0.0, 1.0], "periodic": false, "options": "default" },
+      "equivalenceClasses": ["spline", "interpolation", "options", "non-periodic", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-curve-bcurve-spline-2/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-curve-bcurve-fitted",
+      "status": "success",
+      "producer": "PK_BCURVE_create_fitted + PK_LINE_create",
+      "entity": "BCURVE",
+      "owner": "part.construction-geometry",
+      "parameters": { "sourceCurve": "line", "range": [-2.0, 2.0], "tolerance": 0.000001, "preserveParameterisation": true },
+      "equivalenceClasses": ["fitted", "analytic-input", "non-rational", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-curve-bcurve-fitted/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-surface-bsurf-piecewise",
+      "status": "success",
+      "producer": "PK_BSURF_create_piecewise",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "uDegree": 2, "vDegree": 2, "uSegments": 1, "vSegments": 1, "representation": "bezier" },
+      "equivalenceClasses": ["piecewise", "bezier", "non-rational", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-surface-bsurf-piecewise/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "complex-surface-bsurf-splinewise",
+      "status": "success",
+      "producer": "PK_BSURF_create_splinewise",
+      "entity": "BSURF",
+      "owner": "part.construction-geometry",
+      "parameters": { "uDegree": 2, "vDegree": 2, "uPositions": 3, "vPositions": 3, "knots": "auto" },
+      "equivalenceClasses": ["splinewise", "interpolation", "non-rational", "construction-geometry"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "complex-surface-bsurf-splinewise/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    }
+  ]
+}

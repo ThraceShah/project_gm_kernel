@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "group": "topology-advanced",
+  "entries": [
+    {
+      "caseId": "topology.advanced.multi-shell-compound",
+      "status": "diagnostic",
+      "api": ["PK_BODY_make_compound", "PK_PART_transmit_b", "PK_PART_receive_b"],
+      "parameters": { "members": ["solid-block", "solid-block"], "memberSeparation": [3.0, 0.0, 0.0], "geomAttr": "keep" },
+      "reason": "The public compound construction succeeds, but the current single-body corpus verifier receives two parts from its x_t and cannot yet perform a compound-aware structural comparison.",
+      "evidence": "PK_BODY_make_compound returned success; PK_PART_receive_b returned partCount=2. The single-body CorpusCaseSpec contract rejects this rather than collapsing the parts.",
+      "recheckWhen": "Add a compound-specific case contract that verifies member ownership, part identity, shell counts and compound receive semantics."
+    },
+    {
+      "caseId": "topology.advanced.multi-shell-general",
+      "status": "unreachable",
+      "api": ["PK_BODY_create_topology_2"],
+      "reason": "The hand-authored relation graph is rejected before a valid body is returned.",
+      "evidence": "PK_BODY_create_topology_2 returned error 5014 for the two-shell general-body probe; no x_t was retained.",
+      "recheckWhen": "A documented topology graph seed with valid relation ordering is available."
+    },
+    {
+      "caseId": "topology.advanced.rebuilt-solid-graph",
+      "status": "diagnostic",
+      "api": ["PK_BODY_ask_topology", "PK_BODY_create_topology_2"],
+      "reason": "Rebuilding a graph returned a create fault even though a body handle was reported, so it is not promoted as a successful fixture.",
+      "evidence": "The probe reported n_create_faults=1, state=16401 and n_topols=37; the case contract rejects create faults.",
+      "recheckWhen": "Topology relation and create-fault semantics are mapped and the rebuilt graph has zero faults."
+    },
+    {
+      "caseId": "topology.face.neutral-sheet-binding-only",
+      "status": "unreachable",
+      "api": ["PK_FACE_create_neutral_sheet"],
+      "reason": "The candidate producer exists only in the PKToy binding and has no matching declaration in the checked-in Parasolid header/runtime contract.",
+      "evidence": "GenerateParasolidApiCoverage reports PK_FACE_create_neutral_sheet as binding-only; no callable header signature is available for a legal probe.",
+      "recheckWhen": "A matching header declaration and runtime entry point are added."
+    },
+    {
+      "caseId": "topology.advanced.face-isolated-loop",
+      "status": "unreachable",
+      "typeId": "topology.face.zero-loop",
+      "api": ["PK_FACE_euler_make_loop"],
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_FACE_euler_make_loop",
+        "result": "isolated-vertex-loop"
+      },
+      "reason": "The Euler operation creates a body in memory, but the checked-in runtime aborts during corpus host self-receive/body comparison for this disconnected vertex-loop state.",
+      "evidence": "A standalone host probe returned process exit 139 after PK_FACE_euler_make_loop succeeded and before a diagnostics record could be written; no legal fixture is retained.",
+      "recheckWhen": "The runtime provides stable receive/compare behavior for isolated vertex loops or the host gains a topology-specific verifier."
+    },
+    {
+      "caseId": "topology.advanced.edge-make-faces-from-wire",
+      "status": "unreachable",
+      "api": ["PK_EDGE_make_faces_from_wire"],
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "edgeCount": 4,
+        "sharedLoop": [0, 0, 0, 0]
+      },
+      "reason": "The operation requires a wireframe edge collection; passing the four edges owned by a sheet face is rejected by the runtime and does not produce a new face set.",
+      "evidence": "PK_EDGE_make_faces_from_wire returned error 914 for the closed sheet boundary edge probe; no fixture was retained.",
+      "recheckWhen": "A legal public wireframe producer supplies a closed edge set accepted by PK_EDGE_make_faces_from_wire."
+    },
+    {
+      "caseId": "topology.advanced.loop-delete-from-sheet-body",
+      "status": "unreachable",
+      "api": ["PK_LOOP_delete_from_sheet_body"],
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3) + PK_FACE_euler_make_ring_loop",
+        "loop": "new ring loop"
+      },
+      "reason": "The current runtime does not accept deletion of the newly created ring loop through the sheet-body deletion operation.",
+      "evidence": "PK_LOOP_delete_from_sheet_body returned PK_ERROR_unsuitable_loop (1061) after PK_FACE_euler_make_ring_loop succeeded; no fixture was retained.",
+      "recheckWhen": "A documented interior-loop producer and legal deletion sequence is available."
+    },
+    {
+      "caseId": "topology.advanced.vertex-attach-points",
+      "status": "unreachable",
+      "api": ["PK_VERTEX_attach_points"],
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "vertexCount": 1,
+        "point": [0.0, 0.0, 0.0]
+      },
+      "reason": "Sheet boundary vertices already own the geometry required by this state, so attaching a new point is rejected by the runtime.",
+      "evidence": "PK_VERTEX_attach_points returned PK_ERROR_geom_not_needed (64) for the first sheet vertex and a newly created point; no fixture was retained.",
+      "recheckWhen": "A legal point-less vertex producer is available, allowing PK_VERTEX_attach_points to create persistent point ownership."
+    }
+  ],
+  "notes": ["No compound x_t is promoted as a single-body fixture until the dedicated verifier exists."]
+}

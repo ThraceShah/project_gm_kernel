@@ -1,0 +1,1977 @@
+{
+  "schemaVersion": 1,
+  "group": "surface-pair-matrix",
+  "scope": "Cartesian supporting-surface × p-curve-family matrix. Every p-curve is a two-dimensional BCurve; circle/ellipse source families use a quadratic planar arc accepted by PK_SPCURVE_create.",
+  "cases": [
+    {
+      "caseId": "spcurve.plane.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "plane",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/plane",
+        "pcurve/direct-bcurve",
+        "geometry.surface.plane",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.plane.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.plane.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.plane.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "plane",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/plane",
+        "pcurve/line-bcurve",
+        "geometry.surface.plane",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.plane.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.plane.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.plane.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "plane",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/plane",
+        "pcurve/circle-bcurve",
+        "geometry.surface.plane",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.plane.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.plane.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.plane.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "plane",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/plane",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.plane",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.plane.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.plane.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cylinder.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cylinder",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cylinder",
+        "pcurve/direct-bcurve",
+        "geometry.surface.cylinder",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.cylinder.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CYLINDER"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CYLINDER"
+      ],
+      "output": "spcurve.cylinder.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cylinder.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cylinder",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cylinder",
+        "pcurve/line-bcurve",
+        "geometry.surface.cylinder",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.cylinder.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CYLINDER"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CYLINDER"
+      ],
+      "output": "spcurve.cylinder.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cylinder.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cylinder",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cylinder",
+        "pcurve/circle-bcurve",
+        "geometry.surface.cylinder",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.cylinder.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CYLINDER"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CYLINDER"
+      ],
+      "output": "spcurve.cylinder.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cylinder.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cylinder",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cylinder",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.cylinder",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.cylinder.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CYLINDER"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CYLINDER"
+      ],
+      "output": "spcurve.cylinder.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cone.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cone",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cone",
+        "pcurve/direct-bcurve",
+        "geometry.surface.cone",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.cone.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CONE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CONE"
+      ],
+      "output": "spcurve.cone.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cone.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cone",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cone",
+        "pcurve/line-bcurve",
+        "geometry.surface.cone",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.cone.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CONE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CONE"
+      ],
+      "output": "spcurve.cone.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cone.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cone",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cone",
+        "pcurve/circle-bcurve",
+        "geometry.surface.cone",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.cone.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CONE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CONE"
+      ],
+      "output": "spcurve.cone.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cone.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cone",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/cone",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.cone",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.cone.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CONE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CONE"
+      ],
+      "output": "spcurve.cone.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.sphere.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "sphere",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/sphere",
+        "pcurve/direct-bcurve",
+        "geometry.surface.sphere",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.sphere.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPHERE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPHERE"
+      ],
+      "output": "spcurve.sphere.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.sphere.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "sphere",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/sphere",
+        "pcurve/line-bcurve",
+        "geometry.surface.sphere",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.sphere.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPHERE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPHERE"
+      ],
+      "output": "spcurve.sphere.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.sphere.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "sphere",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/sphere",
+        "pcurve/circle-bcurve",
+        "geometry.surface.sphere",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.sphere.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPHERE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPHERE"
+      ],
+      "output": "spcurve.sphere.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.sphere.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "sphere",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/sphere",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.sphere",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.sphere.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPHERE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPHERE"
+      ],
+      "output": "spcurve.sphere.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.torus.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "torus",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/torus",
+        "pcurve/direct-bcurve",
+        "geometry.surface.torus",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.torus.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "TORUS"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->TORUS"
+      ],
+      "output": "spcurve.torus.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.torus.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "torus",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/torus",
+        "pcurve/line-bcurve",
+        "geometry.surface.torus",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.torus.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "TORUS"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->TORUS"
+      ],
+      "output": "spcurve.torus.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.torus.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "torus",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/torus",
+        "pcurve/circle-bcurve",
+        "geometry.surface.torus",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.torus.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "TORUS"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->TORUS"
+      ],
+      "output": "spcurve.torus.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.torus.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "torus",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/torus",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.torus",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.torus.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "TORUS"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->TORUS"
+      ],
+      "output": "spcurve.torus.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.bsurf.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "bsurf",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/bsurf",
+        "pcurve/direct-bcurve",
+        "geometry.surface.bsurf",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.bsurf.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "B_SURFACE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->B_SURFACE"
+      ],
+      "output": "spcurve.bsurf.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.bsurf.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "bsurf",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/bsurf",
+        "pcurve/line-bcurve",
+        "geometry.surface.bsurf",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.bsurf.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "B_SURFACE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->B_SURFACE"
+      ],
+      "output": "spcurve.bsurf.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.bsurf.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "bsurf",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/bsurf",
+        "pcurve/circle-bcurve",
+        "geometry.surface.bsurf",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.bsurf.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "B_SURFACE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->B_SURFACE"
+      ],
+      "output": "spcurve.bsurf.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.bsurf.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "bsurf",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/bsurf",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.bsurf",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.bsurf.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "B_SURFACE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->B_SURFACE"
+      ],
+      "output": "spcurve.bsurf.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.offset.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "offset",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/offset",
+        "pcurve/direct-bcurve",
+        "geometry.surface.offset",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.offset.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.offset.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.offset.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "offset",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/offset",
+        "pcurve/line-bcurve",
+        "geometry.surface.offset",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.offset.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.offset.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.offset.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "offset",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/offset",
+        "pcurve/circle-bcurve",
+        "geometry.surface.offset",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.offset.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.offset.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.offset.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "offset",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/offset",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.offset",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.offset.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.offset.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.swept.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "swept",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/swept",
+        "pcurve/direct-bcurve",
+        "geometry.surface.swept",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.swept.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SWEPT_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SWEPT_SURF"
+      ],
+      "output": "spcurve.swept.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.swept.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "swept",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/swept",
+        "pcurve/line-bcurve",
+        "geometry.surface.swept",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.swept.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SWEPT_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SWEPT_SURF"
+      ],
+      "output": "spcurve.swept.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.swept.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "swept",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/swept",
+        "pcurve/circle-bcurve",
+        "geometry.surface.swept",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.swept.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SWEPT_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SWEPT_SURF"
+      ],
+      "output": "spcurve.swept.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.swept.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "swept",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/swept",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.swept",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.swept.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SWEPT_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SWEPT_SURF"
+      ],
+      "output": "spcurve.swept.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.spun.direct-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "spun",
+        "pcurveFamily": "direct-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/spun",
+        "pcurve/direct-bcurve",
+        "geometry.surface.spun",
+        "geometry.spcurve.pcurve.direct-bcurve",
+        "geometry.spcurve.pair.spun.direct-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPUN_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPUN_SURF"
+      ],
+      "output": "spcurve.spun.direct-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.spun.line-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "spun",
+        "pcurveFamily": "line-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/spun",
+        "pcurve/line-bcurve",
+        "geometry.surface.spun",
+        "geometry.spcurve.pcurve.line-bcurve",
+        "geometry.spcurve.pair.spun.line-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPUN_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPUN_SURF"
+      ],
+      "output": "spcurve.spun.line-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.spun.circle-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "spun",
+        "pcurveFamily": "circle-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/spun",
+        "pcurve/circle-bcurve",
+        "geometry.surface.spun",
+        "geometry.spcurve.pcurve.circle-bcurve",
+        "geometry.spcurve.pair.spun.circle-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPUN_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPUN_SURF"
+      ],
+      "output": "spcurve.spun.circle-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.spun.ellipse-bcurve",
+      "status": "success",
+      "producer": "PK_SPCURVE_create + PK_BCURVE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "spun",
+        "pcurveFamily": "ellipse-bcurve",
+        "vertexDimension": 2
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "surface-pair",
+        "surface/spun",
+        "pcurve/ellipse-bcurve",
+        "geometry.surface.spun",
+        "geometry.spcurve.pcurve.ellipse-bcurve",
+        "geometry.spcurve.pair.spun.ellipse-bcurve"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPUN_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPUN_SURF"
+      ],
+      "output": "spcurve.spun.ellipse-bcurve/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.plane.analytic-line",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_LINE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "plane",
+        "sourceCurve": "z=0 line",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/plane",
+        "pcurve/analytic-line",
+        "geometry.surface.plane",
+        "geometry.spcurve.pcurve.analytic-line",
+        "geometry.spcurve.pair.plane.analytic-line"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.plane.analytic-line/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.plane.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "plane",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/plane",
+        "pcurve/analytic-circle",
+        "geometry.surface.plane",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.plane.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.plane.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.plane.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "plane",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/plane",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.plane",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.plane.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.plane.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cylinder.analytic-line",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_LINE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cylinder",
+        "sourceCurve": "z=0 line",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/cylinder",
+        "pcurve/analytic-line",
+        "geometry.surface.cylinder",
+        "geometry.spcurve.pcurve.analytic-line",
+        "geometry.spcurve.pair.cylinder.analytic-line"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CYLINDER"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CYLINDER"
+      ],
+      "output": "spcurve.cylinder.analytic-line/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cylinder.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cylinder",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/cylinder",
+        "pcurve/analytic-circle",
+        "geometry.surface.cylinder",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.cylinder.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CYLINDER"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CYLINDER"
+      ],
+      "output": "spcurve.cylinder.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cylinder.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cylinder",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/cylinder",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.cylinder",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.cylinder.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CYLINDER"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CYLINDER"
+      ],
+      "output": "spcurve.cylinder.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cone.analytic-line",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_LINE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cone",
+        "sourceCurve": "z=0 line",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/cone",
+        "pcurve/analytic-line",
+        "geometry.surface.cone",
+        "geometry.spcurve.pcurve.analytic-line",
+        "geometry.spcurve.pair.cone.analytic-line"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CONE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CONE"
+      ],
+      "output": "spcurve.cone.analytic-line/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cone.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cone",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/cone",
+        "pcurve/analytic-circle",
+        "geometry.surface.cone",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.cone.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CONE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CONE"
+      ],
+      "output": "spcurve.cone.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.cone.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "cone",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/cone",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.cone",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.cone.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "CONE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->CONE"
+      ],
+      "output": "spcurve.cone.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.sphere.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "sphere",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/sphere",
+        "pcurve/analytic-circle",
+        "geometry.surface.sphere",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.sphere.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPHERE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPHERE"
+      ],
+      "output": "spcurve.sphere.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.sphere.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "sphere",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/sphere",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.sphere",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.sphere.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPHERE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPHERE"
+      ],
+      "output": "spcurve.sphere.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.torus.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "torus",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/torus",
+        "pcurve/analytic-circle",
+        "geometry.surface.torus",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.torus.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "TORUS"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->TORUS"
+      ],
+      "output": "spcurve.torus.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.torus.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "torus",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/torus",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.torus",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.torus.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "TORUS"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->TORUS"
+      ],
+      "output": "spcurve.torus.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.bsurf.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "bsurf",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/bsurf",
+        "pcurve/analytic-circle",
+        "geometry.surface.bsurf",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.bsurf.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "B_SURFACE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->B_SURFACE"
+      ],
+      "output": "spcurve.bsurf.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.offset.analytic-line",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_LINE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "offset",
+        "sourceCurve": "z=0 line",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/offset",
+        "pcurve/analytic-line",
+        "geometry.surface.offset",
+        "geometry.spcurve.pcurve.analytic-line",
+        "geometry.spcurve.pair.offset.analytic-line"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.offset.analytic-line/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.offset.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "offset",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/offset",
+        "pcurve/analytic-circle",
+        "geometry.surface.offset",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.offset.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.offset.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.offset.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "offset",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/offset",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.offset",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.offset.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "PLANE"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->PLANE"
+      ],
+      "output": "spcurve.offset.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.swept.analytic-line",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_LINE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "swept",
+        "sourceCurve": "z=0 line",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/swept",
+        "pcurve/analytic-line",
+        "geometry.surface.swept",
+        "geometry.spcurve.pcurve.analytic-line",
+        "geometry.spcurve.pair.swept.analytic-line"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SWEPT_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SWEPT_SURF"
+      ],
+      "output": "spcurve.swept.analytic-line/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.swept.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "swept",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/swept",
+        "pcurve/analytic-circle",
+        "geometry.surface.swept",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.swept.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SWEPT_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SWEPT_SURF"
+      ],
+      "output": "spcurve.swept.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.swept.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "swept",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/swept",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.swept",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.swept.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SWEPT_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SWEPT_SURF"
+      ],
+      "output": "spcurve.swept.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.spun.analytic-line",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_LINE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "spun",
+        "sourceCurve": "z=0 line",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/spun",
+        "pcurve/analytic-line",
+        "geometry.surface.spun",
+        "geometry.spcurve.pcurve.analytic-line",
+        "geometry.spcurve.pair.spun.analytic-line"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPUN_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPUN_SURF"
+      ],
+      "output": "spcurve.spun.analytic-line/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.spun.analytic-circle",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_CIRCLE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "spun",
+        "sourceCurve": "z=0 circle",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/spun",
+        "pcurve/analytic-circle",
+        "geometry.surface.spun",
+        "geometry.spcurve.pcurve.analytic-circle",
+        "geometry.spcurve.pair.spun.analytic-circle"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPUN_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPUN_SURF"
+      ],
+      "output": "spcurve.spun.analytic-circle/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    },
+    {
+      "caseId": "spcurve.spun.analytic-ellipse",
+      "status": "success",
+      "producer": "PK_CURVE_make_spcurves_2 + PK_ELLIPSE_create",
+      "entity": "SP_CURVE",
+      "owner": "construction-geometry",
+      "parameters": {
+        "supportingSurface": "spun",
+        "sourceCurve": "z=0 ellipse",
+        "producer": "PK_CURVE_make_spcurves_2"
+      },
+      "coverage": [
+        "spcurve",
+        "spcurve/pcurve-family",
+        "spcurve/analytic-source",
+        "surface-pair",
+        "surface/spun",
+        "pcurve/analytic-ellipse",
+        "geometry.surface.spun",
+        "geometry.spcurve.pcurve.analytic-ellipse",
+        "geometry.spcurve.pair.spun.analytic-ellipse"
+      ],
+      "requiredSchemaNodes": [
+        "SP_CURVE",
+        "B_CURVE",
+        "SPUN_SURF"
+      ],
+      "requiredSchemaDependencies": [
+        "SP_CURVE->B_CURVE",
+        "SP_CURVE->SPUN_SURF"
+      ],
+      "output": "spcurve.spun.analytic-ellipse/model.x_t",
+      "verification": "typed-ask-schema-and-self-receive"
+    }
+  ]
+}

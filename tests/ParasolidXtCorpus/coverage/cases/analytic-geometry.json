@@ -1,0 +1,325 @@
+{
+  "group": "analytic-geometry",
+  "schema": "SCH_3701000_37102",
+  "cases": [
+    {
+      "caseId": "analytic-curve-line-wire",
+      "producer": "PK_LINE_create + PK_CURVE_make_wire_body",
+      "entity": "LINE",
+      "owner": "wire-body.edge",
+      "parameters": { "location": [-2.0, 0.0, 0.0], "axis": [1.0, 0.0, 0.0], "range": [-2.0, 2.0] },
+      "equivalenceClasses": ["analytic", "finite-range", "wire-body"],
+      "expected": {
+        "status": "success",
+        "entityCounts": { "regions": 1, "shells": 1, "faces": 0, "edges": 1, "vertices": 2, "loops": 0, "fins": 0 },
+        "output": "analytic-curve-line-wire/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-circle-wire",
+      "producer": "PK_CIRCLE_create + PK_CURVE_make_wire_body",
+      "entity": "CIRCLE",
+      "owner": "wire-body.edge",
+      "parameters": { "location": [0.0, 0.0, 0.0], "axis": [0.0, 0.0, 1.0], "radius": 2.0, "range": [0.0, 6.283185307179586] },
+      "equivalenceClasses": ["analytic", "periodic", "wire-body"],
+      "expected": {
+        "status": "success",
+        "entityCounts": { "regions": 1, "shells": 1, "faces": 0, "edges": 1, "vertices": 0, "loops": 0, "fins": 0 },
+        "output": "analytic-curve-circle-wire/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-ellipse-wire",
+      "producer": "PK_ELLIPSE_create + PK_CURVE_make_wire_body",
+      "entity": "ELLIPSE",
+      "owner": "wire-body.edge",
+      "parameters": { "location": [0.0, 0.0, 0.0], "axis": [0.0, 0.0, 1.0], "majorRadius": 3.0, "minorRadius": 1.5, "range": [0.0, 6.283185307179586] },
+      "equivalenceClasses": ["analytic", "distinct-radii", "periodic", "wire-body"],
+      "expected": {
+        "status": "success",
+        "entityCounts": { "regions": 1, "shells": 1, "faces": 0, "edges": 1, "vertices": 0, "loops": 0, "fins": 0 },
+        "output": "analytic-curve-ellipse-wire/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-wire-2",
+      "producer": "PK_LINE_create + PK_CURVE_make_wire_body_2",
+      "entity": "LINE",
+      "owner": "wire-body.edge",
+      "parameters": { "location": [-1.0, 0.0, 0.0], "axis": [1.0, 0.0, 0.0], "range": [-1.0, 1.0], "options": { "allowDisjoint": true, "check": true } },
+      "equivalenceClasses": ["analytic", "finite-range", "options", "wire-body"],
+      "expected": {
+        "status": "success",
+        "entityCounts": { "regions": 1, "shells": 1, "faces": 0, "edges": 1, "vertices": 2, "loops": 0, "fins": 0 },
+        "output": "analytic-curve-wire-2/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-reversed-wire",
+      "producer": "PK_CURVE_make_curve_reversed + PK_CURVE_make_wire_body",
+      "entity": "LINE",
+      "owner": "wire-body.edge",
+      "parameters": { "source": "line", "range": [-1.0, 1.0], "operation": "reverse" },
+      "equivalenceClasses": ["analytic", "finite-range", "reverse", "wire-body"],
+      "expected": {
+        "status": "success",
+        "entityCounts": { "regions": 1, "shells": 1, "faces": 0, "edges": 1, "vertices": 2, "loops": 0, "fins": 0 },
+        "output": "analytic-curve-reversed-wire/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-line",
+      "producer": "PK_LINE_create",
+      "entity": "LINE",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "location": [1.0, -2.0, 0.5],
+        "axis": [0.0, 1.0, 0.0]
+      },
+      "equivalenceClasses": ["analytic", "axis1", "construction-geometry"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 1,
+          "shells": 1,
+          "faces": 1,
+          "edges": 4,
+          "vertices": 4,
+          "loops": 1,
+          "fins": 4
+        },
+        "output": "analytic-curve-line/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-circle",
+      "producer": "PK_CIRCLE_create",
+      "entity": "CIRCLE",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "location": [-1.0, 2.0, 0.0],
+        "axis": [0.0, 0.0, 1.0],
+        "refDirection": [1.0, 0.0, 0.0],
+        "radius": 2.5
+      },
+      "equivalenceClasses": ["analytic", "axis2", "positive-radius", "construction-geometry"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 1,
+          "shells": 1,
+          "faces": 1,
+          "edges": 4,
+          "vertices": 4,
+          "loops": 1,
+          "fins": 4
+        },
+        "output": "analytic-curve-circle/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-ellipse",
+      "producer": "PK_ELLIPSE_create",
+      "entity": "ELLIPSE",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "location": [2.0, -1.0, 0.25],
+        "axis": [0.0, 0.0, 1.0],
+        "refDirection": [1.0, 0.0, 0.0],
+        "majorRadius": 4.0,
+        "minorRadius": 1.5
+      },
+      "equivalenceClasses": ["analytic", "axis2", "distinct-radii", "construction-geometry"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 1,
+          "shells": 1,
+          "faces": 1,
+          "edges": 4,
+          "vertices": 4,
+          "loops": 1,
+          "fins": 4
+        },
+        "output": "analytic-curve-ellipse/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-surface-plane",
+      "producer": "PK_PLANE_create",
+      "entity": "PLANE",
+      "owner": "part.construction-geometry",
+      "parameters": {
+        "location": [0.0, 0.0, 1.25],
+        "axis": [0.0, 0.0, 1.0],
+        "refDirection": [1.0, 0.0, 0.0],
+        "sheetExtent": [4.0, 3.0]
+      },
+      "equivalenceClasses": ["analytic", "axis2", "sheet", "finite-boundary"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 1,
+          "shells": 1,
+          "faces": 1,
+          "edges": 4,
+          "vertices": 4,
+          "loops": 1,
+          "fins": 4
+        },
+        "output": "analytic-surface-plane/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-surface-cylinder",
+      "producer": "PK_CYL_create + PK_CYL_make_solid_body",
+      "entity": "CYL",
+      "owner": "face.surface",
+      "parameters": {
+        "location": [0.0, 0.0, -1.0],
+        "axis": [0.0, 0.0, 1.0],
+        "refDirection": [1.0, 0.0, 0.0],
+        "radius": 2.0,
+        "range": [0.0, 5.0]
+      },
+      "equivalenceClasses": ["analytic", "axis2", "positive-radius", "finite-interval", "solid"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 2,
+          "shells": 2,
+          "faces": 3,
+          "edges": 2,
+          "vertices": 0,
+          "loops": 4,
+          "fins": 4
+        },
+        "output": "analytic-surface-cylinder/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-surface-cone",
+      "producer": "PK_CONE_create + PK_CONE_make_solid_body",
+      "entity": "CONE",
+      "owner": "face.surface",
+      "parameters": {
+        "location": [0.0, 0.0, 0.0],
+        "axis": [0.0, 0.0, 1.0],
+        "refDirection": [1.0, 0.0, 0.0],
+        "radius": 2.0,
+        "semiAngle": 0.35,
+        "range": [0.0, 5.0]
+      },
+      "equivalenceClasses": ["analytic", "axis2", "positive-radius", "finite-interval", "semi-angle", "solid"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 2,
+          "shells": 2,
+          "faces": 3,
+          "edges": 2,
+          "vertices": 0,
+          "loops": 4,
+          "fins": 4
+        },
+        "output": "analytic-surface-cone/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-surface-sphere",
+      "producer": "PK_SPHERE_create + PK_SPHERE_make_solid_body",
+      "entity": "SPHERE",
+      "owner": "face.surface",
+      "parameters": {
+        "location": [-2.0, 0.5, 1.0],
+        "axis": [0.0, 0.0, 1.0],
+        "refDirection": [1.0, 0.0, 0.0],
+        "radius": 2.0
+      },
+      "equivalenceClasses": ["analytic", "axis2", "positive-radius", "periodic", "solid"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 2,
+          "shells": 2,
+          "faces": 1,
+          "edges": 0,
+          "vertices": 0,
+          "loops": 0,
+          "fins": 0
+        },
+        "output": "analytic-surface-sphere/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-surface-torus",
+      "producer": "PK_TORUS_create + PK_TORUS_make_solid_body",
+      "entity": "TORUS",
+      "owner": "face.surface",
+      "parameters": {
+        "location": [1.0, -1.0, 0.0],
+        "axis": [0.0, 0.0, 1.0],
+        "refDirection": [1.0, 0.0, 0.0],
+        "majorRadius": 5.0,
+        "minorRadius": 1.25
+      },
+      "equivalenceClasses": ["analytic", "axis2", "positive-radii", "periodic", "solid"],
+      "expected": {
+        "status": "success",
+        "entityCounts": {
+          "regions": 2,
+          "shells": 2,
+          "faces": 1,
+          "edges": 0,
+          "vertices": 0,
+          "loops": 0,
+          "fins": 0
+        },
+        "output": "analytic-surface-torus/model.x_t"
+      },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-line-rotated",
+      "producer": "PK_LINE_create",
+      "entity": "LINE",
+      "owner": "part.construction-geometry",
+      "parameters": { "location": [-0.5, 1.25, 0.75], "axis": [0.6, 0.8, 0.0] },
+      "equivalenceClasses": ["analytic", "axis1", "rotated-axis", "construction-geometry"],
+      "expected": { "status": "success", "output": "analytic-curve-line-rotated/model.x_t" },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-curve-circle-minimum-radius",
+      "producer": "PK_CIRCLE_create",
+      "entity": "CIRCLE",
+      "owner": "part.construction-geometry",
+      "parameters": { "radius": 0.000001 },
+      "equivalenceClasses": ["analytic", "axis2", "minimum-positive-radius", "construction-geometry"],
+      "expected": { "status": "success", "output": "analytic-curve-circle-minimum-radius/model.x_t" },
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "analytic-surface-plane-reversed",
+      "producer": "PK_PLANE_create",
+      "entity": "PLANE",
+      "owner": "part.construction-geometry",
+      "parameters": { "location": [0.0, 0.0, -1.25], "axis": [0.0, 0.0, -1.0], "refDirection": [0.0, 1.0, 0.0] },
+      "equivalenceClasses": ["analytic", "axis2", "reversed-axis", "sheet"],
+      "expected": { "status": "success", "output": "analytic-surface-plane-reversed/model.x_t" },
+      "verification": "self-receive-and-body-compare"
+    }
+  ]
+}

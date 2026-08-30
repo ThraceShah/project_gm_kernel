@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "group": "groups",
+  "entries": [],
+  "notes": [
+    "The first group case covers the body-owned face group lifecycle; owner and entity-class matrices remain separate work items."
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "group": "face-blends",
+  "entries": [
+    {
+      "caseId": "icurve.find-surfs-common.returned-icurve",
+      "status": "rejected",
+      "api": ["PK_CURVE_find_surfs_common"],
+      "entity": "ICURVE",
+      "parameters": { "producer": "PK_FACE_intersect_face", "supports": ["BSURF", "PLANE"] },
+      "result": "PK_ERROR_geom_topol_mismatch=62",
+      "reason": "The current Parasolid build rejects the common-support inquiry for an ICURVE returned by PK_FACE_intersect_face. The successful fixture therefore validates class and the INTERSECTION schema dependency graph directly.",
+      "evidence": "PK_ENTITY_ask_class returned PK_CLASS_icurve; PK_CURVE_find_surfs_common returned PK_ERROR_geom_topol_mismatch (62), while the transmitted INTERSECTION node references both B_SURFACE and PLANE.",
+      "recheckWhen": "The kernel accepts PK_CURVE_find_surfs_common for returned ICURVE entities."
+    },
+    {
+      "caseId": "blend.fxf.block-adjacent.rolling-ball",
+      "status": "rejected",
+      "api": ["PK_FACE_make_blend"],
+      "entity": "FACE-FACE blend",
+      "parameters": { "seed": "solid-block(1,2,3)", "walls": "adjacent block faces", "radius": 0.05 },
+      "result": "PK_fxf_fault_both=17465",
+      "reason": "A block's adjacent solid faces are not a stable face-face seed for this version: the operation reports both-wall failure. The accepted fixture uses two deterministic perpendicular sheet faces and an offset parameter spine.",
+      "evidence": "The probe returned PK_ERROR_no_errors with n_sheet_bodies=0, n_blend_topols=0 and PK_fxf_fault_both; no fixture was retained.",
+      "recheckWhen": "A documented solid-face seed for PK_FACE_make_blend is identified."
+    },
+    {
+      "caseId": "blend.fxf.blend-plane.rolling-ball.2",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_make_blend"],
+      "entity": "BLENDSF",
+      "typeCoverage": ["geometry.blend.depth.2", "geometry.icurve.depth.2"],
+      "parameters": { "firstBlend": "bsurf-plane", "rightWall": "plane(x=1)", "radius": 0.02, "depth": 2 },
+      "reason": "The deterministic blend-on-blend seed does not produce a stable second face-face blend in this Parasolid build.",
+      "evidence": "PK_FACE_make_blend returned fxf fault 17461 after the first BSurf-plane blend was accepted.",
+      "recheckWhen": "A documented blend-on-blend seed and parameter spine are available."
+    },
+    {
+      "caseId": "blend.edge-and-three-face",
+      "status": "out-of-scope",
+      "api": ["PK_EDGE_set_blend_constant", "PK_FACE_make_3_face_blend"],
+      "entity": "EDGE/THREE-FACE blend",
+      "parameters": {},
+      "result": "excluded-by-plan",
+      "reason": "This round covers only face-face PK_FACE_make_blend; edge blend and three-face blend are deliberately excluded.",
+      "recheckWhen": "The corpus scope is expanded beyond the current manifold face-face gate."
+    }
+  ]
+}

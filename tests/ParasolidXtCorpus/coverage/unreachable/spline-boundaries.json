@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "group": "spline-boundaries",
+  "entries": [
+    {
+      "api": "PK_BSURF_create",
+      "status": "rejected",
+      "scenario": "B-surface standard form with vertex_dim=2",
+      "observedError": "PK_ERROR_bad_value (39)",
+      "reason": "The checked Parasolid runtime rejects the two-dimensional B-surface boundary even though two-dimensional B-curves are accepted; the three-dimensional 2x2 bilinear case is the minimum successful B-surface fixture."
+    },
+    {
+      "api": "PK_BCURVE_create",
+      "status": "rejected",
+      "scenario": "quartic B-curve with six vertices and endpoint multiplicities [5,2,5]",
+      "observedError": "PK_ERROR_wrong_number_knots (980)",
+      "reason": "For degree=4 and six control vertices, the knot multiplicity sum is not compatible with [5,2,5]. The corrected seven-vertex fixture is retained as bsf-boundary.bcurve.degree4-interior-knot."
+    },
+    {
+      "api": "PK_BCURVE_ask",
+      "status": "normalized",
+      "scenario": "direct arbitrary B-curve knot_type field",
+      "observed": "knot_type=PK_knot_unset_c (8500) while knot multiplicity and knot arrays are retained",
+      "reason": "This runtime normalizes the direct arbitrary B-curve knot_type discriminator to unset on ask; boundary coverage therefore asserts degree, vertex count/dimension, rational flag and transmitted knot arrays, and records the discriminator normalization explicitly."
+    }
+  ]
+}

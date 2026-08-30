@@ -1,0 +1,15 @@
+{
+  "caseId": "body.solid.sphere.typical",
+  "group": "body-basics",
+  "producer": "PK_BODY_create_solid_sphere",
+  "description": "Solid sphere with a typical positive radius.",
+  "parameters": "{\"radius\":2.0,\"basisSet\":null}",
+  "coverage": ["basis/default", "body", "body/solid", "body/solid/sphere", "parameters/typical"],
+  "schemaVersion": 37102,
+  "transmitVersion": 371,
+  "entityCounts": { "regions": 2, "shells": 2, "faces": 1, "edges": 0, "vertices": 0, "loops": 0, "fins": 0 },
+  "semanticHash": "faad9ccc48953e5e36f65afa33fb4ed15461db896f01a551c0c1b0ca92853b2a",
+  "generatorVersion": "corpus-host-v1",
+  "verification": "ParasolidVerified",
+  "managedVerification": "passed"
+}

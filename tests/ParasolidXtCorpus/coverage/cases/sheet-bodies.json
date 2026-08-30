@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "group": "sheet-bodies",
+  "cases": [
+    { "caseId": "body.sheet.circle.typical", "status": "success", "producer": "PK_BODY_create_sheet_circle", "parameters": { "radius": 2.0, "basisSet": null }, "coverage": ["body/sheet/circle", "parameters/typical"], "output": "body.sheet.circle.typical/model.x_t" },
+    { "caseId": "body.sheet.planar.rectangle", "status": "success", "producer": "PK_BODY_create_sheet_planar", "parameters": { "vertices": [[-2.0, -1.0, 0.0], [2.0, -1.0, 0.0], [2.0, 1.0, 0.0], [-2.0, 1.0, 0.0]], "closed": true }, "coverage": ["body/sheet/planar", "topology/loop"], "output": "body.sheet.planar.rectangle/model.x_t" },
+    { "caseId": "body.sheet.rectangle.typical", "status": "success", "producer": "PK_BODY_create_sheet_rectangle", "parameters": { "x": 2.0, "y": 3.0, "basisSet": null }, "coverage": ["body/sheet/rectangle", "parameters/typical"], "output": "body.sheet.rectangle.typical/model.x_t" },
+    { "caseId": "body.sheet.polygon.pentagon", "status": "success", "producer": "PK_BODY_create_sheet_polygon", "parameters": { "radius": 2.0, "nSides": 5, "basisSet": null }, "coverage": ["body/sheet/polygon", "parameters/n-sides"], "output": "body.sheet.polygon.pentagon/model.x_t" }
+  ]
+}

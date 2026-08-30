@@ -1,0 +1,13 @@
+{
+  "generator": "parasolid-type-matrix-inputs-v1",
+  "apiManifestSha256": "78e75b65286a0059a3c7d333f83df89f2a17b4b01da06222d16e5f413d8ab664",
+  "schemaSha256": "c2d06b56144524347834699b33d9dbfe7e6a1b8d3cd125b1a4d68593464f8e5f",
+  "matrixSha256": "90af15db29910f9b7f3433596f06f049f8be691602f08a6bc10b61ac9b27fb9b",
+  "requiredCount": 250,
+  "excludedCount": 12,
+  "rejectedCount": 9,
+  "normalizedCount": 10,
+  "deferredCount": 17,
+  "sourceCount": 157,
+  "unresolvedSources": []
+}
