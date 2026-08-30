@@ -1,6 +1,6 @@
-namespace ProjectGmKernel.Native.Runtime;
+namespace ProjectGmKernel.Xt;
 
-internal enum XtSemanticKind : byte
+public enum XtSemanticKind : byte
 {
     VersionExtension,
     PartBlock,
@@ -25,7 +25,7 @@ internal enum XtSemanticKind : byte
     Lattice,
 }
 
-internal readonly record struct XtSemanticEntity(
+public readonly record struct XtSemanticEntity(
     XtNodeIndex NodeIndex,
     XtNodeType NodeType,
     XtNodePosition NodePosition,
@@ -37,7 +37,7 @@ internal readonly record struct XtSemanticEntity(
 /// topology, geometry, attribute and mesh entities stable typed categories
 /// without copying their schema-defined field payloads.
 /// </summary>
-internal sealed class XtSemanticModel
+public sealed class XtSemanticModel
 {
     public required XtSemanticEntity[] Entities { get; init; }
     public required XtNodePosition[] PartRoots { get; init; }

@@ -469,6 +469,8 @@ internal static unsafe class KernelRuntime
         using var scope = RuntimeLock.EnterScope();
         if (session is not null && session.Started)
             return ParasolidConstants.PK_ERROR_rollback_started;
+        if (!XtSchemaRegistry.ConfigureFromEnvironment())
+            return ParasolidConstants.PK_ERROR_schema_access_error;
 
         session = new SessionState(DefaultSessionId) { Started = true };
         session.ResetPartitions();

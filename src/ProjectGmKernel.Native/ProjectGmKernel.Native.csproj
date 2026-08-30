@@ -22,7 +22,6 @@
     <InternalsVisibleTo Include="TopologyDump" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="../../third_party/parasolid/schema/sch_*.sch_txt"
-                      LogicalName="ProjectGmKernel.Native.Schemas.%(Filename)%(Extension)" />
+    <ProjectReference Include="..\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />
   </ItemGroup>
 </Project>

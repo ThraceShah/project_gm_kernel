@@ -2,9 +2,11 @@
 
 ## 1. 目标
 
-在提供对应 Parasolid schema 的前提下，完整支持该 schema 所描述的
-part 文本传输格式。首批范围为 `third_party/parasolid/schema/` 中现有的
-101 个 schema；后续新增 schema 必须通过同一注册、差异分析和验收流程接入。
+在调用方显式提供对应 Parasolid schema 目录的前提下，完整支持该 schema
+所描述的 part 文本传输格式。首批私有验收集为调用方本地持有的 101 个
+schema；后续新增 schema 通过同一外部 catalog、差异分析和验收流程接入。
+源码、NuGet、NativeAOT 发布物和 CI artifact 均不得包含 schema 原文或
+schema-specific 派生 descriptor。
 
 本计划覆盖全部合法 part x_t 内容，包括：
 
@@ -51,9 +53,9 @@ Body 外形作为“完整支持”。
 
 ### 3.1 严格解析和生成
 
-将当前单一静态 `XtSchema` 改为按完整 schema identity 选择的只读 registry，
-初始注册现有 101 个 schema。运行时不得只根据 schema 名字的数字后缀猜测
-兼容性。
+使用 `XtSchemaCatalog.OpenDirectory` 建立调用方拥有的只读 catalog。目录必须
+显式传入，只扫描顶层 `sch_*.sch_txt`；库不提供默认目录、内置 registry、
+schema 下载或 fallback。运行时不得只根据 schema 名字的数字后缀猜测兼容性。
 
 schema 生成阶段必须验证：
 
@@ -64,8 +66,9 @@ schema 生成阶段必须验证：
 - 标量、固定数组和变长数组的合法声明。
 - schema 引用的 node class 是否存在或属于明确的抽象 class。
 
-任何未识别非空行、字段数不一致、重复 ID 或非法引用都必须使生成失败。
-生成结果必须确定性稳定，并提供 `--check` 模式验证仓库内容未过期。
+任何未识别非空行、字段数不一致、重复 ID 或非法引用都必须使加载失败。
+工具的 `--check` 只验证调用方目录；逐字段 descriptor 和差异结果只能写入
+Git ignored 的 `bin/`，不得生成可发布的 schema-specific 源码或资源。
 
 ### 3.2 Schema identity 和版本选择
 
@@ -74,7 +77,8 @@ registry 必须保存完整 identity，而不是只保存 schema number。接收
 
 1. 解析并验证文件 header。
 2. 若存在 embedded schema，验证其 identity 和内容后使用该定义。
-3. 否则从内置 registry 精确匹配 schema identity。
+3. 否则从调用方提供的 catalog 精确匹配 schema identity，或应用已声明的
+   producer/schema 兼容规则。
 4. 找不到匹配项时返回明确的不支持格式错误，不得退回当前 schema 猜读。
 
 发送时严格遵守 `PK_PART_transmit_o_t.transmit_version` 及其他传输选项，选择
@@ -146,7 +150,7 @@ Codec 必须覆盖：
 ## 7. 实施顺序
 
 1. 修正当前 codec 的固定数组、变长长度、presence 和 token 边界问题。
-2. 建立 101-schema registry、严格生成检查和 schema identity 映射。
+2. 建立外部 schema catalog、严格加载检查和 schema identity 映射。
 3. 实现无损 node graph 及 decode/encode 结构往返。
 4. 实现 embedded schema、user fields、mesh 和 indexed context。
 5. 建立规范 part 模型及无损版本扩展图。
@@ -214,7 +218,8 @@ Codec 必须覆盖：
 新增 schema 时必须：
 
 1. 严格解析新 schema 并生成与最近版本的节点/字段差异。
-2. 更新 registry 和 transmit-version 映射。
+2. 更新外部 catalog 兼容规则和 transmit-version 映射；不得把新 schema
+   编译或嵌入发布物。
 3. 将新增或变化内容映射到规范模型或无损扩展图。
 4. 更新 API 语料适用矩阵。
 5. 在对应真实 Parasolid runtime 可用时完成双向 oracle 验证。
@@ -223,4 +228,3 @@ Codec 必须覆盖：
 历史废弃状态若无法通过当前公共 API 构造，不得手写 x_t 后宣称语义验收
 通过。可以使用合成节点做 codec 单元测试，但必须将真实 oracle 状态记录为
 未完成，等待对应历史 runtime、合法种子文件或可证明的公共构造路径。
-

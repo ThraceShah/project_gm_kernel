@@ -44,6 +44,19 @@ public static class XtCorpusInspection
         return result;
     }
 
+    public static XtCorpusSupportedSchema ResolveSupportedSchema(string identity)
+    {
+        var schema = XtSchemaRegistry.Resolve(identity);
+        var producer = schema.ModelerVersion;
+        if (identity.StartsWith("SCH_", StringComparison.Ordinal))
+        {
+            var separator = identity.IndexOf('_', 4);
+            var text = separator < 0 ? identity.AsSpan(4) : identity.AsSpan(4, separator - 4);
+            if (int.TryParse(text, out var parsed)) producer = parsed;
+        }
+        return new XtCorpusSupportedSchema(identity, "<caller-provided>", ComputeSchemaDescriptorHash(schema), producer, schema.SchemaNumber);
+    }
+
     public static int GetCompatibleTransmitVersion(int modelerVersion)
     {
         if (modelerVersion <= 0)
@@ -81,21 +94,21 @@ public static class XtCorpusInspection
     {
         var document = XtText.DecodeDocument(Encoding.ASCII.GetString(source));
         var target = XtSchemaRegistry.Resolve(targetSchemaIdentity);
-        return Encoding.ASCII.GetBytes(XtText.Encode(XtSchemaTranscoder.Transcode(document, target)));
+        return Encoding.ASCII.GetBytes(XtText.Encode(ProjectGmKernel.Xt.XtVersionConverter.Transcode(document, target)));
     }
 
     public static bool CanTranscode(ReadOnlySpan<byte> source, string targetSchemaIdentity)
     {
         var document = XtText.DecodeDocument(Encoding.ASCII.GetString(source));
         var target = XtSchemaRegistry.Resolve(targetSchemaIdentity);
-        return XtSchemaTranscoder.CanTranscode(document, target);
+        return ProjectGmKernel.Xt.XtVersionConverter.CanTranscode(document, target);
     }
 
     public static string? GetTranscodeIncompatibility(ReadOnlySpan<byte> source, string targetSchemaIdentity)
     {
         var document = XtText.DecodeDocument(Encoding.ASCII.GetString(source));
         var target = XtSchemaRegistry.Resolve(targetSchemaIdentity);
-        return XtSchemaTranscoder.GetIncompatibility(document, target);
+        return ProjectGmKernel.Xt.XtVersionConverter.GetIncompatibility(document, target);
     }
 
     public static string ComputeStructuralHash(ReadOnlySpan<byte> source)
@@ -168,6 +181,14 @@ public static class XtCorpusInspection
             .ThenBy(edge => edge.To, StringComparer.Ordinal)
             .ToArray();
         return new XtCorpusInventory(nodeSummary, dependencySummary);
+    }
+
+    public static byte[] CanonicalBrepRoundTrip(ReadOnlySpan<byte> source)
+    {
+        var document = XtText.DecodeDocument(Encoding.ASCII.GetString(source));
+        var model = ProjectGmKernel.Xt.XtBrepConverter.Decode(document);
+        var rebuilt = ProjectGmKernel.Xt.XtBrepConverter.Encode(XtSchemaRegistry.Catalog, model, document.HeaderSchemaIdentity);
+        return ProjectGmKernel.Xt.XtCodec.Write(XtSchemaRegistry.Catalog, rebuilt);
     }
 
     public static unsafe byte[] RoundTrip(

@@ -56,16 +56,37 @@ unsafe
             var label = Path.GetRelativePath(scriptDirectory, paths[fixtureIndex]);
             try
             {
+                Trace(label + " source");
                 var expected = Receive(MemoryPayload(sources[fixtureIndex]), label + " source");
                 try
                 {
                     var incompatibility = XtCorpusInspection.GetTranscodeIncompatibility(sources[fixtureIndex], "SCH_3701097_37102");
                     if (incompatibility is not null)
                         throw new InvalidOperationException("historical-to-current adapter rejected the fixture: " + incompatibility);
-                    var managed = XtCorpusInspection.RoundTrip(sources[fixtureIndex], 0, userFields: true);
-                    var actual = Receive(managed, label + " managed");
-                    try { CompareParts(expected, actual, label); }
-                    finally { FreeParts(actual); }
+                    var managedVersionText = Environment.GetEnvironmentVariable("PGM_XT_ORACLE_TRANSMIT_VERSION");
+                    var managedVersion = int.TryParse(managedVersionText, out var parsedManagedVersion) ? parsedManagedVersion : 0;
+                    var managed = XtCorpusInspection.RoundTrip(sources[fixtureIndex], managedVersion, userFields: true, keepCompound: true);
+                    if (Environment.GetEnvironmentVariable("PGM_XT_ORACLE_DUMP") == "1")
+                    {
+                        var dumpDirectory = Path.GetFullPath(Path.Combine(scriptDirectory, "..", "bin", "xt-oracle-debug"));
+                        Directory.CreateDirectory(dumpDirectory);
+                        File.WriteAllBytes(Path.Combine(dumpDirectory, "managed.x_t"), managed);
+                    }
+                    if (!StructurallyEqual(sources[fixtureIndex], managed))
+                    {
+                        Trace(label + " managed");
+                        var actual = Receive(managed, label + " managed");
+                        try { CompareParts(expected, actual, label, userFieldSize); }
+                        finally { FreeParts(actual); }
+                    }
+                    var canonical = XtCorpusInspection.CanonicalBrepRoundTrip(sources[fixtureIndex]);
+                    if (!StructurallyEqual(sources[fixtureIndex], canonical))
+                    {
+                        Trace(label + " canonical-brep");
+                        var canonicalActual = Receive(canonical, label + " canonical-brep");
+                        try { CompareParts(expected, canonicalActual, label + " canonical-brep", userFieldSize); }
+                        finally { FreeParts(canonicalActual); }
+                    }
                 }
                 finally
                 {
@@ -82,6 +103,19 @@ unsafe
     }
 }
 return failures == 0 ? 0 : 1;
+
+static void Trace(string message)
+{
+    if (Environment.GetEnvironmentVariable("PGM_XT_ORACLE_TRACE") == "1")
+        Console.WriteLine("TRACE " + message);
+}
+
+static bool StructurallyEqual(byte[] source, byte[] candidate)
+    => source.AsSpan().SequenceEqual(candidate) ||
+       string.Equals(
+           XtCorpusInspection.ComputeStructuralHash(source),
+           XtCorpusInspection.ComputeStructuralHash(candidate),
+           StringComparison.Ordinal);
 
 static unsafe ReceivedParts Receive(byte[] bytes, string label)
 {
@@ -118,7 +152,7 @@ static byte[] MemoryPayload(byte[] bytes)
     return bytes.AsSpan(payloadOffset).ToArray();
 }
 
-static unsafe void CompareParts(ReceivedParts expected, ReceivedParts actual, string label)
+static unsafe void CompareParts(ReceivedParts expected, ReceivedParts actual, string label, int userFieldSize)
 {
     if (expected.Count != actual.Count)
         throw new InvalidOperationException($"part count differs: {expected.Count} != {actual.Count}");
@@ -130,11 +164,17 @@ static unsafe void CompareParts(ReceivedParts expected, ReceivedParts actual, st
         Check(PK_ENTITY_ask_class(actual.Parts[index], &actualClass), "PK_ENTITY_ask_class actual " + label);
         if (expectedClass != actualClass)
             throw new InvalidOperationException($"part class differs: {expectedClass} != {actualClass}");
+        CompareUserField(expected.Parts[index],actual.Parts[index],userFieldSize,label);
         if (expectedClass == PK_CLASS_body)
             CompareBodies(expected.Parts[index], actual.Parts[index], label);
         else if (expectedClass == PK_CLASS_assembly)
             CompareAssemblies(expected.Parts[index], actual.Parts[index], label);
     }
+}
+
+static unsafe void CompareUserField(PK_ENTITY_t expected,PK_ENTITY_t actual,int length,string label)
+{
+    if(length==0)return;var expectedValues=new int[length];var actualValues=new int[length];fixed(int* expectedPointer=expectedValues)fixed(int* actualPointer=actualValues){Check(PK_ENTITY_ask_user_field(expected,expectedPointer),"PK_ENTITY_ask_user_field expected "+label);Check(PK_ENTITY_ask_user_field(actual,actualPointer),"PK_ENTITY_ask_user_field actual "+label);}if(!expectedValues.AsSpan().SequenceEqual(actualValues))throw new InvalidOperationException("user field differs: "+label);
 }
 
 static unsafe void CompareBodies(PK_BODY_t expected, PK_BODY_t actual, string label)
@@ -146,7 +186,28 @@ static unsafe void CompareBodies(PK_BODY_t expected, PK_BODY_t actual, string la
     if (expectedType != actualType)
         throw new InvalidOperationException($"body type differs: {expectedType} != {actualType}");
     if (expectedType == PK_BODY_type_compound_c)
-        throw new NotSupportedException("compound fixture comparison requires child detachment");
+    {
+        var childOptions = new PK_BODY_ask_children_o_t();
+        int expectedCount;
+        int actualCount;
+        PK_BODY_t* expectedChildren;
+        PK_BODY_t* actualChildren;
+        Check(PK_BODY_ask_children(expected, &childOptions, &expectedCount, &expectedChildren), "PK_BODY_ask_children expected " + label);
+        Check(PK_BODY_ask_children(actual, &childOptions, &actualCount, &actualChildren), "PK_BODY_ask_children actual " + label);
+        try
+        {
+            if (expectedCount != actualCount)
+                throw new InvalidOperationException($"compound child count differs: {expectedCount} != {actualCount}");
+            for (var index = 0; index < expectedCount; index++)
+                CompareBodies(expectedChildren[index], actualChildren[index], label + $" child[{index}]");
+        }
+        finally
+        {
+            if (expectedChildren is not null) Check(PK_MEMORY_free(expectedChildren), "PK_MEMORY_free expected compound children " + label);
+            if (actualChildren is not null) Check(PK_MEMORY_free(actualChildren), "PK_MEMORY_free actual compound children " + label);
+        }
+        return;
+    }
 
     var options = new PK_DEBUG_BODY_compare_o_t
     {
@@ -166,6 +227,17 @@ static unsafe void CompareBodies(PK_BODY_t expected, PK_BODY_t actual, string la
     {
         Check(PK_DEBUG_BODY_compare_r_f(&results), "PK_DEBUG_BODY_compare_r_f " + label);
     }
+    CompareFaceIntegerAttributes(expected,actual,label);
+}
+
+static unsafe void CompareFaceIntegerAttributes(PK_BODY_t expected,PK_BODY_t actual,string label)
+{
+    var expectedValues=FaceIntegerAttributes(expected);var actualValues=FaceIntegerAttributes(actual);if(!expectedValues.AsSpan().SequenceEqual(actualValues))throw new InvalidOperationException($"face integer attributes differ: {string.Join(',',expectedValues)} != {string.Join(',',actualValues)} ({label})");
+}
+
+static unsafe int[] FaceIntegerAttributes(PK_BODY_t body)
+{
+    int faceCount;PK_FACE_t* faces;Check(PK_BODY_ask_faces(body,&faceCount,&faces),"PK_BODY_ask_faces attributes");var values=new List<int>();try{for(var faceIndex=0;faceIndex<faceCount;faceIndex++){int attributeCount;PK_ATTRIB_t* attributes;Check(PK_ENTITY_ask_attribs(faces[faceIndex],0,&attributeCount,&attributes),"PK_ENTITY_ask_attribs");try{for(var attributeIndex=0;attributeIndex<attributeCount;attributeIndex++){int count;int* integers;var error=PK_ATTRIB_ask_ints(attributes[attributeIndex],0,&count,&integers);if(error!=PK_ERROR_no_errors)continue;try{for(var i=0;i<count;i++)values.Add(integers[i]);}finally{if(integers is not null)Check(PK_MEMORY_free(integers),"PK_MEMORY_free attribute ints");}}}finally{if(attributes is not null)Check(PK_MEMORY_free(attributes),"PK_MEMORY_free attributes");}}}finally{if(faces is not null)Check(PK_MEMORY_free(faces),"PK_MEMORY_free attribute faces");}values.Sort();return values.ToArray();
 }
 
 static unsafe void CompareAssemblies(PK_ASSEMBLY_t expected, PK_ASSEMBLY_t actual, string label)

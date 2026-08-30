@@ -47,6 +47,8 @@ var schemas = XtCorpusInspection.GetSupportedSchemas()
         ? string.Equals(schema.Identity, schemaFilter, StringComparison.Ordinal)
         : includeSmokeVerified ? verifiedSchemas.Contains(schema.Identity) : schema.ModelerVersion >= 600000)
     .ToArray();
+if (schemaFilter is not null && schemas.Length == 0)
+    schemas = [XtCorpusInspection.ResolveSupportedSchema(schemaFilter)];
 if (!ParasolidScriptHost.TryStartSession("Parasolid schema corpus matrix", out var session, out var skipMessage, userFieldLength: 8))
 {
     Console.WriteLine(skipMessage);
