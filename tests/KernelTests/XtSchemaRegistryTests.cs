@@ -33,6 +33,7 @@ public sealed unsafe class XtSchemaRegistryTests
         Assert.Equal(37102, schema.SchemaNumber);
         Assert.Equal("SCH_3701097_37102", schema.Identity);
         Assert.Equal(20000, XtSchemaRegistry.Resolve("SCH_2300000_20000").SchemaNumber);
+        Assert.Equal(37102, XtSchemaRegistry.Resolve("SCH_3800150_37102").SchemaNumber);
         Assert.Throws<FormatException>(() => XtSchemaRegistry.Resolve("SCH_9999999_37102"));
     }
 
@@ -99,7 +100,7 @@ public sealed unsafe class XtSchemaRegistryTests
     [InlineData('h')]
     public void Codec_RoundTripsCompositePhysicalFieldTypes(char requiredType)
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var descriptor = FindNodeWithType(schema, requiredType);
         var node = CreateNode(schema, descriptor, 2);
         var original = CreateDocument(schema, 0, node);
@@ -110,7 +111,7 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void Codec_RoundTripsEntityUserFields()
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var descriptor = schema.GetNode((int)XtNodeTypes.Body);
         var node = CreateNode(schema, descriptor, 0);
         node.UserFields = [31415, -2718];
@@ -122,7 +123,7 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void Codec_RoundTripsRawCharacterArraysContainingSpaces()
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var descriptor = schema.GetNode(79);
         var text = "Kg/Cu M ";
         var node = new XtNode
@@ -140,7 +141,7 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void Codec_ParsesHistoricalBareSignedZeroComponents()
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var descriptor = FindNodeWithType(schema, 'v');
         var node = CreateNode(schema, descriptor, 0);
         var vectorIndex = Array.FindIndex(node.Fields, static value => value.Kind == XtFieldKind.Vector);
@@ -155,13 +156,13 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void Codec_RoundTripsPhysicalFileHeaderWithoutRewrappingIt()
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var descriptor = schema.GetNode((int)XtNodeTypes.Body);
         var original = new XtDocument
         {
             PhysicalHeader = "**PART1;\n**PART2;\n**END_OF_HEADER*****************************************************************\n",
             VersionText = ": TRANSMIT FILE created by modeller version 3800150",
-            HeaderSchemaIdentity = XtSchema.SchemaName,
+            HeaderSchemaIdentity = XtSchemaRegistry.ResolveCurrent().Identity,
             Schema = schema,
             UserFieldSize = 0,
             Nodes = [CreateNode(schema, descriptor, 0)],
@@ -174,12 +175,12 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void Codec_RejectsPhysicalHeaderSchemaAndUserFieldMismatches()
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var original = CreateDocument(schema, 0, CreateNode(schema, schema.GetNode((int)XtNodeTypes.Body), 0));
         var payload = XtText.Encode(original);
         var malformedSchema = "**PART2;SCH=NOT_A_SCHEMA;USFLD_SIZE=0;\n**END_OF_HEADER*****************************************************************\n" + payload;
         var differentKnownSchema = "**PART2;SCH=SCH_1000102_10002;USFLD_SIZE=0;\n**END_OF_HEADER*****************************************************************\n" + payload;
-        var wrongUserFields = $"**PART2;SCH={XtSchema.SchemaName};USFLD_SIZE=4;\n**END_OF_HEADER*****************************************************************\n" + payload;
+        var wrongUserFields = $"**PART2;SCH={XtSchemaRegistry.ResolveCurrent().Identity};USFLD_SIZE=4;\n**END_OF_HEADER*****************************************************************\n" + payload;
         Assert.Throws<FormatException>(() => XtText.DecodeDocument(malformedSchema));
         Assert.NotNull(XtText.DecodeDocument(differentKnownSchema));
         Assert.Throws<FormatException>(() => XtText.DecodeDocument(wrongUserFields));
@@ -387,7 +388,7 @@ public sealed unsafe class XtSchemaRegistryTests
         var historical = XtSchemaTranscoder.Transcode(source, XtSchemaRegistry.ResolveBySchemaNumber(25001));
         Assert.True(XtText.TryEncodeForTransmitVersion(historical, 0, out var text));
         var normalized = XtText.DecodeDocument(text);
-        Assert.Equal(XtSchema.SchemaNumber, normalized.Schema.SchemaNumber);
+        Assert.Equal(XtSchemaRegistry.ResolveCurrent().SchemaNumber, normalized.Schema.SchemaNumber);
         Assert.NotNull(normalized.BaseSchema);
         Assert.Equal(13006, normalized.BaseSchema.SchemaNumber);
     }
@@ -447,7 +448,7 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void SemanticProjection_RecognizesLegacyPointerListPartContainer()
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var listDescriptor = schema.GetNode(74);
         var bodyDescriptor = schema.GetNode((int)XtNodeTypes.Body);
         var list = CreateNode(schema, listDescriptor, 2, 1);
@@ -469,7 +470,7 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void PartReceive_ImplementsCompoundSplitKeepAndFailContracts()
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
+        var schema = XtSchemaRegistry.ResolveCurrent();
         var bodyDescriptor = schema.GetNode((int)XtNodeTypes.Body);
         var parent = CreateNode(schema, bodyDescriptor, 0, 1);
         var firstChild = CreateNode(schema, bodyDescriptor, 0, 10);
@@ -544,7 +545,7 @@ public sealed unsafe class XtSchemaRegistryTests
     }
 
     private static XtDocument CreateDocument(XtSchemaDefinition schema, int userFieldSize, params XtNode[] nodes)
-        => CreateDocument(schema, XtSchema.SchemaName, userFieldSize, nodes);
+        => CreateDocument(schema, XtSchemaRegistry.ResolveCurrent().Identity, userFieldSize, nodes);
 
     private static XtDocument CreateDocument(XtSchemaDefinition schema, string headerIdentity, int userFieldSize, params XtNode[] nodes)
         => new()

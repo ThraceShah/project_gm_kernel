@@ -1,81 +1,95 @@
-# Parasolid part x_t 全版本支持实施状态
+# Parasolid part x_t 支持实施状态
 
-本文记录 `docs/xt_all_versions_support_plan.md` 的可执行验收状态。机器结果以
-以下文件为准：
+本文记录 `docs/xt_all_versions_support_plan.md` 与独立 XT 库的当前验收结论。
 
-- `tests/ParasolidXtCorpus/coverage/xt-schema-support-report.json`
-- `tests/ParasolidXtCorpus/coverage/xt-schema-corpus-matrix-report.json`
-- `tests/ParasolidXtCorpus/coverage/xt-schema-applicability.json`
-- `tests/ParasolidXtCorpus/coverage/xt-schema-differences.json`
+## 发布和法律边界
 
-## 已完成
+- `ProjectGmKernel.Xt` 是独立 `.NET 10` managed library；
+  `ProjectGmKernel.Xt.Native` 是独立 NativeAOT C ABI library。
+- 两个发布物都不依赖 `ProjectGmKernel.Native`、PKToy、`pskernel`、Parasolid
+  header、session 或许可。
+- 使用者必须显式提供自己的 schema 目录。库只扫描目录顶层的
+  `sch_*.sch_txt`，不包含默认目录、内置 schema、下载逻辑或 fallback。
+- 源码、NuGet 和 NativeAOT artifact 均不包含 `.sch_txt`、schema identity
+  registry、schema-specific field table 或派生 descriptor。私有 schema 只用于
+  本地集成验收，不进入 Git、包或 CI artifact。
+- 支持 text x_t；不支持 x_b。
 
-- 101 个 bundled schema 已进入严格 registry；生成器检查 header、terminator、
-  统计数量、重复节点、字段类型、pointer class、固定数组和 variable 声明。
-- 100 个按 modeller version 排序的相邻 schema 差异已逐节点/字段生成机器清单，
-  摘要见 `docs/xt_schema_differences.md`；新增或修改 schema 会使统一 check 失败。
-- 普通及 embedded schema、完整 `**PART1/2/3` 文件头、全部物理字段码、
-  presence、固定/变长数组、原始字符数组、历史裸符号零、前向及共享引用、
-  user fields、mesh/lattice 节点和现代/旧式 multi-part 容器已进入通用 codec。
-- receive 后同时保留无损版本扩展图，并建立 part、body、topology、geometry、
-  assembly/instance、attribute、mesh/lattice 的连续语义索引。
-- 版本降级先执行可表示性检查。固定数组只在被截断尾部均为默认值时收缩；
-  版本专属派生缓存和等价默认状态采用显式 adapter 规则。无法证明无损时返回
-  `PK_ERROR_wrong_version`，不再静默补零或删除非默认字段。
-- `transmit_version=0` 会将历史输入规范化到当前 embedded schema；显式历史
-  transmit version 选择对应历史 schema。V1–V3 不再因 schema number 小于
-  4000 而被 registry 排除，`10/20/30/40/50/60` 到后续版本均可由同一
-  `PK_PART_transmit_b` 路径选择。V7–V38 使用真实 V38 探针固定的兼容表，
-  不再错误假设 `transmit_version == schemaNumber / 100`（例如 101→10004、
-  91→9008、210–241→20000）；producer maintenance version 若没有独立 public
-  transmit token，则在同一 major 内选择最近的可用版本（如 701081→70、
-  901101→91）。多 part receive 后可按子集和顺序重建 part block。
-- `PK_PART_receive_b` 已按真实 V38 合同实现零基且严格递增的 `part_indices`、
-  `part_index`/普通 transmit `identifiers` 错误语义，以及 compound 的默认
-  split、keep 和 fail(1096)；compound 无损 codec 回归显式使用 keep。receive
-  options 的结构版本、attdef/seek/mixed enum、`key_is_partition` 和
-  `make_facet` 错误合同，以及 transmit options 的 1–4 结构版本、format、
-  transmit version、indexed context 和 V4 mesh enum 合同，均由真实 V38
-  探针固定并进入单元测试。
-- Parasolid 38.0.150 已对 77 个 schema 完成最小 solid block 双向 smoke；其中
-  64 个 V6+ schema 已进一步通过完整语料 receive 和
-  `PK_DEBUG_BODY_compare`。矩阵中的 managed 路径按各 schema 自身的
-  `transmit_version` 重发，不再用版本 0 升级到当前 schema。328 个 API 合法模型形成 20,391 个适用的
-  case/schema 组合，全部通过；601 个不适用组合均有字段级或版本级原因，
-  无 source-unavailable 和实现失败。
-- 当前版本完整语料 check、单元测试、schema codegen check、NativeAOT
-  publish、ABI smoke 和现有 Parasolid oracle 均进入 `scripts/VerifyKernel.cs`。
+## 已实现能力
 
-## 尚未达到 Complete
+- 外部 `XtSchemaCatalog` 支持索引、lazy strict parse、`LoadAll`、并发只读缓存、
+  精确 identity 及受限 producer/schema 兼容解析。
+- 无损 `XtDocument` codec 覆盖普通和 embedded schema、presence、固定/变长
+  数组、所有现有字段码、字符数组、前向/共享/环引用、user fields、mesh、
+  lattice 和 multi-part block。
+- `XtBrepModel`/`XtBrepBuilder` 提供 blittable DOD 表、类型化索引、扁平
+  offset/count、冻结后只读视图和输出前验证。
+- V30–V38 canonical adapter 覆盖 Part/Body、完整 topology、曲线/曲面及 spline
+  数据、Assembly/Instance、Attribute、User fields、mesh/lattice、frame 和
+  indexed-context 相关持久节点。
+- `ProjectGmKernel.Native` 已改为引用 managed XT 核心；session 从调用方的
+  `PARASOLID_SCHEMA_DIR` 或 `P_SCHEMA` 创建 catalog，缺失时返回 schema access
+  error，不再使用内置 schema。
+- NativeAOT C ABI 提供 generation-checked handle、context/document/B-rep 生命周期、
+  pinned writable/read-only table view、finalize/validate、独立 buffer 所有权及
+  thread-local diagnostic。
 
-按照计划中的声明规则，目前不能把 101 个 schema 全部标记为 `Complete`：
+## 当前验收结果
 
-1. 24 个 `SCH_5030` 及更早 schema 缺少对应历史 runtime。当前 38.0.150
-   对字段定义完全相同的 `SCH_5030` 返回 `PK_ERROR_corrupt_file`，却接受
-   `SCH_5031`；两者的 descriptor hash 已写入支持报告，形成明确 runtime
-   下限证据。当前 runtime 同样拒绝以前 schema 作为 embedded base。
-2. 13 个 V5.031–V5.059 schema 已通过 solid block 的旧 BODY/SHELL 布局和
-   region 双向 adapter，但 sheet、wire、minimum 及部分历史几何仍未通过
-   全语料矩阵。缺少对应 V5 runtime 或真实 V5 API 生成种子时，不能把当前
-   V38 的 922 结果解释为合法版本限制，也不能手写节点冒充 oracle。
-3. `tests/ParasolidXtCorpus/coverage/type-coverage-report.json` 仍报告 5 个 missing
-   和 17 个 deferred typed coverage 项。即使 API 分类门禁为
-   `strictGapCount=0`，也不能据此宣称目标 2 的 typed matrix 已完成。
+- 调用方私有目录中的 101 个 schema 全部通过 strict `LoadAll`，且 schema 工具
+  `--check` 不生成 schema-derived source。
+- 597 个 API 合法 x_t 模型全部通过：
+  `XT → XtBrepModel → 丢弃原 node graph → XT`、managed 再读、真实 Parasolid
+  receive，以及适用的 Body/compound child/Assembly/Attribute/User field/mesh
+  比较。
+- V30–V37 的 14 个独立 schema，加 `SCH_3800150_37102` V38 producer identity，
+  共 15 组 × 328 个当前适用 API case = 4,920 个版本矩阵项全部通过，无实现
+  失败。
+- managed 单元测试和原内核 82 项回归测试通过；Linux x64 NativeAOT publish、
+  C ABI smoke、C header/managed row layout static assert、NuGet 独立消费及 schema
+  泄漏扫描通过。
+- `linux-x64` 已在当前主机实际运行验证；`win-x64` 和 `osx-arm64` 已配置，但未在
+  当前环境运行验证。
 
-因此当前可声明的最高状态是：全部 101 个 schema 达到 `SemanticMapped`；其中
-64 个达到完整 `CorpusVerified`，另有 13 个达到 solid-block
-`ParasolidVerified`，其余 24 个保持 `AdapterAndRuntimeBlocked`。`Complete`
-必须等待 V5 全语料 adapter、对应更早 runtime/合法历史种子以及目标 2 typed
-coverage 门禁归零后再更新。
+## V29 及更早版本
 
-## 复现
+调用方提供兼容 schema 时，低层 schema parser 和无损 node codec 可工作；但
+V29 及更早版本不在 canonical B-rep 完整双向承诺内，也不得因当前 V38 runtime
+接受某个历史文件就标记 `Complete`。历史 runtime、许可或合法 API 构造路径
+缺失的项目继续按 `AdapterAndRuntimeBlocked` 记录。
+
+## 尚不能声明 Complete 的项目
+
+仓库现有 API 语料审计仍明确将 Frame producer、Lattice 和 indexed-I/O 记录为
+不可达或排除项；它们没有合法的 Parasolid transmit 语料，因此不能被 597/4,920
+通过数覆盖：
+
+- Frame 没有稳定的独立公共 producer case；managed DOD 已按实际 FRAME
+  geometry/owner/sense/ring 语义实现，但尚缺真实 transmit oracle。
+- 当前 runtime 的最小 `PK_LATTICE_create_by_core` 返回
+  `PK_ERROR_lattice_geometry (5277)`；Lattice data 的完整 canonical adapter 和
+  receive 比较尚无合法输入可验收。
+- indexed-I/O 在没有完整 callback/context host 时返回
+  `PK_ERROR_not_implemented (5000)`；text x_t codec 不应伪造其语料。
+
+这些项目详见
+`tests/ParasolidXtCorpus/coverage/unreachable/residual-api-audit.json` 和
+`tests/ParasolidXtCorpus/coverage/unreachable/user-fields-mesh.json`。按照计划的
+声明规则，当前结论是“V30–V38 的全部可达语料通过”，而不是全类型
+`Complete`。获得支持 Lattice/indexed-I/O 的 runtime/license、合法 seed 或完整
+callback host 后，必须重新生成语料并补齐 canonical adapter 才能升级状态。
+
+## 主要复现命令
+
+所有 schema 路径均由调用方通过 `PARASOLID_SCHEMA_DIR` 或 `P_SCHEMA` 提供。
 
 ```bash
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/GenerateXtSchema.cs -- --check
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/GenerateXtSchemaDifferences.cs -- --check
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ParasolidAllSchemaOracle.cs -- --check
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/GenerateParasolidXtCorpus.cs -- --check
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ParasolidSchemaCorpusMatrix.cs -- --check
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ParasolidSchemaCorpusMatrix.cs -- --include-smoke-verified
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyKernel.cs
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/GenerateXtSchema.cs -- --check
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ValidateXtBrepCorpus.cs -- ../bin/parasolid-xt-corpus
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ParasolidXtFixtureOracle.cs -- <fixture paths...>
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ParasolidSchemaCorpusMatrix.cs -- --schema <identity>
+MSBUILDDISABLENODEREUSE=1 dotnet pack src/ProjectGmKernel.Xt/ProjectGmKernel.Xt.csproj -c Release
+MSBUILDDISABLENODEREUSE=1 dotnet publish src/ProjectGmKernel.Xt.Native/ProjectGmKernel.Xt.Native.csproj -c Release -r linux-x64 -o bin/xt-native/linux-x64
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/XtNativeAbiSmoke.cs
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ScanXtArtifacts.cs -- bin/xt-native/linux-x64
 ```

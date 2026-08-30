@@ -2,8 +2,8 @@
 // Prints Parasolid XT schema node/field specs for the locked project schema.
 //
 // Usage:
-//   dotnet run scripts/ExtractXtSchema.cs
-//   dotnet run scripts/ExtractXtSchema.cs -- --focus BODY,SHELL,FACE
+//   PARASOLID_SCHEMA_DIR=... dotnet run --file scripts/ExtractXtSchema.cs
+//   dotnet run --file scripts/ExtractXtSchema.cs -- --schema-dir ../private-schema --focus BODY,SHELL,FACE
 
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -15,8 +15,11 @@ using SchemaNodeType = System.Int32;
 static string GetScriptPath([CallerFilePath] string path = "") => path;
 
 var scriptDir = Path.GetDirectoryName(GetScriptPath()) ?? ".";
-var repoRoot = Path.GetFullPath(Path.Combine(scriptDir, ".."));
-var schemaPath = Path.Combine(repoRoot, "third_party", "parasolid", "schema", "sch_37102.sch_txt");
+var schemaDirectory = ReadOption(args, "--schema-dir") ?? Environment.GetEnvironmentVariable("PARASOLID_SCHEMA_DIR") ?? Environment.GetEnvironmentVariable("P_SCHEMA");
+if (string.IsNullOrWhiteSpace(schemaDirectory))
+    throw new ArgumentException("Pass --schema-dir or set PARASOLID_SCHEMA_DIR/P_SCHEMA to a caller-owned schema directory.");
+var resolvedSchemaDirectory = Path.GetFullPath(Path.Combine(scriptDir, schemaDirectory));
+var schemaPath = Path.Combine(resolvedSchemaDirectory, "sch_37102.sch_txt");
 
 if (!File.Exists(schemaPath))
     throw new FileNotFoundException("Locked XT schema file is missing.", schemaPath);
@@ -29,7 +32,7 @@ var selected = focus.Count == 0
 
 Console.WriteLine("Parasolid XT schema extract");
 Console.WriteLine("  schema: SCH_3701000_37102");
-Console.WriteLine("  source: third_party/parasolid/schema/sch_37102.sch_txt");
+Console.WriteLine("  source: " + Path.GetFileName(schemaPath));
 Console.WriteLine("  nodes:  " + selected.Length);
 Console.WriteLine();
 
@@ -72,6 +75,12 @@ static HashSet<string> ParseFocus(string[] args)
     }
 
     return result;
+}
+
+static string? ReadOption(string[] args,string option)
+{
+    for(var index=0;index<args.Length;index++)if(args[index]==option)return index+1<args.Length?args[index+1]:throw new ArgumentException(option+" requires a value.");
+    return null;
 }
 
 static SchemaNode[] ParseSchema(string path)

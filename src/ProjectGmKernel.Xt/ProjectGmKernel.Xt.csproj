@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>ProjectGmKernel.Xt</AssemblyName>
+    <RootNamespace>ProjectGmKernel.Xt</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <IsPackable>true</IsPackable>
+    <PackageId>ProjectGmKernel.Xt</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>ThraceShah</Authors>
+    <Description>Schema-driven Parasolid XT text codec and neutral B-rep model.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageOutputPath>..\..\bin\nuget</PackageOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <Target Name="ScanXtPackage" AfterTargets="Pack">
+    <Exec Command="dotnet run --file &quot;$(MSBuildProjectDirectory)/../../scripts/ScanXtArtifacts.cs&quot; -- &quot;$(PackageOutputPath)/$(PackageId).$(PackageVersion).nupkg&quot;" />
+  </Target>
+</Project>

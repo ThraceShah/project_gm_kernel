@@ -6,7 +6,9 @@ Parasolid `PK_PART_transmit_b` output when `transmit_version = 371`.
 
 Sources:
 
-- `third_party/parasolid/schema/sch_37102.sch_txt` is the field-order source of truth.
+- 调用方合法取得并通过 `PARASOLID_SCHEMA_DIR`、`P_SCHEMA` 或 `--schema-dir`
+  提供的 `sch_37102.sch_txt` 是字段顺序依据；仓库和发布物不携带该文件或其
+  派生 descriptor。
 - `docs/parasolid_online_docs/xt_index.html` is the XT reference entry point.
 - `docs/parasolid_online_docs/chapters/xt_chap.03.html` explains logical layout and schema syntax.
 - `docs/parasolid_online_docs/chapters/xt_chap.04.html` explains physical/text layout.
@@ -25,7 +27,7 @@ Sources:
 
 ## Minimal node set
 
-Use `dotnet run scripts/ExtractXtSchema.cs -- --focus BODY,SHELL,FACE,LOOP,HALFEDGE,EDGE,VERTEX,REGION,POINT,CIRCLE,PLANE,CYLINDER` to print the exact field list from `sch_37102.sch_txt`.
+Use `dotnet run --file scripts/ExtractXtSchema.cs -- --schema-dir <caller-schema-directory> --focus BODY,SHELL,FACE,LOOP,HALFEDGE,EDGE,VERTEX,REGION,POINT,CIRCLE,PLANE,CYLINDER` to print the exact field list from the caller-provided `sch_37102.sch_txt`.
 
 The first x_t implementation slice should cover:
 

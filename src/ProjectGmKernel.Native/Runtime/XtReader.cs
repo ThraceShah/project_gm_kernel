@@ -65,7 +65,7 @@ internal static unsafe class XtReader
                 var root = FindPartNode(document, rootIndex)
                     ?? throw new FormatException("XT part container references a missing part.");
                 EntityTag tag = 0;
-                var error = root.Type == (int)XtNodeTypes.Body && document.Schema.SchemaNumber == XtSchema.SchemaNumber
+                var error = root.Type == (int)XtNodeTypes.Body && document.Schema.SchemaNumber == XtSchemaRegistry.ResolveCurrent().SchemaNumber
                     ? MaterializeBody(nodes, root, out tag)
                     : ParasolidConstants.PK_ERROR_bad_file_format;
                 if (error == ParasolidConstants.PK_ERROR_no_errors)

@@ -1,0 +1,9 @@
+global using XtDocument = ProjectGmKernel.Xt.XtDocument;
+global using XtNode = ProjectGmKernel.Xt.XtNode;
+global using XtFieldValue = ProjectGmKernel.Xt.XtFieldValue;
+global using XtFieldKind = ProjectGmKernel.Xt.XtFieldKind;
+global using XtSchemaDefinition = ProjectGmKernel.Xt.XtSchemaDefinition;
+global using XtNodeDescriptor = ProjectGmKernel.Xt.XtNodeDescriptor;
+global using XtFieldDescriptor = ProjectGmKernel.Xt.XtFieldDescriptor;
+global using XtSemanticKind = ProjectGmKernel.Xt.XtSemanticKind;
+global using XtSchemaTranscoder = ProjectGmKernel.Xt.XtVersionConverter;

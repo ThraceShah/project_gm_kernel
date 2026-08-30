@@ -1,142 +1,47 @@
 using System.Globalization;
 using System.Text;
-using ProjectGmKernel.Native.Generated;
 
-namespace ProjectGmKernel.Native.Runtime;
+namespace ProjectGmKernel.Xt;
 
-internal static class XtText
+public readonly record struct XtReadOptions(bool RequirePhysicalHeader = false);
+
+public readonly record struct XtWriteOptions(
+    string? TargetSchemaIdentity = null,
+    bool IncludeUserFields = true,
+    bool IncludePhysicalHeader = true);
+
+public static class XtCodec
 {
-    private const int CurrentTransmitModelerVersion = 3800150;
-
-    public static string Encode(IReadOnlyList<XtNode> nodes)
-        => EncodeCurrent(nodes, 371);
-
-    public static string EncodeCurrent(IReadOnlyList<XtNode> nodes, int transmitVersion)
+    public static byte[] Write(XtSchemaCatalog catalog, XtDocument document, XtWriteOptions options = default)
     {
-        var schema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
-        var nodeArray = nodes as XtNode[] ?? nodes.ToArray();
-        if (transmitVersion == 0)
-        {
-            var baseSchema = XtSchemaRegistry.ResolveBySchemaNumber(13006);
-            var definitions = new Dictionary<int, EmbeddedNodeDefinition>();
-            foreach (var node in nodeArray)
-            {
-                if (definitions.ContainsKey(node.Type))
-                    continue;
-                var descriptor = schema.GetNode(node.Type);
-                if (descriptor.Type == 0)
-                    throw new InvalidOperationException($"Unknown XT node type {node.Type}.");
-                definitions.Add(node.Type, CreateEmbeddedDefinition(
-                    node.Type,
-                    descriptor.Name,
-                    descriptor.Description,
-                    EffectiveFields(schema, descriptor)));
-            }
-            var identity = $"SCH_{CurrentTransmitModelerVersion}_{schema.SchemaNumber}_{baseSchema.SchemaNumber}";
-            var effectiveSchema = BuildEmbeddedSchema(
-                identity,
-                CurrentTransmitModelerVersion,
-                schema.SchemaNumber,
-                definitions.Values);
-            var maxNodeType = 1;
-            foreach (var descriptor in schema.Nodes)
-                maxNodeType = Math.Max(maxNodeType, descriptor.Type + 1);
-            return Encode(new XtDocument
-            {
-                VersionText = $": TRANSMIT FILE created by modeller version {CurrentTransmitModelerVersion}",
-                HeaderSchemaIdentity = identity,
-                Schema = effectiveSchema,
-                BaseSchema = baseSchema,
-                EmbeddedMaxNodeType = maxNodeType,
-                UserFieldSize = 0,
-                Nodes = nodeArray,
-            });
-        }
-
-        var headerIdentity = transmitVersion switch
-        {
-            371 => XtSchema.SchemaName,
-            380 => $"SCH_{CurrentTransmitModelerVersion}_{schema.SchemaNumber}",
-            _ => null,
-        };
-        if (headerIdentity is null)
-        {
-            if (!XtSchemaRegistry.TryResolveTransmitVersion(transmitVersion, out var targetSchema))
-                throw new NotSupportedException($"Unsupported XT transmit version {transmitVersion}.");
-            var sourceDocument = new XtDocument
-            {
-                VersionText = $": TRANSMIT FILE created by modeller version {CurrentTransmitModelerVersion}",
-                HeaderSchemaIdentity = XtSchema.SchemaName,
-                Schema = schema,
-                UserFieldSize = 0,
-                Nodes = nodeArray,
-            };
-            return Encode(XtSchemaTranscoder.Transcode(sourceDocument, targetSchema));
-        }
-        return Encode(new XtDocument
-        {
-            VersionText = $": TRANSMIT FILE created by modeller version {CurrentTransmitModelerVersion}",
-            HeaderSchemaIdentity = headerIdentity,
-            Schema = schema,
-            UserFieldSize = 0,
-            Nodes = nodeArray,
-        });
+        ArgumentNullException.ThrowIfNull(catalog);
+        ArgumentNullException.ThrowIfNull(document);
+        if (options == default)
+            options = new XtWriteOptions(null, IncludeUserFields: true, IncludePhysicalHeader: true);
+        var selected = SelectUserFields(document, options.IncludeUserFields);
+        if (options.TargetSchemaIdentity is { Length: > 0 } targetIdentity &&
+            !string.Equals(selected.Schema.Identity, targetIdentity, StringComparison.Ordinal))
+            selected = XtVersionConverter.Transcode(selected, catalog.Resolve(targetIdentity));
+        var text = Encode(selected);
+        if (!options.IncludePhysicalHeader && selected.PhysicalHeader is not null)
+            text = text[(text.IndexOf('\n') + 1)..];
+        return Encoding.UTF8.GetBytes(text);
     }
 
-    public static bool TryEncodeForTransmitVersion(XtDocument document, int transmitVersion, out string text, bool includeUserFields = true)
+    public static bool TryWrite(XtSchemaCatalog catalog, XtDocument document, XtWriteOptions options, out byte[] output, out XtDiagnostic diagnostic)
     {
-        text = "";
-        document = SelectUserFields(document, includeUserFields);
-        if (document.Schema.SchemaNumber != XtSchema.SchemaNumber)
+        try
         {
-            if (transmitVersion == 0)
-            {
-                var currentSchema = XtSchemaRegistry.Resolve(XtSchema.SchemaName);
-                if (!XtSchemaTranscoder.CanTranscode(document, currentSchema))
-                    return false;
-                var currentDocument = XtSchemaTranscoder.Transcode(document, currentSchema);
-                text = EncodeWithBaseSchema(currentDocument, XtSchemaRegistry.ResolveBySchemaNumber(13006));
-                return true;
-            }
-            if (!XtSchemaRegistry.TryResolveTransmitVersion(transmitVersion, out var historicTarget))
-                return false;
-            text = Encode(XtSchemaTranscoder.Transcode(document, historicTarget));
+            output = Write(catalog, document, options);
+            diagnostic = default;
             return true;
         }
-
-        if (transmitVersion == 0)
+        catch (Exception exception) when (exception is XtFormatException or FormatException or NotSupportedException or ArgumentException)
         {
-            if (document.BaseSchema is not null)
-            {
-                text = Encode(document);
-                return true;
-            }
-            text = EncodeWithBaseSchema(document, XtSchemaRegistry.ResolveBySchemaNumber(13006));
-            return true;
+            output = [];
+            diagnostic = new XtDiagnostic(exception is XtFormatException format ? format.ErrorCode : XtErrorCode.NotRepresentable, exception.Message);
+            return false;
         }
-
-        var headerIdentity = transmitVersion switch
-        {
-            371 => XtSchema.SchemaName,
-            380 => $"SCH_{CurrentTransmitModelerVersion}_{XtSchema.SchemaNumber}",
-            _ => null,
-        };
-        if (headerIdentity is null)
-        {
-            if (!XtSchemaRegistry.TryResolveTransmitVersion(transmitVersion, out var targetSchema))
-                return false;
-            text = Encode(XtSchemaTranscoder.Transcode(document, targetSchema));
-            return true;
-        }
-        text = Encode(new XtDocument
-        {
-            VersionText = $": TRANSMIT FILE created by modeller version {CurrentTransmitModelerVersion}",
-            HeaderSchemaIdentity = headerIdentity,
-            Schema = document.Schema,
-            UserFieldSize = document.UserFieldSize,
-            Nodes = document.Nodes,
-        });
-        return true;
     }
 
     public static XtDocument SelectUserFields(XtDocument document, bool include)
@@ -294,10 +199,11 @@ internal static class XtText
                 descriptor.Description,
                 EffectiveFields(document.Schema, descriptor)));
         }
-        var identity = $"SCH_{CurrentTransmitModelerVersion}_{document.Schema.SchemaNumber}_{baseSchema.SchemaNumber}";
+        var modelerVersion = document.Schema.ModelerVersion;
+        var identity = $"SCH_{modelerVersion}_{document.Schema.SchemaNumber}_{baseSchema.SchemaNumber}";
         var effectiveSchema = BuildEmbeddedSchema(
             identity,
-            CurrentTransmitModelerVersion,
+            modelerVersion,
             document.Schema.SchemaNumber,
             definitions.Values);
         var maxNodeType = 1;
@@ -305,7 +211,7 @@ internal static class XtText
             maxNodeType = Math.Max(maxNodeType, descriptor.Type + 1);
         return Encode(new XtDocument
         {
-            VersionText = $": TRANSMIT FILE created by modeller version {CurrentTransmitModelerVersion}",
+            VersionText = $": TRANSMIT FILE created by modeller version {modelerVersion}",
             HeaderSchemaIdentity = identity,
             Schema = effectiveSchema,
             BaseSchema = baseSchema,
@@ -378,10 +284,32 @@ internal static class XtText
             : payload;
     }
 
-    public static XtNode[] Decode(string text)
-        => DecodeDocument(text).Nodes;
+    public static XtDocument Read(XtSchemaCatalog catalog, ReadOnlySpan<byte> source, XtReadOptions options = default)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        var document = DecodeDocument(catalog, Encoding.UTF8.GetString(source));
+        if (options.RequirePhysicalHeader && document.PhysicalHeader is null)
+            throw new XtFormatException(XtErrorCode.InvalidHeader, "XT physical header is required.");
+        return document;
+    }
 
-    public static XtDocument DecodeDocument(string text)
+    public static bool TryRead(XtSchemaCatalog catalog, ReadOnlySpan<byte> source, XtReadOptions options, out XtDocument? document, out XtDiagnostic diagnostic)
+    {
+        try
+        {
+            document = Read(catalog, source, options);
+            diagnostic = default;
+            return true;
+        }
+        catch (Exception exception) when (exception is XtFormatException or FormatException or ArgumentException)
+        {
+            document = null;
+            diagnostic = new XtDiagnostic(exception is XtFormatException format ? format.ErrorCode : XtErrorCode.InvalidData, exception.Message);
+            return false;
+        }
+    }
+
+    internal static XtDocument DecodeDocument(XtSchemaCatalog catalog, string text)
     {
         var physicalHeader = RemovePhysicalHeader(ref text);
         text = RemoveLineBreaks(text);
@@ -401,9 +329,9 @@ internal static class XtText
             throw new FormatException("XT user field size is negative.");
         ValidatePhysicalHeader(physicalHeader, schema, userFieldSize);
         var baseSchema = archiveIdentity.Embedded
-            ? XtSchemaRegistry.ResolveBySchemaNumber(archiveIdentity.BaseSchemaNumber)
+            ? catalog.ResolveBySchemaNumber(archiveIdentity.BaseSchemaNumber, archiveIdentity.ModelerVersion)
             : null;
-        var schemaDefinition = baseSchema ?? XtSchemaRegistry.Resolve(schema);
+        var schemaDefinition = baseSchema ?? catalog.Resolve(schema);
         Dictionary<int, EmbeddedNodeDefinition>? embeddedDefinitions = archiveIdentity.Embedded ? new() : null;
 
         var nodes = new List<XtNode>();
@@ -724,7 +652,10 @@ internal static class XtText
             nodes[index] = definition.Descriptor with { FieldOffset = fieldOffset };
             fieldOffset += definition.Fields.Length;
         }
-        return new XtSchemaDefinition(identity, modelerVersion, schemaNumber, nodes, fields);
+        return new XtSchemaDefinition(
+            new XtSchemaInfo(identity, "<embedded>", modelerVersion, schemaNumber, nodes.Length, fields.Length),
+            nodes,
+            fields);
     }
 
     private static void WriteEmbeddedNodeDefinition(
@@ -733,7 +664,7 @@ internal static class XtText
         XtSchemaDefinition schema,
         XtSchemaDefinition baseSchema)
     {
-        var fields = schema.Fields.Slice(descriptor.FieldOffset, descriptor.ParsedFieldCount).ToArray();
+        var fields = EffectiveFields(schema, descriptor);
         var baseDescriptor = baseSchema.GetNode(descriptor.Type);
         if (baseDescriptor.Type == 0)
         {

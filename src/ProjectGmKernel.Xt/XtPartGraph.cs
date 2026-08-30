@@ -1,13 +1,19 @@
-using ProjectGmKernel.Native.Generated;
 
-namespace ProjectGmKernel.Native.Runtime;
+namespace ProjectGmKernel.Xt;
 
-internal static class XtPartGraph
+public enum XtCompoundReceiveMode
 {
-    public static int ApplyCompoundReceiveMode(
+    Keep,
+    Split,
+    Fail,
+}
+
+public static class XtPartGraph
+{
+    public static bool ApplyCompoundReceiveMode(
         XtDocument document,
         ReadOnlySpan<XtNodeIndex> selectedRoots,
-        int receiveCompound,
+        XtCompoundReceiveMode receiveCompound,
         out XtDocument result,
         out XtNodeIndex[] roots)
     {
@@ -26,9 +32,9 @@ internal static class XtPartGraph
                 expanded.Add(rootIndex);
                 continue;
             }
-            if (receiveCompound == ParasolidConstants.PK_receive_compound_fail_c)
-                return ParasolidConstants.PK_ERROR_compound_body;
-            if (receiveCompound == ParasolidConstants.PK_receive_compound_keep_c)
+            if (receiveCompound == XtCompoundReceiveMode.Fail)
+                return false;
+            if (receiveCompound == XtCompoundReceiveMode.Keep)
             {
                 expanded.Add(rootIndex);
                 continue;
@@ -47,10 +53,10 @@ internal static class XtPartGraph
                 childIndex = ReadPointer(document.Schema, child, document.Schema.GetNode(child.Type), "next");
             }
         }
-        if (compoundParents.Count == 0 || receiveCompound == ParasolidConstants.PK_receive_compound_keep_c)
+        if (compoundParents.Count == 0 || receiveCompound == XtCompoundReceiveMode.Keep)
         {
             roots = expanded.ToArray();
-            return ParasolidConstants.PK_ERROR_no_errors;
+            return true;
         }
 
         var containerIndexes = RootContainerIndexes(document);
@@ -93,7 +99,7 @@ internal static class XtPartGraph
         };
         result = WrapInCurrentPartBlock(split, expanded.ToArray());
         roots = expanded.ToArray();
-        return ParasolidConstants.PK_ERROR_no_errors;
+        return true;
     }
 
     public static XtNodeIndex[] GetRootIndexes(XtDocument document)

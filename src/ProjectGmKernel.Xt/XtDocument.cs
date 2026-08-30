@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace ProjectGmKernel.Native.Runtime;
+namespace ProjectGmKernel.Xt;
 
 internal enum XtNodeTypes : XtNodeType
 {
@@ -24,7 +24,7 @@ internal enum XtNodeTypes : XtNodeType
     Torus = 54,
 }
 
-internal enum XtFieldKind : byte
+public enum XtFieldKind : byte
 {
     Empty = 0,
     Integer = 1,
@@ -38,7 +38,7 @@ internal enum XtFieldKind : byte
     Box = 9,
 }
 
-internal readonly struct XtVector
+public readonly struct XtVector
 {
     public readonly double X;
     public readonly double Y;
@@ -53,7 +53,7 @@ internal readonly struct XtVector
 }
 
 [StructLayout(LayoutKind.Sequential)]
-internal struct XtFieldValue
+public struct XtFieldValue
 {
     public XtFieldKind Kind;
     public long Integer;
@@ -88,7 +88,7 @@ internal struct XtFieldValue
     };
 }
 
-internal sealed class XtNode
+public sealed class XtNode
 {
     public XtNodeType Type;
     public XtNodeIndex Index;
@@ -97,7 +97,7 @@ internal sealed class XtNode
     public int[] UserFields = [];
 }
 
-internal sealed class XtDocument
+public sealed class XtDocument
 {
     private XtSemanticModel? semanticModel;
 

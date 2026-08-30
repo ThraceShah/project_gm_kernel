@@ -1,9 +1,19 @@
-using ProjectGmKernel.Native.Generated;
 
-namespace ProjectGmKernel.Native.Runtime;
+namespace ProjectGmKernel.Xt;
 
-internal static class XtSchemaTranscoder
+public static class XtVersionConverter
 {
+    public static XtDocument Transcode(XtSchemaCatalog catalog,XtDocument document,string targetSchemaIdentity)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);ArgumentNullException.ThrowIfNull(document);return Transcode(document,catalog.Resolve(targetSchemaIdentity));
+    }
+
+    public static bool TryTranscode(XtSchemaCatalog catalog,XtDocument document,string targetSchemaIdentity,out XtDocument? result,out XtDiagnostic diagnostic)
+    {
+        try{result=Transcode(catalog,document,targetSchemaIdentity);diagnostic=default;return true;}
+        catch(Exception exception) when(exception is XtFormatException or FormatException or NotSupportedException or ArgumentException){result=null;diagnostic=new XtDiagnostic(exception is XtFormatException format?format.Code:XtErrorCode.NotRepresentable,exception.Message);return false;}
+    }
+
     public static bool CanTranscode(XtDocument source, XtSchemaDefinition target)
         => GetIncompatibility(source, target) is null;
 
