@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "group": "body-basics",
+  "entries": [
+    {
+      "caseId": "body.wire-and-minimum.producers",
+      "status": "unreachable",
+      "api": [
+        "PK_BODY_create_wire_topology",
+        "PK_BODY_create_minimum_topology"
+      ],
+      "reason": "The current body-basics native scope does not expose wire/minimum topology producers as implemented API paths; topology construction remains a separate work package.",
+      "evidence": "No corresponding implementation exists in src/ProjectGmKernel.Native/KernelExports.cs for this work package.",
+      "recheckWhen": "Topology producer APIs become available in the current native kernel."
+    },
+    {
+      "caseId": "body.general-compound-and-acorn.producers",
+      "status": "unreachable",
+      "api": [],
+      "reason": "No current native producer path has been identified for general, compound, acorn, unspecified or empty body variants; these are not represented by hand-written x_t data.",
+      "evidence": "Current native primitive producer surface is limited to the six solid constructors covered by this group.",
+      "recheckWhen": "API inventory identifies a public persistent producer for one of these body variants."
+    }
+  ]
+}

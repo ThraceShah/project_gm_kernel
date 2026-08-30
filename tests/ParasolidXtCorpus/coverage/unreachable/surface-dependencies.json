@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "group": "surface-dependencies",
+  "entries": [
+    {
+      "caseId": "spcurve.surface.bsurf-isoparam",
+      "status": "diagnostic",
+      "api": ["PK_BSURF_create", "PK_CURVE_make_spcurves_2", "PK_SURF_make_sheet_body"],
+      "typeCoverage": ["geometry.surface.bsurf", "geometry.spcurve.pcurve.bcurve"],
+      "parameters": { "surface": "bsurf", "pcurve": "u-isoparametric", "degrees": [2, 2], "uvBox": [0.0, 1.0, 0.0, 1.0] },
+      "reason": "The B-surface and SP_CURVE are created successfully, but the checked-in XT inspector cannot decode the transmitted B-spline surface payload.",
+      "evidence": "PK_BSURF_create and PK_CURVE_make_spcurves_2 return success; corpus host inspection fails with IndexOutOfRangeException at XtText.Decode for an XT token of type 0, so no fixture is promoted.",
+      "recheckWhen": "XtText.Decode supports the emitted B-spline surface node and the case passes self-receive plus schema inspection."
+    },
+    {
+      "caseId": "icurve.surface-pair.sphere-torus",
+      "status": "diagnostic",
+      "api": ["PK_FACE_intersect_face", "PK_CURVE_find_surfs_common"],
+      "typeCoverage": ["geometry.surface-pair.sphere-torus", "geometry.icurve.depth.1"],
+      "parameters": { "leftSurface": "sphere(offset=[1,0,0],radius=4.5)", "rightSurface": "torus(major=4,minor=1)", "intersection": "non-analytic" },
+      "reason": "PK_FACE_intersect_face produces an ICURVE, but the current single-body corpus contract cannot inspect and retain this cross-part dependency as a stable fixture.",
+      "evidence": "PK_ENTITY_ask_class returns PK_CLASS_icurve; PK_CURVE_find_surfs_common returns PK_ERROR_geom_topol_mismatch (62), and XT inspection fails with IndexOutOfRangeException at XtText.Decode.",
+      "recheckWhen": "The XT inspector handles the ICURVE dependency graph and a dedicated two-support-surface verifier validates both supporting faces."
+    }
+  ],
+  "notes": ["The diagnostic entries preserve exact runtime evidence; they are not counted as successful type coverage."]
+}

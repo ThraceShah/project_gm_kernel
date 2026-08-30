@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "group": "trcurves",
+  "entries": [
+    {
+      "caseId": "trcurve.line.reversed-interval",
+      "status": "rejected",
+      "api": ["CRTRCU"],
+      "entity": "TRCURVE",
+      "parameters": { "basis": "line", "range": [1.75, -1.25] },
+      "result": "PK_ERROR_bad_parameter=120",
+      "reason": "A raw descending interval is rejected by CRTRCU for an infinite line; the successful reversed-orientation case uses PK_CURVE_make_curve_reversed on the basis curve.",
+      "recheckWhen": "The kernel accepts descending intervals for line TRCURVE standard forms."
+    },
+    {
+      "caseId": "trcurve.bcurve.periodic-seam",
+      "status": "rejected",
+      "api": ["CRTRCU", "PK_BCURVE_create"],
+      "entity": "TRCURVE",
+      "parameters": { "basis": "periodic-bcurve", "range": [9.0, 11.0] },
+      "result": "CRTRCU ifail=120",
+      "reason": "The current CRTRCU runtime rejects a periodic B-curve interval crossing the nominal knot-domain seam; no stable fixture is retained.",
+      "recheckWhen": "A periodic B-curve seam recipe accepted by CRTRCU is available."
+    }
+  ]
+}

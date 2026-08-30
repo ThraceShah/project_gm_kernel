@@ -17,6 +17,8 @@
     <InternalsVisibleTo Include="KernelTests" />
     <InternalsVisibleTo Include="ParasolidOracleSmoke" />
     <InternalsVisibleTo Include="ParasolidPrimitiveOracle" />
+    <InternalsVisibleTo Include="ParasolidXtCorpusBodyBasics" />
+    <InternalsVisibleTo Include="ParasolidXtCorpusCases" />
     <InternalsVisibleTo Include="TopologyDump" />
   </ItemGroup>
 </Project>

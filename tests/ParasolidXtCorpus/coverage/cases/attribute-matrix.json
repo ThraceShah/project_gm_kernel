@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "group": "attribute-matrix",
+  "cases": [
+    {
+      "caseId": "attribute.face.named-integer",
+      "status": "success",
+      "producer": "PK_ATTDEF_create_2 + PK_ATTRIB_set_named_ints",
+      "entity": "ATTRIBUTE",
+      "owner": "face",
+      "parameters": { "field": "code", "value": 71 },
+      "coverage": ["attribute", "named-field", "field/integer", "owner/face"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "attribute.face.named-integer/model.x_t",
+      "verification": "named-field-ask-and-self-receive"
+    },
+    {
+      "caseId": "attribute.body.multiple-definitions",
+      "status": "success",
+      "producer": "PK_ATTDEF_create + PK_ATTRIB_create_empty",
+      "entity": "ATTRIBUTE",
+      "owner": "body",
+      "parameters": { "definitions": ["integer", "real"] },
+      "coverage": ["attribute", "multiple-definitions", "owner/body"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "attribute.body.multiple-definitions/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    }
+  ]
+}

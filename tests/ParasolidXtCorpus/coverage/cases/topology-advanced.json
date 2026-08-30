@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "group": "topology-advanced",
+  "schema": "SCH_3701000_37102",
+  "cases": [
+    {
+      "caseId": "topology.advanced.face-ring-loop",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_FACE_euler_make_ring_loop",
+      "entity": "FACE/LOOP",
+      "owner": "sheet-body.face",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_FACE_euler_make_ring_loop",
+        "newLoop": "ring"
+      },
+      "equivalenceClasses": ["sheet", "face", "loop", "multiple-loops", "ring-loop"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 3, "fins": 6, "edges": 5, "vertices": 4 },
+      "output": "topology.advanced.face-ring-loop/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "topology.advanced.face-ring-face",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_FACE_euler_make_ring_face",
+      "entity": "FACE/LOOP",
+      "owner": "sheet-body.face",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_FACE_euler_make_ring_face",
+        "newFace": "ring"
+      },
+      "equivalenceClasses": ["sheet", "face", "loop", "multiple-faces", "ring-face"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 2, "loops": 3, "fins": 6, "edges": 5, "vertices": 4 },
+      "output": "topology.advanced.face-ring-face/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "topology.advanced.edge-split",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_EDGE_euler_split",
+      "entity": "EDGE/VERTEX",
+      "owner": "sheet-body.boundary",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_EDGE_euler_split",
+        "forward": true
+      },
+      "equivalenceClasses": ["sheet", "edge", "vertex", "edge-split", "shared-vertex"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 5, "edges": 5, "vertices": 5 },
+      "output": "topology.advanced.edge-split/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "topology.advanced.edge-make-curve",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_EDGE_make_curve",
+      "entity": "EDGE/CURVE",
+      "owner": "sheet-body.boundary",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_EDGE_make_curve",
+        "edgeCount": 1,
+        "tolerance": 0.00001,
+        "curveDirection": "none"
+      },
+      "equivalenceClasses": ["sheet", "edge", "continuous-curve", "curve-replacement"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "topology.advanced.edge-make-curve/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "topology.advanced.loop-make-edge",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_LOOP_euler_make_edge",
+      "entity": "LOOP/EDGE/VERTEX",
+      "owner": "sheet-body.boundary",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_LOOP_euler_make_edge",
+        "finIndex": 0
+      },
+      "equivalenceClasses": ["sheet", "loop", "edge", "vertex", "new-edge", "new-vertex"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 6, "edges": 5, "vertices": 5 },
+      "output": "topology.advanced.loop-make-edge/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "topology.advanced.loop-make-edge-face",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_LOOP_euler_make_edge_face",
+      "entity": "LOOP/EDGE/FACE",
+      "owner": "sheet-body",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_LOOP_euler_make_edge_face",
+        "finIndices": [0, 2]
+      },
+      "equivalenceClasses": ["sheet", "loop", "edge", "face", "shared-edge", "new-face"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 2, "loops": 2, "fins": 6, "edges": 5, "vertices": 4 },
+      "output": "topology.advanced.loop-make-edge-face/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "topology.advanced.loop-make-edge-loop",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_LOOP_euler_make_edge_loop",
+      "entity": "LOOP/EDGE",
+      "owner": "sheet-body.face",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_LOOP_euler_make_edge_loop",
+        "finIndices": [0, 2]
+      },
+      "equivalenceClasses": ["sheet", "loop", "edge", "multiple-loops", "shared-edge"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 2, "fins": 6, "edges": 5, "vertices": 4 },
+      "output": "topology.advanced.loop-make-edge-loop/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "topology.advanced.edge-set-precision",
+      "status": "success",
+      "producer": "PK_BODY_create_sheet_rectangle + PK_EDGE_set_precision_2",
+      "entity": "EDGE",
+      "owner": "sheet-body.boundary",
+      "parameters": {
+        "source": "PK_BODY_create_sheet_rectangle(2,3)",
+        "operation": "PK_EDGE_set_precision_2",
+        "precision": 0.0001,
+        "method": "default",
+        "reportShortEdges": false
+      },
+      "equivalenceClasses": ["sheet", "edge", "precision", "tolerance", "default-method"],
+      "expectedEntityCounts": { "regions": 1, "shells": 1, "faces": 1, "loops": 1, "fins": 4, "edges": 4, "vertices": 4 },
+      "output": "topology.advanced.edge-set-precision/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    }
+  ]
+}

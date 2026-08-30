@@ -1,0 +1,542 @@
+{
+  "caseId": "analytic-surface-plane",
+  "group": "analytic-geometry",
+  "producer": "PK_PLANE_create",
+  "description": "Planar sheet whose construction surface is created from an explicit plane standard form.",
+  "parameters": "{\u0022location\u0022:[0.0,0.0,1.25],\u0022axis\u0022:[0.0,0.0,1.0],\u0022refDirection\u0022:[1.0,0.0,0.0],\u0022sheetExtent\u0022:[4.0,3.0]}",
+  "coverage": [
+    "analytic",
+    "axis2",
+    "plane",
+    "sheet",
+    "surface"
+  ],
+  "schemaVersion": 37102,
+  "transmitVersion": 371,
+  "entityCounts": {
+    "regions": 1,
+    "shells": 1,
+    "faces": 1,
+    "edges": 4,
+    "vertices": 4,
+    "loops": 1,
+    "fins": 4
+  },
+  "semanticHash": "82e52a3bab956bffa03672ab9eb2680a07c81ac13c58bba0100a4261c0676911",
+  "generatorVersion": "corpus-host-v1",
+  "verification": "ParasolidVerified",
+  "managedVerification": "not-requested",
+  "schemaNodes": [
+    {
+      "name": "BODY",
+      "count": 1
+    },
+    {
+      "name": "EDGE",
+      "count": 4
+    },
+    {
+      "name": "FACE",
+      "count": 1
+    },
+    {
+      "name": "HALFEDGE",
+      "count": 8
+    },
+    {
+      "name": "LINE",
+      "count": 4
+    },
+    {
+      "name": "LOOP",
+      "count": 1
+    },
+    {
+      "name": "PLANE",
+      "count": 2
+    },
+    {
+      "name": "POINT",
+      "count": 4
+    },
+    {
+      "name": "REGION",
+      "count": 1
+    },
+    {
+      "name": "SHELL",
+      "count": 1
+    },
+    {
+      "name": "VERTEX",
+      "count": 4
+    }
+  ],
+  "schemaDependencies": [
+    {
+      "from": "BODY#1",
+      "to": "EDGE#9"
+    },
+    {
+      "from": "BODY#1",
+      "to": "LINE#6"
+    },
+    {
+      "from": "BODY#1",
+      "to": "PLANE#2"
+    },
+    {
+      "from": "BODY#1",
+      "to": "PLANE#5"
+    },
+    {
+      "from": "BODY#1",
+      "to": "POINT#7"
+    },
+    {
+      "from": "BODY#1",
+      "to": "REGION#8"
+    },
+    {
+      "from": "BODY#1",
+      "to": "SHELL#4"
+    },
+    {
+      "from": "BODY#1",
+      "to": "VERTEX#10"
+    },
+    {
+      "from": "EDGE#12",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#12",
+      "to": "EDGE#34"
+    },
+    {
+      "from": "EDGE#12",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "EDGE#12",
+      "to": "LINE#6"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "EDGE#34"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "EDGE#9"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "LINE#35"
+    },
+    {
+      "from": "EDGE#34",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#34",
+      "to": "EDGE#12"
+    },
+    {
+      "from": "EDGE#34",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "EDGE#34",
+      "to": "HALFEDGE#25"
+    },
+    {
+      "from": "EDGE#34",
+      "to": "LINE#13"
+    },
+    {
+      "from": "EDGE#9",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#9",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "EDGE#9",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "EDGE#9",
+      "to": "LINE#18"
+    },
+    {
+      "from": "FACE#11",
+      "to": "LOOP#21"
+    },
+    {
+      "from": "FACE#11",
+      "to": "PLANE#5"
+    },
+    {
+      "from": "FACE#11",
+      "to": "SHELL#4"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "EDGE#9"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "VERTEX#27"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "EDGE#12"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "HALFEDGE#25"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "LOOP#21"
+    },
+    {
+      "from": "HALFEDGE#19",
+      "to": "VERTEX#10"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "EDGE#34"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#19"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#25"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "LOOP#21"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "VERTEX#20"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "EDGE#9"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "HALFEDGE#19"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "LOOP#21"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "VERTEX#14"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "EDGE#12"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "HALFEDGE#19"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "VERTEX#14"
+    },
+    {
+      "from": "HALFEDGE#25",
+      "to": "EDGE#34"
+    },
+    {
+      "from": "HALFEDGE#25",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "HALFEDGE#25",
+      "to": "VERTEX#10"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "LOOP#21"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "VERTEX#27"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "VERTEX#20"
+    },
+    {
+      "from": "LINE#13",
+      "to": "EDGE#34"
+    },
+    {
+      "from": "LINE#13",
+      "to": "LINE#35"
+    },
+    {
+      "from": "LINE#13",
+      "to": "LINE#6"
+    },
+    {
+      "from": "LINE#18",
+      "to": "EDGE#9"
+    },
+    {
+      "from": "LINE#18",
+      "to": "LINE#35"
+    },
+    {
+      "from": "LINE#35",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "LINE#35",
+      "to": "LINE#13"
+    },
+    {
+      "from": "LINE#35",
+      "to": "LINE#18"
+    },
+    {
+      "from": "LINE#6",
+      "to": "EDGE#12"
+    },
+    {
+      "from": "LINE#6",
+      "to": "LINE#13"
+    },
+    {
+      "from": "LOOP#21",
+      "to": "FACE#11"
+    },
+    {
+      "from": "LOOP#21",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "PLANE#2",
+      "to": "BODY#1"
+    },
+    {
+      "from": "PLANE#5",
+      "to": "FACE#11"
+    },
+    {
+      "from": "POINT#15",
+      "to": "POINT#30"
+    },
+    {
+      "from": "POINT#15",
+      "to": "POINT#7"
+    },
+    {
+      "from": "POINT#15",
+      "to": "VERTEX#10"
+    },
+    {
+      "from": "POINT#29",
+      "to": "POINT#30"
+    },
+    {
+      "from": "POINT#29",
+      "to": "VERTEX#27"
+    },
+    {
+      "from": "POINT#30",
+      "to": "POINT#15"
+    },
+    {
+      "from": "POINT#30",
+      "to": "POINT#29"
+    },
+    {
+      "from": "POINT#30",
+      "to": "VERTEX#20"
+    },
+    {
+      "from": "POINT#7",
+      "to": "POINT#15"
+    },
+    {
+      "from": "POINT#7",
+      "to": "VERTEX#14"
+    },
+    {
+      "from": "REGION#8",
+      "to": "BODY#1"
+    },
+    {
+      "from": "REGION#8",
+      "to": "SHELL#4"
+    },
+    {
+      "from": "SHELL#4",
+      "to": "BODY#1"
+    },
+    {
+      "from": "SHELL#4",
+      "to": "FACE#11"
+    },
+    {
+      "from": "SHELL#4",
+      "to": "REGION#8"
+    },
+    {
+      "from": "VERTEX#10",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#10",
+      "to": "HALFEDGE#19"
+    },
+    {
+      "from": "VERTEX#10",
+      "to": "POINT#15"
+    },
+    {
+      "from": "VERTEX#10",
+      "to": "VERTEX#20"
+    },
+    {
+      "from": "VERTEX#14",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#14",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "VERTEX#14",
+      "to": "POINT#7"
+    },
+    {
+      "from": "VERTEX#14",
+      "to": "VERTEX#27"
+    },
+    {
+      "from": "VERTEX#20",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#20",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "VERTEX#20",
+      "to": "POINT#30"
+    },
+    {
+      "from": "VERTEX#20",
+      "to": "VERTEX#10"
+    },
+    {
+      "from": "VERTEX#20",
+      "to": "VERTEX#27"
+    },
+    {
+      "from": "VERTEX#27",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#27",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "VERTEX#27",
+      "to": "POINT#29"
+    },
+    {
+      "from": "VERTEX#27",
+      "to": "VERTEX#14"
+    },
+    {
+      "from": "VERTEX#27",
+      "to": "VERTEX#20"
+    }
+  ],
+  "typeCoverage": []
+}

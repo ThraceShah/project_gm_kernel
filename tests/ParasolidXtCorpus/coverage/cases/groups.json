@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "group": "groups",
+  "cases": [
+    {
+      "caseId": "group.body.faces-options",
+      "status": "success",
+      "producer": "PK_GROUP_create_from_entities_2 + PK_GROUP_set_entity_label",
+      "parameters": { "owner": "body.solid.block.typical", "entityClass": "face", "membership": "inclusive", "label": 202 },
+      "coverage": ["body", "create", "face", "group", "label", "options", "persistent-state"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "group.body.faces-options/model.x_t"
+    },
+    {
+      "caseId": "group.body.faces-lifecycle",
+      "status": "success",
+      "producer": "PK_GROUP_create_from_entities + PK_GROUP_add_entities + PK_GROUP_set_entity_label + PK_GROUP_remove_entities",
+      "parameters": { "owner": "body.solid.block.typical", "entityClass": "face", "initialMembers": 1, "addedMembers": 1, "removedMembers": 1, "label": 101 },
+      "coverage": ["add", "body", "create", "face", "group", "label", "persistent-state", "remove"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8 },
+      "output": "group.body.faces-lifecycle/model.x_t"
+    }
+  ]
+}

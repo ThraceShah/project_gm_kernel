@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "group": "spcurve-variants",
+  "scope": "SP_CURVE p-curve rational, closed, periodic and seam representatives.",
+  "cases": [
+    { "caseId": "spcurve.variant.plane.rational", "status": "success", "producer": "PK_BCURVE_create + PK_SPCURVE_create", "entity": "SP_CURVE", "parameters": { "surface": "plane", "variant": "rational" }, "typeCoverage": ["geometry.spcurve.variant.rational", "geometry.spcurve.variant.surface.plane"], "output": "spcurve.variant.plane.rational/model.x_t" },
+    { "caseId": "spcurve.variant.plane.closed", "status": "success", "producer": "PK_BCURVE_create + PK_SPCURVE_create", "entity": "SP_CURVE", "parameters": { "surface": "plane", "variant": "closed" }, "typeCoverage": ["geometry.spcurve.variant.closed", "geometry.spcurve.variant.surface.plane"], "output": "spcurve.variant.plane.closed/model.x_t" },
+    { "caseId": "spcurve.variant.plane.periodic", "status": "success", "producer": "PK_BCURVE_create + PK_SPCURVE_create", "entity": "SP_CURVE", "parameters": { "surface": "plane", "variant": "periodic" }, "typeCoverage": ["geometry.spcurve.variant.periodic", "geometry.spcurve.variant.surface.plane"], "output": "spcurve.variant.plane.periodic/model.x_t" },
+    { "caseId": "spcurve.variant.cylinder.seam-crossing", "status": "success", "producer": "PK_BCURVE_create + PK_SPCURVE_create", "entity": "SP_CURVE", "parameters": { "surface": "cylinder", "variant": "periodic", "seamCrossing": true }, "typeCoverage": ["geometry.spcurve.variant.periodic", "geometry.spcurve.variant.surface.cylinder"], "output": "spcurve.variant.cylinder.seam-crossing/model.x_t" },
+    { "caseId": "spcurve.variant.torus.rational", "status": "success", "producer": "PK_BCURVE_create + PK_SPCURVE_create", "entity": "SP_CURVE", "parameters": { "surface": "torus", "variant": "rational" }, "typeCoverage": ["geometry.spcurve.variant.rational", "geometry.spcurve.variant.surface.torus"], "output": "spcurve.variant.torus.rational/model.x_t" },
+    { "caseId": "spcurve.variant.torus.closed", "status": "success", "producer": "PK_BCURVE_create + PK_SPCURVE_create", "entity": "SP_CURVE", "parameters": { "surface": "torus", "variant": "closed" }, "typeCoverage": ["geometry.spcurve.variant.closed", "geometry.spcurve.variant.surface.torus"], "output": "spcurve.variant.torus.closed/model.x_t" }
+  ]
+}

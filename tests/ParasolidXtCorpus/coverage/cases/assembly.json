@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "group": "assembly",
+  "cases": [
+    {
+      "caseId": "assembly.empty",
+      "status": "success",
+      "producer": "PK_ASSEMBLY_create_empty",
+      "parameters": { "instances": [], "parts": [] },
+      "coverage": ["assembly", "assembly/empty", "instance/none", "part/identity"],
+      "expectedEntityCounts": { "instances": 0, "parts": 0 },
+      "output": "assembly.empty/model.x_t"
+    },
+    {
+      "caseId": "assembly.single-block-identity-instance",
+      "status": "success",
+      "producer": "PK_ASSEMBLY_create_empty + PK_TRANSF_create + PK_INSTANCE_create",
+      "parameters": { "instances": [{ "part": "body.solid.block.typical", "transform": "identity" }] },
+      "coverage": ["assembly", "assembly/one-level", "instance/single", "part/shared", "transform/identity"],
+      "expectedEntityCounts": { "instances": 1, "parts": 1 },
+      "output": "assembly.single-block-identity-instance/model.x_t"
+    },
+    {
+      "caseId": "assembly.single-block-levelized",
+      "status": "success",
+      "producer": "PK_ASSEMBLY_make_level_assembly + PK_INSTANCE_create",
+      "parameters": { "instances": [{ "part": "body.solid.block.typical" }], "operation": "make-level-assembly" },
+      "coverage": ["assembly", "assembly/levelized", "instance/single", "part/shared"],
+      "expectedEntityCounts": { "instances": 1, "parts": 1 },
+      "output": "assembly.single-block-levelized/model.x_t"
+    },
+    {
+      "caseId": "assembly.single-block-transformed",
+      "status": "success",
+      "producer": "PK_ASSEMBLY_transform + PK_INSTANCE_create",
+      "parameters": { "instances": [{ "part": "body.solid.block.typical" }], "translation": [2.0, 1.0, 0.0] },
+      "coverage": ["assembly", "assembly/one-level", "instance/single", "transform", "translation"],
+      "expectedEntityCounts": { "instances": 1, "parts": 1 },
+      "output": "assembly.single-block-transformed/model.x_t"
+    },
+    {
+      "caseId": "assembly.instance-transformed",
+      "status": "success",
+      "producer": "PK_INSTANCE_transform + PK_INSTANCE_create",
+      "parameters": { "instanceTransform": "translation", "translation": [1.0, 0.0, 2.0] },
+      "coverage": ["assembly", "instance", "instance/transform", "translation"],
+      "expectedEntityCounts": { "instances": 1, "parts": 1 },
+      "output": "assembly.instance-transformed/model.x_t"
+    },
+    {
+      "caseId": "assembly.instance-replaced-transform",
+      "status": "success",
+      "producer": "PK_INSTANCE_replace_transf + PK_INSTANCE_create",
+      "parameters": { "initialTransform": "identity", "replacement": "translation", "translation": [-1.0, 2.0, 0.0] },
+      "coverage": ["assembly", "instance", "instance/replace-transform", "translation"],
+      "expectedEntityCounts": { "instances": 1, "parts": 1 },
+      "output": "assembly.instance-replaced-transform/model.x_t"
+    },
+    {
+      "caseId": "assembly.instance-reflection",
+      "status": "success",
+      "producer": "PK_TRANSF_create_reflection + PK_INSTANCE_create",
+      "parameters": { "reflectionPlane": { "position": [0.0, 0.0, 0.0], "normal": [1.0, 0.0, 0.0] } },
+      "coverage": ["assembly", "instance", "reflection", "transform"],
+      "expectedEntityCounts": { "instances": 1, "parts": 1 },
+      "output": "assembly.instance-reflection/model.x_t"
+    },
+    {
+      "caseId": "assembly.instance-rotation",
+      "status": "success",
+      "producer": "PK_TRANSF_create_rotation + PK_INSTANCE_transform",
+      "parameters": { "rotationAxis": [0.0, 0.0, 1.0], "angle": 0.5 },
+      "coverage": ["assembly", "instance", "transform", "rotation"],
+      "expectedEntityCounts": { "instances": 1, "parts": 1 },
+      "output": "assembly.instance-rotation/model.x_t"
+    },
+    {
+      "caseId": "assembly.shared-two-instances",
+      "status": "success",
+      "producer": "PK_ASSEMBLY_create_empty + PK_INSTANCE_create",
+      "parameters": { "instances": 2, "parts": 1, "sharedPart": true, "transforms": ["identity", "translation"] },
+      "coverage": ["assembly", "instance/multiple", "part/shared", "transform"],
+      "expectedEntityCounts": { "instances": 2, "parts": 2 },
+      "output": "assembly.shared-two-instances/model.x_t"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "group": "spline-standard-forms",
+  "entries": [
+    {
+      "api": "PK_BSURF_create",
+      "status": "rejected",
+      "scenario": "B-surface vertex_dim=2",
+      "observedError": "PK_ERROR_bad_value (39)",
+      "reason": "A B-surface in a two-dimensional control representation is rejected; rational 3D surfaces use vertex_dim=4 homogeneous coordinates."
+    }
+  ]
+}

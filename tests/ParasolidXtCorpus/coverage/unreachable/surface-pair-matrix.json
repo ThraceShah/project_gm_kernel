@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "group": "surface-pair-matrix",
+  "entries": [
+    {
+      "caseId": "spcurve.sphere.analytic-line",
+      "status": "needs-recipe",
+      "api": ["PK_LINE_create", "PK_CURVE_make_spcurves_2"],
+      "typeCoverage": ["geometry.spcurve.pair.sphere.analytic-line"],
+      "parameters": { "supportingSurface": "sphere", "sourceCurve": "z=0 line" },
+      "reason": "A straight line has no non-empty exact parameter curve on a sphere.",
+      "evidence": "PK_CURVE_make_spcurves_2 returned PK_ERROR_no_intersection (1063) with deterministic line seed."
+    },
+    {
+      "caseId": "spcurve.torus.analytic-line",
+      "status": "needs-recipe",
+      "api": ["PK_LINE_create", "PK_CURVE_make_spcurves_2"],
+      "typeCoverage": ["geometry.spcurve.pair.torus.analytic-line"],
+      "parameters": { "supportingSurface": "torus", "sourceCurve": "z=0 line" },
+      "reason": "A straight line has no non-empty exact parameter curve on a torus.",
+      "evidence": "PK_CURVE_make_spcurves_2 returned PK_ERROR_no_intersection (1063) with deterministic line seed."
+    },
+    {
+      "caseId": "spcurve.bsurf.analytic-line",
+      "status": "needs-recipe",
+      "api": ["PK_LINE_create", "PK_CURVE_make_spcurves_2", "PK_BSURF_create"],
+      "typeCoverage": ["geometry.spcurve.pair.bsurf.analytic-line"],
+      "parameters": { "supportingSurface": "bsurf", "sourceCurve": "z=0 line" },
+      "reason": "The projected B-surface fixture is created, but the emitted spline payload is not currently decodable by the shared XT inspector.",
+      "evidence": "PK_CURVE_make_spcurves_2 succeeds; generation stops in XtText.Decode on compact spline sentinel token BB????0."
+    },
+    {
+      "caseId": "spcurve.bsurf.analytic-ellipse",
+      "status": "needs-recipe",
+      "api": ["PK_ELLIPSE_create", "PK_CURVE_make_spcurves_2", "PK_BSURF_create"],
+      "typeCoverage": ["geometry.spcurve.pair.bsurf.analytic-ellipse"],
+      "parameters": { "supportingSurface": "bsurf", "sourceCurve": "z=0 ellipse" },
+      "reason": "The projected B-surface fixture is created, but the emitted spline payload is not currently decodable by the shared XT inspector.",
+      "evidence": "PK_CURVE_make_spcurves_2 succeeds; generation stops in XtText.Decode on compact spline sentinel token BBBBBB????0."
+    }
+  ],
+  "notes": [
+    "All 59 emitted Cartesian direct/analytic-source cases pass real Parasolid creation, typed ask, XT schema inspection, and self-receive; four legal analytic-source cells remain needs-recipe and are retained above."
+  ]
+}

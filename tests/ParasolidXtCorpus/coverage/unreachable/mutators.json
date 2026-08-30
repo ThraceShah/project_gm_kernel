@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "group": "mutators",
+  "entries": [
+    {
+      "caseId": "mutator.body.boolean-offset-thicken-sweep",
+      "status": "unreachable",
+      "api": ["PK_BODY_boolean", "PK_BODY_offset", "PK_BODY_thicken", "PK_BODY_sweep"],
+      "reason": "These mutators require additional tool/profile/option contracts, or the tested body configuration is rejected by the runtime.",
+      "evidence": "PK_BODY_reverse_orientation is covered for a valid sheet body; boolean, offset, thicken and sweep still require dedicated tool/profile contracts.",
+      "recheckWhen": "A dedicated mutator work package supplies valid tool bodies, options, and error-contract cases."
+    },
+    {
+      "caseId": "mutator.body.remove-from-parents-standalone",
+      "status": "unreachable",
+      "api": ["PK_BODY_remove_from_parents"],
+      "reason": "Removing a standalone body from parents is rejected; the operation requires an owning assembly/compound parent.",
+      "evidence": "PK_BODY_remove_from_parents on a valid standalone solid block returned error 914; no fixture was retained.",
+      "recheckWhen": "A parent-owned body case is available for the lifecycle operation."
+    },
+    {
+      "caseId": "mutator.wire.edge-precision",
+      "status": "unreachable",
+      "api": ["PK_EDGE_set_precision"],
+      "reason": "The tested wire edge does not accept an explicit precision update under the current runtime tolerance policy.",
+      "evidence": "PK_EDGE_set_precision on a finite line edge returned error 96; no replacement edge or fixture was retained.",
+      "recheckWhen": "A wire edge with a documented precision-edit contract is available."
+    },
+    {
+      "caseId": "mutator.sheet.face-reverse",
+      "status": "unreachable",
+      "api": ["PK_FACE_reverse"],
+      "reason": "The checked-in runtime rejects reversing the face of the generated sheet body under the default face-reverse options.",
+      "evidence": "PK_FACE_reverse returned error 10 for the sole face of body.sheet.rectangle.typical; the body-level sheet orientation operation remains covered.",
+      "recheckWhen": "A sheet face reverse contract with valid options is documented."
+    },
+    {
+      "caseId": "mutator.sheet.imprint-curve",
+      "status": "unreachable",
+      "api": ["PK_BODY_imprint_curve"],
+      "reason": "The tested public imprint operation is rejected for a finite line against the generated sheet body.",
+      "evidence": "PK_BODY_imprint_curve returned error 914; no modified sheet fixture was retained.",
+      "recheckWhen": "A documented curve/sheet intersection and imprint contract is available."
+    }
+  ]
+}

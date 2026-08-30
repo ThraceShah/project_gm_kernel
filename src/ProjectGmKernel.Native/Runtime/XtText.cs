@@ -39,7 +39,9 @@ internal static class XtText
                 if (!fields[i].Transmit)
                     continue;
 
-                var count = descriptor.Variable && fields[i].ElementCount == 1 ? VariableLength(node) : 1;
+                var count = fields[i].ElementCount > 1
+                    ? fields[i].ElementCount
+                    : descriptor.Variable && fields[i].ElementCount == 1 ? VariableLength(node) : 1;
                 for (var j = 0; j < count; j++)
                     WriteField(sb, fields[i].Type, node.Fields[valueIndex++]);
             }
@@ -72,6 +74,11 @@ internal static class XtText
         while (true)
         {
             var type = tokenizer.NextInt();
+            // Optional schema fields may be emitted as compact null sentinels
+            // by Parasolid. They are not valid node types; consume them until
+            // a real node header (or the 999 terminator) is reached.
+            while (type == 0)
+                type = tokenizer.NextInt();
             if (type == (int)XtNodeTypes.Terminator)
             {
                 var terminatorIndex = tokenizer.NextInt();
@@ -95,10 +102,21 @@ internal static class XtText
                 if (!fields[i].Transmit)
                     continue;
 
-                var count = fields[i].ElementCount == 1 ? Math.Max(1, variableLength) : 1;
+                var count = fields[i].ElementCount > 1
+                    ? fields[i].ElementCount
+                    : fields[i].ElementCount == 1 ? Math.Max(1, variableLength) : 1;
                 for (var j = 0; j < count; j++)
+                {
                     node.Fields[valueIndex++] = ReadField(ref tokenizer, fields[i].Type);
+                }
             }
+            // Parasolid writes runs of '?' character sentinels without a
+            // separator before an optional null pointer.  Once the declared
+            // fields have consumed that run, a trailing zero can remain in
+            // the tokenizer's compact-token buffer.  It is a field sentinel,
+            // never a node type (the terminator is 999), so discard it before
+            // reading the next node header.
+            tokenizer.DiscardPendingZero();
             nodes.Add(node);
         }
 
@@ -111,7 +129,9 @@ internal static class XtText
         foreach (var field in fields)
         {
             if (field.Transmit)
-                count += field.ElementCount == 1 ? Math.Max(1, variableLength) : 1;
+            count += field.ElementCount > 1
+                ? field.ElementCount
+                : field.ElementCount == 1 ? Math.Max(1, variableLength) : 1;
         }
 
         return count;
@@ -377,6 +397,12 @@ internal static class XtText
             if (value.Length > 1)
                 pending = value[1..];
             return value[0];
+        }
+
+        public void DiscardPendingZero()
+        {
+            if (pending == "0")
+                pending = null;
         }
 
         public string NextRaw(int length)

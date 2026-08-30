@@ -1,0 +1,6 @@
+{
+  "caseId": "body.solid.sphere.typical",
+  "status": "pass",
+  "summary": "self-receive and body compare passed; managed verification=passed",
+  "exception": null
+}

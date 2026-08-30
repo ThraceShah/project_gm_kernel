@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "group": "body-basics",
+  "owner": "body-basics",
+  "scope": "Current native solid-body producer APIs; each successful case is one independent x_t.",
+  "cases": [
+    {
+      "caseId": "body.solid.block.typical",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_block",
+      "parameters": { "x": 1.0, "y": 2.0, "z": 3.0, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/block", "basis/default", "parameters/typical"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "body.solid.block.typical/model.x_t"
+    },
+    {
+      "caseId": "body.solid.block.minimum-positive",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_block",
+      "parameters": { "x": 0.001, "y": 0.001, "z": 0.001, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/block", "basis/default", "parameters/positive-minimum", "boundary/positive"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "body.solid.block.minimum-positive/model.x_t"
+    },
+    {
+      "caseId": "body.solid.block.oriented",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_block",
+      "parameters": {
+        "x": 1.0,
+        "y": 2.0,
+        "z": 3.0,
+        "basisSet": {
+          "location": [3.0, -2.0, 1.0],
+          "axis": [0.0, 0.0, 1.0],
+          "refDirection": [1.0, 0.0, 0.0]
+        }
+      },
+      "coverage": ["body", "body/solid", "body/solid/block", "basis/non-default", "basis/translation", "basis/orientation"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "edges": 12, "vertices": 8, "loops": 6, "fins": 24 },
+      "output": "body.solid.block.oriented/model.x_t"
+    },
+    {
+      "caseId": "body.solid.cyl.typical",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_cyl",
+      "parameters": { "radius": 2.0, "height": 5.0, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/cylinder", "basis/default", "parameters/typical"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 3, "edges": 2, "vertices": 0, "loops": 4, "fins": 4 },
+      "output": "body.solid.cyl.typical/model.x_t"
+    },
+    {
+      "caseId": "body.solid.cyl.minimum-positive",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_cyl",
+      "parameters": { "radius": 0.001, "height": 0.001, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/cylinder", "basis/default", "parameters/positive-minimum", "boundary/positive"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 3, "edges": 2, "vertices": 0, "loops": 4, "fins": 4 },
+      "output": "body.solid.cyl.minimum-positive/model.x_t"
+    },
+    {
+      "caseId": "body.solid.cone.typical",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_cone",
+      "parameters": { "radius": 1.0, "height": 5.0, "semiAngle": 0.25, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/cone", "basis/default", "parameters/typical"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 3, "edges": 2, "vertices": 0, "loops": 4, "fins": 4 },
+      "output": "body.solid.cone.typical/model.x_t"
+    },
+    {
+      "caseId": "body.solid.cone.apex-radius-zero",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_cone",
+      "parameters": { "radius": 0.0, "height": 5.0, "semiAngle": 0.25, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/cone", "basis/default", "parameters/radius-zero", "boundary/degenerate-but-valid"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 2, "edges": 1, "vertices": 1, "loops": 3, "fins": 2 },
+      "output": "body.solid.cone.apex-radius-zero/model.x_t"
+    },
+    {
+      "caseId": "body.solid.prism.typical",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_prism",
+      "parameters": { "radius": 2.0, "height": 5.0, "nSides": 5, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/prism", "basis/default", "parameters/typical", "parameters/n-sides"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 7, "edges": 15, "vertices": 10, "loops": 7, "fins": 30 },
+      "output": "body.solid.prism.typical/model.x_t"
+    },
+    {
+      "caseId": "body.solid.prism.minimum-sides",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_prism",
+      "parameters": { "radius": 1.0, "height": 1.0, "nSides": 3, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/prism", "basis/default", "parameters/minimum-sides", "boundary/side-count"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 5, "edges": 9, "vertices": 6, "loops": 5, "fins": 18 },
+      "output": "body.solid.prism.minimum-sides/model.x_t"
+    },
+    {
+      "caseId": "body.solid.sphere.typical",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_sphere",
+      "parameters": { "radius": 2.0, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/sphere", "basis/default", "parameters/typical"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 1, "edges": 0, "vertices": 0, "loops": 0, "fins": 0 },
+      "output": "body.solid.sphere.typical/model.x_t"
+    },
+    {
+      "caseId": "body.solid.torus.typical",
+      "status": "success",
+      "producer": "PK_BODY_create_solid_torus",
+      "parameters": { "majorRadius": 5.0, "minorRadius": 1.0, "basisSet": null },
+      "coverage": ["body", "body/solid", "body/solid/torus", "basis/default", "parameters/typical"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 1, "edges": 0, "vertices": 0, "loops": 0, "fins": 0 },
+      "output": "body.solid.torus.typical/model.x_t"
+    }
+  ],
+  "rejectionCases": [
+    {
+      "caseId": "body.solid.block.reject.zero-x",
+      "producer": "PK_BODY_create_solid_block",
+      "parameters": { "x": 0.0, "y": 2.0, "z": 3.0, "basisSet": null },
+      "expectedError": "PK_ERROR_distance_le_0",
+      "expectedErrorCode": 15,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.cyl.reject.zero-radius",
+      "producer": "PK_BODY_create_solid_cyl",
+      "parameters": { "radius": 0.0, "height": 5.0, "basisSet": null },
+      "expectedError": "PK_ERROR_distance_le_0",
+      "expectedErrorCode": 15,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.cone.reject.zero-height",
+      "producer": "PK_BODY_create_solid_cone",
+      "parameters": { "radius": 1.0, "height": 0.0, "semiAngle": 0.25, "basisSet": null },
+      "expectedError": "PK_ERROR_distance_le_0",
+      "expectedErrorCode": 15,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.cone.reject.zero-angle",
+      "producer": "PK_BODY_create_solid_cone",
+      "parameters": { "radius": 1.0, "height": 5.0, "semiAngle": 0.0, "basisSet": null },
+      "expectedError": "PK_ERROR_bad_angle",
+      "expectedErrorCode": 1,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.prism.reject.two-sides",
+      "producer": "PK_BODY_create_solid_prism",
+      "parameters": { "radius": 2.0, "height": 5.0, "nSides": 2, "basisSet": null },
+      "expectedError": "PK_ERROR_lt_3_sides",
+      "expectedErrorCode": 33,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.sphere.reject.zero-radius",
+      "producer": "PK_BODY_create_solid_sphere",
+      "parameters": { "radius": 0.0, "basisSet": null },
+      "expectedError": "PK_ERROR_distance_le_0",
+      "expectedErrorCode": 15,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.torus.reject.zero-minor-radius",
+      "producer": "PK_BODY_create_solid_torus",
+      "parameters": { "majorRadius": 5.0, "minorRadius": 0.0, "basisSet": null },
+      "expectedError": "PK_ERROR_distance_le_0",
+      "expectedErrorCode": 15,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.torus.reject.equal-radii",
+      "producer": "PK_BODY_create_solid_torus",
+      "parameters": { "majorRadius": 1.0, "minorRadius": 1.0, "basisSet": null },
+      "expectedError": "PK_ERROR_majrad_minrad_mismatch",
+      "expectedErrorCode": 507,
+      "fixture": null
+    },
+    {
+      "caseId": "body.solid.torus.reject.non-positive-sum",
+      "producer": "PK_BODY_create_solid_torus",
+      "parameters": { "majorRadius": -2.0, "minorRadius": 1.0, "basisSet": null },
+      "expectedError": "PK_ERROR_majrad_minrad_mismatch",
+      "expectedErrorCode": 507,
+      "fixture": null
+    }
+  ]
+}

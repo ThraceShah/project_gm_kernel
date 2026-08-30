@@ -1,0 +1,35 @@
+{
+  "caseId": "user-field.body.single-slot",
+  "group": "user-field-single",
+  "producer": "PK_SESSION_start(user_field=1) \u002B PK_ENTITY_set_user_field",
+  "description": "A one-slot integer user-field payload round-tripped on a body.",
+  "parameters": "{\u0022sessionUserFieldLength\u0022:1,\u0022value\u0022:[31415],\u0022transmitUserFields\u0022:true}",
+  "coverage": [
+    "body",
+    "boundary-length",
+    "single-slot",
+    "transmit",
+    "user-field"
+  ],
+  "schemaVersion": 37102,
+  "transmitVersion": 371,
+  "entityCounts": {
+    "regions": 2,
+    "shells": 2,
+    "faces": 6,
+    "edges": 12,
+    "vertices": 8,
+    "loops": 6,
+    "fins": 24
+  },
+  "semanticHash": "3b0ee262dbe572f0dd4fe58a20b035dc086f79781e76e8e1980a1ab82e036476",
+  "generatorVersion": "corpus-host-v1",
+  "verification": "ParasolidVerified",
+  "managedVerification": "not-requested",
+  "schemaNodes": [],
+  "schemaDependencies": [],
+  "typeCoverage": [
+    "userfield.owner.body",
+    "userfield.payload.single-slot"
+  ]
+}

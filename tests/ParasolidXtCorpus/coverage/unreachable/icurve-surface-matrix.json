@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "group": "icurve-surface-matrix",
+  "entries": [
+    {
+      "caseId": "icurve.bsurf-cylinder.depth1-uvboxes",
+      "status": "rejected",
+      "typeId": "geometry.surface-pair.bsurf-cylinder.uvboxes",
+      "api": ["PK_FACE_intersect_face"],
+      "typeCoverage": ["geometry.surface-pair.bsurf-cylinder.uvboxes"],
+      "parameters": { "leftSurface": "bsurf", "rightSurface": "cylinder", "haveUvBox1": true, "haveUvBox2": true },
+      "observedError": "PK_ERROR_unsuitable_entity (907)",
+      "reason": "The explicit UV-box option is unsuitable for the fixed B-surface/cylinder seed on v38; no I_CURVE fixture is retained."
+    },
+    {
+      "caseId": "icurve.analytic-analytic.plane-cylinder",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_intersect_face"],
+      "typeCoverage": ["geometry.icurve.surface-pair.plane-cylinder"],
+      "parameters": { "leftSurface": "plane", "rightSurface": "cylinder" },
+      "reason": "The deterministic bounded-face intersection is represented by an analytic circle, not PK_CLASS_icurve; a non-analytic seed is needed to exercise this pair as I_CURVE.",
+      "evidence": "PK_FACE_intersect_face returned PK_CLASS_circle for the stable plane/cylinder seed."
+    },
+    {
+      "caseId": "icurve.analytic-analytic.plane-cone",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_intersect_face"],
+      "typeCoverage": ["geometry.icurve.surface-pair.plane-cone"],
+      "parameters": { "leftSurface": "plane", "rightSurface": "cone" },
+      "reason": "The deterministic bounded-face intersection is represented by an analytic circle, not PK_CLASS_icurve; a non-analytic seed is needed to exercise this pair as I_CURVE.",
+      "evidence": "PK_FACE_intersect_face returned PK_CLASS_circle for the stable plane/cone seed."
+    },
+    {
+      "caseId": "icurve.analytic-analytic.plane-sphere",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_intersect_face"],
+      "typeCoverage": ["geometry.icurve.surface-pair.plane-sphere"],
+      "parameters": { "leftSurface": "plane", "rightSurface": "sphere" },
+      "reason": "The deterministic bounded-face intersection is represented by an analytic circle, not PK_CLASS_icurve; a non-analytic seed is needed to exercise this pair as I_CURVE.",
+      "evidence": "PK_FACE_intersect_face returned PK_CLASS_circle for the stable plane/sphere seed."
+    },
+    {
+      "caseId": "icurve.analytic-analytic.cylinder-cone",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_intersect_face"],
+      "typeCoverage": ["geometry.icurve.surface-pair.cylinder-cone"],
+      "parameters": { "leftSurface": "cylinder", "rightSurface": "cone" },
+      "reason": "The deterministic bounded-face intersection is represented by an analytic circle, not PK_CLASS_icurve; a non-analytic seed is needed to exercise this pair as I_CURVE.",
+      "evidence": "PK_FACE_intersect_face returned PK_CLASS_circle for the stable cylinder/cone seed."
+    },
+    {
+      "caseId": "icurve.analytic-analytic.plane-swept",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_intersect_face"],
+      "typeCoverage": ["geometry.icurve.surface-pair.plane-swept"],
+      "parameters": { "leftSurface": "plane", "rightSurface": "swept" },
+      "reason": "The deterministic bounded-face intersection is represented by a line, not PK_CLASS_icurve; a non-analytic seed is needed to exercise this pair as I_CURVE.",
+      "evidence": "PK_FACE_intersect_face returned PK_CLASS_line for the stable plane/swept seed."
+    },
+    {
+      "caseId": "icurve.bsurf-cylinder.mixed-both",
+      "status": "rejected",
+      "api": ["PK_FACE_intersect_face"],
+      "typeCoverage": ["geometry.surface-pair.bsurf-cylinder.mixed-both"],
+      "parameters": { "leftSurface": "bsurf", "rightSurface": "cylinder", "mixedCurveCategory": "PK_mixed_intersection_both_c" },
+      "reason": "This option combination is not implemented by the current Parasolid build.",
+      "evidence": "PK_FACE_intersect_face returned PK_ERROR_not_implemented (5000)."
+    },
+    {
+      "caseId": "icurve.bsurf-offset.depth1",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_intersect_face", "PK_SURF_offset"],
+      "typeCoverage": ["geometry.icurve.surface-pair.bsurf-offset"],
+      "parameters": { "leftSurface": "bsurf", "rightSurface": "offset(plane,0.5)" },
+      "reason": "The deterministic offset-plane seed has no bounded intersection branch for the warped B-surface; a different offset or placement recipe is needed.",
+      "evidence": "PK_FACE_intersect_face returned no curves (n_curves=0) with the fixed B-surface and offset-plane seed."
+    },
+    {
+      "caseId": "icurve.analytic-analytic.cylinder-cylinder-perpendicular",
+      "status": "needs-recipe",
+      "api": ["PK_FACE_intersect_face", "PK_CYL_create"],
+      "typeCoverage": ["geometry.icurve.surface-pair.cylinder-cylinder"],
+      "parameters": { "leftSurface": "cylinder(axis=z)", "rightSurface": "cylinder(axis=x)" },
+      "reason": "The stable perpendicular-cylinder seed has an exact analytic ellipse representation rather than PK_CLASS_icurve.",
+      "evidence": "PK_FACE_intersect_face returned four PK_CLASS_ellipse curves."
+    }
+  ],
+  "notes": [
+    "These are not API rejections: the pair is valid and the kernel selected an analytic curve class. They remain needs-recipe until a deterministic seed makes PK_FACE_intersect_face emit an I_CURVE.",
+    "The stable I_CURVE group covers BSurf with Cylinder, Cone, Sphere, Torus, Swept and Spun, plus Cone/Swept and Sphere/Swept; seed-vector, finite-box, UV-box, periodic-support and reversed-order variants are successful."
+  ]
+}

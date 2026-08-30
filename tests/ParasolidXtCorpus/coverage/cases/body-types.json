@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "group": "body-types",
+  "scope": "Body-type classification for an acorn body built from disconnected minimum-body vertices.",
+  "cases": [
+    {
+      "caseId": "body.acorn.two-points",
+      "status": "success",
+      "producer": "PK_POINT_make_minimum_body + PK_REGION_combine_bodies",
+      "entity": "BODY",
+      "owner": "part",
+      "parameters": { "sources": [{ "point": [0.0, 0.0, 0.0] }, { "point": [5.0, 0.0, 0.0] }], "operation": "PK_REGION_combine_bodies", "expectedBodyType": "acorn" },
+      "coverage": ["body", "body/acorn", "body/minimum", "body.type.acorn", "topology/acorn", "topology.vertex.isolated"],
+      "expectedEntityCounts": { "regions": 1, "shells": 2, "faces": 0, "edges": 0, "vertices": 2 },
+      "output": "body.acorn.two-points/model.x_t",
+      "verification": "typed-body-and-acorn-shell-ask-self-receive"
+    },
+    {
+      "caseId": "body.compound.two-solids",
+      "status": "success",
+      "producer": "PK_BODY_make_compound",
+      "entity": "BODY",
+      "owner": "part",
+      "parameters": { "sources": ["solid-block", "solid-sphere"], "expectedBodyType": "compound", "expectedChildren": 2 },
+      "coverage": ["body", "body/compound", "compound/children"],
+      "typeCoverage": ["body.type.compound"],
+      "expectedEntityCounts": { "regions": 4, "shells": 4, "faces": 7, "loops": 6, "fins": 24, "edges": 12, "vertices": 8 },
+      "output": "body.compound.two-solids/model.x_t",
+      "verification": "compound-child-count-and-type-self-receive"
+    }
+  ]
+}

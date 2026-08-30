@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "group": "implicit-bodies",
+  "entries": [
+    {
+      "caseId": "body.implicit.tpms",
+      "status": "unreachable",
+      "api": ["PK_BODY_create_implicit"],
+      "reason": "The checked-in runtime exposes the TPMS implicit-body contract but reports it as unimplemented.",
+      "evidence": "A gyroid TPMS probe with explicit scale, tolerance and finite front/back offsets returned PK_ERROR_not_implemented (5000); no body handle or x_t was retained.",
+      "recheckWhen": "The runtime implements PK_BODY_create_implicit for a supported TPMS definition."
+    }
+  ],
+  "notes": ["Implicit-body support is retained as an explicit runtime audit, not a fabricated fixture."]
+}

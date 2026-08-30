@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "group": "derived-surface-profiles",
+  "entries": [
+    { "id": "derived.offset.zero", "status": "rejected", "api": "PK_SURF_offset", "error": 5026, "reason": "Zero plane offset is rejected by the v38 runtime; the underlying plane is returned for non-zero offsets." }
+  ]
+}

@@ -732,11 +732,15 @@ internal static unsafe class XtWriter
 
     private static FinSlot OtherFinOnEdge(FinSlot slot, FinRecord fin)
     {
+        if (fin.Edge < 0)
+            return -1;
         return fin.NextOfEdge != slot ? fin.NextOfEdge : -1;
     }
 
     private static char FinSense(FinSlot slot, FinRecord fin)
     {
+        if (fin.Edge < 0)
+            return '?';
         var edge = KernelRuntime.GetEdgeRecord(fin.Edge);
         if (fin.Vertex == edge.EndVertex)
             return '+';

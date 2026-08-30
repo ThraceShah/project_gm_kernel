@@ -1,0 +1,13 @@
+{
+  "group": "analytic-geometry",
+  "schema": "SCH_3701000_37102",
+  "unreachable": [],
+  "notes": [
+    "All analytic curve and surface constructors assigned to this group have a stable public construction path in the checked-in runtime.",
+    "Complex and callback-backed geometry (ICURVE, BCURVE, SPCURVE, FCURVE, CPCURVE, TRCURVE, BSURF, BLENDSF, OFFSET, SWEPT, SPUN and FSURF) belongs to the complex-geometry work package and is not counted by this group."
+  ],
+  "recheckWhen": [
+    "Parasolid header or PKToy binding changes the standard-form signatures.",
+    "A new runtime or schema version changes construction-geometry ownership or transmit behavior."
+  ]
+}

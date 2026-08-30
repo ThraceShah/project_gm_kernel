@@ -1,0 +1,61 @@
+{
+  "generator": "parasolid-xt-golden-v1",
+  "fixtures": [
+    {
+      "caseId": "analytic-surface-plane",
+      "modelSha256": "4687ecaa78c26b5e4a5cb3fdb2cb82e177ad0b3285eff6109c8c5e5b0283bec9",
+      "manifestSha256": "69d1b82836e192037ed253e4ab9b784c9546286c359919a38afad7ab5c84f5c7",
+      "diagnosticsSha256": "9f1cdccaaf8b7d0a1c6b6c693fe2bd31ae41b7abbfb7de5883f3aa21dd108e12",
+      "modelBytes": 1063
+    },
+    {
+      "caseId": "assembly.single-block-identity-instance",
+      "modelSha256": "cfacc95881f5475dfc5249d1312796b7ab8fb3f72318e1978b9e454285e2a5ec",
+      "manifestSha256": "431cb08eaa757551836cce430d88264bdf6c9fa86738a681b70a10579cf95623",
+      "diagnosticsSha256": "0332a672550b97e63caf26f4a8b32061d64705e4f7cd716ee22c3389f1d9fa51",
+      "modelBytes": 3001
+    },
+    {
+      "caseId": "attribute.face.named-integer",
+      "modelSha256": "85f1fbc0dfb74cd41838018354de371a38fa4fef4b20d8e6a8e92fc86c9ecf97",
+      "manifestSha256": "31189718bc4bbf67983341b41c6117aa5b5dba996e19d7e14b987479bea37799",
+      "diagnosticsSha256": "9a8badadfe9696e420b45bc5c4badce6fda0284f7c5c4d749cb6f4fda1692eb9",
+      "modelBytes": 3102
+    },
+    {
+      "caseId": "blend.fxf.bsurf-plane.rolling-ball",
+      "modelSha256": "91f641693641c8ddc9f3b3e825c6078dff4fb70c07f0ca02afd0fceada5c947d",
+      "manifestSha256": "689912bac706297d2e358d4ce248fa2a3a862321fedcaebde80183b83cca4797",
+      "diagnosticsSha256": "759dcbad0324731bc6b1c7e692ea05e1b18ca828a407e71123c9733bb50e903d",
+      "modelBytes": 5936
+    },
+    {
+      "caseId": "body.solid.block.typical",
+      "modelSha256": "021f5d2ec3cacd8a387245b1a87805d43e4a4dd4fff0c380953759061e396115",
+      "manifestSha256": "3b34b48afe459fa13bf914c10c6fc6613f80b463dc8d0147af626069f036b510",
+      "diagnosticsSha256": "0c960353d09cc9c1db652d3e6eb7f194ad367c32c5a673eef6e19d6ce2a12a87",
+      "modelBytes": 2853
+    },
+    {
+      "caseId": "body.solid.sphere.typical",
+      "modelSha256": "94f1493ef73ea2f8d0201a986a151cc9a1ed535f804abe536485eeb10924f49e",
+      "manifestSha256": "21170507d2fd57ca26f979cd8017898a890c8a71799837e5dd74ced098c68982",
+      "diagnosticsSha256": "b6ba64a2a441cd2e3dbbb643cff1c5c7d684863504ba669aaee004b9f3461d14",
+      "modelBytes": 327
+    },
+    {
+      "caseId": "topology.face.inner-loop.block-cylinder-hole",
+      "modelSha256": "3da009a9456d6cfe084a4f120b57fc0b6a3b7e4abdb8254a62a3795ff3fd3378",
+      "manifestSha256": "516c220aefb14e1c82ae8401b2ac1196bc0ac4ef0a427cc2d76585504f267b6e",
+      "diagnosticsSha256": "7889e92dd6b4b5ea2e6285a5670290103b4635b1f62945d49f176e4cf8486526",
+      "modelBytes": 3299
+    },
+    {
+      "caseId": "user-field.body.single-slot",
+      "modelSha256": "021f5d2ec3cacd8a387245b1a87805d43e4a4dd4fff0c380953759061e396115",
+      "manifestSha256": "2d4af78204ad0f04f08aafd96adb320c645c208454d9018c313d6d1a8a4c5656",
+      "diagnosticsSha256": "006b264518789cc8e493b6eb30e68eb0c9439f1c2b0cec7d52ff834288c22898",
+      "modelBytes": 2853
+    }
+  ]
+}

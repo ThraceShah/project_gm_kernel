@@ -1,0 +1,1869 @@
+{
+  "caseId": "topology.face.inner-loop.block-cylinder-hole",
+  "group": "manifold-topology",
+  "producer": "PK_BODY_boolean_2(PK_boolean_subtract)",
+  "description": "Solid block with a coaxial cylindrical through-hole, retaining inner face loops.",
+  "parameters": "Solid block with a coaxial cylindrical through-hole, retaining inner face loops.",
+  "coverage": [
+    "body/solid",
+    "face/hole",
+    "loop/inner",
+    "topology",
+    "topology/face",
+    "topology/loop"
+  ],
+  "schemaVersion": 37102,
+  "transmitVersion": 371,
+  "entityCounts": {
+    "regions": 2,
+    "shells": 2,
+    "faces": 7,
+    "edges": 14,
+    "vertices": 8,
+    "loops": 10,
+    "fins": 28
+  },
+  "semanticHash": "d5915a2dd6eb8471a66c34f374efe012f9f3a858e57a40050127f24e2d4016be",
+  "generatorVersion": "corpus-host-v1",
+  "verification": "ParasolidVerified",
+  "managedVerification": "not-requested",
+  "schemaNodes": [
+    {
+      "name": "BODY",
+      "count": 1
+    },
+    {
+      "name": "CIRCLE",
+      "count": 2
+    },
+    {
+      "name": "CYLINDER",
+      "count": 1
+    },
+    {
+      "name": "EDGE",
+      "count": 14
+    },
+    {
+      "name": "FACE",
+      "count": 7
+    },
+    {
+      "name": "HALFEDGE",
+      "count": 28
+    },
+    {
+      "name": "LINE",
+      "count": 12
+    },
+    {
+      "name": "LOOP",
+      "count": 10
+    },
+    {
+      "name": "PLANE",
+      "count": 6
+    },
+    {
+      "name": "POINT",
+      "count": 8
+    },
+    {
+      "name": "REGION",
+      "count": 2
+    },
+    {
+      "name": "SHELL",
+      "count": 2
+    },
+    {
+      "name": "VERTEX",
+      "count": 8
+    }
+  ],
+  "schemaDependencies": [
+    {
+      "from": "BODY#1",
+      "to": "EDGE#8"
+    },
+    {
+      "from": "BODY#1",
+      "to": "LINE#5"
+    },
+    {
+      "from": "BODY#1",
+      "to": "PLANE#4"
+    },
+    {
+      "from": "BODY#1",
+      "to": "POINT#6"
+    },
+    {
+      "from": "BODY#1",
+      "to": "REGION#7"
+    },
+    {
+      "from": "BODY#1",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "BODY#1",
+      "to": "VERTEX#9"
+    },
+    {
+      "from": "CIRCLE#73",
+      "to": "CIRCLE#92"
+    },
+    {
+      "from": "CIRCLE#73",
+      "to": "EDGE#65"
+    },
+    {
+      "from": "CIRCLE#73",
+      "to": "LINE#66"
+    },
+    {
+      "from": "CIRCLE#92",
+      "to": "CIRCLE#73"
+    },
+    {
+      "from": "CIRCLE#92",
+      "to": "EDGE#95"
+    },
+    {
+      "from": "CYLINDER#99",
+      "to": "FACE#97"
+    },
+    {
+      "from": "CYLINDER#99",
+      "to": "PLANE#105"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "EDGE#8"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "EDGE#85"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "EDGE#17",
+      "to": "LINE#13"
+    },
+    {
+      "from": "EDGE#50",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#50",
+      "to": "EDGE#53"
+    },
+    {
+      "from": "EDGE#50",
+      "to": "EDGE#54"
+    },
+    {
+      "from": "EDGE#50",
+      "to": "HALFEDGE#21"
+    },
+    {
+      "from": "EDGE#50",
+      "to": "LINE#56"
+    },
+    {
+      "from": "EDGE#51",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#51",
+      "to": "EDGE#59"
+    },
+    {
+      "from": "EDGE#51",
+      "to": "EDGE#85"
+    },
+    {
+      "from": "EDGE#51",
+      "to": "HALFEDGE#47"
+    },
+    {
+      "from": "EDGE#51",
+      "to": "LINE#79"
+    },
+    {
+      "from": "EDGE#53",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#53",
+      "to": "EDGE#50"
+    },
+    {
+      "from": "EDGE#53",
+      "to": "EDGE#80"
+    },
+    {
+      "from": "EDGE#53",
+      "to": "HALFEDGE#48"
+    },
+    {
+      "from": "EDGE#53",
+      "to": "LINE#74"
+    },
+    {
+      "from": "EDGE#54",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#54",
+      "to": "EDGE#50"
+    },
+    {
+      "from": "EDGE#54",
+      "to": "EDGE#69"
+    },
+    {
+      "from": "EDGE#54",
+      "to": "HALFEDGE#44"
+    },
+    {
+      "from": "EDGE#54",
+      "to": "LINE#75"
+    },
+    {
+      "from": "EDGE#57",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#57",
+      "to": "EDGE#63"
+    },
+    {
+      "from": "EDGE#57",
+      "to": "EDGE#65"
+    },
+    {
+      "from": "EDGE#57",
+      "to": "HALFEDGE#49"
+    },
+    {
+      "from": "EDGE#57",
+      "to": "LINE#66"
+    },
+    {
+      "from": "EDGE#59",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#59",
+      "to": "EDGE#51"
+    },
+    {
+      "from": "EDGE#59",
+      "to": "EDGE#80"
+    },
+    {
+      "from": "EDGE#59",
+      "to": "HALFEDGE#29"
+    },
+    {
+      "from": "EDGE#59",
+      "to": "LINE#77"
+    },
+    {
+      "from": "EDGE#63",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#63",
+      "to": "EDGE#57"
+    },
+    {
+      "from": "EDGE#63",
+      "to": "EDGE#69"
+    },
+    {
+      "from": "EDGE#63",
+      "to": "HALFEDGE#61"
+    },
+    {
+      "from": "EDGE#63",
+      "to": "LINE#72"
+    },
+    {
+      "from": "EDGE#65",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#65",
+      "to": "CIRCLE#73"
+    },
+    {
+      "from": "EDGE#65",
+      "to": "EDGE#57"
+    },
+    {
+      "from": "EDGE#65",
+      "to": "EDGE#95"
+    },
+    {
+      "from": "EDGE#65",
+      "to": "HALFEDGE#86"
+    },
+    {
+      "from": "EDGE#69",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#69",
+      "to": "EDGE#54"
+    },
+    {
+      "from": "EDGE#69",
+      "to": "EDGE#63"
+    },
+    {
+      "from": "EDGE#69",
+      "to": "HALFEDGE#67"
+    },
+    {
+      "from": "EDGE#69",
+      "to": "LINE#71"
+    },
+    {
+      "from": "EDGE#8",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#8",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "EDGE#8",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "EDGE#8",
+      "to": "LINE#5"
+    },
+    {
+      "from": "EDGE#80",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#80",
+      "to": "EDGE#53"
+    },
+    {
+      "from": "EDGE#80",
+      "to": "EDGE#59"
+    },
+    {
+      "from": "EDGE#80",
+      "to": "HALFEDGE#78"
+    },
+    {
+      "from": "EDGE#80",
+      "to": "LINE#76"
+    },
+    {
+      "from": "EDGE#85",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#85",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "EDGE#85",
+      "to": "EDGE#51"
+    },
+    {
+      "from": "EDGE#85",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "EDGE#85",
+      "to": "LINE#81"
+    },
+    {
+      "from": "EDGE#95",
+      "to": "BODY#1"
+    },
+    {
+      "from": "EDGE#95",
+      "to": "CIRCLE#92"
+    },
+    {
+      "from": "EDGE#95",
+      "to": "EDGE#65"
+    },
+    {
+      "from": "EDGE#95",
+      "to": "HALFEDGE#93"
+    },
+    {
+      "from": "FACE#10",
+      "to": "FACE#58"
+    },
+    {
+      "from": "FACE#10",
+      "to": "LOOP#88"
+    },
+    {
+      "from": "FACE#10",
+      "to": "PLANE#4"
+    },
+    {
+      "from": "FACE#10",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "FACE#10",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "FACE#46",
+      "to": "FACE#68"
+    },
+    {
+      "from": "FACE#46",
+      "to": "FACE#97"
+    },
+    {
+      "from": "FACE#46",
+      "to": "LOOP#42"
+    },
+    {
+      "from": "FACE#46",
+      "to": "PLANE#102"
+    },
+    {
+      "from": "FACE#46",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "FACE#46",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "FACE#58",
+      "to": "FACE#10"
+    },
+    {
+      "from": "FACE#58",
+      "to": "FACE#89"
+    },
+    {
+      "from": "FACE#58",
+      "to": "LOOP#19"
+    },
+    {
+      "from": "FACE#58",
+      "to": "PLANE#12"
+    },
+    {
+      "from": "FACE#58",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "FACE#58",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "FACE#68",
+      "to": "FACE#46"
+    },
+    {
+      "from": "FACE#68",
+      "to": "FACE#82"
+    },
+    {
+      "from": "FACE#68",
+      "to": "LOOP#96"
+    },
+    {
+      "from": "FACE#68",
+      "to": "PLANE#105"
+    },
+    {
+      "from": "FACE#68",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "FACE#68",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "FACE#82",
+      "to": "FACE#68"
+    },
+    {
+      "from": "FACE#82",
+      "to": "FACE#89"
+    },
+    {
+      "from": "FACE#82",
+      "to": "LOOP#83"
+    },
+    {
+      "from": "FACE#82",
+      "to": "PLANE#87"
+    },
+    {
+      "from": "FACE#82",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "FACE#82",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "FACE#89",
+      "to": "FACE#58"
+    },
+    {
+      "from": "FACE#89",
+      "to": "FACE#82"
+    },
+    {
+      "from": "FACE#89",
+      "to": "LOOP#27"
+    },
+    {
+      "from": "FACE#89",
+      "to": "PLANE#90"
+    },
+    {
+      "from": "FACE#89",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "FACE#89",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "FACE#97",
+      "to": "CYLINDER#99"
+    },
+    {
+      "from": "FACE#97",
+      "to": "FACE#46"
+    },
+    {
+      "from": "FACE#97",
+      "to": "LOOP#91"
+    },
+    {
+      "from": "FACE#97",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "FACE#97",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "HALFEDGE#100",
+      "to": "EDGE#95"
+    },
+    {
+      "from": "HALFEDGE#100",
+      "to": "HALFEDGE#100"
+    },
+    {
+      "from": "HALFEDGE#100",
+      "to": "HALFEDGE#93"
+    },
+    {
+      "from": "HALFEDGE#100",
+      "to": "LOOP#98"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "EDGE#8"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "HALFEDGE#21"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "LOOP#19"
+    },
+    {
+      "from": "HALFEDGE#16",
+      "to": "VERTEX#9"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "EDGE#59"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "HALFEDGE#29"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "HALFEDGE#49"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "HALFEDGE#61"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "LOOP#19"
+    },
+    {
+      "from": "HALFEDGE#20",
+      "to": "VERTEX#39"
+    },
+    {
+      "from": "HALFEDGE#21",
+      "to": "EDGE#50"
+    },
+    {
+      "from": "HALFEDGE#21",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "HALFEDGE#21",
+      "to": "HALFEDGE#43"
+    },
+    {
+      "from": "HALFEDGE#21",
+      "to": "HALFEDGE#49"
+    },
+    {
+      "from": "HALFEDGE#21",
+      "to": "LOOP#19"
+    },
+    {
+      "from": "HALFEDGE#21",
+      "to": "VERTEX#34"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "EDGE#8"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#47"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "HALFEDGE#55"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "LOOP#84"
+    },
+    {
+      "from": "HALFEDGE#22",
+      "to": "VERTEX#34"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "HALFEDGE#29"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "LOOP#84"
+    },
+    {
+      "from": "HALFEDGE#23",
+      "to": "VERTEX#9"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "HALFEDGE#29"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "HALFEDGE#30"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "LOOP#27"
+    },
+    {
+      "from": "HALFEDGE#24",
+      "to": "VERTEX#18"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "EDGE#85"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#23"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#55"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "HALFEDGE#78"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "LOOP#84"
+    },
+    {
+      "from": "HALFEDGE#26",
+      "to": "VERTEX#18"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "EDGE#85"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "HALFEDGE#45"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "HALFEDGE#55"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "HALFEDGE#78"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "LOOP#83"
+    },
+    {
+      "from": "HALFEDGE#28",
+      "to": "VERTEX#25"
+    },
+    {
+      "from": "HALFEDGE#29",
+      "to": "EDGE#59"
+    },
+    {
+      "from": "HALFEDGE#29",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "HALFEDGE#29",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "HALFEDGE#29",
+      "to": "HALFEDGE#61"
+    },
+    {
+      "from": "HALFEDGE#29",
+      "to": "LOOP#27"
+    },
+    {
+      "from": "HALFEDGE#29",
+      "to": "VERTEX#9"
+    },
+    {
+      "from": "HALFEDGE#30",
+      "to": "EDGE#80"
+    },
+    {
+      "from": "HALFEDGE#30",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "HALFEDGE#30",
+      "to": "HALFEDGE#61"
+    },
+    {
+      "from": "HALFEDGE#30",
+      "to": "HALFEDGE#67"
+    },
+    {
+      "from": "HALFEDGE#30",
+      "to": "HALFEDGE#78"
+    },
+    {
+      "from": "HALFEDGE#30",
+      "to": "LOOP#27"
+    },
+    {
+      "from": "HALFEDGE#30",
+      "to": "VERTEX#40"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "EDGE#50"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "HALFEDGE#21"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "HALFEDGE#44"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "HALFEDGE#47"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "HALFEDGE#49"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "LOOP#42"
+    },
+    {
+      "from": "HALFEDGE#43",
+      "to": "VERTEX#38"
+    },
+    {
+      "from": "HALFEDGE#44",
+      "to": "EDGE#54"
+    },
+    {
+      "from": "HALFEDGE#44",
+      "to": "HALFEDGE#43"
+    },
+    {
+      "from": "HALFEDGE#44",
+      "to": "HALFEDGE#48"
+    },
+    {
+      "from": "HALFEDGE#44",
+      "to": "HALFEDGE#52"
+    },
+    {
+      "from": "HALFEDGE#44",
+      "to": "LOOP#42"
+    },
+    {
+      "from": "HALFEDGE#44",
+      "to": "VERTEX#31"
+    },
+    {
+      "from": "HALFEDGE#45",
+      "to": "EDGE#53"
+    },
+    {
+      "from": "HALFEDGE#45",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "HALFEDGE#45",
+      "to": "HALFEDGE#48"
+    },
+    {
+      "from": "HALFEDGE#45",
+      "to": "HALFEDGE#67"
+    },
+    {
+      "from": "HALFEDGE#45",
+      "to": "HALFEDGE#70"
+    },
+    {
+      "from": "HALFEDGE#45",
+      "to": "LOOP#83"
+    },
+    {
+      "from": "HALFEDGE#45",
+      "to": "VERTEX#31"
+    },
+    {
+      "from": "HALFEDGE#47",
+      "to": "EDGE#51"
+    },
+    {
+      "from": "HALFEDGE#47",
+      "to": "HALFEDGE#21"
+    },
+    {
+      "from": "HALFEDGE#47",
+      "to": "HALFEDGE#43"
+    },
+    {
+      "from": "HALFEDGE#47",
+      "to": "HALFEDGE#48"
+    },
+    {
+      "from": "HALFEDGE#47",
+      "to": "HALFEDGE#55"
+    },
+    {
+      "from": "HALFEDGE#47",
+      "to": "LOOP#42"
+    },
+    {
+      "from": "HALFEDGE#47",
+      "to": "VERTEX#34"
+    },
+    {
+      "from": "HALFEDGE#48",
+      "to": "EDGE#53"
+    },
+    {
+      "from": "HALFEDGE#48",
+      "to": "HALFEDGE#44"
+    },
+    {
+      "from": "HALFEDGE#48",
+      "to": "HALFEDGE#45"
+    },
+    {
+      "from": "HALFEDGE#48",
+      "to": "HALFEDGE#47"
+    },
+    {
+      "from": "HALFEDGE#48",
+      "to": "LOOP#42"
+    },
+    {
+      "from": "HALFEDGE#48",
+      "to": "VERTEX#25"
+    },
+    {
+      "from": "HALFEDGE#49",
+      "to": "EDGE#57"
+    },
+    {
+      "from": "HALFEDGE#49",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "HALFEDGE#49",
+      "to": "HALFEDGE#21"
+    },
+    {
+      "from": "HALFEDGE#49",
+      "to": "HALFEDGE#52"
+    },
+    {
+      "from": "HALFEDGE#49",
+      "to": "HALFEDGE#60"
+    },
+    {
+      "from": "HALFEDGE#49",
+      "to": "LOOP#19"
+    },
+    {
+      "from": "HALFEDGE#49",
+      "to": "VERTEX#38"
+    },
+    {
+      "from": "HALFEDGE#52",
+      "to": "EDGE#54"
+    },
+    {
+      "from": "HALFEDGE#52",
+      "to": "HALFEDGE#44"
+    },
+    {
+      "from": "HALFEDGE#52",
+      "to": "HALFEDGE#60"
+    },
+    {
+      "from": "HALFEDGE#52",
+      "to": "HALFEDGE#70"
+    },
+    {
+      "from": "HALFEDGE#52",
+      "to": "LOOP#62"
+    },
+    {
+      "from": "HALFEDGE#52",
+      "to": "VERTEX#38"
+    },
+    {
+      "from": "HALFEDGE#55",
+      "to": "EDGE#51"
+    },
+    {
+      "from": "HALFEDGE#55",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "HALFEDGE#55",
+      "to": "HALFEDGE#26"
+    },
+    {
+      "from": "HALFEDGE#55",
+      "to": "HALFEDGE#47"
+    },
+    {
+      "from": "HALFEDGE#55",
+      "to": "HALFEDGE#48"
+    },
+    {
+      "from": "HALFEDGE#55",
+      "to": "LOOP#84"
+    },
+    {
+      "from": "HALFEDGE#55",
+      "to": "VERTEX#25"
+    },
+    {
+      "from": "HALFEDGE#60",
+      "to": "EDGE#57"
+    },
+    {
+      "from": "HALFEDGE#60",
+      "to": "HALFEDGE#49"
+    },
+    {
+      "from": "HALFEDGE#60",
+      "to": "HALFEDGE#52"
+    },
+    {
+      "from": "HALFEDGE#60",
+      "to": "HALFEDGE#64"
+    },
+    {
+      "from": "HALFEDGE#60",
+      "to": "LOOP#62"
+    },
+    {
+      "from": "HALFEDGE#60",
+      "to": "VERTEX#39"
+    },
+    {
+      "from": "HALFEDGE#61",
+      "to": "EDGE#63"
+    },
+    {
+      "from": "HALFEDGE#61",
+      "to": "HALFEDGE#29"
+    },
+    {
+      "from": "HALFEDGE#61",
+      "to": "HALFEDGE#30"
+    },
+    {
+      "from": "HALFEDGE#61",
+      "to": "HALFEDGE#60"
+    },
+    {
+      "from": "HALFEDGE#61",
+      "to": "HALFEDGE#64"
+    },
+    {
+      "from": "HALFEDGE#61",
+      "to": "LOOP#27"
+    },
+    {
+      "from": "HALFEDGE#61",
+      "to": "VERTEX#39"
+    },
+    {
+      "from": "HALFEDGE#64",
+      "to": "EDGE#63"
+    },
+    {
+      "from": "HALFEDGE#64",
+      "to": "HALFEDGE#60"
+    },
+    {
+      "from": "HALFEDGE#64",
+      "to": "HALFEDGE#61"
+    },
+    {
+      "from": "HALFEDGE#64",
+      "to": "HALFEDGE#70"
+    },
+    {
+      "from": "HALFEDGE#64",
+      "to": "LOOP#62"
+    },
+    {
+      "from": "HALFEDGE#64",
+      "to": "VERTEX#40"
+    },
+    {
+      "from": "HALFEDGE#67",
+      "to": "EDGE#69"
+    },
+    {
+      "from": "HALFEDGE#67",
+      "to": "HALFEDGE#45"
+    },
+    {
+      "from": "HALFEDGE#67",
+      "to": "HALFEDGE#64"
+    },
+    {
+      "from": "HALFEDGE#67",
+      "to": "HALFEDGE#70"
+    },
+    {
+      "from": "HALFEDGE#67",
+      "to": "HALFEDGE#78"
+    },
+    {
+      "from": "HALFEDGE#67",
+      "to": "LOOP#83"
+    },
+    {
+      "from": "HALFEDGE#67",
+      "to": "VERTEX#40"
+    },
+    {
+      "from": "HALFEDGE#70",
+      "to": "EDGE#69"
+    },
+    {
+      "from": "HALFEDGE#70",
+      "to": "HALFEDGE#44"
+    },
+    {
+      "from": "HALFEDGE#70",
+      "to": "HALFEDGE#52"
+    },
+    {
+      "from": "HALFEDGE#70",
+      "to": "HALFEDGE#64"
+    },
+    {
+      "from": "HALFEDGE#70",
+      "to": "HALFEDGE#67"
+    },
+    {
+      "from": "HALFEDGE#70",
+      "to": "LOOP#62"
+    },
+    {
+      "from": "HALFEDGE#70",
+      "to": "VERTEX#31"
+    },
+    {
+      "from": "HALFEDGE#78",
+      "to": "EDGE#80"
+    },
+    {
+      "from": "HALFEDGE#78",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "HALFEDGE#78",
+      "to": "HALFEDGE#30"
+    },
+    {
+      "from": "HALFEDGE#78",
+      "to": "HALFEDGE#67"
+    },
+    {
+      "from": "HALFEDGE#78",
+      "to": "LOOP#83"
+    },
+    {
+      "from": "HALFEDGE#78",
+      "to": "VERTEX#18"
+    },
+    {
+      "from": "HALFEDGE#86",
+      "to": "EDGE#65"
+    },
+    {
+      "from": "HALFEDGE#86",
+      "to": "HALFEDGE#86"
+    },
+    {
+      "from": "HALFEDGE#86",
+      "to": "HALFEDGE#94"
+    },
+    {
+      "from": "HALFEDGE#86",
+      "to": "LOOP#88"
+    },
+    {
+      "from": "HALFEDGE#93",
+      "to": "EDGE#95"
+    },
+    {
+      "from": "HALFEDGE#93",
+      "to": "HALFEDGE#100"
+    },
+    {
+      "from": "HALFEDGE#93",
+      "to": "HALFEDGE#93"
+    },
+    {
+      "from": "HALFEDGE#93",
+      "to": "LOOP#96"
+    },
+    {
+      "from": "HALFEDGE#94",
+      "to": "EDGE#65"
+    },
+    {
+      "from": "HALFEDGE#94",
+      "to": "HALFEDGE#86"
+    },
+    {
+      "from": "HALFEDGE#94",
+      "to": "HALFEDGE#94"
+    },
+    {
+      "from": "HALFEDGE#94",
+      "to": "LOOP#91"
+    },
+    {
+      "from": "LINE#13",
+      "to": "EDGE#17"
+    },
+    {
+      "from": "LINE#13",
+      "to": "LINE#5"
+    },
+    {
+      "from": "LINE#13",
+      "to": "LINE#81"
+    },
+    {
+      "from": "LINE#5",
+      "to": "EDGE#8"
+    },
+    {
+      "from": "LINE#5",
+      "to": "LINE#13"
+    },
+    {
+      "from": "LINE#56",
+      "to": "EDGE#50"
+    },
+    {
+      "from": "LINE#56",
+      "to": "LINE#72"
+    },
+    {
+      "from": "LINE#56",
+      "to": "LINE#74"
+    },
+    {
+      "from": "LINE#66",
+      "to": "CIRCLE#73"
+    },
+    {
+      "from": "LINE#66",
+      "to": "EDGE#57"
+    },
+    {
+      "from": "LINE#66",
+      "to": "LINE#75"
+    },
+    {
+      "from": "LINE#71",
+      "to": "EDGE#69"
+    },
+    {
+      "from": "LINE#71",
+      "to": "LINE#72"
+    },
+    {
+      "from": "LINE#71",
+      "to": "LINE#75"
+    },
+    {
+      "from": "LINE#72",
+      "to": "EDGE#63"
+    },
+    {
+      "from": "LINE#72",
+      "to": "LINE#56"
+    },
+    {
+      "from": "LINE#72",
+      "to": "LINE#71"
+    },
+    {
+      "from": "LINE#74",
+      "to": "EDGE#53"
+    },
+    {
+      "from": "LINE#74",
+      "to": "LINE#56"
+    },
+    {
+      "from": "LINE#74",
+      "to": "LINE#76"
+    },
+    {
+      "from": "LINE#75",
+      "to": "EDGE#54"
+    },
+    {
+      "from": "LINE#75",
+      "to": "LINE#66"
+    },
+    {
+      "from": "LINE#75",
+      "to": "LINE#71"
+    },
+    {
+      "from": "LINE#76",
+      "to": "EDGE#80"
+    },
+    {
+      "from": "LINE#76",
+      "to": "LINE#74"
+    },
+    {
+      "from": "LINE#76",
+      "to": "LINE#77"
+    },
+    {
+      "from": "LINE#77",
+      "to": "EDGE#59"
+    },
+    {
+      "from": "LINE#77",
+      "to": "LINE#76"
+    },
+    {
+      "from": "LINE#77",
+      "to": "LINE#79"
+    },
+    {
+      "from": "LINE#79",
+      "to": "EDGE#51"
+    },
+    {
+      "from": "LINE#79",
+      "to": "LINE#77"
+    },
+    {
+      "from": "LINE#79",
+      "to": "LINE#81"
+    },
+    {
+      "from": "LINE#81",
+      "to": "EDGE#85"
+    },
+    {
+      "from": "LINE#81",
+      "to": "LINE#13"
+    },
+    {
+      "from": "LINE#81",
+      "to": "LINE#79"
+    },
+    {
+      "from": "LOOP#19",
+      "to": "FACE#58"
+    },
+    {
+      "from": "LOOP#19",
+      "to": "HALFEDGE#21"
+    },
+    {
+      "from": "LOOP#27",
+      "to": "FACE#89"
+    },
+    {
+      "from": "LOOP#27",
+      "to": "HALFEDGE#29"
+    },
+    {
+      "from": "LOOP#42",
+      "to": "FACE#46"
+    },
+    {
+      "from": "LOOP#42",
+      "to": "HALFEDGE#44"
+    },
+    {
+      "from": "LOOP#62",
+      "to": "FACE#68"
+    },
+    {
+      "from": "LOOP#62",
+      "to": "HALFEDGE#52"
+    },
+    {
+      "from": "LOOP#83",
+      "to": "FACE#82"
+    },
+    {
+      "from": "LOOP#83",
+      "to": "HALFEDGE#78"
+    },
+    {
+      "from": "LOOP#84",
+      "to": "FACE#10"
+    },
+    {
+      "from": "LOOP#84",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "LOOP#88",
+      "to": "FACE#10"
+    },
+    {
+      "from": "LOOP#88",
+      "to": "HALFEDGE#86"
+    },
+    {
+      "from": "LOOP#88",
+      "to": "LOOP#84"
+    },
+    {
+      "from": "LOOP#91",
+      "to": "FACE#97"
+    },
+    {
+      "from": "LOOP#91",
+      "to": "HALFEDGE#94"
+    },
+    {
+      "from": "LOOP#91",
+      "to": "LOOP#98"
+    },
+    {
+      "from": "LOOP#96",
+      "to": "FACE#68"
+    },
+    {
+      "from": "LOOP#96",
+      "to": "HALFEDGE#93"
+    },
+    {
+      "from": "LOOP#96",
+      "to": "LOOP#62"
+    },
+    {
+      "from": "LOOP#98",
+      "to": "FACE#97"
+    },
+    {
+      "from": "LOOP#98",
+      "to": "HALFEDGE#100"
+    },
+    {
+      "from": "PLANE#102",
+      "to": "FACE#46"
+    },
+    {
+      "from": "PLANE#102",
+      "to": "PLANE#105"
+    },
+    {
+      "from": "PLANE#102",
+      "to": "PLANE#87"
+    },
+    {
+      "from": "PLANE#105",
+      "to": "CYLINDER#99"
+    },
+    {
+      "from": "PLANE#105",
+      "to": "FACE#68"
+    },
+    {
+      "from": "PLANE#105",
+      "to": "PLANE#102"
+    },
+    {
+      "from": "PLANE#12",
+      "to": "FACE#58"
+    },
+    {
+      "from": "PLANE#12",
+      "to": "PLANE#4"
+    },
+    {
+      "from": "PLANE#12",
+      "to": "PLANE#90"
+    },
+    {
+      "from": "PLANE#4",
+      "to": "FACE#10"
+    },
+    {
+      "from": "PLANE#4",
+      "to": "PLANE#12"
+    },
+    {
+      "from": "PLANE#87",
+      "to": "FACE#82"
+    },
+    {
+      "from": "PLANE#87",
+      "to": "PLANE#102"
+    },
+    {
+      "from": "PLANE#87",
+      "to": "PLANE#90"
+    },
+    {
+      "from": "PLANE#90",
+      "to": "FACE#89"
+    },
+    {
+      "from": "PLANE#90",
+      "to": "PLANE#12"
+    },
+    {
+      "from": "PLANE#90",
+      "to": "PLANE#87"
+    },
+    {
+      "from": "POINT#14",
+      "to": "POINT#35"
+    },
+    {
+      "from": "POINT#14",
+      "to": "POINT#6"
+    },
+    {
+      "from": "POINT#14",
+      "to": "VERTEX#18"
+    },
+    {
+      "from": "POINT#32",
+      "to": "POINT#33"
+    },
+    {
+      "from": "POINT#32",
+      "to": "POINT#35"
+    },
+    {
+      "from": "POINT#32",
+      "to": "VERTEX#34"
+    },
+    {
+      "from": "POINT#33",
+      "to": "POINT#32"
+    },
+    {
+      "from": "POINT#33",
+      "to": "POINT#36"
+    },
+    {
+      "from": "POINT#33",
+      "to": "VERTEX#39"
+    },
+    {
+      "from": "POINT#35",
+      "to": "POINT#14"
+    },
+    {
+      "from": "POINT#35",
+      "to": "POINT#32"
+    },
+    {
+      "from": "POINT#35",
+      "to": "VERTEX#25"
+    },
+    {
+      "from": "POINT#36",
+      "to": "POINT#33"
+    },
+    {
+      "from": "POINT#36",
+      "to": "POINT#37"
+    },
+    {
+      "from": "POINT#36",
+      "to": "VERTEX#40"
+    },
+    {
+      "from": "POINT#37",
+      "to": "POINT#36"
+    },
+    {
+      "from": "POINT#37",
+      "to": "POINT#41"
+    },
+    {
+      "from": "POINT#37",
+      "to": "VERTEX#31"
+    },
+    {
+      "from": "POINT#41",
+      "to": "POINT#37"
+    },
+    {
+      "from": "POINT#41",
+      "to": "VERTEX#38"
+    },
+    {
+      "from": "POINT#6",
+      "to": "POINT#14"
+    },
+    {
+      "from": "POINT#6",
+      "to": "VERTEX#9"
+    },
+    {
+      "from": "REGION#11",
+      "to": "BODY#1"
+    },
+    {
+      "from": "REGION#11",
+      "to": "REGION#7"
+    },
+    {
+      "from": "REGION#11",
+      "to": "SHELL#3"
+    },
+    {
+      "from": "REGION#7",
+      "to": "BODY#1"
+    },
+    {
+      "from": "REGION#7",
+      "to": "REGION#11"
+    },
+    {
+      "from": "REGION#7",
+      "to": "SHELL#15"
+    },
+    {
+      "from": "SHELL#15",
+      "to": "FACE#10"
+    },
+    {
+      "from": "SHELL#15",
+      "to": "REGION#7"
+    },
+    {
+      "from": "SHELL#3",
+      "to": "BODY#1"
+    },
+    {
+      "from": "SHELL#3",
+      "to": "FACE#10"
+    },
+    {
+      "from": "SHELL#3",
+      "to": "REGION#11"
+    },
+    {
+      "from": "VERTEX#18",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#18",
+      "to": "HALFEDGE#24"
+    },
+    {
+      "from": "VERTEX#18",
+      "to": "POINT#14"
+    },
+    {
+      "from": "VERTEX#18",
+      "to": "VERTEX#25"
+    },
+    {
+      "from": "VERTEX#18",
+      "to": "VERTEX#9"
+    },
+    {
+      "from": "VERTEX#25",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#25",
+      "to": "HALFEDGE#28"
+    },
+    {
+      "from": "VERTEX#25",
+      "to": "POINT#35"
+    },
+    {
+      "from": "VERTEX#25",
+      "to": "VERTEX#18"
+    },
+    {
+      "from": "VERTEX#25",
+      "to": "VERTEX#34"
+    },
+    {
+      "from": "VERTEX#31",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#31",
+      "to": "HALFEDGE#45"
+    },
+    {
+      "from": "VERTEX#31",
+      "to": "POINT#37"
+    },
+    {
+      "from": "VERTEX#31",
+      "to": "VERTEX#34"
+    },
+    {
+      "from": "VERTEX#31",
+      "to": "VERTEX#40"
+    },
+    {
+      "from": "VERTEX#34",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#34",
+      "to": "HALFEDGE#22"
+    },
+    {
+      "from": "VERTEX#34",
+      "to": "POINT#32"
+    },
+    {
+      "from": "VERTEX#34",
+      "to": "VERTEX#25"
+    },
+    {
+      "from": "VERTEX#34",
+      "to": "VERTEX#31"
+    },
+    {
+      "from": "VERTEX#38",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#38",
+      "to": "HALFEDGE#43"
+    },
+    {
+      "from": "VERTEX#38",
+      "to": "POINT#41"
+    },
+    {
+      "from": "VERTEX#38",
+      "to": "VERTEX#39"
+    },
+    {
+      "from": "VERTEX#39",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#39",
+      "to": "HALFEDGE#20"
+    },
+    {
+      "from": "VERTEX#39",
+      "to": "POINT#33"
+    },
+    {
+      "from": "VERTEX#39",
+      "to": "VERTEX#38"
+    },
+    {
+      "from": "VERTEX#39",
+      "to": "VERTEX#40"
+    },
+    {
+      "from": "VERTEX#40",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#40",
+      "to": "HALFEDGE#30"
+    },
+    {
+      "from": "VERTEX#40",
+      "to": "POINT#36"
+    },
+    {
+      "from": "VERTEX#40",
+      "to": "VERTEX#31"
+    },
+    {
+      "from": "VERTEX#40",
+      "to": "VERTEX#39"
+    },
+    {
+      "from": "VERTEX#9",
+      "to": "BODY#1"
+    },
+    {
+      "from": "VERTEX#9",
+      "to": "HALFEDGE#16"
+    },
+    {
+      "from": "VERTEX#9",
+      "to": "POINT#6"
+    },
+    {
+      "from": "VERTEX#9",
+      "to": "VERTEX#18"
+    }
+  ],
+  "typeCoverage": [
+    "topology.face.inner-loop",
+    "topology.loop.inner",
+    "topology.loop.winding",
+    "topology.region.multiple",
+    "topology.shell.multiple"
+  ]
+}

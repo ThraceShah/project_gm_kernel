@@ -684,6 +684,58 @@ public unsafe class KernelRegressionTests : IDisposable
     }
 
     [Fact]
+    public void PartTransmitReceiveB_RoundTripsAllSolidPrimitiveTopologies()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCone(1, 5, 0.25, null, &body));
+        RoundTripPrimitive(body, 2, 2, 3, 2, 0);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidCone(0, 5, 0.25, null, &body));
+        RoundTripPrimitive(body, 2, 2, 2, 1, 1);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidPrism(2, 5, 5, null, &body));
+        RoundTripPrimitive(body, 2, 2, 7, 15, 10);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidSphere(2, null, &body));
+        RoundTripPrimitive(body, 2, 2, 1, 0, 0);
+
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidTorus(5, 1, null, &body));
+        RoundTripPrimitive(body, 2, 2, 1, 0, 0);
+    }
+
+    [Fact]
+    public void GoldenSphereFixture_IsReceivableOffline()
+    {
+        var fixturePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Fixtures",
+            "body.solid.sphere.typical",
+            "model.x_t");
+        var bytes = File.ReadAllBytes(fixturePath);
+        fixed (byte* pointer = bytes)
+        {
+            var block = new PK_MEMORY_block_s { n_bytes = (nuint)bytes.Length, bytes = pointer };
+            var options = new PK_PART_receive_o_s
+            {
+                o_t_version = 14,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            };
+            int partCount;
+            int* parts;
+            Assert.Equal(0, KernelRuntime.PartReceiveB(block, &options, &partCount, &parts));
+            try
+            {
+                Assert.Equal(1, partCount);
+                AssertBodyCounts(parts[0], 2, 2, 1, 0, 0);
+            }
+            finally
+            {
+                Assert.Equal(0, KernelRuntime.MemoryFree(parts));
+            }
+        }
+    }
+
+    [Fact]
     public void PartTransmitReceiveB_RoundTripsMultipleBodies()
     {
         int blockBody;
@@ -878,6 +930,41 @@ public unsafe class KernelRegressionTests : IDisposable
         vertexTag = vertices[0];
 
         return bodyTag;
+    }
+
+    private static void RoundTripPrimitive(int body, int regions, int shells, int faces, int edges, int vertices)
+    {
+        var options = new PK_PART_transmit_o_s
+        {
+            o_t_version = 10,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        };
+        var block = new PK_MEMORY_block_s();
+        Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        try
+        {
+            var receiveOptions = new PK_PART_receive_o_s
+            {
+                o_t_version = 14,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            };
+            int partCount;
+            int* parts;
+            Assert.Equal(0, KernelRuntime.PartReceiveB(block, &receiveOptions, &partCount, &parts));
+            try
+            {
+                Assert.Equal(1, partCount);
+                AssertBodyCounts(parts[0], regions, shells, faces, edges, vertices);
+            }
+            finally
+            {
+                Assert.Equal(0, KernelRuntime.MemoryFree(parts));
+            }
+        }
+        finally
+        {
+            Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+        }
     }
 
     private static void AssertCylinderCounts(int body)

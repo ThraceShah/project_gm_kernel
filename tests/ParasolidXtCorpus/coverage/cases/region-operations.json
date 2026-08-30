@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "group": "region-operations",
+  "scope": "Region type mutators on a valid solid block; each operation is isolated in its own x_t.",
+  "cases": [
+    {
+      "caseId": "region.make-void",
+      "status": "success",
+      "producer": "PK_REGION_make_void + PK_BODY_create_solid_block",
+      "entity": "REGION",
+      "owner": "body.region",
+      "parameters": { "source": "body.solid.block.typical", "regionIndex": 0, "type": "void" },
+      "coverage": ["region", "region/type", "void", "mutator"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "loops": 6, "fins": 24, "edges": 12, "vertices": 8 },
+      "output": "region.make-void/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    },
+    {
+      "caseId": "region.make-solid",
+      "status": "success",
+      "producer": "PK_REGION_make_solid + PK_BODY_create_solid_block",
+      "entity": "REGION",
+      "owner": "body.region",
+      "parameters": { "source": "body.solid.block.typical", "regionIndex": 0, "type": "solid" },
+      "coverage": ["region", "region/type", "solid", "mutator", "idempotent"],
+      "expectedEntityCounts": { "regions": 2, "shells": 2, "faces": 6, "loops": 6, "fins": 24, "edges": 12, "vertices": 8 },
+      "output": "region.make-solid/model.x_t",
+      "verification": "self-receive-and-body-compare"
+    }
+  ]
+}

@@ -13,7 +13,8 @@ internal static unsafe class ParasolidScriptHost
         string label,
         out ParasolidScriptSession? session,
         out string message,
-        [CallerFilePath] string scriptPath = "")
+        [CallerFilePath] string scriptPath = "",
+        int userFieldLength = 0)
     {
         session = null;
         if (!TryPrepare(label, scriptPath, out message))
@@ -22,7 +23,7 @@ internal static unsafe class ParasolidScriptHost
         try
         {
             RegisterCallbacks();
-            var options = new PK_SESSION_start_o_t();
+            var options = new PK_SESSION_start_o_t { user_field = userFieldLength };
             Check(PK_SESSION_start(&options), "PK_SESSION_start");
             session = new ParasolidScriptSession();
             message = "";
@@ -51,7 +52,7 @@ internal static unsafe class ParasolidScriptHost
         }
 
         var scriptDir = Path.GetDirectoryName(scriptPath);
-        var repoRoot = Path.GetFullPath(Path.Combine(scriptDir ?? ".", ".."));
+        var repoRoot = FindRepositoryRoot(scriptDir ?? ".");
         var schemaDir = Path.Combine(repoRoot, "third_party", "parasolid", "schema");
         var candidateLibraryPath = GetDynamicLibraryPath(repoRoot, platform);
         if (!Directory.Exists(schemaDir) || !File.Exists(candidateLibraryPath))
@@ -77,6 +78,21 @@ internal static unsafe class ParasolidScriptHost
 
         message = "";
         return true;
+    }
+
+    private static string FindRepositoryRoot(string startDirectory)
+    {
+        var current = Path.GetFullPath(startDirectory);
+        while (true)
+        {
+            if (Directory.Exists(Path.Combine(current, ".git")) || File.Exists(Path.Combine(current, "AGENTS.md")))
+                return current;
+
+            var parent = Directory.GetParent(current)?.FullName;
+            if (parent is null || string.Equals(parent, current, StringComparison.Ordinal))
+                return current;
+            current = parent;
+        }
     }
 
     private static string GetPlatform()

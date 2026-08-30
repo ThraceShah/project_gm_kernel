@@ -2623,11 +2623,17 @@ internal static unsafe class KernelRuntime
         for (int f = 0; f < faceCount; f++)
             faceSlots[f] = AddFace(bodySlot, surfTags[f]);
 
-        AddLoopWithEdges(faceSlots[0], edgeSlots, edgeCount);
         if (radius == 0)
+        {
+            AddLoopWithEdges(faceSlots[0], edgeSlots, edgeCount);
             AddLoopWithEdges(faceSlots[1], edgeSlots, 1);
+            var apexLoop = AddLoop(faceSlots[1]);
+            AddDegenerateFinToLoopAndVertex(apexLoop, faceSlots[1], body.FirstVertexBody);
+        }
         else
         {
+            AddLoopWithEdges(faceSlots[0], edgeSlots[0], 1);
+            AddLoopWithEdges(faceSlots[0], edgeSlots[1], 1);
             AddLoopWithEdges(faceSlots[1], edgeSlots, 1);
             AddLoopWithEdges(faceSlots[2], edgeSlots[1], 1);
         }
@@ -3154,6 +3160,23 @@ internal static unsafe class KernelRuntime
         AppendFinToLoop(loopSlot, finSlot);
         AppendFinToEdge(edgeSlot, finSlot);
         AppendFinToVertex(EdgeFinVertex(finSlot, Edges[edgeSlot]), finSlot);
+        return finSlot;
+    }
+
+    private static int AddDegenerateFinToLoopAndVertex(LoopSlot loopSlot, FaceSlot faceSlot, VertexSlot vertexSlot)
+    {
+        var finSlot = Fins.Allocate();
+        ref var fin = ref Fins[finSlot];
+        fin.Edge = -1;
+        fin.Loop = loopSlot;
+        fin.Face = faceSlot;
+        fin.NextInLoop = fin.PrevInLoop = -1;
+        fin.NextOfEdge = fin.PrevOfEdge = -1;
+        fin.Vertex = vertexSlot;
+        fin.NextAtVertex = fin.PrevAtVertex = -1;
+
+        AppendFinToLoop(loopSlot, finSlot);
+        AppendFinToVertex(vertexSlot, finSlot);
         return finSlot;
     }
 

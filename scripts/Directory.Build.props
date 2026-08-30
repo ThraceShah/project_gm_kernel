@@ -1,8 +1,16 @@
 <Project>
   <ItemGroup Condition="'$(UsePskernelSharpUsings)' == 'true'">
-    <Compile Include="../third_party/PKToy/PskernelSharp/Using.cs" Link="PskernelSharp.Using.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)../third_party/PKToy/PskernelSharp/Using.cs" Link="PskernelSharp.Using.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseParasolidScriptHost)' == 'true'">
-    <Compile Include="ParasolidScriptHost.cs" Link="ParasolidScriptHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidScriptHost.cs" Link="ParasolidScriptHost.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseParasolidXtCorpusHost)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidXtCorpusHost.cs" Link="ParasolidXtCorpusHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidXtSchemaInspector.cs" Link="ParasolidXtSchemaInspector.cs" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseCorpusManagedKernel)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)CorpusManagedKernel.cs" Link="CorpusManagedKernel.cs" />
   </ItemGroup>
 </Project>

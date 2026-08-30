@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "group": "derived-surface-profiles",
+  "scope": "Offset sign and swept/spun profile-family representatives.",
+  "cases": [
+    { "caseId": "derived.offset.negative", "status": "success", "producer": "PK_PLANE_create + PK_SURF_offset", "entity": "PLANE", "owner": "part.construction-geometry", "parameters": { "offset": -1.0 }, "typeCoverage": ["geometry.surface.offset", "derived.offset.negative"] },
+    { "caseId": "derived.offset.positive", "status": "success", "producer": "PK_PLANE_create + PK_SURF_offset", "entity": "PLANE", "owner": "part.construction-geometry", "parameters": { "offset": 1.0 }, "typeCoverage": ["geometry.surface.offset", "derived.offset.positive"] },
+    { "caseId": "derived.swept.line", "status": "success", "producer": "PK_LINE_create + PK_SWEPT_create", "entity": "SWEPT_SURF", "owner": "part.construction-geometry", "parameters": { "profile": "line", "closed": false }, "typeCoverage": ["geometry.surface.swept", "derived.swept.profile.line"] },
+    { "caseId": "derived.swept.circle", "status": "success", "producer": "PK_CIRCLE_create + PK_SWEPT_create", "entity": "SWEPT_SURF", "owner": "part.construction-geometry", "parameters": { "profile": "circle", "closed": true }, "typeCoverage": ["geometry.surface.swept", "derived.swept.profile.circle", "derived.profile.closed"] },
+    { "caseId": "derived.spun.line", "status": "success", "producer": "PK_LINE_create + PK_SPUN_create", "entity": "SPUN_SURF", "owner": "part.construction-geometry", "parameters": { "profile": "line", "closed": false }, "typeCoverage": ["geometry.surface.spun", "derived.spun.profile.line"] },
+    { "caseId": "derived.spun.circle", "status": "success", "producer": "PK_CIRCLE_create + PK_SPUN_create", "entity": "SPUN_SURF", "owner": "part.construction-geometry", "parameters": { "profile": "circle", "closed": true }, "typeCoverage": ["geometry.surface.spun", "derived.spun.profile.circle", "derived.profile.closed"] }
+  ]
+}

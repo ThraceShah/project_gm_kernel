@@ -1,0 +1,6 @@
+{
+  "caseId": "user-field.body.single-slot",
+  "status": "pass",
+  "summary": "self-receive and body compare passed; managed verification=not-requested",
+  "exception": null
+}
