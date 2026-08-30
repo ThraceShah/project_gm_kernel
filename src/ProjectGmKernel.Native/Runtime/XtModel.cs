@@ -34,6 +34,8 @@ internal enum XtFieldKind : byte
     Unsigned = 5,
     Logical = 6,
     Vector = 7,
+    Interval = 8,
+    Box = 9,
 }
 
 internal readonly struct XtVector
@@ -59,6 +61,9 @@ internal struct XtFieldValue
     public XtNodeIndex Pointer;
     public char Character;
     public XtVector Vector;
+    public double Fourth;
+    public double Fifth;
+    public double Sixth;
 
     public static XtFieldValue Int(long value) => new() { Kind = XtFieldKind.Integer, Integer = value };
     public static XtFieldValue Null() => new() { Kind = XtFieldKind.Empty };
@@ -68,11 +73,41 @@ internal struct XtFieldValue
     public static XtFieldValue Unsigned(long value) => new() { Kind = XtFieldKind.Unsigned, Integer = value };
     public static XtFieldValue Logical(bool value) => new() { Kind = XtFieldKind.Logical, Integer = value ? 1 : 0 };
     public static XtFieldValue Vec(double x, double y, double z) => new() { Kind = XtFieldKind.Vector, Vector = new XtVector(x, y, z) };
+    public static XtFieldValue IntervalValue(double low, double high) => new()
+    {
+        Kind = XtFieldKind.Interval,
+        Vector = new XtVector(low, high, 0),
+    };
+    public static XtFieldValue BoxValue(double xLow, double xHigh, double yLow, double yHigh, double zLow, double zHigh) => new()
+    {
+        Kind = XtFieldKind.Box,
+        Vector = new XtVector(xLow, xHigh, yLow),
+        Fourth = yHigh,
+        Fifth = zLow,
+        Sixth = zHigh,
+    };
 }
 
 internal sealed class XtNode
 {
     public XtNodeType Type;
     public XtNodeIndex Index;
+    public int VariableLength = -1;
     public XtFieldValue[] Fields = [];
+    public int[] UserFields = [];
+}
+
+internal sealed class XtDocument
+{
+    private XtSemanticModel? semanticModel;
+
+    public string? PhysicalHeader { get; init; }
+    public required string VersionText { get; init; }
+    public required string HeaderSchemaIdentity { get; init; }
+    public required XtSchemaDefinition Schema { get; init; }
+    public XtSchemaDefinition? BaseSchema { get; init; }
+    public int EmbeddedMaxNodeType { get; init; }
+    public int UserFieldSize { get; init; }
+    public required XtNode[] Nodes { get; init; }
+    public XtSemanticModel SemanticModel => semanticModel ??= XtSemanticProjector.Project(this);
 }

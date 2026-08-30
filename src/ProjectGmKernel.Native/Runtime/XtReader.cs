@@ -5,12 +5,25 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe class XtReader
 {
     public static int ReadText(string text, out EntityTag[] parts)
+        => ReadText(text, receiveUserFields: true, [], ParasolidConstants.PK_receive_compound_split_c, out parts);
+
+    public static int ReadText(string text, bool receiveUserFields, out EntityTag[] parts)
+        => ReadText(text, receiveUserFields, [], ParasolidConstants.PK_receive_compound_split_c, out parts);
+
+    public static int ReadText(
+        string text,
+        bool receiveUserFields,
+        ReadOnlySpan<int> partIndices,
+        int receiveCompound,
+        out EntityTag[] parts)
     {
         parts = [];
-        XtNode[] nodes;
+        XtDocument document;
         try
         {
-            nodes = XtText.Decode(text);
+            document = XtText.DecodeDocument(text);
+            document = XtText.SelectUserFields(document, receiveUserFields);
+            _ = document.SemanticModel;
         }
         catch (FormatException)
         {
@@ -21,46 +34,72 @@ internal static unsafe class XtReader
             return ParasolidConstants.PK_ERROR_bad_file_format;
         }
 
-        if (nodes.Length == 0 || (nodes[0].Type != (int)XtNodeTypes.Body && nodes[0].Type != (int)XtNodeTypes.PartTransmitBlock))
-            return ParasolidConstants.PK_ERROR_corrupt_file;
-
         var result = new List<EntityTag>();
-        foreach (var body in GetBodyNodes(nodes))
+        try
         {
-            var error = MaterializeBody(nodes, body, out var tag);
-            if (error != ParasolidConstants.PK_ERROR_no_errors)
-                return error;
-            result.Add(tag);
+            var allRootIndexes = XtPartGraph.GetRootIndexes(document);
+            if (partIndices.Length != 0 && partIndices[^1] >= allRootIndexes.Length)
+                return ParasolidConstants.PK_ERROR_bad_index;
+            XtNodeIndex[] rootIndexes;
+            if (partIndices.Length == 0)
+            {
+                rootIndexes = allRootIndexes;
+            }
+            else
+            {
+                rootIndexes = new XtNodeIndex[partIndices.Length];
+                for (var index = 0; index < rootIndexes.Length; index++)
+                    rootIndexes[index] = allRootIndexes[partIndices[index]];
+            }
+            var compoundError = XtPartGraph.ApplyCompoundReceiveMode(
+                document,
+                rootIndexes,
+                receiveCompound,
+                out document,
+                out rootIndexes);
+            if (compoundError != ParasolidConstants.PK_ERROR_no_errors)
+                return compoundError;
+            var nodes = document.Nodes;
+            foreach (var rootIndex in rootIndexes)
+            {
+                var root = FindPartNode(document, rootIndex)
+                    ?? throw new FormatException("XT part container references a missing part.");
+                EntityTag tag = 0;
+                var error = root.Type == (int)XtNodeTypes.Body && document.Schema.SchemaNumber == XtSchema.SchemaNumber
+                    ? MaterializeBody(nodes, root, out tag)
+                    : ParasolidConstants.PK_ERROR_bad_file_format;
+                if (error == ParasolidConstants.PK_ERROR_no_errors)
+                    KernelRuntime.AttachReceivedXt(tag, document, root.Index, opaque: false);
+                else
+                    error = KernelRuntime.CreateOpaquePartCore(document, root, out tag);
+                if (error != ParasolidConstants.PK_ERROR_no_errors)
+                    return error;
+                result.Add(tag);
+            }
+        }
+        catch (FormatException)
+        {
+            return ParasolidConstants.PK_ERROR_corrupt_file;
         }
 
         parts = result.ToArray();
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static IEnumerable<XtNode> GetBodyNodes(XtNode[] nodes)
+    private static XtNode? FindPartNode(XtDocument document, XtNodeIndex index)
     {
-        if (nodes[0].Type == (int)XtNodeTypes.PartTransmitBlock)
+        if (index == 0)
+            return null;
+        for (var i = 0; i < document.Nodes.Length; i++)
         {
-            var fields = nodes[0].Fields;
-            if (fields.Length < 5)
-                throw new FormatException("Invalid XT part transmit block.");
-
-            var count = checked((int)fields[0].Integer);
-            if (count < 0 || fields.Length != 5 + count)
-                throw new FormatException("Invalid XT part transmit block entries.");
-
-            for (var i = 0; i < count; i++)
-            {
-                var body = FindNode(nodes, fields[5 + i].Pointer, (int)XtNodeTypes.Body);
-                if (body is null)
-                    throw new FormatException("XT part transmit block references a missing body.");
-                yield return body;
-            }
-            yield break;
+            var node = document.Nodes[i];
+            if (node.Index != index)
+                continue;
+            var name = document.Schema.GetNode(node.Type).Name;
+            if (name is "ASSEMBLY" or "BODY")
+                return node;
         }
-
-        foreach (var body in nodes.Where(node => node.Type == (int)XtNodeTypes.Body))
-            yield return body;
+        return null;
     }
 
     private static int MaterializeBody(XtNode[] nodes, XtNode body, out EntityTag bodyTag)

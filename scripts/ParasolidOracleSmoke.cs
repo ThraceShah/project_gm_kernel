@@ -503,10 +503,11 @@ static unsafe void WritePartsToFile(int partCount, int* parts, string path, stri
 {
     var options = new ProjectGmKernel.Native.Generated.PK_PART_transmit_o_s
     {
-        o_t_version = 10,
+        o_t_version = 4,
         transmit_format = ProjectGmKernel.Native.Generated.ParasolidConstants.PK_transmit_format_text_c,
         transmit_user_fields = 0,
         transmit_version = 371,
+        transmit_meshes = ProjectGmKernel.Native.Generated.ParasolidConstants.PK_transmit_meshes_separate_c,
     };
     var block = new ProjectGmKernel.Native.Generated.PK_MEMORY_block_s();
     CheckManaged(KernelRuntime.PartTransmitB(partCount, parts, &options, &block), "our PK_PART_transmit_b " + label);
@@ -540,7 +541,7 @@ static unsafe bool TryReadFileAndCheckMany(string path, string label)
             };
             var options = new ProjectGmKernel.Native.Generated.PK_PART_receive_o_s
             {
-                o_t_version = 14,
+                o_t_version = 8,
                 transmit_format = ProjectGmKernel.Native.Generated.ParasolidConstants.PK_transmit_format_text_c,
             };
             int nParts;
@@ -599,7 +600,7 @@ static unsafe bool TryReadFileAndCheck(
             };
             var options = new ProjectGmKernel.Native.Generated.PK_PART_receive_o_s
             {
-                o_t_version = 14,
+                o_t_version = 8,
                 transmit_format = ProjectGmKernel.Native.Generated.ParasolidConstants.PK_transmit_format_text_c,
             };
             int nParts;

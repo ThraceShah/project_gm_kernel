@@ -621,8 +621,9 @@ public unsafe class KernelRegressionTests : IDisposable
 
         var options = new PK_PART_transmit_o_s
         {
-            o_t_version = 10,
+            o_t_version = 4,
             transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
         };
         var block = new PK_MEMORY_block_s();
         Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
@@ -631,7 +632,7 @@ public unsafe class KernelRegressionTests : IDisposable
 
         var receiveOptions = new PK_PART_receive_o_s
         {
-            o_t_version = 14,
+            o_t_version = 8,
             transmit_format = ParasolidConstants.PK_transmit_format_text_c,
         };
         int nParts;
@@ -662,15 +663,16 @@ public unsafe class KernelRegressionTests : IDisposable
 
         var options = new PK_PART_transmit_o_s
         {
-            o_t_version = 10,
+            o_t_version = 4,
             transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
         };
         var block = new PK_MEMORY_block_s();
         Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
 
         var receiveOptions = new PK_PART_receive_o_s
         {
-            o_t_version = 14,
+            o_t_version = 8,
             transmit_format = ParasolidConstants.PK_transmit_format_text_c,
         };
         int nParts;
@@ -717,7 +719,7 @@ public unsafe class KernelRegressionTests : IDisposable
             var block = new PK_MEMORY_block_s { n_bytes = (nuint)bytes.Length, bytes = pointer };
             var options = new PK_PART_receive_o_s
             {
-                o_t_version = 14,
+                o_t_version = 8,
                 transmit_format = ParasolidConstants.PK_transmit_format_text_c,
             };
             int partCount;
@@ -746,15 +748,16 @@ public unsafe class KernelRegressionTests : IDisposable
         var partsToTransmit = stackalloc int[2] { blockBody, cylinderBody };
         var options = new PK_PART_transmit_o_s
         {
-            o_t_version = 10,
+            o_t_version = 4,
             transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
         };
         var block = new PK_MEMORY_block_s();
         Assert.Equal(0, KernelRuntime.PartTransmitB(2, partsToTransmit, &options, &block));
 
         var receiveOptions = new PK_PART_receive_o_s
         {
-            o_t_version = 14,
+            o_t_version = 8,
             transmit_format = ParasolidConstants.PK_transmit_format_text_c,
         };
         int nParts;
@@ -766,6 +769,221 @@ public unsafe class KernelRegressionTests : IDisposable
         AssertCylinderCounts(parts[1]);
         Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
         Assert.Equal(0, KernelRuntime.MemoryFree(parts));
+    }
+
+    [Fact]
+    public void PartReceiveB_HonorsZeroBasedStrictlyIncreasingPartIndices()
+    {
+        int firstBody;
+        int secondBody;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &firstBody));
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(4, 5, 6, null, &secondBody));
+        var sourceParts = stackalloc int[2] { firstBody, secondBody };
+        var transmitOptions = new PK_PART_transmit_o_s
+        {
+            o_t_version = 4,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            transmit_version = 371,
+            transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
+        };
+        var block = new PK_MEMORY_block_s();
+        Assert.Equal(0, KernelRuntime.PartTransmitB(2, sourceParts, &transmitOptions, &block));
+        try
+        {
+            var selectedIndex = 1;
+            var receiveOptions = new PK_PART_receive_o_s
+            {
+                o_t_version = 8,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+                attdef_mismatch = ParasolidConstants.PK_ATTDEF_mismatch_fail_c,
+                n_part_indices = 1,
+                part_indices = &selectedIndex,
+                receive_compound = ParasolidConstants.PK_receive_compound_split_c,
+                receive_using_seek = ParasolidConstants.PK_receive_using_seek_no_c,
+                receive_mixed = ParasolidConstants.PK_receive_mixed_fail_c,
+            };
+            int count;
+            int* received;
+            Assert.Equal(0, KernelRuntime.PartReceiveB(block, &receiveOptions, &count, &received));
+            try
+            {
+                Assert.Equal(1, count);
+                var selectedBlock = new PK_MEMORY_block_s();
+                Assert.Equal(0, KernelRuntime.PartTransmitB(1, received, &transmitOptions, &selectedBlock));
+                try
+                {
+                    var document = XtText.DecodeDocument(System.Text.Encoding.ASCII.GetString(selectedBlock.bytes, checked((int)selectedBlock.n_bytes)));
+                    Assert.Single(XtPartGraph.GetRootIndexes(document));
+                }
+                finally
+                {
+                    Assert.Equal(0, KernelRuntime.MemoryBlockFree(&selectedBlock));
+                }
+            }
+            finally
+            {
+                Assert.Equal(0, KernelRuntime.MemoryFree(received));
+            }
+
+            var descending = stackalloc int[2] { 1, 0 };
+            receiveOptions.n_part_indices = 2;
+            receiveOptions.part_indices = descending;
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_index, KernelRuntime.PartReceiveB(block, &receiveOptions, &count, &received));
+            receiveOptions.n_part_indices = 0;
+            receiveOptions.part_indices = null;
+            receiveOptions.part_index = 1;
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_index, KernelRuntime.PartReceiveB(block, &receiveOptions, &count, &received));
+            receiveOptions.part_index = 0;
+            var identifier = 0;
+            receiveOptions.n_identifiers = 1;
+            receiveOptions.identifiers = &identifier;
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_value, KernelRuntime.PartReceiveB(block, &receiveOptions, &count, &received));
+        }
+        finally
+        {
+            Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+        }
+    }
+
+    [Fact]
+    public void PartReceiveB_ValidatesVersionedReceiveOptionsLikeParasolidV38()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+        var transmitOptions = new PK_PART_transmit_o_s
+        {
+            o_t_version = 4,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            transmit_version = 371,
+            transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
+        };
+        var block = new PK_MEMORY_block_s();
+        Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &transmitOptions, &block));
+        try
+        {
+            int count;
+            int* received;
+            var options = new PK_PART_receive_o_s
+            {
+                o_t_version = 8,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            };
+
+            Assert.Equal(0, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            Assert.Equal(0, KernelRuntime.MemoryFree(received));
+
+            options = new PK_PART_receive_o_s
+            {
+                o_t_version = 8,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+                attdef_mismatch = ParasolidConstants.PK_ATTDEF_mismatch_ignore_c,
+                receive_compound = ParasolidConstants.PK_receive_compound_split_c,
+                receive_using_seek = ParasolidConstants.PK_receive_using_seek_yes_c,
+                receive_mixed = ParasolidConstants.PK_receive_mixed_allow_c,
+            };
+            Assert.Equal(0, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            Assert.Equal(0, KernelRuntime.MemoryFree(received));
+
+            options.o_t_version = 0;
+            Assert.Equal(ParasolidConstants.PK_ERROR_o_t_version_unknown, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            options.o_t_version = 9;
+            Assert.Equal(ParasolidConstants.PK_ERROR_o_t_version_unknown, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            options.o_t_version = 5;
+            Assert.Equal(ParasolidConstants.PK_ERROR_field_of_wrong_type, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+
+            var legacyValue = 0;
+            options = new PK_PART_receive_o_s
+            {
+                o_t_version = 1,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+                part_index = 1,
+                n_part_indices = 1,
+                part_indices = &legacyValue,
+                n_identifiers = 1,
+                identifiers = &legacyValue,
+                key_is_partition = 1,
+            };
+            Assert.Equal(0, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            Assert.Equal(0, KernelRuntime.MemoryFree(received));
+
+            options = new PK_PART_receive_o_s
+            {
+                o_t_version = 3,
+                transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+                attdef_mismatch = ParasolidConstants.PK_ATTDEF_mismatch_ignore_c,
+                n_part_indices = 1,
+                part_indices = &legacyValue,
+            };
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_value, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            options.o_t_version = 4;
+            options.n_part_indices = 0;
+            options.part_indices = null;
+            options.n_identifiers = 1;
+            options.identifiers = &legacyValue;
+            Assert.Equal(ParasolidConstants.PK_ERROR_not_a_logical, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+
+            options.o_t_version = 8;
+            options.n_identifiers = 0;
+            options.identifiers = null;
+            options.receive_compound = ParasolidConstants.PK_receive_compound_split_c;
+            options.receive_using_seek = ParasolidConstants.PK_receive_using_seek_no_c;
+            options.receive_mixed = ParasolidConstants.PK_receive_mixed_fail_c;
+            options.attdef_mismatch = 123;
+            Assert.Equal(ParasolidConstants.PK_ERROR_field_of_wrong_type, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            options.attdef_mismatch = ParasolidConstants.PK_ATTDEF_mismatch_ignore_c;
+            options.receive_using_seek = 123;
+            Assert.Equal(ParasolidConstants.PK_ERROR_field_of_wrong_type, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            options.receive_using_seek = ParasolidConstants.PK_receive_using_seek_no_c;
+            options.receive_mixed = ParasolidConstants.PK_receive_mixed_make_facet_c;
+            Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+            options.receive_mixed = ParasolidConstants.PK_receive_mixed_fail_c;
+            options.key_is_partition = 1;
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_value, KernelRuntime.PartReceiveB(block, &options, &count, &received));
+        }
+        finally
+        {
+            Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+        }
+    }
+
+    [Fact]
+    public void PartTransmitB_ValidatesVersionedTransmitOptionsLikeParasolidV38()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+        var options = new PK_PART_transmit_o_s
+        {
+            o_t_version = 4,
+            transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            transmit_version = 371,
+            transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
+        };
+        var block = new PK_MEMORY_block_s();
+
+        Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+        options.transmit_meshes = ParasolidConstants.PK_transmit_meshes_embedded_c;
+        Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        Assert.Equal(0, KernelRuntime.MemoryBlockFree(&block));
+
+        options.o_t_version = 0;
+        Assert.Equal(ParasolidConstants.PK_ERROR_o_t_version_unknown, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        options.o_t_version = 5;
+        Assert.Equal(ParasolidConstants.PK_ERROR_o_t_version_unknown, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        options.o_t_version = 4;
+        options.transmit_format = ParasolidConstants.PK_transmit_format_binary_c;
+        Assert.Equal(ParasolidConstants.PK_ERROR_bad_file_format, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        options.transmit_format = 123;
+        Assert.Equal(ParasolidConstants.PK_ERROR_field_of_wrong_type, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        options.transmit_format = ParasolidConstants.PK_transmit_format_text_c;
+        options.transmit_meshes = 0;
+        Assert.Equal(ParasolidConstants.PK_ERROR_field_of_wrong_type, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        options.transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c;
+        options.transmit_indexed_context = 1;
+        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented, KernelRuntime.PartTransmitB(1, &body, &options, &block));
+        options.transmit_indexed_context = 0;
+        options.transmit_version = -1;
+        Assert.Equal(ParasolidConstants.PK_ERROR_wrong_version, KernelRuntime.PartTransmitB(1, &body, &options, &block));
     }
 
     [Fact]
@@ -836,7 +1054,7 @@ public unsafe class KernelRegressionTests : IDisposable
             var block = new PK_MEMORY_block_s { n_bytes = (nuint)bytes.Length, bytes = text };
             var receiveOptions = new PK_PART_receive_o_s
             {
-                o_t_version = 14,
+                o_t_version = 8,
                 transmit_format = ParasolidConstants.PK_transmit_format_text_c,
             };
             int nParts;
@@ -845,6 +1063,8 @@ public unsafe class KernelRegressionTests : IDisposable
 
             receiveOptions.transmit_format = ParasolidConstants.PK_transmit_format_binary_c;
             Assert.Equal(ParasolidConstants.PK_ERROR_wrong_format, KernelRuntime.PartReceiveB(block, &receiveOptions, &nParts, &parts));
+            receiveOptions.transmit_format = 123;
+            Assert.Equal(ParasolidConstants.PK_ERROR_field_of_wrong_type, KernelRuntime.PartReceiveB(block, &receiveOptions, &nParts, &parts));
         }
     }
 
@@ -936,8 +1156,9 @@ public unsafe class KernelRegressionTests : IDisposable
     {
         var options = new PK_PART_transmit_o_s
         {
-            o_t_version = 10,
+            o_t_version = 4,
             transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+            transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
         };
         var block = new PK_MEMORY_block_s();
         Assert.Equal(0, KernelRuntime.PartTransmitB(1, &body, &options, &block));
@@ -945,7 +1166,7 @@ public unsafe class KernelRegressionTests : IDisposable
         {
             var receiveOptions = new PK_PART_receive_o_s
             {
-                o_t_version = 14,
+                o_t_version = 8,
                 transmit_format = ParasolidConstants.PK_transmit_format_text_c,
             };
             int partCount;

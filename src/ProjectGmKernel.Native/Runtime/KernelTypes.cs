@@ -63,3 +63,4 @@ global using XtFieldIndex = int;
 global using XtFieldElementCount = int;
 global using XtNodeClass = int;
 global using XtNodeIndex = int;
+global using XtNodePosition = int;

@@ -62,6 +62,9 @@ internal static unsafe class KernelRuntime
     private static readonly int[] CurveSlotToTag = new int[MaxCurves];
     private static readonly int[] SurfaceSlotToTag = new int[MaxSurfaces];
     private static readonly int[] TransformSlotToTag = new int[MaxTransforms];
+    private static readonly XtDocument?[] BodyXtDocuments = new XtDocument?[MaxBodies];
+    private static readonly int[] BodyXtRootIndexes = new int[MaxBodies];
+    private static readonly byte[] BodyXtOpaque = new byte[MaxBodies];
 
     // ── Return arena for int** query outputs ─────────────────────
     // Session-managed unmanaged buffers. Each query allocates a contiguous
@@ -107,6 +110,59 @@ internal static unsafe class KernelRuntime
 
         bodySlot = Handles[bodyTag].SlotIndex;
         return true;
+    }
+
+    internal static bool TryGetReceivedXt(EntityTag partTag, out XtDocument document, out XtNodeIndex rootIndex)
+    {
+        document = null!;
+        rootIndex = 0;
+        if (!IsValidTag(partTag) || Handles[partTag].Pool != PoolKind.Body)
+            return false;
+        var slot = Handles[partTag].SlotIndex;
+        document = BodyXtDocuments[slot]!;
+        if (document is null)
+            return false;
+        rootIndex = BodyXtRootIndexes[slot];
+        return true;
+    }
+
+    internal static void AttachReceivedXt(EntityTag partTag, XtDocument document, XtNodeIndex rootIndex, bool opaque)
+    {
+        if (!IsValidTag(partTag) || Handles[partTag].Pool != PoolKind.Body)
+            throw new InvalidOperationException("Cannot attach XT data to a non-part entity.");
+        var slot = Handles[partTag].SlotIndex;
+        BodyXtDocuments[slot] = document;
+        BodyXtRootIndexes[slot] = rootIndex;
+        BodyXtOpaque[slot] = opaque ? (byte)1 : (byte)0;
+    }
+
+    internal static int CreateOpaquePartCore(XtDocument document, XtNode root, out EntityTag partTag)
+    {
+        partTag = 0;
+        EntityClass entityClass = root.Type switch
+        {
+            10 => EntityClass.Assembly,
+            12 => EntityClass.Body,
+            _ => (EntityClass)0,
+        };
+        if (entityClass == 0)
+            return ParasolidConstants.PK_ERROR_bad_file_format;
+
+        var bodySlot = Bodies.Allocate();
+        ref var body = ref Bodies[bodySlot];
+        InitializeBody(ref body);
+        AssignPartition(ref body.Header, CurrentPartition);
+        var tag = AllocateTag(entityClass, PoolKind.Body, bodySlot, body.Header.Generation);
+        if (tag < 0)
+        {
+            Bodies.Free(bodySlot);
+            return ParasolidConstants.PK_ERROR_general_body;
+        }
+        if (entityClass == EntityClass.Body)
+            AppendBodyToPartition(CurrentPartition, bodySlot);
+        partTag = tag;
+        AttachReceivedXt(tag, document, root.Index, opaque: true);
+        return ParasolidConstants.PK_ERROR_no_errors;
     }
 
     internal static BodyRecord GetBodyRecord(BodySlot bodySlot) => Bodies[bodySlot];
@@ -235,6 +291,12 @@ internal static unsafe class KernelRuntime
             Generation = generation,
             SessionId = DefaultSessionId,
         };
+        if (pool == PoolKind.Body)
+        {
+            BodyXtDocuments[slotIndex] = null;
+            BodyXtRootIndexes[slotIndex] = 0;
+            BodyXtOpaque[slotIndex] = 0;
+        }
         SetSlotToTag(pool, slotIndex, tag);
         return tag;
     }
@@ -412,6 +474,9 @@ internal static unsafe class KernelRuntime
         session.ResetPartitions();
         nextTag = 1;
         Array.Clear(Handles);
+        Array.Clear(BodyXtDocuments);
+        Array.Clear(BodyXtRootIndexes);
+        Array.Clear(BodyXtOpaque);
         ClearSlotToTagMaps();
         ResetReturnArena(freeBlocks: true);
 
@@ -450,6 +515,9 @@ internal static unsafe class KernelRuntime
         session = null;
         nextTag = 1;
         Array.Clear(Handles);
+        Array.Clear(BodyXtDocuments);
+        Array.Clear(BodyXtRootIndexes);
+        Array.Clear(BodyXtOpaque);
         ClearSlotToTagMaps();
         ResetReturnArena(freeBlocks: true);
 
@@ -517,7 +585,7 @@ internal static unsafe class KernelRuntime
         if (!IsValidTag(entityTag))
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        *classCode = (int)Handles[entityTag].Class;
+        *classCode = ToPkClass(Handles[entityTag].Class);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -1594,6 +1662,7 @@ internal static unsafe class KernelRuntime
         return entityClass switch
         {
             EntityClass.Body => ParasolidConstants.PK_CLASS_body,
+            EntityClass.Assembly => ParasolidConstants.PK_CLASS_assembly,
             EntityClass.Shell => ParasolidConstants.PK_CLASS_shell,
             EntityClass.Face => ParasolidConstants.PK_CLASS_face,
             EntityClass.Loop => ParasolidConstants.PK_CLASS_loop,
@@ -2369,14 +2438,24 @@ internal static unsafe class KernelRuntime
 
         if (options is not null)
         {
-            if (options->transmit_format != 0 && options->transmit_format != ParasolidConstants.PK_transmit_format_text_c)
+            if (options->o_t_version is < 1 or > 4)
+                return ParasolidConstants.PK_ERROR_o_t_version_unknown;
+            if (options->transmit_format != ParasolidConstants.PK_transmit_format_text_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_binary_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_neutral_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_applio_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_xml_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_typed_binary_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_indexio_c)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
+            if (options->transmit_format != ParasolidConstants.PK_transmit_format_text_c)
                 return ParasolidConstants.PK_ERROR_bad_file_format;
-            if (options->transmit_user_fields != 0)
-                return ParasolidConstants.PK_ERROR_bad_file_format;
-            if (options->transmit_indexed_context != 0)
-                return ParasolidConstants.PK_ERROR_bad_file_format;
-            if (options->transmit_meshes != 0 && options->transmit_meshes != ParasolidConstants.PK_transmit_meshes_separate_c)
-                return ParasolidConstants.PK_ERROR_bad_file_format;
+            if (options->o_t_version >= 3 && options->transmit_indexed_context != 0)
+                return ParasolidConstants.PK_ERROR_not_implemented;
+            if (options->o_t_version >= 4 &&
+                options->transmit_meshes != ParasolidConstants.PK_transmit_meshes_separate_c &&
+                options->transmit_meshes != ParasolidConstants.PK_transmit_meshes_embedded_c)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
         }
 
         var partList = new EntityTag[nParts];
@@ -2388,12 +2467,17 @@ internal static unsafe class KernelRuntime
                     return ParasolidConstants.PK_ERROR_duplicate_parts;
             }
 
-            if (!TryResolveBodySlot(parts[i], out _))
+            if (!TryResolveBodySlot(parts[i], out _) && !TryGetReceivedXt(parts[i], out _, out _))
                 return ParasolidConstants.PK_ERROR_unsuitable_entity;
             partList[i] = parts[i];
         }
 
-        var error = XtWriter.WriteText(partList, out var text);
+        var transmitVersion = options is null ? 0 : options->transmit_version;
+        var transmitUserFields = options is null || options->transmit_user_fields != 0;
+        int error;
+        string text;
+        if (!TryEncodeReceivedParts(partList, transmitVersion, transmitUserFields, out text, out error))
+            error = XtWriter.WriteText(partList, transmitVersion, out text);
         if (error != ParasolidConstants.PK_ERROR_no_errors)
             return error;
 
@@ -2409,6 +2493,33 @@ internal static unsafe class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
+    private static bool TryEncodeReceivedParts(EntityTag[] parts, int transmitVersion, bool transmitUserFields, out string text, out int error)
+    {
+        text = "";
+        error = ParasolidConstants.PK_ERROR_no_errors;
+        XtDocument? document = null;
+        var rootIndexes = new int[parts.Length];
+        for (var index = 0; index < parts.Length; index++)
+        {
+            if (!TryGetReceivedXt(parts[index], out var candidate, out rootIndexes[index]))
+                return false;
+            if (document is null)
+                document = candidate;
+            else if (!ReferenceEquals(document, candidate))
+                return false;
+        }
+        if (document is null)
+            return false;
+        if (!XtText.TrySelectPartRoots(document, rootIndexes, out var selected))
+        {
+            error = ParasolidConstants.PK_ERROR_unsuitable_entity;
+            return true;
+        }
+        if (!XtText.TryEncodeForTransmitVersion(selected, transmitVersion, out text, transmitUserFields))
+            error = ParasolidConstants.PK_ERROR_wrong_version;
+        return true;
+    }
+
     public static int PartReceiveB(PK_MEMORY_block_t block, PK_PART_receive_o_s* options, int* nParts, EntityTag** parts)
     {
         if (nParts is null || parts is null)
@@ -2420,10 +2531,65 @@ internal static unsafe class KernelRuntime
 
         if (options is not null)
         {
-            if (options->transmit_format != 0 && options->transmit_format != ParasolidConstants.PK_transmit_format_text_c)
+            if (options->o_t_version is < 1 or > 8)
+                return ParasolidConstants.PK_ERROR_o_t_version_unknown;
+            if (options->o_t_version == 5)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
+            if (options->transmit_format != ParasolidConstants.PK_transmit_format_text_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_binary_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_neutral_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_applio_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_xml_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_typed_binary_c &&
+                options->transmit_format != ParasolidConstants.PK_transmit_format_indexio_c)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
+            if (options->transmit_format != ParasolidConstants.PK_transmit_format_text_c)
                 return ParasolidConstants.PK_ERROR_wrong_format;
-            if (options->receive_user_fields != 0)
-                return ParasolidConstants.PK_ERROR_bad_file_format;
+            var zeroInitializedTail = options->attdef_mismatch == 0 &&
+                options->part_index == 0 && options->n_part_indices == 0 && options->part_indices is null &&
+                options->n_identifiers == 0 && options->identifiers is null &&
+                options->receive_indexed_context == 0 && options->key_is_partition == 0 &&
+                options->receive_compound == 0 && options->receive_using_seek == 0 && options->receive_mixed == 0;
+            if (!zeroInitializedTail && options->o_t_version >= 2 &&
+                options->attdef_mismatch != ParasolidConstants.PK_ATTDEF_mismatch_fail_c &&
+                options->attdef_mismatch != ParasolidConstants.PK_ATTDEF_mismatch_ignore_c)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
+            if (options->o_t_version >= 3 && options->part_index != 0)
+                return ParasolidConstants.PK_ERROR_bad_index;
+            if (options->o_t_version is 3 or 4 && options->n_part_indices != 0)
+                return ParasolidConstants.PK_ERROR_bad_value;
+            if (options->o_t_version >= 6 && (options->n_part_indices < 0 ||
+                options->n_part_indices > 0 && options->part_indices is null))
+                return ParasolidConstants.PK_ERROR_bad_index;
+            if (options->o_t_version == 4 && options->n_identifiers != 0)
+                return ParasolidConstants.PK_ERROR_not_a_logical;
+            if (options->o_t_version >= 6 && options->n_identifiers != 0)
+                return ParasolidConstants.PK_ERROR_bad_value;
+            if (options->o_t_version >= 5 && options->receive_indexed_context != 0)
+                return ParasolidConstants.PK_ERROR_not_implemented;
+            if (options->o_t_version >= 6 && options->key_is_partition != 0)
+                return ParasolidConstants.PK_ERROR_bad_value;
+            if (!zeroInitializedTail && options->o_t_version >= 6 &&
+                options->receive_compound != ParasolidConstants.PK_receive_compound_split_c &&
+                options->receive_compound != ParasolidConstants.PK_receive_compound_keep_c &&
+                options->receive_compound != ParasolidConstants.PK_receive_compound_fail_c)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
+            if (!zeroInitializedTail && options->o_t_version >= 7 &&
+                options->receive_using_seek != ParasolidConstants.PK_receive_using_seek_no_c &&
+                options->receive_using_seek != ParasolidConstants.PK_receive_using_seek_yes_c)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
+            if (!zeroInitializedTail && options->o_t_version >= 8 &&
+                options->receive_mixed != ParasolidConstants.PK_receive_mixed_fail_c &&
+                options->receive_mixed != ParasolidConstants.PK_receive_mixed_make_facet_c &&
+                options->receive_mixed != ParasolidConstants.PK_receive_mixed_allow_c)
+                return ParasolidConstants.PK_ERROR_field_of_wrong_type;
+            if (options->o_t_version >= 8 && options->receive_mixed == ParasolidConstants.PK_receive_mixed_make_facet_c)
+                return ParasolidConstants.PK_ERROR_not_implemented;
+            for (var index = 0; options->o_t_version >= 6 && index < options->n_part_indices; index++)
+            {
+                if (options->part_indices[index] < 0 || index > 0 && options->part_indices[index] <= options->part_indices[index - 1])
+                    return ParasolidConstants.PK_ERROR_bad_index;
+            }
         }
 
         var builder = new System.Text.StringBuilder((int)Math.Min(block.n_bytes, 1_000_000));
@@ -2434,7 +2600,14 @@ internal static unsafe class KernelRuntime
             builder.Append(System.Text.Encoding.ASCII.GetString(current->bytes, checked((int)current->n_bytes)));
         }
 
-        var error = XtReader.ReadText(builder.ToString(), out var received);
+        var receiveUserFields = options is not null && options->receive_user_fields != 0;
+        var partIndices = options is null || options->o_t_version < 6 || options->n_part_indices == 0
+            ? ReadOnlySpan<int>.Empty
+            : new ReadOnlySpan<int>(options->part_indices, options->n_part_indices);
+        var receiveCompound = options is null || options->o_t_version < 6 || options->receive_compound == 0
+            ? ParasolidConstants.PK_receive_compound_split_c
+            : options->receive_compound;
+        var error = XtReader.ReadText(builder.ToString(), receiveUserFields, partIndices, receiveCompound, out var received);
         if (error != ParasolidConstants.PK_ERROR_no_errors)
             return error;
 
@@ -2919,7 +3092,12 @@ internal static unsafe class KernelRuntime
         {
             case PoolKind.Point: Points.Free(slot); break;
             case PoolKind.Vector: Vectors.Free(slot); break;
-            case PoolKind.Body: Bodies.Free(slot); break;
+            case PoolKind.Body:
+                BodyXtDocuments[slot] = null;
+                BodyXtRootIndexes[slot] = 0;
+                BodyXtOpaque[slot] = 0;
+                Bodies.Free(slot);
+                break;
             case PoolKind.Shell: Shells.Free(slot); break;
             case PoolKind.Face: Faces.Free(slot); break;
             case PoolKind.Loop: Loops.Free(slot); break;

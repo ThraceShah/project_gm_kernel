@@ -7,7 +7,7 @@ internal static unsafe class XtWriter
     private const double DefaultResolutionSize = 1000.0;
     private const double DefaultLinearResolution = 1e-8;
 
-    public static int WriteText(IReadOnlyList<EntityTag> parts, out string text)
+    public static int WriteText(IReadOnlyList<EntityTag> parts, int transmitVersion, out string text)
     {
         text = "";
         var nodes = new List<XtNode>(128);
@@ -33,7 +33,14 @@ internal static unsafe class XtWriter
         if (parts.Count > 1)
             nodes[0] = PartTransmitBlockNode(1, bodyIndexes);
 
-        text = XtText.Encode(nodes);
+        try
+        {
+            text = XtText.EncodeCurrent(nodes, transmitVersion);
+        }
+        catch (NotSupportedException)
+        {
+            return ParasolidConstants.PK_ERROR_wrong_version;
+        }
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 

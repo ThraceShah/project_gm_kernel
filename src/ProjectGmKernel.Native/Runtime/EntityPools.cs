@@ -272,6 +272,7 @@ internal enum EntityClass : int
     Curve = 2002,
     Surface = 2003,
     Transform = 2500,
+    Assembly = 5008,
 }
 
 /// <summary>

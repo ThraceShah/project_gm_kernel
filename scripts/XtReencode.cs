@@ -3,13 +3,25 @@
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 
 using ProjectGmKernel.Native.Runtime;
+using System.Runtime.CompilerServices;
 
-if (args.Length != 2)
+static string GetScriptPath([CallerFilePath] string path = "") => path;
+
+if (args.Length is not 2 and not 4 || args.Length == 4 && args[2] is not "--schema" and not "--base-schema")
 {
-    Console.Error.WriteLine("usage: dotnet run scripts/XtReencode.cs -- INPUT.x_t OUTPUT.x_t");
+    Console.Error.WriteLine("usage: dotnet run scripts/XtReencode.cs -- INPUT.x_t OUTPUT.x_t [--schema IDENTITY | --base-schema IDENTITY]");
     return 2;
 }
 
-var nodes = XtText.Decode(File.ReadAllText(args[0]));
-File.WriteAllText(args[1], XtText.Encode(nodes));
+var scriptDirectory = Path.GetDirectoryName(GetScriptPath()) ?? ".";
+var inputPath = Path.GetFullPath(Path.Combine(scriptDirectory, args[0]));
+var outputPath = Path.GetFullPath(Path.Combine(scriptDirectory, args[1]));
+var source = File.ReadAllBytes(inputPath);
+var output = args.Length == 2
+    ? System.Text.Encoding.ASCII.GetBytes(XtText.Encode(XtText.DecodeDocument(System.Text.Encoding.ASCII.GetString(source))))
+    : args[2] == "--schema"
+        ? XtCorpusInspection.Transcode(source, args[3])
+        : XtCorpusInspection.EmbedWithBaseSchema(source, args[3]);
+Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+File.WriteAllBytes(outputPath, output);
 return 0;

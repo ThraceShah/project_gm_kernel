@@ -141,7 +141,27 @@ static unsafe void FreeArray<T>(T* values)
 static void Check(PK_ERROR_code_t error, string name)
 {
     if (error != 0)
-        throw new InvalidOperationException($"{name} failed with error {error}");
+        throw new InvalidOperationException($"{name} failed with error {error}; {DescribeLastError()}");
+}
+
+static unsafe string DescribeLastError()
+{
+    PK_LOGICAL_t wasError;
+    var details = new PK_ERROR_sf_t();
+    if (PK_ERROR_ask_last(&wasError, &details) != PK_ERROR_no_errors || !wasError)
+        return "no error detail";
+    byte* function = details.function;
+    byte* token = details.code_token;
+    byte* argument = details.argument_name;
+    return $"function={ReadToken(function)} code={ReadToken(token)} argument={details.argument_number}:{ReadToken(argument)}[{details.argument_index}] entity={details.entity}";
+}
+
+static unsafe string ReadToken(byte* value)
+{
+    var length = 0;
+    while (length < 32 && value[length] != 0)
+        length++;
+    return System.Text.Encoding.ASCII.GetString(value, length);
 }
 
 static void Require(bool condition, string label, int actual, int expected)

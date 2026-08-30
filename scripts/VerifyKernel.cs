@@ -30,6 +30,10 @@ var xtSchemaExit = Run("dotnet", "run scripts/GenerateXtSchema.cs -- --check", c
 if (xtSchemaExit != 0)
     return xtSchemaExit;
 
+var xtSchemaDifferencesExit = Run("dotnet", "run scripts/GenerateXtSchemaDifferences.cs -- --check", cleanupTesthost: false);
+if (xtSchemaDifferencesExit != 0)
+    return xtSchemaDifferencesExit;
+
 var publishExit = Run("dotnet", $"publish src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj -c Release -r {rid}", cleanupTesthost: false);
 if (publishExit != 0)
     return publishExit;
@@ -53,6 +57,30 @@ if (parasolidOracleExit != 0)
 var parasolidPrimitiveOracleExit = Run("dotnet", "run scripts/ParasolidPrimitiveOracle.cs", cleanupTesthost: false);
 if (parasolidPrimitiveOracleExit != 0)
     return parasolidPrimitiveOracleExit;
+
+var allSchemaOracleExit = Run("dotnet", "run scripts/ParasolidAllSchemaOracle.cs -- --check", cleanupTesthost: false);
+if (allSchemaOracleExit != 0)
+    return allSchemaOracleExit;
+
+var corpusOracleExit = Run("dotnet", "run scripts/GenerateParasolidXtCorpus.cs -- --check", cleanupTesthost: false);
+if (corpusOracleExit != 0)
+    return corpusOracleExit;
+
+var schemaCorpusMatrixExit = Run("dotnet", "run scripts/ParasolidSchemaCorpusMatrix.cs -- --check", cleanupTesthost: false);
+if (schemaCorpusMatrixExit != 0)
+    return schemaCorpusMatrixExit;
+
+var corpusCoverageExit = Run("dotnet", "run scripts/CheckParasolidXtCorpusCoverage.cs -- --check --strict", cleanupTesthost: false);
+if (corpusCoverageExit != 0)
+    return corpusCoverageExit;
+
+var schemaDependencyExit = Run("dotnet", "run scripts/CheckParasolidSchemaDependencies.cs -- --check --strict", cleanupTesthost: false);
+if (schemaDependencyExit != 0)
+    return schemaDependencyExit;
+
+var goldenFixtureExit = Run("dotnet", "run scripts/CheckParasolidXtGoldenFixtures.cs -- --check --strict", cleanupTesthost: false);
+if (goldenFixtureExit != 0)
+    return goldenFixtureExit;
 
 var manualExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "KernelExports.cs");
 var generatedExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "KernelExports.generated.cs");

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "caseId": "topology.advanced.face-ring-face",
+      "minimumModelerVersion": 600343,
+      "reason": "SCH_600186_6020 collapses the two-face result to one face; SCH_600343_6021 is the first bundled schema that preserves face-ring face cardinality."
+    },
+    {
+      "caseId": "topology.advanced.loop-make-edge-face",
+      "minimumModelerVersion": 600343,
+      "reason": "SCH_600186_6020 collapses the two-face result to one face; SCH_600343_6021 is the first bundled schema that preserves the loop-make-edge face branch."
+    }
+  ]
+}
