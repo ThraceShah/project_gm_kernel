@@ -8,6 +8,8 @@ internal static unsafe class ParasolidScriptHost
     private static string? libraryPath;
     private static nint libraryHandle;
     private static bool resolverRegistered;
+    private static string? schemaCacheDirectory;
+    private static readonly FileStream?[] OpenSchemaFiles = new FileStream?[64];
 
     public static bool TryStartSession(
         string label,
@@ -53,14 +55,16 @@ internal static unsafe class ParasolidScriptHost
 
         var scriptDir = Path.GetDirectoryName(scriptPath);
         var repoRoot = FindRepositoryRoot(scriptDir ?? ".");
-        var schemaDir = Path.Combine(repoRoot, "third_party", "parasolid", "schema");
+        var schemaSourceDir = Path.Combine(repoRoot, "third_party", "parasolid", "schema");
         var candidateLibraryPath = GetDynamicLibraryPath(repoRoot, platform);
-        if (!Directory.Exists(schemaDir) || !File.Exists(candidateLibraryPath))
+        if (!Directory.Exists(schemaSourceDir) || !File.Exists(candidateLibraryPath))
         {
             message = label + " skipped: third_party/parasolid schema or dynamic library is missing.";
             return false;
         }
 
+        var schemaDir = PrepareSchemaCache(repoRoot, schemaSourceDir);
+        schemaCacheDirectory = schemaDir;
         Environment.SetEnvironmentVariable("P_SCHEMA", schemaDir);
         libraryPath = candidateLibraryPath;
         RegisterResolver();
@@ -78,6 +82,22 @@ internal static unsafe class ParasolidScriptHost
 
         message = "";
         return true;
+    }
+
+    private static string PrepareSchemaCache(string repoRoot, string sourceDirectory)
+    {
+        var cacheDirectory = Path.Combine(repoRoot, "bin", "parasolid-schema-cache");
+        Directory.CreateDirectory(cacheDirectory);
+        foreach (var source in Directory.EnumerateFiles(sourceDirectory, "sch_*.sch_txt", SearchOption.TopDirectoryOnly))
+        {
+            var stem = Path.GetFileName(source)[..^".sch_txt".Length];
+            var destination = Path.Combine(cacheDirectory, stem.ToLowerInvariant() + ".s_t");
+            var sourceInfo = new FileInfo(source);
+            var destinationInfo = new FileInfo(destination);
+            if (!destinationInfo.Exists || destinationInfo.Length != sourceInfo.Length || destinationInfo.LastWriteTimeUtc < sourceInfo.LastWriteTimeUtc)
+                File.Copy(source, destination, overwrite: true);
+        }
+        return cacheDirectory;
     }
 
     private static string FindRepositoryRoot(string startDirectory)
@@ -153,6 +173,9 @@ internal static unsafe class ParasolidScriptHost
             fstop = &FrustrumOk,
             fmallo = &FrustrumAlloc,
             fmfree = &FrustrumFree,
+            ffoprd = &FrustrumFileOpenRead,
+            ffread = &FrustrumFileRead,
+            ffclos = &FrustrumFileClose,
         };
         Check(PK_SESSION_register_frustrum(&frustrum), "PK_SESSION_register_frustrum");
 
@@ -179,6 +202,92 @@ internal static unsafe class ParasolidScriptHost
         NativeMemory.Free(*memory);
         *memory = null;
         *ifail = FR_no_errors;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void FrustrumFileOpenRead(int* guise, int* format, byte* name, int* nameLength, int* skipHeader, int* streamId, int* ifail)
+    {
+        *streamId = -1;
+        *ifail = FR_open_fail;
+        try
+        {
+            if (schemaCacheDirectory is null || *nameLength <= 0)
+                return;
+            var requested = System.Text.Encoding.ASCII.GetString(new ReadOnlySpan<byte>(name, *nameLength));
+            requested = Path.GetFileName(requested).ToLowerInvariant();
+            if (!requested.EndsWith(".s_t", StringComparison.Ordinal))
+                requested += ".s_t";
+            var path = Path.Combine(schemaCacheDirectory, requested);
+            var slot = Array.FindIndex(OpenSchemaFiles, static file => file is null);
+            if (slot < 0 || !File.Exists(path))
+                return;
+            var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            if (*skipHeader == FFSKHD)
+                SkipSchemaHeader(stream);
+            OpenSchemaFiles[slot] = stream;
+            *streamId = slot;
+            *ifail = FR_no_errors;
+        }
+        catch
+        {
+            *ifail = FR_open_fail;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void FrustrumFileRead(int* guise, int* streamId, int* maximum, byte* buffer, int* actual, int* ifail)
+    {
+        *actual = 0;
+        *ifail = FR_read_fail;
+        try
+        {
+            if ((uint)*streamId >= (uint)OpenSchemaFiles.Length || OpenSchemaFiles[*streamId] is not { } stream)
+                return;
+            *actual = stream.Read(new Span<byte>(buffer, *maximum));
+            *ifail = *actual == 0 ? FR_end_of_file : FR_no_errors;
+        }
+        catch
+        {
+            *ifail = FR_read_fail;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void FrustrumFileClose(int* guise, int* streamId, int* action, int* ifail)
+    {
+        *ifail = FR_close_fail;
+        try
+        {
+            if ((uint)*streamId >= (uint)OpenSchemaFiles.Length || OpenSchemaFiles[*streamId] is not { } stream)
+                return;
+            OpenSchemaFiles[*streamId] = null;
+            stream.Dispose();
+            *ifail = FR_no_errors;
+        }
+        catch
+        {
+            *ifail = FR_close_fail;
+        }
+    }
+
+    private static void SkipSchemaHeader(FileStream stream)
+    {
+        Span<byte> one = stackalloc byte[1];
+        var line = new List<byte>(96);
+        while (stream.Read(one) != 0)
+        {
+            if (one[0] == (byte)'\n')
+            {
+                if (line.Count >= 15 && System.Text.Encoding.ASCII.GetString(CollectionsMarshal.AsSpan(line)).StartsWith("**END_OF_HEADER", StringComparison.Ordinal))
+                    return;
+                line.Clear();
+            }
+            else if (one[0] != (byte)'\r')
+            {
+                line.Add(one[0]);
+            }
+        }
+        stream.Position = 0;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

@@ -1,0 +1,671 @@
+{
+  "generator": "parasolid-schema-corpus-matrix-v2",
+  "schemaCount": 64,
+  "caseCount": 328,
+  "applicableCount": 20391,
+  "passedCount": 20391,
+  "failedCount": 0,
+  "notApplicableCount": 601,
+  "sourceUnavailableCount": 0,
+  "schemas": [
+    {
+      "identity": "SCH_1000102_10002",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1000149_10004",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1001026_10100",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1100071_11003",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1100100_11004",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1200118_12006",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1201050_12102",
+      "status": "CorpusVerified",
+      "applicableCount": 317,
+      "passedCount": 317,
+      "failedCount": 0,
+      "notApplicableCount": 11,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1201142_12103",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1300033_13005",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1300120_13006",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1400043_14000",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1500084_15003",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1501143_15102",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1600065_16002",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1600090_16003",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1601018_16004",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1601133_16100",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1701146_17104",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1701154_17105",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1701165_17106",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1800075_18005",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1800117_18007",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1801039_18106",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1900134_19002",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1900149_19007",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_1900157_19008",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2000107_20000",
+      "status": "CorpusVerified",
+      "applicableCount": 323,
+      "passedCount": 323,
+      "failedCount": 0,
+      "notApplicableCount": 5,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2500005_25000",
+      "status": "CorpusVerified",
+      "applicableCount": 325,
+      "passedCount": 325,
+      "failedCount": 0,
+      "notApplicableCount": 3,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2500120_25001",
+      "status": "CorpusVerified",
+      "applicableCount": 325,
+      "passedCount": 325,
+      "failedCount": 0,
+      "notApplicableCount": 3,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2601118_26102",
+      "status": "CorpusVerified",
+      "applicableCount": 325,
+      "passedCount": 325,
+      "failedCount": 0,
+      "notApplicableCount": 3,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2601134_26104",
+      "status": "CorpusVerified",
+      "applicableCount": 325,
+      "passedCount": 325,
+      "failedCount": 0,
+      "notApplicableCount": 3,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2700008_26105",
+      "status": "CorpusVerified",
+      "applicableCount": 325,
+      "passedCount": 325,
+      "failedCount": 0,
+      "notApplicableCount": 3,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2800099_28002",
+      "status": "CorpusVerified",
+      "applicableCount": 326,
+      "passedCount": 326,
+      "failedCount": 0,
+      "notApplicableCount": 2,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_2801142_28101",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3000119_30000",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3100020_30100",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3101042_31001",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3200020_31100",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3200138_32001",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3301102_33101",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3301152_33103",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3400066_34001",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3401113_34101",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3500127_35001",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3500137_35002",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3501127_35102",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3600031_36001",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_3701097_37102",
+      "status": "CorpusVerified",
+      "applicableCount": 328,
+      "passedCount": 328,
+      "failedCount": 0,
+      "notApplicableCount": 0,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_600186_6020",
+      "status": "CorpusVerified",
+      "applicableCount": 289,
+      "passedCount": 289,
+      "failedCount": 0,
+      "notApplicableCount": 39,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_600343_6021",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_700043_7002",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_700064_7007",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_701037_7014",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_701068_7015",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_701081_7016",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_800025_8000",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_800046_8002",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_800081_8005",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_800097_8008",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_900080_8101",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_900102_9001",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_900133_9003",
+      "status": "CorpusVerified",
+      "applicableCount": 302,
+      "passedCount": 302,
+      "failedCount": 0,
+      "notApplicableCount": 26,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_900161_9008",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    },
+    {
+      "identity": "SCH_901101_9100",
+      "status": "CorpusVerified",
+      "applicableCount": 316,
+      "passedCount": 316,
+      "failedCount": 0,
+      "notApplicableCount": 12,
+      "sourceUnavailableCount": 0
+    }
+  ],
+  "notApplicableReasons": [
+    {
+      "reason": "node 70/3 field notransmit[0] is unavailable (i:1)",
+      "count": 224
+    },
+    {
+      "reason": "node 70/2 field notransmit[0] is unavailable (i:1)",
+      "count": 70
+    },
+    {
+      "reason": "node 41/25 field term_use[0] is unavailable (c:S/83)",
+      "count": 48
+    },
+    {
+      "reason": "node 80/12 field field_names[0] is unavailable (p:96)",
+      "count": 45
+    },
+    {
+      "reason": "node 12/1 field child[0] is unavailable (p:10)",
+      "count": 43
+    },
+    {
+      "reason": "node 12/1 field child[0] is unavailable (p:9)",
+      "count": 43
+    },
+    {
+      "reason": "node 12/1 field boundary_mesh[0] is unavailable (p:4)",
+      "count": 33
+    },
+    {
+      "reason": "node 12/1 field boundary_mesh[0] is unavailable (p:5)",
+      "count": 33
+    },
+    {
+      "reason": "node 12/1 field boundary_polyline[0] is unavailable (p:6)",
+      "count": 16
+    },
+    {
+      "reason": "node 201/4 is unavailable",
+      "count": 16
+    },
+    {
+      "reason": "node 80/88 field field_names[0] is unavailable (p:95)",
+      "count": 9
+    },
+    {
+      "reason": "node 98/13 is unavailable",
+      "count": 8
+    },
+    {
+      "reason": "node 40/44 field base_scale[0] is unavailable (f:0.995967792365097)",
+      "count": 6
+    },
+    {
+      "reason": "SCH_600186_6020 collapses the two-face result to one face; SCH_600343_6021 is the first bundled schema that preserves face-ring face cardinality.",
+      "count": 1
+    },
+    {
+      "reason": "SCH_600186_6020 collapses the two-face result to one face; SCH_600343_6021 is the first bundled schema that preserves the loop-make-edge face branch.",
+      "count": 1
+    },
+    {
+      "reason": "node 40/42 field base_scale[0] is unavailable (f:0.994746797235078)",
+      "count": 1
+    },
+    {
+      "reason": "node 40/44 field base_scale[0] is unavailable (f:1.001858013737602)",
+      "count": 1
+    },
+    {
+      "reason": "node 40/47 field base_scale[0] is unavailable (f:0.993928343872667)",
+      "count": 1
+    },
+    {
+      "reason": "node 40/47 field base_scale[0] is unavailable (f:0.995118852558116)",
+      "count": 1
+    },
+    {
+      "reason": "node 40/47 field base_scale[0] is unavailable (f:0.997554422756589)",
+      "count": 1
+    }
+  ],
+  "failures": []
+}

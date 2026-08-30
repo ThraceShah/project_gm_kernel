@@ -8,6 +8,7 @@ const int PK_CLASS_point = 2501;
 const int PK_TOPOL_sense_negative_c = 18541;
 const int PK_TOPOL_sense_positive_c = 18542;
 const int PK_transmit_format_text_c = 18220;
+const int PK_transmit_meshes_separate_c = 26130;
 
 static string GetScriptPath([CallerFilePath] string path = "") => path;
 
@@ -130,8 +131,9 @@ try
 
         var transmitOptions = new PK_PART_transmit_o_s
         {
-            o_t_version = 10,
+            o_t_version = 4,
             transmit_format = PK_transmit_format_text_c,
+            transmit_meshes = PK_transmit_meshes_separate_c,
         };
         var memoryBlock = new PK_MEMORY_block_s();
         Check(partTransmitB(1, &cylBody, &transmitOptions, &memoryBlock), "PK_PART_transmit_b(cylinder)");
@@ -140,7 +142,7 @@ try
 
         var receiveOptions = new PK_PART_receive_o_s
         {
-            o_t_version = 14,
+            o_t_version = 8,
             transmit_format = PK_transmit_format_text_c,
         };
         int receivedCount;

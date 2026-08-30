@@ -8,9 +8,10 @@
   <ItemGroup Condition="'$(UseParasolidXtCorpusHost)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidXtCorpusHost.cs" Link="ParasolidXtCorpusHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidXtSchemaInspector.cs" Link="ParasolidXtSchemaInspector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CorpusManagedKernel.cs" Link="CorpusManagedKernel.cs" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseCorpusManagedKernel)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)CorpusManagedKernel.cs" Link="CorpusManagedKernel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CorpusManagedKernelBodyWriter.cs" Link="CorpusManagedKernelBodyWriter.cs" />
   </ItemGroup>
 </Project>

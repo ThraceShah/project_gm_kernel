@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ProjectGmKernel.Native.Runtime;
 using static parasolid;
 
 public readonly record struct CorpusBodyCounts(
@@ -402,6 +403,14 @@ public static unsafe class ParasolidXtCorpusHost
         return schema.schema_version;
     }
 
+    private static void RequireStructuralRoundTrip(byte[] expected, byte[] actual, string caseId)
+    {
+        var expectedHash = XtCorpusInspection.ComputeStructuralHash(expected);
+        var actualHash = XtCorpusInspection.ComputeStructuralHash(actual);
+        if (!string.Equals(expectedHash, actualHash, StringComparison.Ordinal))
+            throw new InvalidOperationException($"{caseId} structural XT hash differs: {expectedHash} != {actualHash}");
+    }
+
     private static void RunCase(
         string group,
         CorpusCaseSpec spec,
@@ -440,7 +449,21 @@ public static unsafe class ParasolidXtCorpusHost
         else
             ReceiveAndCompare(xt, body, counts, spec.CaseId, spec.TransmitUserFields);
 
-        var managedVerification = "not-requested";
+        var managedRoundTrip = CorpusManagedKernel.RoundTrip(xt, TransmitVersion, spec.TransmitUserFields, spec.IsCompound);
+        RequireStructuralRoundTrip(xt, managedRoundTrip, spec.CaseId + " managed round-trip");
+        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-roundtrip.x_t"), managedRoundTrip);
+        if (spec.IsCompound)
+            ReceiveCompoundAndCompare(managedRoundTrip, body, counts, spec.CaseId + " managed round-trip");
+        else
+            ReceiveAndCompare(managedRoundTrip, body, counts, spec.CaseId + " managed round-trip", spec.TransmitUserFields);
+        var managedEmbedded = CorpusManagedKernel.RoundTrip(xt, 0, spec.TransmitUserFields, spec.IsCompound);
+        RequireStructuralRoundTrip(xt, managedEmbedded, spec.CaseId + " managed embedded");
+        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-embedded.x_t"), managedEmbedded);
+        if (spec.IsCompound)
+            ReceiveCompoundAndCompare(managedEmbedded, body, counts, spec.CaseId + " managed embedded");
+        else
+            ReceiveAndCompare(managedEmbedded, body, counts, spec.CaseId + " managed embedded", spec.TransmitUserFields);
+        var managedVerification = "passed";
         if (spec.ManagedTransmit is not null)
         {
             var managedXt = spec.ManagedTransmit();
@@ -451,7 +474,6 @@ public static unsafe class ParasolidXtCorpusHost
                 ReceiveCompoundAndCompare(managedXt, body, counts, spec.CaseId + " managed");
             else
                 ReceiveAndCompare(managedXt, body, counts, spec.CaseId + " managed", false);
-            managedVerification = "passed";
         }
 
         var schemaInventory = !spec.InspectSchema || spec.TransmitUserFields
@@ -509,6 +531,14 @@ public static unsafe class ParasolidXtCorpusHost
         var bytes = Transmit(assembly);
         File.WriteAllBytes(Path.Combine(caseDirectory, "model.x_t"), bytes);
         var counts = ReceiveAssemblyAndCheck(bytes, assembly, spec.ExpectedCounts, spec.CaseId);
+        var managedRoundTrip = CorpusManagedKernel.RoundTrip(bytes, TransmitVersion);
+        RequireStructuralRoundTrip(bytes, managedRoundTrip, spec.CaseId + " managed round-trip");
+        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-roundtrip.x_t"), managedRoundTrip);
+        _ = ReceiveAssemblyAndCheck(managedRoundTrip, assembly, spec.ExpectedCounts, spec.CaseId + " managed round-trip");
+        var managedEmbedded = CorpusManagedKernel.RoundTrip(bytes, 0);
+        RequireStructuralRoundTrip(bytes, managedEmbedded, spec.CaseId + " managed embedded");
+        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-embedded.x_t"), managedEmbedded);
+        _ = ReceiveAssemblyAndCheck(managedEmbedded, assembly, spec.ExpectedCounts, spec.CaseId + " managed embedded");
         var semanticHash = ComputeAssemblySemanticHash(spec, schemaVersion, counts);
         var manifest = new CorpusAssemblyManifest(
             spec.CaseId,
@@ -675,6 +705,8 @@ public static unsafe class ParasolidXtCorpusHost
                     (expectedCounts.Fins != 0 && receivedCounts.Fins != expectedCounts.Fins))
                     throw new InvalidOperationException($"self-receive counts mismatch: expected {expectedCounts}, got {receivedCounts}");
                 CompareBodies(expected, received, caseId);
+                if (receiveUserFields)
+                    CompareUserFields(expected, received, caseId);
             }
             finally
             {
@@ -790,6 +822,52 @@ public static unsafe class ParasolidXtCorpusHost
         finally
         {
             Free(expectedChildren);
+        }
+    }
+
+    private static void CompareUserFields(PK_BODY_t expected, PK_BODY_t received, string caseId)
+    {
+        int length;
+        Check(PK_SESSION_ask_user_field_len(&length), "PK_SESSION_ask_user_field_len " + caseId);
+        if (length <= 0)
+            throw new InvalidOperationException(caseId + " requested user-field comparison in a zero-length session");
+        var expectedBody = stackalloc int[length];
+        var receivedBody = stackalloc int[length];
+        Check(PK_ENTITY_ask_user_field(expected, expectedBody), "PK_ENTITY_ask_user_field expected body " + caseId);
+        Check(PK_ENTITY_ask_user_field(received, receivedBody), "PK_ENTITY_ask_user_field received body " + caseId);
+        for (var index = 0; index < length; index++)
+        {
+            if (expectedBody[index] != receivedBody[index])
+                throw new InvalidOperationException($"{caseId} body user field differs at {index}: {expectedBody[index]} != {receivedBody[index]}");
+        }
+
+        var expectedFaces = UserFieldSignatures(expected, length);
+        var receivedFaces = UserFieldSignatures(received, length);
+        if (!expectedFaces.SequenceEqual(receivedFaces, StringComparer.Ordinal))
+            throw new InvalidOperationException(caseId + " face user-field payloads differ");
+    }
+
+    private static string[] UserFieldSignatures(PK_BODY_t body, int length)
+    {
+        int faceCount;
+        PK_FACE_t* faces;
+        Check(PK_BODY_ask_faces(body, &faceCount, &faces), "PK_BODY_ask_faces user fields");
+        try
+        {
+            var signatures = new string[faceCount];
+            var values = stackalloc int[length];
+            for (var faceIndex = 0; faceIndex < faceCount; faceIndex++)
+            {
+                Check(PK_ENTITY_ask_user_field(faces[faceIndex], values), "PK_ENTITY_ask_user_field face");
+                signatures[faceIndex] = string.Join(',', new ReadOnlySpan<int>(values, length).ToArray());
+            }
+            Array.Sort(signatures, StringComparer.Ordinal);
+            return signatures;
+        }
+        finally
+        {
+            if (faces is not null)
+                Check(PK_MEMORY_free(faces), "PK_MEMORY_free user-field faces");
         }
     }
 

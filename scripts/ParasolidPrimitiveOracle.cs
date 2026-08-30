@@ -69,8 +69,9 @@ static unsafe void WriteOurPart(string dir, string label, int body)
 {
     var options = new ProjectGmKernel.Native.Generated.PK_PART_transmit_o_s
     {
-        o_t_version = 10,
+        o_t_version = 4,
         transmit_format = ParasolidConstants.PK_transmit_format_text_c,
+        transmit_meshes = ParasolidConstants.PK_transmit_meshes_separate_c,
     };
     var block = new ProjectGmKernel.Native.Generated.PK_MEMORY_block_s();
     CheckManaged(KernelRuntime.PartTransmitB(1, &body, &options, &block), "PartTransmitB " + label);

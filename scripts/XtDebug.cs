@@ -4,6 +4,9 @@
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 
 using ProjectGmKernel.Native.Runtime;
+using System.Runtime.CompilerServices;
+
+static string GetScriptPath([CallerFilePath] string path = "") => path;
 
 if (args.Length is < 1 or > 2)
 {
@@ -11,16 +14,28 @@ if (args.Length is < 1 or > 2)
     return 2;
 }
 
-var text = File.ReadAllText(args[0]);
+var scriptDirectory = Path.GetDirectoryName(GetScriptPath()) ?? ".";
+var inputPath = Path.GetFullPath(Path.Combine(scriptDirectory, args[0]));
+var text = File.ReadAllText(inputPath);
 try
 {
-    var nodes = XtText.Decode(text);
-    Console.WriteLine($"decode ok: nodes={nodes.Length}");
+    var document = XtText.DecodeDocument(text);
+    var nodes = document.Nodes;
+    Console.WriteLine($"decode ok: schema={document.HeaderSchemaIdentity} nodes={nodes.Length} root={(nodes.Length == 0 ? "none" : nodes[0].Type + "/" + nodes[0].Index)}");
+    try
+    {
+        var semantic = document.SemanticModel;
+        Console.WriteLine($"semantic ok: roots={semantic.PartRoots.Length} extensions={semantic.VersionExtensions.Length}");
+    }
+    catch (Exception exception)
+    {
+        Console.WriteLine($"semantic failed: {exception.GetType().Name}: {exception.Message}");
+    }
     foreach (var group in nodes.GroupBy(node => node.Type).OrderBy(group => group.Key))
         Console.WriteLine($"  type {group.Key}: {group.Count()}");
 
     if (args.Length > 1 && args[1] == "--dump")
-        DumpNodes(nodes);
+        DumpNodes(document);
 }
 catch (Exception ex)
 {
@@ -45,21 +60,27 @@ unsafe
     return error == 0 ? 0 : 1;
 }
 
-static void DumpNodes(XtNode[] nodes)
+static void DumpNodes(XtDocument document)
 {
-    foreach (var node in nodes)
+    foreach (var node in document.Nodes)
     {
-        var descriptor = ProjectGmKernel.Native.Generated.XtSchema.GetNode(node.Type);
+        var descriptor = document.Schema.GetNode(node.Type);
         Console.WriteLine($"{node.Type} {node.Index} {descriptor.Name}");
-        var fields = ProjectGmKernel.Native.Generated.XtSchema.Fields.Slice(descriptor.FieldOffset, descriptor.ParsedFieldCount);
+        var fields = document.Schema.Fields.Slice(descriptor.FieldOffset, descriptor.ParsedFieldCount);
         var valueIndex = 0;
         for (var i = 0; i < fields.Length; i++)
         {
             if (!fields[i].Transmit)
                 continue;
 
-            var value = node.Fields[valueIndex++];
-            Console.WriteLine($"  {fields[i].Name}: {Format(value)}");
+            var count = fields[i].ElementCount > 1
+                ? fields[i].ElementCount
+                : descriptor.Variable && fields[i].ElementCount == 1 ? node.VariableLength : 1;
+            for (var index = 0; index < count; index++)
+            {
+                var value = node.Fields[valueIndex++];
+                Console.WriteLine($"  {fields[i].Name}[{index}]: {Format(value)}");
+            }
         }
     }
 }
@@ -73,6 +94,8 @@ static string Format(XtFieldValue value)
         XtFieldKind.Character => "'" + value.Character + "'",
         XtFieldKind.Logical => value.Integer != 0 ? "T" : "F",
         XtFieldKind.Vector => $"({value.Vector.X:G17}, {value.Vector.Y:G17}, {value.Vector.Z:G17})",
+        XtFieldKind.Interval => $"[{value.Vector.X:G17}, {value.Vector.Y:G17}]",
+        XtFieldKind.Box => $"[{value.Vector.X:G17}, {value.Vector.Y:G17}]x[{value.Vector.Z:G17}, {value.Fourth:G17}]x[{value.Fifth:G17}, {value.Sixth:G17}]",
         _ => value.Integer.ToString(System.Globalization.CultureInfo.InvariantCulture),
     };
 }
