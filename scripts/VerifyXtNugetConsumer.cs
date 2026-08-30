@@ -5,14 +5,22 @@ using System.Runtime.CompilerServices;
 
 var scriptDirectory=Path.GetDirectoryName(GetScriptPath())!;var root=Path.GetFullPath(Path.Combine(scriptDirectory,".."));
 Run("dotnet",["pack",Path.Combine(root,"src","ProjectGmKernel.Xt","ProjectGmKernel.Xt.csproj"),"-c","Release"]);
-var directory=Path.Combine(root,"bin","xt-nuget-consumer");Directory.CreateDirectory(directory);
+var directory=Path.Combine(root,"bin","xt-nuget-consumer");
+if(Directory.Exists(directory))Directory.Delete(directory,true);
+Directory.CreateDirectory(directory);
 File.WriteAllText(Path.Combine(directory,"NuGet.Config"),$"<configuration><packageSources><clear/><add key=\"local\" value=\"{Path.Combine(root,"bin","nuget")}\"/></packageSources></configuration>");
 File.WriteAllText(Path.Combine(directory,"Consumer.csproj"),"""
-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings></PropertyGroup><ItemGroup><PackageReference Include="ProjectGmKernel.Xt" Version="0.1.0" /></ItemGroup></Project>
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><RestorePackagesPath>packages</RestorePackagesPath></PropertyGroup><ItemGroup><PackageReference Include="ProjectGmKernel.Xt" Version="0.1.0" /></ItemGroup></Project>
 """);
 File.WriteAllText(Path.Combine(directory,"Program.cs"),"""
 using ProjectGmKernel.Xt;
+using Schema = ProjectGmKernel.Xt.Schema.SCH_3701097_37102;
 if (typeof(XtSchemaCatalog).Assembly.GetReferencedAssemblies().Any(a => a.Name is "ProjectGmKernel.Native" or "PskernelSharp")) return 1;
+if (typeof(XtSchemaCatalog).Assembly.GetType("ProjectGmKernel.Xt.XtGeometryRow") is not null) return 2;
+var catalog = XtSchemaCatalog.OpenBuiltIn();
+if (!catalog.Resolve("SCH_3701097_37102").Nodes.ToArray().Any(node => node.Name == "INTERSECTION")) return 3;
+if (typeof(Schema.INTERSECTION).GetField("intersection_data") is null) return 4;
+if (typeof(Schema.BLENDED_EDGE).GetField("blend_type") is null) return 5;
 Console.WriteLine(typeof(XtCodec).Assembly.FullName);
 return 0;
 """);

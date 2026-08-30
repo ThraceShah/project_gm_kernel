@@ -63,6 +63,7 @@ internal static unsafe class KernelRuntime
     private static readonly int[] SurfaceSlotToTag = new int[MaxSurfaces];
     private static readonly int[] TransformSlotToTag = new int[MaxTransforms];
     private static readonly XtDocument?[] BodyXtDocuments = new XtDocument?[MaxBodies];
+    private static readonly ProjectGmKernel.Xt.IXtSchemaModel?[] BodyXtModels = new ProjectGmKernel.Xt.IXtSchemaModel?[MaxBodies];
     private static readonly int[] BodyXtRootIndexes = new int[MaxBodies];
     private static readonly byte[] BodyXtOpaque = new byte[MaxBodies];
 
@@ -113,9 +114,13 @@ internal static unsafe class KernelRuntime
     }
 
     internal static bool TryGetReceivedXt(EntityTag partTag, out XtDocument document, out XtNodeIndex rootIndex)
+        => TryGetReceivedXt(partTag, out document, out rootIndex, out _);
+
+    internal static bool TryGetReceivedXt(EntityTag partTag, out XtDocument document, out XtNodeIndex rootIndex, out ProjectGmKernel.Xt.IXtSchemaModel? model)
     {
         document = null!;
         rootIndex = 0;
+        model = null;
         if (!IsValidTag(partTag) || Handles[partTag].Pool != PoolKind.Body)
             return false;
         var slot = Handles[partTag].SlotIndex;
@@ -123,20 +128,22 @@ internal static unsafe class KernelRuntime
         if (document is null)
             return false;
         rootIndex = BodyXtRootIndexes[slot];
+        model = BodyXtModels[slot];
         return true;
     }
 
-    internal static void AttachReceivedXt(EntityTag partTag, XtDocument document, XtNodeIndex rootIndex, bool opaque)
+    internal static void AttachReceivedXt(EntityTag partTag, XtDocument document, ProjectGmKernel.Xt.IXtSchemaModel? model, XtNodeIndex rootIndex, bool opaque)
     {
         if (!IsValidTag(partTag) || Handles[partTag].Pool != PoolKind.Body)
             throw new InvalidOperationException("Cannot attach XT data to a non-part entity.");
         var slot = Handles[partTag].SlotIndex;
         BodyXtDocuments[slot] = document;
+        BodyXtModels[slot] = model;
         BodyXtRootIndexes[slot] = rootIndex;
         BodyXtOpaque[slot] = opaque ? (byte)1 : (byte)0;
     }
 
-    internal static int CreateOpaquePartCore(XtDocument document, XtNode root, out EntityTag partTag)
+    internal static int CreateOpaquePartCore(XtDocument document, ProjectGmKernel.Xt.IXtSchemaModel? model, XtNode root, out EntityTag partTag)
     {
         partTag = 0;
         EntityClass entityClass = root.Type switch
@@ -161,7 +168,7 @@ internal static unsafe class KernelRuntime
         if (entityClass == EntityClass.Body)
             AppendBodyToPartition(CurrentPartition, bodySlot);
         partTag = tag;
-        AttachReceivedXt(tag, document, root.Index, opaque: true);
+        AttachReceivedXt(tag, document, model, root.Index, opaque: true);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -294,6 +301,7 @@ internal static unsafe class KernelRuntime
         if (pool == PoolKind.Body)
         {
             BodyXtDocuments[slotIndex] = null;
+            BodyXtModels[slotIndex] = null;
             BodyXtRootIndexes[slotIndex] = 0;
             BodyXtOpaque[slotIndex] = 0;
         }
@@ -477,6 +485,7 @@ internal static unsafe class KernelRuntime
         nextTag = 1;
         Array.Clear(Handles);
         Array.Clear(BodyXtDocuments);
+        Array.Clear(BodyXtModels);
         Array.Clear(BodyXtRootIndexes);
         Array.Clear(BodyXtOpaque);
         ClearSlotToTagMaps();
@@ -518,6 +527,7 @@ internal static unsafe class KernelRuntime
         nextTag = 1;
         Array.Clear(Handles);
         Array.Clear(BodyXtDocuments);
+        Array.Clear(BodyXtModels);
         Array.Clear(BodyXtRootIndexes);
         Array.Clear(BodyXtOpaque);
         ClearSlotToTagMaps();
@@ -2500,18 +2510,26 @@ internal static unsafe class KernelRuntime
         text = "";
         error = ParasolidConstants.PK_ERROR_no_errors;
         XtDocument? document = null;
+        ProjectGmKernel.Xt.IXtSchemaModel? schemaModel = null;
         var rootIndexes = new int[parts.Length];
         for (var index = 0; index < parts.Length; index++)
         {
-            if (!TryGetReceivedXt(parts[index], out var candidate, out rootIndexes[index]))
+            if (!TryGetReceivedXt(parts[index], out var candidate, out rootIndexes[index], out var candidateModel))
                 return false;
             if (document is null)
+            {
                 document = candidate;
+                schemaModel = candidateModel;
+            }
             else if (!ReferenceEquals(document, candidate))
+                return false;
+            if (!ReferenceEquals(schemaModel, candidateModel))
                 return false;
         }
         if (document is null)
             return false;
+        if (schemaModel is not null)
+            document = schemaModel.ToDocument();
         if (!XtText.TrySelectPartRoots(document, rootIndexes, out var selected))
         {
             error = ParasolidConstants.PK_ERROR_unsuitable_entity;
@@ -3096,6 +3114,7 @@ internal static unsafe class KernelRuntime
             case PoolKind.Vector: Vectors.Free(slot); break;
             case PoolKind.Body:
                 BodyXtDocuments[slot] = null;
+                BodyXtModels[slot] = null;
                 BodyXtRootIndexes[slot] = 0;
                 BodyXtOpaque[slot] = 0;
                 Bodies.Free(slot);

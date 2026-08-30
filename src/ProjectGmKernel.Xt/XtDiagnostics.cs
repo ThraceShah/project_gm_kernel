@@ -9,6 +9,7 @@ public enum XtErrorCode
     SchemaDirectoryNotFound,
     SchemaNotFound,
     SchemaMalformed,
+    SchemaMismatch,
     InvalidText,
     UnsupportedFormat,
     UnsupportedVersion,

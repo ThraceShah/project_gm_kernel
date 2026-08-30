@@ -1,9 +1,9 @@
 # ProjectGmKernel.Xt
 
-Schema-agnostic Parasolid text XT parsing, lossless document handling, and a
-data-oriented B-rep interchange model for .NET 10.
+Parasolid text XT parsing, lossless document handling, and schema-node-typed
+models for .NET 10.
 
-This package contains no Parasolid schema, descriptor, field table, kernel,
-header, or licensed runtime. Callers must legally obtain their own text schema
-files and explicitly pass their directory to `XtSchemaCatalog.OpenDirectory`.
-The package never downloads schemas and has no built-in fallback.
+V30-V38 use built-in compiled descriptors and generated node/field types. Older
+and future versions use caller-provided schemas through
+`XtSchemaCatalog.OpenDirectory`. This package contains no `.sch_txt` source,
+Parasolid API/header, kernel, or licensed runtime, and never downloads schemas.

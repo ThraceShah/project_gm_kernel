@@ -186,9 +186,14 @@ public static class XtCorpusInspection
     public static byte[] CanonicalBrepRoundTrip(ReadOnlySpan<byte> source)
     {
         var document = XtText.DecodeDocument(Encoding.ASCII.GetString(source));
-        var model = ProjectGmKernel.Xt.XtBrepConverter.Decode(document);
-        var rebuilt = ProjectGmKernel.Xt.XtBrepConverter.Encode(XtSchemaRegistry.Catalog, model, document.HeaderSchemaIdentity);
+        var rebuilt = ProjectGmKernel.Xt.XtGeneratedModelCodec.RoundTrip(document);
         return ProjectGmKernel.Xt.XtCodec.Write(XtSchemaRegistry.Catalog, rebuilt);
+    }
+
+    public static byte[] GeneratedModelRoundTrip(ReadOnlySpan<byte> source)
+    {
+        var document=XtText.DecodeDocument(Encoding.ASCII.GetString(source));
+        return ProjectGmKernel.Xt.XtCodec.Write(XtSchemaRegistry.Catalog,ProjectGmKernel.Xt.XtGeneratedModelCodec.RoundTrip(document));
     }
 
     public static unsafe byte[] RoundTrip(

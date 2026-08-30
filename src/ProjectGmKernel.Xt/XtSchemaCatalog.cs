@@ -21,6 +21,19 @@ public sealed class XtSchemaCatalog
     public string SchemaDirectory => _directory;
     public IReadOnlyList<XtSchemaInfo> Schemas { get; }
 
+    public static XtSchemaCatalog OpenBuiltIn()
+    {
+        var registrations = XtBuiltInSchemas.Identities
+            .Order(StringComparer.Ordinal)
+            .Select(static identity =>
+            {
+                var definition = XtBuiltInSchemas.Resolve(identity);
+                return new Registration(null, definition.Info, definition);
+            })
+            .ToArray();
+        return new XtSchemaCatalog(string.Empty, registrations);
+    }
+
     public static XtSchemaCatalog OpenDirectory(string schemaDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(schemaDirectory);
@@ -31,16 +44,26 @@ public sealed class XtSchemaCatalog
         var paths = Directory.EnumerateFiles(directory, "sch_*.sch_txt", SearchOption.TopDirectoryOnly)
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var registrations = new Registration[paths.Length];
+        var registrations = new List<Registration>();
         var identities = new HashSet<string>(StringComparer.Ordinal);
-        for (var index = 0; index < paths.Length; index++)
+        foreach (var identity in XtBuiltInSchemas.Identities.Order(StringComparer.Ordinal))
         {
-            var info = Inspect(paths[index]);
-            if (!identities.Add(info.Identity))
-                throw new XtFormatException(XtErrorCode.SchemaMalformed, $"Duplicate XT schema identity {info.Identity} in {directory}.");
-            registrations[index] = new Registration(paths[index], info);
+            var definition = XtBuiltInSchemas.Resolve(identity);
+            registrations.Add(new Registration(null, definition.Info, definition));
+            identities.Add(identity);
         }
-        return new XtSchemaCatalog(directory, registrations);
+        foreach (var path in paths)
+        {
+            var info = Inspect(path);
+            if (!identities.Add(info.Identity))
+            {
+                var external = Parse(new Registration(path, info, null));
+                XtGeneratedSchemaRuntime.RequireShape(external, XtBuiltInSchemas.Resolve(info.Identity));
+                continue;
+            }
+            registrations.Add(new Registration(path, info, null));
+        }
+        return new XtSchemaCatalog(directory, registrations.ToArray());
     }
 
     public void LoadAll()
@@ -122,7 +145,7 @@ public sealed class XtSchemaCatalog
             cached = _cache[index];
             if (cached is not null)
                 return cached;
-            cached = Parse(_registrations[index]);
+            cached = _registrations[index].Definition ?? Parse(_registrations[index]);
             _cache[index] = cached;
             return cached;
         }
@@ -173,7 +196,8 @@ public sealed class XtSchemaCatalog
         var currentFieldOffset = 0;
         var lineNumber = 0;
 
-        foreach (var rawLine in File.ReadLines(registration.Path))
+        var path = registration.Path ?? throw new InvalidOperationException("Built-in schema has no source path.");
+        foreach (var rawLine in File.ReadLines(path))
         {
             lineNumber++;
             var line = rawLine.Trim();
@@ -264,7 +288,7 @@ public sealed class XtSchemaCatalog
         }
 
         XtFormatException Invalid(string message)
-            => new(XtErrorCode.SchemaMalformed, $"{message} File {registration.Path}, line {lineNumber}.");
+            => new(XtErrorCode.SchemaMalformed, $"{message} File {path}, line {lineNumber}.");
     }
 
     private static bool TryReadModelerVersion(string line, out XtModelerVersion version)
@@ -335,5 +359,5 @@ public sealed class XtSchemaCatalog
         _ => throw new XtFormatException(XtErrorCode.SchemaMalformed, $"Invalid schema bit {value}."),
     };
 
-    private readonly record struct Registration(string Path, XtSchemaInfo Info);
+    private readonly record struct Registration(string? Path, XtSchemaInfo Info, XtSchemaDefinition? Definition);
 }

@@ -25,8 +25,9 @@ internal static unsafe class XtReader
             document = XtText.SelectUserFields(document, receiveUserFields);
             _ = document.SemanticModel;
         }
-        catch (FormatException)
+        catch (FormatException exception)
         {
+            if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine(exception);
             return ParasolidConstants.PK_ERROR_corrupt_file;
         }
         catch (NotSupportedException)
@@ -59,6 +60,12 @@ internal static unsafe class XtReader
                 out rootIndexes);
             if (compoundError != ParasolidConstants.PK_ERROR_no_errors)
                 return compoundError;
+            ProjectGmKernel.Xt.IXtSchemaModel? schemaModel = null;
+            if (document.Schema.ModelerVersion / 100000 is >= 30 and <= 38)
+            {
+                schemaModel = ProjectGmKernel.Xt.XtGeneratedModelCodec.Decode(document);
+                document = schemaModel.ToDocument();
+            }
             var nodes = document.Nodes;
             foreach (var rootIndex in rootIndexes)
             {
@@ -69,9 +76,9 @@ internal static unsafe class XtReader
                     ? MaterializeBody(nodes, root, out tag)
                     : ParasolidConstants.PK_ERROR_bad_file_format;
                 if (error == ParasolidConstants.PK_ERROR_no_errors)
-                    KernelRuntime.AttachReceivedXt(tag, document, root.Index, opaque: false);
+                    KernelRuntime.AttachReceivedXt(tag, document, schemaModel, root.Index, opaque: false);
                 else
-                    error = KernelRuntime.CreateOpaquePartCore(document, root, out tag);
+                    error = KernelRuntime.CreateOpaquePartCore(document, schemaModel, root, out tag);
                 if (error != ParasolidConstants.PK_ERROR_no_errors)
                     return error;
                 result.Add(tag);

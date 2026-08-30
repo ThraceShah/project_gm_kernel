@@ -11,6 +11,7 @@ internal static class XtText
     {
         var schema=XtSchemaRegistry.ResolveCurrent();var array=nodes as XtNode[]??nodes.ToArray();
         var document=new XtDocument{VersionText=$": TRANSMIT FILE created by modeller version {schema.ModelerVersion}",HeaderSchemaIdentity=schema.Identity,Schema=schema,Nodes=array};
+        document=ManagedXt.XtGeneratedModelCodec.RoundTrip(document);
         if(transmitVersion==0)return ManagedXt.XtCodec.EncodeWithBaseSchema(document,XtSchemaRegistry.ResolveEmbeddedBase());
         if(!XtSchemaRegistry.TryResolveTransmitVersion(transmitVersion,out var target))throw new NotSupportedException($"Unsupported XT transmit version {transmitVersion}.");
         if(target.SchemaNumber!=schema.SchemaNumber)document=ManagedXt.XtVersionConverter.Transcode(document,target);
@@ -32,6 +33,7 @@ internal static class XtText
             }
             if(!XtSchemaRegistry.TryResolveTransmitVersion(transmitVersion,out var target)){text="";return false;}
             if(target.SchemaNumber!=document.Schema.SchemaNumber)document=ManagedXt.XtVersionConverter.Transcode(document,target);
+            if(target.ModelerVersion/100000 is >=30 and <=38)document=ManagedXt.XtGeneratedModelCodec.RoundTrip(document);
             var identity=transmitVersion==371?$"SCH_3701000_{target.SchemaNumber}":transmitVersion==380?$"SCH_3800150_{target.SchemaNumber}":target.Identity;
             text=Encoding.UTF8.GetString(ManagedXt.XtCodec.Write(XtSchemaRegistry.Catalog,Clone(document,identity)));return true;
         }

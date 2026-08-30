@@ -1,5 +1,6 @@
 using System.Text;
 using ProjectGmKernel.Xt;
+using Schema37102 = ProjectGmKernel.Xt.Schema.SCH_3701097_37102;
 
 namespace ProjectGmKernel.Xt.Tests;
 
@@ -56,132 +57,52 @@ public sealed class XtSchemaCatalogTests : IDisposable
 
         var catalog = XtSchemaCatalog.OpenDirectory(_directory);
 
-        Assert.Empty(catalog.Schemas);
-        Assert.Throws<XtFormatException>(() => catalog.Resolve("SCH_3000000_30000"));
+        Assert.DoesNotContain(catalog.Schemas, static schema => schema.Identity == "SCH_3000000_30000");
+        Assert.Throws<XtFormatException>(() => catalog.Resolve("SCH_3000000_99999"));
     }
 
     [Fact]
-    public void BuilderRejectsInvalidTopologyBeforeFreeze()
+    public void BuiltInCatalogRequiresNoSchemaDirectory()
     {
-        var builder = new XtBrepBuilder(new XtBrepCounts(Parts: 1, Bodies: 1));
-        builder.Parts[0] = new XtPartRow { Kind = XtPartKind.Body, Body = 0, Assembly = -1, Name = -1 };
-        builder.Bodies[0] = new XtBodyRow
-        {
-            Kind = XtBodyKind.Solid,
-            Regions = new XtRange { Offset = 0, Count = 1 },
-        };
+        var catalog = XtSchemaCatalog.OpenBuiltIn();
+        Assert.Equal(37102, catalog.Resolve("SCH_3701097_37102").SchemaNumber);
+        Assert.Equal(37102, catalog.Resolve("SCH_3800150_37102").SchemaNumber);
+    }
+
+    [Fact]
+    public void ProcessGeometryTypesMapSchemaFieldsDirectly()
+    {
+        AssertFields<Schema37102.INTERSECTION>("surface", "chart", "start", "end", "intersection_data", "scale");
+        AssertFields<Schema37102.BLENDED_EDGE>("blend_type", "surface", "spine", "range", "thumb_weight", "boundary", "start", "end");
+        AssertFields<Schema37102.NURBS_CURVE>("degree", "n_vertices", "vertex_dim", "n_knots", "periodic", "rational", "bspline_vertices", "knot_mult", "knots");
+        AssertFields<Schema37102.NURBS_SURF>("u_degree", "v_degree", "n_u_vertices", "n_v_vertices", "rational", "bspline_vertices", "u_knot_mult", "v_knot_mult", "u_knots", "v_knots");
+        AssertFields<Schema37102.SP_CURVE>("chart", "surface", "b_curve", "original", "tolerance_to_original");
+        AssertFields<Schema37102.TRIMMED_CURVE>("basis_curve", "point_1", "point_2", "parm_1", "parm_2");
+        AssertFields<Schema37102.SWEPT_SURF>("section", "sweep", "scale");
+        AssertFields<Schema37102.SPUN_SURF>("profile", "base", "axis", "start", "end", "start_param", "end_param", "x_axis", "scale");
+    }
+
+    [Fact]
+    public void GeneratedBuilderRejectsUnavailableTransmittedFields()
+    {
+        var builder = new Schema37102.MODEL_BUILDER(new Schema37102.COUNTS { BODY = 1 });
+        builder.BODY[0]._xt_index = 1;
+        builder.BODY[0]._xt_order = 0;
         Assert.Throws<XtFormatException>(builder.FinalizeModel);
-    }
-
-    [Fact]
-    public void CanonicalModelEncodesWithoutSourceNodeGraph()
-    {
-        Directory.CreateDirectory(_directory);
-        File.WriteAllText(Path.Combine(_directory, "sch_test.sch_txt"), MinimalSchema);
-        var catalog = XtSchemaCatalog.OpenDirectory(_directory);
-        var builder = new XtBrepBuilder(new XtBrepCounts(Parts: 1, Bodies: 1));
-        builder.Parts[0] = new XtPartRow { Kind = XtPartKind.Body, IsRoot = 1, Body = 0, Assembly = -1, Name = -1, Next = -1, Previous = -1 };
-        builder.Bodies[0] = new XtBodyRow
-        {
-            Kind = XtBodyKind.Empty,
-            HighestNodeId = 1,
-            ReferenceInstance = -1,
-            Owner = -1,
-            Child = -1,
-            Surface = -1,
-            Curve = -1,
-            Point = -1,
-            BoundarySurface = -1,
-            BoundaryCurve = -1,
-            BoundaryPoint = -1,
-            BoundaryMesh = -1,
-            BoundaryPolyline = -1,
-        };
-        var model = builder.FinalizeModel();
-
-        var document = XtBrepConverter.Encode(catalog, model, "SCH_3000000_30000");
-        var bytes = XtCodec.Write(catalog, document);
-        var decoded = XtCodec.Read(catalog, bytes);
-
-        Assert.Single(decoded.Nodes);
-        Assert.Equal("BODY", decoded.Schema.GetNode(decoded.Nodes[0].Type).Name);
-    }
-
-    [Fact]
-    public void BuilderRejectsCyclicAssemblyAndInvalidRationalSpline()
-    {
-        var assemblyBuilder = new XtBrepBuilder(new XtBrepCounts(Parts: 1, Assemblies: 1, Instances: 1));
-        assemblyBuilder.Parts[0] = new XtPartRow { Kind = XtPartKind.Assembly, Body = -1, Assembly = 0, Name = -1, Next = -1, Previous = -1 };
-        assemblyBuilder.Assemblies[0] = new XtAssemblyRow { Instances = new XtRange { Offset = 0, Count = 1 }, Name = -1, ReferenceInstance = -1, Next = -1, Previous = -1 };
-        assemblyBuilder.Instances[0] = new XtInstanceRow { Owner = 0, Part = 0, Transform = -1, NextInPart = -1, PreviousInPart = -1, NextOfPart = -1, PreviousOfPart = -1 };
-        Assert.Throws<XtFormatException>(assemblyBuilder.FinalizeModel);
-
-        var splineBuilder = new XtBrepBuilder(new XtBrepCounts(Geometries: 1, ControlPoints: 1));
-        splineBuilder.Geometries[0] = new XtGeometryRow
-        {
-            Kind = XtGeometryKind.BCurve,
-            ControlPoints = new XtRange { Offset = 0, Count = 1 },
-            Rational = 1,
-            Basis = -1,
-            Profile = -1,
-            Spine = -1,
-            Chart = -1,
-            StartLimit = -1,
-            EndLimit = -1,
-            IntersectionData = -1,
-            GeometricOwner = -1,
-            OwnerKind = XtOwnerKind.None,
-            Owner = -1,
-            Next = -1,
-            Previous = -1,
-        };
-        Assert.Throws<XtFormatException>(splineBuilder.FinalizeModel);
-    }
-
-    [Fact]
-    public void BuilderRepresentsPersistentFrameSemantics()
-    {
-        var builder = new XtBrepBuilder(new XtBrepCounts(Geometries: 1, Frames: 1));
-        builder.Geometries[0] = new XtGeometryRow
-        {
-            Kind = XtGeometryKind.Line,
-            Basis = -1,
-            Profile = -1,
-            Spine = -1,
-            Chart = -1,
-            StartLimit = -1,
-            EndLimit = -1,
-            IntersectionData = -1,
-            GeometricOwner = -1,
-            OwnerKind = XtOwnerKind.None,
-            Owner = -1,
-            Next = -1,
-            Previous = -1,
-        };
-        builder.Frames[0] = new XtFrameRow
-        {
-            Geometry = 0,
-            GeometryKind = XtOwnerKind.Geometry,
-            GeometryEntity = 0,
-            Next = -1,
-            Previous = -1,
-            NextOnGeometry = -1,
-            PreviousOnGeometry = -1,
-            OwnerKind = XtOwnerKind.Geometry,
-            Owner = 0,
-            Sense = 1,
-        };
-
-        var model = builder.FinalizeModel();
-
-        Assert.Equal(XtOwnerKind.Geometry, model.Frames[0].OwnerKind);
-        Assert.Equal(0, model.Frames[0].Geometry);
     }
 
 
     public void Dispose()
     {
         if (Directory.Exists(_directory)) Directory.Delete(_directory, recursive: true);
+    }
+
+    private static void AssertFields<T>(params string[] expected)
+    {
+        var actual = typeof(T).GetFields().Select(static field => field.Name).ToArray();
+        foreach (var name in expected) Assert.Contains(name, actual);
+        Assert.DoesNotContain("A", actual);
+        Assert.DoesNotContain("Kind", actual);
     }
 
     private const string MinimalSchema = """
