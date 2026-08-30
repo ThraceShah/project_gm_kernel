@@ -9,7 +9,7 @@ public sealed unsafe class XtSchemaRegistryTests
     [Fact]
     public void Registry_LoadsEveryBundledSchemaWithConsistentFieldRanges()
     {
-        Assert.Equal(101, XtSchemaRegistry.Count);
+        Assert.Equal(102, XtSchemaRegistry.Count); // 101 external identities plus the built-in V38 producer alias.
         var identities = new HashSet<string>(StringComparer.Ordinal);
         for (var schemaIndex = 0; schemaIndex < XtSchemaRegistry.Count; schemaIndex++)
         {

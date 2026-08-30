@@ -13,7 +13,7 @@
     <PackageId>ProjectGmKernel.Xt</PackageId>
     <Version>0.1.0</Version>
     <Authors>ThraceShah</Authors>
-    <Description>Schema-driven Parasolid XT text codec and neutral B-rep model.</Description>
+    <Description>Parasolid XT text codec with exact V30-V38 schema-node models.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageOutputPath>..\..\bin\nuget</PackageOutputPath>

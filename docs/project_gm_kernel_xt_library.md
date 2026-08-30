@@ -1,68 +1,93 @@
 # ProjectGmKernel.Xt 独立库
 
-## 组件
+## 组件与发布边界
 
 - `src/ProjectGmKernel.Xt/`：`.NET 10` managed class library 和本地 NuGet。
 - `src/ProjectGmKernel.Xt.Native/`：NativeAOT C ABI wrapper。
-- `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.h`：ABI 1 C header。
+- `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.h`：ABI 1 公共入口。
+- `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.Schema.generated.h`：
+  V30–V38 的逐 schema、逐节点 C 类型和 typed table API。
 
-两者都不包含 Parasolid schema、派生 descriptor、Parasolid API/header 或
-`pskernel` 依赖。调用方负责合法取得 schema，并显式提供目录。
+发布物不包含 `.sch_txt` 原文、Parasolid header、API、kernel、session 或许可。
+V30–V38 的生成类型和编译 descriptor 是本项目代码的一部分，因此这组版本
+不需要运行时 schema 目录。V29 以前及未来版本只提供外部 schema 驱动的动态
+`XtDocument` codec；调用方负责合法取得 schema。
 
 ## Managed 使用方式
 
 ```csharp
 using ProjectGmKernel.Xt;
+using Schema = ProjectGmKernel.Xt.Schema.SCH_3701097_37102;
 
-var catalog = XtSchemaCatalog.OpenDirectory(schemaDirectory);
-catalog.LoadAll();
-
+var catalog = XtSchemaCatalog.OpenBuiltIn();
 var document = XtCodec.Read(catalog, sourceBytes);
-var model = XtBrepConverter.Decode(document);
-XtBrepValidator.Validate(model);
+var model = Schema.CODEC.Decode(document);
 
-var rebuilt = XtBrepConverter.Encode(catalog, model, targetSchemaIdentity);
+ReadOnlySpan<Schema.INTERSECTION> intersections = model.INTERSECTION;
+ReadOnlySpan<Schema.BLENDED_EDGE> blends = model.BLENDED_EDGE;
+
+var rebuilt = Schema.CODEC.Encode(model);
 var output = XtCodec.Write(catalog, rebuilt);
 ```
 
-`schemaDirectory` 没有隐式默认值。Catalog 只扫描顶层 `sch_*.sch_txt`，首次
-解析后在 catalog 生命周期内只读缓存。切换目录时应创建新 catalog。
+每个支持的 identity 位于独立 namespace，例如
+`ProjectGmKernel.Xt.Schema.SCH_3701097_37102`。每个 schema node 都有同名大写
+struct；字段保持 schema 的 snake_case 名称。每个 transmitted node 有独立连续
+table，每个变长字段有独立 element table。
 
-`XtDocument` 用于 schema/node graph 无损读写；`XtBrepModel` 是冻结的 DOD
-规范模型。第三方内核应把自己的 B-rep 映射到 `XtBrepBuilder` 的 typed table，
-填完所有 index、range、owner 和 payload 后调用 `FinalizeModel`。null index 为
-`-1`；builder 不会替调用方猜测未填写的语义。
+字段使用显式 `Unavailable`、`Null`、`Value` 状态。`transmit=0` 字段存在于
+struct 中，但 decode 后只能为 `Unavailable`，builder 不能发送它。`p` 字段保存
+原始 x_t node index；finalize 根据编译 descriptor 校验引用。过程几何不求值、
+不 NURBS 化，ICurve、Blend、B-spline 等保持原始节点引用图。
+
+构造模型时使用 schema namespace内的 `COUNTS` 和 `MODEL_BUILDER`。Builder
+一次分配 pinned tables；写入各 node/variable-field span 后调用 `FinalizeModel`。
+Finalize 之后只允许并发读取。
+
+动态版本使用：
+
+```csharp
+var catalog = XtSchemaCatalog.OpenDirectory(schemaDirectory);
+catalog.LoadAll();
+var document = XtCodec.Read(catalog, sourceBytes);
+```
+
+外部目录只扫描顶层 `sch_*.sch_txt`。若目录包含与内置 identity 同名的 schema，
+其 node/field shape 必须与编译 descriptor 完全一致，否则返回 `SchemaMismatch`。
 
 ## C ABI 使用方式
 
-调用方在 `PGM_XT_CONTEXT_create` 的 `PGM_XT_context_o_t` 中传入 UTF-8 schema
-目录。Context 会复制目录字符串，但其生命周期内目录内容必须保持稳定。
+`PGM_XT_CONTEXT_create` 的 schema 目录可为 null；此时 V30–V38 仍可使用。通用
+API 只管理 context、document、buffer 和 diagnostics。模型 API 按 schema identity
+和 node 名称强类型导出，例如：
 
-`PGM_XT_BREP_create` 按 counts 一次分配所有 pinned table；finalize 前
-`PGM_XT_BREP_get_table_view` 返回可写 view，finalize 后返回只读 view。View 由
-B-rep handle 统一释放；XT buffer 和 diagnostic buffer 使用
-`PGM_XT_BUFFER_free`。
+```c
+PGM_XT_DOCUMENT_to_SCH_3701097_37102_MODEL(...);
+PGM_XT_SCH_3701097_37102_INTERSECTION_get_read_view(...);
+PGM_XT_SCH_3701097_37102_BLENDED_EDGE_get_read_view(...);
+PGM_XT_SCH_3701097_37102_CHART_hvec_get_read_view(...);
+PGM_XT_SCH_3701097_37102_MODEL_to_DOCUMENT(...);
+```
 
-Handle 是带 generation 校验的 64-bit token，不是托管对象地址。重复 delete、
-错误类型 handle、finalize 后再次 finalize，以及非 finalized B-rep 的 encode
-都会返回明确错误。
+不存在 generic geometry row、mesh row、table kind 或 schema-neutral BREP table
+API。C struct 和 managed struct 逐字段对应；固定数组内联，变长字段使用专用
+range 和 element view。
 
-## 支持范围
+Handle 是带 generation 校验的 64-bit token，不是托管对象地址。Table view 由
+model handle 统一释放；XT 输出 buffer 使用 `PGM_XT_BUFFER_free`。
 
-- 低层 codec：调用方目录中能通过严格解析的兼容 text schema。
-- Canonical B-rep 双向转换：V30–V38 当前可达 API 语料；Frame 已有 typed DOD
-  表但缺 producer oracle，Lattice/indexed-I/O 仍受当前 runtime/callback host
-  阻塞，不能宣称全类型 Complete。
-- 不支持：x_b、自动下载 schema、Parasolid session/API 仿真和第三方内核专用
-  adapter。
+## 支持范围与验证
 
-## 打包保护
+- V30–V38：内置编译 descriptor 和强类型双向 schema model。
+- V29 以前和未来版本：调用方 schema 驱动的动态无损 `XtDocument` codec。
+- 不支持：x_b、自动下载 schema、Parasolid session/API 仿真。
 
-`scripts/ScanXtArtifacts.cs` 会扫描 NuGet 和 NativeAOT 发布目录。发现
-`.sch_txt`、schema identity、schema-specific generated table、descriptor 标记
-或私有 schema 路径时立即失败。`scripts/VerifyXtNugetConsumer.cs` 使用临时项目
-只引用本地 NuGet，验证依赖图中没有 `ProjectGmKernel.Native`、PKToy 或
-`pskernel`。
+生成映射见 `docs/xt_schema_generated_mapping.md`。它逐 node、逐 field 记录 managed
+成员、C 成员和 codec 分支。元数据也直接公开为 `_xt_index`、`_xt_order`，仅
+variable node 具有 `_xt_variable_length`。当前 Linux x64 已运行 managed、NativeAOT、C layout、
+5,427 个导出符号、597 个 corpus case 和 4,920 个版本矩阵项验证；win-x64 和
+osx-arm64 仅提供发布配置，尚未在对应主机运行。
 
-当前主机已运行验证 `linux-x64`。`win-x64` 和 `osx-arm64` 已配置发布 RID 和
-C header，但尚未在对应主机运行验证。
+`scripts/ScanXtArtifacts.cs` 禁止 `.sch_txt`、schema 原始 header/terminator 和
+私有 schema 路径进入 NuGet/native artifact，但允许生成类型、字段名和编译
+descriptor。

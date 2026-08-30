@@ -140,6 +140,7 @@ internal static unsafe class XtWriter
         {
             Type = (int)XtNodeTypes.PartTransmitBlock,
             Index = index,
+            VariableLength = bodyIndexes.Length,
             Fields = fields,
         };
     }

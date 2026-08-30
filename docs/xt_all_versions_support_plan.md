@@ -2,11 +2,11 @@
 
 ## 1. 目标
 
-在调用方显式提供对应 Parasolid schema 目录的前提下，完整支持该 schema
-所描述的 part 文本传输格式。首批私有验收集为调用方本地持有的 101 个
-schema；后续新增 schema 通过同一外部 catalog、差异分析和验收流程接入。
-源码、NuGet、NativeAOT 发布物和 CI artifact 均不得包含 schema 原文或
-schema-specific 派生 descriptor。
+完整支持 V30–V38 的 part 文本传输格式；V29 以前和未来版本在调用方显式
+提供对应 Parasolid schema 目录时提供动态无损 codec。首批私有验收集为调用方
+本地持有的 101 个 schema。源码、NuGet、NativeAOT 发布物和 CI artifact 均不得
+包含 schema 原文；允许包含 V30–V38 的生成类型、字段映射、codec 和编译
+descriptor。
 
 本计划覆盖全部合法 part x_t 内容，包括：
 
@@ -20,9 +20,9 @@ schema-specific 派生 descriptor。
 本计划不覆盖二进制 x_b。不得以能够扫描 token、忽略未知字段或只保存
 Body 外形作为“完整支持”。
 
-目标实现采用“规范语义模型 + 无损版本扩展图”：能够安全解释的公共语义
-进入可查询、可编辑的规范模型；历史、废弃或版本专属内容保留在无损扩展图
-中。任何 receive/transmit 路径都不得静默丢弃合法输入。
+V30–V38 的公开模型采用逐 schema node、逐字段的强类型连续表，不合并为抽象
+geometry/mesh union。历史或未来动态 schema 使用无损 `XtDocument`。任何
+receive/transmit 路径都不得静默丢弃合法输入。
 
 ## 2. 支持状态与声明规则
 
@@ -31,7 +31,8 @@ Body 外形作为“完整支持”。
 1. `SchemaLoaded`：schema 已严格解析并通过自校验。
 2. `CodecLossless`：全部 transmitted 字段可保持类型、presence、数组基数、
    引用和数值无损往返。
-3. `SemanticMapped`：公共语义已进入规范模型；版本专属内容已进入无损扩展图。
+3. `SchemaTyped`：全部 node/field 已进入该 identity 的强类型模型，或对动态
+   版本保持在无损 `XtDocument` 中。
 4. `ParasolidVerified`：本项目重编码的文件可被真实 Parasolid 接收，并通过
    对应的语义比较。
 5. `Complete`：该 schema 的全部适用 API 语料均通过，且不存在未解释缺口。
@@ -53,9 +54,10 @@ Body 外形作为“完整支持”。
 
 ### 3.1 严格解析和生成
 
-使用 `XtSchemaCatalog.OpenDirectory` 建立调用方拥有的只读 catalog。目录必须
-显式传入，只扫描顶层 `sch_*.sch_txt`；库不提供默认目录、内置 registry、
-schema 下载或 fallback。运行时不得只根据 schema 名字的数字后缀猜测兼容性。
+V30–V38 使用 `XtSchemaCatalog.OpenBuiltIn` 中的只读编译 descriptor。动态版本
+使用 `XtSchemaCatalog.OpenDirectory`；目录显式传入且只扫描顶层
+`sch_*.sch_txt`。外部同名 identity 必须与内置 descriptor shape 完全一致。
+库不提供 schema 下载。运行时不得只根据 schema 名字的数字后缀猜测兼容性。
 
 schema 生成阶段必须验证：
 
@@ -67,8 +69,9 @@ schema 生成阶段必须验证：
 - schema 引用的 node class 是否存在或属于明确的抽象 class。
 
 任何未识别非空行、字段数不一致、重复 ID 或非法引用都必须使加载失败。
-工具的 `--check` 只验证调用方目录；逐字段 descriptor 和差异结果只能写入
-Git ignored 的 `bin/`，不得生成可发布的 schema-specific 源码或资源。
+生成器从调用方目录确定性地产生 V30–V38 的 schema-specific C#/C 类型、codec、
+descriptor 和逐字段映射，并支持 `--check`。发布扫描禁止原始 schema header、
+terminator 和 `.sch_txt`，但不禁止这些派生源码。
 
 ### 3.2 Schema identity 和版本选择
 
@@ -104,10 +107,11 @@ Codec 必须覆盖：
 结构无损测试以规范化 node graph 为准：节点顺序、空白和浮点文本表示可以
 变化，但字段值、presence、数组维度和引用图必须一致。
 
-## 5. 规范模型与无损扩展图
+## 5. 强类型 schema 模型与动态 document
 
-规范模型必须使用适合 `.NET 10`、NativeAOT 和 DOD 的连续存储、类型化索引
-及显式所有权，不依赖反射或托管对象引用图。模型至少包括：
+每个 V30–V38 schema namespace 必须使用适合 `.NET 10`、NativeAOT 和 DOD 的
+连续 typed table、原始 node index 和显式 field state，不依赖反射或托管对象
+引用图。模型包括该 schema 的全部 node 和 field：
 
 - Part、Body、Assembly、Instance。
 - Region、Shell、Face、Loop、Fin、Edge、Vertex。
@@ -116,22 +120,18 @@ Codec 必须覆盖：
 - Mesh、lattice 及其公开拓扑和几何数据。
 - User fields 和 indexed context 的 owner/payload 关联。
 
-无损版本扩展图保存：
-
-- 原 schema identity。
-- 无法安全规范化的节点和字段。
-- 原始字段类型、presence、数组基数和值。
-- 节点引用及其与规范实体的映射。
-- 历史、废弃和版本专属判别信息。
-
-修改规范实体后重新发送时，adapter 必须明确合并规范模型和扩展图。发生
-冲突时不得静默选择一方；必须采用文档化的确定性规则或返回不可表示错误。
+每个 schema node 均生成同名 struct，包括非 transmitted node；每个字段保持
+原 snake_case 名称。`transmit=0` 字段必须为 `Unavailable`，`?` 为 `Null`，
+具体值为 `Value`。固定数组内联，变长数组使用 field-specific range/element
+table，pointer 保存原始 node index。过程几何严格保存节点引用图，不求值或
+转换成 NURBS。
 
 ## 6. 版本 Adapter 与降级
 
-每个 schema adapter 负责规范模型、无损扩展图和该 schema node graph 之间
-的转换。相邻版本优先共享声明式差异规则，但不得假设节点 ID 相同就具有完全
-相同语义。
+每个 schema 由独立生成的 `CODEC` 负责 typed model 和 `XtDocument` 之间的
+逐字段转换。跨版本转换先回到 `XtDocument`，由 descriptor transcoder 处理，
+再进入目标 schema namespace；不得在不同版本 struct 间使用通用几何字段或
+手写猜测。
 
 向旧 schema 发送前必须执行可表示性检查，覆盖：
 
@@ -153,9 +153,8 @@ Codec 必须覆盖：
 2. 建立外部 schema catalog、严格加载检查和 schema identity 映射。
 3. 实现无损 node graph 及 decode/encode 结构往返。
 4. 实现 embedded schema、user fields、mesh 和 indexed context。
-5. 建立规范 part 模型及无损版本扩展图。
-6. 依次完成 topology、geometry、Assembly/Instance、Attribute、mesh/lattice
-   的语义 adapter。
+5. 为 V30–V38 生成全部 node/field 类型、typed table、descriptor 和 codec。
+6. 建立 schema-specific C ABI、Native kernel adapter 和跨版本 transcoder。
 7. 接入 `docs/parasolid_part_api_corpus_plan.md` 定义的语料矩阵，逐 schema
    推进支持状态。
 8. 将支持矩阵纳入持续验证；发现新 schema 时自动生成差异和待覆盖项。
@@ -169,7 +168,7 @@ Codec 必须覆盖：
 
 1. 使用真实 Parasolid API 构造基准模型。
 2. 使用目标 `transmit_version` 生成原始 x_t。
-3. 本项目 receive，检查 node graph、规范模型和扩展图。
+3. 本项目 receive，检查 node graph 和目标 schema-specific MODEL。
 4. 本项目按同一 schema transmit。
 5. 真实 Parasolid receive 本项目输出。
 6. 比较接收结果和步骤 1 的基准模型。
@@ -208,7 +207,7 @@ Codec 必须覆盖：
 ### 8.5 Mesh、lattice 和 indexed context
 
 使用对应 ask/check API 比较公开类型、连接关系、owner、几何数据、索引数据、
-边界和 Attribute。无法公开查询的 transmitted 数据必须由无损 node graph
+边界和 Attribute。无法公开查询的 transmitted 数据必须由 typed table/node graph
 比较补足并记录限制。
 
 任一适用 case 失败，该 schema 不得标记 `Complete`。
@@ -218,9 +217,10 @@ Codec 必须覆盖：
 新增 schema 时必须：
 
 1. 严格解析新 schema 并生成与最近版本的节点/字段差异。
-2. 更新外部 catalog 兼容规则和 transmit-version 映射；不得把新 schema
-   编译或嵌入发布物。
-3. 将新增或变化内容映射到规范模型或无损扩展图。
+2. 更新外部 catalog 兼容规则和 transmit-version 映射。未来版本默认先作为
+   动态 `XtDocument`；若纳入强类型承诺，必须明确批准后生成派生类型/descriptor。
+3. 将新增或变化内容映射到新的 schema namespace 和逐字段 codec，或保留为
+   动态无损 document。
 4. 更新 API 语料适用矩阵。
 5. 在对应真实 Parasolid runtime 可用时完成双向 oracle 验证。
 6. 更新支持矩阵；未完成项保持明确的非 `Complete` 状态。

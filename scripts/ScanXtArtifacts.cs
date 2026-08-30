@@ -2,14 +2,12 @@
 
 using System.IO.Compression;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 
 var scriptDirectory = GetScriptDirectory();
 var inputs = args.Length == 0 ? [Path.GetFullPath(Path.Combine(scriptDirectory, "..", "bin"))] : args.Select(Path.GetFullPath).ToArray();
-var forbiddenNames = new[] { ".sch_txt", "xtschema.generated", "xtschemaregistry.generated", "schema descriptor" };
-var identity = new Regex(@"SCH_[0-9]{3,}(?:_[0-9]{3,})+", RegexOptions.CultureInvariant);
-var privatePath = new Regex(@"third_party[/\\]parasolid[/\\]schema", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+var forbiddenNames = new[] { ".sch_txt" };
+var forbiddenText = new[] { ": SCHEMA FILE created by modeller version", "** end of schema", "third_party/parasolid/schema", "third_party\\parasolid\\schema" };
 var violations = new List<string>();
 
 foreach (var input in inputs)
@@ -60,8 +58,7 @@ void Inspect(string display, ReadOnlySpan<byte> bytes)
     var lower = display.ToLowerInvariant();
     if (forbiddenNames.Any(lower.Contains)) violations.Add($"forbidden entry name: {display}");
     var text = Encoding.Latin1.GetString(bytes);
-    if (identity.IsMatch(text)) violations.Add($"schema identity embedded in: {display}");
-    if (privatePath.IsMatch(text)) violations.Add($"private schema path embedded in: {display}");
+    if (forbiddenText.Any(marker => text.Contains(marker, StringComparison.OrdinalIgnoreCase))) violations.Add($"raw schema text or private schema path embedded in: {display}");
 }
 
 static string GetScriptDirectory([CallerFilePath] string path = "") => Path.GetDirectoryName(path)!;

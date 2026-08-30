@@ -95,6 +95,7 @@ public sealed class XtNode
     public int VariableLength = -1;
     public XtFieldValue[] Fields = [];
     public int[] UserFields = [];
+    internal int TransmitOrder;
 }
 
 public sealed class XtDocument

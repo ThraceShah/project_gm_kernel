@@ -103,6 +103,11 @@ unsafe
                         try { CompareParts(expected, direct, caseId + " " + schema.Identity); }
                         finally { FreeParts(direct); }
 
+                        var generated = XtCorpusInspection.GeneratedModelRoundTrip(target);
+                        var generatedParts = Receive(generated, caseId + " " + schema.Identity + " generated-model");
+                        try { CompareParts(expected, generatedParts, caseId + " " + schema.Identity + " generated-model"); }
+                        finally { FreeParts(generatedParts); }
+
                         var transmitVersion = XtCorpusInspection.GetCompatibleTransmitVersion(schema.ModelerVersion);
                         var managed = XtCorpusInspection.RoundTrip(target, transmitVersion, userFields: true, keepCompound: true);
                         var managedAgain = XtCorpusInspection.RoundTrip(managed, transmitVersion, userFields: true, keepCompound: true);

@@ -33,6 +33,7 @@ global using XtBlobOffset = System.Int32;
 global using XtTableOffset = System.Int32;
 global using XtTableCount = System.Int32;
 global using XtTableIndex = System.Int32;
+global using XtVariableLength = System.Int32;
 global using XtChartIndex = System.Int32;
 global using XtLimitIndex = System.Int32;
 global using XtIntersectionDataIndex = System.Int32;
