@@ -5,8 +5,8 @@
 - `src/ProjectGmKernel.Xt/`：`.NET 10` managed class library 和本地 NuGet。
 - `src/ProjectGmKernel.Xt.Native/`：NativeAOT C ABI wrapper。
 - `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.h`：ABI 1 公共入口。
-- `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.Schema.generated.h`：
-  V30–V38 的逐 schema、逐节点 C 类型和 typed table API。
+- `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_*.h`：每个 schema
+  identity 一份独立头文件，提供短名称的逐节点 C 类型和 typed table API。
 
 发布物不包含 `.sch_txt` 原文、Parasolid header、API、kernel、session 或许可。
 V30–V38 的生成类型和编译 descriptor 是本项目代码的一部分，因此这组版本
@@ -58,16 +58,28 @@ var document = XtCodec.Read(catalog, sourceBytes);
 ## C ABI 使用方式
 
 `PGM_XT_CONTEXT_create` 的 schema 目录可为 null；此时 V30–V38 仍可使用。通用
-API 只管理 context、document、buffer 和 diagnostics。模型 API 按 schema identity
-和 node 名称强类型导出，例如：
+API 只管理 context、document、buffer 和 diagnostics。每个翻译单元选择一个
+schema 头文件：
 
 ```c
-PGM_XT_DOCUMENT_to_SCH_3701097_37102_MODEL(...);
-PGM_XT_SCH_3701097_37102_INTERSECTION_get_read_view(...);
-PGM_XT_SCH_3701097_37102_BLENDED_EDGE_get_read_view(...);
-PGM_XT_SCH_3701097_37102_CHART_hvec_get_read_view(...);
-PGM_XT_SCH_3701097_37102_MODEL_to_DOCUMENT(...);
+#include "ProjectGmKernel.Xt.SCH_3701097_37102.h"
+
+PGM_XT_INTERSECTION_t *intersections;
+PGM_XT_BLENDED_EDGE_t *blends;
+PGM_XT_DOCUMENT_to_MODEL(...);
+PGM_XT_INTERSECTION_get_read_view(...);
+PGM_XT_CHART_hvec_get_read_view(...);
+PGM_XT_MODEL_to_DOCUMENT(...);
 ```
+
+15 份头文件可以重复使用同一套 `PGM_XT_EDGE_t`、`PGM_XT_BODY_t` 等短名称。
+同一份源码可由不同 target/条件宏选择不同头文件后分别编译。一个翻译单元同时
+包含两个 schema 头文件会得到明确编译错误，因为短 typedef 无法同时表达两个
+layout。
+
+动态库中的真实链接符号仍带完整 identity，以免不同版本发生符号冲突；头文件
+把短函数名映射到对应的真实符号。这个细节不影响调用方源码。C++ 关键字字段
+使用尾随 `_`，例如 C 的 `.new` 在 C++ 中为 `.new_`；其他字段保持 schema 名称。
 
 不存在 generic geometry row、mesh row、table kind 或 schema-neutral BREP table
 API。C struct 和 managed struct 逐字段对应；固定数组内联，变长字段使用专用
@@ -84,7 +96,7 @@ model handle 统一释放；XT 输出 buffer 使用 `PGM_XT_BUFFER_free`。
 
 生成映射见 `docs/xt_schema_generated_mapping.md`。它逐 node、逐 field 记录 managed
 成员、C 成员和 codec 分支。元数据也直接公开为 `_xt_index`、`_xt_order`，仅
-variable node 具有 `_xt_variable_length`。当前 Linux x64 已运行 managed、NativeAOT、C layout、
+variable node 具有 `_xt_variable_length`。当前 Linux x64 已运行 managed、NativeAOT、15 份独立 C header layout 和代表性 C++ header 编译、
 5,427 个导出符号、597 个 corpus case 和 4,920 个版本矩阵项验证；win-x64 和
 osx-arm64 仅提供发布配置，尚未在对应主机运行。
 

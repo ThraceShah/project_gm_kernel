@@ -30,13 +30,14 @@ NativeLibrary.Free(library);VerifyHeader(root);Console.WriteLine("XT schema-spec
 
 static void VerifyHeader(string root)
 {
-    var work=Path.Combine(root,"bin","xt-native-abi-smoke");Directory.CreateDirectory(work);var source=Path.Combine(work,"header-layout.c");var executable=Path.Combine(work,"header-layout");var header=Path.Combine(root,"src","ProjectGmKernel.Xt.Native","include","ProjectGmKernel.Xt.h").Replace("\\","/",StringComparison.Ordinal);
+    var work=Path.Combine(root,"bin","xt-native-abi-smoke");Directory.CreateDirectory(work);var source=Path.Combine(work,"header-layout.c");var executable=Path.Combine(work,"header-layout");var header=Path.Combine(root,"src","ProjectGmKernel.Xt.Native","include","ProjectGmKernel.Xt.SCH_3701097_37102.h").Replace("\\","/",StringComparison.Ordinal);
     File.WriteAllText(source,$$"""
 #include "{{header}}"
-_Static_assert(sizeof(PGM_XT_SCH_3701097_37102_INTERSECTION_t)=={{Unsafe.SizeOf<Schema37102.INTERSECTION>()}},"INTERSECTION layout mismatch");
-_Static_assert(sizeof(PGM_XT_SCH_3701097_37102_BLENDED_EDGE_t)=={{Unsafe.SizeOf<Schema37102.BLENDED_EDGE>()}},"BLENDED_EDGE layout mismatch");
-_Static_assert(sizeof(PGM_XT_SCH_3701097_37102_NURBS_SURF_t)=={{Unsafe.SizeOf<Schema37102.NURBS_SURF>()}},"NURBS_SURF layout mismatch");
-_Static_assert(sizeof(PGM_XT_SCH_3701097_37102_SURFACE_DATA_t)=={{Unsafe.SizeOf<Schema37102.SURFACE_DATA>()}},"SURFACE_DATA layout mismatch");
+_Static_assert(sizeof(PGM_XT_INTERSECTION_t)=={{Unsafe.SizeOf<Schema37102.INTERSECTION>()}},"INTERSECTION layout mismatch");
+_Static_assert(sizeof(PGM_XT_BLENDED_EDGE_t)=={{Unsafe.SizeOf<Schema37102.BLENDED_EDGE>()}},"BLENDED_EDGE layout mismatch");
+_Static_assert(sizeof(PGM_XT_NURBS_SURF_t)=={{Unsafe.SizeOf<Schema37102.NURBS_SURF>()}},"NURBS_SURF layout mismatch");
+_Static_assert(sizeof(PGM_XT_SURFACE_DATA_t)=={{Unsafe.SizeOf<Schema37102.SURFACE_DATA>()}},"SURFACE_DATA layout mismatch");
+_Static_assert(_Generic(&PGM_XT_MODEL_create, PGM_XT_status_t (*)(const PGM_XT_COUNTS_t *, PGM_XT_model_t *): 1, default: 0),"short model API mismatch");
 int main(void){return 0;}
 """);Run("cc",["-std=c11","-Wall","-Werror",source,"-o",executable]);Run(executable,[]);
 }
