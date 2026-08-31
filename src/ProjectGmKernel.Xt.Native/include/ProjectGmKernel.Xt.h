@@ -54,8 +54,6 @@ PGM_XT_API PGM_XT_status_t PGM_XT_DOCUMENT_delete(PGM_XT_document_t);
 PGM_XT_API void PGM_XT_BUFFER_free(void *);
 PGM_XT_API PGM_XT_status_t PGM_XT_ERROR_get(PGM_XT_buffer_t *);
 
-#include "ProjectGmKernel.Xt.Schema.generated.h"
-
 #ifdef __cplusplus
 }
 #endif

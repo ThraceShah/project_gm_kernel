@@ -15,7 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />
     <None Include="include\ProjectGmKernel.Xt.h" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <None Include="include\ProjectGmKernel.Xt.Schema.generated.h" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="include\ProjectGmKernel.Xt.SCH_*.h" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="ScanXtNativeArtifacts" AfterTargets="Publish">
     <Exec Command="dotnet run --file &quot;$(MSBuildProjectDirectory)/../../scripts/ScanXtArtifacts.cs&quot; -- &quot;$(PublishDir)&quot;" />

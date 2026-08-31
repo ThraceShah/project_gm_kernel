@@ -6,7 +6,8 @@
 managed/C 模型不再使用 `XtGeometryRow`、`XtMeshRow` 或通用 BREP table；它们
 直接映射 V30–V38 schema 的 node 和 field。
 
-- 14 个 V30–V37 schema 和 V38 producer alias 共 15 个独立 namespace/C 前缀。
+- 14 个 V30–V37 schema 和 V38 producer alias 共 15 个独立 managed namespace
+  和独立 C/C++ 头文件。
 - 2,920 个 schema node 全部生成同名 struct，25,186 个字段全部生成同名成员。
 - transmitted node 使用独立连续 typed table；variable field 使用专用 element
   table。
@@ -30,7 +31,8 @@ Parasolid API/header、`pskernel` 或许可材料。
 - C# 与 C 对 2,920 个 node struct、31,139 个 schema/metadata 字段完成
   `sizeof/offsetof` 核对；其中 schema 原字段为 25,186 个。
 - NativeAOT header 声明、实现和 Linux 动态库均包含 5,427 个 schema-specific
-  typed API；旧 generic BREP/giant-row 符号为零。
+  typed API；头文件公开短类型/API 名，真实导出符号保留 identity；旧 generic
+  BREP/giant-row 符号为零。
 - managed 测试、原内核 82 项回归、NuGet 独立消费、Linux NativeAOT smoke、
   无 schema 目录 build/pack/publish 和原文泄漏扫描通过。
 

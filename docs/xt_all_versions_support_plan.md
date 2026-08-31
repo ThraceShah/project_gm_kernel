@@ -126,6 +126,11 @@ Codec 必须覆盖：
 table，pointer 保存原始 node index。过程几何严格保存节点引用图，不求值或
 转换成 NURBS。
 
+C ABI 为每个 identity 生成独立头文件。头文件内 node struct 和 typed API 使用
+`PGM_XT_EDGE_t`、`PGM_XT_EDGE_get_read_view` 一类短名称；一个翻译单元只选择
+一个 schema 头文件。同一源码可为多个版本 target 分别编译。动态库实际导出
+符号保留完整 identity，并由头文件宏映射短 API，从而避免链接冲突。
+
 ## 6. 版本 Adapter 与降级
 
 每个 schema 由独立生成的 `CODEC` 负责 typed model 和 `XtDocument` 之间的
