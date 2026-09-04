@@ -2,10 +2,10 @@
   "generator": "parasolid-xt-corpus-coverage-v1",
   "persistentApiCount": 289,
   "coveredApiReferenceCount": 172,
-  "auditedUnreachableApiCount": 171,
+  "auditedUnreachableApiCount": 169,
   "uncoveredApiCount": 152,
   "strictGapCount": 0,
-  "caseCount": 327,
+  "caseCount": 330,
   "groups": [
     "analytic-geometry",
     "assembly",
@@ -514,8 +514,6 @@
     "PK_REGION_imprint_curve",
     "PK_REGION_imprint_point",
     "PK_REGION_remove_lattice",
-    "PK_SPHERE_create",
-    "PK_SPUN_create",
     "PK_SURF_create_blend",
     "PK_SURF_make_bsurf",
     "PK_SURF_make_bsurf_2",
@@ -555,16 +553,18 @@
     "PK_FACE_make_blend",
     "PK_INSTANCE_create",
     "PK_LINE_create",
-    "PK_SPHERE_create",
-    "PK_SPUN_create",
     "PK_SURF_make_sheet_body",
     "PK_SURF_offset",
     "PK_SWEPT_create"
   ],
   "missingCoverageFiles": [],
-  "coverageMetadataMissing": [],
+  "coverageMetadataMissing": [
+    "blend.fxf.plane-plane-plane.nested.2",
+    "blend.fxf.sphere-spun.rolling-ball",
+    "icurve.spun-bcurve-bsurf.depth2"
+  ],
   "coverageMetadataExtra": [],
   "verificationCounts": {
-    "ParasolidVerified": 327
+    "ParasolidVerified": 330
   }
 }

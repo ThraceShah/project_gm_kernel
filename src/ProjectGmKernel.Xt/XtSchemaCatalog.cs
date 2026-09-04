@@ -42,6 +42,7 @@ public sealed class XtSchemaCatalog
             throw new XtFormatException(XtErrorCode.SchemaDirectoryNotFound, $"XT schema directory does not exist: {directory}");
 
         var paths = Directory.EnumerateFiles(directory, "sch_*.sch_txt", SearchOption.TopDirectoryOnly)
+            .Concat(Directory.EnumerateFiles(directory, "sch_*.s_t", SearchOption.TopDirectoryOnly))
             .Order(StringComparer.Ordinal)
             .ToArray();
         var registrations = new List<Registration>();

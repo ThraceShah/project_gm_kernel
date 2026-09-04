@@ -210,7 +210,7 @@ subagent 可以并行编写和验证互不相交的代码，但在确认 runtime
 - Body 基础：11 个成功 case、9 个拒绝合同。
 - Topology operations：Face/Edge/Loop/Vertex 的 sheet/solid 合法操作共 15 个成功 case，覆盖 make-sheet、imprint、offset、split、precision 和 transform 分支。
 - Topology advanced：Euler ring-loop/ring-face、edge split/make-curve、loop make-edge 及 edge precision 共 8 个成功 case；不稳定的删除/attach 分支保留精确错误审计。
-- Manifold topology：through-hole inner loop、双通孔、cylinder winding loop、BCurve wire loop、outer/vertex loop 以及 edge valence 0/2 共 9 个成功 case；legacy hole/peripheral token 保留 needs-recipe。
+- Manifold topology：through-hole inner loop、双通孔、cylinder winding loop、BCurve wire loop、outer/vertex loop 以及 edge valence 0/2 共 9 个成功 case；legacy hole/peripheral token 经探查确认 v38 恒归一化为 inner/outer，已按运行时归一化记录。
 - Analytic geometry：Line、Circle、Ellipse、Plane、Cylinder、Cone、Sphere、Torus
   及 line/circle/ellipse wire-body、option-bearing/reversed wire、旋转轴/反向轴/最小正半径共 16 个成功 case。
 - Assembly：空 Assembly、identity instance、levelized/transformed assembly、instance
@@ -276,11 +276,11 @@ typed 门禁另外运行：
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/CheckParasolidTypeCoverage.cs -- --strict
 ```
 
-当前 v38 runtime 的 typed report 有 3 个 `needs-recipe` 缺口：
-`geometry.blend.pair.sphere-spun`、`topology.loop.hole`、`topology.loop.peripheral`；
-此外 `geometry.blend.depth.2` 与 `geometry.icurve.depth.2` 尚无成功嵌套 fixture，
-因此 typed strict gap 实际为 5。待提供稳定 seed 或能产生旧版 token 的公共 API 配方后
-才能将本轮计划标为完全完成。
+当前 v38 runtime 的 typed report 已无 `missing`/`needs-recipe` 缺口：
+`geometry.blend.pair.sphere-spun` 与 blend/ICurve 深度 2 已由稳定 seed 的成功
+fixture 关闭；`topology.loop.hole`（5401）与 `topology.loop.peripheral`（5402）
+经 `scripts/ProbeXtGapRecipes.cs` 探查确认 v38 永不发出（恒归一化为
+`inner`/`outer`），已按运行时归一化记录。typed strict gap 为 0。
 当前 17 个 deferred 维度仍在
 `type-matrix.json` 中单独跟踪，不能以 API strictGapCount=0 代替。
 
@@ -710,14 +710,12 @@ MSBUILDDISABLENODEREUSE=1 dotnet run scripts/CheckParasolidTypeCoverage.cs -- --
 但其 `strictGapCount` 不代表 typed matrix 完成度；最终 typed 门禁以
 `type-coverage-report.json` 的 `missingCount` 和精确 rejection/normalization 统计为准。
 
-当前 v38 runtime 的 typed report 有三个 `needs-recipe`：
-`geometry.blend.pair.sphere-spun`、`topology.loop.hole`（5401）和
-`topology.loop.peripheral`（5402）。通过-hole、周期圆柱和 BCurve imprint 已分别
-关闭 `inner`、`winding`、`wire`；这些缺口若没有能产生并可往返的公共 API 配方，必须
-保持缺口，不能以审计或手写 XT 节点冒充成功。blend/ICurve 深度 2 同样等待稳定嵌套
-seed。收到配方后再把 typed strict gap 收敛到 0。
+当前 v38 runtime 的 typed report 已没有 `needs-recipe` 与 `missing`：
+`geometry.blend.pair.sphere-spun`、blend/ICurve 深度 2 已由成功 fixture 关闭；
+`topology.loop.hole`（5401）与 `topology.loop.peripheral`（5402）经探查确认 v38
+永不发出（恒归一化为 `inner`/`outer`），按运行时归一化记录，不以手写 XT 节点
+冒充成功。
 
-此外，报告当前有 17 个 `deferredLabels`，并且 `planGapCount=20`（另有 3 个
-needs-recipe）；这些 deferred 仍包括未穷尽的 ICurve/Blend/BCurve 组合、Attribute/
+此外，报告当前有 17 个 `deferredLabels`，并且 `planGapCount=17`；这些 deferred 仍包括未穷尽的 ICurve/Blend/BCurve 组合、Attribute/
 User-field/Assembly callback、CPCurve、Frame 和诊断 token。这些项目不会被
 family-level strict label 冒充为已完成。
