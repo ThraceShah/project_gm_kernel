@@ -35,6 +35,7 @@ global using PointTag = int;
 global using CurveTag = int;
 global using SurfTag = int;
 global using GeomTag = int;
+global using BlendBoundTag = int;
 global using TransfTag = int;
 global using EntityTag = int;
 
