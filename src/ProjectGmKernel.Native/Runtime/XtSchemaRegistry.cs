@@ -39,7 +39,13 @@ internal static class XtSchemaRegistry
     internal static XtSchemaDefinition ResolveOldest()=>Extreme(newest:false);
     internal static XtSchemaDefinition ResolveEmbeddedBase()
     {
-        EnsureConfigured();var match=-1;
+        // Real Parasolid embeds schema definitions against the fixed v13 base
+        // schema 13006 regardless of the transmitted schema version.
+        EnsureConfigured();
+        for(var i=0;i<registrations.Length;i++)
+            if(registrations[i].SchemaNumber==13006)
+                return GetByIndex(i);
+        var match=-1;
         for(var i=0;i<registrations.Length;i++)
         {
             var major=registrations[i].ModelerVersion/100000;

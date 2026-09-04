@@ -26,6 +26,21 @@ var cases = new CorpusCaseSpec[]
     Pair("bsurf", "cylinder", "icurve.bsurf-cylinder.depth1-seed-vector", "B-surface/cylinder intersection branch selected by an explicit seed vector.", "geometry.surface-pair.bsurf-cylinder.seed-vector", "seed-vector"),
     Pair("bsurf", "cylinder", "icurve.bsurf-cylinder.depth1-box", "B-surface/cylinder intersection restricted to a finite spatial box.", "geometry.surface-pair.bsurf-cylinder.box", "box"),
     Pair("bsurf", "cylinder", "icurve.bsurf-cylinder.depth1-reverse-face", "B-surface/cylinder intersection with the right face orientation reversed.", "geometry.surface-pair.bsurf-cylinder.reverse-face", "reverse-face"),
+    new(
+        "icurve.spun-bcurve-bsurf.depth2",
+        "PK_BCURVE_create + PK_SPUN_create + PK_FACE_intersect_face",
+        "Intersection curve whose supporting spun surface depends on a B-curve profile, intersected with a B-surface.",
+        new[] { "icurve", "icurve/face-face", "surface-pair/spun-bsurf", "surface/spun", "surface/bsurf", "icurve/dependent-support" },
+        CreateDependentIntersection,
+        null,
+        null,
+        "{\"leftSurface\":\"spun(bcurve)\",\"rightSurface\":\"bsurf\",\"depth\":2,\"variant\":\"dependent-profile\"}",
+        0,
+        false,
+        requiredSchemaNodes: new[] { "INTERSECTION", "SPUN_SURF", "B_SURFACE" },
+        requiredSchemaDependencies: new[] { "INTERSECTION->SPUN_SURF", "INTERSECTION->B_SURFACE", "SPUN_SURF->B_CURVE" },
+        typeCoverage: new[] { "geometry.icurve.depth.2", "geometry.icurve.depth.1", "geometry.surface.spun", "geometry.surface.bsurf", "schema.node.INTERSECTION" },
+        typedAsk: AssertICurve),
 };
 
 return ParasolidXtCorpusHost.RunGroup("icurve-surface-matrix", cases, args);
@@ -163,6 +178,70 @@ static unsafe PK_BODY_t CreateIntersection(string leftKind, string rightKind, st
         if (types is not null) ParasolidXtCorpusHost.Check(PK_MEMORY_free(types), "PK_MEMORY_free I_CURVE types");
     }
     throw new InvalidOperationException("PK_FACE_intersect_face returned no I_CURVE for " + leftKind + "/" + rightKind + " (curves=" + nCurves + ", classes=" + string.Join(",", returnedClasses) + ")");
+}
+
+static unsafe PK_BODY_t CreateDependentIntersection()
+{
+    // Depth 2: the left support is a spun surface whose profile is a warped
+    // B-curve, so the intersection node depends on dependent supporting
+    // geometry rather than on two independent primitives.
+    var poles = stackalloc double[]
+    {
+        1.2, 0, -1,
+        1.8, 0, 1,
+        2.6, 0, -1,
+        3.4, 0, 1,
+    };
+    var profileMultiplicities = stackalloc int[] { 4, 4 };
+    var profileKnots = stackalloc double[] { 0, 1 };
+    var profileForm = new PK_BCURVE_sf_t(3, 4, 3, PK_LOGICAL_false, poles,
+        PK_BCURVE_form_arbitrary_c, 2, profileMultiplicities, profileKnots,
+        PK_knot_bezier_ends_c, PK_LOGICAL_false, PK_LOGICAL_false, PK_self_intersect_false_c);
+    PK_BCURVE_t profile;
+    ParasolidXtCorpusHost.Check(PK_BCURVE_create(&profileForm, &profile), "PK_BCURVE_create dependent spun profile");
+    var spunForm = new PK_SPUN_sf_t(profile, new PK_AXIS1_sf_t(new PK_VECTOR_t(0, 0, 0), new PK_VECTOR1_t(0, 0, 1)));
+    PK_SPUN_t spun;
+    ParasolidXtCorpusHost.Check(PK_SPUN_create(&spunForm, &spun), "PK_SPUN_create dependent support");
+    var rightSurface = CreateSurface("bsurf");
+    var rightSupport = CreateSurface("bsurf");
+    var leftBody = MakeSheetBody(spun, "spun-bcurve");
+    var rightBody = MakeSheetBody(rightSurface, "bsurf");
+    var leftFace = FirstFace(leftBody);
+    var rightFace = FirstFace(rightBody);
+
+    var options = new PK_FACE_intersect_face_o_t();
+    int nVectors;
+    PK_VECTOR_t* vectors = null;
+    int nCurves;
+    PK_CURVE_t* curves = null;
+    PK_INTERVAL_t* bounds = null;
+    PK_intersect_curve_t* types = null;
+    ParasolidXtCorpusHost.Check(PK_FACE_intersect_face(leftFace, rightFace, &options,
+        &nVectors, &vectors, &nCurves, &curves, &bounds, &types),
+        "PK_FACE_intersect_face spun-bcurve/bsurf");
+    try
+    {
+        for (var i = 0; i < nCurves; i++)
+        {
+            PK_CLASS_t curveClass;
+            ParasolidXtCorpusHost.Check(PK_ENTITY_ask_class(curves[i], &curveClass), "PK_ENTITY_ask_class dependent I_CURVE");
+            if (curveClass != PK_CLASS_icurve)
+                continue;
+            var support = stackalloc PK_GEOM_t[1] { rightSupport };
+            ParasolidXtCorpusHost.Check(PK_PART_add_geoms(leftBody, 1, support), "PK_PART_add_geoms dependent I_CURVE support");
+            var resultCurve = stackalloc PK_GEOM_t[1] { curves[i] };
+            ParasolidXtCorpusHost.Check(PK_PART_add_geoms(leftBody, 1, resultCurve), "PK_PART_add_geoms dependent I_CURVE");
+            return leftBody;
+        }
+        throw new InvalidOperationException("dependent intersection returned no I_CURVE (curves=" + nCurves + ")");
+    }
+    finally
+    {
+        if (vectors is not null) ParasolidXtCorpusHost.Check(PK_MEMORY_free(vectors), "PK_MEMORY_free dependent I_CURVE vectors");
+        if (curves is not null) ParasolidXtCorpusHost.Check(PK_MEMORY_free(curves), "PK_MEMORY_free dependent I_CURVE curves");
+        if (bounds is not null) ParasolidXtCorpusHost.Check(PK_MEMORY_free(bounds), "PK_MEMORY_free dependent I_CURVE bounds");
+        if (types is not null) ParasolidXtCorpusHost.Check(PK_MEMORY_free(types), "PK_MEMORY_free dependent I_CURVE types");
+    }
 }
 
 static unsafe PK_BODY_t MakeSheetBody(PK_SURF_t surface, string kind)

@@ -159,6 +159,18 @@ var cases = new CorpusCaseSpec[]
         typeCoverage: new[] { "geometry.blend.depth.1", "geometry.blend.pair.sphere-swept", "geometry.surface.sphere", "geometry.surface.swept", "blend.option.walls.trim-both" },
         typedAsk: AssertBlendAny),
     new(
+        "blend.fxf.sphere-spun.rolling-ball",
+        "PK_SPHERE_create + PK_SPUN_create + PK_FACE_make_blend",
+        "Rolling-ball blend between bounded spherical and spun supporting faces.",
+        new[] { "blend", "blend/face-face", "blend/rolling-ball", "surface-pair/sphere-spun", "option/walls-trim-both" },
+        CreateSphereSpunBlend,
+        null,
+        null,
+        "{\"pair\":\"sphere-spun\",\"xsection\":\"rolling-ball\",\"walls\":\"trim-both\",\"radius\":0.05,\"sphereRadius\":3.0,\"spunLineOffset\":2.2,\"spine\":\"line(2.0,0.2,-2)+z\"}",
+        requiredSchemaNodes: new[] { "TORUS" },
+        typeCoverage: new[] { "geometry.blend.depth.1", "geometry.blend.pair.sphere-spun", "geometry.surface.sphere", "geometry.surface.spun", "blend.option.walls.trim-both" },
+        typedAsk: AssertBlendAny),
+    new(
         "blend.fxf.bsurf-spun.rolling-ball",
         "PK_BSURF_create + PK_SPUN_create + PK_FACE_make_blend",
         "Rolling-ball blend between bounded B-surface and spun supporting faces.",
@@ -293,6 +305,41 @@ static unsafe PK_BODY_t CreateBlend(BlendRecipe recipe)
     if (unders is not null) ParasolidXtCorpusHost.Check(PK_MEMORY_free(unders), "PK_MEMORY_free blend matrix unders");
     if (ribs.n_ribs != 0) ParasolidXtCorpusHost.Check(PK_blend_rib_r_f(&ribs), "PK_blend_rib_r_f blend matrix");
     return result;
+}
+
+static unsafe PK_BODY_t CreateSphereSpunBlend()
+{
+    // The shared analytic seed (sphere r=2, spun line at x=2, spine near the
+    // axis) reports fxf fault 17462.  A larger sphere with the spine offset
+    // onto the sphere/spun intersection branch blends deterministically.
+    var sphereForm = new PK_SPHERE_sf_t(new PK_AXIS2_sf_t(new PK_VECTOR_t(0, 0, 0), new PK_VECTOR1_t(0, 0, 1), new PK_VECTOR1_t(1, 0, 0)), 3.0);
+    PK_SPHERE_t sphere;
+    ParasolidXtCorpusHost.Check(PK_SPHERE_create(&sphereForm, &sphere), "PK_SPHERE_create sphere-spun blend");
+    PK_UVBOX_t sphereBox;
+    ParasolidXtCorpusHost.Check(PK_SURF_ask_uvbox(sphere, &sphereBox), "PK_SURF_ask_uvbox sphere-spun blend");
+    PK_BODY_t sphereBody;
+    ParasolidXtCorpusHost.Check(PK_SURF_make_sheet_body(sphere, sphereBox, &sphereBody), "PK_SURF_make_sheet_body sphere-spun blend");
+    var lineForm = new PK_LINE_sf_t(new PK_AXIS1_sf_t(new PK_VECTOR_t(2.2, 0, -3), new PK_VECTOR1_t(0, 0, 1)));
+    PK_LINE_t profile;
+    ParasolidXtCorpusHost.Check(PK_LINE_create(&lineForm, &profile), "PK_LINE_create sphere-spun profile");
+    var spunForm = new PK_SPUN_sf_t(profile, new PK_AXIS1_sf_t(new PK_VECTOR_t(0, 0, 0), new PK_VECTOR1_t(0, 0, 1)));
+    PK_SPUN_t spun;
+    ParasolidXtCorpusHost.Check(PK_SPUN_create(&spunForm, &spun), "PK_SPUN_create sphere-spun blend");
+    PK_UVBOX_t spunBox;
+    ParasolidXtCorpusHost.Check(PK_SURF_ask_uvbox(spun, &spunBox), "PK_SURF_ask_uvbox sphere-spun spun");
+    PK_BODY_t spunBody;
+    ParasolidXtCorpusHost.Check(PK_SURF_make_sheet_body(spun, spunBox, &spunBody), "PK_SURF_make_sheet_body sphere-spun spun");
+    var spineForm = new PK_LINE_sf_t(new PK_AXIS1_sf_t(new PK_VECTOR_t(2.0, 0.2, -2), new PK_VECTOR1_t(0, 0, 1)));
+    PK_LINE_t spine;
+    ParasolidXtCorpusHost.Check(PK_LINE_create(&spineForm, &spine), "PK_LINE_create sphere-spun spine");
+    var options = new PK_FACE_make_blend_o_t();
+    options.shape.xsection = PK_blend_xs_rolling_ball_c;
+    options.shape.radius = 0.05;
+    options.shape.parameter = spine;
+    options.walls = PK_blend_walls_trim_both_c;
+    if (TryBlendRaw(new[] { FirstFace(sphereBody) }, new[] { FirstFace(spunBody) }, &options, out var result, out var fault))
+        return result;
+    throw new InvalidOperationException("sphere/spun blend seed failed (fault=" + fault + ")");
 }
 
 static unsafe PK_BODY_t CreateAnalyticBlend(string leftKind, string rightKind)

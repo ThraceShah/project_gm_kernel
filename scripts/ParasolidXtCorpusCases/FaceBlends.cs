@@ -63,9 +63,81 @@ var cases = new CorpusCaseSpec[]
         requiredSchemaDependencies: new[] { "BLENDED_EDGE->B_SURFACE", "BLENDED_EDGE->PLANE", "BLENDED_EDGE->INTERSECTION", "BLEND_BOUND->BLENDED_EDGE", "BLEND_BOUND->PLANE" },
         typeCoverage: new[] { "geometry.blend.depth.1", "geometry.surface.bsurf", "geometry.surface.plane", "schema.node.BLENDED_EDGE", "schema.node.BLEND_BOUND" },
         typedAsk: AssertGenericBlendSheet),
+    new(
+        "blend.fxf.plane-plane-plane.nested.2",
+        "PK_FACE_make_blend",
+        "Nested face-face blend: the first blend's cylindrical face is blended against a third perpendicular plane.",
+        new[] { "blend", "blend/face-face", "blend/nested", "blend/rolling-ball", "surface/plane", "topology/manifold" },
+        CreateNestedBlend,
+        null,
+        null,
+        "{\"seed\":\"perpendicular-sheet-planes\",\"firstRadius\":0.25,\"secondRadius\":0.05,\"spine\":\"line(x=0.25,y=0.25)+z\",\"walls\":\"trim-both\",\"depth\":2}",
+        requiredSchemaNodes: new[] { "TORUS", "SP_CURVE", "B_CURVE" },
+        requiredSchemaDependencies: new[] { "FACE->TORUS", "SP_CURVE->B_CURVE" },
+        typeCoverage: new[] { "geometry.blend.depth.2", "geometry.blend.depth.1", "geometry.surface.torus" },
+        typedAsk: AssertNestedBlendSheet),
 };
 
 return ParasolidXtCorpusHost.RunGroup("face-blends", cases, args);
+
+static unsafe PK_BODY_t CreateNestedBlend()
+{
+    // Depth 2: blend the cylindrical face produced by a first plane/plane
+    // blend against a third perpendicular plane.  The nested result depends
+    // on blend-produced geometry rather than on a primitive wall.
+    var seed = CreatePerpendicularPlaneSeed();
+    var firstOptions = new PK_FACE_make_blend_o_t();
+    firstOptions.shape.xsection = PK_blend_xs_rolling_ball_c;
+    firstOptions.shape.radius = 0.25;
+    firstOptions.shape.ratio = 1.0;
+    firstOptions.walls = PK_blend_walls_trim_both_c;
+    firstOptions.shape.parameter = seed.Spine;
+    if (!TryBlend(seed.Left, seed.Right, PK_LOGICAL_true, PK_LOGICAL_true, &firstOptions, out var firstBody, out var firstFault))
+        throw new InvalidOperationException("nested blend first stage failed (fault=" + firstFault + ")");
+
+    int faceCount;
+    PK_FACE_t* faces = null;
+    ParasolidXtCorpusHost.Check(PK_BODY_ask_faces(firstBody, &faceCount, &faces), "PK_BODY_ask_faces nested blend first stage");
+    PK_FACE_t blendFace;
+    try
+    {
+        if (faceCount < 1)
+            throw new InvalidOperationException("nested blend first stage has no face");
+        blendFace = faces[0];
+    }
+    finally
+    {
+        if (faces is not null) ParasolidXtCorpusHost.Check(PK_MEMORY_free(faces), "PK_MEMORY_free nested blend first faces");
+    }
+
+    var thirdBasis = new PK_AXIS2_sf_t(new PK_VECTOR_t(0.0, 0.0, 0.0), new PK_VECTOR1_t(0.0, 0.0, 1.0), new PK_VECTOR1_t(1.0, 0.0, 0.0));
+    PK_BODY_t thirdBody;
+    ParasolidXtCorpusHost.Check(PK_BODY_create_sheet_rectangle(4.0, 4.0, &thirdBasis, &thirdBody), "PK_BODY_create_sheet_rectangle nested third plane");
+    var secondOptions = new PK_FACE_make_blend_o_t();
+    secondOptions.shape.xsection = PK_blend_xs_rolling_ball_c;
+    secondOptions.shape.radius = 0.05;
+    secondOptions.shape.ratio = 1.0;
+    secondOptions.walls = PK_blend_walls_trim_both_c;
+    secondOptions.shape.parameter = seed.Spine;
+    if (TryBlend(blendFace, FirstFace(thirdBody), PK_LOGICAL_true, PK_LOGICAL_true, &secondOptions, out var result, out var fault))
+        return result;
+    throw new InvalidOperationException("nested blend second stage failed (fault=" + fault + ")");
+}
+
+static unsafe void AssertNestedBlendSheet(PK_BODY_t body)
+{
+    PK_BODY_type_t bodyType;
+    ParasolidXtCorpusHost.Check(PK_BODY_ask_type(body, &bodyType), "PK_BODY_ask_type nested blend");
+    if (bodyType != PK_BODY_type_sheet_c)
+        throw new InvalidOperationException("nested blend result has body type " + bodyType + ", expected sheet");
+    var face = FirstFace(body);
+    PK_SURF_t surface;
+    PK_CLASS_t surfaceClass;
+    ParasolidXtCorpusHost.Check(PK_FACE_ask_surf(face, &surface), "PK_FACE_ask_surf nested blend");
+    ParasolidXtCorpusHost.Check(PK_ENTITY_ask_class(surface, &surfaceClass), "PK_ENTITY_ask_class nested blend");
+    if (surfaceClass is not (PK_CLASS_blendsf or PK_CLASS_torus))
+        throw new InvalidOperationException("nested blend surface class is " + surfaceClass);
+}
 
 static unsafe PK_BODY_t CreateBlend(double radius, PK_LOGICAL_t leftSense, PK_LOGICAL_t rightSense)
 {

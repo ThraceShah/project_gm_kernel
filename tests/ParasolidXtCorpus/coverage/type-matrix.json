@@ -295,13 +295,11 @@
     { "id": "bsurf.sf.form.ruled", "reason": "PK_BSURF_create/ask normalizes the tested generic control net to arbitrary." },
     { "id": "bsurf.sf.form.gen_cone", "reason": "PK_BSURF_create/ask normalizes the tested generic control net to arbitrary." },
     { "id": "bsurf.sf.form.quadric", "reason": "PK_BSURF_create/ask normalizes the tested generic control net to arbitrary." },
-    { "id": "bsurf.sf.form.swept", "reason": "PK_BSURF_create/ask normalizes the tested generic control net to arbitrary." }
+    { "id": "bsurf.sf.form.swept", "reason": "PK_BSURF_create/ask normalizes the tested generic control net to arbitrary." },
+    { "id": "topology.loop.hole", "reason": "Every v38 hole-loop construction (boolean through-hole, imprinted inner loop) reports PK_LOOP_type_inner_c; the legacy hole token is never emitted by the current runtime." },
+    { "id": "topology.loop.peripheral", "reason": "Every v38 peripheral-boundary loop reports PK_LOOP_type_outer_c; the legacy peripheral token is never emitted by the current runtime." }
   ],
-  "needsRecipe": [
-    { "id": "geometry.blend.pair.sphere-spun", "reason": "Fixed analytic sphere/spun blend seed returns fxf fault 17462; a valid seed is needed." },
-    { "id": "topology.loop.hole", "reason": "The v38 runtime emits topology.loop.inner for face holes; provide a legacy PK_LOOP_type_hole_c recipe if that distinct token must be preserved." },
-    { "id": "topology.loop.peripheral", "reason": "The v38 runtime emits topology.loop.outer for peripheral boundaries; provide a legacy PK_LOOP_type_peripheral_c recipe if that distinct token must be preserved." }
-  ],
+  "needsRecipe": [],
   "deferred": [
     { "id": "bspline.degree-control-boundaries", "reason": "Only representative degree/control-grid sizes are present; minimum, upper-bound, asymmetric and degenerate combinations are not enumerated." },
     { "id": "bspline.knot-multiplicity-clamped", "reason": "Internal knot multiplicity, clamped/unclamped and repeated-endpoint combinations are not a complete matrix." },

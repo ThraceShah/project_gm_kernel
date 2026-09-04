@@ -3,16 +3,6 @@
   "group": "blend-matrix",
   "entries": [
     {
-      "caseId": "blend.fxf.sphere-spun.rolling-ball",
-      "status": "needs-recipe",
-      "api": ["PK_SPHERE_create", "PK_SPUN_create", "PK_FACE_make_blend"],
-      "typeCoverage": ["geometry.blend.pair.sphere-spun"],
-      "parameters": { "pair": "sphere-spun", "xsection": "rolling-ball", "walls": "trim-both", "radius": 0.05 },
-      "reason": "The fixed analytic sphere/spun seed does not produce a stable face-face blend.",
-      "evidence": "PK_FACE_make_blend reported fxf fault 17462 on the deterministic seed.",
-      "recheckWhen": "A valid sphere/spun rolling-ball seed is available."
-    },
-    {
       "caseId": "blend.fxf.bsurf-plane.notch",
       "status": "rejected",
       "typeId": "blend.option.notch",

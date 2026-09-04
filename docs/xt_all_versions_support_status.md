@@ -35,6 +35,18 @@ Parasolid API/header、`pskernel` 或许可材料。
   BREP/giant-row 符号为零。
 - managed 测试、原内核 82 项回归、NuGet 独立消费、Linux NativeAOT smoke、
   无 schema 目录 build/pack/publish 和原文泄漏扫描通过。
+- typed corpus 门禁（`CheckParasolidTypeCoverage -- --strict`）`missingCount=0`：
+  原 5 个缺口中 sphere-spun blend、blend 深度 2、ICurve 深度 2 已由成功 fixture
+  关闭；loop hole/peripheral 旧 token 经探查确认 v38 恒归一化为 `inner`/`outer`，
+  按运行时归一化记录。30 组、330 个 manifest 全部通过真实 Parasolid
+  transmit/receive/compare。
+- 修复了 embedded-schema transmit（`transmit_version=0`）回归：根因是
+  `XtSchemaCatalog` 只识别 `sch_*.sch_txt` 而漏掉 schema 缓存的 `sch_*.s_t` 命名，
+  导致 embedded base 回退到最老 schema 3000。修复后 catalog 同时接受两种命名，
+  embedded base 恢复固定 schema 13006，identity 中的 modeler 版本跟随
+  `document.Schema.ModelerVersion`（如 37102 → `SCH_3701097_37102_13006`），与所
+  传输 schema 版本保持一致；此前所有 corpus case 的 managed embedded 再编码被真实
+  Parasolid 以 `schema_incompatible (1094)` 拒收。
 
 ## Complete 声明边界
 
