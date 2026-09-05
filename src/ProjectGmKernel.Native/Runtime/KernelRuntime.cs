@@ -4,7 +4,7 @@ using ProjectGmKernel.Native.Generated;
 
 namespace ProjectGmKernel.Native.Runtime;
 
-internal static unsafe class KernelRuntime
+internal static unsafe partial class KernelRuntime
 {
     private enum CreatePrimitiveKind
     {
@@ -670,6 +670,9 @@ internal static unsafe class KernelRuntime
                     Faces[slots[i]].FrontFaceUse = -1;
                     Faces[slots[i]].FirstLoop = -1;
                     Faces[slots[i]].LastLoop = -1;
+                    Faces[slots[i]].Tolerance = 0;
+                    Faces[slots[i]].PrevOnSurf = -1;
+                    Faces[slots[i]].NextOnSurf = -1;
                     Faces[slots[i]].PrevInBody = -1;
                     Faces[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Face;
@@ -692,6 +695,7 @@ internal static unsafe class KernelRuntime
                     Edges[slots[i]].EndVertex = -1;
                     Edges[slots[i]].FirstFinEdge = -1;
                     Edges[slots[i]].LastFinEdge = -1;
+                    Edges[slots[i]].Tolerance = 0;
                     Edges[slots[i]].PrevInBody = -1;
                     Edges[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Edge;
@@ -701,20 +705,23 @@ internal static unsafe class KernelRuntime
                     AssignPartition(ref Fins[slots[i]].Header, CurrentPartition);
                     Fins[slots[i]].Edge = -1;
                     Fins[slots[i]].Loop = -1;
-                    Fins[slots[i]].Face = -1;
                     Fins[slots[i]].NextInLoop = -1;
                     Fins[slots[i]].PrevInLoop = -1;
-                    Fins[slots[i]].NextOfEdge = -1;
-                    Fins[slots[i]].PrevOfEdge = -1;
+                    Fins[slots[i]].Other = -1;
+                    Fins[slots[i]].Curve = -1;
                     Fins[slots[i]].Vertex = -1;
                     Fins[slots[i]].NextAtVertex = -1;
                     Fins[slots[i]].PrevAtVertex = -1;
+                    Fins[slots[i]].NextOfEdge = -1;
+                    Fins[slots[i]].PrevOfEdge = -1;
+                    Fins[slots[i]].Sense = '+';
                     poolKinds[i] = (byte)PoolKind.Fin;
                     break;
                 case ParasolidConstants.PK_CLASS_vertex:
                     slots[i] = Vertices.Allocate();
                     AssignPartition(ref Vertices[slots[i]].Header, CurrentPartition);
                     Vertices[slots[i]].Body = -1;
+                    Vertices[slots[i]].Tolerance = 0;
                     Vertices[slots[i]].FirstFinVertex = -1;
                     Vertices[slots[i]].LastFinVertex = -1;
                     Vertices[slots[i]].PrevInBody = -1;
@@ -728,6 +735,7 @@ internal static unsafe class KernelRuntime
                     Regions[slots[i]].IsSolid = 0;
                     Regions[slots[i]].FirstShell = -1;
                     Regions[slots[i]].LastShell = -1;
+                    Regions[slots[i]].Frame = -1;
                     Regions[slots[i]].PrevInBody = -1;
                     Regions[slots[i]].NextInBody = -1;
                     poolKinds[i] = (byte)PoolKind.Region;
@@ -830,7 +838,6 @@ internal static unsafe class KernelRuntime
                     ref var loop = ref Loops[parentSlot];
                     ref var fin = ref Fins[childSlot];
                     fin.Loop = parentSlot;
-                    fin.Face = loop.Face;  // derive face from parent loop
                     AppendFinToLoop(parentSlot, childSlot);
                 }
                 break;
@@ -1083,7 +1090,6 @@ internal static unsafe class KernelRuntime
         ref var loop = ref Loops[loopSlot];
         ref var fin = ref Fins[finSlot];
         fin.Loop = loopSlot;
-        fin.Face = loop.Face;
         if (loop.FirstFin < 0)
         {
             loop.FirstFin = finSlot;
@@ -1115,6 +1121,7 @@ internal static unsafe class KernelRuntime
             edge.LastFinEdge = finSlot;
             fin.PrevOfEdge = finSlot;
             fin.NextOfEdge = finSlot;
+            fin.Other = finSlot;
         }
         else
         {
@@ -1122,7 +1129,9 @@ internal static unsafe class KernelRuntime
             var last = edge.LastFinEdge;
             fin.PrevOfEdge = last;
             fin.NextOfEdge = first;
+            fin.Other = first;
             Fins[last].NextOfEdge = finSlot;
+            Fins[last].Other = finSlot;
             Fins[first].PrevOfEdge = finSlot;
             edge.LastFinEdge = finSlot;
         }
@@ -1137,6 +1146,12 @@ internal static unsafe class KernelRuntime
         ref var vertex = ref Vertices[vertexSlot];
         ref var fin = ref Fins[finSlot];
         fin.Vertex = vertexSlot;
+        if (fin.Edge >= 0)
+        {
+            // fin aligned with edge direction points at the edge's end vertex
+            var edge = Edges[fin.Edge];
+            fin.Sense = fin.Vertex == edge.StartVertex ? '-' : '+';
+        }
         if (vertex.FirstFinVertex < 0)
         {
             vertex.FirstFinVertex = finSlot;
@@ -1338,8 +1353,43 @@ internal static unsafe class KernelRuntime
     private static CurveTag EdgeCurveTag(EdgeSlot edgeSlot) => edgeSlot >= 0 ? Edges[edgeSlot].CurveTag : 0;
     private static SurfTag FaceSurfaceTag(FaceSlot faceSlot) => faceSlot >= 0 ? Faces[faceSlot].SurfTag : 0;
 
+    // Chains faces that share the same surface, in body order (XT face
+    // next_on_surface/previous_on_surface chains).
+    private static void RebuildFaceSurfaceChains(BodySlot bodySlot)
+    {
+        var body = Bodies[bodySlot];
+
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
+        {
+            Faces[faceSlot].PrevOnSurf = -1;
+            Faces[faceSlot].NextOnSurf = -1;
+        }
+
+        faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
+        {
+            ref var face = ref Faces[faceSlot];
+            if (face.SurfTag <= 0 || face.NextOnSurf >= 0)
+                continue;
+
+            var otherSlot = Faces[faceSlot].NextInBody;
+            for (var j = i + 1; j < body.FaceCountBody; j++, otherSlot = Faces[otherSlot].NextInBody)
+            {
+                if (Faces[otherSlot].SurfTag != face.SurfTag)
+                    continue;
+
+                face.NextOnSurf = otherSlot;
+                Faces[otherSlot].PrevOnSurf = faceSlot;
+                break;
+            }
+        }
+    }
+
     private static void RebuildBoundaryGeometryLinks(BodySlot bodySlot)
     {
+        RebuildFaceSurfaceChains(bodySlot);
+
         var body = Bodies[bodySlot];
 
         var faceSlot = body.FirstFaceBody;
@@ -2074,7 +2124,8 @@ internal static unsafe class KernelRuntime
             return ParasolidConstants.PK_ERROR_unknown_class;
 
         ref var fin = ref Fins[Handles[finTag].SlotIndex];
-        *faceTag = GetOrAllocateTag(EntityClass.Face, PoolKind.Face, fin.Face);
+        var faceSlot = Loops[fin.Loop].Face;
+        *faceTag = GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -2269,7 +2320,7 @@ internal static unsafe class KernelRuntime
         }
 
         // Face definitions: 6 faces, each with 4 edge indices
-        // Face 0: bottom (z=0)  edges 0,1,2,3
+        // Face 0: bottom (z=0)  edges 3,2,1,0 (outward normal is -axis)
         // Face 1: top (z=h)     edges 4,5,6,7
         // Face 2: front         edges 0,9,4,8
         // Face 3: right         edges 1,10,5,9
@@ -2277,7 +2328,7 @@ internal static unsafe class KernelRuntime
         // Face 5: left          edges 3,8,7,11
         ReadOnlySpan<int> faceEdgeIndices = stackalloc int[24]
         {
-            0, 1, 2, 3,
+            3, 2, 1, 0,
             4, 5, 6, 7,
             0, 9, 4, 8,
             1, 10, 5, 9,
@@ -2328,11 +2379,13 @@ internal static unsafe class KernelRuntime
 
                 fin.Edge = edgeSlots[ei];
                 fin.Loop = loopSlots[f];
-                fin.Face = faceSlots[f];
                 fin.NextInLoop = fin.PrevInLoop = -1;
-                fin.NextOfEdge = fin.PrevOfEdge = -1;
+                fin.Other = -1;
+                fin.Curve = -1;
                 fin.Vertex = -1;
                 fin.NextAtVertex = fin.PrevAtVertex = -1;
+                fin.NextOfEdge = fin.PrevOfEdge = -1;
+                fin.Sense = '+';
 
                 AppendFinToLoop(loopSlots[f], finSlot);
                 AppendFinToEdge(edgeSlots[ei], finSlot);
@@ -3249,6 +3302,15 @@ internal static unsafe class KernelRuntime
         body.FirstVertexBody = -1;
         body.LastVertexBody = -1;
         body.VertexCountBody = 0;
+        body.FirstConstructionSurface = -1;
+        body.LastConstructionSurface = -1;
+        body.ConstructionSurfaceCount = 0;
+        body.FirstConstructionCurve = -1;
+        body.LastConstructionCurve = -1;
+        body.ConstructionCurveCount = 0;
+        body.FirstConstructionPoint = -1;
+        body.LastConstructionPoint = -1;
+        body.ConstructionPointCount = 0;
         body.PrevInPartition = -1;
         body.NextInPartition = -1;
     }
@@ -3289,7 +3351,6 @@ internal static unsafe class KernelRuntime
     {
         shell.Body = bodySlot;
         shell.Region = -1;
-        shell.ShellType = 0;
         shell.FirstFaceUseShell = -1;
         shell.LastFaceUseShell = -1;
         shell.FaceUseCount = 0;
@@ -3311,6 +3372,9 @@ internal static unsafe class KernelRuntime
         face.LoopCount = 0;
         face.SurfTag = 0;
         face.Orientation = ParasolidConstants.PK_TOPOL_sense_none_c;
+        face.Tolerance = 0;
+        face.PrevOnSurf = -1;
+        face.NextOnSurf = -1;
         face.PrevInBody = -1;
         face.NextInBody = -1;
     }
@@ -3325,10 +3389,12 @@ internal static unsafe class KernelRuntime
         voidRegion.FirstShell = -1;
         voidRegion.LastShell = -1;
         voidRegion.ShellCount = 0;
+        voidRegion.Frame = -1;
         solidRegion.IsSolid = 1;
         solidRegion.FirstShell = -1;
         solidRegion.LastShell = -1;
         solidRegion.ShellCount = 0;
+        solidRegion.Frame = -1;
 
         AppendRegionToBody(bodySlot, voidRegionSlot);
         AppendRegionToBody(bodySlot, solidRegionSlot);
@@ -3350,14 +3416,18 @@ internal static unsafe class KernelRuntime
         ref var fin = ref Fins[finSlot];
         fin.Edge = edgeSlot;
         fin.Loop = loopSlot;
-        fin.Face = faceSlot;
         fin.NextInLoop = fin.PrevInLoop = -1;
-        fin.NextOfEdge = fin.PrevOfEdge = -1;
+        fin.Other = -1;
+        fin.Curve = -1;
         fin.Vertex = -1;
         fin.NextAtVertex = fin.PrevAtVertex = -1;
+        fin.NextOfEdge = fin.PrevOfEdge = -1;
+        fin.Sense = '+';
 
         AppendFinToLoop(loopSlot, finSlot);
         AppendFinToEdge(edgeSlot, finSlot);
+        if (Edges[edgeSlot].StartVertex < 0 && Edges[edgeSlot].EndVertex < 0)
+            fin.Sense = finSlot == Edges[edgeSlot].FirstFinEdge ? '+' : '-';
         AppendFinToVertex(EdgeFinVertex(finSlot, Edges[edgeSlot]), finSlot);
         return finSlot;
     }
@@ -3368,11 +3438,13 @@ internal static unsafe class KernelRuntime
         ref var fin = ref Fins[finSlot];
         fin.Edge = -1;
         fin.Loop = loopSlot;
-        fin.Face = faceSlot;
         fin.NextInLoop = fin.PrevInLoop = -1;
-        fin.NextOfEdge = fin.PrevOfEdge = -1;
+        fin.Other = -1;
+        fin.Curve = -1;
         fin.Vertex = vertexSlot;
         fin.NextAtVertex = fin.PrevAtVertex = -1;
+        fin.NextOfEdge = fin.PrevOfEdge = -1;
+        fin.Sense = '+';
 
         AppendFinToLoop(loopSlot, finSlot);
         AppendFinToVertex(vertexSlot, finSlot);

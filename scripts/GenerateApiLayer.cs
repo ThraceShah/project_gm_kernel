@@ -32,7 +32,7 @@ static string GetScriptPath([CallerFilePath] string path = "") => path;
 
 var scriptDir = Path.GetDirectoryName(GetScriptPath()) ?? ".";
 var repoRoot = Path.GetFullPath(Path.Combine(scriptDir, ".."));
-var incDir = Path.Combine(repoRoot, "docs", "parasolid_inc");
+var incDir = Path.Combine(repoRoot, "third_party", "parasolid", "include");
 var nativeOut = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "ParasolidHeader.generated.cs");
 var exportsOut = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "KernelExports.generated.cs");
 var unresolvedPath = Path.Combine(repoRoot, "temp_docs", "unresolved.md");
@@ -191,21 +191,33 @@ static void PreloadLibClang()
             foreach (var fileName in CandidateFileNames())
             {
                 var candidate = Path.Combine(env, fileName);
-                if (NativeLibrary.TryLoad(candidate, out _))
+                if (NativeLibrary.TryLoad(candidate, out var handle))
+                {
+                    BindLibClang(handle);
                     return;
+                }
             }
         }
-        else if (NativeLibrary.TryLoad(env, out _))
+        else if (NativeLibrary.TryLoad(env, out var handle))
         {
+            BindLibClang(handle);
             return;
         }
     }
 
     foreach (var candidate in CandidateLibraryPaths())
     {
-        if (NativeLibrary.TryLoad(candidate, out _))
+        if (NativeLibrary.TryLoad(candidate, out var handle))
+        {
+            BindLibClang(handle);
             return;
+        }
     }
+}
+
+static unsafe void BindLibClang(nint handle)
+{
+    clang.ResolveLibrary += (name, assembly, searchPath) => name == "libclang" ? handle : 0;
 }
 
 static IEnumerable<string> CandidateFileNames()
@@ -214,7 +226,7 @@ static IEnumerable<string> CandidateFileNames()
         return ["libclang.dylib"];
     if (OperatingSystem.IsWindows())
         return ["libclang.dll", "clang.dll"];
-    return ["libclang.so", "libclang-21.so", "libclang-20.so", "libclang-18.so"];
+    return ["libclang.so", "libclang-21.so.21", "libclang-21.so", "libclang-20.so", "libclang-18.so"];
 }
 
 static IEnumerable<string> CandidateLibraryPaths()
@@ -241,6 +253,7 @@ static IEnumerable<string> CandidateLibraryPaths()
 
     return [
         "libclang.so",
+        "libclang-21.so.21",
         "/usr/lib/llvm-21/lib/libclang.so",
         "/usr/lib/llvm-20/lib/libclang.so",
         "/usr/lib/llvm-18/lib/libclang.so",
@@ -286,7 +299,7 @@ static void RestoreSnapshot(FileSnapshot snapshot)
 
 static (bool Ok, string Output) RunProcess(string fileName, string arguments, string workingDirectory)
 {
-    var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+    var startInfo = new System.Diagnostics.ProcessStartInfo
     {
         FileName = fileName,
         Arguments = arguments,
@@ -294,7 +307,9 @@ static (bool Ok, string Output) RunProcess(string fileName, string arguments, st
         RedirectStandardOutput = true,
         RedirectStandardError = true,
         UseShellExecute = false,
-    });
+    };
+    startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+    using var process = System.Diagnostics.Process.Start(startInfo);
 
     process!.WaitForExit();
     var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
@@ -1499,11 +1514,13 @@ static bool IsReadOnlyApi(string functionName)
 
 bool IsUnmanagedCallersOnlyType(string typeName)
 {
-    if (typeName.EndsWith('*'))
+    if (typeName.EndsWith('*') || IsFunctionPointerAlias(typeName))
         return true;
 
     var resolved = ResolveChain(typeName);
-    return resolved is "void" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or "ulong" or "nint" or "nuint" or "float" or "double";
+    // Generated aggregates contain unmanaged fields and may be passed by value (e.g. PK_UV_t).
+    return IsGeneratedAggregateTypeName(resolved)
+        || resolved is "void" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or "ulong" or "nint" or "nuint" or "float" or "double";
 }
 
 bool CanGenerateExportStub((string Name, string RetType, List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsDoublePtr)> Params) func)
@@ -1544,7 +1561,10 @@ void GenerateExportsFile(string outputPath)
         if (implemented.Contains(func.Name))
             continue;
         if (!CanGenerateExportStub(func))
+        {
+            RecordUnresolved(func.Name, "unsupported export signature", "func-param");
             continue;
+        }
 
         var parms = string.Join(", ", func.Params.Select(p =>
         {

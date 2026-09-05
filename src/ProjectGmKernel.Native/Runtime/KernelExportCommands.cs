@@ -2,6 +2,36 @@ using ProjectGmKernel.Native.Generated;
 
 namespace ProjectGmKernel.Native.Runtime;
 
+internal unsafe struct CurveEvalCommand : IKernelCommand
+{
+    public CurveTag Curve;
+    public double Parameter;
+    public DerivativeOrder Order;
+    public PK_VECTOR_s* Output;
+    public int Execute() => KernelRuntime.CurveEval(Curve, Parameter, Order, Output);
+}
+
+internal unsafe struct CurveEvalWithTangentCommand : IKernelCommand
+{
+    public CurveTag Curve;
+    public double Parameter;
+    public DerivativeOrder Order;
+    public PK_VECTOR_s* Output;
+    public PK_VECTOR_s* Tangent;
+    public int Execute() => KernelRuntime.CurveEvalWithTangent(Curve, Parameter, Order, Output, Tangent);
+}
+
+internal unsafe struct SurfEvalCommand : IKernelCommand
+{
+    public SurfTag Surface;
+    public PK_UV_s Parameter;
+    public DerivativeOrder UOrder;
+    public DerivativeOrder VOrder;
+    public KernelLogical Triangular;
+    public PK_VECTOR_s* Output;
+    public int Execute() => KernelRuntime.SurfEval(Surface, Parameter, UOrder, VOrder, Triangular, Output);
+}
+
 internal unsafe struct SessionStartCommand : IKernelCommand
 {
     public PK_SESSION_start_o_s* Options;

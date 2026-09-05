@@ -55,6 +55,14 @@ try
         var faceAskShells = (delegate* unmanaged[Cdecl]<int, int*, int>)NativeLibrary.GetExport(handle, "PK_FACE_ask_shells");
         var cylCreate = (delegate* unmanaged[Cdecl]<PK_CYL_sf_s*, int*, int>)NativeLibrary.GetExport(handle, "PK_CYL_create");
         var cylAsk = (delegate* unmanaged[Cdecl]<int, PK_CYL_sf_s*, int>)NativeLibrary.GetExport(handle, "PK_CYL_ask");
+        var faceAskSurf = (delegate* unmanaged[Cdecl]<int, int*, int>)NativeLibrary.GetExport(handle, "PK_FACE_ask_surf");
+        var edgeAskCurve = (delegate* unmanaged[Cdecl]<int, int*, int>)NativeLibrary.GetExport(handle, "PK_EDGE_ask_curve");
+        var curveEval = (delegate* unmanaged[Cdecl]<int, double, int, PK_VECTOR_s*, int>)NativeLibrary.GetExport(handle, "PK_CURVE_eval");
+        var curveEvalWithTangent = (delegate* unmanaged[Cdecl]<int, double, int, PK_VECTOR_s*, PK_VECTOR_s*, int>)NativeLibrary.GetExport(handle, "PK_CURVE_eval_with_tangent");
+        var surfEval = (delegate* unmanaged[Cdecl]<int, PK_UV_s, int, int, byte, PK_VECTOR_s*, int>)NativeLibrary.GetExport(handle, "PK_SURF_eval");
+        NativeLibrary.GetExport(handle, "PK_SURF_eval_handed");
+        NativeLibrary.GetExport(handle, "PK_SURF_eval_with_normal");
+        NativeLibrary.GetExport(handle, "PK_SESSION_register_polling_cb");
         var partTransmitB = (delegate* unmanaged[Cdecl]<int, int*, PK_PART_transmit_o_s*, PK_MEMORY_block_s*, int>)NativeLibrary.GetExport(handle, "PK_PART_transmit_b");
         var partReceiveB = (delegate* unmanaged[Cdecl]<PK_MEMORY_block_s, PK_PART_receive_o_s*, int*, nint*, int>)NativeLibrary.GetExport(handle, "PK_PART_receive_b");
         var memoryBlockFree = (delegate* unmanaged[Cdecl]<PK_MEMORY_block_s*, int>)NativeLibrary.GetExport(handle, "PK_MEMORY_block_f");
@@ -82,6 +90,30 @@ try
         Check(bodyAskFaces(body, &faceCount, &faces), "PK_BODY_ask_faces");
         Require(faceCount == 6, "solid block face count");
         Require(faces != 0, "faces pointer");
+
+        int surface;
+        Check(faceAskSurf(((int*)faces)[0], &surface), "face surface");
+        var derivatives = stackalloc PK_VECTOR_s[9];
+        var uv = new PK_UV_s { u = 0.25, v = 0.75 };
+        Check(surfEval(surface, uv, 2, 2, 0, derivatives), "PK_SURF_eval by-value UV");
+        var du = derivatives[1];
+        var dv = derivatives[3];
+        Require(Math.Abs(du.coord0 * du.coord0 + du.coord1 * du.coord1 + du.coord2 * du.coord2 - 1) < 1e-12, "plane du");
+        Require(Math.Abs(dv.coord0 * dv.coord0 + dv.coord1 * dv.coord1 + dv.coord2 * dv.coord2 - 1) < 1e-12, "plane dv");
+        var position = derivatives[0];
+        Check(surfEval(surface, new PK_UV_s(), 0, 0, 0, derivatives), "plane origin");
+        Require(Math.Abs(position.coord0 - derivatives[0].coord0 - uv.u * du.coord0 - uv.v * dv.coord0) < 1e-12, "UV x");
+        Require(Math.Abs(position.coord1 - derivatives[0].coord1 - uv.u * du.coord1 - uv.v * dv.coord1) < 1e-12, "UV y");
+        Require(Math.Abs(position.coord2 - derivatives[0].coord2 - uv.u * du.coord2 - uv.v * dv.coord2) < 1e-12, "UV z");
+        int evalEdgeCount;
+        nint evalEdges;
+        Check(bodyAskEdges(body, &evalEdgeCount, &evalEdges), "evaluation edges");
+        int curve;
+        Check(edgeAskCurve(((int*)evalEdges)[0], &curve), "edge curve");
+        Check(curveEval(curve, 0.25, 2, derivatives), "PK_CURVE_eval");
+        PK_VECTOR_s tangent;
+        Check(curveEvalWithTangent(curve, 0.25, 0, derivatives, &tangent), "PK_CURVE_eval_with_tangent");
+        Require(Math.Abs(tangent.coord0 * tangent.coord0 + tangent.coord1 * tangent.coord1 + tangent.coord2 * tangent.coord2 - 1) < 1e-12, "unit tangent");
 
         int shellCount;
         nint shells;
@@ -228,6 +260,13 @@ struct PK_VECTOR_s
     public double coord0;
     public double coord1;
     public double coord2;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+struct PK_UV_s
+{
+    public double u;
+    public double v;
 }
 
 [StructLayout(LayoutKind.Sequential)]

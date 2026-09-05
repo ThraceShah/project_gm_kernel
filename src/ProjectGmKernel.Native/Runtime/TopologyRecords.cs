@@ -42,6 +42,17 @@ internal struct BodyRecord
     public VertexSlot FirstVertexBody;
     public VertexSlot LastVertexBody;
     public int VertexCountBody;
+    // Construction geometry chains (XT BODY surface/curve/point heads).
+    // Lattice/mesh/polyline chains have no kernel entity yet.
+    public SurfaceSlot FirstConstructionSurface;
+    public SurfaceSlot LastConstructionSurface;
+    public int ConstructionSurfaceCount;
+    public CurveSlot FirstConstructionCurve;
+    public CurveSlot LastConstructionCurve;
+    public int ConstructionCurveCount;
+    public PointSlot FirstConstructionPoint;
+    public PointSlot LastConstructionPoint;
+    public int ConstructionPointCount;
     public BodySlot PrevInPartition;
     public BodySlot NextInPartition;
 }
@@ -53,7 +64,6 @@ internal struct BodyRecord
 internal struct ShellRecord
 {
     public RecordHeader Header;
-    public KernelShellType ShellType;
     public BodySlot Body;
     public RegionSlot Region;
     public FaceUseSlot FirstFaceUseShell;
@@ -95,6 +105,9 @@ internal struct FaceRecord
     public int LoopCount;
     public SurfTag SurfTag;
     public KernelSense Orientation;
+    public double Tolerance;     // XT face tolerance is not used; keep as null-double (0)
+    public FaceSlot PrevOnSurf;  // previous face sharing the surface (XT previous_on_surface)
+    public FaceSlot NextOnSurf;  // next face sharing the surface (XT next_on_surface)
     public FaceSlot PrevInBody;   // sibling ring in body
     public FaceSlot NextInBody;   // sibling chain in body
     public LoopSlot LastLoop;
@@ -107,7 +120,6 @@ internal struct FaceRecord
 internal struct LoopRecord
 {
     public RecordHeader Header;
-    public KernelLoopType LoopType;
     public FaceSlot Face;
     public FinSlot FirstFin;
     public FinSlot LastFin;
@@ -123,7 +135,6 @@ internal struct LoopRecord
 internal struct EdgeRecord
 {
     public RecordHeader Header;
-    public KernelEdgeType EdgeType;
     public BodySlot Body;
     public VertexSlot StartVertex; // -1 for ring/vertexless edges
     public VertexSlot EndVertex;   // -1 for ring/vertexless edges
@@ -131,30 +142,42 @@ internal struct EdgeRecord
     public FinSlot LastFinEdge;
     public int FinCount;
     public CurveTag CurveTag;
-    public KernelEdgeConvexity Convexity;
+    public double Tolerance;     // 0 = accurate edge (XT null-double)
     public EdgeSlot PrevInBody;   // sibling ring
     public EdgeSlot NextInBody;   // sibling chain
 }
 
 /// <summary>
-/// Fin (half-edge): a directed traversal of an edge within a loop.
-/// Links edge, loop, face together with next/prev in loop and next/prev of edge.
+/// Fin (XT "halfedge"): the oriented use of an edge by a loop (XT schema 5.3.9).
+/// Vertex is the forward vertex of the fin. Sense is '+' when the fin direction
+/// agrees with its edge, '-' when opposed — this is the fin's only stored sense.
+/// There is deliberately no sense between the fin and its own pcurve (Curve):
+/// Parasolid stores no such field; the direction is derived at query time
+/// (PK_FIN_ask_oriented_curve returns a flag) from the constraint that the
+/// pcurve ends correspond to the fin's vertices, while the pcurve node itself
+/// carries its own sense against its basis curve. See
+/// docs/xt_topology_sense_semantics.md.
+/// Face is reached via the owning loop. Other is the next fin around the edge
+/// in XT's ordered fin ring, starting at the positive (primary) fin.
+/// Curve holds the trimmed SP-curve of a tolerant edge's fin
+/// (-1 otherwise).
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct FinRecord
 {
     public RecordHeader Header;
-    public KernelFinType FinType;
-    public EdgeSlot Edge;
-    public LoopSlot Loop;
-    public FaceSlot Face;
-    public FinSlot NextInLoop;
-    public FinSlot PrevInLoop;
-    public FinSlot NextOfEdge;
-    public FinSlot PrevOfEdge;
-    public VertexSlot Vertex;
-    public FinSlot NextAtVertex;
+    public LoopSlot Loop;          // -1 for dummy fins
+    public FinSlot NextInLoop;     // forward: next fin around loop
+    public FinSlot PrevInLoop;     // backward: previous fin around loop
+    public VertexSlot Vertex;      // forward vertex of the fin
+    public FinSlot Other;          // next fin around edge in XT ring; -1 when unattached
+    public EdgeSlot Edge;          // -1 for isolated/dummy fins
+    public CurveTag Curve;         // trimmed SP-curve for tolerant edges; -1 otherwise
+    public FinSlot NextAtVertex;   // next fin in chain at vertex
     public FinSlot PrevAtVertex;
+    public FinSlot NextOfEdge;     // edge's ordered fin ring (kernel-internal)
+    public FinSlot PrevOfEdge;
+    public char Sense;             // '+' same direction as edge, '-' opposed
 }
 
 /// <summary>
@@ -164,9 +187,9 @@ internal struct FinRecord
 internal struct VertexRecord
 {
     public RecordHeader Header;
-    public KernelVertexType VertexType;
     public BodySlot Body;
     public PointTag PointTag;
+    public double Tolerance;     // 0 = accurate vertex (XT null-double)
     public FinSlot FirstFinVertex;
     public FinSlot LastFinVertex;
     public VertexSlot PrevInBody; // sibling ring
@@ -185,6 +208,7 @@ internal struct RegionRecord
     public ShellSlot FirstShell;  // -1 if none
     public ShellSlot LastShell;   // -1 if none
     public int ShellCount;
+    public FrameSlot Frame;      // XT frame attached to region; -1 = none (no frame entity yet)
     public RegionSlot PrevInBody; // sibling ring
     public RegionSlot NextInBody; // sibling chain
 }

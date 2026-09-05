@@ -44,6 +44,9 @@ internal enum ApiId : ushort
     BodyCreateSolidPrism = 40,
     BodyCreateSolidSphere = 41,
     BodyCreateSolidTorus = 42,
+    CurveEval = 43,
+    CurveEvalWithTangent = 44,
+    SurfEval = 45,
     GeneratedStub = 65535,
 }
 

@@ -214,9 +214,10 @@ internal static class IntegrityChecker
                 Debug.WriteLine($"Fin {i}: invalid loop link {fin.Loop}");
                 errors++;
             }
-            if (fin.Face < 0 || !KernelRuntime.Faces.IsAlive(fin.Face))
+            var faceSlot = KernelRuntime.Loops[fin.Loop].Face;
+            if (faceSlot < 0 || !KernelRuntime.Faces.IsAlive(faceSlot))
             {
-                Debug.WriteLine($"Fin {i}: invalid face link {fin.Face}");
+                Debug.WriteLine($"Fin {i}: invalid face link {faceSlot} via loop {fin.Loop}");
                 errors++;
             }
         }

@@ -6,6 +6,31 @@ namespace ProjectGmKernel.Native;
 
 internal static unsafe partial class KernelExports
 {
+    [UnmanagedCallersOnly(EntryPoint = "PK_CURVE_eval")]
+    public static int PK_CURVE_eval(CurveTag curve, double t, DerivativeOrder nDerivs, PK_VECTOR_s* output)
+    {
+        var command = new CurveEvalCommand { Curve = curve, Parameter = t, Order = nDerivs, Output = output };
+        return KernelRuntime.Dispatch(ApiId.CurveEval, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_CURVE_eval_with_tangent")]
+    public static int PK_CURVE_eval_with_tangent(CurveTag curve, double t, DerivativeOrder nDerivs,
+        PK_VECTOR_s* output, PK_VECTOR_s* tangent)
+    {
+        var command = new CurveEvalWithTangentCommand
+        { Curve = curve, Parameter = t, Order = nDerivs, Output = output, Tangent = tangent };
+        return KernelRuntime.Dispatch(ApiId.CurveEvalWithTangent, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_SURF_eval")]
+    public static int PK_SURF_eval(SurfTag surface, PK_UV_s uv, DerivativeOrder nUDerivs,
+        DerivativeOrder nVDerivs, KernelLogical triangular, PK_VECTOR_s* output)
+    {
+        var command = new SurfEvalCommand
+        { Surface = surface, Parameter = uv, UOrder = nUDerivs, VOrder = nVDerivs, Triangular = triangular, Output = output };
+        return KernelRuntime.Dispatch(ApiId.SurfEval, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+    }
+
     // ── Session ──────────────────────────────────────────────────
 
     [UnmanagedCallersOnly(EntryPoint = "PK_SESSION_start")]

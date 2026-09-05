@@ -342,7 +342,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Int(NodeId(map.ShellSlots[slot], map)),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(region.IsSolid != 0 ? map.Body : 0),
-                XtFieldValue.Ptr(NextSolidShell(slot, map)),
+                XtFieldValue.Ptr(NextShellInRegion(slot, map)),
                 XtFieldValue.Ptr(firstBack),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
@@ -364,16 +364,16 @@ internal static unsafe class XtWriter
                 XtFieldValue.Int(NodeId(map.FaceSlots[slot], map)),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Null(),
-                XtFieldValue.Ptr(NextFace(slot, map)),
-                XtFieldValue.Ptr(PreviousFace(slot, map)),
+                XtFieldValue.Ptr(FaceRingNext(face.BackFaceUse, back: true, map)),
+                XtFieldValue.Ptr(FaceRingPrevious(face.BackFaceUse, back: true, map)),
                 XtFieldValue.Ptr(Ptr(map.LoopSlots, face.FirstLoop)),
                 XtFieldValue.Ptr(Ptr(map.ShellSlots, face.BackShell)),
                 XtFieldValue.Ptr(face.SurfTag > 0 ? map.SurfaceTags[face.SurfTag] : 0),
                 XtFieldValue.Char(face.Orientation == ParasolidConstants.PK_TOPOL_sense_negative_c ? '-' : '+'),
-                XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(NextFace(slot, map)),
-                XtFieldValue.Ptr(PreviousFace(slot, map)),
+                XtFieldValue.Ptr(Ptr(map.FaceSlots, face.NextOnSurf)),
+                XtFieldValue.Ptr(Ptr(map.FaceSlots, face.PrevOnSurf)),
+                XtFieldValue.Ptr(FaceRingNext(face.FrontFaceUse, back: false, map)),
+                XtFieldValue.Ptr(FaceRingPrevious(face.FrontFaceUse, back: false, map)),
                 XtFieldValue.Ptr(Ptr(map.ShellSlots, face.FrontShell)),
             ],
         };
@@ -408,8 +408,8 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(map.EdgeSlots[slot], map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Null(),
-                XtFieldValue.Ptr(Ptr(map.FinSlots, edge.FirstFinEdge)),
+                edge.Tolerance != 0 ? XtFieldValue.RealValue(edge.Tolerance) : XtFieldValue.Null(),
+                XtFieldValue.Ptr(Ptr(map.FinSlots, PrimaryFin(edge))),
                 XtFieldValue.Ptr(PreviousEdge(slot, map)),
                 XtFieldValue.Ptr(NextEdge(slot, map)),
                 XtFieldValue.Ptr(edge.CurveTag > 0 ? map.CurveTags[edge.CurveTag] : 0),
@@ -434,9 +434,9 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(Ptr(map.FinSlots, fin.NextInLoop)),
                 XtFieldValue.Ptr(Ptr(map.FinSlots, fin.PrevInLoop)),
                 XtFieldValue.Ptr(Ptr(map.VertexSlots, fin.Vertex)),
-                XtFieldValue.Ptr(Ptr(map.FinSlots, OtherFinOnEdge(slot, fin))),
+                XtFieldValue.Ptr(Ptr(map.FinSlots, fin.Other)),
                 XtFieldValue.Ptr(Ptr(map.EdgeSlots, fin.Edge)),
-                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(Ptr(map.CurveTags, fin.Curve)),
                 XtFieldValue.Ptr(NextAtVertex(slot, fin, map)),
                 XtFieldValue.Char(FinSense(slot, fin)),
             ],
@@ -458,7 +458,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(PreviousVertex(slot, map)),
                 XtFieldValue.Ptr(NextVertex(slot, map)),
                 XtFieldValue.Ptr(vertex.PointTag > 0 ? map.PointTags[vertex.PointTag] : 0),
-                XtFieldValue.Null(),
+                vertex.Tolerance != 0 ? XtFieldValue.RealValue(vertex.Tolerance) : XtFieldValue.Null(),
                 XtFieldValue.Ptr(map.Body),
             ],
         };
@@ -669,22 +669,11 @@ internal static unsafe class XtWriter
         return 0;
     }
 
-    private static XtNodeIndex NextSolidShell(ShellSlot slot, NodeMap map)
+    private static XtNodeIndex NextShellInRegion(ShellSlot slot, NodeMap map)
     {
-        var found = false;
-        foreach (var pair in map.ShellSlots)
-        {
-            var shell = KernelRuntime.GetShellRecord(pair.Key);
-            var region = KernelRuntime.GetRegionRecord(shell.Region);
-            if (region.IsSolid == 0)
-                continue;
-            if (found)
-                return pair.Value;
-            if (pair.Key == slot)
-                found = true;
-        }
-
-        return 0;
+        var shell = KernelRuntime.GetShellRecord(slot);
+        var first = KernelRuntime.GetRegionRecord(shell.Region).FirstShell;
+        return shell.NextInRegion != first ? Ptr(map.ShellSlots, shell.NextInRegion) : 0;
     }
 
     private static XtNodeIndex NextRegion(RegionSlot slot, NodeMap map)
@@ -696,17 +685,6 @@ internal static unsafe class XtWriter
     private static XtNodeIndex PreviousRegion(RegionSlot slot, NodeMap map)
     {
         return slot != map.FirstRegionSlot ? Ptr(map.RegionSlots, KernelRuntime.GetRegionRecord(slot).PrevInBody) : 0;
-    }
-
-    private static XtNodeIndex NextFace(FaceSlot slot, NodeMap map)
-    {
-        var next = KernelRuntime.GetFaceRecord(slot).NextInBody;
-        return next != map.FirstFaceSlot ? Ptr(map.FaceSlots, next) : 0;
-    }
-
-    private static XtNodeIndex PreviousFace(FaceSlot slot, NodeMap map)
-    {
-        return slot != map.FirstFaceSlot ? Ptr(map.FaceSlots, KernelRuntime.GetFaceRecord(slot).PrevInBody) : 0;
     }
 
     private static XtNodeIndex NextLoop(LoopSlot slot, NodeMap map)
@@ -738,24 +716,64 @@ internal static unsafe class XtWriter
         return slot != map.FirstVertexSlot ? Ptr(map.VertexSlots, KernelRuntime.GetVertexRecord(slot).PrevInBody) : 0;
     }
 
-    private static FinSlot OtherFinOnEdge(FinSlot slot, FinRecord fin)
-    {
-        if (fin.Edge < 0)
-            return -1;
-        return fin.NextOfEdge != slot ? fin.NextOfEdge : -1;
-    }
-
     private static char FinSense(FinSlot slot, FinRecord fin)
     {
         if (fin.Edge < 0)
             return '?';
-        var edge = KernelRuntime.GetEdgeRecord(fin.Edge);
-        if (fin.Vertex == edge.EndVertex)
-            return '+';
-        if (fin.Vertex == edge.StartVertex)
-            return '-';
-        return slot == edge.FirstFinEdge ? '+' : '-';
+        if (fin.Vertex < 0)
+            return slot == KernelRuntime.GetEdgeRecord(fin.Edge).FirstFinEdge ? '+' : '-';
+        return fin.Sense;
     }
+
+    // XT: edge.halfedge heads the edge's fin chain and must be the positive
+    // (primary) fin (XT schema 5.3.9.1).
+    private static FinSlot PrimaryFin(EdgeRecord edge)
+    {
+        var finSlot = edge.FirstFinEdge;
+        for (var i = 0; i < edge.FinCount; i++, finSlot = KernelRuntime.GetFinRecord(finSlot).NextOfEdge)
+        {
+            if (KernelRuntime.GetFinRecord(finSlot).Sense == '+')
+                return finSlot;
+        }
+        return edge.FirstFinEdge;
+    }
+
+    // Runtime face-use rings become null-terminated XT chains, separately for
+    // back/front uses. Do not wrap around the shell's first use when exporting.
+    private static XtNodeIndex FaceRingNext(FaceUseSlot useSlot, bool back, NodeMap map)
+    {
+        if (useSlot < 0)
+            return 0;
+        var start = KernelRuntime.GetShellRecord(KernelRuntime.GetFaceUseRecord(useSlot).Shell).FirstFaceUseShell;
+        var cur = KernelRuntime.GetFaceUseRecord(useSlot).NextInShell;
+        while (cur != start)
+        {
+            var use = KernelRuntime.GetFaceUseRecord(cur);
+            if (IsBackFaceUse(use) == back)
+                return Ptr(map.FaceSlots, use.Face);
+            cur = use.NextInShell;
+        }
+        return 0;
+    }
+
+    private static XtNodeIndex FaceRingPrevious(FaceUseSlot useSlot, bool back, NodeMap map)
+    {
+        if (useSlot < 0)
+            return 0;
+        var start = KernelRuntime.GetShellRecord(KernelRuntime.GetFaceUseRecord(useSlot).Shell).FirstFaceUseShell;
+        var cur = useSlot;
+        while (cur != start)
+        {
+            cur = KernelRuntime.GetFaceUseRecord(cur).PrevInShell;
+            var use = KernelRuntime.GetFaceUseRecord(cur);
+            if (IsBackFaceUse(use) == back)
+                return Ptr(map.FaceSlots, use.Face);
+        }
+        return 0;
+    }
+
+    private static bool IsBackFaceUse(FaceUseRecord use)
+        => use.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c;
 
     private static XtNodeIndex NextAtVertex(FinSlot slot, FinRecord fin, NodeMap map)
     {
