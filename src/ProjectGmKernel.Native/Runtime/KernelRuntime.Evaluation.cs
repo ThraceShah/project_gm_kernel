@@ -38,6 +38,20 @@ internal static unsafe partial class KernelRuntime
             case CurveClass.Circle:
                 status = CurveEvaluation.Evaluate(in CircleDataPool[record.DataIndex], t, order, values, out direction);
                 break;
+            case CurveClass.BCurve:
+                var view = GetBCurveView(in BCurveDataStore[record.DataIndex]);
+                status = BCurveEvaluation.Evaluate(in view, t, Math.Min(Math.Max(order, 1), view.Degree), values, BCurveWorkspace, out direction);
+                if (status == AlgorithmStatus.Success && tangent is not null)
+                {
+                    var first = values[1];
+                    if (first.X * first.X + first.Y * first.Y + first.Z * first.Z <= 1e-22)
+                        direction = default;
+                }
+                // PK_CURVE_eval V38 zero-fills orders above the spline degree, including rational curves.
+                // The numerical evaluator retains the full rational derivative recurrence for internal use.
+                if (status == AlgorithmStatus.Success && order > view.Degree)
+                    values.Slice(view.Degree + 1, order - view.Degree).Clear();
+                break;
             default:
                 return ParasolidConstants.PK_ERROR_not_implemented;
         }

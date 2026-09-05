@@ -354,12 +354,12 @@ internal struct TorusData
 [StructLayout(LayoutKind.Sequential)]
 internal struct BCurveData
 {
-    public int Degree;
-    public int NVertices;         // total number of control points
-    public int VertexDim;         // dimension of each vertex (3 or 4 if rational)
+    public SplineDegree Degree;
+    public BufferCount NVertices; // total number of control points
+    public BufferCount VertexDim; // dimension of each vertex (3 or 4 if rational)
     public KernelLogical IsRational;
     public KernelBCurveForm Form;
-    public int NKnots;
+    public BufferCount NKnots;
     public KernelKnotType KnotType;
     public KernelLogical IsPeriodic;
     public KernelLogical IsClosed;
@@ -368,6 +368,8 @@ internal struct BCurveData
     public DataSlot VertexOffset;   // offset into CurveVertices arena
     public DataSlot KnotOffset;     // offset into CurveKnots arena
     public DataSlot KnotMultOffset; // offset into CurveKnotMults arena
+    public DataSlot ExpandedKnotOffset;
+    public BufferCount ExpandedKnotCount;
 }
 
 /// <summary>

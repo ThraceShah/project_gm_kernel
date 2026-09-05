@@ -59,6 +59,7 @@ try
         var edgeAskCurve = (delegate* unmanaged[Cdecl]<int, int*, int>)NativeLibrary.GetExport(handle, "PK_EDGE_ask_curve");
         var curveEval = (delegate* unmanaged[Cdecl]<int, double, int, PK_VECTOR_s*, int>)NativeLibrary.GetExport(handle, "PK_CURVE_eval");
         var curveEvalWithTangent = (delegate* unmanaged[Cdecl]<int, double, int, PK_VECTOR_s*, PK_VECTOR_s*, int>)NativeLibrary.GetExport(handle, "PK_CURVE_eval_with_tangent");
+        var bcurveCreate = (delegate* unmanaged[Cdecl]<PK_BCURVE_sf_s*, int*, int>)NativeLibrary.GetExport(handle, "PK_BCURVE_create");
         var surfEval = (delegate* unmanaged[Cdecl]<int, PK_UV_s, int, int, byte, PK_VECTOR_s*, int>)NativeLibrary.GetExport(handle, "PK_SURF_eval");
         NativeLibrary.GetExport(handle, "PK_SURF_eval_handed");
         NativeLibrary.GetExport(handle, "PK_SURF_eval_with_normal");
@@ -114,6 +115,17 @@ try
         PK_VECTOR_s tangent;
         Check(curveEvalWithTangent(curve, 0.25, 0, derivatives, &tangent), "PK_CURVE_eval_with_tangent");
         Require(Math.Abs(tangent.coord0 * tangent.coord0 + tangent.coord1 * tangent.coord1 + tangent.coord2 * tangent.coord2 - 1) < 1e-12, "unit tangent");
+
+        double* poles = stackalloc double[9] { 0,0,0, 1,2,0, 3,1,2 };
+        double* knots = stackalloc double[2] { 0,4 };
+        int* multiplicities = stackalloc int[2] { 3,3 };
+        var spline = new PK_BCURVE_sf_s { degree=2,n_vertices=3,vertex_dim=3,vertex=poles,
+            n_knots=2,knot=knots,knot_mult=multiplicities,form=8650,knot_type=8500,self_intersecting=8550 };
+        int bcurve;
+        Check(bcurveCreate(&spline,&bcurve), "PK_BCURVE_create");
+        Check(curveEvalWithTangent(bcurve,2,2,derivatives,&tangent), "B-curve native evaluation");
+        Require(Math.Abs(derivatives[0].coord0-1.25)<1e-13 && Math.Abs(derivatives[0].coord1-1.25)<1e-13, "B-curve point");
+        Require(Math.Abs(derivatives[2].coord0-0.125)<1e-13, "B-curve second derivative");
 
         int shellCount;
         nint shells;
@@ -267,6 +279,24 @@ struct PK_UV_s
 {
     public double u;
     public double v;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+unsafe struct PK_BCURVE_sf_s
+{
+    public int degree;
+    public int n_vertices;
+    public int vertex_dim;
+    public byte is_rational;
+    public double* vertex;
+    public int form;
+    public int n_knots;
+    public int* knot_mult;
+    public double* knot;
+    public int knot_type;
+    public byte is_periodic;
+    public byte is_closed;
+    public int self_intersecting;
 }
 
 [StructLayout(LayoutKind.Sequential)]

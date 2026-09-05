@@ -255,6 +255,11 @@ internal static unsafe partial class KernelRuntime
     private const int PoolConeData = 19;
     private const int PoolSphereData = 20;
     private const int PoolTorusData = 21;
+    private const int PoolBCurveData = 22;
+    private const int PoolBCurveVertices = 23;
+    private const int PoolBCurveKnots = 24;
+    private const int PoolBCurveKnotMults = 25;
+    private const int PoolBCurveExpandedKnots = 26;
 
     static KernelRuntime()
     {
@@ -512,6 +517,7 @@ internal static unsafe partial class KernelRuntime
         ConeDataPool.Reset();
         SphereDataPool.Reset();
         TorusDataPool.Reset();
+        ResetBCurves();
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -554,6 +560,7 @@ internal static unsafe partial class KernelRuntime
         ConeDataPool.Reset();
         SphereDataPool.Reset();
         TorusDataPool.Reset();
+        ResetBCurves();
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -598,6 +605,8 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_unknown_class;
 
         *classCode = ToPkClass(Handles[entityTag].Class);
+        if (Handles[entityTag].Class == EntityClass.Curve && Curves[Handles[entityTag].SlotIndex].Class != CurveClass.None)
+            *classCode = (int)Curves[Handles[entityTag].SlotIndex].Class;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -3038,6 +3047,11 @@ internal static unsafe partial class KernelRuntime
         m.PoolCounts[PoolConeData] = ConeDataPool.AllocatedCount;
         m.PoolCounts[PoolSphereData] = SphereDataPool.AllocatedCount;
         m.PoolCounts[PoolTorusData] = TorusDataPool.AllocatedCount;
+        m.PoolCounts[PoolBCurveData] = BCurveDataStore.Count;
+        m.PoolCounts[PoolBCurveVertices] = BCurveVertices.Count;
+        m.PoolCounts[PoolBCurveKnots] = BCurveKnots.Count;
+        m.PoolCounts[PoolBCurveKnotMults] = BCurveKnotMults.Count;
+        m.PoolCounts[PoolBCurveExpandedKnots] = BCurveExpandedKnots.Count;
         m.RollbackStamp = session.NextRollbackStamp;
 
         session.HasMark = true;
@@ -3082,12 +3096,17 @@ internal static unsafe partial class KernelRuntime
         ConeDataPool.RestoreMark(m.PoolCounts[PoolConeData]);
         SphereDataPool.RestoreMark(m.PoolCounts[PoolSphereData]);
         TorusDataPool.RestoreMark(m.PoolCounts[PoolTorusData]);
+        BCurveDataStore.RestoreMark(m.PoolCounts[PoolBCurveData]);
+        BCurveVertices.RestoreMark(m.PoolCounts[PoolBCurveVertices]);
+        BCurveKnots.RestoreMark(m.PoolCounts[PoolBCurveKnots]);
+        BCurveKnotMults.RestoreMark(m.PoolCounts[PoolBCurveKnotMults]);
+        BCurveExpandedKnots.RestoreMark(m.PoolCounts[PoolBCurveExpandedKnots]);
 
         // Restore deleted entities (tombstones)
         for (int i = 0; i < session.TombstoneCount; i++)
         {
             ref var ts = ref session.Tombstones[i];
-            if (ts.Slot < m.PoolCounts[ts.PoolIndex])
+            if (ts.Slot < m.PoolCounts[SnapshotPoolIndex((PoolKind)ts.PoolIndex)])
             {
                 // This entity was alive at mark time — restore it
                 RestoreEntity(ts.PoolIndex, ts.Slot, ts.HandleTag);
@@ -3120,6 +3139,25 @@ internal static unsafe partial class KernelRuntime
         session.ClearTombstones();
         return ParasolidConstants.PK_ERROR_no_errors;
     }
+
+    // Handle pool identifiers do not include FaceUse and are not snapshot-array indices.
+    private static int SnapshotPoolIndex(PoolKind pool) => pool switch
+    {
+        PoolKind.Point => PoolPoints,
+        PoolKind.Vector => PoolVectors,
+        PoolKind.Body => PoolBodies,
+        PoolKind.Shell => PoolShells,
+        PoolKind.Face => PoolFaces,
+        PoolKind.Loop => PoolLoops,
+        PoolKind.Edge => PoolEdges,
+        PoolKind.Fin => PoolFins,
+        PoolKind.Vertex => PoolVertices,
+        PoolKind.Region => PoolRegions,
+        PoolKind.Curve => PoolCurves,
+        PoolKind.Surface => PoolSurfaces,
+        PoolKind.Transform => PoolTransforms,
+        _ => throw new InvalidOperationException("Unsupported marked entity pool."),
+    };
 
     // ── Entity delete ────────────────────────────────────────────
 

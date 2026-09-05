@@ -16,4 +16,5 @@ internal enum XtNodeTypes : XtNodeType
     Terminator=1,PartTransmitBlock=176,Body=12,Shell=13,Face=14,Loop=15,Edge=16,
     Halfedge=17,Vertex=18,Region=19,Point=29,Line=30,Circle=31,Plane=50,
     Cylinder=51,Cone=52,Sphere=53,Torus=54,
+    BSplineVertices=45,KnotMultiplicities=127,KnotSet=128,BCurve=134,CurveData=135,NurbsCurve=136,
 }

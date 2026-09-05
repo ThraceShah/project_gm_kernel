@@ -28,6 +28,7 @@ internal struct EntityPool<T> where T : struct
     public readonly int Capacity => _arena.Capacity;
     public readonly int AliveCount => _aliveCount;
     public readonly int AllocatedCount => _arena.Count;
+    public readonly bool CanAllocate => _freeCount > 0 || _arena.Count < _arena.Capacity;
 
     public readonly ref T this[int index] => ref _arena[index];
 
