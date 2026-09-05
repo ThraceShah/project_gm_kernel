@@ -5,11 +5,12 @@
 ## 支持范围
 
 - 当前运行时实际装载的直线、圆，以及平面、圆柱、圆锥、球和环面。
+- 后续已加入三维 B 样条曲线的创建和求值，详见 `docs/bcurve_evaluation.md`。
 - 曲线 0–10 阶导数；附切向版本即使只请求位置也返回单位切向。
 - 曲面 U/V 各 0–10 阶及混合偏导；矩形和三角布局均支持。三角布局要求两个阶数相等，超过阶数上限返回 `PK_ERROR_too_many_derivatives`。
 - 曲面输出按 Parasolid 的 U 快变排列。内部 `SurfaceDerivativeLayout` 的排列不同，由 API 适配一次重排。
 - 周期参数不被拓扑边/面的裁剪范围限制；球纬度、圆锥有效半部、apple/lemon torus 的有效 V 范围单独检查。
-- 尚未装载到计算池的样条、交线、SP-curve、offset/swept/spun/blend 等几何没有被本次补齐，返回 `PK_ERROR_not_implemented`，不读取未经实现的数据池。
+- B-surface、交线、SP-curve、offset/swept/spun/blend 等几何尚未补齐，返回 `PK_ERROR_not_implemented`，不读取未经实现的数据池。
 
 对非有限参数、空输出指针及负的曲线导数阶数，入口返回 `PK_ERROR_bad_parameter`。负的曲线阶数在真实 V38 探查中具有依赖求值状态的表现，不作为本实现的兼容输入范围；本实现采用确定性的输入拒绝。曲面头文件对阶数标注 [NF]，按实测行为将负数视为零，但三角阶数一致性在归零前检查。
 
@@ -31,7 +32,7 @@
 
 ResolveLibrary 的用法依据 [ClangSharp 18.1.0 官方源码](https://raw.githubusercontent.com/dotnet/ClangSharp/v18.1.0/sources/ClangSharp.Interop/clang.cs)，避免与该库自身的 DllImportResolver 重复注册。
 
-本次生成覆盖 1190 个头文件函数：45 个手写导出、1145 个生成占位导出。已经手写实现的三个求值入口不会再出现在生成文件中；漏生成问题还通过其余按值 UV API 及 callback API 的 native export 检查验证。
+生成覆盖 1190 个头文件函数；加入 `PK_BCURVE_create` 后为 46 个手写导出、1144 个生成占位导出。已经手写实现的入口不会再出现在生成文件中；漏生成问题还通过其余按值 UV API 及 callback API 的 native export 检查验证。
 
 ## 验证
 
@@ -42,7 +43,7 @@ ResolveLibrary 的用法依据 [ClangSharp 18.1.0 官方源码](https://raw.gith
 
 数值 oracle 支持 `--numerical-only`，会明确报告未检查 XT，不能当作完整 oracle 的替代。命令为 `dotnet run scripts/ParasolidEvaluationOracle.cs -- --numerical-only`；完整命令不带该选项。
 
-验证结果：116 项 KernelTests 和 6 项 XT 库测试通过；10 组默认/旋转平移坐标系下的基本体均通过数值与 XT receive/body compare。生成器构建和 ABI 检查无阻断项，重复生成文件哈希一致。
+解析几何与 XT 修复批次的验证结果：116 项 KernelTests 和 6 项 XT 库测试通过；10 组默认/旋转平移坐标系下的基本体均通过数值与 XT receive/body compare。生成器构建和 ABI 检查无阻断项，重复生成文件哈希一致。加入 B-curve 后的最新测试数量见 `docs/bcurve_evaluation.md`。
 
 ### 1e-13 网格对照
 

@@ -62,6 +62,10 @@ var parasolidEvaluationOracleExit = Run("dotnet", "run scripts/ParasolidEvaluati
 if (parasolidEvaluationOracleExit != 0)
     return parasolidEvaluationOracleExit;
 
+var bcurveEvaluationOracleExit = Run("dotnet", "run scripts/BCurveEvaluationOracle.cs", cleanupTesthost: false);
+if (bcurveEvaluationOracleExit != 0)
+    return bcurveEvaluationOracleExit;
+
 var allSchemaOracleExit = Run("dotnet", "run scripts/ParasolidAllSchemaOracle.cs -- --check", cleanupTesthost: false);
 if (allSchemaOracleExit != 0)
     return allSchemaOracleExit;

@@ -65,3 +65,6 @@ global using XtNodePosition = int;
 global using BufferOffset = int;
 global using BufferCount = int;
 global using DerivativeOrder = int;
+global using SplineDegree = int;
+global using KnotIndex = int;
+global using ControlPointIndex = int;

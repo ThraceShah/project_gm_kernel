@@ -47,6 +47,7 @@ internal enum ApiId : ushort
     CurveEval = 43,
     CurveEvalWithTangent = 44,
     SurfEval = 45,
+    BCurveCreate = 46,
     GeneratedStub = 65535,
 }
 

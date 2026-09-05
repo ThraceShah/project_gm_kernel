@@ -6,6 +6,13 @@ namespace ProjectGmKernel.Native;
 
 internal static unsafe partial class KernelExports
 {
+    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_create")]
+    public static int PK_BCURVE_create(PK_BCURVE_sf_s* definition, CurveTag* curve)
+    {
+        var command = new BCurveCreateCommand { Definition = definition, Curve = curve };
+        return KernelRuntime.Dispatch(ApiId.BCurveCreate, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref command);
+    }
+
     [UnmanagedCallersOnly(EntryPoint = "PK_CURVE_eval")]
     public static int PK_CURVE_eval(CurveTag curve, double t, DerivativeOrder nDerivs, PK_VECTOR_s* output)
     {

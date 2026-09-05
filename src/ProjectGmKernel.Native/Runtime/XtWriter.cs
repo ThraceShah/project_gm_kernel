@@ -121,7 +121,7 @@ internal static unsafe class XtWriter
         for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = KernelRuntime.GetVertexRecord(vertexSlot).NextInBody)
             SetNode(nodes, map, map.VertexSlots[vertexSlot], VertexNode(vertexSlot, map));
 
-        WriteGeometryNodes(ref map, nodes);
+        WriteGeometryNodes(ref map, nodes, ref graph);
         return true;
     }
 
@@ -186,7 +186,7 @@ internal static unsafe class XtWriter
         }
     }
 
-    private static void WriteGeometryNodes(ref NodeMap map, List<XtNode> nodes)
+    private static void WriteGeometryNodes(ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
     {
         foreach (var pair in map.SurfaceTags)
         {
@@ -210,6 +210,7 @@ internal static unsafe class XtWriter
             {
                 CurveClass.Line => LineNode(pair.Value, pair.Key, curve, map),
                 CurveClass.Circle => CircleNode(pair.Value, pair.Key, curve, map),
+                CurveClass.BCurve => BCurveNode(pair.Value, pair.Key, curve, ref map, nodes, ref graph),
                 _ => throw new NotSupportedException("Unsupported curve class for XT writer."),
             };
             SetNode(nodes, map, pair.Value, node);
@@ -604,6 +605,54 @@ internal static unsafe class XtWriter
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
+            ],
+        };
+    }
+
+    private static XtNode BCurveNode(XtNodeIndex index, CurveTag tag, CurveRecord curve,
+        ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        var data = KernelRuntime.BCurveDataStore[curve.DataIndex];
+        var nurbs = AddIndex(nodes, ref graph, ref map);
+        var vertices = AddIndex(nodes, ref graph, ref map);
+        var knots = AddIndex(nodes, ref graph, ref map);
+        var mults = AddIndex(nodes, ref graph, ref map);
+        var curveData = AddIndex(nodes, ref graph, ref map);
+        var poles = KernelRuntime.BCurveVertices.AsSpan(data.VertexOffset, data.NVertices * data.VertexDim);
+        var knotValues = KernelRuntime.BCurveKnots.AsSpan(data.KnotOffset, data.NKnots);
+        var multiplicities = KernelRuntime.BCurveKnotMults.AsSpan(data.KnotMultOffset, data.NKnots);
+        var poleFields = new XtFieldValue[poles.Length];
+        var knotFields = new XtFieldValue[data.NKnots];
+        var multFields = new XtFieldValue[data.NKnots];
+        for (BufferOffset i = 0; i < poles.Length; i++) poleFields[i] = XtFieldValue.RealValue(poles[i]);
+        for (KnotIndex i = 0; i < data.NKnots; i++)
+        {
+            knotFields[i] = XtFieldValue.RealValue(knotValues[i]);
+            multFields[i] = XtFieldValue.Int(multiplicities[i]);
+        }
+        SetNode(nodes, map, vertices, new XtNode { Type=(int)XtNodeTypes.BSplineVertices, Index=vertices, VariableLength=poles.Length, Fields=poleFields });
+        SetNode(nodes, map, knots, new XtNode { Type=(int)XtNodeTypes.KnotSet, Index=knots, VariableLength=data.NKnots, Fields=knotFields });
+        SetNode(nodes, map, mults, new XtNode { Type=(int)XtNodeTypes.KnotMultiplicities, Index=mults, VariableLength=data.NKnots, Fields=multFields });
+        SetNode(nodes, map, curveData, new XtNode { Type=(int)XtNodeTypes.CurveData, Index=curveData, Fields=
+            [XtFieldValue.Unsigned(data.SelfIntersecting - ParasolidConstants.PK_self_intersect_unset_c), XtFieldValue.Ptr(0)] });
+        SetNode(nodes, map, nurbs, new XtNode
+        {
+            Type=(int)XtNodeTypes.NurbsCurve, Index=nurbs, Fields=
+            [
+                XtFieldValue.Int(data.Degree), XtFieldValue.Int(data.NVertices), XtFieldValue.Int(data.VertexDim),
+                XtFieldValue.Int(data.NKnots), XtFieldValue.Unsigned(data.KnotType - ParasolidConstants.PK_knot_unset_c),
+                XtFieldValue.Logical(data.IsPeriodic != 0), XtFieldValue.Logical(data.IsClosed != 0),
+                XtFieldValue.Logical(data.IsRational != 0), XtFieldValue.Unsigned(data.Form - ParasolidConstants.PK_BCURVE_form_unset_c),
+                XtFieldValue.Ptr(vertices), XtFieldValue.Ptr(mults), XtFieldValue.Ptr(knots),
+            ],
+        });
+        return new XtNode
+        {
+            Type=(int)XtNodeTypes.BCurve, Index=index, Fields=
+            [
+                XtFieldValue.Int(NodeId(index, map)), XtFieldValue.Ptr(0), XtFieldValue.Ptr(Ptr(map.EdgeSlots, curve.OwnerEdge)),
+                XtFieldValue.Ptr(NextCurve(tag, map)), XtFieldValue.Ptr(PreviousCurve(tag, map)), XtFieldValue.Ptr(0),
+                XtFieldValue.Char('+'), XtFieldValue.Ptr(nurbs), XtFieldValue.Ptr(curveData),
             ],
         };
     }

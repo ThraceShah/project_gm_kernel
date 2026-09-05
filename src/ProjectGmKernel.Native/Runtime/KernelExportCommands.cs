@@ -2,6 +2,13 @@ using ProjectGmKernel.Native.Generated;
 
 namespace ProjectGmKernel.Native.Runtime;
 
+internal unsafe struct BCurveCreateCommand : IKernelCommand
+{
+    public PK_BCURVE_sf_s* Definition;
+    public CurveTag* Curve;
+    public int Execute() => KernelRuntime.BCurveCreate(Definition, Curve);
+}
+
 internal unsafe struct CurveEvalCommand : IKernelCommand
 {
     public CurveTag Curve;

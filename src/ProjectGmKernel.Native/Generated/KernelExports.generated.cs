@@ -482,12 +482,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_create")]
-    public static int PK_BCURVE_create(PK_BCURVE_sf_t* arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_create_by_fitting")]
     public static int PK_BCURVE_create_by_fitting(PK_BCURVE_create_by_fitting_o_t* arg0, int* arg1, PK_BCURVE_fit_fault_t* arg2)
     {
