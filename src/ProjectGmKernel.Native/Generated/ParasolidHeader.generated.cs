@@ -5,7 +5,6 @@
 global using ptrdiff_t = nint;
 global using size_t = nuint;
 global using wchar_t = int;
-global using max_align_t = double;
 global using PK_CLASS_t = int;
 global using PK_MARK_t = int;
 global using PK_PMARK_t = int;
@@ -8826,6 +8825,13 @@ namespace ProjectGmKernel.Native.Generated;
     {
         public int r_t_version;
         public int transf_out;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct max_align_t
+    {
+        public long __clang_max_align_nonce1;
+        public double __clang_max_align_nonce2;
     }
 
     [StructLayout(LayoutKind.Sequential)]

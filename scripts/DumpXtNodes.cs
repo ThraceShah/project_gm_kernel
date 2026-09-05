@@ -5,6 +5,8 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using ProjectGmKernel.Native.Runtime;
+using XtFieldValue = ProjectGmKernel.Xt.XtFieldValue;
+using XtFieldKind = ProjectGmKernel.Xt.XtFieldKind;
 
 static string GetScriptPath([CallerFilePath] string path = "") => path;
 

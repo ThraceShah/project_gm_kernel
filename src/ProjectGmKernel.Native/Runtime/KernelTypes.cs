@@ -23,6 +23,7 @@ global using EdgeSlot = int;
 global using FinSlot = int;
 global using VertexSlot = int;
 global using RegionSlot = int;
+global using FrameSlot = int;
 global using CurveSlot = int;
 global using SurfaceSlot = int;
 global using TransformSlot = int;
@@ -43,12 +44,6 @@ global using EntityTag = int;
 // Values match PK_*_t for zero-cost conversion at API boundary.
 global using KernelBodyType = int;       // PK_BODY_type_t
 global using KernelBodyConfig = int;     // PK_BODY_config_t
-global using KernelShellType = int;      // PK_SHELL_type_t
-global using KernelLoopType = int;       // PK_LOOP_type_t
-global using KernelFinType = int;        // PK_FIN_type_t
-global using KernelEdgeType = int;       // PK_EDGE_vertex_type_t
-global using KernelEdgeConvexity = int;  // PK_EDGE_convexity_t
-global using KernelVertexType = int;     // PK_VERTEX_type_t
 global using KernelSense = int;          // PK_TOPOL_sense_t
 global using KernelBCurveForm = int;     // PK_BCURVE_form_t
 global using KernelBSurfaceForm = int;   // PK_BSURF_form_t
@@ -65,3 +60,8 @@ global using XtFieldElementCount = int;
 global using XtNodeClass = int;
 global using XtNodeIndex = int;
 global using XtNodePosition = int;
+
+// Computation buffer positions and derivative orders (not entity handles).
+global using BufferOffset = int;
+global using BufferCount = int;
+global using DerivativeOrder = int;

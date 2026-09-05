@@ -58,6 +58,10 @@ var parasolidPrimitiveOracleExit = Run("dotnet", "run scripts/ParasolidPrimitive
 if (parasolidPrimitiveOracleExit != 0)
     return parasolidPrimitiveOracleExit;
 
+var parasolidEvaluationOracleExit = Run("dotnet", "run scripts/ParasolidEvaluationOracle.cs", cleanupTesthost: false);
+if (parasolidEvaluationOracleExit != 0)
+    return parasolidEvaluationOracleExit;
+
 var allSchemaOracleExit = Run("dotnet", "run scripts/ParasolidAllSchemaOracle.cs -- --check", cleanupTesthost: false);
 if (allSchemaOracleExit != 0)
     return allSchemaOracleExit;
