@@ -44,6 +44,7 @@ internal static unsafe partial class KernelRuntime
     /// <summary>Test hook: drop all cached pages (scheduler quiescent point).</summary>
     internal static void TrimAllocator()
     {
+        if (Dispatcher.IsExecuting) return; // command-local undo may retain retired records
         var command = new TrimMemoryCommand();
         Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command);
     }
@@ -73,6 +74,7 @@ internal static unsafe partial class KernelRuntime
     private static void TrimEmptyPool<T>(ref PagedEntityPool<T> pool) where T : unmanaged
     {
         if (pool.AliveCount == 0) pool.Dispose();
+        else pool.TrimEmptyPages();
     }
 
     internal static int UndoEntryCountValue => State.Session != null ? State.Session->UndoEntryCount : 0;
@@ -88,9 +90,8 @@ internal static unsafe partial class KernelRuntime
         var session = State.Session;
         if (session == null) return false;
         var threadId = Environment.CurrentManagedThreadId;
+        if (ThreadContext() == null) return false;
         var slot = session->FindThread(threadId);
-        if (slot < 0)
-            slot = session->TryRegisterThread(threadId, session->SessionGeneration);
         if (slot < 0) return false;
         CommandScratch.Bind(session, slot);
         return true;
@@ -204,6 +205,7 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_memory_full;
         }
         AttachPools(memory);
+        session->Returns.SetFrustrumCallbacks(globalMemoryCallbacks.alloc_fn, globalMemoryCallbacks.free_fn);
         session->SessionGeneration = System.Threading.Interlocked.Increment(ref nextSessionGeneration);
         ResetBCurves();
         State.Session = session;
@@ -219,6 +221,8 @@ internal static unsafe partial class KernelRuntime
 
         // Drain: the dispatch layer guarantees no command is running. Release
         // caller-held result memory; callers must not touch it afterwards.
+        var context = ThreadContext();
+        if (context != null) context->InKernel++;
         session->Returns.ReleaseAll();
         session->Dispose();
         MemoryPointer()->Free(session);
@@ -260,11 +264,11 @@ internal static unsafe partial class KernelRuntime
 
     internal static bool RecordSlotAllocation(PoolKind pool, DataSlot slot, EntityGeneration generation, void* record)
         => cachedThreadContext->SkipCreationUndo != 0 || State.Session->TryAppendUndo(SessionData.UndoKind.EntityCreated, (byte)pool,
-            (short)CurrentPartition, slot, generation, 0, record, 0);
+            CurrentPartition, slot, generation, 0, record, 0);
 
     internal static PartitionSlot AllocationPartition => cachedThreadContext->CurrentPartition;
 
-    private static short PoolPartitionOf(PoolKind pool, int slot)
+    internal static PartitionSlot PoolPartitionOf(PoolKind pool, int slot)
     {
         return pool switch
         {

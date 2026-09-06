@@ -99,43 +99,40 @@ internal static unsafe partial class KernelRuntime
 
     internal static SurfaceRecord GetSurfaceByTag(SurfTag surfaceTag)
     {
-        if (!IsValidTag(surfaceTag) || (EntityClass)TagRec(surfaceTag).ClassCode != EntityClass.Surface)
-            return default;
-        return Surfaces[TagRec(surfaceTag).Slot];
+        var slot = GetSurfaceSlotByTag(surfaceTag);
+        return slot >= 0 ? Surfaces[slot] : default;
     }
 
     internal static SurfaceSlot GetSurfaceSlotByTag(SurfTag surfaceTag)
     {
-        return IsValidTag(surfaceTag) && (EntityClass)TagRec(surfaceTag).ClassCode == EntityClass.Surface
-            ? TagRec(surfaceTag).Slot
+        return surfaceTag > 0 && State.Session != null && State.Session->Tags.TryResolve(surfaceTag, CurrentSessionId, out var record)
+            && (EntityClass)record.ClassCode == EntityClass.Surface ? record.Slot
             : -1;
     }
 
     internal static PointRecord GetPointByTag(PointTag pointTag)
     {
-        if (!IsValidTag(pointTag) || (EntityClass)TagRec(pointTag).ClassCode != EntityClass.Point)
-            return default;
-        return Points[TagRec(pointTag).Slot];
+        var slot = GetPointSlotByTag(pointTag);
+        return slot >= 0 ? Points[slot] : default;
     }
 
     internal static PointSlot GetPointSlotByTag(PointTag pointTag)
     {
-        return IsValidTag(pointTag) && (EntityClass)TagRec(pointTag).ClassCode == EntityClass.Point
-            ? TagRec(pointTag).Slot
+        return pointTag > 0 && State.Session != null && State.Session->Tags.TryResolve(pointTag, CurrentSessionId, out var record)
+            && (EntityClass)record.ClassCode == EntityClass.Point ? record.Slot
             : -1;
     }
 
     internal static CurveRecord GetCurveByTag(CurveTag curveTag)
     {
-        if (!IsValidTag(curveTag) || (EntityClass)TagRec(curveTag).ClassCode != EntityClass.Curve)
-            return default;
-        return Curves[TagRec(curveTag).Slot];
+        var slot = GetCurveSlotByTag(curveTag);
+        return slot >= 0 ? Curves[slot] : default;
     }
 
     internal static CurveSlot GetCurveSlotByTag(CurveTag curveTag)
     {
-        return IsValidTag(curveTag) && (EntityClass)TagRec(curveTag).ClassCode == EntityClass.Curve
-            ? TagRec(curveTag).Slot
+        return curveTag > 0 && State.Session != null && State.Session->Tags.TryResolve(curveTag, CurrentSessionId, out var record)
+            && (EntityClass)record.ClassCode == EntityClass.Curve ? record.Slot
             : -1;
     }
 
@@ -211,7 +208,6 @@ internal static unsafe partial class KernelRuntime
         int slot;
         if (!Points.TryAllocate(out slot)) return ParasolidConstants.PK_ERROR_memory_full;
         ref var rec = ref Points[slot];
-        AssignPartition(ref rec.Header, CurrentPartition);
         // Zero-cost reinterpret: PK_VECTOR_s and KernelVector3 have identical layout
         rec.Position = Unsafe.As<PK_VECTOR_s, KernelVector3>(ref pointSf->position);
 
@@ -844,7 +840,7 @@ internal static unsafe partial class KernelRuntime
         if (session == null)
             return;
 
-        ref var partition = ref session->Partitions[FindPartitionSlot((short)partitionSlot)];
+        ref var partition = ref session->Partitions[FindPartitionSlot(partitionSlot)];
         ref var body = ref Bodies[bodySlot];
         AssignPartition(ref body.Header, partitionSlot);
 
@@ -1052,14 +1048,45 @@ internal static unsafe partial class KernelRuntime
                 break;
             }
         }
+        faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
+        {
+            ref var first = ref Faces[faceSlot];
+            if (first.PrevOnSurf >= 0 || first.NextOnSurf < 0) continue;
+            var last = first.NextOnSurf;
+            while (Faces[last].NextOnSurf >= 0) last = Faces[last].NextOnSurf;
+            Faces[last].NextOnSurf = faceSlot;
+            first.PrevOnSurf = last;
+        }
     }
 
-    private static void RebuildBoundaryGeometryLinks(BodySlot bodySlot)
+    private static void RebuildBoundaryGeometryLinks(BodySlot bodySlot, bool resetOwners = false)
     {
         RebuildFaceSurfaceChains(bodySlot);
-
         var body = Bodies[bodySlot];
+        if (resetOwners)
+        {
+            var face = body.FirstFaceBody;
+            for (var i = 0; i < body.FaceCountBody; i++, face = Faces[face].NextInBody)
+            {
+                var slot = GetSurfaceSlotByTag(Faces[face].SurfTag);
+                if (slot >= 0) Surfaces[slot].OwnerCount = 0;
+            }
+            var edge = body.FirstEdgeBody;
+            for (var i = 0; i < body.EdgeCountBody; i++, edge = Edges[edge].NextInBody)
+            {
+                var slot = GetCurveSlotByTag(Edges[edge].CurveTag);
+                if (slot >= 0) Curves[slot].OwnerCount = 0;
+            }
+            var vertex = body.FirstVertexBody;
+            for (var i = 0; i < body.VertexCountBody; i++, vertex = Vertices[vertex].NextInBody)
+            {
+                var slot = GetPointSlotByTag(Vertices[vertex].PointTag);
+                if (slot >= 0) Points[slot].OwnerCount = 0;
+            }
+        }
 
+        SurfaceSlot firstSurface = -1, lastSurface = -1;
         var faceSlot = body.FirstFaceBody;
         for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
         {
@@ -1069,11 +1096,23 @@ internal static unsafe partial class KernelRuntime
                 continue;
 
             ref var surface = ref Surfaces[surfaceSlot];
+            if (surface.OwnerCount++ != 0) continue;
             surface.OwnerFace = faceSlot;
-            surface.PrevInBody = FaceSurfaceTag(Faces[faceSlot].PrevInBody);
-            surface.NextInBody = FaceSurfaceTag(Faces[faceSlot].NextInBody);
+            if (lastSurface >= 0)
+            {
+                surface.PrevInBody = Surfaces[lastSurface].Header.Tag;
+                Surfaces[lastSurface].NextInBody = surfTag;
+            }
+            else firstSurface = surfaceSlot;
+            lastSurface = surfaceSlot;
+        }
+        if (lastSurface >= 0)
+        {
+            Surfaces[lastSurface].NextInBody = Surfaces[firstSurface].Header.Tag;
+            Surfaces[firstSurface].PrevInBody = Surfaces[lastSurface].Header.Tag;
         }
 
+        CurveSlot firstCurve = -1, lastCurve = -1;
         var edgeSlot = body.FirstEdgeBody;
         for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
         {
@@ -1083,11 +1122,23 @@ internal static unsafe partial class KernelRuntime
                 continue;
 
             ref var curve = ref Curves[curveSlot];
+            if (curve.OwnerCount++ != 0) continue;
             curve.OwnerEdge = edgeSlot;
-            curve.PrevInBody = EdgeCurveTag(Edges[edgeSlot].PrevInBody);
-            curve.NextInBody = EdgeCurveTag(Edges[edgeSlot].NextInBody);
+            if (lastCurve >= 0)
+            {
+                curve.PrevInBody = Curves[lastCurve].Header.Tag;
+                Curves[lastCurve].NextInBody = curveTag;
+            }
+            else firstCurve = curveSlot;
+            lastCurve = curveSlot;
+        }
+        if (lastCurve >= 0)
+        {
+            Curves[lastCurve].NextInBody = Curves[firstCurve].Header.Tag;
+            Curves[firstCurve].PrevInBody = Curves[lastCurve].Header.Tag;
         }
 
+        PointSlot firstPoint = -1, lastPoint = -1;
         var vertexSlot = body.FirstVertexBody;
         for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = Vertices[vertexSlot].NextInBody)
         {
@@ -1097,9 +1148,20 @@ internal static unsafe partial class KernelRuntime
                 continue;
 
             ref var point = ref Points[pointSlot];
+            if (point.OwnerCount++ != 0) continue;
             point.OwnerVertex = vertexSlot;
-            point.PrevInBody = VertexPointTag(Vertices[vertexSlot].PrevInBody);
-            point.NextInBody = VertexPointTag(Vertices[vertexSlot].NextInBody);
+            if (lastPoint >= 0)
+            {
+                point.PrevInBody = Points[lastPoint].Header.Tag;
+                Points[lastPoint].NextInBody = pointTag;
+            }
+            else firstPoint = pointSlot;
+            lastPoint = pointSlot;
+        }
+        if (lastPoint >= 0)
+        {
+            Points[lastPoint].NextInBody = Points[firstPoint].Header.Tag;
+            Points[firstPoint].PrevInBody = Points[lastPoint].Header.Tag;
         }
     }
 
@@ -2377,7 +2439,9 @@ internal static unsafe partial class KernelRuntime
 
     private static int MemoryFreeImplementation(void* pointer)
     {
-        if (pointer is not null && !State.Session->Returns.TryFree(pointer))
+        if (pointer == null) return ParasolidConstants.PK_ERROR_null_arg_address;
+        if (!IsSessionStarted) return ParasolidConstants.PK_ERROR_not_in_PK;
+        if (!State.Session->Returns.TryFree(pointer))
             return ParasolidConstants.PK_ERROR_bad_value;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -2681,6 +2745,13 @@ internal static unsafe partial class KernelRuntime
         session->ClearUndo();
         session->MarkSequence++;
         session->SetMarkActive(1);
+        session->MarkCurrentPartition = ThreadContext()->CurrentPartition;
+        for (var i = 0; i < session->PartitionHighWater; i++)
+            if (session->Partitions[i].Alive != 0)
+            {
+                session->Partitions[i].AtPmark = 1;
+                session->Partitions[i].MarkHasEntities = session->Tags.HasLiveEntities(i) ? (byte)1 : (byte)0;
+            }
         *mark = session->MarkSequence;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -2694,9 +2765,16 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_bad_mark;
 
         RollbackMark(session);
+        ThreadContext()->CurrentPartition = session->MarkCurrentPartition;
+        // Other threads must not retain references to partitions removed by goto.
+        for (var i = 0; i < session->ThreadCount; i++)
+            if (!session->TryFindPartition(session->Threads[i].CurrentPartition, out _))
+                session->Threads[i].CurrentPartition = session->DefaultPartition;
         session->SetMarkActive(0);
         session->ClearUndo();
         session->ClearDeferred();
+        for (var i = 0; i < session->PartitionHighWater; i++)
+            if (session->Partitions[i].Alive != 0) session->Partitions[i].AtPmark = 1;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -2711,7 +2789,7 @@ internal static unsafe partial class KernelRuntime
         // Keep the modifications, release deferred objects and the log.
         for (var thread = 0; thread < session->ThreadCount; thread++)
         {
-            var context = &session->Threads[thread];
+            var context = session->Threads.Pointer(thread);
             for (int i = 0; i < context->DeferredCount; i++)
             {
                 ref var deferred = ref context->Deferred[i];
@@ -2728,7 +2806,7 @@ internal static unsafe partial class KernelRuntime
     {
         if (session->ThreadCount == 1)
         {
-            var context = &session->Threads[0];
+            var context = session->Threads.Pointer(0);
             for (var i = context->UndoEntryCount - 1; i >= 0; i--)
                 ReplayMarkEntry(session, ref context->UndoEntries[i]);
             return;
@@ -2738,27 +2816,26 @@ internal static unsafe partial class KernelRuntime
         // A global order (not per-partition chains) keeps the two undo
         // entries of one entity — recorded before and after its partition
         // assignment propagates — adjacent and correctly ordered.
-        Span<int> positions = stackalloc int[SessionData.MaxThreads];
         for (var thread = 0; thread < session->ThreadCount; thread++)
-            positions[thread] = session->Threads[thread].UndoEntryCount - 1;
+            session->Threads[thread].ReplayPosition = session->Threads[thread].UndoEntryCount - 1;
         while (true)
         {
             var selected = -1;
             var sequence = -1;
             for (var thread = 0; thread < session->ThreadCount; thread++)
             {
-                var index = positions[thread];
+                var index = session->Threads[thread].ReplayPosition;
                 if (index >= 0 && session->Threads[thread].UndoEntries[index].Sequence > sequence)
                 { selected = thread; sequence = session->Threads[thread].UndoEntries[index].Sequence; }
             }
             if (selected < 0) break;
-            ref var entry = ref session->Threads[selected].UndoEntries[positions[selected]--];
+            ref var entry = ref session->Threads[selected].UndoEntries[session->Threads[selected].ReplayPosition--];
             ReplayMarkEntry(session, ref entry);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void ReplayMarkEntry(SessionData* session, ref SessionData.UndoEntry entry)
+    private static void ReplayMarkEntry(SessionData* session, ref SessionData.UndoEntry entry, bool commandFailure = false)
     {
         switch (entry.Kind)
         {
@@ -2769,7 +2846,35 @@ internal static unsafe partial class KernelRuntime
                 RestoreDeletedEntity(session, (PoolKind)entry.Pool, entry.Slot, entry.Tag);
                 break;
             case SessionData.UndoKind.FieldSnapshot:
-                RestoreSnapshot((PoolKind)entry.Pool, entry.Slot, entry.Data);
+                Buffer.MemoryCopy(entry.Data, entry.Target, entry.DataBytes, entry.DataBytes);
+                break;
+            case SessionData.UndoKind.PartitionCreated:
+                session->Partitions[entry.Slot].Alive = 0;
+                session->PartitionCount--;
+                break;
+            case SessionData.UndoKind.PartitionDeleted:
+                session->Partitions[entry.Slot].Alive = 1;
+                session->PartitionCount++;
+                break;
+            case SessionData.UndoKind.CurrentPartitionChanged:
+                if (commandFailure) ((SessionData.ThreadContext*)entry.Data)->CurrentPartition = entry.Slot;
+                break;
+            case SessionData.UndoKind.BodyUnlinked:
+                ref var body = ref Bodies[entry.Slot];
+                ref var partition = ref session->Partitions[entry.Partition];
+                body.PrevInPartition = entry.PreviousBody;
+                body.NextInPartition = entry.FollowingBody;
+                Bodies[entry.PreviousBody].NextInPartition = entry.Slot;
+                Bodies[entry.FollowingBody].PrevInPartition = entry.Slot;
+                partition.FirstBody = entry.FirstBody;
+                partition.LastBody = entry.LastBody;
+                partition.BodyCount++;
+                break;
+            case SessionData.UndoKind.GeometryReferenceReleased:
+                AcquireGeometryReference((PoolKind)entry.Pool, entry.Slot);
+                break;
+            case SessionData.UndoKind.PartitionModified:
+                session->Partitions[entry.Slot].AtPmark = (byte)entry.Generation;
                 break;
             case SessionData.UndoKind.BlockReplaced:
                 RollbackBlockSwap(entry.Pool, entry.Slot, entry.Data);
@@ -2793,11 +2898,22 @@ internal static unsafe partial class KernelRuntime
         {
             if (!session->Tags.TryResolve(entities[i], CurrentSessionId, out var handle))
                 return ParasolidConstants.PK_ERROR_unknown_class;
+            var partition = PoolPartitionOf((PoolKind)handle.Pool, handle.Slot);
+            var owner = session->Partitions[partition].LockOwnerThread;
+            if (owner != 0 && owner != ThreadContext()->ManagedThreadId)
+                return ParasolidConstants.PK_ERROR_bad_thread;
+            var pool = (PoolKind)handle.Pool;
+            if (pool is PoolKind.Face or PoolKind.Edge or PoolKind.Vertex or PoolKind.Loop or PoolKind.Fin
+                or PoolKind.Shell or PoolKind.Region or PoolKind.FaceUse
+                || (pool is PoolKind.Curve or PoolKind.Surface or PoolKind.Point && GeometryOwnerCount(pool, handle.Slot) != 0))
+                return ParasolidConstants.PK_ERROR_is_attached;
+            for (var j = 0; j < i; j++)
+                if (entities[j] == entities[i]) return ParasolidConstants.PK_ERROR_bad_value;
             if (i == 0) firstRecord = handle;
-            if (session->IsMarkActive != 0)
-                deleteEntries += (PoolKind)handle.Pool == PoolKind.Body ? BodyDeletionEntries(handle.Slot) : 1;
+            if (DeferDeletes)
+                deleteEntries += ((PoolKind)handle.Pool == PoolKind.Body ? BodyDeletionEntries(handle.Slot) : 1) + 1;
         }
-        if (session->IsMarkActive != 0 && (deleteEntries > int.MaxValue || !session->TryReserveDeletion((int)deleteEntries)))
+        if (DeferDeletes && (deleteEntries > int.MaxValue || !session->TryReserveDeletion((int)deleteEntries)))
             return ParasolidConstants.PK_ERROR_memory_full;
         for (int i = 0; i < nEntities; i++)
         {
@@ -2807,6 +2923,10 @@ internal static unsafe partial class KernelRuntime
                 return ParasolidConstants.PK_ERROR_unknown_class;
             var pool = (PoolKind)record.Pool;
             var slot = record.Slot;
+            var partition = PoolPartitionOf(pool, slot);
+            if (DeferDeletes && session->Partitions[partition].AtPmark != 0)
+                session->TryAppendUndo(SessionData.UndoKind.PartitionModified, 0, partition, partition, session->Partitions[partition].AtPmark, 0, null, 0);
+            session->Partitions[partition].AtPmark = 0;
 
             if (pool == PoolKind.Body)
             {
@@ -2824,7 +2944,7 @@ internal static unsafe partial class KernelRuntime
     private static long BodyDeletionEntries(BodySlot slot)
     {
         ref var body = ref Bodies[slot];
-        long count = 1L + body.RegionCount + body.ShellCount + 2L * body.FaceCountBody
+        long count = 2L + body.RegionCount + body.ShellCount + 2L * body.FaceCountBody
             + 2L * body.EdgeCountBody + 2L * body.VertexCountBody;
         var face = body.FirstFaceBody;
         for (var i = 0; i < body.FaceCountBody; i++, face = Faces[face].NextInBody)
@@ -2849,6 +2969,16 @@ internal static unsafe partial class KernelRuntime
     {
         ref var body = ref Bodies[bodySlot];
         var partition = body.Header.Partition;
+
+        if (DeferDeletes)
+        {
+            session->TryAppendUndo(SessionData.UndoKind.BodyUnlinked, 0, partition, bodySlot, 0, 0, null, 0);
+            ref var entry = ref session->UndoEntries[session->UndoEntryCount - 1];
+            entry.PreviousBody = body.PrevInPartition;
+            entry.FollowingBody = body.NextInPartition;
+            entry.FirstBody = session->Partitions[partition].FirstBody;
+            entry.LastBody = session->Partitions[partition].LastBody;
+        }
 
         // Faces (with loops and fins), edges, vertices — body flat chains.
         var faceSlot = body.FirstFaceBody;
@@ -2924,11 +3054,11 @@ internal static unsafe partial class KernelRuntime
 
         // Unlink from partition body chain.
         UnlinkBodyFromPartition(partition, bodySlot);
-        if (session->IsMarkActive == 0) SessionMemoryOwner.DropBodyXt(bodySlot);
+        if (!DeferDeletes) SessionMemoryOwner.DropBodyXt(bodySlot);
         DeleteEntitySingle(session, PoolKind.Body, bodySlot, bodyTag);
     }
 
-    private static void UnlinkBodyFromPartition(short partition, BodySlot bodySlot)
+    private static void UnlinkBodyFromPartition(PartitionSlot partition, BodySlot bodySlot)
     {
         var session = State.Session;
         var slot = partition >= 0 ? FindPartitionSlot(partition) : 0;
@@ -2954,22 +3084,16 @@ internal static unsafe partial class KernelRuntime
         body.NextInPartition = -1;
     }
 
-    private static int FindPartitionSlot(short partitionId)
+    private static int FindPartitionSlot(PartitionSlot partitionId)
     {
         var session = State.Session;
-        for (int i = 0; i < SessionData.MaxPartitions; i++)
-            if (session->Partitions[i].Alive == 1 && session->Partitions[i].PartitionId == partitionId)
-                return i;
-        return 0;
+        return session->TryFindPartition(partitionId, out var slot) ? slot : 0;
     }
 
     /// <summary>Geometry (curve/surface/point) ownership release: refcount-1, free at zero.</summary>
     private static void ReleaseGeometryOwner(SessionData* session, EntityClass @class, EntityTag tag)
     {
-        if (!IsValidTag(tag))
-            return;
-        var record = TagRec(tag);
-        if ((EntityClass)record.ClassCode != @class)
+        if (!session->Tags.TryResolve(tag, CurrentSessionId, out var record) || (EntityClass)record.ClassCode != @class)
             return;
         var pool = (PoolKind)record.Pool;
         var slot = record.Slot;
@@ -2981,23 +3105,17 @@ internal static unsafe partial class KernelRuntime
     /// <summary>Decrement a geometry record's owner count; true when it reaches zero.</summary>
     private static bool TryReleaseGeometryReference(PoolKind pool, int slot)
     {
+        if (GeometryOwnerCount(pool, slot) <= 1) return true;
+        if (DeferDeletes)
+            State.Session->TryAppendUndo(SessionData.UndoKind.GeometryReferenceReleased, (byte)pool,
+                PoolPartitionOf(pool, slot), slot, 0, 0, null, 0);
         switch (pool)
         {
-            case PoolKind.Curve:
-                ref var curve = ref Curves[slot];
-                if (curve.OwnerCount > 1) { curve.OwnerCount--; return false; }
-                return true;
-            case PoolKind.Surface:
-                ref var surface = ref Surfaces[slot];
-                if (surface.OwnerCount > 1) { surface.OwnerCount--; return false; }
-                return true;
-            case PoolKind.Point:
-                ref var point = ref Points[slot];
-                if (point.OwnerCount > 1) { point.OwnerCount--; return false; }
-                return true;
-            default:
-                return true;
+            case PoolKind.Curve: Curves[slot].OwnerCount--; break;
+            case PoolKind.Surface: Surfaces[slot].OwnerCount--; break;
+            case PoolKind.Point: Points[slot].OwnerCount--; break;
         }
+        return false;
     }
 
     /// <summary>Acquire a geometry ownership reference (shared geometry across a partition).</summary>
@@ -3013,7 +3131,7 @@ internal static unsafe partial class KernelRuntime
 
     private static void DeleteEntitySingle(SessionData* session, PoolKind pool, int slot, EntityTag tag)
     {
-        if (session->IsMarkActive != 0)
+        if (DeferDeletes)
         {
             // Snapshot for rollback, then defer the physical release.
             session->TryAppendUndo(SessionData.UndoKind.EntityDeleted, (byte)pool,
@@ -3027,6 +3145,8 @@ internal static unsafe partial class KernelRuntime
             FinalReleaseEntity(pool, slot, tag, knownAlive: true);
         }
     }
+
+    private static bool DeferDeletes => cachedThreadContext->DeferCommandDeletes != 0;
 
     private static void FinalReleaseEntity(PoolKind pool, int slot, EntityTag tag, bool knownAlive = false)
     {
@@ -3142,12 +3262,7 @@ internal static unsafe partial class KernelRuntime
     {
         RevivePoolSlot(pool, slot);
         if (tag > 0) session->Tags.Restore(tag);
-        if (pool == PoolKind.Body)
-            AppendBodyToPartition(Bodies[slot].Header.Partition, slot);
     }
-
-    private static void RestoreSnapshot(PoolKind pool, int slot, void* snapshot)
-        => CopySnapshotToRecord(pool, slot, snapshot);
 
     private static void RollbackBlockSwap(byte pool, int slot, void* oldBlock)
     {
@@ -3273,28 +3388,6 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    private static void CopySnapshotToRecord(PoolKind pool, int slot, void* snapshot)
-    {
-        if (snapshot == null) return;
-        switch (pool)
-        {
-            case PoolKind.Point: Points[slot] = *(PointRecord*)snapshot; break;
-            case PoolKind.Vector: Vectors[slot] = *(VectorRecord*)snapshot; break;
-            case PoolKind.Body: Bodies[slot] = *(BodyRecord*)snapshot; break;
-            case PoolKind.Shell: Shells[slot] = *(ShellRecord*)snapshot; break;
-            case PoolKind.FaceUse: FaceUses[slot] = *(FaceUseRecord*)snapshot; break;
-            case PoolKind.Face: Faces[slot] = *(FaceRecord*)snapshot; break;
-            case PoolKind.Loop: Loops[slot] = *(LoopRecord*)snapshot; break;
-            case PoolKind.Edge: Edges[slot] = *(EdgeRecord*)snapshot; break;
-            case PoolKind.Fin: Fins[slot] = *(FinRecord*)snapshot; break;
-            case PoolKind.Vertex: Vertices[slot] = *(VertexRecord*)snapshot; break;
-            case PoolKind.Region: Regions[slot] = *(RegionRecord*)snapshot; break;
-            case PoolKind.Curve: Curves[slot] = *(CurveRecord*)snapshot; break;
-            case PoolKind.Surface: Surfaces[slot] = *(SurfaceRecord*)snapshot; break;
-            case PoolKind.Transform: Transforms[slot] = *(TransformRecord*)snapshot; break;
-        }
-    }
-
     // ── Helpers ──────────────────────────────────────────────────
 
     /// <summary>
@@ -3369,7 +3462,7 @@ internal static unsafe partial class KernelRuntime
 
     private static void AssignPartition(ref RecordHeader header, PartitionSlot partition)
     {
-        header.Partition = (short)partition;
+        header.Partition = partition;
     }
 
     internal static PartitionSlot GetEntityPartition(EntityTag entityTag)
@@ -3876,13 +3969,13 @@ internal static unsafe partial class KernelRuntime
 
     // Transaction completion is INSIDE the scheduler claim. Stop/rollback
     // cannot free the session or replay a log before this command commits.
-    internal static int ExecuteAuthorized<TCommand>(SessionData* session, AccessKind access, ApiId api,
+    internal static int ExecuteAuthorized<TCommand>(SessionData* session, SessionData.ThreadContext* context,
+        AccessKind access, ApiId api, PartitionSlot partition,
         ref TCommand command) where TCommand : struct, IKernelCommand
     {
-        if (session == null || access == AccessKind.SessionControl
-            || api is ApiId.MarkCreate or ApiId.MarkGoto or ApiId.MarkDelete)
+        if (session == null || api is ApiId.SessionStart or ApiId.SessionStop
+            or ApiId.MarkCreate or ApiId.MarkGoto or ApiId.MarkDelete)
             return command.Execute();
-        var context = ThreadContext();
         if (context == null) return ParasolidConstants.PK_ERROR_memory_full;
         // A point publishes exactly one record and explicitly frees it if tag
         // publication fails. It needs no undo journal unless a mark or an
@@ -3891,25 +3984,133 @@ internal static unsafe partial class KernelRuntime
         {
             context->SkipCreationUndo = 1;
             context->InKernel++;
-            try { return command.Execute(); }
+            try
+            {
+                ref var creation = ref Unsafe.As<TCommand, PointCreateCommand>(ref command);
+                var error = PointCreateImplementation(creation.PointSf, creation.Point);
+                if (error == 0) session->Partitions[context->CurrentPartition].AtPmark = 0;
+                return error;
+            }
             finally { context->SkipCreationUndo = 0; context->InKernel--; }
         }
+        if (typeof(TCommand) == typeof(EntityDeleteCommand) && session->IsMarkActive == 0)
+        {
+            ref var deletion = ref Unsafe.As<TCommand, EntityDeleteCommand>(ref command);
+            if (deletion.EntityCount == 1 && deletion.Entities != null
+                && TryDeleteAtomicPoint(session, context, *deletion.Entities, out var result))
+                return result;
+        }
         var boundary = context->UndoEntryCount;
+        var sessionGeneration = session->SessionGeneration;
+        var deferredBoundary = context->DeferredCount;
         var returnBoundary = session->Returns.Sequence;
+        context->DeferCommandDeletes = typeof(TCommand) != typeof(EntityDeleteCommand) || session->IsMarkActive != 0 ? (byte)1 : (byte)0;
+        context->PartitionDeletionPending = 0;
         context->InKernel++;
         try
         {
+            if (access == AccessKind.GlobalWrite && api != ApiId.EntityDelete && session->Partitions[partition].AtPmark != 0
+                && !session->TryAppendUndo(SessionData.UndoKind.PartitionModified, 0, partition, partition, session->Partitions[partition].AtPmark, 0, null, 0))
+                return ParasolidConstants.PK_ERROR_memory_full;
             var error = command.Execute();
+            // A waiting partition-lock call drops its scheduler claim. Stop
+            // may have released the old session before that call resumes.
+            if (State.Session != session || session->SessionGeneration != sessionGeneration)
+                return error != 0 ? error : ParasolidConstants.PK_ERROR_not_in_PK;
             if (error < 0) error = ParasolidConstants.PK_ERROR_memory_full;
+            if (error == 0 && access == AccessKind.GlobalWrite && api != ApiId.EntityDelete)
+                session->Partitions[partition].AtPmark = 0;
             if (error != 0)
             {
                 UndoCommandEffects(session, boundary);
+                session->DiscardUndoFrom(boundary);
+                // Free callbacks can reenter the kernel. Their successful
+                // operations belong to the remaining mark, not to this failed
+                // command's already-replayed journal segment.
+                context->DeferCommandDeletes = session->IsMarkActive != 0 ? (byte)1 : (byte)0;
                 session->Returns.ReleaseSince(returnBoundary, context->ManagedThreadId);
+                if (session->IsMarkActive == 0) session->DiscardUndoFrom(boundary);
+                return error;
             }
-            if (session->IsMarkActive == 0) context->UndoEntryCount = boundary;
+            else if (context->PartitionDeletionPending != 0)
+            {
+                for (var i = boundary; i < context->UndoEntryCount; i++)
+                    if (context->UndoEntries[i].Kind == SessionData.UndoKind.PartitionDeleted)
+                        CommitPartitionDeletion(session, context->UndoEntries[i].Slot);
+            }
+            if (session->IsMarkActive == 0 && error == 0)
+            {
+                for (var i = deferredBoundary; i < context->DeferredCount; i++)
+                {
+                    var entry = context->Deferred[i];
+                    FinalReleaseEntity((PoolKind)entry.Pool, entry.Slot, entry.Tag);
+                }
+                context->DeferredCount = deferredBoundary;
+            }
+            if (session->IsMarkActive == 0) session->DiscardUndoFrom(boundary);
             return error;
         }
-        finally { context->InKernel--; }
+        finally
+        {
+            if (State.Session == session && session->SessionGeneration == sessionGeneration)
+            {
+                context->InKernel--;
+                context->DeferCommandDeletes = 0;
+                context->PartitionDeletionPending = 0;
+            }
+        }
+    }
+
+    // A standalone point has no payload, topology links or fallible work
+    // after validation. Composite commands and marked deletes use the full
+    // transaction path; this only handles the concrete scalar delete command.
+    private static bool TryDeleteAtomicPoint(SessionData* session, SessionData.ThreadContext* context,
+        EntityTag tag, out int error)
+    {
+        error = 0;
+        if (!session->Tags.TryResolve(tag, CurrentSessionId, out var record))
+        { error = ParasolidConstants.PK_ERROR_unknown_class; return true; }
+        if (record.Pool != (byte)PoolKind.Point) return false;
+        ref var point = ref Points[record.Slot];
+        if (point.OwnerCount != 0) { error = ParasolidConstants.PK_ERROR_is_attached; return true; }
+        ref var partition = ref session->Partitions[point.Header.Partition];
+        if (partition.LockOwnerThread != 0 && partition.LockOwnerThread != context->ManagedThreadId)
+        { error = ParasolidConstants.PK_ERROR_bad_thread; return true; }
+        partition.AtPmark = 0;
+        Points.Free(record.Slot);
+        session->Tags.Revoke(tag);
+        return true;
+    }
+
+    // Explicit PK partition deletion removes the partition at every mark.
+    // Delay this irreversible pruning until the surrounding command succeeds.
+    private static void CommitPartitionDeletion(SessionData* session, PartitionSlot partition)
+    {
+        if (session->MarkCurrentPartition == partition)
+            session->MarkCurrentPartition = ThreadContext()->CurrentPartition;
+        for (var thread = 0; thread < session->ThreadCount; thread++)
+        {
+            var context = session->Threads.Pointer(thread);
+            for (var i = 0; i < context->UndoEntryCount; i++)
+            {
+                ref var entry = ref context->UndoEntries[i];
+                if (entry.Partition != partition || entry.Kind == SessionData.UndoKind.CurrentPartitionChanged) continue;
+                if (entry.Kind == SessionData.UndoKind.FieldSnapshot && entry.Data != null)
+                {
+                    session->Blocks.Free(entry.Data);
+                    context->UndoSnapshotCount--;
+                }
+                entry.Data = null;
+                entry.Kind = (SessionData.UndoKind)SessionData.UndoBookkeeping.Cancelled;
+            }
+            for (var i = 0; i < context->DeferredCount;)
+            {
+                var entry = context->Deferred[i];
+                if (PoolPartitionOf((PoolKind)entry.Pool, entry.Slot) != partition) { i++; continue; }
+                FinalReleaseEntity((PoolKind)entry.Pool, entry.Slot, entry.Tag);
+                context->Deferred[i] = context->Deferred[--context->DeferredCount];
+            }
+        }
     }
     /// <summary>
     /// Reverse the undo entries a failed command appended: destroy created
@@ -3926,20 +4127,9 @@ internal static unsafe partial class KernelRuntime
                 continue;
             if (entry.ThreadId != threadId)
                 continue;                              // another command's entry
-            switch (entry.Kind)
-            {
-                case SessionData.UndoKind.EntityCreated:
-                    DestroyCreatedEntity((PoolKind)entry.Pool, entry.Slot, entry.Generation, (RecordHeader*)entry.Data);
-                    break;
-                case SessionData.UndoKind.EntityDeleted:
-                    RestoreDeletedEntity(session, (PoolKind)entry.Pool, entry.Slot, entry.Tag);
-                    DropDeferredRelease(session, entry.Pool, entry.Slot);
-                    break;
-                case SessionData.UndoKind.FieldSnapshot:
-                    RestoreSnapshot((PoolKind)entry.Pool, entry.Slot, entry.Data);
-                    break;
-            }
-            entry.Kind = (SessionData.UndoKind)SessionData.UndoBookkeeping.Cancelled;
+            ReplayMarkEntry(session, ref entry, commandFailure: true);
+            if (entry.Kind == SessionData.UndoKind.EntityDeleted)
+                DropDeferredRelease(session, entry.Pool, entry.Slot);
         }
     }
 

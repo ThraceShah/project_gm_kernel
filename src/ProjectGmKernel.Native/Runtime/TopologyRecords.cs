@@ -8,11 +8,10 @@ namespace ProjectGmKernel.Native.Runtime;
 [StructLayout(LayoutKind.Sequential)]
 internal struct RecordHeader
 {
-    public int Generation;
+    public EntityGeneration Generation;
+    public PartitionSlot Partition;
+    public EntityTag Tag;                       // published tag for this slot (0 = none yet)
     public byte Alive;
-    public short Partition;
-    public int RollbackStamp;
-    public int Tag;                             // published tag for this slot (0 = none yet)
 }
 
 // ── Topology Records ──────────────────────────────────────────────

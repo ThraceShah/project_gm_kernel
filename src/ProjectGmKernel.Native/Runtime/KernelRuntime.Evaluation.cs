@@ -91,7 +91,8 @@ internal static unsafe partial class KernelRuntime
         vOrder = Math.Max(0, vOrder);
         ref readonly var record = ref Surfaces[TagRec(surface).Slot];
         if (!TryPrepareSurface(in record, out var prepared)) return ParasolidConstants.PK_ERROR_not_implemented;
-        var layout = new SurfaceDerivativeLayout(uOrder, vOrder);
+        if (!SurfaceDerivativeLayout.TryCreate(uOrder, vOrder, out var layout))
+            return ParasolidConstants.PK_ERROR_bad_value;
         Span<KernelVector3> values = stackalloc KernelVector3[121];
         var status = SurfaceEvaluation.Evaluate(in prepared, uv.param[0], uv.param[1], in layout, values);
         if (status != AlgorithmStatus.Success) return EvaluationError(status);

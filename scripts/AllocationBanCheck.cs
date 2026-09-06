@@ -2,15 +2,24 @@
 #:property PublishAot=false
 #:property PublishTrimmed=false
 #:property EnableTrimAnalyzer=false
-#:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 
 // Inspect actual emitted IL, not source regexes: value-type constructors are
 // not heap allocations; compiler-generated closures, boxing and newarr are.
 // This is a verification guard, not a proof about the entire BCL call graph.
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
 
-var assembly = Assembly.Load("ProjectGmKernel.Native");
+var scriptDirectory = Path.GetDirectoryName(ScriptPath())!;
+var assemblyPath = Path.GetFullPath(Path.Combine(scriptDirectory,
+    args.Length == 0 ? "../src/ProjectGmKernel.Native/bin/Release/net10.0/ProjectGmKernel.Native.dll" : args[0]));
+AssemblyLoadContext.Default.Resolving += (_, name) =>
+{
+    var dependency = Path.Combine(Path.GetDirectoryName(assemblyPath)!, name.Name + ".dll");
+    return File.Exists(dependency) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(dependency) : null;
+};
+var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
 var codes = typeof(OpCodes).GetFields(BindingFlags.Public | BindingFlags.Static)
     .Where(f => f.FieldType == typeof(OpCode)).Select(f => (OpCode)f.GetValue(null)!)
     .ToDictionary(c => unchecked((ushort)c.Value));
@@ -106,3 +115,5 @@ Console.WriteLine($"allocation IL guard: checked {methodCount} methods");
 foreach (var violation in violations) Console.WriteLine("VIOLATION " + violation);
 Console.WriteLine(violations.Count == 0 ? "allocation IL guard: CLEAN" : $"allocation IL guard: {violations.Count} violations");
 return violations.Count == 0 ? 0 : 1;
+
+static string ScriptPath([CallerFilePath] string path = "") => path;

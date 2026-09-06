@@ -2,6 +2,7 @@
 #:property AllowUnsafeBlocks=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
+#:property UseParasolidMarkOracle=true
 #:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 
@@ -33,6 +34,9 @@ unsafe
             if (memoryReview)
             {
                 CheckPartitionLockProtocol();
+                CheckPartitionLifecycle(directory);
+                CheckSharedCurve(directory);
+                CheckSharedSurface(directory);
             }
             foreach (var kind in new[] { "block", "cylinder", "cone", "sphere", "torus" })
             foreach (var rotated in new[] { false, true })
@@ -88,6 +92,7 @@ unsafe
                     Check(PK_BODY_create_solid_sphere(1, null, &referenceTemporary), "reference temporary body");
                     Check(KernelRuntime.EntityDelete(1, &ourTemporary), "our temporary delete");
                     Check(PK_ENTITY_delete(1, &referenceTemporary), "reference temporary delete");
+                    CheckGeometryAttachments(ours, reference);
                 }
                 else
                 {
@@ -139,15 +144,19 @@ static unsafe void CheckPartitionLockProtocol()
     int ours, reference;
     Check(KernelRuntime.PartitionCreateEmpty(&ours), "our partition");
     Check(PK_PARTITION_create_empty(&reference), "reference partition");
-    int ourMark, referenceMark;
-    Check(KernelRuntime.MarkCreate(&ourMark), "our partition checkpoint");
-    Check(PK_MARK_create(&referenceMark), "reference partition checkpoint");
     var ourOptions = new M.PK_THREAD_lock_partitions_o_s
     { o_t_version = 1, want_locked_partitions = 1, want_unavailable_partitions = 1 };
     var options = new PK_THREAD_lock_partitions_o_t
     { want_locked_partitions = 1, want_unavailable_partitions = 1 };
     M.PK_THREAD_lock_partitions_r_s ourResult;
     PK_THREAD_lock_partitions_r_t result;
+    var invalidReference = PK_THREAD_lock_partitions(1, &reference, PK_THREAD_lock_all_c, PK_THREAD_wait_no_c, &options, &result);
+    var invalidOurs = KernelRuntime.ThreadLockPartitions(1, &ours, PK_THREAD_lock_all_c, PK_THREAD_wait_no_c, &ourOptions, &ourResult);
+    Equal(PK_ERROR_not_at_pmark, invalidReference, "reference lock before checkpoint");
+    Equal(invalidReference, invalidOurs, "lock before checkpoint");
+    int ourMark, referenceMark;
+    Check(KernelRuntime.MarkCreate(&ourMark), "our partition checkpoint");
+    Check(PK_MARK_create(&referenceMark), "reference partition checkpoint");
     var expectedError = PK_THREAD_lock_partitions(1, &reference, PK_THREAD_lock_all_c, PK_THREAD_wait_no_c, &options, &result);
     var actualError = KernelRuntime.ThreadLockPartitions(1, &ours, PK_THREAD_lock_all_c, PK_THREAD_wait_no_c, &ourOptions, &ourResult);
     Check(expectedError, "reference partition lock");
@@ -171,6 +180,289 @@ static unsafe void CheckPartitionLockProtocol()
     Check(KernelRuntime.MarkGoto(ourMark), "our partition checkpoint restore");
     Check(PK_MARK_goto(referenceMark), "reference partition checkpoint restore");
     Console.WriteLine("PK partition lock/unlock: oracle comparison passed");
+}
+
+static unsafe void CheckPartitionLifecycle(string directory)
+{
+    int ours, reference, ourDefault, referenceDefault, body, referenceBody, mark, referenceMark, extra, referenceExtra;
+    Check(KernelRuntime.SessionAskCurrentPartition(&ourDefault), "our default partition");
+    Check(PK_SESSION_ask_curr_partition(&referenceDefault), "reference default partition");
+    int control, referenceControl;
+    Check(KernelRuntime.BodyCreateSolidBlock(3, 4, 5, null, &control), "our surviving control body");
+    Check(PK_BODY_create_solid_block(3, 4, 5, null, &referenceControl), "reference surviving control body");
+    Check(KernelRuntime.PartitionCreateEmpty(&ours), "our lifecycle partition");
+    Check(PK_PARTITION_create_empty(&reference), "reference lifecycle partition");
+    Check(KernelRuntime.PartitionSetCurrent(ours), "our select partition");
+    Check(PK_PARTITION_set_current(reference), "reference select partition");
+    var deletion = new PK_PARTITION_delete_o_t { delete_non_empty = 1 };
+    var ourDeletion = new M.PK_PARTITION_delete_o_s { o_t_version = 1, delete_non_empty = 1 };
+    Equal(PK_PARTITION_delete(reference, &deletion), KernelRuntime.PartitionDelete(ours, &ourDeletion), "delete current partition");
+    Check(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body), "our partition block");
+    Check(PK_BODY_create_solid_block(2, 3, 4, null, &referenceBody), "reference partition block");
+    Check(KernelRuntime.MarkCreate(&mark), "our lifecycle mark");
+    Check(PK_MARK_create(&referenceMark), "reference lifecycle mark");
+    Check(KernelRuntime.PartitionSetCurrent(ourDefault), "our leave partition");
+    Check(PK_PARTITION_set_current(referenceDefault), "reference leave partition");
+    Check(KernelRuntime.EntityDelete(1, &body), "our delete partition body");
+    Check(PK_ENTITY_delete(1, &referenceBody), "reference delete partition body");
+    Check(KernelRuntime.PartitionDelete(ours, &ourDeletion), "our delete empty partition");
+    Check(PK_PARTITION_delete(reference, &deletion), "reference delete empty partition");
+    Check(KernelRuntime.PartitionCreateEmpty(&extra), "our post-mark partition");
+    Check(PK_PARTITION_create_empty(&referenceExtra), "reference post-mark partition");
+    Check(KernelRuntime.PartitionSetCurrent(extra), "our post-mark selection");
+    Check(PK_PARTITION_set_current(referenceExtra), "reference post-mark selection");
+    Check(KernelRuntime.MarkGoto(mark), "our partition rollback");
+    Check(PK_MARK_goto(referenceMark), "reference partition rollback");
+    int current, referenceCurrent;
+    Check(KernelRuntime.SessionAskCurrentPartition(&current), "our restored selection");
+    Check(PK_SESSION_ask_curr_partition(&referenceCurrent), "reference restored selection");
+    Equal(referenceDefault, referenceCurrent, "reference selection after removed partition");
+    Equal(ourDefault, current, "our selection after removed partition");
+    int bodyClass;
+    Equal(PK_ERROR_not_a_tag, PK_ENTITY_ask_class(referenceBody, &bodyClass), "reference explicitly deleted partition body");
+    if (KernelRuntime.IsValidTag(body)) throw new InvalidOperationException("Explicitly deleted partition body was resurrected.");
+    CheckRoundtrip(control, referenceControl, Path.Combine(directory, "partition-rollback.x_t"));
+    Check(KernelRuntime.PartitionSetCurrent(ourDefault), "our reset selection");
+    Check(PK_PARTITION_set_current(referenceDefault), "reference reset selection");
+    Console.WriteLine("Partition creation/deletion/selection rollback: oracle passed");
+}
+
+static unsafe void CheckSharedCurve(string directory)
+{
+    int body, referenceBody, referenceCount;
+    Check(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body), "our shared-curve block");
+    Check(PK_BODY_create_solid_block(2, 3, 4, null, &referenceBody), "reference shared-curve block");
+    if (!KernelRuntime.TryResolveBodySlot(body, out var bodySlot)) throw new InvalidOperationException("Shared-curve body missing.");
+    var firstSlot = KernelRuntime.Bodies[bodySlot].FirstEdgeBody;
+    var secondSlot = KernelRuntime.Edges[firstSlot].NextInBody;
+    var first = KernelRuntime.TagOf(PoolKind.Edge, firstSlot);
+    var second = KernelRuntime.TagOf(PoolKind.Edge, secondSlot);
+    int* referenceEdges;
+    Check(PK_BODY_ask_edges(referenceBody, &referenceCount, &referenceEdges), "reference shared-curve edges");
+    var referenceFirst = MatchingLineEdge(firstSlot, referenceEdges, referenceCount);
+    var referenceSecond = MatchingLineEdge(secondSlot, referenceEdges, referenceCount);
+    Check(PK_MEMORY_free(referenceEdges), "reference shared-curve edge list free");
+    int curve, referenceCurve, detached, referenceDetached;
+    Check(KernelRuntime.EdgeAskCurve(first, &curve), "our shared curve");
+    Check(PK_EDGE_ask_curve(referenceFirst, &referenceCurve), "reference shared curve");
+    Check(KernelRuntime.EdgeAskCurve(second, &detached), "our detached curve");
+    Check(PK_EDGE_ask_curve(referenceSecond, &referenceDetached), "reference detached curve");
+    Check(KernelRuntime.TopologyDetachGeometry(second), "our detach before sharing");
+    Check(PK_TOPOL_detach_geom(referenceSecond), "reference detach before sharing");
+    Check(KernelRuntime.EdgeAttachCurves(1, &second, &curve), "our attach shared curve");
+    Check(PK_EDGE_attach_curves(1, &referenceSecond, &referenceCurve), "reference attach shared curve");
+    int attached;
+    Check(PK_EDGE_ask_curve(referenceSecond, &attached), "reference shared ownership");
+    Equal(referenceCurve, attached, "reference geometry is shared");
+    Equal(2, KernelRuntime.GetCurveByTag(curve).OwnerCount, "our shared ownership");
+    SaveReferenceXt(referenceBody, Path.Combine(directory, "reference-shared-curve.x_t"));
+    CheckRoundtrip(body, referenceBody, Path.Combine(directory, "shared-curve.x_t"));
+    int mark, referenceMark;
+    Check(KernelRuntime.MarkCreate(&mark), "our shared-curve mark");
+    Check(PK_MARK_create(&referenceMark), "reference shared-curve mark");
+    Check(KernelRuntime.EntityDelete(1, &body), "our shared-body delete");
+    Check(PK_ENTITY_delete(1, &referenceBody), "reference shared-body delete");
+    Check(KernelRuntime.MarkGoto(mark), "our shared-body restore");
+    Check(PK_MARK_goto(referenceMark), "reference shared-body restore");
+    Equal(2, KernelRuntime.GetCurveByTag(curve).OwnerCount, "restored shared ownership");
+    CheckRoundtrip(body, referenceBody, Path.Combine(directory, "shared-curve-rollback.x_t"));
+    Check(KernelRuntime.EntityDelete(1, &body), "our final shared-body delete");
+    Check(PK_ENTITY_delete(1, &referenceBody), "reference final shared-body delete");
+    int entityClass;
+    Equal(PK_ERROR_not_a_tag, PK_ENTITY_ask_class(referenceCurve, &entityClass), "reference final geometry release");
+    if (KernelRuntime.IsValidTag(curve)) throw new InvalidOperationException("Last geometry reference was not released.");
+    Check(KernelRuntime.EntityDelete(1, &detached), "our standalone detached curve delete");
+    Check(PK_ENTITY_delete(1, &referenceDetached), "reference standalone detached curve delete");
+    Console.WriteLine("Shared curve attach/delete/rollback: XT receive and body compare passed");
+}
+
+static unsafe void CheckSharedSurface(string directory)
+{
+    int body, referenceBody, surface, referenceSurface, referenceCount;
+    Check(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body), "our shared-surface block");
+    Check(PK_BODY_create_solid_block(2, 3, 4, null, &referenceBody), "reference shared-surface block");
+    if (!KernelRuntime.TryResolveBodySlot(body, out var bodySlot)) throw new InvalidOperationException("Shared-surface body missing.");
+    var firstSlot = KernelRuntime.Bodies[bodySlot].FirstFaceBody;
+    var secondSlot = KernelRuntime.Faces[firstSlot].NextInBody;
+    int* faces = stackalloc int[2] { KernelRuntime.TagOf(PoolKind.Face, firstSlot), KernelRuntime.TagOf(PoolKind.Face, secondSlot) };
+    int* referenceFaces = stackalloc int[2];
+    int* candidates;
+    Check(PK_BODY_ask_faces(referenceBody, &referenceCount, &candidates), "reference shared-surface faces");
+    referenceFaces[0] = MatchingPlaneFace(firstSlot, candidates, referenceCount);
+    referenceFaces[1] = MatchingPlaneFace(secondSlot, candidates, referenceCount);
+    Check(PK_MEMORY_free(candidates), "reference shared-surface face list free");
+    var definition = new PK_CYL_sf_t { radius = 2, basis_set = Frame(0, 0, 0, 0, 0, 1, 1, 0, 0) };
+    var ours = new M.PK_CYL_sf_s { radius = 2 };
+    ours.basis_set.axis.coord[2] = 1;
+    ours.basis_set.ref_direction.coord[0] = 1;
+    Check(PK_CYL_create(&definition, &referenceSurface), "reference common cylinder");
+    Check(KernelRuntime.CylCreate(&ours, &surface), "our common cylinder");
+    int* detached = stackalloc int[2];
+    int* referenceDetached = stackalloc int[2];
+    for (var i = 0; i < 2; i++)
+    {
+        Check(KernelRuntime.FaceAskSurf(faces[i], detached + i), "our detached plane");
+        Check(PK_FACE_ask_surf(referenceFaces[i], referenceDetached + i), "reference detached plane");
+        Check(KernelRuntime.TopologyDetachGeometry(faces[i]), "our plane detach");
+        Check(PK_TOPOL_detach_geom(referenceFaces[i]), "reference plane detach");
+    }
+    int* surfaces = stackalloc int[2] { surface, surface };
+    int* referenceSurfaces = stackalloc int[2] { referenceSurface, referenceSurface };
+    byte* senses = stackalloc byte[2] { 1, 1 };
+    PK_LOGICAL_t* referenceSenses = stackalloc PK_LOGICAL_t[2];
+    referenceSenses[0] = referenceSenses[1] = 1;
+    Check(KernelRuntime.FaceAttachSurfaces(2, faces, surfaces, senses), "our attach shared surface");
+    Check(PK_FACE_attach_surfs(2, referenceFaces, referenceSurfaces, referenceSenses), "reference attach shared surface");
+    Equal(2, KernelRuntime.GetSurfaceByTag(surface).OwnerCount, "shared surface owners");
+    SaveReferenceXt(referenceBody, Path.Combine(directory, "reference-shared-surface.x_t"));
+    CheckRoundtrip(body, referenceBody, Path.Combine(directory, "shared-surface.x_t"));
+    int mark, referenceMark;
+    Check(KernelRuntime.MarkCreate(&mark), "our shared-surface mark");
+    Check(PK_MARK_create(&referenceMark), "reference shared-surface mark");
+    Check(KernelRuntime.EntityDelete(1, &body), "our shared-surface delete");
+    Check(PK_ENTITY_delete(1, &referenceBody), "reference shared-surface delete");
+    Check(KernelRuntime.MarkGoto(mark), "our shared-surface restore");
+    Check(PK_MARK_goto(referenceMark), "reference shared-surface restore");
+    Equal(2, KernelRuntime.GetSurfaceByTag(surface).OwnerCount, "restored shared surface owners");
+    CheckRoundtrip(body, referenceBody, Path.Combine(directory, "shared-surface-rollback.x_t"));
+    Check(KernelRuntime.EntityDelete(1, &body), "our final shared-surface delete");
+    Check(PK_ENTITY_delete(1, &referenceBody), "reference final shared-surface delete");
+    Check(KernelRuntime.EntityDelete(2, detached), "our detached planes delete");
+    Check(PK_ENTITY_delete(2, referenceDetached), "reference detached planes delete");
+    Console.WriteLine("Shared surface attach/delete/rollback: XT receive and body compare passed");
+}
+
+static unsafe int MatchingPlaneFace(int ourSlot, int* candidates, int count)
+{
+    var geometry = KernelRuntime.GetSurfaceByTag(KernelRuntime.Faces[ourSlot].SurfTag);
+    var plane = KernelRuntime.GetPlaneData(geometry.DataIndex);
+    for (var i = 0; i < count; i++)
+    {
+        int surface;
+        Check(PK_FACE_ask_surf(candidates[i], &surface), "reference candidate surface");
+        var candidate = new PK_PLANE_sf_t();
+        Check(PK_PLANE_ask(surface, &candidate), "reference candidate plane");
+        var dot = candidate.basis_set.axis.coord[0] * plane.NormalX + candidate.basis_set.axis.coord[1] * plane.NormalY + candidate.basis_set.axis.coord[2] * plane.NormalZ;
+        var offset = (candidate.basis_set.location.coord[0] - plane.LocationX) * plane.NormalX
+            + (candidate.basis_set.location.coord[1] - plane.LocationY) * plane.NormalY
+            + (candidate.basis_set.location.coord[2] - plane.LocationZ) * plane.NormalZ;
+        if (Math.Abs(Math.Abs(dot) - 1) < 1e-12 && Math.Abs(offset) < 1e-12) return candidates[i];
+    }
+    throw new InvalidOperationException("Corresponding reference plane face was not found.");
+}
+
+static unsafe int MatchingLineEdge(int ourSlot, int* candidates, int count)
+{
+    var geometry = KernelRuntime.GetCurveByTag(KernelRuntime.Edges[ourSlot].CurveTag);
+    var line = KernelRuntime.GetLineData(geometry.DataIndex);
+    for (var i = 0; i < count; i++)
+    {
+        int curve;
+        Check(PK_EDGE_ask_curve(candidates[i], &curve), "reference candidate curve");
+        var candidate = new PK_LINE_sf_t();
+        Check(PK_LINE_ask(curve, &candidate), "reference candidate line");
+        var dx = candidate.basis_set.location.coord[0] - line.LocationX;
+        var dy = candidate.basis_set.location.coord[1] - line.LocationY;
+        var dz = candidate.basis_set.location.coord[2] - line.LocationZ;
+        var projection = dx * line.AxisX + dy * line.AxisY + dz * line.AxisZ;
+        var dot = candidate.basis_set.axis.coord[0] * line.AxisX + candidate.basis_set.axis.coord[1] * line.AxisY + candidate.basis_set.axis.coord[2] * line.AxisZ;
+        if (Math.Abs(Math.Abs(dot) - 1) < 1e-12
+            && Math.Abs(dx - projection * line.AxisX) + Math.Abs(dy - projection * line.AxisY) + Math.Abs(dz - projection * line.AxisZ) < 1e-12)
+            return candidates[i];
+    }
+    throw new InvalidOperationException("Corresponding reference line edge was not found.");
+}
+
+static unsafe void SaveReferenceXt(int body, string path)
+{
+    var options = new PK_PART_transmit_o_t { transmit_format = PK_transmit_format_text_c };
+    var block = new PK_MEMORY_block_t();
+    Check(PK_PART_transmit_b(1, &body, &options, &block), "reference diagnostic transmit");
+    try
+    {
+        using var file = File.Create(path);
+        for (var part = &block; part != null; part = part->next)
+            file.Write(new ReadOnlySpan<byte>(part->bytes, checked((int)part->n_bytes)));
+    }
+    finally { Check(PK_MEMORY_block_f(&block), "reference diagnostic block free"); }
+    var bytes = File.ReadAllBytes(path);
+    fixed (byte* data = bytes)
+    {
+        var input = new PK_MEMORY_block_t(null, (ulong)bytes.Length, data);
+        var receive = new PK_PART_receive_o_t { transmit_format = PK_transmit_format_text_c };
+        int count;
+        int* parts;
+        Check(PK_PART_receive_b(input, &receive, &count, &parts), "reference self receive");
+        Check(PK_MEMORY_free(parts), "reference self receive free");
+    }
+}
+
+static unsafe void CheckGeometryAttachments(int body, int referenceBody)
+{
+    int count, referenceCount, ourSurface = 0, referenceSurface = 0;
+    int ourFace = 0, referenceFace = 0, ourEdge = 0, referenceEdge = 0, ourVertex = 0, referenceVertex = 0;
+    int* values;
+    int* referenceValues;
+    Check(KernelRuntime.BodyAskFaces(body, &count, &values), "our attachment faces");
+    Check(PK_BODY_ask_faces(referenceBody, &referenceCount, &referenceValues), "reference attachment faces");
+    Equal(referenceCount, count, "attachment face count");
+    if (count > 0) { ourFace = values[0]; referenceFace = referenceValues[0]; }
+    if (values != null) Check(KernelRuntime.MemoryFree(values), "our face list free");
+    if (referenceValues != null) Check(PK_MEMORY_free(referenceValues), "reference face list free");
+    if (ourFace != 0)
+    {
+        Check(KernelRuntime.FaceAskSurf(ourFace, &ourSurface), "our attached surface");
+        PK_LOGICAL_t sense;
+        Check(PK_FACE_ask_oriented_surf(referenceFace, &referenceSurface, &sense), "reference attached surface");
+        // Each kernel retains its original face sense when reattaching.
+        if (!KernelRuntime.TryResolveBodySlot(body, out var bodySlot)) throw new InvalidOperationException("Our attachment body is missing.");
+        var ourSlot = KernelRuntime.Bodies[bodySlot].FirstFaceBody;
+        byte ourSense = KernelRuntime.Faces[ourSlot].Orientation == M.ParasolidConstants.PK_TOPOL_sense_negative_c ? (byte)0 : (byte)1;
+        Check(KernelRuntime.TopologyDetachGeometry(ourFace), "our detach surface");
+        Check(PK_TOPOL_detach_geom(referenceFace), "reference detach surface");
+        Check(KernelRuntime.FaceAttachSurfaces(1, &ourFace, &ourSurface, &ourSense), "our reattach surface");
+        Check(PK_FACE_attach_surfs(1, &referenceFace, &referenceSurface, &sense), "reference reattach surface");
+    }
+    Check(KernelRuntime.BodyAskEdges(body, &count, &values), "our attachment edges");
+    Check(PK_BODY_ask_edges(referenceBody, &referenceCount, &referenceValues), "reference attachment edges");
+    Equal(referenceCount, count, "attachment edge count");
+    if (count > 0) { ourEdge = values[0]; referenceEdge = referenceValues[0]; }
+    if (values != null) Check(KernelRuntime.MemoryFree(values), "our edge list free");
+    if (referenceValues != null) Check(PK_MEMORY_free(referenceValues), "reference edge list free");
+    if (ourEdge != 0)
+    {
+        int curve, referenceCurve;
+        Check(KernelRuntime.EdgeAskCurve(ourEdge, &curve), "our attached curve");
+        Check(PK_EDGE_ask_curve(referenceEdge, &referenceCurve), "reference attached curve");
+        Check(KernelRuntime.TopologyDetachGeometry(ourEdge), "our detach curve");
+        Check(PK_TOPOL_detach_geom(referenceEdge), "reference detach curve");
+        Check(KernelRuntime.EdgeAttachCurves(1, &ourEdge, &curve), "our reattach curve");
+        Check(PK_EDGE_attach_curves(1, &referenceEdge, &referenceCurve), "reference reattach curve");
+    }
+    Check(KernelRuntime.BodyAskVertices(body, &count, &values), "our attachment vertices");
+    Check(PK_BODY_ask_vertices(referenceBody, &referenceCount, &referenceValues), "reference attachment vertices");
+    Equal(referenceCount, count, "attachment vertex count");
+    if (count > 0) { ourVertex = values[0]; referenceVertex = referenceValues[0]; }
+    if (values != null) Check(KernelRuntime.MemoryFree(values), "our vertex list free");
+    if (referenceValues != null) Check(PK_MEMORY_free(referenceValues), "reference vertex list free");
+    if (ourVertex != 0)
+    {
+        int point, referencePoint;
+        Check(KernelRuntime.VertexAskPoint(ourVertex, &point), "our attached point");
+        Check(PK_VERTEX_ask_point(referenceVertex, &referencePoint), "reference attached point");
+        Check(KernelRuntime.TopologyDetachGeometry(ourVertex), "our detach point");
+        Check(PK_TOPOL_detach_geom(referenceVertex), "reference detach point");
+        Check(KernelRuntime.VertexAttachPoints(1, &ourVertex, &point), "our reattach point");
+        Check(PK_VERTEX_attach_points(1, &referenceVertex, &referencePoint), "reference reattach point");
+    }
+    int mark, referenceMark;
+    Check(KernelRuntime.MarkCreate(&mark), "our geometry mark");
+    Check(PK_MARK_create(&referenceMark), "reference geometry mark");
+    if (ourFace != 0) { Check(KernelRuntime.TopologyDetachGeometry(ourFace), "our marked face detach"); Check(PK_TOPOL_detach_geom(referenceFace), "reference marked face detach"); }
+    if (ourEdge != 0) { Check(KernelRuntime.TopologyDetachGeometry(ourEdge), "our marked edge detach"); Check(PK_TOPOL_detach_geom(referenceEdge), "reference marked edge detach"); }
+    if (ourVertex != 0) { Check(KernelRuntime.TopologyDetachGeometry(ourVertex), "our marked vertex detach"); Check(PK_TOPOL_detach_geom(referenceVertex), "reference marked vertex detach"); }
+    Check(KernelRuntime.MarkGoto(mark), "our geometry rollback");
+    Check(PK_MARK_goto(referenceMark), "reference geometry rollback");
 }
 
 static unsafe void Compare(M.PK_VECTOR_s* ours, PK_VECTOR_t* reference, int count, string label,
@@ -410,60 +702,5 @@ sealed class ComparisonStats
     {
         if (!ByKind.TryGetValue(kind, out var stats)) ByKind.Add(kind, stats = new ComparisonStats());
         return stats;
-    }
-}
-
-// Partitioned Parasolid rollback requires a delta-storage frustrum. This
-// oracle-only adapter uses the PKToy callback types; session setup remains in
-// ParasolidScriptHost. No ABI declarations or session initialization copied.
-static unsafe class MarkOracleStorage
-{
-    private static readonly Dictionary<uint, MemoryStream> Marks = new();
-    private static uint nextDelta;
-    public static void Register()
-    {
-        var callbacks = new PK_DELTA_frustrum_t
-        { open_for_write_fn = &OpenWrite, open_for_read_fn = &OpenRead, close_fn = &Close,
-            write_fn = &Write, read_fn = &Read, delete_fn = &Delete };
-        var error = PK_DELTA_register_callbacks(callbacks);
-        if (error != 0) throw new InvalidOperationException($"reference mark storage: error={error}");
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int OpenWrite(int mark, uint* delta)
-    {
-        *delta = ++nextDelta;
-        Marks.Add(*delta, new MemoryStream());
-        return 0;
-    }
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int OpenRead(uint delta)
-    {
-        if (!Marks.TryGetValue(delta, out var stream)) return PK_ERROR_bad_value;
-        stream.Position = 0;
-        return 0;
-    }
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int Close(uint mark) => 0;
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int Write(uint mark, uint count, byte* bytes)
-    {
-        if (!Marks.TryGetValue(mark, out var stream) || count > int.MaxValue) return PK_ERROR_bad_value;
-        stream.Write(new ReadOnlySpan<byte>(bytes, (int)count));
-        return 0;
-    }
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int Read(uint mark, uint count, byte* bytes)
-    {
-        if (!Marks.TryGetValue(mark, out var stream) || count > int.MaxValue || stream.Length - stream.Position < count)
-            return PK_ERROR_bad_value;
-        stream.ReadExactly(new Span<byte>(bytes, (int)count));
-        return 0;
-    }
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static int Delete(uint mark)
-    {
-        if (Marks.Remove(mark, out var stream)) stream.Dispose();
-        return 0;
     }
 }

@@ -51,6 +51,10 @@ internal enum ApiId : ushort
     CurveEvalWithTangent = 44,
     SurfEval = 45,
     BCurveCreate = 46,
+    ThreadChainStart = 47,
+    ThreadChainStop = 48,
+    AttachGeometry = 49,
+    DetachGeometry = 50,
     GeneratedStub = 65535,
 }
 
@@ -59,6 +63,7 @@ internal enum ConcurrencyKind : byte
     Exclusive = 1,
     Concurrent = 2,
     Local = 3,
+    Unprotected = 4,
 }
 
 internal enum AccessKind : byte
@@ -117,6 +122,8 @@ internal sealed class SessionDispatchState
     private int exclusiveWaiting;
     private bool exclusive;
     private int waiters;
+    private KernelThreadId exclusiveChainOwner;
+    private BufferCount concurrentChains;
     [ThreadStatic] private static int depth;
     public bool IsExecuting => depth != 0;
 
@@ -138,6 +145,7 @@ internal sealed class SessionDispatchState
     private unsafe struct Claim
     {
         internal SessionData* Session;
+        internal SessionData.ThreadContext* Context;
         internal PartitionSlot Partition;
         internal bool Exclusive;
         internal bool Write;
@@ -148,12 +156,23 @@ internal sealed class SessionDispatchState
         where TCommand : struct, IKernelCommand
     {
         if (depth != 0) return command.Execute();
+        if (descriptor.ConcurrencyKind == ConcurrencyKind.Unprotected)
+        {
+            // SDK thread introspection must remain available while another
+            // thread retains an exclusive chain. Stop shares this gate.
+            lock (Gate)
+            {
+                depth = 1;
+                try { return command.Execute(); }
+                finally { depth = 0; }
+            }
+        }
         var claim = Acquire(ref descriptor);
         depth = 1;
         try
         {
-            return KernelRuntime.ExecuteAuthorized(claim.Session, descriptor.AccessKind,
-                descriptor.ApiId, ref command);
+            return KernelRuntime.ExecuteAuthorized(claim.Session, claim.Context, descriptor.AccessKind,
+                descriptor.ApiId, descriptor.PartitionId, ref command);
         }
         finally
         {
@@ -161,6 +180,21 @@ internal sealed class SessionDispatchState
             lock (Gate)
             {
                 active--;
+                var context = claim.Session == KernelRuntime.State.Session ? claim.Context : KernelRuntime.ThreadContext();
+                if (context != null)
+                {
+                    if (descriptor.ApiId != ApiId.ThreadChainStart && context->ChainType != 0 && context->ChainLength > 0)
+                        context->ChainRemaining--;
+                    ReleaseChain(context);
+                    if (context->ChainType != 0 && (context->ChainLength == 0 || context->ChainRemaining > 0))
+                    {
+                        context->ChainHeld = 1;
+                        if (context->ChainType == ProjectGmKernel.Native.Generated.ParasolidConstants.PK_THREAD_chain_exclusive_c)
+                            exclusiveChainOwner = context->ManagedThreadId;
+                        else concurrentChains++;
+                    }
+                }
+                else { exclusiveChainOwner = 0; concurrentChains = 0; }
                 if (claim.Exclusive) exclusive = false;
                 else if (claim.Session != null)
                 {
@@ -178,31 +212,46 @@ internal sealed class SessionDispatchState
     {
         lock (Gate)
         {
+            var session = KernelRuntime.State.Session;
+            var context = session != null ? KernelRuntime.ThreadContext() : null;
             var wantsExclusive = descriptor.ConcurrencyKind == ConcurrencyKind.Exclusive
                 || descriptor.AccessKind == AccessKind.SessionControl;
+            wantsExclusive |= descriptor.ConcurrencyKind == ConcurrencyKind.Local
+                && (context == null || context->LockCount == 0);
+            if (context != null)
+            {
+                wantsExclusive |= context->ChainType == ProjectGmKernel.Native.Generated.ParasolidConstants.PK_THREAD_chain_exclusive_c;
+                // Concurrent chains drop their retained read claim around
+                // exclusive functions, as required by the SDK.
+                if (wantsExclusive && context->ChainType != ProjectGmKernel.Native.Generated.ParasolidConstants.PK_THREAD_chain_exclusive_c)
+                    ReleaseChain(context);
+            }
             if (wantsExclusive) exclusiveWaiting++;
             try
             {
                 while (true)
                 {
-                    // Read the owner only under the same gate as session stop.
-                    // An exclusive stop may have run while this caller waited.
-                    var session = KernelRuntime.State.Session;
-                    var context = session != null ? KernelRuntime.ThreadContext() : null;
+                    if (context != null && context->ChainType != 0 && context->ChainLength > 0 && context->ChainRemaining == 0)
+                        context->ChainRemaining = context->ChainLength;
                     var partitionId = context != null ? context->CurrentPartition : 0;
                     if (descriptor.TargetEntity > 0 && session != null)
                     {
                         var entityPartition = KernelRuntime.GetEntityPartition(descriptor.TargetEntity);
                         if (entityPartition >= 0) partitionId = entityPartition;
                     }
-                    PartitionSlot partition = 0;
-                    if (session != null) session->TryFindPartition(partitionId, out partition);
-                    if (partition < 0) partition = 0; // API validation returns bad partition
+                    // Selection is validated on set; delete/goto repair all
+                    // affected contexts before releasing their exclusive claim.
+                    PartitionSlot partition = partitionId;
                     var write = descriptor.AccessKind == AccessKind.GlobalWrite;
                     var owner = session != null ? session->Partitions[partition].LockOwnerThread : 0;
                     var mine = context != null && owner == context->ManagedThreadId;
                     var nonLocking = write && !mine;
                     var canEnter = !exclusive && (wantsExclusive ? active == 0 : exclusiveWaiting == 0);
+                    var myChain = context != null && context->ChainHeld != 0;
+                    canEnter &= exclusiveChainOwner == 0 || (context != null && exclusiveChainOwner == context->ManagedThreadId);
+                    if (wantsExclusive) canEnter &= concurrentChains == 0;
+                    if (descriptor.ConcurrencyKind == ConcurrencyKind.Local) canEnter &= owner == 0 || mine;
+                    if (myChain && !wantsExclusive && !exclusive) canEnter = exclusiveChainOwner == 0;
                     if (!wantsExclusive && session != null)
                     {
                         ref var target = ref session->Partitions[partition];
@@ -213,6 +262,7 @@ internal sealed class SessionDispatchState
                     if (canEnter)
                     {
                         active++;
+                        if (context != null) context->ExecutionIsExclusive = wantsExclusive ? (byte)1 : (byte)0;
                         descriptor.PartitionId = partition;
                         descriptor.CallerThreadId = Environment.CurrentManagedThreadId;
                         if (wantsExclusive) exclusive = true;
@@ -222,10 +272,13 @@ internal sealed class SessionDispatchState
                             else session->Partitions[partition].SharedReaders++;
                             if (nonLocking) session->NonLockingLocalActive++;
                         }
-                        return new Claim { Session = session, Partition = partition, Exclusive = wantsExclusive,
+                        return new Claim { Session = session, Context = context, Partition = partition, Exclusive = wantsExclusive,
                             Write = write, NonLocking = nonLocking };
                     }
                     WaitForSignal();
+                    // Session stop/start may have run while the gate was released.
+                    session = KernelRuntime.State.Session;
+                    context = session != null ? KernelRuntime.ThreadContext() : null;
                 }
             }
             finally { if (wantsExclusive) exclusiveWaiting--; }
@@ -237,5 +290,13 @@ internal sealed class SessionDispatchState
         waiters++;
         try { Monitor.Wait(Gate); }
         finally { waiters--; }
+    }
+
+    private unsafe void ReleaseChain(SessionData.ThreadContext* context)
+    {
+        if (context->ChainHeld == 0) return;
+        if (exclusiveChainOwner == context->ManagedThreadId) exclusiveChainOwner = 0;
+        else concurrentChains--;
+        context->ChainHeld = 0;
     }
 }

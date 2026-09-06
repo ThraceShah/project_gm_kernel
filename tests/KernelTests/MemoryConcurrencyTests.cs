@@ -162,6 +162,7 @@ public unsafe class MemoryConcurrencyTests
         // Non-empty partitions cannot be deleted.
         Assert.NotEqual(0, KernelRuntime.PartitionDelete(partition, null));
         Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
+        Assert.Equal(0, KernelRuntime.PartitionSetCurrent(0));
         Assert.Equal(0, KernelRuntime.PartitionDelete(partition, null));
 
         // The default partition cannot be deleted.
@@ -176,6 +177,8 @@ public unsafe class MemoryConcurrencyTests
         int p1, p2;
         Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&p1));
         Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&p2));
+        int mark;
+        Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
 
         var partitions = stackalloc int[2] { p1, p2 };
         PK_THREAD_lock_partitions_r_s result = default;
@@ -214,23 +217,26 @@ public unsafe class MemoryConcurrencyTests
 
         int n; int id; byte more;
         Assert.Equal(0, KernelRuntime.ThreadAskId(&n, &id, &more));
-        Assert.Equal(1, n);
-        Assert.Equal(4711, id);
+        Assert.Equal(4711, n);
+        Assert.Equal(0, id);
         Assert.Equal(0, more);
 
-        var chainOptions = new PK_THREAD_chain_start_o_s { o_t_version = 1, length = 1, local_level = 1 };
-        Assert.Equal(0, KernelRuntime.ThreadChainStart(4711, &chainOptions));
+        var chainOptions = new PK_THREAD_chain_start_o_s { o_t_version = 2, length = 3, local_level = ParasolidConstants.PK_THREAD_local_none_c };
+        Assert.Equal(0, KernelRuntime.ThreadChainStart(ParasolidConstants.PK_THREAD_chain_exclusive_c, &chainOptions));
         int threadId, chainId, level;
         Assert.Equal(0, KernelRuntime.ThreadIsInChain(&threadId, &chainId, &level));
-        Assert.Equal(4711, threadId);
-        Assert.Equal(1, level);
+        Assert.Equal(ParasolidConstants.PK_THREAD_chain_exclusive_c, threadId);
+        Assert.Equal(3, chainId);
+        Assert.Equal(2, level);
         byte inKernel, inChain, busy, top;
         Assert.Equal(0, KernelRuntime.ThreadIsInKernel(&inKernel, &inChain, &busy, &top));
-        Assert.Equal(1, inKernel);
-        Assert.Equal(1, inChain);
+        Assert.Equal(0, inKernel);
+        Assert.Equal(0, inChain);
+        Assert.Equal(1, top);
         PK_THREAD_chain_stop_o_s stop = default;
         Assert.Equal(0, KernelRuntime.ThreadChainStop(&stop));
-        Assert.NotEqual(0, KernelRuntime.ThreadIsInChain(&threadId, &chainId, &level));
+        Assert.Equal(0, KernelRuntime.ThreadIsInChain(&threadId, &chainId, &level));
+        Assert.Equal(ParasolidConstants.PK_THREAD_chain_none_c, threadId);
         KernelRuntime.SessionStop();
     }
 
@@ -239,7 +245,8 @@ public unsafe class MemoryConcurrencyTests
     {
         StartSession();
         PK_MEMORY_frustrum_s cbs;
-        Assert.NotEqual(0, KernelRuntime.ThreadAskMemoryCbs(&cbs));   // none registered yet
+        Assert.Equal(0, KernelRuntime.ThreadAskMemoryCbs(&cbs));
+        Assert.True(cbs.alloc_fn == null && cbs.free_fn == null);
 
         var options = new PK_THREAD_set_id_o_s { o_t_version = 1 };
         PK_THREAD_set_id_r_s result = default;
@@ -252,7 +259,7 @@ public unsafe class MemoryConcurrencyTests
 
         int n; int id; byte more;
         Assert.Equal(0, KernelRuntime.ThreadAskId(&n, &id, &more));
-        Assert.Equal(7, id);
+        Assert.Equal(7, n);
         KernelRuntime.SessionStop();
     }
 

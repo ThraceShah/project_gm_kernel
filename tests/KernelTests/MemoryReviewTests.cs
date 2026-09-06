@@ -1,3 +1,5 @@
+global using EntityTag = int;
+global using PartitionSlot = int;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
@@ -7,9 +9,411 @@ namespace KernelTests;
 
 public unsafe class MemoryReviewTests
 {
+    private struct DeletePartitionThenFailCommand : IKernelCommand
+    {
+        internal PartitionSlot Partition;
+        public int Execute()
+        {
+            var options = new PK_PARTITION_delete_o_s { o_t_version = 1, delete_non_empty = 1 };
+            var error = KernelRuntime.PartitionDelete(Partition, &options);
+            return error != 0 ? error : ParasolidConstants.PK_ERROR_bad_value;
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FailedPartitionDeletionRestoresTheModelBeforePruningHistory(bool withMark)
+    {
+        Start();
+        try
+        {
+            int partition, body, mark = 0, type;
+            Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&partition));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(partition));
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(0));
+            if (withMark) Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+            var command = new DeletePartitionThenFailCommand { Partition = partition };
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_value,
+                KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command));
+            Assert.True(KernelRuntime.IsValidTag(body));
+            Assert.Equal(0, KernelRuntime.PartitionAskType(partition, &type));
+            if (withMark) Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+            Assert.True(KernelRuntime.IsValidTag(body));
+            Assert.Equal(0, KernelRuntime.State.Session->DeferredCount);
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
+    private struct DeleteThenFailCommand : IKernelCommand
+    {
+        internal EntityTag Entity;
+        public int Execute()
+        {
+            var entity = Entity;
+            var error = KernelRuntime.EntityDelete(1, &entity);
+            KernelRuntime.TrimAllocator(); // must not reclaim the surrounding transaction's records
+            return error != 0 ? error : ParasolidConstants.PK_ERROR_bad_value;
+        }
+    }
+
+    [Fact]
+    public void FailedCompositeCommandRestoresDeletedPreexistingBodyWithoutGlobalMark()
+    {
+        Start();
+        try
+        {
+            int body, count;
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+            var deletion = new DeleteThenFailCommand { Entity = body };
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_value,
+                KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Exclusive, AccessKind.GlobalWrite, ref deletion, body));
+            Assert.True(KernelRuntime.IsValidTag(body));
+            Assert.Equal(0, KernelRuntime.PartitionAskBodiesCount(0, &count));
+            Assert.Equal(1, count);
+            Assert.Equal(0, KernelRuntime.State.Session->DeferredCount);
+            Assert.Equal(0, KernelRuntime.State.Session->UndoEntryCount);
+            Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
+            Assert.Equal(0, KernelRuntime.Curves.AliveCount);
+            Assert.Equal(0, KernelRuntime.Surfaces.AliveCount);
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
+    [Fact]
+    public void ForceDeletePartitionRemovesBodiesAndTheirMarkHistory()
+    {
+        Start();
+        try
+        {
+            int partition, body, point, mark;
+            Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&partition));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(partition));
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+            var data = new PK_POINT_sf_s();
+            Assert.Equal(0, KernelRuntime.PointCreate(&data, &point));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(0));
+            Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+            var options = new PK_PARTITION_delete_o_s { o_t_version = 1, delete_non_empty = 1 };
+            Assert.Equal(0, KernelRuntime.PartitionDelete(partition, &options));
+            Assert.False(KernelRuntime.IsValidTag(body));
+            Assert.False(KernelRuntime.IsValidTag(point));
+            Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+            Assert.False(KernelRuntime.IsValidTag(body));
+            Assert.False(KernelRuntime.IsValidTag(point));
+            Assert.NotEqual(0, KernelRuntime.PartitionDelete(partition, &options));
+            Assert.Equal(0, KernelRuntime.Points.AliveCount);
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
+    [Theory]
+    [InlineData(ParasolidConstants.PK_THREAD_chain_exclusive_c)]
+    [InlineData(ParasolidConstants.PK_THREAD_chain_concurrent_c)]
+    public void ThreadChainsRetainProtectionAndAllowIntrospection(int chainType)
+    {
+        Start();
+        using var inspected = new ManualResetEventSlim();
+        using var completed = new ManualResetEventSlim();
+        Exception? failure = null;
+        Thread? worker = null;
+        try
+        {
+            var options = new PK_THREAD_chain_start_o_s
+            { o_t_version = 2, length = 0, local_level = ParasolidConstants.PK_THREAD_local_none_c };
+            Assert.Equal(0, KernelRuntime.ThreadChainStart(chainType, &options));
+            worker = new Thread(() =>
+            {
+                try
+                {
+                    int type, length, remaining;
+                    Assert.Equal(0, KernelRuntime.ThreadIsInChain(&type, &length, &remaining));
+                    Assert.Equal(ParasolidConstants.PK_THREAD_chain_none_c, type);
+                    inspected.Set();
+                    var point = new PK_POINT_sf_s();
+                    int tag;
+                    Assert.Equal(0, KernelRuntime.PointCreate(&point, &tag));
+                    completed.Set();
+                }
+                catch (Exception error) { failure = error; inspected.Set(); }
+            });
+            worker.Start();
+            Assert.True(inspected.Wait(TimeSpan.FromSeconds(10)));
+            Assert.Null(failure);
+            Assert.False(completed.Wait(TimeSpan.FromMilliseconds(50)));
+        }
+        finally
+        {
+            KernelRuntime.ThreadChainStop(null);
+            if (worker != null) Assert.True(worker.Join(TimeSpan.FromSeconds(10)));
+            KernelRuntime.SessionStop();
+        }
+        Assert.Null(failure);
+        Assert.True(completed.IsSet);
+    }
+
+    [Fact]
+    public void MetadataGrowsPastFormerPartitionAndThreadLimits()
+    {
+        Start();
+        try
+        {
+            var firstContext = KernelRuntime.ThreadContext();
+            for (var i = 0; i < 300; i++)
+            {
+                int partition, point;
+                Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&partition));
+                Assert.Equal(0, KernelRuntime.PartitionSetCurrent(partition));
+                var data = new PK_POINT_sf_s();
+                Assert.Equal(0, KernelRuntime.PointCreate(&data, &point));
+                Assert.Equal(partition, KernelRuntime.GetEntityPartition(point));
+            }
+            for (var i = 0; i < 140; i++)
+            {
+                Exception? failure = null;
+                var worker = new Thread(() =>
+                {
+                    try
+                    {
+                        int partition;
+                        Assert.Equal(0, KernelRuntime.SessionAskCurrentPartition(&partition));
+                    }
+                    catch (Exception error) { failure = error; }
+                });
+                worker.Start();
+                Assert.True(worker.Join(TimeSpan.FromSeconds(10)));
+                Assert.Null(failure);
+            }
+            Assert.True(firstContext == KernelRuntime.ThreadContext());
+            Assert.True(KernelRuntime.State.Session->ThreadCount > 128);
+            Assert.Equal(301, KernelRuntime.State.Session->PartitionCount);
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
+    [Fact]
+    public void PartialPoolTrimReusesEmptyPagesWithNewGenerations()
+    {
+        SessionMemory memory = default;
+        PagedEntityPool<PointRecord> pool = default;
+        pool.Attach(&memory);
+        try
+        {
+            Assert.True(pool.TryAllocate(out var first));
+            var perPage = pool.Capacity;
+            for (var i = 1; i <= perPage; i++) Assert.True(pool.TryAllocate(out _));
+            var survivor = perPage;
+            var generation = pool.GetGeneration(first);
+            for (var i = 0; i < perPage; i++) pool.Free(i);
+            var before = memory.Statistics.LiveBytes;
+            pool.TrimEmptyPages();
+            Assert.True(pool.IsAlive(survivor));
+            Assert.False(pool.IsValid(first, generation));
+            Assert.True(memory.Statistics.LiveBytes <= before - (ulong)SessionMemory.PageSize);
+            // Fill the surviving page, then force reuse of the reclaimed page.
+            for (var i = 1; i < perPage; i++) Assert.True(pool.TryAllocate(out _));
+            Assert.True(pool.TryAllocate(out var reused));
+            Assert.Equal(first, reused);
+            Assert.True(pool.GetGeneration(reused) > generation);
+            Assert.Equal(2 * perPage, pool.Capacity);
+        }
+        finally { pool.Dispose(); memory.Dispose(); }
+    }
+
+    private struct ChangePointCommand : IKernelCommand
+    {
+        internal EntityTag Point;
+        internal bool Fail;
+        public int Execute()
+        {
+            ref var record = ref KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(Point)];
+            if (!KernelRuntime.State.Session->TrySnapshot(ref record)) return ParasolidConstants.PK_ERROR_memory_full;
+            record.Position.X = 12;
+            return Fail ? ParasolidConstants.PK_ERROR_bad_value : 0;
+        }
+    }
+
+    [Fact]
+    public void FieldSnapshotsRestoreFailedCommandsAndMarksWithoutLeaking()
+    {
+        Start();
+        try
+        {
+            int point, mark;
+            var data = new PK_POINT_sf_s();
+            Assert.Equal(0, KernelRuntime.PointCreate(&data, &point));
+            var change = new ChangePointCommand { Point = point, Fail = true };
+            for (var i = 0; i < 3; i++)
+            {
+                Assert.Equal(ParasolidConstants.PK_ERROR_bad_value,
+                    KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref change, point));
+                Assert.Equal(0, KernelRuntime.GetPointByTag(point).Position.X);
+            }
+            Assert.Equal(0, KernelRuntime.State.Session->UndoEntryCount);
+            Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+            change.Fail = false;
+            Assert.Equal(0, KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref change, point));
+            Assert.Equal(12, KernelRuntime.GetPointByTag(point).Position.X);
+            Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+            Assert.Equal(0, KernelRuntime.GetPointByTag(point).Position.X);
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
+    [Fact]
+    public void MarkRestoresExactBodyOrder()
+    {
+        Start();
+        try
+        {
+            int first, middle, last, mark;
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &first));
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &middle));
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(3, 4, 5, null, &last));
+            Assert.True(KernelRuntime.TryResolveBodySlot(first, out var a));
+            Assert.True(KernelRuntime.TryResolveBodySlot(middle, out var b));
+            Assert.True(KernelRuntime.TryResolveBodySlot(last, out var c));
+            Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+            Assert.Equal(0, KernelRuntime.EntityDelete(1, &middle));
+            Assert.Equal(0, KernelRuntime.EntityDelete(1, &first));
+            Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+            Assert.Equal(a, KernelRuntime.State.Session->Partitions[0].FirstBody);
+            Assert.Equal(c, KernelRuntime.State.Session->Partitions[0].LastBody);
+            Assert.Equal(b, KernelRuntime.Bodies[a].NextInPartition);
+            Assert.Equal(c, KernelRuntime.Bodies[b].NextInPartition);
+            Assert.Equal(a, KernelRuntime.Bodies[c].NextInPartition);
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
+    [Fact]
+    public void PartitionRollbackRemovesNewPartitionsAndHonorsExplicitDeletion()
+    {
+        Start();
+        try
+        {
+            int partition, mark, created, current, type;
+            Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&partition));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(partition));
+            Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+            Assert.Equal(ParasolidConstants.PK_ERROR_partition_is_current, KernelRuntime.PartitionDelete(partition, null));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(0));
+            var deletion = new PK_PARTITION_delete_o_s { o_t_version = 1, delete_non_empty = 1 };
+            Assert.Equal(0, KernelRuntime.PartitionDelete(partition, &deletion));
+            Assert.Equal(0, KernelRuntime.SessionAskCurrentPartition(&current));
+            Assert.Equal(0, current);
+            Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&created));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(created));
+            Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+            Assert.Equal(0, KernelRuntime.SessionAskCurrentPartition(&current));
+            Assert.Equal(0, current);
+            Assert.NotEqual(0, KernelRuntime.PartitionAskType(partition, &type));
+            Assert.NotEqual(0, KernelRuntime.PartitionAskType(created, &type));
+            Assert.Equal(1, KernelRuntime.State.Session->PartitionCount);
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
+    [Fact]
+    public void StandaloneGeometryPreventsPartitionDeletion()
+    {
+        Start();
+        try
+        {
+            int partition, point;
+            Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&partition));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(partition));
+            var data = new PK_POINT_sf_s();
+            Assert.Equal(0, KernelRuntime.PointCreate(&data, &point));
+            Assert.Equal(0, KernelRuntime.PartitionSetCurrent(0));
+            Assert.Equal(ParasolidConstants.PK_ERROR_partition_not_empty, KernelRuntime.PartitionDelete(partition, null));
+            Assert.Equal(0, KernelRuntime.EntityDelete(1, &point));
+            Assert.Equal(0, KernelRuntime.PartitionDelete(partition, null));
+        }
+        finally { KernelRuntime.SessionStop(); }
+    }
+
     private static SessionMemory* callbackMemory;
     private static int callbackAllocations, callbackFrees, callbackReentryError;
     private static bool reenterOnFree;
+    private static bool probeOnFree;
+    private static int callbackFlags, callbackStopError;
+
+    [Fact]
+    public void CallbackQueriesReportProtectionAndCannotStopTheActiveSession()
+    {
+        Start();
+        SessionMemory foreign = default;
+        callbackMemory = &foreign;
+        probeOnFree = reenterOnFree = false;
+        try
+        {
+            int body, count;
+            int* faces;
+            var callbacks = new PK_MEMORY_frustrum_s { alloc_fn = &CallbackAllocate, free_fn = &CallbackFree };
+            Assert.Equal(0, KernelRuntime.ThreadRegisterMemoryCbs(callbacks));
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+            Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &count, &faces));
+            probeOnFree = true;
+            Assert.Equal(0, KernelRuntime.MemoryFree(faces));
+            Assert.Equal(11, callbackFlags);
+            Assert.Equal(ParasolidConstants.PK_ERROR_bad_value, callbackStopError);
+            Assert.True(KernelRuntime.IsValidTag(body));
+        }
+        finally
+        {
+            probeOnFree = false;
+            KernelRuntime.SessionStop();
+            foreign.Dispose();
+            callbackMemory = null;
+        }
+    }
+
+    [Fact]
+    public void GlobalReturnCallbacksPersistAcrossStartAndKeepTheirOriginalFreePair()
+    {
+        SessionMemory foreign = default;
+        callbackMemory = &foreign;
+        callbackAllocations = callbackFrees = callbackReentryError = 0;
+        reenterOnFree = false;
+        try
+        {
+            var callbacks = new PK_MEMORY_frustrum_s { alloc_fn = &CallbackAllocate, free_fn = &CallbackFree };
+            Assert.Equal(0, KernelRuntime.MemoryRegisterCallbacks(callbacks));
+            Start();
+            PK_MEMORY_frustrum_s queried;
+            Assert.Equal(0, KernelRuntime.MemoryAskCallbacks(&queried));
+            Assert.Equal((nint)callbacks.alloc_fn, (nint)queried.alloc_fn);
+            Assert.Equal((nint)callbacks.free_fn, (nint)queried.free_fn);
+            var invalid = new PK_MEMORY_frustrum_s { alloc_fn = &CallbackAllocate };
+            Assert.Equal(0, KernelRuntime.MemoryRegisterCallbacks(invalid));
+            Assert.Equal(0, KernelRuntime.MemoryAskCallbacks(&queried));
+            Assert.True(queried.alloc_fn == null && queried.free_fn == null);
+            Assert.Equal(0, KernelRuntime.MemoryRegisterCallbacks(callbacks));
+            int body, count;
+            int* first;
+            int* second;
+            Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &body));
+            Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &count, &first));
+            Assert.Equal(1, callbackAllocations);
+            Assert.Equal(0, KernelRuntime.MemoryRegisterCallbacks(default));
+            Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &count, &second));
+            Assert.Equal(1, callbackAllocations);
+            Assert.Equal(0, KernelRuntime.MemoryFree(first));
+            Assert.Equal(1, callbackFrees);
+            Assert.Equal(0, KernelRuntime.MemoryFree(second));
+            Assert.Equal(1, callbackFrees);
+            Assert.Equal(0UL, foreign.Statistics.LiveBytes);
+        }
+        finally
+        {
+            KernelRuntime.SessionStop();
+            KernelRuntime.MemoryRegisterCallbacks(default);
+            foreign.Dispose();
+            callbackMemory = null;
+        }
+    }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static nint CallbackAllocate(nuint bytes)
@@ -23,6 +427,13 @@ public unsafe class MemoryReviewTests
     {
         callbackFrees++;
         callbackMemory->Free((void*)pointer);
+        if (probeOnFree)
+        {
+            byte inside, protection, subthread, exclusion;
+            var error = KernelRuntime.ThreadIsInKernel(&inside, &protection, &subthread, &exclusion);
+            callbackFlags = error == 0 ? inside | (protection << 1) | (subthread << 2) | (exclusion << 3) : -error;
+            callbackStopError = KernelRuntime.SessionStop();
+        }
         if (!reenterOnFree) return;
         reenterOnFree = false;
         KernelRuntime.InjectAllocationFailure(-1);
@@ -140,6 +551,8 @@ public unsafe class MemoryReviewTests
         {
             int partition;
             Assert.Equal(0, KernelRuntime.PartitionCreateEmpty(&partition));
+            int mark;
+            Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
             using var locked = new ManualResetEventSlim();
             using var attempted = new ManualResetEventSlim();
             Exception? ownerFailure = null, waiterFailure = null;
