@@ -4808,12 +4808,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_PARTITION_ask_type")]
-    public static int PK_PARTITION_ask_type(int arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_PARTITION_clear_guard")]
     public static int PK_PARTITION_clear_guard(int arg0, byte* arg1)
     {
@@ -4838,20 +4832,8 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_PARTITION_create_empty")]
-    public static int PK_PARTITION_create_empty(int* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_PARTITION_create_r_f")]
     public static int PK_PARTITION_create_r_f(PK_PARTITION_create_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_PARTITION_delete")]
-    public static int PK_PARTITION_delete(int arg0, PK_PARTITION_delete_o_t* arg1)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -4978,12 +4960,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_PARTITION_reset_attribs")]
     public static int PK_PARTITION_reset_attribs(int arg0, int arg1, int* arg2, PK_ATTRIB_reset_cb_f_t arg3, nint arg4, PK_PARTITION_reset_attribs_o_t* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_PARTITION_set_current")]
-    public static int PK_PARTITION_set_current(int arg0)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -6218,12 +6194,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_id")]
-    public static int PK_THREAD_ask_id(int* arg0, int* arg1, byte* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_last_error")]
     public static int PK_THREAD_ask_last_error(byte* arg0, PK_ERROR_sf_t* arg1)
     {
@@ -6232,30 +6202,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_local_level")]
     public static int PK_THREAD_ask_local_level(PK_THREAD_ask_local_level_o_t* arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_memory_cbs")]
-    public static int PK_THREAD_ask_memory_cbs(PK_MEMORY_frustrum_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_partitions")]
-    public static int PK_THREAD_ask_partitions(PK_THREAD_ask_partitions_o_t* arg0, int* arg1, nint* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_chain_start")]
-    public static int PK_THREAD_chain_start(int arg0, PK_THREAD_chain_start_o_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_chain_stop")]
-    public static int PK_THREAD_chain_stop(PK_THREAD_chain_stop_o_t* arg0)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -6272,38 +6218,8 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_is_in_chain")]
-    public static int PK_THREAD_is_in_chain(int* arg0, int* arg1, int* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_is_in_kernel")]
-    public static int PK_THREAD_is_in_kernel(byte* arg0, byte* arg1, byte* arg2, byte* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_lock_partitions")]
-    public static int PK_THREAD_lock_partitions(int arg0, int* arg1, int arg2, int arg3, PK_THREAD_lock_partitions_o_t* arg4, PK_THREAD_lock_partitions_r_t* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_lock_partitions_r_f")]
-    public static int PK_THREAD_lock_partitions_r_f(PK_THREAD_lock_partitions_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_register_error_cbs")]
     public static int PK_THREAD_register_error_cbs(PK_ERROR_frustrum_t arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_register_memory_cbs")]
-    public static int PK_THREAD_register_memory_cbs(PK_MEMORY_frustrum_t arg0)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -6320,12 +6236,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_set_id")]
-    public static int PK_THREAD_set_id(int arg0, PK_THREAD_set_id_o_t* arg1, PK_THREAD_set_id_r_t* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_set_id_r_f")]
     public static int PK_THREAD_set_id_r_f(PK_THREAD_set_id_r_t* arg0)
     {
@@ -6334,12 +6244,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_tidy")]
     public static int PK_THREAD_tidy()
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_unlock_partitions")]
-    public static int PK_THREAD_unlock_partitions(PK_THREAD_unlock_partitions_o_t* arg0, int* arg1, nint* arg2)
     {
         return KernelRuntime.NotImplemented();
     }

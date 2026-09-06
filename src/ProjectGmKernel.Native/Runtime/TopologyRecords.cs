@@ -12,6 +12,7 @@ internal struct RecordHeader
     public byte Alive;
     public short Partition;
     public int RollbackStamp;
+    public int Tag;                             // published tag for this slot (0 = none yet)
 }
 
 // ── Topology Records ──────────────────────────────────────────────

@@ -1,37 +1,50 @@
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using System.Runtime.InteropServices;
 
 namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal static Arena<BCurveData> BCurveDataStore = new(MaxCurves);
-    internal static Arena<double> BCurveVertices = new(1 << 20);
-    internal static Arena<double> BCurveKnots = new(1 << 18);
-    internal static Arena<int> BCurveKnotMults = new(1 << 18);
-    internal static Arena<double> BCurveExpandedKnots = new(1 << 19);
-    // Protected by RuntimeLock; numerical evaluators receive a caller-owned workspace instead.
-    private static readonly double[] BCurveWorkspace = new double[1 << 16];
+    // B-curve metadata lives in a paged pool; pole/knot payloads live in
+    // independently released variable-length blocks owned by the record.
+    internal static PagedEntityPool<BCurveData> BCurveDataStore = default;
+
+    private static Span<double> CommandScratchBorrow(int doubles)
+        => CommandScratch.Current.Take(doubles);
+
+    private static void CommandScratchReturn(Span<double> workspace)
+        => CommandScratch.Current.Return(workspace);
+    // Evaluation workspace comes from the command scratch arena; the shared
+    // static array is gone.
+    internal const int MaxEvalWorkspace = 1 << 15;   // doubles; scratch segment is 256 KiB
 
     private static void ResetBCurves()
     {
-        BCurveDataStore.Reset();
-        BCurveVertices.Reset();
-        BCurveKnots.Reset();
-        BCurveKnotMults.Reset();
-        BCurveExpandedKnots.Reset();
+        BCurveDataStore.Dispose();
     }
 
     internal static BCurveView GetBCurveView(in BCurveData data) => new(
         data.Degree, data.VertexDim, data.IsRational != 0, data.IsPeriodic != 0,
-        BCurveVertices.AsSpan(data.VertexOffset, data.NVertices * data.VertexDim),
-        BCurveExpandedKnots.AsSpan(data.ExpandedKnotOffset, data.ExpandedKnotCount));
+        new ReadOnlySpan<double>(DereferenceBlock(data.VertexBlock), (BufferCount)(data.NVertices * data.VertexDim)),
+        new ReadOnlySpan<double>(DereferenceBlock(data.ExpandedKnotBlock), data.ExpandedKnotCount));
 
-    public static int BCurveCreate(PK_BCURVE_sf_s* sf, CurveTag* curve)
+    internal static void* DereferenceBlock(DataSlot blockHandle)
+        => State.Session == null ? null : State.Session->Blocks.BlockPointer((int)blockHandle);
+
+
+
+    private static int BCurveCreateImplementation(PK_BCURVE_sf_s* sf, CurveTag* curve)
     {
-        using var scope = RuntimeLock.EnterScope();
         if (!IsSessionStarted) return ParasolidConstants.PK_ERROR_not_in_PK;
+        var ownsScratch = EnsureCommandScratch();
+        try { return BCurveCreateCore(sf, curve); }
+        finally { if (ownsScratch) ReleaseCommandScratch(State.Session); }
+    }
+
+    private static int BCurveCreateCore(PK_BCURVE_sf_s* sf, CurveTag* curve)
+    {
         if (sf is null || curve is null || sf->vertex is null || sf->knot is null || sf->knot_mult is null)
             return ParasolidConstants.PK_ERROR_bad_parameter;
         if (sf->degree < 1 || sf->n_vertices <= sf->degree || sf->n_knots < 2)
@@ -42,18 +55,13 @@ internal static unsafe partial class KernelRuntime
             || sf->knot_type < ParasolidConstants.PK_knot_unset_c || sf->knot_type > ParasolidConstants.PK_knot_smooth_seam_c
             || sf->self_intersecting < ParasolidConstants.PK_self_intersect_unset_c || sf->self_intersecting > ParasolidConstants.PK_self_intersect_true_c)
             return ParasolidConstants.PK_ERROR_bad_parameter;
+
+        var session = State.Session;
         var workspaceSize = BCurveEvaluation.WorkspaceSize(sf->degree, 10);
-        if (workspaceSize == 0 || workspaceSize > BCurveWorkspace.Length)
+        if (workspaceSize == 0 || workspaceSize > MaxEvalWorkspace)
             return ParasolidConstants.PK_ERROR_not_implemented;
         var scalarCount = (long)sf->n_vertices * sf->vertex_dim;
         var expandedCount = (long)sf->n_vertices + sf->degree + 1;
-        if (scalarCount > BCurveVertices.Capacity - BCurveVertices.Count
-            || expandedCount > BCurveExpandedKnots.Capacity - BCurveExpandedKnots.Count
-            || sf->n_knots > BCurveKnots.Capacity - BCurveKnots.Count
-            || sf->n_knots > BCurveKnotMults.Capacity - BCurveKnotMults.Count
-            || BCurveDataStore.Count == BCurveDataStore.Capacity || !Curves.CanAllocate
-            || nextTag >= MaxHandles)
-            return ParasolidConstants.PK_ERROR_memory_full;
 
         long total = 0;
         for (KnotIndex i = 0; i < sf->n_knots; i++)
@@ -72,9 +80,27 @@ internal static unsafe partial class KernelRuntime
                 return ParasolidConstants.PK_ERROR_weight_le_0;
         }
 
-        var expandedMark = BCurveExpandedKnots.SaveMark();
-        var expandedOffset = BCurveExpandedKnots.Allocate((BufferCount)expandedCount);
-        var expanded = BCurveExpandedKnots.AsSpan(expandedOffset, (BufferCount)expandedCount);
+        // Allocate the metadata slot first; on failure nothing is left behind.
+        int dataIndex;
+        if (!BCurveDataStore.TryAllocate(out dataIndex))
+            return ParasolidConstants.PK_ERROR_memory_full;
+
+        // Payload blocks (expanded knots built first for validation).
+        var expandedBlock = session->Blocks.TryAllocate((nuint)(expandedCount * sizeof(double)));
+        var vertexBlock = session->Blocks.TryAllocate((nuint)(scalarCount * sizeof(double)));
+        var knotBlock = session->Blocks.TryAllocate((nuint)((long)sf->n_knots * sizeof(double)));
+        var knotMultBlock = session->Blocks.TryAllocate((nuint)((long)sf->n_knots * sizeof(int)));
+        if (expandedBlock == null || vertexBlock == null || knotBlock == null || knotMultBlock == null)
+        {
+            if (expandedBlock != null) session->Blocks.Free(expandedBlock);
+            if (vertexBlock != null) session->Blocks.Free(vertexBlock);
+            if (knotBlock != null) session->Blocks.Free(knotBlock);
+            if (knotMultBlock != null) session->Blocks.Free(knotMultBlock);
+            BCurveDataStore.Free(dataIndex);
+            return ParasolidConstants.PK_ERROR_memory_full;
+        }
+
+        var expanded = new Span<double>(expandedBlock, (BufferCount)expandedCount);
         BufferOffset offset = 0;
         for (KnotIndex i = 0; i < sf->n_knots; i++)
         {
@@ -83,20 +109,22 @@ internal static unsafe partial class KernelRuntime
         }
         if (!(expanded[sf->degree] < expanded[sf->n_vertices]))
         {
-            BCurveExpandedKnots.RestoreMark(expandedMark);
+            ReleaseBCurveBlocks(dataIndex, expandedBlock, vertexBlock, knotBlock, knotMultBlock);
             return ParasolidConstants.PK_ERROR_bad_knots;
         }
         if (sf->is_closed != 0 || sf->is_periodic != 0)
         {
+            var workspace = CommandScratchBorrow(workspaceSize);
             var view = new BCurveView(sf->degree, sf->vertex_dim, sf->is_rational != 0, false,
                 new ReadOnlySpan<double>(sf->vertex, (BufferCount)scalarCount), expanded);
             Span<KernelVector3> first = stackalloc KernelVector3[2];
             Span<KernelVector3> last = stackalloc KernelVector3[2];
-            var startStatus = BCurveEvaluation.Evaluate(in view, view.Start, 1, first, BCurveWorkspace, out var startTangent);
-            var endStatus = BCurveEvaluation.Evaluate(in view, view.End, 1, last, BCurveWorkspace, out var endTangent);
+            var startStatus = BCurveEvaluation.Evaluate(in view, view.Start, 1, first, workspace, out var startTangent);
+            var endStatus = BCurveEvaluation.Evaluate(in view, view.End, 1, last, workspace, out var endTangent);
+            CommandScratchReturn(workspace);
             if (startStatus != AlgorithmStatus.Success || endStatus != AlgorithmStatus.Success)
             {
-                BCurveExpandedKnots.RestoreMark(expandedMark);
+                ReleaseBCurveBlocks(dataIndex, expandedBlock, vertexBlock, knotBlock, knotMultBlock);
                 return ParasolidConstants.PK_ERROR_bad_parameter;
             }
             var dx = first[0].X - last[0].X;
@@ -117,15 +145,19 @@ internal static unsafe partial class KernelRuntime
             }
             if (error != 0)
             {
-                BCurveExpandedKnots.RestoreMark(expandedMark);
+                ReleaseBCurveBlocks(dataIndex, expandedBlock, vertexBlock, knotBlock, knotMultBlock);
                 return error;
             }
         }
 
-        var dataIndex = BCurveDataStore.Allocate();
-        ref var data = ref BCurveDataStore[dataIndex];
-        data = new BCurveData
+        new ReadOnlySpan<double>(sf->vertex, (BufferCount)scalarCount).CopyTo(new Span<double>(vertexBlock, (BufferCount)scalarCount));
+        new ReadOnlySpan<double>(sf->knot, sf->n_knots).CopyTo(new Span<double>(knotBlock, sf->n_knots));
+        new ReadOnlySpan<int>(sf->knot_mult, sf->n_knots).CopyTo(new Span<int>(knotMultBlock, sf->n_knots));
+
+        var header = BCurveDataStore[dataIndex].Header;   // pool slot header survives the metadata write
+        BCurveDataStore[dataIndex] = new BCurveData
         {
+            Header = header,
             Degree = sf->degree,
             NVertices = sf->n_vertices,
             VertexDim = sf->vertex_dim,
@@ -136,16 +168,24 @@ internal static unsafe partial class KernelRuntime
             KnotType = sf->knot_type,
             SelfIntersecting = sf->self_intersecting,
             NKnots = sf->n_knots,
-            VertexOffset = BCurveVertices.Allocate((BufferCount)scalarCount),
-            KnotOffset = BCurveKnots.Allocate(sf->n_knots),
-            KnotMultOffset = BCurveKnotMults.Allocate(sf->n_knots),
-            ExpandedKnotOffset = expandedOffset,
+            VertexBlock = session->Blocks.HandleOf(vertexBlock),
+            KnotBlock = session->Blocks.HandleOf(knotBlock),
+            KnotMultBlock = session->Blocks.HandleOf(knotMultBlock),
+            ExpandedKnotBlock = session->Blocks.HandleOf(expandedBlock),
             ExpandedKnotCount = (BufferCount)expandedCount,
         };
-        new ReadOnlySpan<double>(sf->vertex, (BufferCount)scalarCount).CopyTo(BCurveVertices.AsSpan(data.VertexOffset, (BufferCount)scalarCount));
-        new ReadOnlySpan<double>(sf->knot, sf->n_knots).CopyTo(BCurveKnots.AsSpan(data.KnotOffset, data.NKnots));
-        new ReadOnlySpan<int>(sf->knot_mult, sf->n_knots).CopyTo(BCurveKnotMults.AsSpan(data.KnotMultOffset, data.NKnots));
-        var slot = Curves.Allocate();
+        ref readonly var stored = ref BCurveDataStore[dataIndex];
+        if (stored.VertexBlock <= 0 || stored.KnotBlock <= 0 || stored.KnotMultBlock <= 0 || stored.ExpandedKnotBlock <= 0)
+        {
+            ReleaseBCurveBlocks(dataIndex, expandedBlock, vertexBlock, knotBlock, knotMultBlock);
+            return ParasolidConstants.PK_ERROR_memory_full;
+        }
+
+        if (!Curves.TryAllocate(out int slot))
+        {
+            ReleaseBCurveBlocks(dataIndex, expandedBlock, vertexBlock, knotBlock, knotMultBlock);
+            return ParasolidConstants.PK_ERROR_memory_full;
+        }
         ref var record = ref Curves[slot];
         AssignPartition(ref record.Header, CurrentPartition);
         record.Class = CurveClass.BCurve;
@@ -154,8 +194,44 @@ internal static unsafe partial class KernelRuntime
         record.TMax = expanded[sf->n_vertices];
         record.Sense = ParasolidConstants.PK_TOPOL_sense_positive_c;
         record.OwnerEdge = -1;
+        record.OwnerCount = 1;
         record.PrevInBody = record.NextInBody = 0;
-        *curve = AllocateTag(EntityClass.Curve, PoolKind.Curve, slot, record.Header.Generation);
+        var tag = AllocateTag(EntityClass.Curve, PoolKind.Curve, slot, record.Header.Generation);
+        if (tag <= 0)
+        {
+            FreeBCurveData(dataIndex);
+            Curves.Free(slot);
+            return ParasolidConstants.PK_ERROR_memory_full;
+        }
+        *curve = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    private static void ReleaseBCurveBlocks(int dataIndex, void* expandedBlock, void* vertexBlock, void* knotBlock, void* knotMultBlock)
+    {
+        var blocks = &State.Session->Blocks;
+        blocks->Free(expandedBlock);
+        blocks->Free(vertexBlock);
+        blocks->Free(knotBlock);
+        blocks->Free(knotMultBlock);
+        BCurveDataStore.Free(dataIndex);
+    }
+
+    internal static void FreeBCurveData(int dataIndex)
+    {
+        var blocks = &State.Session->Blocks;
+        ref var data = ref BCurveDataStore[dataIndex];
+        blocks->Free(DereferenceBlock(data.VertexBlock));
+        blocks->Free(DereferenceBlock(data.KnotBlock));
+        blocks->Free(DereferenceBlock(data.KnotMultBlock));
+        blocks->Free(DereferenceBlock(data.ExpandedKnotBlock));
+        BCurveDataStore.Free(dataIndex);
+    }
+
+    private static void RollbackBCurveBlock(int slot, void* oldBlock)
+    {
+        // Block swap undo: the owner record keeps its handle; the snapshot in
+        // the undo entry restores the payload contents.
+        // Handled generically through FieldSnapshot of the owner record today.
     }
 }

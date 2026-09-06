@@ -14,6 +14,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="AbiCheck" />
     <InternalsVisibleTo Include="AllocationBaseline" />
+    <InternalsVisibleTo Include="PerfBaseline" />
     <InternalsVisibleTo Include="KernelTests" />
     <InternalsVisibleTo Include="ParasolidOracleSmoke" />
     <InternalsVisibleTo Include="ParasolidPrimitiveOracle" />

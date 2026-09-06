@@ -7,26 +7,31 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    public static int CurveEval(CurveTag curve, double t, DerivativeOrder order, PK_VECTOR_s* output)
-        => EvaluateCurve(curve, t, order, output, null);
+    private static int CurveEvalImplementation(CurveTag curve, double t, DerivativeOrder order, PK_VECTOR_s* output)
+    {
+        var ownsScratch = EnsureCommandScratch();
+        try { return EvaluateCurve(curve, t, order, output, null); }
+        finally { if (ownsScratch) ReleaseCommandScratch(State.Session); }
+    }
 
-    public static int CurveEvalWithTangent(CurveTag curve, double t, DerivativeOrder order,
+    private static int CurveEvalWithTangentImplementation(CurveTag curve, double t, DerivativeOrder order,
         PK_VECTOR_s* output, PK_VECTOR_s* tangent)
     {
         if (tangent is null) return ParasolidConstants.PK_ERROR_bad_parameter;
-        return EvaluateCurve(curve, t, order, output, tangent);
+        var ownsScratch = EnsureCommandScratch();
+        try { return EvaluateCurve(curve, t, order, output, tangent); }
+        finally { if (ownsScratch) ReleaseCommandScratch(State.Session); }
     }
 
     private static int EvaluateCurve(CurveTag curve, double t, DerivativeOrder order,
         PK_VECTOR_s* output, PK_VECTOR_s* tangent)
     {
-        using var scope = RuntimeLock.EnterScope();
         if (!IsSessionStarted) return ParasolidConstants.PK_ERROR_not_in_PK;
         if (!IsValidTag(curve)) return ParasolidConstants.PK_ERROR_not_a_tag;
-        if (Handles[curve].Class != EntityClass.Curve) return ParasolidConstants.PK_ERROR_wrong_entity;
+        if ((EntityClass)TagRec(curve).ClassCode != EntityClass.Curve) return ParasolidConstants.PK_ERROR_wrong_entity;
         if (output is null || !double.IsFinite(t) || order < 0) return ParasolidConstants.PK_ERROR_bad_parameter;
         if (order > 10) return ParasolidConstants.PK_ERROR_too_many_derivatives;
-        ref readonly var record = ref Curves[Handles[curve].SlotIndex];
+        ref readonly var record = ref Curves[TagRec(curve).Slot];
         Span<KernelVector3> values = stackalloc KernelVector3[11];
         KernelVector3 direction;
         AlgorithmStatus status;
@@ -40,7 +45,7 @@ internal static unsafe partial class KernelRuntime
                 break;
             case CurveClass.BCurve:
                 var view = GetBCurveView(in BCurveDataStore[record.DataIndex]);
-                status = BCurveEvaluation.Evaluate(in view, t, Math.Min(Math.Max(order, 1), view.Degree), values, BCurveWorkspace, out direction);
+                status = BCurveEvaluation.Evaluate(in view, t, Math.Min(Math.Max(order, 1), view.Degree), values, CommandScratch.Current.AvailableSpanOfDoubles(), out direction);
                 if (status == AlgorithmStatus.Success && tangent is not null)
                 {
                     var first = values[1];
@@ -63,13 +68,20 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int SurfEval(SurfTag surface, PK_UV_s uv, DerivativeOrder uOrder, DerivativeOrder vOrder,
+    private static int SurfEvalImplementation(SurfTag surface, PK_UV_s uv, DerivativeOrder uOrder, DerivativeOrder vOrder,
         KernelLogical triangular, PK_VECTOR_s* output)
     {
-        using var scope = RuntimeLock.EnterScope();
+        var ownsScratch = EnsureCommandScratch();
+        try { return SurfEvalCore(surface, uv, uOrder, vOrder, triangular, output); }
+        finally { if (ownsScratch) ReleaseCommandScratch(State.Session); }
+    }
+
+    private static int SurfEvalCore(SurfTag surface, PK_UV_s uv, DerivativeOrder uOrder, DerivativeOrder vOrder,
+        KernelLogical triangular, PK_VECTOR_s* output)
+    {
         if (!IsSessionStarted) return ParasolidConstants.PK_ERROR_not_in_PK;
         if (!IsValidTag(surface)) return ParasolidConstants.PK_ERROR_not_a_tag;
-        if (Handles[surface].Class != EntityClass.Surface) return ParasolidConstants.PK_ERROR_wrong_entity;
+        if ((EntityClass)TagRec(surface).ClassCode != EntityClass.Surface) return ParasolidConstants.PK_ERROR_wrong_entity;
         if (output is null || !double.IsFinite(uv.param[0]) || !double.IsFinite(uv.param[1]))
             return ParasolidConstants.PK_ERROR_bad_parameter;
         if (triangular != 0 && uOrder != vOrder) return ParasolidConstants.PK_ERROR_num_derivs_not_equal;
@@ -77,7 +89,7 @@ internal static unsafe partial class KernelRuntime
         // These counts are marked [NF] in the PK contract; V38 treats negative counts as zero.
         uOrder = Math.Max(0, uOrder);
         vOrder = Math.Max(0, vOrder);
-        ref readonly var record = ref Surfaces[Handles[surface].SlotIndex];
+        ref readonly var record = ref Surfaces[TagRec(surface).Slot];
         if (!TryPrepareSurface(in record, out var prepared)) return ParasolidConstants.PK_ERROR_not_implemented;
         var layout = new SurfaceDerivativeLayout(uOrder, vOrder);
         Span<KernelVector3> values = stackalloc KernelVector3[121];

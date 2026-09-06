@@ -16,7 +16,8 @@ internal static unsafe class ParasolidScriptHost
         out ParasolidScriptSession? session,
         out string message,
         [CallerFilePath] string scriptPath = "",
-        int userFieldLength = 0)
+        int userFieldLength = 0,
+        Action? configureRollback = null)
     {
         session = null;
         if (!TryPrepare(label, scriptPath, out message))
@@ -25,6 +26,7 @@ internal static unsafe class ParasolidScriptHost
         try
         {
             RegisterCallbacks();
+            configureRollback?.Invoke();
             var options = new PK_SESSION_start_o_t { user_field = userFieldLength };
             Check(PK_SESSION_start(&options), "PK_SESSION_start");
             session = new ParasolidScriptSession();
