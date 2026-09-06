@@ -10,23 +10,25 @@ internal readonly struct SurfaceDerivativeLayout
     public DerivativeOrder VOrder { get; }
     public BufferCount Count => (BufferCount)(((long)UOrder + 1) * ((long)VOrder + 1));
 
-    public SurfaceDerivativeLayout(DerivativeOrder uOrder, DerivativeOrder vOrder)
+    private SurfaceDerivativeLayout(DerivativeOrder uOrder, DerivativeOrder vOrder)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(uOrder);
-        ArgumentOutOfRangeException.ThrowIfNegative(vOrder);
-        if (((long)uOrder + 1) * ((long)vOrder + 1) > int.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(vOrder), "Derivative layout exceeds span capacity.");
-
         UOrder = uOrder;
         VOrder = vOrder;
     }
 
+    public static bool TryCreate(DerivativeOrder uOrder, DerivativeOrder vOrder, out SurfaceDerivativeLayout layout)
+    {
+        layout = default;
+        if (uOrder < 0 || vOrder < 0 || ((long)uOrder + 1) * ((long)vOrder + 1) > int.MaxValue)
+            return false;
+        layout = new(uOrder, vOrder);
+        return true;
+    }
+
     public BufferOffset GetIndex(DerivativeOrder uOrder, DerivativeOrder vOrder)
     {
-        if ((uint)uOrder > (uint)UOrder)
-            throw new ArgumentOutOfRangeException(nameof(uOrder));
-        if ((uint)vOrder > (uint)VOrder)
-            throw new ArgumentOutOfRangeException(nameof(vOrder));
+        if ((uint)uOrder > (uint)UOrder || (uint)vOrder > (uint)VOrder)
+            return -1;
 
         return uOrder * (VOrder + 1) + vOrder;
     }

@@ -414,11 +414,34 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(PreviousEdge(slot, map)),
                 XtFieldValue.Ptr(NextEdge(slot, map)),
                 XtFieldValue.Ptr(edge.CurveTag > 0 ? map.CurveTags[edge.CurveTag] : 0),
-                XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(EdgeOnCurve(slot, next: true, map)),
+                XtFieldValue.Ptr(EdgeOnCurve(slot, next: false, map)),
                 XtFieldValue.Ptr(map.Body),
             ],
         };
+    }
+
+    private static XtNodeIndex EdgeOnCurve(EdgeSlot slot, bool next, NodeMap map)
+    {
+        var curve = KernelRuntime.GetEdgeRecord(slot).CurveTag;
+        if (curve <= 0) return 0;
+        XtNodeIndex first = 0, previous = 0, before = 0, after = 0;
+        var found = false;
+        foreach (var pair in map.EdgeSlots)
+        {
+            if (KernelRuntime.GetEdgeRecord(pair.Key).CurveTag != curve) continue;
+            if (first == 0) first = pair.Value;
+            if (found && after == 0) after = pair.Value;
+            if (pair.Key == slot)
+            {
+                before = previous;
+                found = true;
+            }
+            previous = pair.Value;
+        }
+        if (first == previous) return 0;
+        // Shared geometry uses a circular owner ring; singleton owners use null.
+        return next ? (after != 0 ? after : first) : (before != 0 ? before : previous);
     }
 
     private static XtNode HalfedgeNode(FinSlot slot, NodeMap map)

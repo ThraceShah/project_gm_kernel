@@ -9,8 +9,6 @@ namespace ProjectGmKernel.Native.Runtime;
 /// </summary>
 internal unsafe struct SessionData
 {
-    internal const int MaxPartitions = 256;
-    internal const int MaxThreads = 128;
     internal const int UndoSegmentBytes = 32 * 1024;
 
     // ── Partition table ─────────────────────────────────────────
@@ -28,6 +26,8 @@ internal unsafe struct SessionData
         internal int BodyCount;
         internal int UndoTop;                     // index into undo segments (per partition)
         internal int Alive;
+        internal byte AtPmark;
+        internal byte MarkHasEntities;
     }
 
     internal enum PartitionLockState : int
@@ -37,7 +37,7 @@ internal unsafe struct SessionData
         ExclusiveWrite = 2,
     }
 
-    internal PartitionRecord* Partitions;
+    internal StableTable<PartitionRecord> Partitions;
 
     // ── Undo log (single global mark; per-partition ordered entries) ──
 
@@ -49,6 +49,10 @@ internal unsafe struct SessionData
         BlockReplaced = 4,                        // variable-length block swap
         PartitionCreated = 5,
         PartitionDeleted = 6,
+        CurrentPartitionChanged = 7,
+        BodyUnlinked = 8,
+        GeometryReferenceReleased = 9,
+        PartitionModified = 10,
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -56,15 +60,20 @@ internal unsafe struct SessionData
     {
         internal UndoKind Kind;
         internal byte Pool;                       // PoolKind for entity entries
-        internal short Partition;
+        internal PartitionSlot Partition;
         internal DataSlot Slot;
         internal EntityGeneration Generation;
         internal EntityTag Tag;
         internal void* Data;                      // snapshot copy / old block handle
+        internal void* Target;                    // stable address of the snapshotted fields
         internal nuint DataBytes;
         internal int Sequence;                    // global ordering for reverse replay
         internal KernelThreadId ThreadId;         // owning command's thread (failure undo)
         internal int Next;                        // chain per partition, -1 ends
+        internal BodySlot PreviousBody;
+        internal BodySlot FollowingBody;
+        internal BodySlot FirstBody;
+        internal BodySlot LastBody;
     }
 
     internal enum UndoBookkeeping : byte
@@ -76,7 +85,6 @@ internal unsafe struct SessionData
     internal int UndoEntryCount { get => KernelRuntime.ThreadContext()->UndoEntryCount; set => KernelRuntime.ThreadContext()->UndoEntryCount = value; }
     internal int UndoEntryCapacity { get => KernelRuntime.ThreadContext()->UndoEntryCapacity; set => KernelRuntime.ThreadContext()->UndoEntryCapacity = value; }
     internal int UndoSequence;
-    internal int* PartitionUndoHeads;             // per-partition newest entry, -1 ends
 
     // ── Deferred release (delete under active mark) ─────────────
 
@@ -103,37 +111,46 @@ internal unsafe struct SessionData
         internal nuint Offset;
     }
 
-    internal ScratchArena* Scratch;               // per thread slot
+    internal StableTable<ScratchArena> Scratch;
 
     // ── Thread contexts ─────────────────────────────────────────
 
-    internal const int MaxLockedPartitions = 8;
+    internal const int StackLockedPartitions = 8;
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct ThreadContext
     {
         internal KernelThreadId ManagedThreadId;
         internal int SessionGeneration;
-        internal int ChainDepth;                  // 0 = not chained
-        internal int ChainUserId;
+        internal BufferCount ChainLength;          // configured link length; 0 = unlimited
+        internal KernelChainType ChainType;       // 0 = not chained
+        internal BufferCount ChainRemaining;
+        internal byte ChainHeld;
+        internal ApplicationThreadId UserThreadId;
         internal PartitionSlot CurrentPartition;
         internal int InKernel;
-        internal int LockCount;                   // partitions locked via PK_THREAD_lock_partitions
-        internal fixed int LockedPartitions[MaxLockedPartitions];
+        internal BufferCount LockCount;
+        internal BufferCount LockCapacity;
+        internal PartitionSlot* LockedPartitions;
         internal int HasMemoryCbs;
         internal delegate* unmanaged[Cdecl]<nuint, nint> AllocFn;
         internal delegate* unmanaged[Cdecl]<nint, void> FreeFn;
         internal int Allocated;                    // slot in use
         internal byte SkipCreationUndo;           // atomic scalar-create command, no active mark
+        internal byte DeferCommandDeletes;
+        internal byte PartitionDeletionPending;
+        internal byte ExecutionIsExclusive;
         internal UndoEntry* UndoEntries;
         internal BufferCount UndoEntryCount;
         internal BufferCount UndoEntryCapacity;
+        internal BufferCount UndoSnapshotCount;
+        internal BufferOffset ReplayPosition;
         internal DeferredRelease* Deferred;
         internal BufferCount DeferredCount;
         internal BufferCount DeferredCapacity;
     }
 
-    internal ThreadContext* Threads;
+    internal StableTable<ThreadContext> Threads;
     internal int ThreadCount;
 
     // ── Scheduler ───────────────────────────────────────────────
@@ -142,6 +159,7 @@ internal unsafe struct SessionData
     internal int Started;
     internal int HasMark;                         // access via IsMarkActive/SetMarkActive (cross-thread)
     internal int MarkSequence;
+    internal PartitionSlot MarkCurrentPartition;
     internal int UndoGate;                        // short critical section for undo appends
 
     public int IsMarkActive => System.Threading.Volatile.Read(ref HasMark);
@@ -161,6 +179,7 @@ internal unsafe struct SessionData
 
     public int PartitionCount;
     private PartitionSlot nextPartitionId;
+    internal readonly BufferCount PartitionHighWater => nextPartitionId;
     public int CurrentPartitionId;                // default partition for threads without context
 
     public bool IsStarted => Started != 0;
@@ -181,28 +200,9 @@ internal unsafe struct SessionData
 
     public bool Initialize()
     {
-        Partitions = (PartitionRecord*)Memory->TryAllocate((nuint)(MaxPartitions * sizeof(PartitionRecord)));
-        PartitionUndoHeads = (int*)Memory->TryAllocate((nuint)(MaxPartitions * sizeof(int)));
-        Scratch = (ScratchArena*)Memory->TryAllocate((nuint)(MaxThreads * sizeof(ScratchArena)));
-        Threads = (ThreadContext*)Memory->TryAllocate((nuint)(MaxThreads * sizeof(ThreadContext)));
-        if (Partitions != null) new Span<PartitionRecord>(Partitions, MaxPartitions).Clear();
-        if (Scratch != null) new Span<ScratchArena>(Scratch, MaxThreads).Clear();
-        if (Threads != null) new Span<ThreadContext>(Threads, MaxThreads).Clear();
-        if (Partitions == null || PartitionUndoHeads == null || Scratch == null || Threads == null)
-            return false;
-        for (int i = 0; i < MaxPartitions; i++)
-        {
-            Partitions[i].Alive = 0;
-            Partitions[i].FirstBody = -1;
-            Partitions[i].LastBody = -1;
-            PartitionUndoHeads[i] = -1;
-        }
-        for (int i = 0; i < MaxThreads; i++)
-        {
-            Scratch[i].Base = null;
-            Scratch[i].Bytes = Scratch[i].Offset = 0;
-            Threads[i].Allocated = 0;
-        }
+        Partitions.Attach(Memory);
+        Scratch.Attach(Memory);
+        Threads.Attach(Memory);
         PartitionCount = 0;
         CurrentPartitionId = 0;
         if (!TryCreatePartition(0, out _)) return false;
@@ -215,7 +215,7 @@ internal unsafe struct SessionData
     public bool TryCreatePartition(int id, out PartitionSlot slot)
     {
         slot = -1;
-        if (id != nextPartitionId || id >= MaxPartitions) return false;
+        if (id != nextPartitionId || !Partitions.TryEnsure(id)) return false;
         for (int i = id; i <= id; i++)
         {
             if (Partitions[i].Alive != 0) continue;
@@ -226,7 +226,6 @@ internal unsafe struct SessionData
                 FirstBody = -1,
                 LastBody = -1,
             };
-            PartitionUndoHeads[i] = -1;
             PartitionCount++;
             nextPartitionId++;
             slot = i;
@@ -237,13 +236,10 @@ internal unsafe struct SessionData
 
     public bool TryFindPartition(int id, out PartitionSlot slot)
     {
-        for (int i = 0; i < MaxPartitions; i++)
+        if ((uint)id < (uint)nextPartitionId && Partitions[id].Alive == 1)
         {
-            if (Partitions[i].Alive == 1 && Partitions[i].PartitionId == id)
-            {
-                slot = i;
-                return true;
-            }
+            slot = id;
+            return true;
         }
         slot = -1;
         return false;
@@ -252,7 +248,7 @@ internal unsafe struct SessionData
     public bool TryAllocatePartitionId(out int id)
     {
         id = nextPartitionId;
-        return id < MaxPartitions;
+        return id < int.MaxValue - 63;
     }
 
     public void Dispose()
@@ -262,37 +258,68 @@ internal unsafe struct SessionData
         Started = 0;
         for (var i = 0; i < ThreadCount; i++)
         {
-            if (Threads == null || Threads[i].Allocated == 0) continue;
-            FreeUndoSnapshots(&Threads[i]);
+            if (Threads[i].Allocated == 0) continue;
+            FreeUndoSnapshots(Threads.Pointer(i));
             Memory->Free(Threads[i].UndoEntries);
             Memory->Free(Threads[i].Deferred);
+            Memory->Free(Threads[i].LockedPartitions);
         }
-        if (Partitions != null) { Memory->Free(Partitions); Partitions = null; }
-        if (PartitionUndoHeads != null) { Memory->Free(PartitionUndoHeads); PartitionUndoHeads = null; }
-        if (Scratch != null)
-        {
-            for (int i = 0; i < MaxThreads; i++)
-                if (Scratch[i].Base != null) Memory->Free(Scratch[i].Base);
-            Memory->Free(Scratch);
-            Scratch = null;
-        }
-        if (Threads != null) { Memory->Free(Threads); Threads = null; }
+        Partitions.Dispose();
+        for (int i = 0; i < Scratch.Capacity; i++)
+            if (Scratch[i].Base != null) Memory->Free(Scratch[i].Base);
+        Scratch.Dispose();
+        Threads.Dispose();
     }
 
     private void FreeUndoSnapshots(ThreadContext* context)
     {
+        if (context->UndoSnapshotCount == 0) return;
         for (int i = 0; i < context->UndoEntryCount; i++)
         {
             ref var entry = ref context->UndoEntries[i];
             if (entry.Data != null && entry.Kind == UndoKind.FieldSnapshot)
                 Blocks.Free(entry.Data);
         }
+        context->UndoSnapshotCount = 0;
+    }
+
+    /// <summary>Before-image of an entity record beginning with RecordHeader.</summary>
+    internal bool TrySnapshot<T>(ref T value) where T : unmanaged
+    {
+        var copy = Blocks.TryAllocate((nuint)sizeof(T));
+        if (copy == null) return false;
+        *(T*)copy = value;
+        var partition = System.Runtime.CompilerServices.Unsafe.As<T, RecordHeader>(ref value).Partition;
+        if (!TryAppendUndo(UndoKind.FieldSnapshot, 0, partition, 0, 0, 0, copy, (nuint)sizeof(T)))
+        {
+            Blocks.Free(copy);
+            return false;
+        }
+        UndoEntries[UndoEntryCount - 1].Target = System.Runtime.CompilerServices.Unsafe.AsPointer(ref value);
+        KernelRuntime.ThreadContext()->UndoSnapshotCount++;
+        return true;
+    }
+
+    internal void DiscardUndoFrom(BufferOffset boundary)
+    {
+        var context = KernelRuntime.ThreadContext();
+        if (context->UndoSnapshotCount != 0)
+        for (var i = boundary; i < UndoEntryCount; i++)
+        {
+            ref var entry = ref UndoEntries[i];
+            if (entry.Kind == UndoKind.FieldSnapshot && entry.Data != null)
+            {
+                Blocks.Free(entry.Data);
+                context->UndoSnapshotCount--;
+            }
+        }
+        UndoEntryCount = boundary;
     }
 
     // ── Undo log ────────────────────────────────────────────────
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public bool TryAppendUndo(UndoKind kind, byte pool, short partition, int slot,
+    public bool TryAppendUndo(UndoKind kind, byte pool, PartitionSlot partition, int slot,
         int generation, int tag, void* data, nuint dataBytes)
     {
         var context = KernelRuntime.ThreadContext();
@@ -332,7 +359,7 @@ internal unsafe struct SessionData
         for (var i = 0; i < ThreadCount; i++)
         {
             if (Threads[i].Allocated == 0) continue;
-            FreeUndoSnapshots(&Threads[i]);
+            FreeUndoSnapshots(Threads.Pointer(i));
             Threads[i].UndoEntryCount = 0;
         }
         UndoSequence = 0;
@@ -394,7 +421,9 @@ internal unsafe struct SessionData
 
     public bool TryAcquireScratch(int threadSlot, out ScratchArena* arena)
     {
-        arena = &Scratch[threadSlot];
+        arena = null;
+        if (!Scratch.TryEnsure(threadSlot)) return false;
+        arena = Scratch.Pointer(threadSlot);
         if (arena->Base != null) return true;
         arena->Base = (byte*)Memory->TryAllocate(ScratchSegmentBytes);
         if (arena->Base == null) return false;
@@ -409,7 +438,8 @@ internal unsafe struct SessionData
 
     public int TryRegisterThread(int managedThreadId, int sessionGeneration)
     {
-        for (int i = 0; i < MaxThreads; i++)
+        if (!Threads.TryEnsure(ThreadCount)) return -1;
+        for (int i = 0; i <= ThreadCount; i++)
         {
             if (Threads[i].Allocated == 0)
             {
@@ -417,7 +447,7 @@ internal unsafe struct SessionData
                 {
                     ManagedThreadId = managedThreadId,
                     SessionGeneration = sessionGeneration,
-                    ChainDepth = 0,
+                    ChainLength = 0,
                     CurrentPartition = 0,
                     InKernel = 0,
                     Allocated = 1,
@@ -429,9 +459,27 @@ internal unsafe struct SessionData
         return -1;
     }
 
+    internal bool TryReserveLocks(ThreadContext* context, BufferCount count)
+    {
+        if (count <= context->LockCapacity) return true;
+        var capacity = context->LockCapacity == 0 ? StackLockedPartitions : context->LockCapacity;
+        while (capacity < count) capacity = capacity > int.MaxValue / 2 ? count : capacity * 2;
+        var bytes = (nuint)capacity * sizeof(PartitionSlot);
+        var storage = (PartitionSlot*)Memory->TryAllocate(bytes);
+        if (storage == null) return false;
+        if (context->LockedPartitions != null)
+        {
+            Buffer.MemoryCopy(context->LockedPartitions, storage, bytes, (nuint)context->LockCount * sizeof(PartitionSlot));
+            Memory->Free(context->LockedPartitions);
+        }
+        context->LockedPartitions = storage;
+        context->LockCapacity = capacity;
+        return true;
+    }
+
     public int FindThread(int managedThreadId)
     {
-        for (int i = 0; i < MaxThreads; i++)
+        for (int i = 0; i < ThreadCount; i++)
             if (Threads[i].Allocated == 1 && Threads[i].ManagedThreadId == managedThreadId)
                 return i;
         return -1;
@@ -439,7 +487,7 @@ internal unsafe struct SessionData
 
     public void UnregisterThread(int slot)
     {
-        if (Scratch[slot].Base != null)
+        if (slot < Scratch.Capacity && Scratch[slot].Base != null)
         {
             Memory->Free(Scratch[slot].Base);
             Scratch[slot].Base = null;

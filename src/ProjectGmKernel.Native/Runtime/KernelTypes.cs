@@ -78,3 +78,6 @@ global using AllocationSequence = long;
 global using KernelThreadId = int;
 global using KernelSessionId = int;
 global using KernelClassCode = int;
+global using KernelFunctionId = int;
+global using KernelChainType = int;
+global using ApplicationThreadId = int;

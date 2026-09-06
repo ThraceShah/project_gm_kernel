@@ -419,11 +419,11 @@ internal static unsafe partial class KernelExports
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_lock_partitions")]
-    public static int PK_THREAD_lock_partitions(int nPartitions, int* partitions, int lockType, int lockStatus,
+    public static int PK_THREAD_lock_partitions(int nPartitions, int* partitions, int lockType, int waitType,
         PK_THREAD_lock_partitions_o_s* options, PK_THREAD_lock_partitions_r_s* result)
     {
         var command = new ThreadLockPartitionsCommand
-        { Count = nPartitions, Partitions = partitions, LockType = lockType, LockStatus = lockStatus, Options = options, Result = result };
+        { Count = nPartitions, Partitions = partitions, LockType = lockType, WaitType = waitType, Options = options, Result = result };
         return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command);
     }
 
@@ -451,56 +451,84 @@ internal static unsafe partial class KernelExports
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_set_id")]
     public static int PK_THREAD_set_id(int threadId, PK_THREAD_set_id_o_s* options, PK_THREAD_set_id_r_s* result)
     {
-        var command = new ThreadSetIdCommand { ThreadId = threadId, Options = options, Result = result };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command);
+        return KernelRuntime.ThreadSetId(threadId, options, result);
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_id")]
-    public static int PK_THREAD_ask_id(int* nThreadIds, int* threadIds, byte* moreIds)
+    public static int PK_THREAD_ask_id(int* threadId, int* parasolidId, byte* isSubthread)
     {
-        var command = new ThreadAskIdCommand { NThreadIds = nThreadIds, ThreadIds = threadIds, MoreIds = moreIds };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+        return KernelRuntime.ThreadAskId(threadId, parasolidId, isSubthread);
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_chain_start")]
-    public static int PK_THREAD_chain_start(int threadId, PK_THREAD_chain_start_o_s* options)
+    public static int PK_THREAD_chain_start(int type, PK_THREAD_chain_start_o_s* options)
     {
-        var command = new ThreadChainStartCommand { ThreadId = threadId, Options = options };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command);
+        return KernelRuntime.ThreadChainStart(type, options);
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_chain_stop")]
     public static int PK_THREAD_chain_stop(PK_THREAD_chain_stop_o_s* options)
     {
-        var command = new ThreadChainStopCommand { Options = options };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command);
+        return KernelRuntime.ThreadChainStop(options);
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_is_in_chain")]
-    public static int PK_THREAD_is_in_chain(int* threadId, int* chainId, int* localLevel)
+    public static int PK_THREAD_is_in_chain(int* type, int* length, int* remaining)
     {
-        var command = new ThreadIsInChainCommand { ThreadId = threadId, ChainId = chainId, LocalLevel = localLevel };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+        return KernelRuntime.ThreadIsInChain(type, length, remaining);
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_is_in_kernel")]
-    public static int PK_THREAD_is_in_kernel(byte* inKernel, byte* inChain, byte* busy, byte* atTopLevel)
+    public static int PK_THREAD_is_in_kernel(byte* inKernel, byte* isProtected, byte* isSubthread, byte* isExcluding)
     {
-        var command = new ThreadIsInKernelCommand { InKernel = inKernel, InChain = inChain, Busy = busy, AtTopLevel = atTopLevel };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+        return KernelRuntime.ThreadIsInKernel(inKernel, isProtected, isSubthread, isExcluding);
     }
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_register_memory_cbs")]
     public static int PK_THREAD_register_memory_cbs(PK_MEMORY_frustrum_t cbs)
     {
-        var command = new ThreadRegisterMemoryCbsCommand { Cbs = cbs };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command);
+        return KernelRuntime.ThreadRegisterMemoryCbs(cbs);
     }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_MEMORY_register_callbacks")]
+    public static int PK_MEMORY_register_callbacks(PK_MEMORY_frustrum_t callbacks)
+        => KernelRuntime.MemoryRegisterCallbacks(callbacks);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_MEMORY_ask_callbacks")]
+    public static int PK_MEMORY_ask_callbacks(PK_MEMORY_frustrum_t* callbacks)
+        => KernelRuntime.MemoryAskCallbacks(callbacks);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_FUNCTION_find")]
+    public static int PK_FUNCTION_find(int count, byte** names, PK_FUNCTION_find_o_t* options, int* functions)
+        => KernelRuntime.FunctionFind(count, names, options, functions);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_function_run")]
+    public static int PK_THREAD_ask_function_run(int count, int* functions, PK_THREAD_ask_function_run_o_t* options, int* values)
+        => KernelRuntime.ThreadAskFunctionRun(count, functions, options, values);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_local_level")]
+    public static int PK_THREAD_ask_local_level(PK_THREAD_ask_local_level_o_t* options, int* level)
+        => KernelRuntime.ThreadAskLocalLevel(options, level);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_attach_curves")]
+    public static int PK_EDGE_attach_curves(int count, int* edges, int* curves)
+        => KernelRuntime.EdgeAttachCurves(count, edges, curves);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_FACE_attach_surfs")]
+    public static int PK_FACE_attach_surfs(int count, int* faces, int* surfaces, byte* senses)
+        => KernelRuntime.FaceAttachSurfaces(count, faces, surfaces, senses);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_VERTEX_attach_points")]
+    public static int PK_VERTEX_attach_points(int count, int* vertices, int* points)
+        => KernelRuntime.VertexAttachPoints(count, vertices, points);
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_TOPOL_detach_geom")]
+    public static int PK_TOPOL_detach_geom(int topology)
+        => KernelRuntime.TopologyDetachGeometry(topology);
 
     [UnmanagedCallersOnly(EntryPoint = "PK_THREAD_ask_memory_cbs")]
     public static int PK_THREAD_ask_memory_cbs(PK_MEMORY_frustrum_t* cbs)
     {
-        var command = new ThreadAskMemoryCbsCommand { Cbs = cbs };
-        return KernelRuntime.Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command);
+        return KernelRuntime.ThreadAskMemoryCbs(cbs);
     }
 }

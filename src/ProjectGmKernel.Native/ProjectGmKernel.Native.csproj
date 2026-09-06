@@ -19,6 +19,7 @@
     <InternalsVisibleTo Include="ParasolidOracleSmoke" />
     <InternalsVisibleTo Include="ParasolidPrimitiveOracle" />
     <InternalsVisibleTo Include="ParasolidEvaluationOracle" />
+    <InternalsVisibleTo Include="ParasolidThreadOracle" />
     <InternalsVisibleTo Include="BCurveEvaluationOracle" />
     <InternalsVisibleTo Include="ParasolidXtCorpusBodyBasics" />
     <InternalsVisibleTo Include="ParasolidXtCorpusCases" />
@@ -27,4 +28,11 @@
   <ItemGroup>
     <ProjectReference Include="..\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />
   </ItemGroup>
+  <Target Name="CheckCoreAllocations" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <AllocationGuardAssembly>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)/../../scripts', '$(TargetPath)'))</AllocationGuardAssembly>
+    </PropertyGroup>
+    <Exec WorkingDirectory="../../scripts" Command="dotnet run GenerateFunctionCatalog.cs -- --check" EnvironmentVariables="MSBUILDDISABLENODEREUSE=1" />
+    <Exec WorkingDirectory="../../scripts" Command="dotnet run AllocationBanCheck.cs -- &quot;$(AllocationGuardAssembly)&quot;" EnvironmentVariables="MSBUILDDISABLENODEREUSE=1" />
+  </Target>
 </Project>

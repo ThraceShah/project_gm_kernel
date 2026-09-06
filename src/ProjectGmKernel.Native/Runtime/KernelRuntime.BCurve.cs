@@ -194,7 +194,7 @@ internal static unsafe partial class KernelRuntime
         record.TMax = expanded[sf->n_vertices];
         record.Sense = ParasolidConstants.PK_TOPOL_sense_positive_c;
         record.OwnerEdge = -1;
-        record.OwnerCount = 1;
+        record.OwnerCount = 0;
         record.PrevInBody = record.NextInBody = 0;
         var tag = AllocateTag(EntityClass.Curve, PoolKind.Curve, slot, record.Header.Generation);
         if (tag <= 0)

@@ -35,14 +35,14 @@ public class ComputationFrameworkTests
     [Fact]
     public void DerivativeLayout_HasDefinedMixedDerivativePositions_AndChecksOverflow()
     {
-        var layout = new SurfaceDerivativeLayout(2, 3);
+        Assert.True(SurfaceDerivativeLayout.TryCreate(2, 3, out var layout));
         Assert.Equal(12, layout.Count);
         Assert.Equal(6, layout.GetIndex(1, 2));
         Assert.Equal(11, layout.GetIndex(2, 3));
         Assert.Equal(1, default(SurfaceDerivativeLayout).Count);
-        Assert.Throws<ArgumentOutOfRangeException>(() => new SurfaceDerivativeLayout(-1, 0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new SurfaceDerivativeLayout(int.MaxValue, 0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => layout.GetIndex(0, 4));
+        Assert.False(SurfaceDerivativeLayout.TryCreate(-1, 0, out _));
+        Assert.False(SurfaceDerivativeLayout.TryCreate(int.MaxValue, 0, out _));
+        Assert.Equal(-1, layout.GetIndex(0, 4));
     }
 
     [Fact]

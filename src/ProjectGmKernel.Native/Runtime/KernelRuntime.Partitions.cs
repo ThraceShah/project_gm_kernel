@@ -11,6 +11,44 @@ namespace ProjectGmKernel.Native.Runtime;
 /// </summary>
 internal static unsafe partial class KernelRuntime
 {
+    private static PK_MEMORY_frustrum_s globalMemoryCallbacks;
+
+    internal static int MemoryRegisterCallbacks(PK_MEMORY_frustrum_s callbacks)
+    {
+        var command = new MemoryRegisterCallbacksCommand { Callbacks = callbacks };
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Exclusive, AccessKind.ReadOnly, ref command);
+    }
+
+    internal static int MemoryAskCallbacks(PK_MEMORY_frustrum_s* callbacks)
+    {
+        var command = new MemoryAskCallbacksCommand { Callbacks = callbacks };
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Unprotected, AccessKind.ReadOnly, ref command);
+    }
+
+    private struct MemoryRegisterCallbacksCommand : IKernelCommand
+    {
+        internal PK_MEMORY_frustrum_s Callbacks;
+        public int Execute()
+        {
+            if (Callbacks.alloc_fn == null || Callbacks.free_fn == null) Callbacks = default;
+            globalMemoryCallbacks = Callbacks;
+            if (State.Session != null)
+                State.Session->Returns.SetFrustrumCallbacks(Callbacks.alloc_fn, Callbacks.free_fn);
+            return 0;
+        }
+    }
+
+    private struct MemoryAskCallbacksCommand : IKernelCommand
+    {
+        internal PK_MEMORY_frustrum_s* Callbacks;
+        public int Execute()
+        {
+            if (Callbacks == null) return ParasolidConstants.PK_ERROR_bad_field_number;
+            *Callbacks = globalMemoryCallbacks;
+            return 0;
+        }
+    }
+
     [ThreadStatic] private static SessionData.ThreadContext* cachedThreadContext;
     [ThreadStatic] private static int cachedSessionGeneration;
     private static readonly object ThreadRegistrationGate = new();
@@ -45,8 +83,8 @@ internal static unsafe partial class KernelRuntime
             // Session restarted since this context was issued: stale pointers
             // and session-scoped state must not be reused.
             ctx.SessionGeneration = session->SessionGeneration;
-            ctx.ChainDepth = 0;
-            ctx.ChainUserId = 0;
+            ctx.ChainLength = 0;
+            ctx.UserThreadId = 0;
             ctx.CurrentPartition = 0;
             ctx.InKernel = 0;
             ctx.LockCount = 0;
@@ -69,8 +107,13 @@ internal static unsafe partial class KernelRuntime
         var session = State.Session;
         if (!session->TryAllocatePartitionId(out var id))
             return ParasolidConstants.PK_ERROR_memory_full;
-        if (!session->TryCreatePartition(id, out var slot))
+        if (!session->TryAppendUndo(SessionData.UndoKind.PartitionCreated, 0, id, id, 0, 0, null, 0))
             return ParasolidConstants.PK_ERROR_memory_full;
+        if (!session->TryCreatePartition(id, out var slot))
+        {
+            session->UndoEntryCount--;
+            return ParasolidConstants.PK_ERROR_memory_full;
+        }
         *partition = id;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -84,7 +127,11 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_bad_value;
         if (ThreadContext() == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-        ThreadContext()->CurrentPartition = partition;
+        var context = ThreadContext();
+        if (!session->TryAppendUndo(SessionData.UndoKind.CurrentPartitionChanged, 0, 0,
+            context->CurrentPartition, 0, 0, context, 0))
+            return ParasolidConstants.PK_ERROR_memory_full;
+        context->CurrentPartition = partition;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -92,17 +139,45 @@ internal static unsafe partial class KernelRuntime
     {
         if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
+        if (options != null && options->o_t_version != 1) return ParasolidConstants.PK_ERROR_o_t_version_incorrect;
         var session = State.Session;
         if (!session->TryFindPartition(partition, out var slot))
             return ParasolidConstants.PK_ERROR_bad_value;
         if (partition == 0)
             return ParasolidConstants.PK_ERROR_bad_value;   // default partition persists
+        if (ThreadContext()->CurrentPartition == partition)
+            return ParasolidConstants.PK_ERROR_partition_is_current;
         ref var record = ref session->Partitions[slot];
-        if (record.BodyCount != 0)
+        var force = options != null && options->delete_non_empty != 0;
+        if (!force && (record.BodyCount != 0 || session->Tags.HasLiveEntities(partition)
+            || (session->IsMarkActive != 0 && record.MarkHasEntities != 0)))
             return ParasolidConstants.PK_ERROR_partition_not_empty;
         if (record.LockOwnerThread != 0)
             return ParasolidConstants.PK_ERROR_bad_value;   // locked partitions cannot be deleted
+        long required = 1L + session->ThreadCount + session->Tags.CountLiveEntities(partition);
+        var body = record.FirstBody;
+        for (var i = 0; i < record.BodyCount; i++, body = Bodies[body].NextInPartition)
+            required += BodyDeletionEntries(body);
+        if (required > int.MaxValue || !session->TryReserveDeletion((int)required))
+            return ParasolidConstants.PK_ERROR_memory_full;
+        while (record.FirstBody >= 0)
+        {
+            body = record.FirstBody;
+            DeleteBodyCascade(session, body, Bodies[body].Header.Tag);
+        }
+        while (session->Tags.TryFirstLiveEntity(partition, out var entity))
+            DeleteEntitySingle(session, (PoolKind)entity.Pool, entity.Slot, entity.Tag);
+        session->TryAppendUndo(SessionData.UndoKind.PartitionDeleted, 0, slot, slot, 0, 0, null, 0);
+        for (var i = 0; i < session->ThreadCount; i++)
+        {
+            var context = session->Threads.Pointer(i);
+            if (context->CurrentPartition != partition) continue;
+            session->TryAppendUndo(SessionData.UndoKind.CurrentPartitionChanged, 0, 0, partition, 0, 0, context, 0);
+            context->CurrentPartition = session->DefaultPartition;
+        }
         record.Alive = 0;
+        ThreadContext()->PartitionDeletionPending = 1;
+        session->PartitionCount--;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -154,78 +229,96 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_bad_value;
         if (waitType != ParasolidConstants.PK_THREAD_wait_yes_c && waitType != ParasolidConstants.PK_THREAD_wait_no_c)
             return ParasolidConstants.PK_ERROR_bad_value;
-        if (nPartitions > SessionData.MaxLockedPartitions || (options != null && options->o_t_version != 1))
+        if (options != null && options->o_t_version != 1)
             return ParasolidConstants.PK_ERROR_bad_value;
 
         var session = State.Session;
         var generation = session->SessionGeneration;
         var context = ThreadContext();
         if (context == null) return ParasolidConstants.PK_ERROR_memory_full;
-        Span<int> selected = stackalloc int[SessionData.MaxLockedPartitions];
-        Span<int> unavailable = stackalloc int[SessionData.MaxLockedPartitions];
-        lock (SessionDispatchGate)
+        Span<int> selected = stackalloc int[SessionData.StackLockedPartitions];
+        Span<int> unavailable = stackalloc int[SessionData.StackLockedPartitions];
+        void* temporary = null;
+        if (nPartitions > SessionData.StackLockedPartitions)
         {
-            while (true)
+            temporary = session->Blocks.TryAllocate((nuint)nPartitions * 2 * sizeof(PartitionSlot));
+            if (temporary == null) return ParasolidConstants.PK_ERROR_memory_full;
+            selected = new Span<int>(temporary, nPartitions);
+            unavailable = new Span<int>((int*)temporary + nPartitions, nPartitions);
+        }
+        try
+        {
+            lock (SessionDispatchGate)
             {
-                var selectedCount = 0;
-                var unavailableCount = 0;
-                var newLocks = 0;
-                for (var i = 0; i < nPartitions; i++)
+                while (true)
                 {
-                    if (!session->TryFindPartition(partitions[i], out var slot)) return ParasolidConstants.PK_ERROR_bad_value;
-                    for (var j = 0; j < i; j++)
-                        if (partitions[i] == partitions[j]) return ParasolidConstants.PK_ERROR_bad_value;
-                    var owner = session->Partitions[slot].LockOwnerThread;
-                    if (owner != 0 && owner != context->ManagedThreadId)
-                    { unavailable[unavailableCount++] = partitions[i]; continue; }
-                    if (lockType == ParasolidConstants.PK_THREAD_lock_all_c || selectedCount == 0)
+                    var selectedCount = 0;
+                    var unavailableCount = 0;
+                    var newLocks = 0;
+                    for (var i = 0; i < nPartitions; i++)
                     {
-                        selected[selectedCount++] = partitions[i];
-                        if (owner == 0) newLocks++;
+                        if (!session->TryFindPartition(partitions[i], out var slot)) return ParasolidConstants.PK_ERROR_bad_value;
+                        for (var j = 0; j < i; j++)
+                            if (partitions[i] == partitions[j]) return ParasolidConstants.PK_ERROR_bad_value;
+                        var owner = session->Partitions[slot].LockOwnerThread;
+                        if (owner == 0 && session->Partitions[slot].AtPmark == 0)
+                            return ParasolidConstants.PK_ERROR_not_at_pmark;
+                        if (owner != 0 && owner != context->ManagedThreadId)
+                        { unavailable[unavailableCount++] = partitions[i]; continue; }
+                        if (lockType == ParasolidConstants.PK_THREAD_lock_all_c || selectedCount == 0)
+                        {
+                            selected[selectedCount++] = partitions[i];
+                            if (owner == 0) newLocks++;
+                        }
                     }
+                    var granted = lockType == ParasolidConstants.PK_THREAD_lock_all_c ? unavailableCount == 0 : selectedCount != 0;
+                    if (!granted && waitType == ParasolidConstants.PK_THREAD_wait_yes_c)
+                    {
+                        Dispatcher.WaitForPartitionUnlock();
+                        if (State.Session == null || State.Session->SessionGeneration != generation)
+                            return ParasolidConstants.PK_ERROR_not_in_PK;
+                        continue;
+                    }
+                    if (!granted) { selectedCount = 0; newLocks = 0; }
+                    if (newLocks > int.MaxValue - context->LockCount || !session->TryReserveLocks(context, context->LockCount + newLocks))
+                        return ParasolidConstants.PK_ERROR_memory_full;
+                    int* locked = null;
+                    int* missing = null;
+                    if (options != null && options->want_locked_partitions != 0 && selectedCount != 0)
+                    {
+                        locked = (int*)session->Returns.TryAllocate((nuint)selectedCount * sizeof(int));
+                        if (locked == null) return ParasolidConstants.PK_ERROR_memory_full;
+                        selected[..selectedCount].CopyTo(new Span<int>(locked, selectedCount));
+                    }
+                    if (options != null && options->want_unavailable_partitions != 0 && unavailableCount != 0)
+                    {
+                        missing = (int*)session->Returns.TryAllocate((nuint)unavailableCount * sizeof(int));
+                        if (missing == null)
+                        { session->Returns.TryFree(locked); return ParasolidConstants.PK_ERROR_memory_full; }
+                        unavailable[..unavailableCount].CopyTo(new Span<int>(missing, unavailableCount));
+                    }
+                    // No allocation/failure points remain after ownership publication.
+                    for (var i = 0; i < selectedCount; i++)
+                    {
+                        ref var record = ref session->Partitions[selected[i]];
+                        if (record.LockOwnerThread == context->ManagedThreadId) continue;
+                        record.LockOwnerThread = context->ManagedThreadId;
+                        record.LockState = SessionData.PartitionLockState.ExclusiveWrite;
+                        context->LockedPartitions[context->LockCount++] = selected[i];
+                    }
+                    result->status = granted ? ParasolidConstants.PK_lock_status_ok_c : ParasolidConstants.PK_lock_status_fail_c;
+                    result->n_locked_partitions = selectedCount;
+                    result->locked_partitions = locked;
+                    result->n_unavailable_partitions = unavailableCount;
+                    result->unavailable_partitions = missing;
+                    return ParasolidConstants.PK_ERROR_no_errors;
                 }
-                var granted = lockType == ParasolidConstants.PK_THREAD_lock_all_c ? unavailableCount == 0 : selectedCount != 0;
-                if (!granted && waitType == ParasolidConstants.PK_THREAD_wait_yes_c)
-                {
-                    Dispatcher.WaitForPartitionUnlock();
-                    if (State.Session == null || State.Session->SessionGeneration != generation)
-                        return ParasolidConstants.PK_ERROR_not_in_PK;
-                    continue;
-                }
-                if (!granted) selectedCount = 0;
-                if (context->LockCount + newLocks > SessionData.MaxLockedPartitions)
-                    return ParasolidConstants.PK_ERROR_memory_full;
-                int* locked = null;
-                int* missing = null;
-                if (options != null && options->want_locked_partitions != 0 && selectedCount != 0)
-                {
-                    locked = (int*)session->Returns.TryAllocate((nuint)selectedCount * sizeof(int));
-                    if (locked == null) return ParasolidConstants.PK_ERROR_memory_full;
-                    selected[..selectedCount].CopyTo(new Span<int>(locked, selectedCount));
-                }
-                if (options != null && options->want_unavailable_partitions != 0 && unavailableCount != 0)
-                {
-                    missing = (int*)session->Returns.TryAllocate((nuint)unavailableCount * sizeof(int));
-                    if (missing == null)
-                    { session->Returns.TryFree(locked); return ParasolidConstants.PK_ERROR_memory_full; }
-                    unavailable[..unavailableCount].CopyTo(new Span<int>(missing, unavailableCount));
-                }
-                // No allocation/failure points remain after ownership publication.
-                for (var i = 0; i < selectedCount; i++)
-                {
-                    ref var record = ref session->Partitions[selected[i]];
-                    if (record.LockOwnerThread == context->ManagedThreadId) continue;
-                    record.LockOwnerThread = context->ManagedThreadId;
-                    record.LockState = SessionData.PartitionLockState.ExclusiveWrite;
-                    context->LockedPartitions[context->LockCount++] = selected[i];
-                }
-                result->status = granted ? ParasolidConstants.PK_lock_status_ok_c : ParasolidConstants.PK_lock_status_fail_c;
-                result->n_locked_partitions = selectedCount;
-                result->locked_partitions = locked;
-                result->n_unavailable_partitions = unavailableCount;
-                result->unavailable_partitions = missing;
-                return ParasolidConstants.PK_ERROR_no_errors;
             }
+        }
+        finally
+        {
+            if (temporary != null && State.Session == session && session->SessionGeneration == generation)
+                session->Blocks.Free(temporary);
         }
     }
     private static int ThreadLockPartitionsResultFreeImplementation(PK_THREAD_lock_partitions_r_s* result)
@@ -318,37 +411,46 @@ internal static unsafe partial class KernelRuntime
     {
         if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
+        if (options != null && options->o_t_version != 1) return ParasolidConstants.PK_ERROR_o_t_version_incorrect;
         var ctx = ThreadContextRef();
         if (ctx == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-        ctx->ChainUserId = threadId;
+        ctx->UserThreadId = threadId;
+        if (result != null) *result = default;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static int ThreadAskIdImplementation(int* nThreadIds, int* threadIds, byte* moreIds)
+    private static int ThreadAskIdImplementation(int* threadId, int* parasolidId, byte* isSubthread)
     {
-        if (nThreadIds is null || threadIds is null || moreIds is null)
+        if (threadId is null || isSubthread is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
         var ctx = ThreadContextRef();
         if (ctx == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-        *nThreadIds = 1;
-        *threadIds = ctx->ChainUserId;
-        *moreIds = 0;
+        *threadId = ctx->UserThreadId;
+        if (parasolidId != null) *parasolidId = 0;
+        *isSubthread = 0;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static int ThreadChainStartImplementation(int threadId, PK_THREAD_chain_start_o_s* options)
+    private static int ThreadChainStartImplementation(int type, PK_THREAD_chain_start_o_s* options)
     {
         if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
         var ctx = ThreadContextRef();
         if (ctx == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-        ctx->ChainUserId = threadId;
-        ctx->ChainDepth = options is null ? 1 : Math.Max(1, options->length);
+        if (type != ParasolidConstants.PK_THREAD_chain_exclusive_c && type != ParasolidConstants.PK_THREAD_chain_concurrent_c)
+            return ParasolidConstants.PK_ERROR_bad_value;
+        if (options != null && (options->o_t_version != 2 || options->length < 0
+            || options->local_level != ParasolidConstants.PK_THREAD_local_none_c))
+            return ParasolidConstants.PK_ERROR_bad_value;
+        if (ctx->ChainType != 0) return ParasolidConstants.PK_ERROR_bad_value;
+        ctx->ChainType = type;
+        ctx->ChainLength = options == null ? 0 : options->length;
+        ctx->ChainRemaining = Math.Max(0, ctx->ChainLength - 1);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -359,38 +461,41 @@ internal static unsafe partial class KernelRuntime
         var ctx = ThreadContextRef();
         if (ctx == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-        ctx->ChainDepth = 0;
+        ctx->ChainLength = 0;
+        ctx->ChainType = 0;
+        ctx->ChainRemaining = 0;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static int ThreadIsInChainImplementation(int* threadId, int* chainId, int* localLevel)
+    private static int ThreadIsInChainImplementation(int* type, int* length, int* remaining)
     {
-        if (threadId is null || chainId is null || localLevel is null)
-            return ParasolidConstants.PK_ERROR_bad_field_number;
-        if (!IsSessionStarted)
-            return ParasolidConstants.PK_ERROR_not_in_PK;
-        var ctx = ThreadContextRef();
-        if (ctx == null || ctx->ChainDepth == 0)
-            return ParasolidConstants.PK_ERROR_not_in_PK;
-        *threadId = ctx->ChainUserId;
-        *chainId = ctx->ChainUserId;
-        *localLevel = ctx->ChainDepth;
-        return ParasolidConstants.PK_ERROR_no_errors;
-    }
-
-    private static int ThreadIsInKernelImplementation(byte* inKernel, byte* inChain, byte* busy, byte* atTopLevel)
-    {
-        if (inKernel is null || inChain is null || busy is null || atTopLevel is null)
+        if (type is null || length is null || remaining is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
         var ctx = ThreadContextRef();
         if (ctx == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-        *inKernel = 1;
-        *inChain = ctx->ChainDepth != 0 ? (byte)1 : (byte)0;
-        *busy = ctx->InKernel != 0 ? (byte)1 : (byte)0;
-        *atTopLevel = ctx->ChainDepth <= 1 ? (byte)1 : (byte)0;
+        *type = ctx->ChainType == 0 ? ParasolidConstants.PK_THREAD_chain_none_c : ctx->ChainType;
+        *length = ctx->ChainLength;
+        *remaining = ctx->ChainRemaining;
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
+
+    private static int ThreadIsInKernelImplementation(byte* inKernel, byte* isProtected, byte* isSubthread, byte* isExcluding)
+    {
+        if (inKernel is null || isProtected is null || isSubthread is null || isExcluding is null)
+            return ParasolidConstants.PK_ERROR_bad_field_number;
+        if (!IsSessionStarted)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+        var ctx = ThreadContextRef();
+        if (ctx == null)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+        *inKernel = ctx->InKernel != 0 ? (byte)1 : (byte)0;
+        *isProtected = *inKernel;
+        *isSubthread = 0;
+        *isExcluding = ctx->ChainType == ParasolidConstants.PK_THREAD_chain_exclusive_c
+            || (ctx->InKernel != 0 && ctx->ExecutionIsExclusive != 0) ? (byte)1 : (byte)0;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
@@ -403,6 +508,7 @@ internal static unsafe partial class KernelRuntime
         var ctx = ThreadContextRef();
         if (ctx == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
+        if (cbs.alloc_fn == null || cbs.free_fn == null) cbs = default;
         ctx->AllocFn = cbs.alloc_fn;
         ctx->FreeFn = cbs.free_fn;
         ctx->HasMemoryCbs = cbs.alloc_fn != null && cbs.free_fn != null ? 1 : 0;
@@ -418,8 +524,6 @@ internal static unsafe partial class KernelRuntime
         var ctx = ThreadContextRef();
         if (ctx == null)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-        if (ctx->HasMemoryCbs == 0)
-            return ParasolidConstants.PK_ERROR_bad_value;
         cbs->alloc_fn = ctx->AllocFn;
         cbs->free_fn = ctx->FreeFn;
         return ParasolidConstants.PK_ERROR_no_errors;
@@ -431,13 +535,14 @@ internal static unsafe partial class KernelRuntime
         var session = State.Session;
         var threadId = Environment.CurrentManagedThreadId;
         var ctx = ThreadContextRef();
+        if (ctx == null || ctx->LockCount == int.MaxValue || !session->TryReserveLocks(ctx, ctx->LockCount + 1)) return;
         if (session->TryFindPartition(partition, out var slot))
         {
+            if (session->Partitions[slot].LockOwnerThread == threadId) return;
             session->Partitions[slot].LockOwnerThread = threadId;
             session->Partitions[slot].LockState = SessionData.PartitionLockState.ExclusiveWrite;
-        }
-        if (ctx != null && ctx->LockCount < SessionData.MaxLockedPartitions)
             ctx->LockedPartitions[ctx->LockCount++] = partition;
+        }
     }
 
     /// <summary>Gate shared by the scheduler and partition-lock mutations.</summary>

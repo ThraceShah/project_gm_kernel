@@ -165,17 +165,9 @@ static unsafe void CheckBodyRoundtrip(bool rational)
     int curve, referenceCurve;
     Check(KernelRuntime.BCurveCreate(&msf, &curve), "attached B-curve create");
     Check(PK_BCURVE_create(&sf, &referenceCurve), "reference attached B-curve create");
-    // Test setup: attach to the existing block edge without introducing another public modeling API.
-    ref var record = ref KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(curve)];
-    record.OwnerEdge = edgeSlot;
-    record.PrevInBody = oldRecord.PrevInBody;
-    record.NextInBody = oldRecord.NextInBody;
-    KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.PrevInBody)].NextInBody = curve;
-    KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.NextInBody)].PrevInBody = curve;
-    KernelRuntime.Edges[edgeSlot].CurveTag = curve;
-    ref var detached = ref KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(oldCurve)];
-    detached.OwnerEdge = -1;
-    detached.PrevInBody = detached.NextInBody = 0;
+    var ourEdge = KernelRuntime.TagOf(PoolKind.Edge, edgeSlot);
+    Check(KernelRuntime.TopologyDetachGeometry(ourEdge), "our detach line");
+    Check(KernelRuntime.EdgeAttachCurves(1, &ourEdge, &curve), "our attach B-curve");
 
     int count;
     int* edges;

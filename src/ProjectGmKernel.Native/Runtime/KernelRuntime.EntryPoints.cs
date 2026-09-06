@@ -36,7 +36,12 @@ internal static unsafe partial class KernelRuntime
     }
     public static int SessionStop()
     {
-        if (Dispatcher.IsExecuting) return SessionStopImplementation();
+        if (Dispatcher.IsExecuting)
+        {
+            var context = ThreadContext();
+            if (context != null && context->InKernel != 0) return ParasolidConstants.PK_ERROR_bad_value;
+            return SessionStopImplementation();
+        }
         var command = new SessionStopCommand {  };
         return Dispatch(ApiId.SessionStop, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command, 0);
     }
@@ -277,21 +282,41 @@ internal static unsafe partial class KernelRuntime
     }
     public static int MarkCreate(int* mark)
     {
-        if (Dispatcher.IsExecuting) return MarkCreateImplementation(mark);
+        if (Dispatcher.IsExecuting)
+        {
+            var error = ModelControlEntryError();
+            return error != 0 ? error : MarkCreateImplementation(mark);
+        }
         var command = new MarkCreateCommand { Mark = mark };
         return Dispatch(ApiId.MarkCreate, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command, 0);
     }
     public static int MarkGoto(int mark)
     {
-        if (Dispatcher.IsExecuting) return MarkGotoImplementation(mark);
+        if (Dispatcher.IsExecuting)
+        {
+            var error = ModelControlEntryError();
+            return error != 0 ? error : MarkGotoImplementation(mark);
+        }
         var command = new MarkGotoCommand { Mark = mark };
         return Dispatch(ApiId.MarkGoto, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command, 0);
     }
     public static int MarkDelete(int mark)
     {
-        if (Dispatcher.IsExecuting) return MarkDeleteImplementation(mark);
+        if (Dispatcher.IsExecuting)
+        {
+            var error = ModelControlEntryError();
+            return error != 0 ? error : MarkDeleteImplementation(mark);
+        }
         var command = new MarkDeleteCommand { Mark = mark };
         return Dispatch(ApiId.MarkDelete, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command, 0);
+    }
+
+    private static int ModelControlEntryError()
+    {
+        if (State.Session == null) return 0;
+        var context = ThreadContext();
+        if (context == null) return ParasolidConstants.PK_ERROR_memory_full;
+        return context->InKernel != 0 ? ParasolidConstants.PK_ERROR_bad_value : 0;
     }
     public static int PartitionCreateEmpty(PartitionSlot* partition)
     {
@@ -318,11 +343,11 @@ internal static unsafe partial class KernelRuntime
         return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, 0);
     }
     public static int ThreadLockPartitions(int nPartitions, PartitionSlot* partitions,
-        int lockType, int lockStatus, PK_THREAD_lock_partitions_o_s* options,
+        int lockType, int waitType, PK_THREAD_lock_partitions_o_s* options,
         PK_THREAD_lock_partitions_r_s* result)
     {
-        if (Dispatcher.IsExecuting) return ThreadLockPartitionsImplementation(nPartitions, partitions, lockType, lockStatus, options, result);
-        var command = new ThreadLockPartitionsCommand { Count = nPartitions, Partitions = partitions, LockType = lockType, LockStatus = lockStatus, Options = options, Result = result };
+        if (Dispatcher.IsExecuting) return ThreadLockPartitionsImplementation(nPartitions, partitions, lockType, waitType, options, result);
+        var command = new ThreadLockPartitionsCommand { Count = nPartitions, Partitions = partitions, LockType = lockType, WaitType = waitType, Options = options, Result = result };
         return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Exclusive, AccessKind.SessionControl, ref command, 0);
     }
     public static int ThreadLockPartitionsResultFree(PK_THREAD_lock_partitions_r_s* result)
@@ -349,48 +374,48 @@ internal static unsafe partial class KernelRuntime
     {
         if (Dispatcher.IsExecuting) return ThreadSetIdImplementation(threadId, options, result);
         var command = new ThreadSetIdCommand { ThreadId = threadId, Options = options, Result = result };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command, 0);
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Unprotected, AccessKind.ReadOnly, ref command, 0);
     }
-    public static int ThreadAskId(int* nThreadIds, int* threadIds, byte* moreIds)
+    public static int ThreadAskId(int* threadId, int* parasolidId, byte* isSubthread)
     {
-        if (Dispatcher.IsExecuting) return ThreadAskIdImplementation(nThreadIds, threadIds, moreIds);
-        var command = new ThreadAskIdCommand { NThreadIds = nThreadIds, ThreadIds = threadIds, MoreIds = moreIds };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, 0);
+        if (Dispatcher.IsExecuting) return ThreadAskIdImplementation(threadId, parasolidId, isSubthread);
+        var command = new ThreadAskIdCommand { ThreadId = threadId, ParasolidId = parasolidId, IsSubthread = isSubthread };
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Unprotected, AccessKind.ReadOnly, ref command, 0);
     }
-    public static int ThreadChainStart(int threadId, PK_THREAD_chain_start_o_s* options)
+    public static int ThreadChainStart(int type, PK_THREAD_chain_start_o_s* options)
     {
-        if (Dispatcher.IsExecuting) return ThreadChainStartImplementation(threadId, options);
-        var command = new ThreadChainStartCommand { ThreadId = threadId, Options = options };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command, 0);
+        if (Dispatcher.IsExecuting) return ThreadChainStartImplementation(type, options);
+        var command = new ThreadChainStartCommand { Type = type, Options = options };
+        return Dispatch(ApiId.ThreadChainStart, type == ParasolidConstants.PK_THREAD_chain_exclusive_c ? ConcurrencyKind.Exclusive : ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, 0);
     }
     public static int ThreadChainStop(PK_THREAD_chain_stop_o_s* options)
     {
         if (Dispatcher.IsExecuting) return ThreadChainStopImplementation(options);
         var command = new ThreadChainStopCommand { Options = options };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command, 0);
+        return Dispatch(ApiId.ThreadChainStop, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, 0);
     }
-    public static int ThreadIsInChain(int* threadId, int* chainId, int* localLevel)
+    public static int ThreadIsInChain(int* type, int* length, int* remaining)
     {
-        if (Dispatcher.IsExecuting) return ThreadIsInChainImplementation(threadId, chainId, localLevel);
-        var command = new ThreadIsInChainCommand { ThreadId = threadId, ChainId = chainId, LocalLevel = localLevel };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, 0);
+        if (Dispatcher.IsExecuting) return ThreadIsInChainImplementation(type, length, remaining);
+        var command = new ThreadIsInChainCommand { Type = type, Length = length, Remaining = remaining };
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Unprotected, AccessKind.ReadOnly, ref command, 0);
     }
-    public static int ThreadIsInKernel(byte* inKernel, byte* inChain, byte* busy, byte* atTopLevel)
+    public static int ThreadIsInKernel(byte* inKernel, byte* isProtected, byte* isSubthread, byte* isExcluding)
     {
-        if (Dispatcher.IsExecuting) return ThreadIsInKernelImplementation(inKernel, inChain, busy, atTopLevel);
-        var command = new ThreadIsInKernelCommand { InKernel = inKernel, InChain = inChain, Busy = busy, AtTopLevel = atTopLevel };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, 0);
+        if (Dispatcher.IsExecuting) return ThreadIsInKernelImplementation(inKernel, isProtected, isSubthread, isExcluding);
+        var command = new ThreadIsInKernelCommand { InKernel = inKernel, IsProtected = isProtected, IsSubthread = isSubthread, IsExcluding = isExcluding };
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Unprotected, AccessKind.ReadOnly, ref command, 0);
     }
     public static int ThreadRegisterMemoryCbs(PK_MEMORY_frustrum_s cbs)
     {
         if (Dispatcher.IsExecuting) return ThreadRegisterMemoryCbsImplementation(cbs);
         var command = new ThreadRegisterMemoryCbsCommand { Cbs = cbs };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Local, AccessKind.SessionControl, ref command, 0);
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Unprotected, AccessKind.ReadOnly, ref command, 0);
     }
     public static int ThreadAskMemoryCbs(PK_MEMORY_frustrum_s* cbs)
     {
         if (Dispatcher.IsExecuting) return ThreadAskMemoryCbsImplementation(cbs);
         var command = new ThreadAskMemoryCbsCommand { Cbs = cbs };
-        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, 0);
+        return Dispatch(ApiId.GeneratedStub, ConcurrencyKind.Unprotected, AccessKind.ReadOnly, ref command, 0);
     }
 }

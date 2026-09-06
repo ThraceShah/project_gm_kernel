@@ -32,6 +32,50 @@ internal unsafe struct TagMap
     public readonly int NextTag => Volatile.Read(ref nextProcessTag);
     public readonly int LiveOrKeptCount => used;
 
+    internal bool HasLiveEntities(PartitionSlot partition)
+    {
+        if (used == 0) return false;
+        Enter();
+        try
+        {
+            for (var i = 0; i < capacity; i++)
+                if (records[i].Tag != 0 && records[i].Alive != 0
+                    && KernelRuntime.PoolPartitionOf((PoolKind)records[i].Pool, records[i].Slot) == partition)
+                    return true;
+            return false;
+        }
+        finally { Exit(); }
+    }
+
+    internal BufferCount CountLiveEntities(PartitionSlot partition)
+    {
+        Enter();
+        try
+        {
+            var count = 0;
+            for (var i = 0; i < capacity; i++)
+                if (records[i].Tag != 0 && records[i].Alive != 0
+                    && KernelRuntime.PoolPartitionOf((PoolKind)records[i].Pool, records[i].Slot) == partition) count++;
+            return count;
+        }
+        finally { Exit(); }
+    }
+
+    internal bool TryFirstLiveEntity(PartitionSlot partition, out TagRecord record)
+    {
+        Enter();
+        try
+        {
+            for (var i = 0; i < capacity; i++)
+                if (records[i].Tag != 0 && records[i].Alive != 0
+                    && KernelRuntime.PoolPartitionOf((PoolKind)records[i].Pool, records[i].Slot) == partition)
+                { record = records[i]; return true; }
+            record = default;
+            return false;
+        }
+        finally { Exit(); }
+    }
+
     public EntityTag Publish(int classCode, byte pool, DataSlot slot, EntityGeneration generation, int sessionId)
     {
         Enter();

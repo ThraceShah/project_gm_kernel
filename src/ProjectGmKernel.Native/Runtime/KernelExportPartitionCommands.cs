@@ -35,10 +35,10 @@ internal unsafe struct ThreadLockPartitionsCommand : IKernelCommand
     public int Count;
     public PartitionSlot* Partitions;
     public int LockType;
-    public int LockStatus;
+    public int WaitType;
     public PK_THREAD_lock_partitions_o_s* Options;
     public PK_THREAD_lock_partitions_r_s* Result;
-    public int Execute() => KernelRuntime.ThreadLockPartitions(Count, Partitions, LockType, LockStatus, Options, Result);
+    public int Execute() => KernelRuntime.ThreadLockPartitions(Count, Partitions, LockType, WaitType, Options, Result);
 }
 
 internal unsafe struct ThreadLockPartitionsResultFreeCommand : IKernelCommand
@@ -65,7 +65,7 @@ internal unsafe struct ThreadAskLockedPartitionsCommand : IKernelCommand
 
 internal unsafe struct ThreadSetIdCommand : IKernelCommand
 {
-    public int ThreadId;
+    public ApplicationThreadId ThreadId;
     public PK_THREAD_set_id_o_s* Options;
     public PK_THREAD_set_id_r_s* Result;
     public int Execute() => KernelRuntime.ThreadSetId(ThreadId, Options, Result);
@@ -73,17 +73,17 @@ internal unsafe struct ThreadSetIdCommand : IKernelCommand
 
 internal unsafe struct ThreadAskIdCommand : IKernelCommand
 {
-    public int* NThreadIds;
-    public int* ThreadIds;
-    public byte* MoreIds;
-    public int Execute() => KernelRuntime.ThreadAskId(NThreadIds, ThreadIds, MoreIds);
+    public ApplicationThreadId* ThreadId;
+    public ApplicationThreadId* ParasolidId;
+    public byte* IsSubthread;
+    public int Execute() => KernelRuntime.ThreadAskId(ThreadId, ParasolidId, IsSubthread);
 }
 
 internal unsafe struct ThreadChainStartCommand : IKernelCommand
 {
-    public int ThreadId;
+    public KernelChainType Type;
     public PK_THREAD_chain_start_o_s* Options;
-    public int Execute() => KernelRuntime.ThreadChainStart(ThreadId, Options);
+    public int Execute() => KernelRuntime.ThreadChainStart(Type, Options);
 }
 
 internal unsafe struct ThreadChainStopCommand : IKernelCommand
@@ -94,19 +94,19 @@ internal unsafe struct ThreadChainStopCommand : IKernelCommand
 
 internal unsafe struct ThreadIsInChainCommand : IKernelCommand
 {
-    public int* ThreadId;
-    public int* ChainId;
-    public int* LocalLevel;
-    public int Execute() => KernelRuntime.ThreadIsInChain(ThreadId, ChainId, LocalLevel);
+    public KernelChainType* Type;
+    public BufferCount* Length;
+    public BufferCount* Remaining;
+    public int Execute() => KernelRuntime.ThreadIsInChain(Type, Length, Remaining);
 }
 
 internal unsafe struct ThreadIsInKernelCommand : IKernelCommand
 {
     public byte* InKernel;
-    public byte* InChain;
-    public byte* Busy;
-    public byte* AtTopLevel;
-    public int Execute() => KernelRuntime.ThreadIsInKernel(InKernel, InChain, Busy, AtTopLevel);
+    public byte* IsProtected;
+    public byte* IsSubthread;
+    public byte* IsExcluding;
+    public int Execute() => KernelRuntime.ThreadIsInKernel(InKernel, IsProtected, IsSubthread, IsExcluding);
 }
 
 internal unsafe struct ThreadRegisterMemoryCbsCommand : IKernelCommand

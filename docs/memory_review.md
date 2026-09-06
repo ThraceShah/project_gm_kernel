@@ -1,10 +1,10 @@
 # 内存改造审查与修复记录
 
-审查日期：2026-09-06。基线提交为 `8278845`；待审实现是审查开始时的未提交工作区。审查保留了原改动，未执行 reset、stash 或提交。
+审查日期：2026-09-06。首次审查以 `8278845` 为原始基线，以下保留当时的问题与性能证据；本轮补缺口以 `5475aa5` 为基线，结果见本文末尾。修改保留在工作区供审阅。
 
 ## 结论
 
-待审版本不能按原计划验收。问题不只是性能：已有 140 项测试遗漏了能稳定复现的内存损坏、撤销失败和并发竞争。此次直接修复主要缺陷，并改正了测试与基准方法；剩余计划缺口明确列在本文末尾。
+首次待审版本存在内存损坏、撤销失败和并发竞争，原有 140 项测试未能覆盖。首次修复后列出的五类缺口，本轮已补齐对应实现；其中分区删除和回调默认值按真实 Parasolid 的行为修正，而不是沿用最初的语义假设。
 
 原“回退 71–78%”不能作为稳定性能结论：基准仅预热 4 次，随后运行几十次操作，受分层编译/运行配置影响；同时混用了直接托管调用与调度入口。旧 Body 删除也没有回收拓扑和几何，和新删除不等量。它仍提示需要排查，但不能用这个百分比说明并发或非托管内存必然慢几倍。
 
@@ -23,7 +23,7 @@
 
 对应代码集中在 `src/ProjectGmKernel.Native/Runtime/`，针对性测试集中在 `tests/KernelTests/MemoryReviewTests.cs`。
 
-## 性能证据
+## 首次审查的性能证据
 
 统一使用 `.NET 10.0.10`、Release、`DOTNET_TieredCompilation=0`。三个版本运行同一份 `scripts/PerfBaseline.cs`。每项预热 24 个批次，再采样 7 组，每组 32 个批次；计时及分配测量不包括 session 启停。block 批次 8 次、point 批次 512 次，以兼容旧版固定 tag 表。报告中位数，不把几十次调用的单次结果当作稳态性能。
 
@@ -48,7 +48,7 @@
 
 快照和原始输出保存在临时目录 `temp_docs/memory-review/`：`original-results.txt`、`pre-fix-results.txt`、`final-verified-results.txt`；更新代码后可直接重新运行基准。不要把调试/短预热结果与本表混比。
 
-## 验证
+## 首次审查的验证
 
 - Debug 与 Release 均为 **156/156 测试通过**，包括严格 0 B 分配断言；不是保留 700 B 容忍阈值后的通过。
 - 原 140 项测试之外新增针对性回归，覆盖失败撤销、冷分配失败、mark 删除失败、跨 session tag、物理块合并、池元数据、两个分区在同一个 Barrier 上同时持有写权限、并行日志扩容与失败隔离、等待锁及回调重入。
@@ -56,12 +56,45 @@
 - NativeAOT 发布与 `scripts/AbiSmoke.cs` 均通过，真实共享库在 `src/ProjectGmKernel.Native/bin/Release/net10.0/linux-x64/publish/`。B 样条 oracle 的 10 组数值案例及普通/有理曲线附着 Body 的 XT compare 通过。测试数量与最终运行结果以 `temp_docs/memory-review/` 的验收输出为准。
 - 分配检查从源码正则改为 IL 检查，识别真实数组分配、装箱和引用构造。消除了 IntegrityChecker 的首次调用委托分配；不通过扩张整文件白名单掩盖剩余异常构造。
 
-## 剩余问题：不能宣称原计划全部完成
+## 本轮五类缺口的关闭记录
 
-- **[P1] 分区生命周期/任意字段修改的回滚未完成。** `KernelRuntime.Partitions.cs` 的分区创建/删除没有写入相应撤销记录；`SessionData.UndoKind` 中有枚举并不表示功能已经实现。需要补充分区创建/删除、当前分区及存量模型字段的完整回放和 oracle。
-- **[P1] PK 线程协议仍是子集。** `ThreadChainStartImplementation`/`ThreadIsInChainImplementation` 把线程 ID、链类型、链长度等概念混用；相关执行分类查询及全局内存回调导出仍有 stub。真实 Parasolid 对未处于 pmark 的分区返回 `PK_ERROR_not_at_pmark`，我方尚未完整落实这一前置条件。当前 oracle 验证建立 checkpoint 后的合法锁定/解锁流程，不能据此声称 PK_THREAD 全兼容。
-- **[P1] 共享几何所有权未全面落实。** 现有 OwnerCount 字段和释放逻辑没有完整覆盖引用取得、重连及 mark 前镜像；基本体的专属几何通过，不代表共享几何或跨分区修改安全。
-- **[P2] 内存预算并未覆盖所有空洞。** 有存活记录的实体池仍保留部分空页；分区/线程表有固定上限。需要继续做逐页存活计数、安全页回收及元数据上限设计。
-- **[P2] 严格 IL 禁令尚未清零。** `SurfaceDerivativeLayout` 的构造函数和 GetIndex 仍在非法内部参数分支构造异常对象；这是基线已有的检查型工具行为，公开 PK 参数校验的运行测试为 0 分配，但“核心源码任何路径均不分配”的硬禁令尚不成立。IL 检查会如实失败，也尚未接入每次 build 自动执行。
+| 原审查项 | 当前实现 | 对应验证 |
+| --- | --- | --- |
+| 分区生命周期和存量字段回滚 | 实体记录前镜像、快照释放、精确 body 环恢复；无全局 mark 的复合命令也能撤销删除；分区删除成功后才清理历史 | 字段/删除失败测试、分区生命周期 oracle |
+| PK 线程协议 | 分离应用线程 ID、链类型、长度、remaining；保留链权限；补充函数目录、分类查询、全局回调和 checkpoint 前置检查 | 并发链/独占链调度测试、线程 oracle、构建时目录一致性检查 |
+| 共享几何所有权 | 曲线/曲面的引用取得、分离、计数回滚与最后引用释放；点禁止多个父对象；跨分区附着拒绝 | 共享曲线和共享曲面的 XT receive/compare、B 样条重新附着、分配失败及跨分区测试 |
+| 空页和元数据容量 | 每页存活计数与空页回收、页位置复用时提升 generation；稳定地址分段表和动态锁集合 | 部分空池回收、300 个分区、140 个新线程、32 个锁，以及等待时停止 session |
+| IL 分配门禁 | 导数布局改为无异常分配的校验接口；每次构建检查实际 IL，未扩大核心目录豁免 | Debug/Release 构建均为 CLEAN，严格 0 B 运行断言 |
 
-因此本次结果是“重要正确性和性能问题已修复，审查仍有未完成项”，不是原计划的最终验收通过。
+分区删除的语义需要特别区分：Parasolid 的显式 `PK_PARTITION_delete` 会删除该分区在各个 mark 中的历史，之后 goto 不会复活它；mark 保存的当前分区也会相应更新。依据是 v380《PK Functional Description》的 “Deleting partitions” 和 “Session marks” 小节，且已实际调用本地 Parasolid 验证。命令执行失败时仍会恢复删除；永久清理只发生在命令成功提交后。
+
+共享所有者的 XT 链必须闭合，单个所有者使用 null 链接。本轮真实 receive 测试定位并修复了共享 edge 链的线性输出问题。点的附着规则不同：再次附着已有父对象的点返回 `PK_ERROR_has_parent`。任一内存回调为空时，整对回调恢复默认值；这两项均有直接 oracle 对照。
+
+## 本轮验收证据
+
+- `tests/KernelTests`：Debug 和 Release 均为 **179/179**，包括非托管元数据增长、失败撤销、回调保护状态、大小锁集合等待期间停止 session，以及命令内 Trim 不破坏待回滚记录。
+- 构建自动检查 **71 个已实现导出**的函数目录及 **655 个核心方法**的 IL；结果为 CLEAN。内部几何工具不再构造参数异常来表示输入失败。
+- `scripts/ParasolidEvaluationOracle.cs -- --memory-review`：分区语义、共享曲线、共享曲面、各自删除/恢复，以及 5 类基本体的默认/旋转坐标系，均经我方 text XT → 真实 Parasolid receive → `PK_DEBUG_BODY_compare` 验证。共享测试还保存真实 Parasolid 自身的 transmit/receive 结果供定位。
+- `scripts/ParasolidThreadOracle.cs`：线程 ID、可空的未用输出、两类链的 0/1/3 链长、remaining、保护标记、回调默认值及点父对象限制均有直接对照。
+- 本地 Parasolid 库的 `PK_THREAD_ask_function_run` 返回 `not_implemented`，部分较新函数名不在其查询目录中。因此此维度不计作 oracle 通过，采用生成目录检查与真实调度行为测试验收，脚本明确输出该限制。
+- 同一 IL 检查器对 `5475aa5` 基线仍检出 3 处异常对象构造并返回失败；当前代码返回 CLEAN，确认门禁没有通过放宽豁免来清零。
+- 最终版本的 NativeAOT `linux-x64` 发布和 `scripts/AbiSmoke.cs` 通过；B 样条的 10 组数值案例及普通/有理曲线重新附着后的 XT receive/compare 通过。对应输出为 `temp_docs/memory-review/gap-aot-publish.txt`、`temp_docs/memory-review/gap-abi-smoke.txt` 和 `temp_docs/memory-review/bcurve-gap-oracle.txt`。
+
+## 本轮等量性能对照
+
+基线为 `5475aa5`，该版本已完整删除 body 子对象，所以本表的创建/删除是等量工作。前后运行同一份 `scripts/PerfBaseline.cs`，使用 .NET 10.0.10、Release、关闭分层编译、固定 CPU 2、24 批预热及 7 组中位数；session 启停不计时。单位为 ns/op，越低越好。
+
+| 入口 / 用例 | 修改前 | 修改后 |
+| --- | ---: | ---: |
+| 托管 / block 创建 | 5,056.3 | 4,700.9 |
+| 托管 / block 创建＋删除 | 5,976.5 | 5,744.8 |
+| 托管 / point 创建＋删除 | 125.2 | 124.1 |
+| 托管 / mark＋block＋goto | 6,201.1 | 5,581.2 |
+| C 导出 / block 创建 | 5,140.7 | 4,729.5 |
+| C 导出 / block 创建＋删除 | 6,055.0 | 5,625.1 |
+| C 导出 / point 创建＋删除 | 124.7 | 130.0 |
+| C 导出 / mark＋block＋goto | 6,210.8 | 5,610.2 |
+
+全部测量区间为 **0 B/op**。最大耗时增长约 4.3%，未超过 5% 目标。优化保留所有权、分区锁和失败撤销检查，主要减少重复的 tag 查询、上下文查询和默认分区元数据寻址，并保持常用记录的紧凑布局。原始数据为 `temp_docs/memory-review/gap-baseline-pinned.txt` 与 `temp_docs/memory-review/gap-final-scalar.txt`；中间含调度抖动的测量也保留在同目录，不能把单次最大值当作稳定吞吐结论。
+
+原始输出及同机基线快照保存在 `temp_docs/memory-review/`。实现范围是当前已实现的 API、单 session、单个活动全局 mark、标准分区及 `local_level=none`；不是完整 Parasolid 建模 API 或完整多 pmark 图的实现。当前架构详见 `docs/memory_architecture.md`。

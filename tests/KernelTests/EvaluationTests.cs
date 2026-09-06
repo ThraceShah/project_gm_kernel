@@ -97,7 +97,8 @@ public unsafe class EvaluationTests : IDisposable
         Assert.Equal(ParasolidConstants.PK_ERROR_wrong_entity,
             KernelRuntime.CurveEval(surface, 0, 0, &result));
         Assert.Equal(987, result.coord[0]);
-        Assert.Equal(0, KernelRuntime.EntityDelete(1, &surface));
+        Assert.Equal(ParasolidConstants.PK_ERROR_is_attached, KernelRuntime.EntityDelete(1, &surface));
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
         Assert.Equal(ParasolidConstants.PK_ERROR_not_a_tag,
             KernelRuntime.SurfEval(surface, Uv(0, 0), 0, 0, 0, &result));
     }
