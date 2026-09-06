@@ -618,9 +618,9 @@ internal static unsafe class XtWriter
         var knots = AddIndex(nodes, ref graph, ref map);
         var mults = AddIndex(nodes, ref graph, ref map);
         var curveData = AddIndex(nodes, ref graph, ref map);
-        var poles = KernelRuntime.BCurveVertices.AsSpan(data.VertexOffset, data.NVertices * data.VertexDim);
-        var knotValues = KernelRuntime.BCurveKnots.AsSpan(data.KnotOffset, data.NKnots);
-        var multiplicities = KernelRuntime.BCurveKnotMults.AsSpan(data.KnotMultOffset, data.NKnots);
+        var poles = data.PolesSpan();
+        var knotValues = data.KnotsSpan();
+        var multiplicities = data.KnotMultsSpan();
         var poleFields = new XtFieldValue[poles.Length];
         var knotFields = new XtFieldValue[data.NKnots];
         var multFields = new XtFieldValue[data.NKnots];

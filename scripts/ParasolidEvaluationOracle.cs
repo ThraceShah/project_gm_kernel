@@ -6,6 +6,7 @@
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ProjectGmKernel.Native.Runtime;
 using M = ProjectGmKernel.Native.Generated;
 using static parasolid;
@@ -15,11 +16,13 @@ var directory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath()
 Directory.CreateDirectory(directory);
 var roundtripFailures = new List<string>();
 var numericalOnly = args.Contains("--numerical-only");
+var memoryReview = args.Contains("--memory-review");
 if (numericalOnly) Console.WriteLine("Numerical-only run: XT receive/compare is not checked.");
 
 unsafe
 {
-    if (!ParasolidScriptHost.TryStartSession("evaluation oracle", out var session, out var message))
+    if (!ParasolidScriptHost.TryStartSession("evaluation oracle", out var session, out var message,
+        configureRollback: memoryReview ? MarkOracleStorage.Register : null))
         throw new InvalidOperationException(message);
     using (session)
     {
@@ -27,6 +30,10 @@ unsafe
         Check(KernelRuntime.SessionStart(&start), "our session");
         try
         {
+            if (memoryReview)
+            {
+                CheckPartitionLockProtocol();
+            }
             foreach (var kind in new[] { "block", "cylinder", "cone", "sphere", "torus" })
             foreach (var rotated in new[] { false, true })
             {
@@ -65,13 +72,38 @@ unsafe
                         Check(PK_BODY_create_solid_torus(5, 2, bp, &reference), kind);
                         break;
                 }
-                CheckBodyEvaluations(ours, label);
-                Console.WriteLine(label + ": numerical evaluation passed");
+                if (memoryReview)
+                {
+                    // Delete/restore a live body, then reuse slots from another
+                    // body. Both kernels perform the same lifecycle operations.
+                    int ourMark, referenceMark;
+                    Check(KernelRuntime.MarkCreate(&ourMark), "our mark");
+                    Check(PK_MARK_create(&referenceMark), "reference mark");
+                    Check(KernelRuntime.EntityDelete(1, &ours), "our delete under mark");
+                    Check(PK_ENTITY_delete(1, &reference), "reference delete under mark");
+                    Check(KernelRuntime.MarkGoto(ourMark), "our restore");
+                    Check(PK_MARK_goto(referenceMark), "reference restore");
+                    int ourTemporary, referenceTemporary;
+                    Check(KernelRuntime.BodyCreateSolidSphere(1, null, &ourTemporary), "our temporary body");
+                    Check(PK_BODY_create_solid_sphere(1, null, &referenceTemporary), "reference temporary body");
+                    Check(KernelRuntime.EntityDelete(1, &ourTemporary), "our temporary delete");
+                    Check(PK_ENTITY_delete(1, &referenceTemporary), "reference temporary delete");
+                }
+                else
+                {
+                    CheckBodyEvaluations(ours, label);
+                    Console.WriteLine(label + ": numerical evaluation passed");
+                }
                 if (numericalOnly) continue;
                 try
                 {
                     CheckRoundtrip(ours, reference, Path.Combine(directory, label + ".x_t"));
                     Console.WriteLine(label + ": XT body comparison passed");
+                    if (memoryReview)
+                    {
+                        Check(KernelRuntime.EntityDelete(1, &ours), "our final delete");
+                        Check(PK_ENTITY_delete(1, &reference), "reference final delete");
+                    }
                 }
                 catch (InvalidOperationException failure)
                 {
@@ -83,6 +115,7 @@ unsafe
         finally { Check(KernelRuntime.SessionStop(), "our stop"); }
     }
 }
+
 if (roundtripFailures.Count != 0)
     throw new InvalidOperationException(string.Join(Environment.NewLine, roundtripFailures));
 foreach (var (kind, stats) in ComparisonStats.ByKind)
@@ -99,6 +132,45 @@ static void Check(int error, string operation)
 static void Equal(int expected, int actual, string label)
 {
     if (expected != actual) throw new InvalidOperationException($"{label}: expected={expected}, actual={actual}");
+}
+
+static unsafe void CheckPartitionLockProtocol()
+{
+    int ours, reference;
+    Check(KernelRuntime.PartitionCreateEmpty(&ours), "our partition");
+    Check(PK_PARTITION_create_empty(&reference), "reference partition");
+    int ourMark, referenceMark;
+    Check(KernelRuntime.MarkCreate(&ourMark), "our partition checkpoint");
+    Check(PK_MARK_create(&referenceMark), "reference partition checkpoint");
+    var ourOptions = new M.PK_THREAD_lock_partitions_o_s
+    { o_t_version = 1, want_locked_partitions = 1, want_unavailable_partitions = 1 };
+    var options = new PK_THREAD_lock_partitions_o_t
+    { want_locked_partitions = 1, want_unavailable_partitions = 1 };
+    M.PK_THREAD_lock_partitions_r_s ourResult;
+    PK_THREAD_lock_partitions_r_t result;
+    var expectedError = PK_THREAD_lock_partitions(1, &reference, PK_THREAD_lock_all_c, PK_THREAD_wait_no_c, &options, &result);
+    var actualError = KernelRuntime.ThreadLockPartitions(1, &ours, PK_THREAD_lock_all_c, PK_THREAD_wait_no_c, &ourOptions, &ourResult);
+    Check(expectedError, "reference partition lock");
+    Equal(expectedError, actualError, "partition lock error");
+    Equal(result.status, ourResult.status, "partition lock status");
+    Equal(result.n_locked_partitions, ourResult.n_locked_partitions, "partition lock count");
+    Equal(reference, result.locked_partitions[0], "reference returned partition");
+    Equal(ours, ourResult.locked_partitions[0], "our returned partition");
+    Check(PK_THREAD_lock_partitions_r_f(&result), "reference lock result free");
+    Check(KernelRuntime.ThreadLockPartitionsResultFree(&ourResult), "our lock result free");
+    var unlock = new PK_THREAD_unlock_partitions_o_t();
+    var ourUnlock = new M.PK_THREAD_unlock_partitions_o_s { o_t_version = 1 };
+    int referenceCount, ourCount;
+    int* referencePartitions;
+    int* ourPartitions;
+    Check(PK_THREAD_unlock_partitions(&unlock, &referenceCount, &referencePartitions), "reference unlock");
+    Check(KernelRuntime.ThreadUnlockPartitions(&ourUnlock, &ourCount, &ourPartitions), "our unlock");
+    Equal(referenceCount, ourCount, "unlock count");
+    Check(PK_MEMORY_free(referencePartitions), "reference unlock free");
+    Check(KernelRuntime.MemoryFree(ourPartitions), "our unlock free");
+    Check(KernelRuntime.MarkGoto(ourMark), "our partition checkpoint restore");
+    Check(PK_MARK_goto(referenceMark), "reference partition checkpoint restore");
+    Console.WriteLine("PK partition lock/unlock: oracle comparison passed");
 }
 
 static unsafe void Compare(M.PK_VECTOR_s* ours, PK_VECTOR_t* reference, int count, string label,
@@ -338,5 +410,60 @@ sealed class ComparisonStats
     {
         if (!ByKind.TryGetValue(kind, out var stats)) ByKind.Add(kind, stats = new ComparisonStats());
         return stats;
+    }
+}
+
+// Partitioned Parasolid rollback requires a delta-storage frustrum. This
+// oracle-only adapter uses the PKToy callback types; session setup remains in
+// ParasolidScriptHost. No ABI declarations or session initialization copied.
+static unsafe class MarkOracleStorage
+{
+    private static readonly Dictionary<uint, MemoryStream> Marks = new();
+    private static uint nextDelta;
+    public static void Register()
+    {
+        var callbacks = new PK_DELTA_frustrum_t
+        { open_for_write_fn = &OpenWrite, open_for_read_fn = &OpenRead, close_fn = &Close,
+            write_fn = &Write, read_fn = &Read, delete_fn = &Delete };
+        var error = PK_DELTA_register_callbacks(callbacks);
+        if (error != 0) throw new InvalidOperationException($"reference mark storage: error={error}");
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int OpenWrite(int mark, uint* delta)
+    {
+        *delta = ++nextDelta;
+        Marks.Add(*delta, new MemoryStream());
+        return 0;
+    }
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int OpenRead(uint delta)
+    {
+        if (!Marks.TryGetValue(delta, out var stream)) return PK_ERROR_bad_value;
+        stream.Position = 0;
+        return 0;
+    }
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int Close(uint mark) => 0;
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int Write(uint mark, uint count, byte* bytes)
+    {
+        if (!Marks.TryGetValue(mark, out var stream) || count > int.MaxValue) return PK_ERROR_bad_value;
+        stream.Write(new ReadOnlySpan<byte>(bytes, (int)count));
+        return 0;
+    }
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int Read(uint mark, uint count, byte* bytes)
+    {
+        if (!Marks.TryGetValue(mark, out var stream) || count > int.MaxValue || stream.Length - stream.Position < count)
+            return PK_ERROR_bad_value;
+        stream.ReadExactly(new Span<byte>(bytes, (int)count));
+        return 0;
+    }
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int Delete(uint mark)
+    {
+        if (Marks.Remove(mark, out var stream)) stream.Dispose();
+        return 0;
     }
 }

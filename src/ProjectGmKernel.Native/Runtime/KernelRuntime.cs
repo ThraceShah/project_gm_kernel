@@ -12,135 +12,49 @@ internal static unsafe partial class KernelRuntime
         Torus,
     }
 
-    private const int DefaultSessionId = 1;
-    private const int MaxHandles = 4096;
-
-    // ── Pool capacities ──────────────────────────────────────────
-    private const int MaxPoints = 2048;
-    private const int MaxVectors = 2048;
-    private const int MaxBodies = 512;
-    private const int MaxShells = 1024;
-    private const int MaxFaceUses = 8192;
-    private const int MaxFaces = 4096;
-    private const int MaxLoops = 8192;
-    private const int MaxEdges = 8192;
-    private const int MaxFins = 16384;
-    private const int MaxVertices = 8192;
-    private const int MaxRegions = 512;
-    private const int MaxCurves = 4096;
-    private const int MaxSurfaces = 4096;
-    private const int MaxTransforms = 256;
-    private const int MaxCircleData = 4096;
-    private const int MaxLineData = 4096;
-    private const int MaxCylinderData = 1024;
-    private const int MaxPlaneData = 1024;
-    private const int MaxConeData = 1024;
-    private const int MaxSphereData = 1024;
-    private const int MaxTorusData = 1024;
-
-    // ── Shared state ─────────────────────────────────────────────
-    private static readonly System.Threading.Lock RuntimeLock = new();
-    private static readonly SessionDispatchState DispatchState = new();
-    private static SessionState? session;
-
-    // ── Handle table (tag → entity mapping) ──────────────────────
-    private static readonly HandleRecord[] Handles = new HandleRecord[MaxHandles];
-    private static int nextTag = 1;
-
-    // ── Slot → tag reverse mapping (per pool) ────────────────────
-    // Avoids creating duplicate tags for the same entity slot.
-    private static readonly int[] PointSlotToTag = new int[MaxPoints];
-    private static readonly int[] VectorSlotToTag = new int[MaxVectors];
-    private static readonly int[] BodySlotToTag = new int[MaxBodies];
-    private static readonly int[] ShellSlotToTag = new int[MaxShells];
-    private static readonly int[] FaceSlotToTag = new int[MaxFaces];
-    private static readonly int[] LoopSlotToTag = new int[MaxLoops];
-    private static readonly int[] EdgeSlotToTag = new int[MaxEdges];
-    private static readonly int[] FinSlotToTag = new int[MaxFins];
-    private static readonly int[] VertexSlotToTag = new int[MaxVertices];
-    private static readonly int[] RegionSlotToTag = new int[MaxRegions];
-    private static readonly int[] CurveSlotToTag = new int[MaxCurves];
-    private static readonly int[] SurfaceSlotToTag = new int[MaxSurfaces];
-    private static readonly int[] TransformSlotToTag = new int[MaxTransforms];
-    private static readonly XtDocument?[] BodyXtDocuments = new XtDocument?[MaxBodies];
-    private static readonly ProjectGmKernel.Xt.IXtSchemaModel?[] BodyXtModels = new ProjectGmKernel.Xt.IXtSchemaModel?[MaxBodies];
-    private static readonly int[] BodyXtRootIndexes = new int[MaxBodies];
-    private static readonly byte[] BodyXtOpaque = new byte[MaxBodies];
-
-    // ── Return arena for int** query outputs ─────────────────────
-    // Session-managed unmanaged buffers. Each query allocates a contiguous
-    // slice, and returned pointers remain valid until the arena is reset.
-    private const int InitialReturnBlockCapacity = 256;
-    private const int MaxReturnBlocks = 64;
-    private static readonly nint[] ReturnBlocks = new nint[MaxReturnBlocks];
-    private static readonly int[] ReturnBlockCapacities = new int[MaxReturnBlocks];
-    private static int returnBlockCount;
-    private static int returnBlockIndex = -1;
-    private static int returnCursor;
-
-    // ── Entity pools ─────────────────────────────────────────────
-    internal static EntityPool<PointRecord> Points;
-    internal static EntityPool<VectorRecord> Vectors;
-    internal static EntityPool<BodyRecord> Bodies;
-    internal static EntityPool<ShellRecord> Shells;
-    internal static EntityPool<FaceUseRecord> FaceUses;
-    internal static EntityPool<FaceRecord> Faces;
-    internal static EntityPool<LoopRecord> Loops;
-    internal static EntityPool<EdgeRecord> Edges;
-    internal static EntityPool<FinRecord> Fins;
-    internal static EntityPool<VertexRecord> Vertices;
-    internal static EntityPool<RegionRecord> Regions;
-    internal static EntityPool<CurveRecord> Curves;
-    internal static EntityPool<SurfaceRecord> Surfaces;
-    internal static EntityPool<TransformRecord> Transforms;
-    internal static EntityPool<CircleData> CircleDataPool;
-    internal static EntityPool<LineData> LineDataPool;
-    internal static EntityPool<CylinderData> CylinderDataPool;
-    internal static EntityPool<PlaneData> PlaneDataPool;
-    internal static EntityPool<ConeData> ConeDataPool;
-    internal static EntityPool<SphereData> SphereDataPool;
-    internal static EntityPool<TorusData> TorusDataPool;
-
-    internal static bool IsSessionStarted => session is not null && session.Started;
+    internal static bool IsSessionStarted => EnsureSession();
 
     internal static bool TryResolveBodySlot(EntityTag bodyTag, out BodySlot bodySlot)
     {
         bodySlot = -1;
-        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+        if (!IsValidTag(bodyTag) || (EntityClass)TagRec(bodyTag).ClassCode != EntityClass.Body)
             return false;
 
-        bodySlot = Handles[bodyTag].SlotIndex;
+        bodySlot = TagRec(bodyTag).Slot;
         return true;
     }
 
     internal static bool TryGetReceivedXt(EntityTag partTag, out XtDocument document, out XtNodeIndex rootIndex)
         => TryGetReceivedXt(partTag, out document, out rootIndex, out _);
 
+    // ── XT association side table (managed adapter storage) ─────
+    // XT documents stay in the managed adapter layer; the kernel only keeps
+    // the association tag↔document for transmit/receive round-trips.
+    internal static XtAssociationTable Xt = new();
+
     internal static bool TryGetReceivedXt(EntityTag partTag, out XtDocument document, out XtNodeIndex rootIndex, out ProjectGmKernel.Xt.IXtSchemaModel? model)
     {
         document = null!;
         rootIndex = 0;
         model = null;
-        if (!IsValidTag(partTag) || Handles[partTag].Pool != PoolKind.Body)
+        if (!IsValidTag(partTag) || (PoolKind)TagRec(partTag).Pool != PoolKind.Body)
             return false;
-        var slot = Handles[partTag].SlotIndex;
-        document = BodyXtDocuments[slot]!;
-        if (document is null)
+        var slot = TagRec(partTag).Slot;
+        var receivedDocument = Xt.GetDocument(slot);
+        if (receivedDocument is null)
             return false;
-        rootIndex = BodyXtRootIndexes[slot];
-        model = BodyXtModels[slot];
+        document = receivedDocument;
+        rootIndex = Xt.GetRootIndex(slot);
+        model = Xt.GetModel(slot);
         return true;
     }
 
     internal static void AttachReceivedXt(EntityTag partTag, XtDocument document, ProjectGmKernel.Xt.IXtSchemaModel? model, XtNodeIndex rootIndex, bool opaque)
     {
-        if (!IsValidTag(partTag) || Handles[partTag].Pool != PoolKind.Body)
+        if (!IsValidTag(partTag) || (PoolKind)TagRec(partTag).Pool != PoolKind.Body)
             throw new InvalidOperationException("Cannot attach XT data to a non-part entity.");
-        var slot = Handles[partTag].SlotIndex;
-        BodyXtDocuments[slot] = document;
-        BodyXtModels[slot] = model;
-        BodyXtRootIndexes[slot] = rootIndex;
-        BodyXtOpaque[slot] = opaque ? (byte)1 : (byte)0;
+        var slot = TagRec(partTag).Slot;
+        Xt.Attach(slot, document, model, rootIndex, opaque);
     }
 
     internal static int CreateOpaquePartCore(XtDocument document, ProjectGmKernel.Xt.IXtSchemaModel? model, XtNode root, out EntityTag partTag)
@@ -155,7 +69,8 @@ internal static unsafe partial class KernelRuntime
         if (entityClass == 0)
             return ParasolidConstants.PK_ERROR_bad_file_format;
 
-        var bodySlot = Bodies.Allocate();
+        var bodySlot = TryAllocateBodies();
+        if (bodySlot < 0) return -1;
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
         AssignPartition(ref body.Header, CurrentPartition);
@@ -184,43 +99,43 @@ internal static unsafe partial class KernelRuntime
 
     internal static SurfaceRecord GetSurfaceByTag(SurfTag surfaceTag)
     {
-        if (!IsValidTag(surfaceTag) || Handles[surfaceTag].Class != EntityClass.Surface)
+        if (!IsValidTag(surfaceTag) || (EntityClass)TagRec(surfaceTag).ClassCode != EntityClass.Surface)
             return default;
-        return Surfaces[Handles[surfaceTag].SlotIndex];
+        return Surfaces[TagRec(surfaceTag).Slot];
     }
 
     internal static SurfaceSlot GetSurfaceSlotByTag(SurfTag surfaceTag)
     {
-        return IsValidTag(surfaceTag) && Handles[surfaceTag].Class == EntityClass.Surface
-            ? Handles[surfaceTag].SlotIndex
+        return IsValidTag(surfaceTag) && (EntityClass)TagRec(surfaceTag).ClassCode == EntityClass.Surface
+            ? TagRec(surfaceTag).Slot
             : -1;
     }
 
     internal static PointRecord GetPointByTag(PointTag pointTag)
     {
-        if (!IsValidTag(pointTag) || Handles[pointTag].Class != EntityClass.Point)
+        if (!IsValidTag(pointTag) || (EntityClass)TagRec(pointTag).ClassCode != EntityClass.Point)
             return default;
-        return Points[Handles[pointTag].SlotIndex];
+        return Points[TagRec(pointTag).Slot];
     }
 
     internal static PointSlot GetPointSlotByTag(PointTag pointTag)
     {
-        return IsValidTag(pointTag) && Handles[pointTag].Class == EntityClass.Point
-            ? Handles[pointTag].SlotIndex
+        return IsValidTag(pointTag) && (EntityClass)TagRec(pointTag).ClassCode == EntityClass.Point
+            ? TagRec(pointTag).Slot
             : -1;
     }
 
     internal static CurveRecord GetCurveByTag(CurveTag curveTag)
     {
-        if (!IsValidTag(curveTag) || Handles[curveTag].Class != EntityClass.Curve)
+        if (!IsValidTag(curveTag) || (EntityClass)TagRec(curveTag).ClassCode != EntityClass.Curve)
             return default;
-        return Curves[Handles[curveTag].SlotIndex];
+        return Curves[TagRec(curveTag).Slot];
     }
 
     internal static CurveSlot GetCurveSlotByTag(CurveTag curveTag)
     {
-        return IsValidTag(curveTag) && Handles[curveTag].Class == EntityClass.Curve
-            ? Handles[curveTag].SlotIndex
+        return IsValidTag(curveTag) && (EntityClass)TagRec(curveTag).ClassCode == EntityClass.Curve
+            ? TagRec(curveTag).Slot
             : -1;
     }
 
@@ -261,322 +176,40 @@ internal static unsafe partial class KernelRuntime
     private const int PoolBCurveKnotMults = 25;
     private const int PoolBCurveExpandedKnots = 26;
 
-    static KernelRuntime()
+    // ── Tag plumbing (new infrastructure) ───────────────────────
+
+    private static TagMap.TagRecord TagRec(EntityTag tag)
     {
-        Points = new EntityPool<PointRecord>(MaxPoints);
-        Vectors = new EntityPool<VectorRecord>(MaxVectors);
-        Bodies = new EntityPool<BodyRecord>(MaxBodies);
-        Shells = new EntityPool<ShellRecord>(MaxShells);
-        FaceUses = new EntityPool<FaceUseRecord>(MaxFaceUses);
-        Faces = new EntityPool<FaceRecord>(MaxFaces);
-        Loops = new EntityPool<LoopRecord>(MaxLoops);
-        Edges = new EntityPool<EdgeRecord>(MaxEdges);
-        Fins = new EntityPool<FinRecord>(MaxFins);
-        Vertices = new EntityPool<VertexRecord>(MaxVertices);
-        Regions = new EntityPool<RegionRecord>(MaxRegions);
-        Curves = new EntityPool<CurveRecord>(MaxCurves);
-        Surfaces = new EntityPool<SurfaceRecord>(MaxSurfaces);
-        Transforms = new EntityPool<TransformRecord>(MaxTransforms);
-        CircleDataPool = new EntityPool<CircleData>(MaxCircleData);
-        LineDataPool = new EntityPool<LineData>(MaxLineData);
-        CylinderDataPool = new EntityPool<CylinderData>(MaxCylinderData);
-        PlaneDataPool = new EntityPool<PlaneData>(MaxPlaneData);
-        ConeDataPool = new EntityPool<ConeData>(MaxConeData);
-        SphereDataPool = new EntityPool<SphereData>(MaxSphereData);
-        TorusDataPool = new EntityPool<TorusData>(MaxTorusData);
+        State.Session->Tags.TryResolve(tag, CurrentSessionId, out var record);
+        return record;
     }
 
-    // ── Tag allocation ───────────────────────────────────────────
-
-    private static int AllocateTag(EntityClass entityClass, PoolKind pool, int slotIndex, int generation)
-    {
-        if (nextTag >= MaxHandles)
-            return -1;
-
-        var tag = nextTag++;
-        Handles[tag] = new HandleRecord
-        {
-            Alive = 1,
-            Class = entityClass,
-            Pool = pool,
-            SlotIndex = slotIndex,
-            Generation = generation,
-            SessionId = DefaultSessionId,
-        };
-        if (pool == PoolKind.Body)
-        {
-            BodyXtDocuments[slotIndex] = null;
-            BodyXtModels[slotIndex] = null;
-            BodyXtRootIndexes[slotIndex] = 0;
-            BodyXtOpaque[slotIndex] = 0;
-        }
-        SetSlotToTag(pool, slotIndex, tag);
-        return tag;
-    }
-
-    /// <summary>
-    /// Get existing tag for a slot, or allocate a new one if none exists.
-    /// Ensures stable tag identity for the same entity.
-    /// </summary>
+    /// <summary>Tag for an existing slot: reads the tag cached in the record header.</summary>
     private static int GetOrAllocateTag(EntityClass entityClass, PoolKind pool, int slotIndex)
-    {
-        var existing = GetSlotToTag(pool, slotIndex);
-        if (existing > 0 && existing < nextTag && Handles[existing].Alive != 0)
-            return existing;
-        return AllocateEntityTag(entityClass, pool, slotIndex);
-    }
+        => TagOf(pool, slotIndex);
 
-    private static void SetSlotToTag(PoolKind pool, int slot, int tag)
-    {
-        switch (pool)
-        {
-            case PoolKind.Point: PointSlotToTag[slot] = tag; break;
-            case PoolKind.Vector: VectorSlotToTag[slot] = tag; break;
-            case PoolKind.Body: BodySlotToTag[slot] = tag; break;
-            case PoolKind.Shell: ShellSlotToTag[slot] = tag; break;
-            case PoolKind.Face: FaceSlotToTag[slot] = tag; break;
-            case PoolKind.Loop: LoopSlotToTag[slot] = tag; break;
-            case PoolKind.Edge: EdgeSlotToTag[slot] = tag; break;
-            case PoolKind.Fin: FinSlotToTag[slot] = tag; break;
-            case PoolKind.Vertex: VertexSlotToTag[slot] = tag; break;
-            case PoolKind.Region: RegionSlotToTag[slot] = tag; break;
-            case PoolKind.Curve: CurveSlotToTag[slot] = tag; break;
-            case PoolKind.Surface: SurfaceSlotToTag[slot] = tag; break;
-            case PoolKind.Transform: TransformSlotToTag[slot] = tag; break;
-        }
-    }
-
-    private static int GetSlotToTag(PoolKind pool, int slot)
-    {
-        return pool switch
-        {
-            PoolKind.Point => PointSlotToTag[slot],
-            PoolKind.Vector => VectorSlotToTag[slot],
-            PoolKind.Body => BodySlotToTag[slot],
-            PoolKind.Shell => ShellSlotToTag[slot],
-            PoolKind.Face => FaceSlotToTag[slot],
-            PoolKind.Loop => LoopSlotToTag[slot],
-            PoolKind.Edge => EdgeSlotToTag[slot],
-            PoolKind.Fin => FinSlotToTag[slot],
-            PoolKind.Vertex => VertexSlotToTag[slot],
-            PoolKind.Region => RegionSlotToTag[slot],
-            PoolKind.Curve => CurveSlotToTag[slot],
-            PoolKind.Surface => SurfaceSlotToTag[slot],
-            PoolKind.Transform => TransformSlotToTag[slot],
-            _ => 0,
-        };
-    }
-
-    private static void ClearSlotToTagMaps()
-    {
-        Array.Clear(PointSlotToTag);
-        Array.Clear(VectorSlotToTag);
-        Array.Clear(BodySlotToTag);
-        Array.Clear(ShellSlotToTag);
-        Array.Clear(FaceSlotToTag);
-        Array.Clear(LoopSlotToTag);
-        Array.Clear(EdgeSlotToTag);
-        Array.Clear(FinSlotToTag);
-        Array.Clear(VertexSlotToTag);
-        Array.Clear(RegionSlotToTag);
-        Array.Clear(CurveSlotToTag);
-        Array.Clear(SurfaceSlotToTag);
-        Array.Clear(TransformSlotToTag);
-    }
-
-    private static void ResetReturnArena(bool freeBlocks)
-    {
-        if (freeBlocks)
-        {
-            for (int i = 0; i < returnBlockCount; i++)
-            {
-                if (ReturnBlocks[i] != 0)
-                {
-                    NativeMemory.Free((void*)ReturnBlocks[i]);
-                    ReturnBlocks[i] = 0;
-                }
-            }
-            Array.Clear(ReturnBlockCapacities, 0, returnBlockCount);
-            returnBlockCount = 0;
-        }
-
-        returnBlockIndex = -1;
-        returnCursor = 0;
-    }
-
-    private static int* AllocateReturnSlice(int count)
-    {
-        if (count <= 0)
-            return null;
-
-        if (returnBlockIndex < 0 || returnCursor + count > ReturnBlockCapacities[returnBlockIndex])
-        {
-            int nextCapacity = InitialReturnBlockCapacity;
-            if (returnBlockIndex >= 0)
-                nextCapacity = ReturnBlockCapacities[returnBlockIndex] * 2;
-            if (nextCapacity < count)
-                nextCapacity = count;
-
-            if (returnBlockCount == MaxReturnBlocks)
-                return null;
-
-            ReturnBlocks[returnBlockCount] = (nint)NativeMemory.Alloc((nuint)nextCapacity, (nuint)sizeof(int));
-            ReturnBlockCapacities[returnBlockCount] = nextCapacity;
-            returnBlockIndex = returnBlockCount;
-            returnBlockCount++;
-            returnCursor = 0;
-        }
-
-        int* result = ((int*)ReturnBlocks[returnBlockIndex]) + returnCursor;
-        returnCursor += count;
-        return result;
-    }
-
-    private static bool IsValidTag(int tag)
-    {
-        if (tag <= 0 || tag >= nextTag)
-            return false;
-        var h = Handles[tag];
-        return h.Alive != 0 &&
-            h.SessionId == DefaultSessionId &&
-            IsValidSlot(h.Pool, h.SlotIndex, h.Generation);
-    }
-
-    private static ref HandleRecord ResolveTag(int tag)
-    {
-        if (!IsValidTag(tag))
-            throw new InvalidOperationException($"Invalid tag {tag}");
-        return ref Handles[tag];
-    }
-
-    private static bool IsValidSlot(PoolKind pool, int slot, int generation)
-    {
-        return pool switch
-        {
-            PoolKind.Point => Points.IsValid(slot, generation),
-            PoolKind.Vector => Vectors.IsValid(slot, generation),
-            PoolKind.Body => Bodies.IsValid(slot, generation),
-            PoolKind.Shell => Shells.IsValid(slot, generation),
-            PoolKind.Face => Faces.IsValid(slot, generation),
-            PoolKind.Loop => Loops.IsValid(slot, generation),
-            PoolKind.Edge => Edges.IsValid(slot, generation),
-            PoolKind.Fin => Fins.IsValid(slot, generation),
-            PoolKind.Vertex => Vertices.IsValid(slot, generation),
-            PoolKind.Region => Regions.IsValid(slot, generation),
-            PoolKind.Curve => Curves.IsValid(slot, generation),
-            PoolKind.Surface => Surfaces.IsValid(slot, generation),
-            PoolKind.Transform => Transforms.IsValid(slot, generation),
-            _ => false,
-        };
-    }
 
     // ── Session lifecycle ────────────────────────────────────────
 
-    public static int SessionStart(PK_SESSION_start_o_s* options)
-    {
-        if (options is null)
-            return ParasolidConstants.PK_ERROR_bad_field_number;
-        if (options->o_t_version != 1)
-            return ParasolidConstants.PK_ERROR_o_t_version_incorrect;
+    private static int SessionStartImplementation(PK_SESSION_start_o_s* options) => SessionStartCore(options);
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is not null && session.Started)
-            return ParasolidConstants.PK_ERROR_rollback_started;
-        if (!XtSchemaRegistry.ConfigureFromEnvironment())
-            return ParasolidConstants.PK_ERROR_schema_access_error;
 
-        session = new SessionState(DefaultSessionId) { Started = true };
-        session.ResetPartitions();
-        nextTag = 1;
-        Array.Clear(Handles);
-        Array.Clear(BodyXtDocuments);
-        Array.Clear(BodyXtModels);
-        Array.Clear(BodyXtRootIndexes);
-        Array.Clear(BodyXtOpaque);
-        ClearSlotToTagMaps();
-        ResetReturnArena(freeBlocks: true);
+    private static int SessionStopImplementation() => SessionStopCore();
 
-        Points.Reset();
-        Vectors.Reset();
-        Bodies.Reset();
-        Shells.Reset();
-        FaceUses.Reset();
-        Faces.Reset();
-        Loops.Reset();
-        Edges.Reset();
-        Fins.Reset();
-        Vertices.Reset();
-        Regions.Reset();
-        Curves.Reset();
-        Surfaces.Reset();
-        Transforms.Reset();
-        CircleDataPool.Reset();
-        LineDataPool.Reset();
-        CylinderDataPool.Reset();
-        PlaneDataPool.Reset();
-        ConeDataPool.Reset();
-        SphereDataPool.Reset();
-        TorusDataPool.Reset();
-        ResetBCurves();
-
-        return ParasolidConstants.PK_ERROR_no_errors;
-    }
-
-    public static int SessionStop()
-    {
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
-            return ParasolidConstants.PK_ERROR_not_in_PK;
-
-        session.Started = false;
-        session = null;
-        nextTag = 1;
-        Array.Clear(Handles);
-        Array.Clear(BodyXtDocuments);
-        Array.Clear(BodyXtModels);
-        Array.Clear(BodyXtRootIndexes);
-        Array.Clear(BodyXtOpaque);
-        ClearSlotToTagMaps();
-        ResetReturnArena(freeBlocks: true);
-
-        Points.Reset();
-        Vectors.Reset();
-        Bodies.Reset();
-        Shells.Reset();
-        FaceUses.Reset();
-        Faces.Reset();
-        Loops.Reset();
-        Edges.Reset();
-        Fins.Reset();
-        Vertices.Reset();
-        Regions.Reset();
-        Curves.Reset();
-        Surfaces.Reset();
-        Transforms.Reset();
-        CircleDataPool.Reset();
-        LineDataPool.Reset();
-        CylinderDataPool.Reset();
-        PlaneDataPool.Reset();
-        ConeDataPool.Reset();
-        SphereDataPool.Reset();
-        TorusDataPool.Reset();
-        ResetBCurves();
-
-        return ParasolidConstants.PK_ERROR_no_errors;
-    }
 
     // ── PK_POINT_create ──────────────────────────────────────────
 
-    public static int PointCreate(PK_POINT_sf_s* pointSf, int* pointTag)
+    private static int PointCreateImplementation(PK_POINT_sf_s* pointSf, int* pointTag)
     {
+        if (pointTag != null) *pointTag = 0;
         if (pointSf is null || pointTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
-        var slot = Points.Allocate();
+        int slot;
+        if (!Points.TryAllocate(out slot)) return ParasolidConstants.PK_ERROR_memory_full;
         ref var rec = ref Points[slot];
         AssignPartition(ref rec.Header, CurrentPartition);
         // Zero-cost reinterpret: PK_VECTOR_s and KernelVector3 have identical layout
@@ -584,7 +217,10 @@ internal static unsafe partial class KernelRuntime
 
         var tag = AllocateTag(EntityClass.Point, PoolKind.Point, slot, rec.Header.Generation);
         if (tag < 0)
+        {
+            Points.Free(slot);
             return ParasolidConstants.PK_ERROR_general_body;
+        }
 
         *pointTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
@@ -592,27 +228,26 @@ internal static unsafe partial class KernelRuntime
 
     // ── PK_ENTITY_ask_class ──────────────────────────────────────
 
-    public static int EntityAskClass(int entityTag, int* classCode)
+    private static int EntityAskClassImplementation(int entityTag, int* classCode)
     {
         if (classCode is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         if (!IsValidTag(entityTag))
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        *classCode = ToPkClass(Handles[entityTag].Class);
-        if (Handles[entityTag].Class == EntityClass.Curve && Curves[Handles[entityTag].SlotIndex].Class != CurveClass.None)
-            *classCode = (int)Curves[Handles[entityTag].SlotIndex].Class;
+        *classCode = ToPkClass((EntityClass)TagRec(entityTag).ClassCode);
+        if ((EntityClass)(EntityClass)TagRec(entityTag).ClassCode == EntityClass.Curve && Curves[TagRec(entityTag).Slot].Class != CurveClass.None)
+            *classCode = (int)Curves[TagRec(entityTag).Slot].Class;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
     // ── PK_BODY_create_topology_2 ────────────────────────────────
 
-    public static int BodyCreateTopology2(
+    private static int BodyCreateTopology2Implementation(
         int nTopols, PK_CLASS_t* classes,
         int nRelations, int* parents, int* children, int* senses,
         PK_BODY_create_topology_2_o_s* options,
@@ -621,12 +256,12 @@ internal static unsafe partial class KernelRuntime
         if (classes is null || nTopols <= 0)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         // Allocate a body
-        var bodySlot = Bodies.Allocate();
+        var bodySlot = TryAllocateBodies();
+        if (bodySlot < 0) return -1;
         ref var body = ref Bodies[bodySlot];
         body.BodyType = ParasolidConstants.PK_BODY_type_general_c;
         AssignPartition(ref body.Header, CurrentPartition);
@@ -657,7 +292,9 @@ internal static unsafe partial class KernelRuntime
             switch (cls)
             {
                 case ParasolidConstants.PK_CLASS_shell:
-                    slots[i] = Shells.Allocate();
+                    slots[i] = TryAllocateShells();
+                    if (slots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
+
                     AssignPartition(ref Shells[slots[i]].Header, CurrentPartition);
                     Shells[slots[i]].Body = -1;
                     Shells[slots[i]].Region = -1;
@@ -671,7 +308,9 @@ internal static unsafe partial class KernelRuntime
                     poolKinds[i] = (byte)PoolKind.Shell;
                     break;
                 case ParasolidConstants.PK_CLASS_face:
-                    slots[i] = Faces.Allocate();
+                    slots[i] = TryAllocateFaces();
+                    if (slots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
+
                     AssignPartition(ref Faces[slots[i]].Header, CurrentPartition);
                     Faces[slots[i]].BackShell = -1;
                     Faces[slots[i]].FrontShell = -1;
@@ -687,7 +326,9 @@ internal static unsafe partial class KernelRuntime
                     poolKinds[i] = (byte)PoolKind.Face;
                     break;
                 case ParasolidConstants.PK_CLASS_loop:
-                    slots[i] = Loops.Allocate();
+                    slots[i] = TryAllocateLoops();
+                    if (slots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
+
                     AssignPartition(ref Loops[slots[i]].Header, CurrentPartition);
                     Loops[slots[i]].Face = -1;
                     Loops[slots[i]].FirstFin = -1;
@@ -697,7 +338,9 @@ internal static unsafe partial class KernelRuntime
                     poolKinds[i] = (byte)PoolKind.Loop;
                     break;
                 case ParasolidConstants.PK_CLASS_edge:
-                    slots[i] = Edges.Allocate();
+                    slots[i] = TryAllocateEdges();
+                    if (slots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
+
                     AssignPartition(ref Edges[slots[i]].Header, CurrentPartition);
                     Edges[slots[i]].Body = -1;
                     Edges[slots[i]].StartVertex = -1;
@@ -710,7 +353,9 @@ internal static unsafe partial class KernelRuntime
                     poolKinds[i] = (byte)PoolKind.Edge;
                     break;
                 case ParasolidConstants.PK_CLASS_fin:
-                    slots[i] = Fins.Allocate();
+                    slots[i] = TryAllocateFins();
+                    if (slots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
+
                     AssignPartition(ref Fins[slots[i]].Header, CurrentPartition);
                     Fins[slots[i]].Edge = -1;
                     Fins[slots[i]].Loop = -1;
@@ -727,7 +372,9 @@ internal static unsafe partial class KernelRuntime
                     poolKinds[i] = (byte)PoolKind.Fin;
                     break;
                 case ParasolidConstants.PK_CLASS_vertex:
-                    slots[i] = Vertices.Allocate();
+                    slots[i] = TryAllocateVertices();
+                    if (slots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
+
                     AssignPartition(ref Vertices[slots[i]].Header, CurrentPartition);
                     Vertices[slots[i]].Body = -1;
                     Vertices[slots[i]].Tolerance = 0;
@@ -738,7 +385,9 @@ internal static unsafe partial class KernelRuntime
                     poolKinds[i] = (byte)PoolKind.Vertex;
                     break;
                 case ParasolidConstants.PK_CLASS_region:
-                    slots[i] = Regions.Allocate();
+                    slots[i] = TryAllocateRegions();
+                    if (slots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
+
                     AssignPartition(ref Regions[slots[i]].Header, CurrentPartition);
                     Regions[slots[i]].Body = -1;
                     Regions[slots[i]].IsSolid = 0;
@@ -753,6 +402,10 @@ internal static unsafe partial class KernelRuntime
                     return ParasolidConstants.PK_ERROR_bad_class;
             }
         }
+
+        for (int i = 0; i < nTopols; i++)
+            if (slots[i] < 0)
+                return ParasolidConstants.PK_ERROR_memory_full;
 
         // Second pass: wire parent-child relationships
         for (int r = 0; r < nRelations; r++)
@@ -771,7 +424,8 @@ internal static unsafe partial class KernelRuntime
             {
                 var childPool = poolKinds[ci];
                 var childSlot = slots[ci];
-                WireRelation((byte)PoolKind.Body, bodySlot, childPool, childSlot, sense, bodySlot);
+                if (!WireRelation((byte)PoolKind.Body, bodySlot, childPool, childSlot, sense, bodySlot))
+                    return ParasolidConstants.PK_ERROR_memory_full;
             }
             else
             {
@@ -779,7 +433,8 @@ internal static unsafe partial class KernelRuntime
                 var childPool = poolKinds[ci];
                 var parentSlot = slots[pi];
                 var childSlot = slots[ci];
-                WireRelation(parentPool, parentSlot, childPool, childSlot, sense, bodySlot);
+                if (!WireRelation(parentPool, parentSlot, childPool, childSlot, sense, bodySlot))
+                    return ParasolidConstants.PK_ERROR_memory_full;
             }
         }
 
@@ -792,11 +447,12 @@ internal static unsafe partial class KernelRuntime
         {
             results->body = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, body.Header.Generation);
         }
+        if (!PublishBodyTopologyTags(bodySlot)) return ParasolidConstants.PK_ERROR_memory_full;
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static void WireRelation(
+    private static bool WireRelation(
         byte parentPool, int parentSlot,
         byte childPool, int childSlot,
         int sense, int bodySlot)
@@ -829,7 +485,7 @@ internal static unsafe partial class KernelRuntime
 
             case PoolKind.Shell when childPool == (byte)PoolKind.Face:
                 {
-                    AddFaceUse(parentSlot, childSlot, sense);
+                    if (AddFaceUse(parentSlot, childSlot, sense) < 0) return false;
                 }
                 break;
 
@@ -863,11 +519,13 @@ internal static unsafe partial class KernelRuntime
                 Fins[parentSlot].Edge = childSlot;
                 break;
         }
+        return true;
     }
 
     private static FaceUseSlot AddFaceUse(ShellSlot shellSlot, FaceSlot faceSlot, KernelSense sense)
     {
-        var faceUseSlot = FaceUses.Allocate();
+        var faceUseSlot = TryAllocateFaceUses();
+        if (faceUseSlot < 0) return -1;
         ref var faceUse = ref FaceUses[faceUseSlot];
         faceUse.Shell = shellSlot;
         faceUse.Face = faceSlot;
@@ -1182,10 +840,11 @@ internal static unsafe partial class KernelRuntime
 
     private static void AppendBodyToPartition(PartitionSlot partitionSlot, BodySlot bodySlot)
     {
-        if (session is null)
+        var session = State.Session;
+        if (session == null)
             return;
 
-        ref var partition = ref session.Partitions[partitionSlot];
+        ref var partition = ref session->Partitions[FindPartitionSlot((short)partitionSlot)];
         ref var body = ref Bodies[bodySlot];
         AssignPartition(ref body.Header, partitionSlot);
 
@@ -1766,16 +1425,15 @@ internal static unsafe partial class KernelRuntime
         };
     }
 
-    public static int BodyAskShells(int bodyTag, int* nShells, int** shells)
+    private static int BodyAskShellsImplementation(int bodyTag, int* nShells, int** shells)
     {
         if (nShells is null || shells is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+        if (!IsValidTag(bodyTag) || (EntityClass)TagRec(bodyTag).ClassCode != EntityClass.Body)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var body = ref Bodies[Handles[bodyTag].SlotIndex];
+        ref var body = ref Bodies[TagRec(bodyTag).Slot];
         *nShells = body.ShellCount;
         if (WriteTagList(shells, body.ShellCount, body.FirstShell, PoolKind.Shell, EntityClass.Shell, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -1783,16 +1441,15 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int BodyAskFaces(int bodyTag, int* nFaces, int** faces)
+    private static int BodyAskFacesImplementation(int bodyTag, int* nFaces, int** faces)
     {
         if (nFaces is null || faces is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+        if (!IsValidTag(bodyTag) || (EntityClass)TagRec(bodyTag).ClassCode != EntityClass.Body)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var body = ref Bodies[Handles[bodyTag].SlotIndex];
+        ref var body = ref Bodies[TagRec(bodyTag).Slot];
         *nFaces = body.FaceCountBody;
         if (WriteTagList(faces, body.FaceCountBody, body.FirstFaceBody, PoolKind.Face, EntityClass.Face, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -1800,16 +1457,15 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int BodyAskEdges(int bodyTag, int* nEdges, int** edges)
+    private static int BodyAskEdgesImplementation(int bodyTag, int* nEdges, int** edges)
     {
         if (nEdges is null || edges is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+        if (!IsValidTag(bodyTag) || (EntityClass)TagRec(bodyTag).ClassCode != EntityClass.Body)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var body = ref Bodies[Handles[bodyTag].SlotIndex];
+        ref var body = ref Bodies[TagRec(bodyTag).Slot];
         *nEdges = body.EdgeCountBody;
         if (WriteTagList(edges, body.EdgeCountBody, body.FirstEdgeBody, PoolKind.Edge, EntityClass.Edge, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -1817,16 +1473,15 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int BodyAskVertices(int bodyTag, int* nVertices, int** vertices)
+    private static int BodyAskVerticesImplementation(int bodyTag, int* nVertices, int** vertices)
     {
         if (nVertices is null || vertices is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+        if (!IsValidTag(bodyTag) || (EntityClass)TagRec(bodyTag).ClassCode != EntityClass.Body)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var body = ref Bodies[Handles[bodyTag].SlotIndex];
+        ref var body = ref Bodies[TagRec(bodyTag).Slot];
         *nVertices = body.VertexCountBody;
         if (WriteTagList(vertices, body.VertexCountBody, body.FirstVertexBody, PoolKind.Vertex, EntityClass.Vertex, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -1834,16 +1489,15 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int BodyAskRegions(int bodyTag, int* nRegions, int** regions)
+    private static int BodyAskRegionsImplementation(int bodyTag, int* nRegions, int** regions)
     {
         if (nRegions is null || regions is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+        if (!IsValidTag(bodyTag) || (EntityClass)TagRec(bodyTag).ClassCode != EntityClass.Body)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var body = ref Bodies[Handles[bodyTag].SlotIndex];
+        ref var body = ref Bodies[TagRec(bodyTag).Slot];
         *nRegions = body.RegionCount;
         if (WriteTagList(regions, body.RegionCount, body.FirstRegion, PoolKind.Region, EntityClass.Region, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -1851,25 +1505,23 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int RegionIsSolid(int regionTag, KernelLogical* isSolid)
+    private static int RegionIsSolidImplementation(int regionTag, KernelLogical* isSolid)
     {
         if (isSolid is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(regionTag) || Handles[regionTag].Class != EntityClass.Region)
+        if (!IsValidTag(regionTag) || (EntityClass)TagRec(regionTag).ClassCode != EntityClass.Region)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        *isSolid = Regions[Handles[regionTag].SlotIndex].IsSolid;
+        *isSolid = Regions[TagRec(regionTag).Slot].IsSolid;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int EntityAskPartition(EntityTag entityTag, PartitionSlot* partition)
+    private static int EntityAskPartitionImplementation(EntityTag entityTag, PartitionSlot* partition)
     {
         if (partition is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
         var entityPartition = GetEntityPartition(entityTag);
         if (entityPartition < 0)
             return ParasolidConstants.PK_ERROR_unknown_class;
@@ -1878,20 +1530,20 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int SessionAskCurrentPartition(PartitionSlot* partition)
+    private static int SessionAskCurrentPartitionImplementation(PartitionSlot* partition)
     {
         if (partition is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
-        *partition = session.CurrentPartition;
+        var slot = State.Session->FindThread(Environment.CurrentManagedThreadId);
+        *partition = slot >= 0 ? State.Session->Threads[slot].CurrentPartition : 0;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int BodyAskTopology(
+    private static int BodyAskTopologyImplementation(
         int bodyTag,
         PK_BODY_ask_topology_o_s* options,
         int* nTopols,
@@ -1905,11 +1557,10 @@ internal static unsafe partial class KernelRuntime
         if (nTopols is null || topols is null || classes is null || nRelations is null || parents is null || children is null || senses is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(bodyTag) || Handles[bodyTag].Class != EntityClass.Body)
+        if (!IsValidTag(bodyTag) || (EntityClass)TagRec(bodyTag).ClassCode != EntityClass.Body)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        int bodySlot = Handles[bodyTag].SlotIndex;
+        int bodySlot = TagRec(bodyTag).Slot;
         ref var body = ref Bodies[bodySlot];
         int topolCount = 1 + body.RegionCount + body.ShellCount + body.FaceCountBody + body.EdgeCountBody + body.VertexCountBody;
         int finCount = 0;
@@ -1973,16 +1624,15 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int FaceAskLoops(int faceTag, int* nLoops, int** loops)
+    private static int FaceAskLoopsImplementation(int faceTag, int* nLoops, int** loops)
     {
         if (nLoops is null || loops is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(faceTag) || Handles[faceTag].Class != EntityClass.Face)
+        if (!IsValidTag(faceTag) || (EntityClass)TagRec(faceTag).ClassCode != EntityClass.Face)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var face = ref Faces[Handles[faceTag].SlotIndex];
+        ref var face = ref Faces[TagRec(faceTag).Slot];
         *nLoops = face.LoopCount;
         if (WriteTagList(loops, face.LoopCount, face.FirstLoop, PoolKind.Loop, EntityClass.Loop, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -1990,59 +1640,55 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int FaceAskSurf(int faceTag, int* surfTag)
+    private static int FaceAskSurfImplementation(int faceTag, int* surfTag)
     {
         if (surfTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(faceTag) || Handles[faceTag].Class != EntityClass.Face)
+        if (!IsValidTag(faceTag) || (EntityClass)TagRec(faceTag).ClassCode != EntityClass.Face)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var face = ref Faces[Handles[faceTag].SlotIndex];
+        ref var face = ref Faces[TagRec(faceTag).Slot];
         *surfTag = face.SurfTag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int FaceAskShells(int faceTag, int* shells)
+    private static int FaceAskShellsImplementation(int faceTag, int* shells)
     {
         if (shells is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(faceTag) || Handles[faceTag].Class != EntityClass.Face)
+        if (!IsValidTag(faceTag) || (EntityClass)TagRec(faceTag).ClassCode != EntityClass.Face)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var face = ref Faces[Handles[faceTag].SlotIndex];
+        ref var face = ref Faces[TagRec(faceTag).Slot];
         shells[0] = face.BackShell >= 0 ? GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, face.BackShell) : 0;
         shells[1] = face.FrontShell >= 0 ? GetOrAllocateTag(EntityClass.Shell, PoolKind.Shell, face.FrontShell) : 0;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int LoopAskFace(int loopTag, int* faceTag)
+    private static int LoopAskFaceImplementation(int loopTag, int* faceTag)
     {
         if (faceTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(loopTag) || Handles[loopTag].Class != EntityClass.Loop)
+        if (!IsValidTag(loopTag) || (EntityClass)TagRec(loopTag).ClassCode != EntityClass.Loop)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var loop = ref Loops[Handles[loopTag].SlotIndex];
+        ref var loop = ref Loops[TagRec(loopTag).Slot];
         *faceTag = GetOrAllocateTag(EntityClass.Face, PoolKind.Face, loop.Face);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int LoopAskFins(int loopTag, int* nFins, int** fins)
+    private static int LoopAskFinsImplementation(int loopTag, int* nFins, int** fins)
     {
         if (nFins is null || fins is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(loopTag) || Handles[loopTag].Class != EntityClass.Loop)
+        if (!IsValidTag(loopTag) || (EntityClass)TagRec(loopTag).ClassCode != EntityClass.Loop)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var loop = ref Loops[Handles[loopTag].SlotIndex];
+        ref var loop = ref Loops[TagRec(loopTag).Slot];
         *nFins = loop.FinCount;
         if (WriteTagList(fins, loop.FinCount, loop.FirstFin, PoolKind.Fin, EntityClass.Fin, 0) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -2050,16 +1696,15 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int EdgeAskFins(int edgeTag, int* nFins, int** fins)
+    private static int EdgeAskFinsImplementation(int edgeTag, int* nFins, int** fins)
     {
         if (nFins is null || fins is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(edgeTag) || Handles[edgeTag].Class != EntityClass.Edge)
+        if (!IsValidTag(edgeTag) || (EntityClass)TagRec(edgeTag).ClassCode != EntityClass.Edge)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var edge = ref Edges[Handles[edgeTag].SlotIndex];
+        ref var edge = ref Edges[TagRec(edgeTag).Slot];
         *nFins = edge.FinCount;
         if (WriteTagList(fins, edge.FinCount, edge.FirstFinEdge, PoolKind.Fin, EntityClass.Fin, FinChain.ByEdge) < 0)
             return ParasolidConstants.PK_ERROR_general_body;
@@ -2067,72 +1712,67 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int EdgeAskCurve(int edgeTag, int* curveTag)
+    private static int EdgeAskCurveImplementation(int edgeTag, int* curveTag)
     {
         if (curveTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(edgeTag) || Handles[edgeTag].Class != EntityClass.Edge)
+        if (!IsValidTag(edgeTag) || (EntityClass)TagRec(edgeTag).ClassCode != EntityClass.Edge)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var edge = ref Edges[Handles[edgeTag].SlotIndex];
+        ref var edge = ref Edges[TagRec(edgeTag).Slot];
         *curveTag = edge.CurveTag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int VertexAskPoint(int vertexTag, int* pointTag)
+    private static int VertexAskPointImplementation(int vertexTag, int* pointTag)
     {
         if (pointTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(vertexTag) || Handles[vertexTag].Class != EntityClass.Vertex)
+        if (!IsValidTag(vertexTag) || (EntityClass)TagRec(vertexTag).ClassCode != EntityClass.Vertex)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var vert = ref Vertices[Handles[vertexTag].SlotIndex];
+        ref var vert = ref Vertices[TagRec(vertexTag).Slot];
         *pointTag = vert.PointTag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int FinAskEdge(int finTag, int* edgeTag)
+    private static int FinAskEdgeImplementation(int finTag, int* edgeTag)
     {
         if (edgeTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(finTag) || Handles[finTag].Class != EntityClass.Fin)
+        if (!IsValidTag(finTag) || (EntityClass)TagRec(finTag).ClassCode != EntityClass.Fin)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var fin = ref Fins[Handles[finTag].SlotIndex];
+        ref var fin = ref Fins[TagRec(finTag).Slot];
         *edgeTag = GetOrAllocateTag(EntityClass.Edge, PoolKind.Edge, fin.Edge);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int FinAskLoop(int finTag, int* loopTag)
+    private static int FinAskLoopImplementation(int finTag, int* loopTag)
     {
         if (loopTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(finTag) || Handles[finTag].Class != EntityClass.Fin)
+        if (!IsValidTag(finTag) || (EntityClass)TagRec(finTag).ClassCode != EntityClass.Fin)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var fin = ref Fins[Handles[finTag].SlotIndex];
+        ref var fin = ref Fins[TagRec(finTag).Slot];
         *loopTag = GetOrAllocateTag(EntityClass.Loop, PoolKind.Loop, fin.Loop);
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int FinAskFace(int finTag, int* faceTag)
+    private static int FinAskFaceImplementation(int finTag, int* faceTag)
     {
         if (faceTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(finTag) || Handles[finTag].Class != EntityClass.Fin)
+        if (!IsValidTag(finTag) || (EntityClass)TagRec(finTag).ClassCode != EntityClass.Fin)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var fin = ref Fins[Handles[finTag].SlotIndex];
+        ref var fin = ref Fins[TagRec(finTag).Slot];
         var faceSlot = Loops[fin.Loop].Face;
         *faceTag = GetOrAllocateTag(EntityClass.Face, PoolKind.Face, faceSlot);
         return ParasolidConstants.PK_ERROR_no_errors;
@@ -2140,16 +1780,17 @@ internal static unsafe partial class KernelRuntime
 
     // ── PK_TRANSF_create ──────────────────────────────────────────
 
-    public static int TransfCreate(PK_TRANSF_sf_s* transfSf, int* transfTag)
+    private static int TransfCreateImplementation(PK_TRANSF_sf_s* transfSf, int* transfTag)
     {
+        if (transfTag != null) *transfTag = 0;
         if (transfSf is null || transfTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
-        var slot = Transforms.Allocate();
+        int slot;
+        if (!Transforms.TryAllocate(out slot)) return ParasolidConstants.PK_ERROR_memory_full;
         ref var rec = ref Transforms[slot];
         AssignPartition(ref rec.Header, CurrentPartition);
         Unsafe.CopyBlock(ref Unsafe.As<double, byte>(ref rec.Matrix[0]),
@@ -2164,26 +1805,28 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int CylCreate(PK_CYL_sf_s* cylSf, int* cylTag)
+    private static int CylCreateImplementation(PK_CYL_sf_s* cylSf, int* cylTag)
     {
+        if (cylTag != null) *cylTag = 0;
         if (cylSf is null || cylTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (cylSf->radius <= 0)
             return ParasolidConstants.PK_ERROR_distance_le_0;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         ReadAxis2(&cylSf->basis_set, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
-        int dataSlot = CylinderDataPool.Allocate();
+        int dataSlot = TryAllocateCylinderData();
+        if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
         ref var data = ref CylinderDataPool[dataSlot];
         data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
         data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
         data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
         data.Radius = cylSf->radius;
 
-        int surfSlot = Surfaces.Allocate();
+        int surfSlot = TryAllocateSurfaces();
+        if (surfSlot < 0) return -1;
         ref var surf = ref Surfaces[surfSlot];
         AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Cylinder;
@@ -2197,16 +1840,15 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int CylAsk(int cylTag, PK_CYL_sf_s* cylSf)
+    private static int CylAskImplementation(int cylTag, PK_CYL_sf_s* cylSf)
     {
         if (cylSf is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (!IsValidTag(cylTag) || Handles[cylTag].Class != EntityClass.Surface)
+        if (!IsValidTag(cylTag) || (EntityClass)TagRec(cylTag).ClassCode != EntityClass.Surface)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
-        ref var surf = ref Surfaces[Handles[cylTag].SlotIndex];
+        ref var surf = ref Surfaces[TagRec(cylTag).Slot];
         if (surf.Class != SurfaceClass.Cylinder)
             return ParasolidConstants.PK_ERROR_unknown_class;
 
@@ -2226,15 +1868,15 @@ internal static unsafe partial class KernelRuntime
 
     // ── PK_BODY_create_solid_block ─────────────────────────────────
 
-    public static int BodyCreateSolidBlock(double x, double y, double z, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    private static int BodyCreateSolidBlockImplementation(double x, double y, double z, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
+        if (bodyTag != null) *bodyTag = 0;
         if (x <= 0 || y <= 0 || z <= 0)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (bodyTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         return CreateSolidBlockCore(x, y, z, basisSet, bodyTag);
@@ -2242,12 +1884,15 @@ internal static unsafe partial class KernelRuntime
 
     internal static int CreateSolidBlockCore(double x, double y, double z, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
-        var bodySlot = Bodies.Allocate();
+
+        var bodySlot = TryAllocateBodies();
+        if (bodySlot < 0) return -1;
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
         AssignPartition(ref body.Header, CurrentPartition);
 
-        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        if (!CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot))
+            return ParasolidConstants.PK_ERROR_memory_full;
 
         ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
         Cross(axX, axY, axZ, refX, refY, refZ, out double thirdX, out double thirdY, out double thirdZ);
@@ -2275,7 +1920,8 @@ internal static unsafe partial class KernelRuntime
         Span<int> pointTags = stackalloc int[8];
         for (int i = 0; i < 8; i++)
         {
-            vtxSlots[i] = Vertices.Allocate();
+            vtxSlots[i] = TryAllocateVertices();
+            if (vtxSlots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
             pointTags[i] = CreatePointTag(px[i], py[i], pz[i]);
             if (pointTags[i] <= 0)
                 return ParasolidConstants.PK_ERROR_general_body;
@@ -2292,24 +1938,23 @@ internal static unsafe partial class KernelRuntime
         // Allocate 12 edges
         Span<int> edgeSlots = stackalloc int[12];
         Span<int> edgeCurveTags = stackalloc int[12];
-        ReadOnlySpan<int> edgeVertexPairs = stackalloc int[24]
+        // Explicit stores avoid the runtime helper allocations generated
+        // for RVA-backed constant span initializers in unoptimized builds.
+        Span<int> edgeVertexPairs = stackalloc int[24];
+        for (var i = 0; i < 4; i++)
         {
-            0, 1,
-            1, 2,
-            2, 3,
-            3, 0,
-            4, 5,
-            5, 6,
-            6, 7,
-            7, 4,
-            0, 4,
-            1, 5,
-            2, 6,
-            3, 7,
-        };
+            var next = (i + 1) & 3;
+            edgeVertexPairs[2 * i] = i;
+            edgeVertexPairs[2 * i + 1] = next;
+            edgeVertexPairs[2 * i + 8] = i + 4;
+            edgeVertexPairs[2 * i + 9] = next + 4;
+            edgeVertexPairs[2 * i + 16] = i;
+            edgeVertexPairs[2 * i + 17] = i + 4;
+        }
         for (int i = 0; i < 12; i++)
         {
-            edgeSlots[i] = Edges.Allocate();
+            edgeSlots[i] = TryAllocateEdges();
+            if (edgeSlots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
             int v0 = edgeVertexPairs[i * 2];
             int v1 = edgeVertexPairs[i * 2 + 1];
             edgeCurveTags[i] = CreateLineCurveTag(px[v0], py[v0], pz[v0], px[v1] - px[v0], py[v1] - py[v0], pz[v1] - pz[v0]);
@@ -2335,15 +1980,16 @@ internal static unsafe partial class KernelRuntime
         // Face 3: right         edges 1,10,5,9
         // Face 4: back          edges 2,11,6,10
         // Face 5: left          edges 3,8,7,11
-        ReadOnlySpan<int> faceEdgeIndices = stackalloc int[24]
+        Span<int> faceEdgeIndices = stackalloc int[24];
+        for (var i = 0; i < 4; i++)
         {
-            3, 2, 1, 0,
-            4, 5, 6, 7,
-            0, 9, 4, 8,
-            1, 10, 5, 9,
-            2, 11, 6, 10,
-            3, 8, 7, 11,
-        };
+            faceEdgeIndices[i] = 3 - i;
+            faceEdgeIndices[i + 4] = i + 4;
+            faceEdgeIndices[8 + 4 * i] = i;
+            faceEdgeIndices[9 + 4 * i] = 8 + ((i + 1) & 3);
+            faceEdgeIndices[10 + 4 * i] = 4 + i;
+            faceEdgeIndices[11 + 4 * i] = 8 + i;
+        }
 
         Span<int> faceSlots = stackalloc int[6];
         Span<int> loopSlots = stackalloc int[6];
@@ -2362,8 +2008,9 @@ internal static unsafe partial class KernelRuntime
 
         for (int f = 0; f < 6; f++)
         {
-            faceSlots[f] = Faces.Allocate();
-            loopSlots[f] = Loops.Allocate();
+            faceSlots[f] = TryAllocateFaces();
+            loopSlots[f] = TryAllocateLoops();
+            if (faceSlots[f] < 0 || loopSlots[f] < 0) return ParasolidConstants.PK_ERROR_memory_full;
 
             ref var face = ref Faces[faceSlots[f]];
             ref var loop = ref Loops[loopSlots[f]];
@@ -2383,7 +2030,8 @@ internal static unsafe partial class KernelRuntime
             for (int e = 0; e < 4; e++)
             {
                 int ei = faceEdgeIndices[f * 4 + e];
-                int finSlot = Fins.Allocate();
+                int finSlot = TryAllocateFins();
+        if (finSlot < 0) return -1;
                 ref var fin = ref Fins[finSlot];
 
                 fin.Edge = edgeSlots[ei];
@@ -2408,37 +2056,38 @@ internal static unsafe partial class KernelRuntime
                 AppendFinToVertex(vtxSlots[finVertex], finSlot);
             }
 
-            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
-            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
+            if (AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
+            if (AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
         }
 
         // Build result tag
         var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, body.Header.Generation);
         if (tag < 0)
             return ParasolidConstants.PK_ERROR_general_body;
-
-        *bodyTag = tag;
         RebuildBoundaryGeometryLinks(bodySlot);
         AppendBodyToPartition(CurrentPartition, bodySlot);
+        if (!PublishBodyTopologyTags(bodySlot)) return ParasolidConstants.PK_ERROR_memory_full;
+        *bodyTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int BodyCreateSolidCyl(double radius, double height, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    private static int BodyCreateSolidCylImplementation(double radius, double height, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
+        if (bodyTag != null) *bodyTag = 0;
         if (bodyTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (radius <= 0 || height <= 0)
             return ParasolidConstants.PK_ERROR_distance_le_0;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         return CreateSolidCylinderCore(radius, height, basisSet, bodyTag);
     }
 
-    public static int BodyCreateSolidCone(double radius, double height, double semiAngle, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    private static int BodyCreateSolidConeImplementation(double radius, double height, double semiAngle, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
+        if (bodyTag != null) *bodyTag = 0;
         if (bodyTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (height <= 0)
@@ -2448,15 +2097,15 @@ internal static unsafe partial class KernelRuntime
         if (radius < 0)
             return ParasolidConstants.PK_ERROR_distance_le_0;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         return CreateSolidConeCore(radius, height, semiAngle, basisSet, bodyTag);
     }
 
-    public static int BodyCreateSolidPrism(double radius, double height, int nSides, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    private static int BodyCreateSolidPrismImplementation(double radius, double height, int nSides, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
+        if (bodyTag != null) *bodyTag = 0;
         if (bodyTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (radius <= 0 || height <= 0)
@@ -2464,29 +2113,29 @@ internal static unsafe partial class KernelRuntime
         if (nSides < 3)
             return ParasolidConstants.PK_ERROR_lt_3_sides;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         return CreateSolidPrismCore(radius, height, nSides, basisSet, bodyTag);
     }
 
-    public static int BodyCreateSolidSphere(double radius, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    private static int BodyCreateSolidSphereImplementation(double radius, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
+        if (bodyTag != null) *bodyTag = 0;
         if (bodyTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (radius <= 0)
             return ParasolidConstants.PK_ERROR_distance_le_0;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         return CreateSingleFaceSolidCore(CreatePrimitiveKind.Sphere, radius, 0, basisSet, bodyTag);
     }
 
-    public static int BodyCreateSolidTorus(double majorRadius, double minorRadius, PK_AXIS2_sf_s* basisSet, int* bodyTag)
+    private static int BodyCreateSolidTorusImplementation(double majorRadius, double minorRadius, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
+        if (bodyTag != null) *bodyTag = 0;
         if (bodyTag is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (minorRadius <= 0 || majorRadius == 0)
@@ -2494,20 +2143,18 @@ internal static unsafe partial class KernelRuntime
         if (majorRadius == minorRadius || majorRadius + minorRadius <= 0)
             return ParasolidConstants.PK_ERROR_majrad_minrad_mismatch;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         return CreateSingleFaceSolidCore(CreatePrimitiveKind.Torus, majorRadius, minorRadius, basisSet, bodyTag);
     }
 
-    public static int PartTransmitB(int nParts, EntityTag* parts, PK_PART_transmit_o_s* options, PK_MEMORY_block_t* block)
+    private static int PartTransmitBImplementation(int nParts, EntityTag* parts, PK_PART_transmit_o_s* options, PK_MEMORY_block_t* block)
     {
         if (nParts <= 0 || parts is null || block is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         if (options is not null)
@@ -2556,7 +2203,7 @@ internal static unsafe partial class KernelRuntime
             return error;
 
         var byteCount = System.Text.Encoding.ASCII.GetByteCount(text);
-        var bytes = (byte*)NativeMemory.Alloc((nuint)byteCount);
+        var bytes = (byte*)State.Session->Returns.TryAllocate((nuint)byteCount);
         if (bytes is null)
             return ParasolidConstants.PK_ERROR_write_memory_full;
         System.Text.Encoding.ASCII.GetBytes(text, new Span<byte>(bytes, byteCount));
@@ -2602,13 +2249,12 @@ internal static unsafe partial class KernelRuntime
         return true;
     }
 
-    public static int PartReceiveB(PK_MEMORY_block_t block, PK_PART_receive_o_s* options, int* nParts, EntityTag** parts)
+    private static int PartReceiveBImplementation(PK_MEMORY_block_t block, PK_PART_receive_o_s* options, int* nParts, EntityTag** parts)
     {
         if (nParts is null || parts is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         if (options is not null)
@@ -2693,7 +2339,7 @@ internal static unsafe partial class KernelRuntime
         if (error != ParasolidConstants.PK_ERROR_no_errors)
             return error;
 
-        var buffer = (EntityTag*)NativeMemory.Alloc((nuint)received.Length, (nuint)sizeof(EntityTag));
+        var buffer = (EntityTag*)State.Session->Returns.TryAllocate((nuint)(received.Length * sizeof(EntityTag)));
         if (buffer is null)
             return ParasolidConstants.PK_ERROR_write_memory_full;
 
@@ -2705,7 +2351,7 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int MemoryBlockFree(PK_MEMORY_block_t* block)
+    private static int MemoryBlockFreeImplementation(PK_MEMORY_block_t* block)
     {
         if (block is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
@@ -2715,14 +2361,13 @@ internal static unsafe partial class KernelRuntime
         {
             if (current->bytes is not null)
             {
-                NativeMemory.Free(current->bytes);
+                // Same ownership mechanism as every other returned result.
+                if (!State.Session->Returns.TryFree(current->bytes))
+                    return ParasolidConstants.PK_ERROR_bad_value;
                 current->bytes = null;
             }
 
-            var next = current->next;
-            if (current != block)
-                NativeMemory.Free(current);
-            current = next;
+            current = current->next;
         }
 
         block->next = null;
@@ -2730,21 +2375,23 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int MemoryFree(void* pointer)
+    private static int MemoryFreeImplementation(void* pointer)
     {
-        if (pointer is not null)
-            NativeMemory.Free(pointer);
+        if (pointer is not null && !State.Session->Returns.TryFree(pointer))
+            return ParasolidConstants.PK_ERROR_bad_value;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
     internal static int CreateSolidCylinderCore(double radius, double height, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
-        var bodySlot = Bodies.Allocate();
+        var bodySlot = TryAllocateBodies();
+        if (bodySlot < 0) return -1;
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
         AssignPartition(ref body.Header, CurrentPartition);
 
-        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        if (!CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot))
+            return ParasolidConstants.PK_ERROR_memory_full;
         ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
 
         int sideSurf = CreateCylinderSurfaceTag(ox, oy, oz, axX, axY, axZ, refX, refY, refZ, radius);
@@ -2762,7 +2409,8 @@ internal static unsafe partial class KernelRuntime
 
         for (int i = 0; i < 2; i++)
         {
-            edgeSlots[i] = Edges.Allocate();
+            edgeSlots[i] = TryAllocateEdges();
+            if (edgeSlots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
         }
         for (int i = 0; i < 2; i++)
         {
@@ -2785,7 +2433,7 @@ internal static unsafe partial class KernelRuntime
 
         for (int f = 0; f < 3; f++)
         {
-            faceSlots[f] = Faces.Allocate();
+            faceSlots[f] = TryAllocateFaces();
         }
         for (int f = 0; f < 3; f++)
         {
@@ -2796,7 +2444,8 @@ internal static unsafe partial class KernelRuntime
 
             for (int l = 0; l < loopCounts[f]; l++)
             {
-                int loopSlot = Loops.Allocate();
+                int loopSlot = TryAllocateLoops();
+        if (loopSlot < 0) return -1;
                 ref var loop = ref Loops[loopSlot];
                 loop.Face = faceSlots[f];
                 loop.FirstFin = -1;
@@ -2809,28 +2458,31 @@ internal static unsafe partial class KernelRuntime
                 AddFinToLoopAndEdge(loopSlot, faceSlots[f], edgeSlots[edgeIndex]);
             }
 
-            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
-            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
+            if (AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
+            if (AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
         }
 
         var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, body.Header.Generation);
         if (tag < 0)
             return ParasolidConstants.PK_ERROR_general_body;
 
-        *bodyTag = tag;
         RebuildBoundaryGeometryLinks(bodySlot);
         AppendBodyToPartition(CurrentPartition, bodySlot);
+        if (!PublishBodyTopologyTags(bodySlot)) return ParasolidConstants.PK_ERROR_memory_full;
+        *bodyTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
     private static int CreateSolidConeCore(double radius, double height, double semiAngle, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
-        var bodySlot = Bodies.Allocate();
+        var bodySlot = TryAllocateBodies();
+        if (bodySlot < 0) return -1;
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
         AssignPartition(ref body.Header, CurrentPartition);
 
-        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        if (!CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot))
+            return ParasolidConstants.PK_ERROR_memory_full;
         ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
         var topRadius = radius + height * Math.Tan(semiAngle);
 
@@ -2849,7 +2501,8 @@ internal static unsafe partial class KernelRuntime
             if (edgeCurves[i] <= 0)
                 return ParasolidConstants.PK_ERROR_general_body;
 
-            edgeSlots[i] = Edges.Allocate();
+            edgeSlots[i] = TryAllocateEdges();
+            if (edgeSlots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
             ref var edge = ref Edges[edgeSlots[i]];
             edge.Body = bodySlot;
             edge.StartVertex = -1;
@@ -2895,8 +2548,8 @@ internal static unsafe partial class KernelRuntime
 
         for (int f = 0; f < faceCount; f++)
         {
-            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
-            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
+            if (AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
+            if (AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
         }
 
         return FinishCreatedBody(bodySlot, bodyTag);
@@ -2907,12 +2560,14 @@ internal static unsafe partial class KernelRuntime
         if (nSides > 1024)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
-        var bodySlot = Bodies.Allocate();
+        var bodySlot = TryAllocateBodies();
+        if (bodySlot < 0) return -1;
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
         AssignPartition(ref body.Header, CurrentPartition);
 
-        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        if (!CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot))
+            return ParasolidConstants.PK_ERROR_memory_full;
         ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
         Cross(axX, axY, axZ, refX, refY, refZ, out double yX, out double yY, out double yZ);
 
@@ -2979,8 +2634,8 @@ internal static unsafe partial class KernelRuntime
 
         for (int f = 0; f < faceSlots.Length; f++)
         {
-            AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c);
-            AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c);
+            if (AddFaceUse(solidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_negative_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
+            if (AddFaceUse(voidShellSlot, faceSlots[f], ParasolidConstants.PK_TOPOL_sense_positive_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
         }
 
         return FinishCreatedBody(bodySlot, bodyTag);
@@ -2988,12 +2643,14 @@ internal static unsafe partial class KernelRuntime
 
     private static int CreateSingleFaceSolidCore(CreatePrimitiveKind kind, double value0, double value1, PK_AXIS2_sf_s* basisSet, int* bodyTag)
     {
-        var bodySlot = Bodies.Allocate();
+        var bodySlot = TryAllocateBodies();
+        if (bodySlot < 0) return -1;
         ref var body = ref Bodies[bodySlot];
         InitializeBody(ref body);
         AssignPartition(ref body.Header, CurrentPartition);
 
-        CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot);
+        if (!CreateSolidRegionsAndShells(bodySlot, out var voidShellSlot, out var solidShellSlot))
+            return ParasolidConstants.PK_ERROR_memory_full;
         ReadAxis2(basisSet, out double ox, out double oy, out double oz, out double axX, out double axY, out double axZ, out double refX, out double refY, out double refZ);
 
         var surfTag = kind == CreatePrimitiveKind.Sphere
@@ -3003,254 +2660,458 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_general_body;
 
         var faceSlot = AddFace(bodySlot, surfTag);
-        AddFaceUse(solidShellSlot, faceSlot, ParasolidConstants.PK_TOPOL_sense_negative_c);
-        AddFaceUse(voidShellSlot, faceSlot, ParasolidConstants.PK_TOPOL_sense_positive_c);
+        if (AddFaceUse(solidShellSlot, faceSlot, ParasolidConstants.PK_TOPOL_sense_negative_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
+        if (AddFaceUse(voidShellSlot, faceSlot, ParasolidConstants.PK_TOPOL_sense_positive_c) < 0) return ParasolidConstants.PK_ERROR_memory_full;
         return FinishCreatedBody(bodySlot, bodyTag);
     }
 
-    // ── Mark / Rollback ──────────────────────────────────────────
+    // ── Mark / Rollback (undo log based) ──────────────────────
 
-    public static int MarkCreate(int* mark)
+    private static int MarkCreateImplementation(int* mark)
     {
         if (mark is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
-
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
-        if (session.HasMark)
-            return ParasolidConstants.PK_ERROR_rollback_started; // nested marks not supported yet
+        var session = State.Session;
+        if (session->IsMarkActive != 0)
+            return ParasolidConstants.PK_ERROR_rollback_started; // single mark by design
 
-        ref var m = ref session.CurrentMark;
-        m.SequenceNo = session.NextRollbackStamp++;
-        m.HandleCount = nextTag;
-        m.PoolCounts[PoolHandles] = nextTag;
-        m.PoolCounts[PoolPoints] = Points.AllocatedCount;
-        m.PoolCounts[PoolVectors] = Vectors.AllocatedCount;
-        m.PoolCounts[PoolBodies] = Bodies.AllocatedCount;
-        m.PoolCounts[PoolShells] = Shells.AllocatedCount;
-        m.PoolCounts[PoolFaceUses] = FaceUses.AllocatedCount;
-        m.PoolCounts[PoolFaces] = Faces.AllocatedCount;
-        m.PoolCounts[PoolLoops] = Loops.AllocatedCount;
-        m.PoolCounts[PoolEdges] = Edges.AllocatedCount;
-        m.PoolCounts[PoolFins] = Fins.AllocatedCount;
-        m.PoolCounts[PoolVertices] = Vertices.AllocatedCount;
-        m.PoolCounts[PoolRegions] = Regions.AllocatedCount;
-        m.PoolCounts[PoolCurves] = Curves.AllocatedCount;
-        m.PoolCounts[PoolSurfaces] = Surfaces.AllocatedCount;
-        m.PoolCounts[PoolTransforms] = Transforms.AllocatedCount;
-        m.PoolCounts[PoolCircleData] = CircleDataPool.AllocatedCount;
-        m.PoolCounts[PoolCylinderData] = CylinderDataPool.AllocatedCount;
-        m.PoolCounts[PoolPlaneData] = PlaneDataPool.AllocatedCount;
-        m.PoolCounts[PoolLineData] = LineDataPool.AllocatedCount;
-        m.PoolCounts[PoolConeData] = ConeDataPool.AllocatedCount;
-        m.PoolCounts[PoolSphereData] = SphereDataPool.AllocatedCount;
-        m.PoolCounts[PoolTorusData] = TorusDataPool.AllocatedCount;
-        m.PoolCounts[PoolBCurveData] = BCurveDataStore.Count;
-        m.PoolCounts[PoolBCurveVertices] = BCurveVertices.Count;
-        m.PoolCounts[PoolBCurveKnots] = BCurveKnots.Count;
-        m.PoolCounts[PoolBCurveKnotMults] = BCurveKnotMults.Count;
-        m.PoolCounts[PoolBCurveExpandedKnots] = BCurveExpandedKnots.Count;
-        m.RollbackStamp = session.NextRollbackStamp;
-
-        session.HasMark = true;
-        session.TombstoneCount = 0;
-
-        *mark = m.SequenceNo;
+        session->ClearUndo();
+        session->MarkSequence++;
+        session->SetMarkActive(1);
+        *mark = session->MarkSequence;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int MarkGoto(int mark)
+    private static int MarkGotoImplementation(int mark)
     {
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
-
-        if (!session.HasMark || session.CurrentMark.SequenceNo != mark)
+        var session = State.Session;
+        if (session->IsMarkActive == 0 || session->MarkSequence != mark)
             return ParasolidConstants.PK_ERROR_bad_mark;
 
-        ref var m = ref session.CurrentMark;
+        RollbackMark(session);
+        session->SetMarkActive(0);
+        session->ClearUndo();
+        session->ClearDeferred();
+        return ParasolidConstants.PK_ERROR_no_errors;
+    }
 
-        Array.Clear(Handles, m.HandleCount, nextTag - m.HandleCount);
+    private static int MarkDeleteImplementation(int mark)
+    {
+        if (!IsSessionStarted)
+            return ParasolidConstants.PK_ERROR_not_in_PK;
+        var session = State.Session;
+        if (session->IsMarkActive == 0 || session->MarkSequence != mark)
+            return ParasolidConstants.PK_ERROR_bad_mark;
 
-        // Restore all entity pools
-        Points.RestoreMark(m.PoolCounts[PoolPoints]);
-        Vectors.RestoreMark(m.PoolCounts[PoolVectors]);
-        Bodies.RestoreMark(m.PoolCounts[PoolBodies]);
-        Shells.RestoreMark(m.PoolCounts[PoolShells]);
-        FaceUses.RestoreMark(m.PoolCounts[PoolFaceUses]);
-        Faces.RestoreMark(m.PoolCounts[PoolFaces]);
-        Loops.RestoreMark(m.PoolCounts[PoolLoops]);
-        Edges.RestoreMark(m.PoolCounts[PoolEdges]);
-        Fins.RestoreMark(m.PoolCounts[PoolFins]);
-        Vertices.RestoreMark(m.PoolCounts[PoolVertices]);
-        Regions.RestoreMark(m.PoolCounts[PoolRegions]);
-        Curves.RestoreMark(m.PoolCounts[PoolCurves]);
-        Surfaces.RestoreMark(m.PoolCounts[PoolSurfaces]);
-        Transforms.RestoreMark(m.PoolCounts[PoolTransforms]);
-        CircleDataPool.RestoreMark(m.PoolCounts[PoolCircleData]);
-        CylinderDataPool.RestoreMark(m.PoolCounts[PoolCylinderData]);
-        PlaneDataPool.RestoreMark(m.PoolCounts[PoolPlaneData]);
-        LineDataPool.RestoreMark(m.PoolCounts[PoolLineData]);
-        ConeDataPool.RestoreMark(m.PoolCounts[PoolConeData]);
-        SphereDataPool.RestoreMark(m.PoolCounts[PoolSphereData]);
-        TorusDataPool.RestoreMark(m.PoolCounts[PoolTorusData]);
-        BCurveDataStore.RestoreMark(m.PoolCounts[PoolBCurveData]);
-        BCurveVertices.RestoreMark(m.PoolCounts[PoolBCurveVertices]);
-        BCurveKnots.RestoreMark(m.PoolCounts[PoolBCurveKnots]);
-        BCurveKnotMults.RestoreMark(m.PoolCounts[PoolBCurveKnotMults]);
-        BCurveExpandedKnots.RestoreMark(m.PoolCounts[PoolBCurveExpandedKnots]);
-
-        // Restore deleted entities (tombstones)
-        for (int i = 0; i < session.TombstoneCount; i++)
+        // Keep the modifications, release deferred objects and the log.
+        for (var thread = 0; thread < session->ThreadCount; thread++)
         {
-            ref var ts = ref session.Tombstones[i];
-            if (ts.Slot < m.PoolCounts[SnapshotPoolIndex((PoolKind)ts.PoolIndex)])
+            var context = &session->Threads[thread];
+            for (int i = 0; i < context->DeferredCount; i++)
             {
-                // This entity was alive at mark time — restore it
-                RestoreEntity(ts.PoolIndex, ts.Slot, ts.HandleTag);
+                ref var deferred = ref context->Deferred[i];
+                FinalReleaseEntity((PoolKind)deferred.Pool, deferred.Slot, deferred.Tag);
             }
         }
-
-        session.HasMark = false;
-        session.ClearTombstones();
-        ResetReturnArena(freeBlocks: true); // all previously returned pointers are now invalid
-
+        session->SetMarkActive(0);
+        session->ClearUndo();
+        session->ClearDeferred();
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    public static int MarkDelete(int mark)
+    private static void RollbackMark(SessionData* session)
     {
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
-            return ParasolidConstants.PK_ERROR_not_in_PK;
-
-        if (!session.HasMark || session.CurrentMark.SequenceNo != mark)
-            return ParasolidConstants.PK_ERROR_bad_mark;
-
-        for (int i = 0; i < session.TombstoneCount; i++)
+        if (session->ThreadCount == 1)
         {
-            ref var ts = ref session.Tombstones[i];
-            RecycleRetiredEntity(ts.PoolIndex, ts.Slot);
+            var context = &session->Threads[0];
+            for (var i = context->UndoEntryCount - 1; i >= 0; i--)
+                ReplayMarkEntry(session, ref context->UndoEntries[i]);
+            return;
         }
-
-        session.HasMark = false;
-        session.ClearTombstones();
-        return ParasolidConstants.PK_ERROR_no_errors;
+        // Global reverse-chronological replay: destroy created entities,
+        // restore deleted entities and field snapshots, swap back blocks.
+        // A global order (not per-partition chains) keeps the two undo
+        // entries of one entity — recorded before and after its partition
+        // assignment propagates — adjacent and correctly ordered.
+        Span<int> positions = stackalloc int[SessionData.MaxThreads];
+        for (var thread = 0; thread < session->ThreadCount; thread++)
+            positions[thread] = session->Threads[thread].UndoEntryCount - 1;
+        while (true)
+        {
+            var selected = -1;
+            var sequence = -1;
+            for (var thread = 0; thread < session->ThreadCount; thread++)
+            {
+                var index = positions[thread];
+                if (index >= 0 && session->Threads[thread].UndoEntries[index].Sequence > sequence)
+                { selected = thread; sequence = session->Threads[thread].UndoEntries[index].Sequence; }
+            }
+            if (selected < 0) break;
+            ref var entry = ref session->Threads[selected].UndoEntries[positions[selected]--];
+            ReplayMarkEntry(session, ref entry);
+        }
     }
 
-    // Handle pool identifiers do not include FaceUse and are not snapshot-array indices.
-    private static int SnapshotPoolIndex(PoolKind pool) => pool switch
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ReplayMarkEntry(SessionData* session, ref SessionData.UndoEntry entry)
     {
-        PoolKind.Point => PoolPoints,
-        PoolKind.Vector => PoolVectors,
-        PoolKind.Body => PoolBodies,
-        PoolKind.Shell => PoolShells,
-        PoolKind.Face => PoolFaces,
-        PoolKind.Loop => PoolLoops,
-        PoolKind.Edge => PoolEdges,
-        PoolKind.Fin => PoolFins,
-        PoolKind.Vertex => PoolVertices,
-        PoolKind.Region => PoolRegions,
-        PoolKind.Curve => PoolCurves,
-        PoolKind.Surface => PoolSurfaces,
-        PoolKind.Transform => PoolTransforms,
-        _ => throw new InvalidOperationException("Unsupported marked entity pool."),
-    };
+        switch (entry.Kind)
+        {
+            case SessionData.UndoKind.EntityCreated:
+                DestroyCreatedEntity((PoolKind)entry.Pool, entry.Slot, entry.Generation, (RecordHeader*)entry.Data);
+                break;
+            case SessionData.UndoKind.EntityDeleted:
+                RestoreDeletedEntity(session, (PoolKind)entry.Pool, entry.Slot, entry.Tag);
+                break;
+            case SessionData.UndoKind.FieldSnapshot:
+                RestoreSnapshot((PoolKind)entry.Pool, entry.Slot, entry.Data);
+                break;
+            case SessionData.UndoKind.BlockReplaced:
+                RollbackBlockSwap(entry.Pool, entry.Slot, entry.Data);
+                break;
+        }
+    }
 
-    // ── Entity delete ────────────────────────────────────────────
+    // ── Entity delete (ownership cascade) ──────────────────────
 
-    public static int EntityDelete(int nEntities, int* entities)
+    private static int EntityDeleteImplementation(int nEntities, int* entities)
     {
         if (entities is null || nEntities <= 0)
             return ParasolidConstants.PK_ERROR_bad_field_number;
-
-        using var scope = RuntimeLock.EnterScope();
-        if (session is null || !session.Started)
+        if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
+        var session = State.Session;
+        long deleteEntries = 0;
+        TagMap.TagRecord firstRecord = default;
+        for (var i = 0; i < nEntities; i++)
+        {
+            if (!session->Tags.TryResolve(entities[i], CurrentSessionId, out var handle))
+                return ParasolidConstants.PK_ERROR_unknown_class;
+            if (i == 0) firstRecord = handle;
+            if (session->IsMarkActive != 0)
+                deleteEntries += (PoolKind)handle.Pool == PoolKind.Body ? BodyDeletionEntries(handle.Slot) : 1;
+        }
+        if (session->IsMarkActive != 0 && (deleteEntries > int.MaxValue || !session->TryReserveDeletion((int)deleteEntries)))
+            return ParasolidConstants.PK_ERROR_memory_full;
         for (int i = 0; i < nEntities; i++)
         {
             var tag = entities[i];
-            if (!IsValidTag(tag))
+            var record = firstRecord;
+            if (i != 0 && !session->Tags.TryResolve(tag, CurrentSessionId, out record))
                 return ParasolidConstants.PK_ERROR_unknown_class;
+            var pool = (PoolKind)record.Pool;
+            var slot = record.Slot;
 
-            ref var handle = ref Handles[tag];
-            var poolIndex = (int)handle.Pool;
-            var slot = handle.SlotIndex;
-            var generation = handle.Generation;
-
-            // Record tombstone if we have an active mark
-            if (session.HasMark)
-                session.AddTombstone(poolIndex, slot, generation, tag);
-
-            if (session.HasMark)
-                RetireEntity(poolIndex, slot);
+            if (pool == PoolKind.Body)
+            {
+                DeleteBodyCascade(session, slot, tag);
+            }
             else
-                KillEntity(poolIndex, slot);
-
-            // Kill the handle
-            handle.Alive = 0;
+            {
+                DeleteEntitySingle(session, pool, slot, tag);
+            }
         }
 
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static void KillEntity(int poolIndex, int slot)
+    private static long BodyDeletionEntries(BodySlot slot)
     {
-        switch ((PoolKind)poolIndex)
+        ref var body = ref Bodies[slot];
+        long count = 1L + body.RegionCount + body.ShellCount + 2L * body.FaceCountBody
+            + 2L * body.EdgeCountBody + 2L * body.VertexCountBody;
+        var face = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, face = Faces[face].NextInBody)
         {
-            case PoolKind.Point: Points.Free(slot); break;
-            case PoolKind.Vector: Vectors.Free(slot); break;
-            case PoolKind.Body:
-                BodyXtDocuments[slot] = null;
-                BodyXtModels[slot] = null;
-                BodyXtRootIndexes[slot] = 0;
-                BodyXtOpaque[slot] = 0;
-                Bodies.Free(slot);
-                break;
-            case PoolKind.Shell: Shells.Free(slot); break;
-            case PoolKind.Face: Faces.Free(slot); break;
-            case PoolKind.Loop: Loops.Free(slot); break;
-            case PoolKind.Edge: Edges.Free(slot); break;
-            case PoolKind.Fin: Fins.Free(slot); break;
-            case PoolKind.Vertex: Vertices.Free(slot); break;
-            case PoolKind.Region: Regions.Free(slot); break;
-            case PoolKind.Curve: Curves.Free(slot); break;
-            case PoolKind.Surface: Surfaces.Free(slot); break;
-            case PoolKind.Transform: Transforms.Free(slot); break;
+            count += Faces[face].LoopCount;
+            var loop = Faces[face].FirstLoop;
+            for (var j = 0; j < Faces[face].LoopCount; j++, loop = Loops[loop].NextInFace)
+                count += Loops[loop].FinCount;
+        }
+        var shell = body.FirstShell;
+        for (var i = 0; i < body.ShellCount; i++, shell = Shells[shell].NextInBody)
+            count += Shells[shell].FaceUseCount;
+        return count;
+    }
+
+    /// <summary>
+    /// Body delete: reclaim owned regions, shells, face uses, faces, loops,
+    /// fins, edges, vertices and exclusively owned geometry, and unlink the
+    /// body from its partition chain.
+    /// </summary>
+    private static void DeleteBodyCascade(SessionData* session, BodySlot bodySlot, EntityTag bodyTag)
+    {
+        ref var body = ref Bodies[bodySlot];
+        var partition = body.Header.Partition;
+
+        // Faces (with loops and fins), edges, vertices — body flat chains.
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++)
+        {
+            var next = Faces[faceSlot].NextInBody;
+            var face = Faces[faceSlot];
+            var loopSlot = face.FirstLoop;
+            for (var j = 0; j < face.LoopCount; j++)
+            {
+                var nextLoop = Loops[loopSlot].NextInFace;
+                var loop = Loops[loopSlot];
+                var finSlot = loop.FirstFin;
+                for (var k = 0; k < loop.FinCount; k++)
+                {
+                    var nextFin = Fins[finSlot].NextInLoop;
+                    DeleteEntitySingle(session, PoolKind.Fin, finSlot, TagOf(PoolKind.Fin, finSlot));
+                    finSlot = nextFin;
+                }
+                DeleteEntitySingle(session, PoolKind.Loop, loopSlot, TagOf(PoolKind.Loop, loopSlot));
+                loopSlot = nextLoop;
+            }
+            // Face-owned surface (when exclusively owned by this face).
+            if (face.SurfTag > 0)
+                ReleaseGeometryOwner(session, EntityClass.Surface, face.SurfTag);
+            DeleteEntitySingle(session, PoolKind.Face, faceSlot, TagOf(PoolKind.Face, faceSlot));
+            faceSlot = next;
+        }
+
+        var edgeSlot = body.FirstEdgeBody;
+        for (var i = 0; i < body.EdgeCountBody; i++)
+        {
+            var next = Edges[edgeSlot].NextInBody;
+            if (Edges[edgeSlot].CurveTag > 0)
+                ReleaseGeometryOwner(session, EntityClass.Curve, Edges[edgeSlot].CurveTag);
+            DeleteEntitySingle(session, PoolKind.Edge, edgeSlot, TagOf(PoolKind.Edge, edgeSlot));
+            edgeSlot = next;
+        }
+
+        var vertexSlot = body.FirstVertexBody;
+        for (var i = 0; i < body.VertexCountBody; i++)
+        {
+            var next = Vertices[vertexSlot].NextInBody;
+            if (Vertices[vertexSlot].PointTag > 0)
+                ReleaseGeometryOwner(session, EntityClass.Point, Vertices[vertexSlot].PointTag);
+            DeleteEntitySingle(session, PoolKind.Vertex, vertexSlot, TagOf(PoolKind.Vertex, vertexSlot));
+            vertexSlot = next;
+        }
+
+        // Shells (with face uses) and regions.
+        var shellSlot = body.FirstShell;
+        for (var i = 0; i < body.ShellCount; i++)
+        {
+            var next = Shells[shellSlot].NextInBody;
+            var shell = Shells[shellSlot];
+            var faceUseSlot = shell.FirstFaceUseShell;
+            for (var j = 0; j < shell.FaceUseCount; j++)
+            {
+                var nextUse = FaceUses[faceUseSlot].NextInShell;
+                DeleteEntitySingle(session, PoolKind.FaceUse, faceUseSlot, 0);
+                faceUseSlot = nextUse;
+            }
+            DeleteEntitySingle(session, PoolKind.Shell, shellSlot, TagOf(PoolKind.Shell, shellSlot));
+            shellSlot = next;
+        }
+        var regionSlot = body.FirstRegion;
+        for (var i = 0; i < body.RegionCount; i++)
+        {
+            var next = Regions[regionSlot].NextInBody;
+            DeleteEntitySingle(session, PoolKind.Region, regionSlot, TagOf(PoolKind.Region, regionSlot));
+            regionSlot = next;
+        }
+
+        // Unlink from partition body chain.
+        UnlinkBodyFromPartition(partition, bodySlot);
+        if (session->IsMarkActive == 0) SessionMemoryOwner.DropBodyXt(bodySlot);
+        DeleteEntitySingle(session, PoolKind.Body, bodySlot, bodyTag);
+    }
+
+    private static void UnlinkBodyFromPartition(short partition, BodySlot bodySlot)
+    {
+        var session = State.Session;
+        var slot = partition >= 0 ? FindPartitionSlot(partition) : 0;
+        ref var body = ref Bodies[bodySlot];
+        if (body.PrevInPartition < 0 && body.NextInPartition < 0)
+            return;                               // not attached (undo path)
+        if (body.PrevInPartition == bodySlot)
+        {
+            session->Partitions[slot].FirstBody = -1;
+            session->Partitions[slot].LastBody = -1;
+        }
+        else
+        {
+            Bodies[body.PrevInPartition].NextInPartition = body.NextInPartition;
+            Bodies[body.NextInPartition].PrevInPartition = body.PrevInPartition;
+            if (session->Partitions[slot].FirstBody == bodySlot)
+                session->Partitions[slot].FirstBody = body.NextInPartition;
+            if (session->Partitions[slot].LastBody == bodySlot)
+                session->Partitions[slot].LastBody = body.PrevInPartition;
+        }
+        session->Partitions[slot].BodyCount--;
+        body.PrevInPartition = -1;
+        body.NextInPartition = -1;
+    }
+
+    private static int FindPartitionSlot(short partitionId)
+    {
+        var session = State.Session;
+        for (int i = 0; i < SessionData.MaxPartitions; i++)
+            if (session->Partitions[i].Alive == 1 && session->Partitions[i].PartitionId == partitionId)
+                return i;
+        return 0;
+    }
+
+    /// <summary>Geometry (curve/surface/point) ownership release: refcount-1, free at zero.</summary>
+    private static void ReleaseGeometryOwner(SessionData* session, EntityClass @class, EntityTag tag)
+    {
+        if (!IsValidTag(tag))
+            return;
+        var record = TagRec(tag);
+        if ((EntityClass)record.ClassCode != @class)
+            return;
+        var pool = (PoolKind)record.Pool;
+        var slot = record.Slot;
+        if (!TryReleaseGeometryReference(pool, slot))
+            return;                                // still referenced by another owner
+        DeleteEntitySingle(session, pool, slot, tag);
+    }
+
+    /// <summary>Decrement a geometry record's owner count; true when it reaches zero.</summary>
+    private static bool TryReleaseGeometryReference(PoolKind pool, int slot)
+    {
+        switch (pool)
+        {
+            case PoolKind.Curve:
+                ref var curve = ref Curves[slot];
+                if (curve.OwnerCount > 1) { curve.OwnerCount--; return false; }
+                return true;
+            case PoolKind.Surface:
+                ref var surface = ref Surfaces[slot];
+                if (surface.OwnerCount > 1) { surface.OwnerCount--; return false; }
+                return true;
+            case PoolKind.Point:
+                ref var point = ref Points[slot];
+                if (point.OwnerCount > 1) { point.OwnerCount--; return false; }
+                return true;
+            default:
+                return true;
         }
     }
 
-    private static void RetireEntity(int poolIndex, int slot)
+    /// <summary>Acquire a geometry ownership reference (shared geometry across a partition).</summary>
+    private static void AcquireGeometryReference(PoolKind pool, int slot)
     {
-        switch ((PoolKind)poolIndex)
+        switch (pool)
         {
-            case PoolKind.Point: Points.Retire(slot); break;
-            case PoolKind.Vector: Vectors.Retire(slot); break;
-            case PoolKind.Body: Bodies.Retire(slot); break;
-            case PoolKind.Shell: Shells.Retire(slot); break;
-            case PoolKind.Face: Faces.Retire(slot); break;
-            case PoolKind.Loop: Loops.Retire(slot); break;
-            case PoolKind.Edge: Edges.Retire(slot); break;
-            case PoolKind.Fin: Fins.Retire(slot); break;
-            case PoolKind.Vertex: Vertices.Retire(slot); break;
-            case PoolKind.Region: Regions.Retire(slot); break;
-            case PoolKind.Curve: Curves.Retire(slot); break;
-            case PoolKind.Surface: Surfaces.Retire(slot); break;
-            case PoolKind.Transform: Transforms.Retire(slot); break;
+            case PoolKind.Curve: Curves[slot].OwnerCount++; break;
+            case PoolKind.Surface: Surfaces[slot].OwnerCount++; break;
+            case PoolKind.Point: Points[slot].OwnerCount++; break;
         }
     }
 
-    private static void RecycleRetiredEntity(int poolIndex, int slot)
+    private static void DeleteEntitySingle(SessionData* session, PoolKind pool, int slot, EntityTag tag)
     {
-        switch ((PoolKind)poolIndex)
+        if (session->IsMarkActive != 0)
+        {
+            // Snapshot for rollback, then defer the physical release.
+            session->TryAppendUndo(SessionData.UndoKind.EntityDeleted, (byte)pool,
+                PoolPartitionOf(pool, slot), slot, PoolGenerationOf(pool, slot), tag, null, 0);
+            RetireInPool(pool, slot);
+            session->TryDeferRelease((byte)pool, slot, tag);
+            if (tag > 0) session->Tags.Suspend(tag);
+        }
+        else
+        {
+            FinalReleaseEntity(pool, slot, tag, knownAlive: true);
+        }
+    }
+
+    private static void FinalReleaseEntity(PoolKind pool, int slot, EntityTag tag, bool knownAlive = false)
+    {
+        // Variable-length and typed geometry payloads die with their owner
+        // record, whatever path releases it.
+        if (pool == PoolKind.Curve || pool == PoolKind.Surface)
+            ReleaseGeometryPayload(pool, slot);
+        if (pool == PoolKind.Body && Bodies.IsAlive(slot))
+            UnlinkBodyFromPartition(Bodies[slot].Header.Partition, slot);
+        if (pool == PoolKind.Body) SessionMemoryOwner.DropBodyXt(slot);
+        // Slots retired under an active mark come back with Alive == 0; both
+        // freshly dead and retired slots end up on the free chain.
+        if (knownAlive || IsSlotAlive(pool, slot))
+            ReleasePoolSlot(pool, slot);
+        else
+            RecycleRetiredSlot(pool, slot);
+        if (tag > 0) State.Session->Tags.Revoke(tag);
+    }
+
+    /// <summary>Free the typed data record owned by a curve or surface.</summary>
+    private static void ReleaseGeometryPayload(PoolKind pool, int slot)
+    {
+        if (pool == PoolKind.Curve)
+        {
+            var curve = Curves[slot];
+            switch (curve.Class)
+            {
+                case CurveClass.BCurve: FreeBCurveData(curve.DataIndex); break;
+                case CurveClass.Line: LineDataPool.Free(curve.DataIndex); break;
+                case CurveClass.Circle: CircleDataPool.Free(curve.DataIndex); break;
+            }
+        }
+        else if (pool == PoolKind.Surface)
+        {
+            var surface = Surfaces[slot];
+            switch (surface.Class)
+            {
+                case SurfaceClass.Plane: PlaneDataPool.Free(surface.DataIndex); break;
+                case SurfaceClass.Cylinder: CylinderDataPool.Free(surface.DataIndex); break;
+                case SurfaceClass.Cone: ConeDataPool.Free(surface.DataIndex); break;
+                case SurfaceClass.Sphere: SphereDataPool.Free(surface.DataIndex); break;
+                case SurfaceClass.Torus: TorusDataPool.Free(surface.DataIndex); break;
+            }
+        }
+    }
+
+    private static bool IsSlotAlive(PoolKind pool, int slot)
+    {
+        return pool switch
+        {
+            PoolKind.Point => Points.IsAlive(slot),
+            PoolKind.Vector => Vectors.IsAlive(slot),
+            PoolKind.Body => Bodies.IsAlive(slot),
+            PoolKind.Shell => Shells.IsAlive(slot),
+            PoolKind.Face => Faces.IsAlive(slot),
+            PoolKind.Loop => Loops.IsAlive(slot),
+            PoolKind.Edge => Edges.IsAlive(slot),
+            PoolKind.Fin => Fins.IsAlive(slot),
+            PoolKind.Vertex => Vertices.IsAlive(slot),
+            PoolKind.Region => Regions.IsAlive(slot),
+            PoolKind.Curve => Curves.IsAlive(slot),
+            PoolKind.Surface => Surfaces.IsAlive(slot),
+            PoolKind.Transform => Transforms.IsAlive(slot),
+            PoolKind.FaceUse => FaceUses.IsAlive(slot),
+            PoolKind.BCurveData => BCurveDataStore.IsAlive(slot),
+            PoolKind.TorusData => TorusDataPool.IsAlive(slot),
+            PoolKind.SphereData => SphereDataPool.IsAlive(slot),
+            PoolKind.ConeData => ConeDataPool.IsAlive(slot),
+            PoolKind.PlaneData => PlaneDataPool.IsAlive(slot),
+            PoolKind.CylinderData => CylinderDataPool.IsAlive(slot),
+            PoolKind.LineData => LineDataPool.IsAlive(slot),
+            PoolKind.CircleData => CircleDataPool.IsAlive(slot),
+            _ => false,
+        };
+    }
+
+    private static void RecycleRetiredSlot(PoolKind pool, int slot)
+    {
+        switch (pool)
         {
             case PoolKind.Point: Points.RecycleRetired(slot); break;
             case PoolKind.Vector: Vectors.RecycleRetired(slot); break;
             case PoolKind.Body: Bodies.RecycleRetired(slot); break;
             case PoolKind.Shell: Shells.RecycleRetired(slot); break;
+            case PoolKind.FaceUse: FaceUses.RecycleRetired(slot); break;
             case PoolKind.Face: Faces.RecycleRetired(slot); break;
             case PoolKind.Loop: Loops.RecycleRetired(slot); break;
             case PoolKind.Edge: Edges.RecycleRetired(slot); break;
@@ -3260,37 +3121,178 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.Curve: Curves.RecycleRetired(slot); break;
             case PoolKind.Surface: Surfaces.RecycleRetired(slot); break;
             case PoolKind.Transform: Transforms.RecycleRetired(slot); break;
+            case PoolKind.BCurveData: BCurveDataStore.RecycleRetired(slot); break;
+            case PoolKind.TorusData: TorusDataPool.RecycleRetired(slot); break;
+            case PoolKind.SphereData: SphereDataPool.RecycleRetired(slot); break;
+            case PoolKind.ConeData: ConeDataPool.RecycleRetired(slot); break;
+            case PoolKind.PlaneData: PlaneDataPool.RecycleRetired(slot); break;
+            case PoolKind.CylinderData: CylinderDataPool.RecycleRetired(slot); break;
+            case PoolKind.LineData: LineDataPool.RecycleRetired(slot); break;
+            case PoolKind.CircleData: CircleDataPool.RecycleRetired(slot); break;
         }
     }
 
-    private static void RestoreEntity(int poolIndex, int slot, int handleTag)
+    private static void DestroyCreatedEntity(PoolKind pool, int slot, EntityGeneration generation, RecordHeader* header)
     {
-        // Restore the entity's alive bit
-        switch ((PoolKind)poolIndex)
+        if (header == null || header->Alive == 0 || header->Generation != generation) return;
+        FinalReleaseEntity(pool, slot, header->Tag, knownAlive: true);
+    }
+
+    private static void RestoreDeletedEntity(SessionData* session, PoolKind pool, int slot, EntityTag tag)
+    {
+        RevivePoolSlot(pool, slot);
+        if (tag > 0) session->Tags.Restore(tag);
+        if (pool == PoolKind.Body)
+            AppendBodyToPartition(Bodies[slot].Header.Partition, slot);
+    }
+
+    private static void RestoreSnapshot(PoolKind pool, int slot, void* snapshot)
+        => CopySnapshotToRecord(pool, slot, snapshot);
+
+    private static void RollbackBlockSwap(byte pool, int slot, void* oldBlock)
+    {
+        // Variable-length data restore is BCurve-specific today; the BCurve
+        // store holds the owner record whose handle points at the new block.
+        RollbackBCurveBlock(slot, oldBlock);
+    }
+
+    private static int PoolGenerationOf(PoolKind pool, int slot)
+    {
+        return pool switch
         {
-            case PoolKind.Point: RestoreSlot(ref Points, slot); break;
-            case PoolKind.Vector: RestoreSlot(ref Vectors, slot); break;
-            case PoolKind.Body: RestoreSlot(ref Bodies, slot); break;
-            case PoolKind.Shell: RestoreSlot(ref Shells, slot); break;
-            case PoolKind.Face: RestoreSlot(ref Faces, slot); break;
-            case PoolKind.Loop: RestoreSlot(ref Loops, slot); break;
-            case PoolKind.Edge: RestoreSlot(ref Edges, slot); break;
-            case PoolKind.Fin: RestoreSlot(ref Fins, slot); break;
-            case PoolKind.Vertex: RestoreSlot(ref Vertices, slot); break;
-            case PoolKind.Region: RestoreSlot(ref Regions, slot); break;
-            case PoolKind.Curve: RestoreSlot(ref Curves, slot); break;
-            case PoolKind.Surface: RestoreSlot(ref Surfaces, slot); break;
-            case PoolKind.Transform: RestoreSlot(ref Transforms, slot); break;
-        }
-
-        // Restore the handle
-        if (handleTag > 0 && handleTag < MaxHandles)
-            Handles[handleTag].Alive = 1;
+            PoolKind.Point => Points.GetGeneration(slot),
+            PoolKind.Vector => Vectors.GetGeneration(slot),
+            PoolKind.Body => Bodies.GetGeneration(slot),
+            PoolKind.Shell => Shells.GetGeneration(slot),
+            PoolKind.Face => Faces.GetGeneration(slot),
+            PoolKind.Loop => Loops.GetGeneration(slot),
+            PoolKind.Edge => Edges.GetGeneration(slot),
+            PoolKind.Fin => Fins.GetGeneration(slot),
+            PoolKind.Vertex => Vertices.GetGeneration(slot),
+            PoolKind.Region => Regions.GetGeneration(slot),
+            PoolKind.Curve => Curves.GetGeneration(slot),
+            PoolKind.Surface => Surfaces.GetGeneration(slot),
+            PoolKind.Transform => Transforms.GetGeneration(slot),
+            PoolKind.BCurveData => BCurveDataStore.GetGeneration(slot),
+            PoolKind.TorusData => TorusDataPool.GetGeneration(slot),
+            PoolKind.SphereData => SphereDataPool.GetGeneration(slot),
+            PoolKind.ConeData => ConeDataPool.GetGeneration(slot),
+            PoolKind.PlaneData => PlaneDataPool.GetGeneration(slot),
+            PoolKind.CylinderData => CylinderDataPool.GetGeneration(slot),
+            PoolKind.LineData => LineDataPool.GetGeneration(slot),
+            PoolKind.CircleData => CircleDataPool.GetGeneration(slot),
+            PoolKind.FaceUse => FaceUses.GetGeneration(slot),
+            _ => 0,
+        };
     }
 
-    private static void RestoreSlot<T>(ref EntityPool<T> pool, int slot) where T : struct
+    private static void ReleasePoolSlot(PoolKind pool, int slot)
     {
-        pool.MarkAlive(slot);
+        switch (pool)
+        {
+            case PoolKind.Point: Points.Free(slot); break;
+            case PoolKind.Vector: Vectors.Free(slot); break;
+            case PoolKind.Body: Bodies.Free(slot); break;
+            case PoolKind.Shell: Shells.Free(slot); break;
+            case PoolKind.FaceUse: FaceUses.Free(slot); break;
+            case PoolKind.Face: Faces.Free(slot); break;
+            case PoolKind.Loop: Loops.Free(slot); break;
+            case PoolKind.Edge: Edges.Free(slot); break;
+            case PoolKind.Fin: Fins.Free(slot); break;
+            case PoolKind.Vertex: Vertices.Free(slot); break;
+            case PoolKind.Region: Regions.Free(slot); break;
+            case PoolKind.Curve: Curves.Free(slot); break;
+            case PoolKind.Surface: Surfaces.Free(slot); break;
+            case PoolKind.Transform: Transforms.Free(slot); break;
+            case PoolKind.BCurveData: BCurveDataStore.Free(slot); break;
+            case PoolKind.TorusData: TorusDataPool.Free(slot); break;
+            case PoolKind.SphereData: SphereDataPool.Free(slot); break;
+            case PoolKind.ConeData: ConeDataPool.Free(slot); break;
+            case PoolKind.PlaneData: PlaneDataPool.Free(slot); break;
+            case PoolKind.CylinderData: CylinderDataPool.Free(slot); break;
+            case PoolKind.LineData: LineDataPool.Free(slot); break;
+            case PoolKind.CircleData: CircleDataPool.Free(slot); break;
+        }
+    }
+
+    private static void RetireInPool(PoolKind pool, int slot)
+    {
+        switch (pool)
+        {
+            case PoolKind.Point: Points.Retire(slot); break;
+            case PoolKind.Vector: Vectors.Retire(slot); break;
+            case PoolKind.Body: Bodies.Retire(slot); break;
+            case PoolKind.Shell: Shells.Retire(slot); break;
+            case PoolKind.FaceUse: FaceUses.Retire(slot); break;
+            case PoolKind.Face: Faces.Retire(slot); break;
+            case PoolKind.Loop: Loops.Retire(slot); break;
+            case PoolKind.Edge: Edges.Retire(slot); break;
+            case PoolKind.Fin: Fins.Retire(slot); break;
+            case PoolKind.Vertex: Vertices.Retire(slot); break;
+            case PoolKind.Region: Regions.Retire(slot); break;
+            case PoolKind.Curve: Curves.Retire(slot); break;
+            case PoolKind.Surface: Surfaces.Retire(slot); break;
+            case PoolKind.Transform: Transforms.Retire(slot); break;
+            case PoolKind.BCurveData: BCurveDataStore.Retire(slot); break;
+            case PoolKind.TorusData: TorusDataPool.Retire(slot); break;
+            case PoolKind.SphereData: SphereDataPool.Retire(slot); break;
+            case PoolKind.ConeData: ConeDataPool.Retire(slot); break;
+            case PoolKind.PlaneData: PlaneDataPool.Retire(slot); break;
+            case PoolKind.CylinderData: CylinderDataPool.Retire(slot); break;
+            case PoolKind.LineData: LineDataPool.Retire(slot); break;
+            case PoolKind.CircleData: CircleDataPool.Retire(slot); break;
+        }
+    }
+
+    private static void RevivePoolSlot(PoolKind pool, int slot)
+    {
+        switch (pool)
+        {
+            case PoolKind.Point: Points.MarkAlive(slot); break;
+            case PoolKind.Vector: Vectors.MarkAlive(slot); break;
+            case PoolKind.Body: Bodies.MarkAlive(slot); break;
+            case PoolKind.Shell: Shells.MarkAlive(slot); break;
+            case PoolKind.FaceUse: FaceUses.MarkAlive(slot); break;
+            case PoolKind.Face: Faces.MarkAlive(slot); break;
+            case PoolKind.Loop: Loops.MarkAlive(slot); break;
+            case PoolKind.Edge: Edges.MarkAlive(slot); break;
+            case PoolKind.Fin: Fins.MarkAlive(slot); break;
+            case PoolKind.Vertex: Vertices.MarkAlive(slot); break;
+            case PoolKind.Region: Regions.MarkAlive(slot); break;
+            case PoolKind.Curve: Curves.MarkAlive(slot); break;
+            case PoolKind.Surface: Surfaces.MarkAlive(slot); break;
+            case PoolKind.Transform: Transforms.MarkAlive(slot); break;
+            case PoolKind.BCurveData: BCurveDataStore.MarkAlive(slot); break;
+            case PoolKind.TorusData: TorusDataPool.MarkAlive(slot); break;
+            case PoolKind.SphereData: SphereDataPool.MarkAlive(slot); break;
+            case PoolKind.ConeData: ConeDataPool.MarkAlive(slot); break;
+            case PoolKind.PlaneData: PlaneDataPool.MarkAlive(slot); break;
+            case PoolKind.CylinderData: CylinderDataPool.MarkAlive(slot); break;
+            case PoolKind.LineData: LineDataPool.MarkAlive(slot); break;
+            case PoolKind.CircleData: CircleDataPool.MarkAlive(slot); break;
+        }
+    }
+
+    private static void CopySnapshotToRecord(PoolKind pool, int slot, void* snapshot)
+    {
+        if (snapshot == null) return;
+        switch (pool)
+        {
+            case PoolKind.Point: Points[slot] = *(PointRecord*)snapshot; break;
+            case PoolKind.Vector: Vectors[slot] = *(VectorRecord*)snapshot; break;
+            case PoolKind.Body: Bodies[slot] = *(BodyRecord*)snapshot; break;
+            case PoolKind.Shell: Shells[slot] = *(ShellRecord*)snapshot; break;
+            case PoolKind.FaceUse: FaceUses[slot] = *(FaceUseRecord*)snapshot; break;
+            case PoolKind.Face: Faces[slot] = *(FaceRecord*)snapshot; break;
+            case PoolKind.Loop: Loops[slot] = *(LoopRecord*)snapshot; break;
+            case PoolKind.Edge: Edges[slot] = *(EdgeRecord*)snapshot; break;
+            case PoolKind.Fin: Fins[slot] = *(FinRecord*)snapshot; break;
+            case PoolKind.Vertex: Vertices[slot] = *(VertexRecord*)snapshot; break;
+            case PoolKind.Region: Regions[slot] = *(RegionRecord*)snapshot; break;
+            case PoolKind.Curve: Curves[slot] = *(CurveRecord*)snapshot; break;
+            case PoolKind.Surface: Surfaces[slot] = *(SurfaceRecord*)snapshot; break;
+            case PoolKind.Transform: Transforms[slot] = *(TransformRecord*)snapshot; break;
+        }
     }
 
     // ── Helpers ──────────────────────────────────────────────────
@@ -3353,34 +3355,46 @@ internal static unsafe partial class KernelRuntime
         body.NextInPartition = -1;
     }
 
-    private static PartitionSlot CurrentPartition => session?.CurrentPartition ?? 0;
+    /// <summary>Calling thread's current partition (PK_PARTITION_set_current); default 0.</summary>
+    private static PartitionSlot CurrentPartition
+    {
+        get
+        {
+            var session = State.Session;
+            if (session == null) return 0;
+            var context = ThreadContext();
+            return context != null ? context->CurrentPartition : 0;
+        }
+    }
 
     private static void AssignPartition(ref RecordHeader header, PartitionSlot partition)
     {
         header.Partition = (short)partition;
     }
 
-    private static PartitionSlot GetEntityPartition(EntityTag entityTag)
+    internal static PartitionSlot GetEntityPartition(EntityTag entityTag)
     {
         if (!IsValidTag(entityTag))
             return -1;
 
-        var handle = Handles[entityTag];
-        return handle.Pool switch
+        var handle = TagRec(entityTag);
+        var pool = (PoolKind)handle.Pool;
+        var poolSlot = handle.Slot;
+        return pool switch
         {
-            PoolKind.Point => Points[handle.SlotIndex].Header.Partition,
-            PoolKind.Vector => Vectors[handle.SlotIndex].Header.Partition,
-            PoolKind.Body => Bodies[handle.SlotIndex].Header.Partition,
-            PoolKind.Shell => Shells[handle.SlotIndex].Header.Partition,
-            PoolKind.Face => Faces[handle.SlotIndex].Header.Partition,
-            PoolKind.Loop => Loops[handle.SlotIndex].Header.Partition,
-            PoolKind.Edge => Edges[handle.SlotIndex].Header.Partition,
-            PoolKind.Fin => Fins[handle.SlotIndex].Header.Partition,
-            PoolKind.Vertex => Vertices[handle.SlotIndex].Header.Partition,
-            PoolKind.Region => Regions[handle.SlotIndex].Header.Partition,
-            PoolKind.Curve => Curves[handle.SlotIndex].Header.Partition,
-            PoolKind.Surface => Surfaces[handle.SlotIndex].Header.Partition,
-            PoolKind.Transform => Transforms[handle.SlotIndex].Header.Partition,
+            PoolKind.Point => Points[poolSlot].Header.Partition,
+            PoolKind.Vector => Vectors[poolSlot].Header.Partition,
+            PoolKind.Body => Bodies[poolSlot].Header.Partition,
+            PoolKind.Shell => Shells[poolSlot].Header.Partition,
+            PoolKind.Face => Faces[poolSlot].Header.Partition,
+            PoolKind.Loop => Loops[poolSlot].Header.Partition,
+            PoolKind.Edge => Edges[poolSlot].Header.Partition,
+            PoolKind.Fin => Fins[poolSlot].Header.Partition,
+            PoolKind.Vertex => Vertices[poolSlot].Header.Partition,
+            PoolKind.Region => Regions[poolSlot].Header.Partition,
+            PoolKind.Curve => Curves[poolSlot].Header.Partition,
+            PoolKind.Surface => Surfaces[poolSlot].Header.Partition,
+            PoolKind.Transform => Transforms[poolSlot].Header.Partition,
             _ => -1,
         };
     }
@@ -3417,10 +3431,12 @@ internal static unsafe partial class KernelRuntime
         face.NextInBody = -1;
     }
 
-    private static void CreateSolidRegionsAndShells(BodySlot bodySlot, out ShellSlot voidShellSlot, out ShellSlot solidShellSlot)
+    private static bool CreateSolidRegionsAndShells(BodySlot bodySlot, out ShellSlot voidShellSlot, out ShellSlot solidShellSlot)
     {
-        RegionSlot voidRegionSlot = Regions.Allocate();
-        RegionSlot solidRegionSlot = Regions.Allocate();
+        voidShellSlot = solidShellSlot = -1;
+        RegionSlot voidRegionSlot = TryAllocateRegions();
+        RegionSlot solidRegionSlot = TryAllocateRegions();
+        if (voidRegionSlot < 0 || solidRegionSlot < 0) return false;
         ref var voidRegion = ref Regions[voidRegionSlot];
         ref var solidRegion = ref Regions[solidRegionSlot];
         voidRegion.IsSolid = 0;
@@ -3437,8 +3453,9 @@ internal static unsafe partial class KernelRuntime
         AppendRegionToBody(bodySlot, voidRegionSlot);
         AppendRegionToBody(bodySlot, solidRegionSlot);
 
-        voidShellSlot = Shells.Allocate();
-        solidShellSlot = Shells.Allocate();
+        voidShellSlot = TryAllocateShells();
+        solidShellSlot = TryAllocateShells();
+        if (voidShellSlot < 0 || solidShellSlot < 0) return false;
         InitializeShell(ref Shells[voidShellSlot], bodySlot);
         InitializeShell(ref Shells[solidShellSlot], bodySlot);
 
@@ -3446,11 +3463,13 @@ internal static unsafe partial class KernelRuntime
         AppendShellToRegion(voidRegionSlot, voidShellSlot);
         AppendShellToBody(bodySlot, solidShellSlot);
         AppendShellToRegion(solidRegionSlot, solidShellSlot);
+        return true;
     }
 
     private static int AddFinToLoopAndEdge(LoopSlot loopSlot, FaceSlot faceSlot, EdgeSlot edgeSlot)
     {
-        int finSlot = Fins.Allocate();
+        int finSlot = TryAllocateFins();
+        if (finSlot < 0) return -1;
         ref var fin = ref Fins[finSlot];
         fin.Edge = edgeSlot;
         fin.Loop = loopSlot;
@@ -3472,7 +3491,8 @@ internal static unsafe partial class KernelRuntime
 
     private static int AddDegenerateFinToLoopAndVertex(LoopSlot loopSlot, FaceSlot faceSlot, VertexSlot vertexSlot)
     {
-        var finSlot = Fins.Allocate();
+        var finSlot = TryAllocateFins();
+        if (finSlot < 0) return -1;
         ref var fin = ref Fins[finSlot];
         fin.Edge = -1;
         fin.Loop = loopSlot;
@@ -3491,7 +3511,8 @@ internal static unsafe partial class KernelRuntime
 
     private static FaceSlot AddFace(BodySlot bodySlot, SurfTag surfTag)
     {
-        var faceSlot = Faces.Allocate();
+        var faceSlot = TryAllocateFaces();
+        if (faceSlot < 0) return -1;
         ref var face = ref Faces[faceSlot];
         InitializeFace(ref face);
         face.SurfTag = surfTag;
@@ -3501,7 +3522,8 @@ internal static unsafe partial class KernelRuntime
 
     private static LoopSlot AddLoop(FaceSlot faceSlot)
     {
-        var loopSlot = Loops.Allocate();
+        var loopSlot = TryAllocateLoops();
+        if (loopSlot < 0) return -1;
         ref var loop = ref Loops[loopSlot];
         loop.Face = faceSlot;
         loop.FirstFin = -1;
@@ -3528,7 +3550,8 @@ internal static unsafe partial class KernelRuntime
 
     private static bool AddVertex(BodySlot bodySlot, double x, double y, double z, out VertexSlot vertexSlot)
     {
-        vertexSlot = Vertices.Allocate();
+        vertexSlot = TryAllocateVertices();
+        if (vertexSlot < 0) return false;
         var pointTag = CreatePointTag(x, y, z);
         if (pointTag <= 0)
             return false;
@@ -3543,7 +3566,8 @@ internal static unsafe partial class KernelRuntime
 
     private static bool AddLineEdge(BodySlot bodySlot, VertexSlot startVertex, VertexSlot endVertex, double x0, double y0, double z0, double x1, double y1, double z1, out EdgeSlot edgeSlot)
     {
-        edgeSlot = Edges.Allocate();
+        edgeSlot = TryAllocateEdges();
+        if (edgeSlot < 0) return false;
         var curveTag = CreateLineCurveTag(x0, y0, z0, x1 - x0, y1 - y0, z1 - z0);
         if (curveTag <= 0)
             return false;
@@ -3559,28 +3583,99 @@ internal static unsafe partial class KernelRuntime
         return true;
     }
 
+
+    /// <summary>
+    /// Publish tags for every topology entity reachable from the body so that
+    /// read-only queries never need to create identities (lazy tag creation
+    /// is gone). Also records undo entries when a mark is active.
+    /// </summary>
+    private static bool PublishBodyTopologyTags(BodySlot bodySlot)
+    {
+        var session = State.Session;
+        ref var body = ref Bodies[bodySlot];
+
+        var regionSlot = body.FirstRegion;
+        for (var i = 0; i < body.RegionCount; i++, regionSlot = Regions[regionSlot].NextInBody)
+        {
+            if (Regions[regionSlot].Header.Tag == 0)
+                Regions[regionSlot].Header.Tag = AllocateTag(EntityClass.Region, PoolKind.Region, regionSlot, Regions[regionSlot].Header.Generation);
+            if (Regions[regionSlot].Header.Tag <= 0) return false;
+        }
+
+        var shellSlot = body.FirstShell;
+        for (var i = 0; i < body.ShellCount; i++, shellSlot = Shells[shellSlot].NextInBody)
+        {
+            if (Shells[shellSlot].Header.Tag == 0)
+                Shells[shellSlot].Header.Tag = AllocateTag(EntityClass.Shell, PoolKind.Shell, shellSlot, Shells[shellSlot].Header.Generation);
+            if (Shells[shellSlot].Header.Tag <= 0) return false;
+        }
+
+        var faceSlot = body.FirstFaceBody;
+        for (var i = 0; i < body.FaceCountBody; i++, faceSlot = Faces[faceSlot].NextInBody)
+        {
+            if (Faces[faceSlot].Header.Tag == 0)
+                Faces[faceSlot].Header.Tag = AllocateTag(EntityClass.Face, PoolKind.Face, faceSlot, Faces[faceSlot].Header.Generation);
+            if (Faces[faceSlot].Header.Tag <= 0) return false;
+            var loopSlot = Faces[faceSlot].FirstLoop;
+            for (var j = 0; j < Faces[faceSlot].LoopCount; j++, loopSlot = Loops[loopSlot].NextInFace)
+            {
+                if (Loops[loopSlot].Header.Tag == 0)
+                    Loops[loopSlot].Header.Tag = AllocateTag(EntityClass.Loop, PoolKind.Loop, loopSlot, Loops[loopSlot].Header.Generation);
+                if (Loops[loopSlot].Header.Tag <= 0) return false;
+                var finSlot = Loops[loopSlot].FirstFin;
+                for (var k = 0; k < Loops[loopSlot].FinCount; k++, finSlot = Fins[finSlot].NextInLoop)
+                {
+                    if (Fins[finSlot].Header.Tag == 0)
+                        Fins[finSlot].Header.Tag = AllocateTag(EntityClass.Fin, PoolKind.Fin, finSlot, Fins[finSlot].Header.Generation);
+                    if (Fins[finSlot].Header.Tag <= 0) return false;
+                }
+            }
+        }
+
+        var edgeSlot = body.FirstEdgeBody;
+        for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
+        {
+            if (Edges[edgeSlot].Header.Tag == 0)
+                Edges[edgeSlot].Header.Tag = AllocateTag(EntityClass.Edge, PoolKind.Edge, edgeSlot, Edges[edgeSlot].Header.Generation);
+            if (Edges[edgeSlot].Header.Tag <= 0) return false;
+        }
+
+        var vertexSlot = body.FirstVertexBody;
+        for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = Vertices[vertexSlot].NextInBody)
+        {
+            if (Vertices[vertexSlot].Header.Tag == 0)
+                Vertices[vertexSlot].Header.Tag = AllocateTag(EntityClass.Vertex, PoolKind.Vertex, vertexSlot, Vertices[vertexSlot].Header.Generation);
+            if (Vertices[vertexSlot].Header.Tag <= 0) return false;
+        }
+
+        return true;
+    }
+
     private static int FinishCreatedBody(BodySlot bodySlot, EntityTag* bodyTag)
     {
         var tag = AllocateTag(EntityClass.Body, PoolKind.Body, bodySlot, Bodies[bodySlot].Header.Generation);
         if (tag < 0)
             return ParasolidConstants.PK_ERROR_general_body;
 
-        *bodyTag = tag;
         RebuildBoundaryGeometryLinks(bodySlot);
         AppendBodyToPartition(CurrentPartition, bodySlot);
+        if (!PublishBodyTopologyTags(bodySlot)) return ParasolidConstants.PK_ERROR_memory_full;
+        *bodyTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
     private static int CreateCircleCurveTag(double cx, double cy, double cz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius)
     {
-        int dataSlot = CircleDataPool.Allocate();
+        int dataSlot = TryAllocateCircleData();
+        if (dataSlot < 0) return 0;
         ref var data = ref CircleDataPool[dataSlot];
         data.CenterX = cx; data.CenterY = cy; data.CenterZ = cz;
         data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
         data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
         data.Radius = radius;
 
-        int curveSlot = Curves.Allocate();
+        int curveSlot = TryAllocateCurves();
+        if (curveSlot < 0) return -1;
         ref var curve = ref Curves[curveSlot];
         AssignPartition(ref curve.Header, CurrentPartition);
         curve.Class = CurveClass.Circle;
@@ -3597,12 +3692,14 @@ internal static unsafe partial class KernelRuntime
         if (length <= 0)
             return 0;
 
-        int dataSlot = LineDataPool.Allocate();
+        int dataSlot = TryAllocateLineData();
+        if (dataSlot < 0) return 0;
         ref var data = ref LineDataPool[dataSlot];
         data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
         data.AxisX = axX / length; data.AxisY = axY / length; data.AxisZ = axZ / length;
 
-        int curveSlot = Curves.Allocate();
+        int curveSlot = TryAllocateCurves();
+        if (curveSlot < 0) return -1;
         ref var curve = ref Curves[curveSlot];
         AssignPartition(ref curve.Header, CurrentPartition);
         curve.Class = CurveClass.Line;
@@ -3615,7 +3712,8 @@ internal static unsafe partial class KernelRuntime
 
     private static int CreatePointTag(double x, double y, double z)
     {
-        int pointSlot = Points.Allocate();
+        int pointSlot = TryAllocatePoints();
+        if (pointSlot < 0) return -1;
         ref var point = ref Points[pointSlot];
         AssignPartition(ref point.Header, CurrentPartition);
         point.Position.X = x;
@@ -3626,14 +3724,16 @@ internal static unsafe partial class KernelRuntime
 
     private static int CreateCylinderSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius)
     {
-        int dataSlot = CylinderDataPool.Allocate();
+        int dataSlot = TryAllocateCylinderData();
+        if (dataSlot < 0) return 0;
         ref var data = ref CylinderDataPool[dataSlot];
         data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
         data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
         data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
         data.Radius = radius;
 
-        int surfSlot = Surfaces.Allocate();
+        int surfSlot = TryAllocateSurfaces();
+        if (surfSlot < 0) return -1;
         ref var surf = ref Surfaces[surfSlot];
         AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Cylinder;
@@ -3647,7 +3747,8 @@ internal static unsafe partial class KernelRuntime
 
     private static int CreateConeSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius, double semiAngle)
     {
-        int dataSlot = ConeDataPool.Allocate();
+        int dataSlot = TryAllocateConeData();
+        if (dataSlot < 0) return 0;
         ref var data = ref ConeDataPool[dataSlot];
         data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
         data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
@@ -3655,7 +3756,8 @@ internal static unsafe partial class KernelRuntime
         data.Radius = radius;
         data.SemiAngle = semiAngle;
 
-        int surfSlot = Surfaces.Allocate();
+        int surfSlot = TryAllocateSurfaces();
+        if (surfSlot < 0) return -1;
         ref var surf = ref Surfaces[surfSlot];
         AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Cone;
@@ -3669,14 +3771,16 @@ internal static unsafe partial class KernelRuntime
 
     private static int CreateSphereSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double radius)
     {
-        int dataSlot = SphereDataPool.Allocate();
+        int dataSlot = TryAllocateSphereData();
+        if (dataSlot < 0) return 0;
         ref var data = ref SphereDataPool[dataSlot];
         data.CenterX = ox; data.CenterY = oy; data.CenterZ = oz;
         data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
         data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
         data.Radius = radius;
 
-        int surfSlot = Surfaces.Allocate();
+        int surfSlot = TryAllocateSurfaces();
+        if (surfSlot < 0) return -1;
         ref var surf = ref Surfaces[surfSlot];
         AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Sphere;
@@ -3690,7 +3794,8 @@ internal static unsafe partial class KernelRuntime
 
     private static int CreateTorusSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ, double majorRadius, double minorRadius)
     {
-        int dataSlot = TorusDataPool.Allocate();
+        int dataSlot = TryAllocateTorusData();
+        if (dataSlot < 0) return 0;
         ref var data = ref TorusDataPool[dataSlot];
         data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
         data.AxisX = axX; data.AxisY = axY; data.AxisZ = axZ;
@@ -3698,7 +3803,8 @@ internal static unsafe partial class KernelRuntime
         data.MajorRadius = majorRadius;
         data.MinorRadius = minorRadius;
 
-        int surfSlot = Surfaces.Allocate();
+        int surfSlot = TryAllocateSurfaces();
+        if (surfSlot < 0) return -1;
         ref var surf = ref Surfaces[surfSlot];
         AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Torus;
@@ -3712,13 +3818,15 @@ internal static unsafe partial class KernelRuntime
 
     private static int CreatePlaneSurfaceTag(double ox, double oy, double oz, double axX, double axY, double axZ, double refX, double refY, double refZ)
     {
-        int dataSlot = PlaneDataPool.Allocate();
+        int dataSlot = TryAllocatePlaneData();
+        if (dataSlot < 0) return 0;
         ref var data = ref PlaneDataPool[dataSlot];
         data.LocationX = ox; data.LocationY = oy; data.LocationZ = oz;
         data.NormalX = axX; data.NormalY = axY; data.NormalZ = axZ;
         data.RefDirX = refX; data.RefDirY = refY; data.RefDirZ = refZ;
 
-        int surfSlot = Surfaces.Allocate();
+        int surfSlot = TryAllocateSurfaces();
+        if (surfSlot < 0) return -1;
         ref var surf = ref Surfaces[surfSlot];
         AssignPartition(ref surf.Header, CurrentPartition);
         surf.Class = SurfaceClass.Plane;
@@ -3758,18 +3866,95 @@ internal static unsafe partial class KernelRuntime
 
     // ── Dispatch ─────────────────────────────────────────────────
 
-    public static int Dispatch<TCommand>(ApiId apiId, ConcurrencyKind concurrencyKind, AccessKind accessKind, ref TCommand command)
-        where TCommand : struct, IKernelCommand
+    public static int Dispatch<TCommand>(ApiId apiId, ConcurrencyKind concurrencyKind, AccessKind accessKind,
+        ref TCommand command, EntityTag targetEntity = 0) where TCommand : struct, IKernelCommand
     {
         var descriptor = new CommandDescriptor
+        { ApiId = apiId, ConcurrencyKind = concurrencyKind, AccessKind = accessKind, TargetEntity = targetEntity };
+        return Dispatcher.Execute(ref descriptor, ref command);
+    }
+
+    // Transaction completion is INSIDE the scheduler claim. Stop/rollback
+    // cannot free the session or replay a log before this command commits.
+    internal static int ExecuteAuthorized<TCommand>(SessionData* session, AccessKind access, ApiId api,
+        ref TCommand command) where TCommand : struct, IKernelCommand
+    {
+        if (session == null || access == AccessKind.SessionControl
+            || api is ApiId.MarkCreate or ApiId.MarkGoto or ApiId.MarkDelete)
+            return command.Execute();
+        var context = ThreadContext();
+        if (context == null) return ParasolidConstants.PK_ERROR_memory_full;
+        // A point publishes exactly one record and explicitly frees it if tag
+        // publication fails. It needs no undo journal unless a mark or an
+        // enclosing composite command owns its lifetime.
+        if (typeof(TCommand) == typeof(PointCreateCommand) && session->IsMarkActive == 0)
         {
-            ApiId = apiId,
-            ConcurrencyKind = concurrencyKind,
-            AccessKind = accessKind,
-            SessionId = DefaultSessionId,
-            PartitionId = CurrentPartition,
-        };
-        return DispatchState.Execute(ref descriptor, ref command);
+            context->SkipCreationUndo = 1;
+            context->InKernel++;
+            try { return command.Execute(); }
+            finally { context->SkipCreationUndo = 0; context->InKernel--; }
+        }
+        var boundary = context->UndoEntryCount;
+        var returnBoundary = session->Returns.Sequence;
+        context->InKernel++;
+        try
+        {
+            var error = command.Execute();
+            if (error < 0) error = ParasolidConstants.PK_ERROR_memory_full;
+            if (error != 0)
+            {
+                UndoCommandEffects(session, boundary);
+                session->Returns.ReleaseSince(returnBoundary, context->ManagedThreadId);
+            }
+            if (session->IsMarkActive == 0) context->UndoEntryCount = boundary;
+            return error;
+        }
+        finally { context->InKernel--; }
+    }
+    /// <summary>
+    /// Reverse the undo entries a failed command appended: destroy created
+    /// entities, restore deleted ones and field snapshots. Only this
+    /// command's entries (matched by thread) are touched.
+    /// </summary>
+    private static void UndoCommandEffects(SessionData* session, int boundary)
+    {
+        var threadId = Environment.CurrentManagedThreadId;
+        for (int i = session->UndoEntryCount - 1; i >= boundary; i--)
+        {
+            ref var entry = ref session->UndoEntries[i];
+            if ((byte)entry.Kind == (byte)SessionData.UndoBookkeeping.Cancelled)
+                continue;
+            if (entry.ThreadId != threadId)
+                continue;                              // another command's entry
+            switch (entry.Kind)
+            {
+                case SessionData.UndoKind.EntityCreated:
+                    DestroyCreatedEntity((PoolKind)entry.Pool, entry.Slot, entry.Generation, (RecordHeader*)entry.Data);
+                    break;
+                case SessionData.UndoKind.EntityDeleted:
+                    RestoreDeletedEntity(session, (PoolKind)entry.Pool, entry.Slot, entry.Tag);
+                    DropDeferredRelease(session, entry.Pool, entry.Slot);
+                    break;
+                case SessionData.UndoKind.FieldSnapshot:
+                    RestoreSnapshot((PoolKind)entry.Pool, entry.Slot, entry.Data);
+                    break;
+            }
+            entry.Kind = (SessionData.UndoKind)SessionData.UndoBookkeeping.Cancelled;
+        }
+    }
+
+    private static void DropDeferredRelease(SessionData* session, byte pool, int slot)
+    {
+        for (int i = session->DeferredCount - 1; i >= 0; i--)
+        {
+            if (session->Deferred[i].Pool == pool && session->Deferred[i].Slot == slot)
+            {
+                for (int j = i; j < session->DeferredCount - 1; j++)
+                    session->Deferred[j] = session->Deferred[j + 1];
+                session->DeferredCount--;
+                return;
+            }
+        }
     }
 
     public static int NotImplemented()

@@ -121,17 +121,15 @@ public unsafe class BCurveEvaluationTests : IDisposable
     public void MarksRestorePayloadCounts_AndRestoreDeletedCurve()
     {
         var existing = Create(1, [0, 0, 0, 1, 2, 3], [0, 4], [2, 2]);
-        var dataCount = KernelRuntime.BCurveDataStore.Count;
-        var poleCount = KernelRuntime.BCurveVertices.Count;
-        var knotCount = KernelRuntime.BCurveExpandedKnots.Count;
+        var dataAlive = KernelRuntime.BCurveDataStore.AliveCount;
+        var blockBytes = KernelRuntime.BlocksLiveBytes;
         int mark;
         Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
         var added = Create(2, [0, 0, 0, 1, 2, 0, 3, 1, 2], [0, 4], [3, 3]);
         Assert.Equal(0, KernelRuntime.EntityDelete(1, &existing));
         Assert.Equal(0, KernelRuntime.MarkGoto(mark));
-        Assert.Equal(dataCount, KernelRuntime.BCurveDataStore.Count);
-        Assert.Equal(poleCount, KernelRuntime.BCurveVertices.Count);
-        Assert.Equal(knotCount, KernelRuntime.BCurveExpandedKnots.Count);
+        Assert.Equal(dataAlive, KernelRuntime.BCurveDataStore.AliveCount);
+        Assert.Equal(blockBytes, KernelRuntime.BlocksLiveBytes);
         PK_VECTOR_s output;
         Assert.Equal(0, KernelRuntime.CurveEval(existing, 1, 0, &output));
         Assert.Equal(ParasolidConstants.PK_ERROR_not_a_tag, KernelRuntime.CurveEval(added, 1, 0, &output));
@@ -166,9 +164,8 @@ public unsafe class BCurveEvaluationTests : IDisposable
         sf.is_periodic = sf.is_closed = 1;
         Assert.Equal(ParasolidConstants.PK_ERROR_periodic_open, KernelRuntime.BCurveCreate(&sf, &curve));
         Assert.Equal(987, curve);
-        Assert.Equal(0, KernelRuntime.BCurveDataStore.Count);
-        Assert.Equal(0, KernelRuntime.BCurveVertices.Count);
-        Assert.Equal(0, KernelRuntime.BCurveExpandedKnots.Count);
+        Assert.Equal(0, KernelRuntime.BCurveDataStore.AliveCount);
+        Assert.Equal(0UL, KernelRuntime.BlocksLiveBytes);
     }
 
     [Fact]

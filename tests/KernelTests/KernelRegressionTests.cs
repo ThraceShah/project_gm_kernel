@@ -1244,11 +1244,5 @@ public unsafe class KernelRegressionTests : IDisposable
 
     // ── Reflection helper to access nextTag ───────────────────────
 
-    private static int GetNextTag()
-    {
-        // Use reflection to access the private nextTag field
-        var field = typeof(KernelRuntime).GetField("nextTag",
-            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-        return (int)field!.GetValue(null)!;
-    }
+    private static int GetNextTag() => KernelRuntime.NextTagValue;
 }

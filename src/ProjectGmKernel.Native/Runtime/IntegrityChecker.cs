@@ -5,7 +5,7 @@ namespace ProjectGmKernel.Native.Runtime;
 /// <summary>
 /// Validates topology and geometry consistency. Used for debug assertions and diagnostics.
 /// </summary>
-internal static class IntegrityChecker
+internal static unsafe class IntegrityChecker
 {
     /// <summary>
     /// Run all integrity checks on the current kernel state.
@@ -39,7 +39,7 @@ internal static class IntegrityChecker
 
             // Check shell chain length matches ShellCount
             int shellCount = CountChain(KernelRuntime.Shells, body.FirstShell, body.ShellCount,
-                s => s.NextInBody);
+                &NextShell);
             if (shellCount != body.ShellCount)
             {
                 Debug.WriteLine($"Body {i}: ShellCount mismatch: expected {body.ShellCount}, counted {shellCount}");
@@ -77,7 +77,7 @@ internal static class IntegrityChecker
             }
 
             int faceUseCount = CountChain(KernelRuntime.FaceUses, shell.FirstFaceUseShell, shell.FaceUseCount,
-                s => s.NextInShell);
+                &NextFaceUse);
             if (faceUseCount != shell.FaceUseCount)
             {
                 Debug.WriteLine($"Shell {i}: FaceUseCount mismatch: expected {shell.FaceUseCount}, counted {faceUseCount}");
@@ -121,7 +121,7 @@ internal static class IntegrityChecker
             }
 
             int loopCount = CountChain(KernelRuntime.Loops, face.FirstLoop, face.LoopCount,
-                s => s.NextInFace);
+                &NextLoop);
             if (loopCount != face.LoopCount)
             {
                 Debug.WriteLine($"Face {i}: LoopCount mismatch: expected {face.LoopCount}, counted {loopCount}");
@@ -158,7 +158,7 @@ internal static class IntegrityChecker
             }
 
             int finCount = CountChain(KernelRuntime.Fins, loop.FirstFin, loop.FinCount,
-                s => s.NextInLoop);
+                &NextLoopFin);
             if (finCount != loop.FinCount)
             {
                 Debug.WriteLine($"Loop {i}: FinCount mismatch: expected {loop.FinCount}, counted {finCount}");
@@ -185,7 +185,7 @@ internal static class IntegrityChecker
             }
 
             int finCount = CountChain(KernelRuntime.Fins, edge.FirstFinEdge, edge.FinCount,
-                s => s.NextOfEdge);
+                &NextEdgeFin);
             if (finCount != edge.FinCount)
             {
                 Debug.WriteLine($"Edge {i}: FinCount mismatch: expected {edge.FinCount}, counted {finCount}");
@@ -256,7 +256,13 @@ internal static class IntegrityChecker
     /// <summary>
     /// Count the length of a sibling chain in an entity pool.
     /// </summary>
-    private static int CountChain<T>(EntityPool<T> pool, int first, int expectedCount, Func<T, int> nextLink) where T : struct
+    private static DataSlot NextShell(ShellRecord value) => value.NextInBody;
+    private static DataSlot NextFaceUse(FaceUseRecord value) => value.NextInShell;
+    private static DataSlot NextLoop(LoopRecord value) => value.NextInFace;
+    private static DataSlot NextLoopFin(FinRecord value) => value.NextInLoop;
+    private static DataSlot NextEdgeFin(FinRecord value) => value.NextOfEdge;
+
+    private static int CountChain<T>(PagedEntityPool<T> pool, int first, int expectedCount, delegate*<T, DataSlot> nextLink) where T : unmanaged
     {
         if (expectedCount == 0)
             return first < 0 ? 0 : -1;

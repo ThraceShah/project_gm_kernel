@@ -180,6 +180,7 @@ internal struct PointRecord
     public VertexSlot OwnerVertex;
     public PointTag PrevInBody;
     public PointTag NextInBody;
+    public int OwnerCount;                      // sharing geometry: vertices referencing this point
 }
 
 /// <summary>
@@ -209,6 +210,7 @@ internal struct CurveRecord
     public EdgeSlot OwnerEdge;
     public CurveTag PrevInBody;
     public CurveTag NextInBody;
+    public int OwnerCount;                      // sharing geometry: edges referencing this curve
 }
 
 /// <summary>
@@ -227,6 +229,7 @@ internal struct SurfaceRecord
     public FaceSlot OwnerFace;
     public SurfTag PrevInBody;
     public SurfTag NextInBody;
+    public int OwnerCount;                      // sharing geometry: faces referencing this surface
 }
 
 // ── Analytic Curve Data ───────────────────────────────────────────
@@ -352,8 +355,9 @@ internal struct TorusData
 /// Maps from PK_BCURVE_sf_s.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-internal struct BCurveData
+internal unsafe struct BCurveData
 {
+    public RecordHeader Header;                 // pool slot header (all pooled records start with one)
     public SplineDegree Degree;
     public BufferCount NVertices; // total number of control points
     public BufferCount VertexDim; // dimension of each vertex (3 or 4 if rational)
@@ -364,12 +368,19 @@ internal struct BCurveData
     public KernelLogical IsPeriodic;
     public KernelLogical IsClosed;
     public KernelSelfIntersect SelfIntersecting;
-    // Indices into flat data arenas (CurveVertices, CurveKnots, CurveKnotMults)
-    public DataSlot VertexOffset;   // offset into CurveVertices arena
-    public DataSlot KnotOffset;     // offset into CurveKnots arena
-    public DataSlot KnotMultOffset; // offset into CurveKnotMults arena
-    public DataSlot ExpandedKnotOffset;
+    // Variable-length payload block handles (BlockAllocator), -1 = none
+    public DataSlot VertexBlock;
+    public DataSlot KnotBlock;
+    public DataSlot KnotMultBlock;
+    public DataSlot ExpandedKnotBlock;
     public BufferCount ExpandedKnotCount;
+
+    public readonly Span<double> PolesSpan()
+        => VertexBlock < 0 ? Span<double>.Empty : new Span<double>(KernelRuntime.DereferenceBlock(VertexBlock), NVertices * VertexDim);
+    public readonly Span<double> KnotsSpan()
+        => KnotBlock < 0 ? Span<double>.Empty : new Span<double>(KernelRuntime.DereferenceBlock(KnotBlock), NKnots);
+    public readonly Span<int> KnotMultsSpan()
+        => KnotMultBlock < 0 ? Span<int>.Empty : new Span<int>(KernelRuntime.DereferenceBlock(KnotMultBlock), NKnots);
 }
 
 /// <summary>

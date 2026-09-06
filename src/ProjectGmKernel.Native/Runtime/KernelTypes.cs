@@ -68,3 +68,13 @@ global using DerivativeOrder = int;
 global using SplineDegree = int;
 global using KnotIndex = int;
 global using ControlPointIndex = int;
+
+// Memory ownership and allocator metadata.
+global using MemoryPageIndex = int;
+global using MemoryBlockIndex = int;
+global using MemorySizeClass = int;
+global using EntityGeneration = int;
+global using AllocationSequence = long;
+global using KernelThreadId = int;
+global using KernelSessionId = int;
+global using KernelClassCode = int;
