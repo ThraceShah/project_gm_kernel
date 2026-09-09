@@ -52,4 +52,11 @@ internal enum PoolKind : byte
     SphereData = 37,
     TorusData = 38,
     BCurveData = 39,
+    EllipseData = 40,
+    TrCurveData = 41,
+    SpCurveData = 42,
+    BSurfaceData = 43,
+    OffsetData = 44,
+    SweptData = 45,
+    SpunData = 46,
 }

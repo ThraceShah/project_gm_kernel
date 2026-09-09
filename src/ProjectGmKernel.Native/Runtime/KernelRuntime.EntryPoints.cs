@@ -250,6 +250,48 @@ internal static unsafe partial class KernelRuntime
         var command = new CylCreateCommand { CylinderSf = cylSf, Cylinder = cylTag };
         return Dispatch(ApiId.CylCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
     }
+    public static int EllipseCreate(PK_ELLIPSE_sf_s* ellipseSf, int* ellipseTag)
+    {
+        if (Dispatcher.IsExecuting) return EllipseCreateImplementation(ellipseSf, ellipseTag);
+        var command = new EllipseCreateCommand { EllipseSf = ellipseSf, Ellipse = ellipseTag };
+        return Dispatch(ApiId.EllipseCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int TrCurveCreate(PK_TRCURVE_sf_s* trCurveSf, int* trCurveTag)
+    {
+        if (Dispatcher.IsExecuting) return TrCurveCreateImplementation(trCurveSf, trCurveTag);
+        var command = new TrCurveCreateCommand { TrCurveSf = trCurveSf, TrCurve = trCurveTag };
+        return Dispatch(ApiId.TrCurveCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int SpCurveCreate(PK_SPCURVE_sf_s* spCurveSf, int* spCurveTag)
+    {
+        if (Dispatcher.IsExecuting) return SpCurveCreateImplementation(spCurveSf, spCurveTag);
+        var command = new SpCurveCreateCommand { SpCurveSf = spCurveSf, SpCurve = spCurveTag };
+        return Dispatch(ApiId.SpCurveCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int BSurfCreate(PK_BSURF_sf_s* bsurfSf, int* bsurfTag)
+    {
+        if (Dispatcher.IsExecuting) return BSurfCreateImplementation(bsurfSf, bsurfTag);
+        var command = new BSurfCreateCommand { BSurfSf = bsurfSf, BSurf = bsurfTag };
+        return Dispatch(ApiId.BSurfCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int OffsetCreate(PK_OFFSET_sf_s* offsetSf, int* offsetTag)
+    {
+        if (Dispatcher.IsExecuting) return OffsetCreateImplementation(offsetSf, offsetTag);
+        var command = new OffsetCreateCommand { OffsetSf = offsetSf, Offset = offsetTag };
+        return Dispatch(ApiId.OffsetCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int SweptCreate(PK_SWEPT_sf_s* sweptSf, int* sweptTag)
+    {
+        if (Dispatcher.IsExecuting) return SweptCreateImplementation(sweptSf, sweptTag);
+        var command = new SweptCreateCommand { SweptSf = sweptSf, Swept = sweptTag };
+        return Dispatch(ApiId.SweptCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int SpunCreate(PK_SPUN_sf_s* spunSf, int* spunTag)
+    {
+        if (Dispatcher.IsExecuting) return SpunCreateImplementation(spunSf, spunTag);
+        var command = new SpunCreateCommand { SpunSf = spunSf, Spun = spunTag };
+        return Dispatch(ApiId.SpunCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
     public static int CylAsk(int cylTag, PK_CYL_sf_s* cylSf)
     {
         if (Dispatcher.IsExecuting) return CylAskImplementation(cylTag, cylSf);

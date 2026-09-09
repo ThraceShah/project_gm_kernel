@@ -3177,6 +3177,9 @@ internal static unsafe partial class KernelRuntime
                 case CurveClass.BCurve: FreeBCurveData(curve.DataIndex); break;
                 case CurveClass.Line: LineDataPool.Free(curve.DataIndex); break;
                 case CurveClass.Circle: CircleDataPool.Free(curve.DataIndex); break;
+                case CurveClass.Ellipse: EllipseDataPool.Free(curve.DataIndex); break;
+                case CurveClass.TRCurve: TrCurveDataPool.Free(curve.DataIndex); break;
+                case CurveClass.SPCurve: SpCurveDataPool.Free(curve.DataIndex); break;
             }
         }
         else if (pool == PoolKind.Surface)
@@ -3189,6 +3192,10 @@ internal static unsafe partial class KernelRuntime
                 case SurfaceClass.Cone: ConeDataPool.Free(surface.DataIndex); break;
                 case SurfaceClass.Sphere: SphereDataPool.Free(surface.DataIndex); break;
                 case SurfaceClass.Torus: TorusDataPool.Free(surface.DataIndex); break;
+                case SurfaceClass.BSurface: FreeBSurfaceData(surface.DataIndex); break;
+                case SurfaceClass.Offset: OffsetDataPool.Free(surface.DataIndex); break;
+                case SurfaceClass.Swept: SweptDataPool.Free(surface.DataIndex); break;
+                case SurfaceClass.Spun: SpunDataPool.Free(surface.DataIndex); break;
             }
         }
     }
@@ -3219,6 +3226,13 @@ internal static unsafe partial class KernelRuntime
             PoolKind.CylinderData => CylinderDataPool.IsAlive(slot),
             PoolKind.LineData => LineDataPool.IsAlive(slot),
             PoolKind.CircleData => CircleDataPool.IsAlive(slot),
+            PoolKind.EllipseData => EllipseDataPool.IsAlive(slot),
+            PoolKind.TrCurveData => TrCurveDataPool.IsAlive(slot),
+            PoolKind.SpCurveData => SpCurveDataPool.IsAlive(slot),
+            PoolKind.BSurfaceData => BSurfaceDataStore.IsAlive(slot),
+            PoolKind.OffsetData => OffsetDataPool.IsAlive(slot),
+            PoolKind.SweptData => SweptDataPool.IsAlive(slot),
+            PoolKind.SpunData => SpunDataPool.IsAlive(slot),
             _ => false,
         };
     }
@@ -3249,6 +3263,13 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.CylinderData: CylinderDataPool.RecycleRetired(slot); break;
             case PoolKind.LineData: LineDataPool.RecycleRetired(slot); break;
             case PoolKind.CircleData: CircleDataPool.RecycleRetired(slot); break;
+            case PoolKind.EllipseData: EllipseDataPool.RecycleRetired(slot); break;
+            case PoolKind.TrCurveData: TrCurveDataPool.RecycleRetired(slot); break;
+            case PoolKind.SpCurveData: SpCurveDataPool.RecycleRetired(slot); break;
+            case PoolKind.BSurfaceData: BSurfaceDataStore.RecycleRetired(slot); break;
+            case PoolKind.OffsetData: OffsetDataPool.RecycleRetired(slot); break;
+            case PoolKind.SweptData: SweptDataPool.RecycleRetired(slot); break;
+            case PoolKind.SpunData: SpunDataPool.RecycleRetired(slot); break;
         }
     }
 
@@ -3296,6 +3317,13 @@ internal static unsafe partial class KernelRuntime
             PoolKind.CylinderData => CylinderDataPool.GetGeneration(slot),
             PoolKind.LineData => LineDataPool.GetGeneration(slot),
             PoolKind.CircleData => CircleDataPool.GetGeneration(slot),
+            PoolKind.EllipseData => EllipseDataPool.GetGeneration(slot),
+            PoolKind.TrCurveData => TrCurveDataPool.GetGeneration(slot),
+            PoolKind.SpCurveData => SpCurveDataPool.GetGeneration(slot),
+            PoolKind.BSurfaceData => BSurfaceDataStore.GetGeneration(slot),
+            PoolKind.OffsetData => OffsetDataPool.GetGeneration(slot),
+            PoolKind.SweptData => SweptDataPool.GetGeneration(slot),
+            PoolKind.SpunData => SpunDataPool.GetGeneration(slot),
             PoolKind.FaceUse => FaceUses.GetGeneration(slot),
             _ => 0,
         };
@@ -3327,6 +3355,13 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.CylinderData: CylinderDataPool.Free(slot); break;
             case PoolKind.LineData: LineDataPool.Free(slot); break;
             case PoolKind.CircleData: CircleDataPool.Free(slot); break;
+            case PoolKind.EllipseData: EllipseDataPool.Free(slot); break;
+            case PoolKind.TrCurveData: TrCurveDataPool.Free(slot); break;
+            case PoolKind.SpCurveData: SpCurveDataPool.Free(slot); break;
+            case PoolKind.BSurfaceData: BSurfaceDataStore.Free(slot); break;
+            case PoolKind.OffsetData: OffsetDataPool.Free(slot); break;
+            case PoolKind.SweptData: SweptDataPool.Free(slot); break;
+            case PoolKind.SpunData: SpunDataPool.Free(slot); break;
         }
     }
 
@@ -3356,6 +3391,13 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.CylinderData: CylinderDataPool.Retire(slot); break;
             case PoolKind.LineData: LineDataPool.Retire(slot); break;
             case PoolKind.CircleData: CircleDataPool.Retire(slot); break;
+            case PoolKind.EllipseData: EllipseDataPool.Retire(slot); break;
+            case PoolKind.TrCurveData: TrCurveDataPool.Retire(slot); break;
+            case PoolKind.SpCurveData: SpCurveDataPool.Retire(slot); break;
+            case PoolKind.BSurfaceData: BSurfaceDataStore.Retire(slot); break;
+            case PoolKind.OffsetData: OffsetDataPool.Retire(slot); break;
+            case PoolKind.SweptData: SweptDataPool.Retire(slot); break;
+            case PoolKind.SpunData: SpunDataPool.Retire(slot); break;
         }
     }
 
@@ -3385,6 +3427,13 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.CylinderData: CylinderDataPool.MarkAlive(slot); break;
             case PoolKind.LineData: LineDataPool.MarkAlive(slot); break;
             case PoolKind.CircleData: CircleDataPool.MarkAlive(slot); break;
+            case PoolKind.EllipseData: EllipseDataPool.MarkAlive(slot); break;
+            case PoolKind.TrCurveData: TrCurveDataPool.MarkAlive(slot); break;
+            case PoolKind.SpCurveData: SpCurveDataPool.MarkAlive(slot); break;
+            case PoolKind.BSurfaceData: BSurfaceDataStore.MarkAlive(slot); break;
+            case PoolKind.OffsetData: OffsetDataPool.MarkAlive(slot); break;
+            case PoolKind.SweptData: SweptDataPool.MarkAlive(slot); break;
+            case PoolKind.SpunData: SpunDataPool.MarkAlive(slot); break;
         }
     }
 

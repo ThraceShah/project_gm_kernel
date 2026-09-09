@@ -30,6 +30,13 @@ internal static unsafe partial class KernelRuntime
         new ReadOnlySpan<double>(DereferenceBlock(data.VertexBlock), (BufferCount)(data.NVertices * data.VertexDim)),
         new ReadOnlySpan<double>(DereferenceBlock(data.ExpandedKnotBlock), data.ExpandedKnotCount));
 
+    internal static BSurfaceView GetBSurfaceView(in BSurfaceData data) => new(
+        data.UDegree, data.VDegree, data.NUVertices, data.NVVertices, data.VertexDim,
+        data.IsRational != 0, data.IsUPeriodic != 0, data.IsVPeriodic != 0,
+        new ReadOnlySpan<double>(DereferenceBlock(data.VertexBlock), (BufferCount)(data.NUVertices * data.NVVertices * data.VertexDim)),
+        new ReadOnlySpan<double>(DereferenceBlock(data.UExpandedKnotBlock), data.UExpandedKnotCount),
+        new ReadOnlySpan<double>(DereferenceBlock(data.VExpandedKnotBlock), data.VExpandedKnotCount));
+
     internal static void* DereferenceBlock(DataSlot blockHandle)
         => State.Session == null ? null : State.Session->Blocks.BlockPointer((int)blockHandle);
 
@@ -49,7 +56,9 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_bad_parameter;
         if (sf->degree < 1 || sf->n_vertices <= sf->degree || sf->n_knots < 2)
             return ParasolidConstants.PK_ERROR_bad_parameter;
-        if (sf->vertex_dim != (sf->is_rational != 0 ? 4 : 3))
+        // Planar (u, v) B-curves feed SP-curves: plain dimension 2 or rational dimension 3.
+        var planar = sf->vertex_dim == (sf->is_rational != 0 ? 3 : 2);
+        if (sf->vertex_dim != (sf->is_rational != 0 ? 4 : 3) && !planar)
             return ParasolidConstants.PK_ERROR_bad_dimension;
         if (sf->form < ParasolidConstants.PK_BCURVE_form_unset_c || sf->form > ParasolidConstants.PK_BCURVE_form_hyperbolic_c
             || sf->knot_type < ParasolidConstants.PK_knot_unset_c || sf->knot_type > ParasolidConstants.PK_knot_smooth_seam_c
@@ -76,7 +85,7 @@ internal static unsafe partial class KernelRuntime
         {
             if (!double.IsFinite(sf->vertex[i]))
                 return ParasolidConstants.PK_ERROR_bad_vertex;
-            if (sf->is_rational != 0 && i % 4 == 3 && sf->vertex[i] <= 0)
+            if (sf->is_rational != 0 && i % sf->vertex_dim == sf->vertex_dim - 1 && sf->vertex[i] <= 0)
                 return ParasolidConstants.PK_ERROR_weight_le_0;
         }
 
@@ -114,6 +123,8 @@ internal static unsafe partial class KernelRuntime
         }
         if (sf->is_closed != 0 || sf->is_periodic != 0)
         {
+            if (planar)
+                return ParasolidConstants.PK_ERROR_bad_parameter;
             var workspace = CommandScratchBorrow(workspaceSize);
             var view = new BCurveView(sf->degree, sf->vertex_dim, sf->is_rational != 0, false,
                 new ReadOnlySpan<double>(sf->vertex, (BufferCount)scalarCount), expanded);
@@ -226,6 +237,20 @@ internal static unsafe partial class KernelRuntime
         blocks->Free(DereferenceBlock(data.KnotMultBlock));
         blocks->Free(DereferenceBlock(data.ExpandedKnotBlock));
         BCurveDataStore.Free(dataIndex);
+    }
+
+    internal static void FreeBSurfaceData(int dataIndex)
+    {
+        var blocks = &State.Session->Blocks;
+        ref var data = ref BSurfaceDataStore[dataIndex];
+        blocks->Free(DereferenceBlock(data.VertexBlock));
+        blocks->Free(DereferenceBlock(data.UKnotBlock));
+        blocks->Free(DereferenceBlock(data.VKnotBlock));
+        blocks->Free(DereferenceBlock(data.UKnotMultBlock));
+        blocks->Free(DereferenceBlock(data.VKnotMultBlock));
+        blocks->Free(DereferenceBlock(data.UExpandedKnotBlock));
+        blocks->Free(DereferenceBlock(data.VExpandedKnotBlock));
+        BSurfaceDataStore.Free(dataIndex);
     }
 
     private static void RollbackBCurveBlock(int slot, void* oldBlock)
