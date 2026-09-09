@@ -11,6 +11,8 @@ internal static class EvaluationMath
         => Vector(a.X * scale, a.Y * scale, a.Z * scale);
     internal static KernelVector3 Cross(in KernelVector3 a, in KernelVector3 b)
         => Vector(a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X);
+    internal static double Dot(in KernelVector3 a, in KernelVector3 b)
+        => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
     internal static bool IsFinite(in KernelVector3 value)
         => double.IsFinite(value.X) && double.IsFinite(value.Y) && double.IsFinite(value.Z);
 

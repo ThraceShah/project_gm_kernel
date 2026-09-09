@@ -7,7 +7,7 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 internal static class BCurveEvaluation
 {
     // PK's default knot-side selection uses angular/parameter resolution, without snapping t itself.
-    private const double KnotSideResolution = 1e-11;
+    internal const double KnotSideResolution = 1e-11;
     internal static BufferCount WorkspaceSize(SplineDegree degree, DerivativeOrder order)
     {
         if (degree < 1 || order < 0 || order > 10) return 0;

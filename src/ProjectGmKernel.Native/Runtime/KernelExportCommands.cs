@@ -341,6 +341,62 @@ internal unsafe struct CylCreateCommand : IKernelCommand
     public int Execute() => KernelRuntime.CylCreate(CylinderSf, Cylinder);
 }
 
+internal unsafe struct EllipseCreateCommand : IKernelCommand
+{
+    public PK_ELLIPSE_sf_s* EllipseSf;
+    public EntityTag* Ellipse;
+
+    public int Execute() => KernelRuntime.EllipseCreate(EllipseSf, Ellipse);
+}
+
+internal unsafe struct TrCurveCreateCommand : IKernelCommand
+{
+    public PK_TRCURVE_sf_s* TrCurveSf;
+    public EntityTag* TrCurve;
+
+    public int Execute() => KernelRuntime.TrCurveCreate(TrCurveSf, TrCurve);
+}
+
+internal unsafe struct SpCurveCreateCommand : IKernelCommand
+{
+    public PK_SPCURVE_sf_s* SpCurveSf;
+    public EntityTag* SpCurve;
+
+    public int Execute() => KernelRuntime.SpCurveCreate(SpCurveSf, SpCurve);
+}
+
+internal unsafe struct BSurfCreateCommand : IKernelCommand
+{
+    public PK_BSURF_sf_s* BSurfSf;
+    public EntityTag* BSurf;
+
+    public int Execute() => KernelRuntime.BSurfCreate(BSurfSf, BSurf);
+}
+
+internal unsafe struct OffsetCreateCommand : IKernelCommand
+{
+    public PK_OFFSET_sf_s* OffsetSf;
+    public EntityTag* Offset;
+
+    public int Execute() => KernelRuntime.OffsetCreate(OffsetSf, Offset);
+}
+
+internal unsafe struct SweptCreateCommand : IKernelCommand
+{
+    public PK_SWEPT_sf_s* SweptSf;
+    public EntityTag* Swept;
+
+    public int Execute() => KernelRuntime.SweptCreate(SweptSf, Swept);
+}
+
+internal unsafe struct SpunCreateCommand : IKernelCommand
+{
+    public PK_SPUN_sf_s* SpunSf;
+    public EntityTag* Spun;
+
+    public int Execute() => KernelRuntime.SpunCreate(SpunSf, Spun);
+}
+
 internal unsafe struct CylAskCommand : IKernelCommand
 {
     public EntityTag Cylinder;

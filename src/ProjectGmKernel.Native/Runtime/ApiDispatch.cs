@@ -55,6 +55,13 @@ internal enum ApiId : ushort
     ThreadChainStop = 48,
     AttachGeometry = 49,
     DetachGeometry = 50,
+    EllipseCreate = 51,
+    TrCurveCreate = 52,
+    SpCurveCreate = 53,
+    BSurfCreate = 54,
+    OffsetCreate = 55,
+    SweptCreate = 56,
+    SpunCreate = 57,
     GeneratedStub = 65535,
 }
 

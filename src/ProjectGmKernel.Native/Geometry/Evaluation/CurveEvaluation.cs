@@ -39,4 +39,25 @@ internal static class CurveEvaluation
         }
         return AlgorithmStatus.Success;
     }
+
+    /// <summary>P(t) = C + R1·cos(t)·X + R2·sin(t)·Y with the major axis along the reference direction.</summary>
+    internal static AlgorithmStatus Evaluate(in EllipseData ellipse, double t, DerivativeOrder order,
+        Span<KernelVector3> output, out KernelVector3 tangent)
+    {
+        tangent = default;
+        if (!double.IsFinite(t) || order < 0) return AlgorithmStatus.InvalidInput;
+        if (order >= output.Length) return AlgorithmStatus.OutputTooSmall;
+        var x = Vector(ellipse.RefDirX, ellipse.RefDirY, ellipse.RefDirZ);
+        var y = Cross(Vector(ellipse.AxisX, ellipse.AxisY, ellipse.AxisZ), x);
+        var (sin, cos) = Math.SinCos(t);
+        tangent = Unit(Add(Scale(x, -ellipse.R1 * sin), Scale(y, ellipse.R2 * cos)));
+        for (DerivativeOrder i = 0; i <= order; i++)
+        {
+            var (s, c) = Differentiate(sin, cos, i);
+            output[i] = Add(Scale(x, ellipse.R1 * c), Scale(y, ellipse.R2 * s));
+            if (i == 0) output[i] = Add(Vector(ellipse.CenterX, ellipse.CenterY, ellipse.CenterZ), output[i]);
+            if (!IsFinite(output[i])) return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
 }

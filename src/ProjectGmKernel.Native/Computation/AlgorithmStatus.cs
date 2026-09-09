@@ -14,5 +14,6 @@ internal enum AlgorithmStatus : byte
     OutputTooSmall,
     NotConverged,
     NumericalFailure,
+    Singular,
     Cancelled,
 }

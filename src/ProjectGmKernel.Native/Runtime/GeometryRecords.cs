@@ -384,21 +384,22 @@ internal unsafe struct BCurveData
 }
 
 /// <summary>
-/// B-spline surface metadata. Actual pole/knot data stored in flat arenas.
-/// Maps from PK_BSURF_sf_s.
+/// B-spline surface metadata. Actual pole/knot data stored in variable-length
+/// blocks owned by the record. Maps from PK_BSURF_sf_s.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-internal struct BSurfaceData
+internal unsafe struct BSurfaceData
 {
-    public int UDegree;
-    public int VDegree;
-    public int NUVertices;
-    public int NVVertices;
-    public int VertexDim;
+    public RecordHeader Header;                 // pool slot header (all pooled records start with one)
+    public SplineDegree UDegree;
+    public SplineDegree VDegree;
+    public BufferCount NUVertices;
+    public BufferCount NVVertices;
+    public BufferCount VertexDim;
     public KernelLogical IsRational;
     public KernelBSurfaceForm Form;
-    public int NUKnots;
-    public int NVKnots;
+    public BufferCount NUKnots;
+    public BufferCount NVKnots;
     public KernelKnotType UKnotType;
     public KernelKnotType VKnotType;
     public KernelLogical IsUPeriodic;
@@ -407,12 +408,32 @@ internal struct BSurfaceData
     public KernelLogical IsVClosed;
     public KernelSelfIntersect SelfIntersecting;
     public KernelConvexity Convexity;
-    // Indices into flat data arenas
-    public DataSlot VertexOffset;     // offset into SurfaceVertices arena
-    public DataSlot UKnotOffset;      // offset into SurfaceUKnots arena
-    public DataSlot VKnotOffset;      // offset into SurfaceVKnots arena
-    public DataSlot UKnotMultOffset;  // offset into SurfaceUKnotMults arena
-    public DataSlot VKnotMultOffset;  // offset into SurfaceVKnotMults arena
+    // Variable-length payload block handles (BlockAllocator), -1 = none
+    public DataSlot VertexBlock;
+    public DataSlot UKnotBlock;
+    public DataSlot VKnotBlock;
+    public DataSlot UKnotMultBlock;
+    public DataSlot VKnotMultBlock;
+    public DataSlot UExpandedKnotBlock;
+    public DataSlot VExpandedKnotBlock;
+    public BufferCount UExpandedKnotCount;
+    public BufferCount VExpandedKnotCount;
+
+    // Poles are stored u-major: pole (i, j) at VertexBlock[(i * NVVertices + j) * VertexDim].
+    public readonly Span<double> PolesSpan()
+        => VertexBlock < 0 ? Span<double>.Empty : new Span<double>(KernelRuntime.DereferenceBlock(VertexBlock), NUVertices * NVVertices * VertexDim);
+    public readonly Span<double> UKnotsSpan()
+        => UKnotBlock < 0 ? Span<double>.Empty : new Span<double>(KernelRuntime.DereferenceBlock(UKnotBlock), NUKnots);
+    public readonly Span<double> VKnotsSpan()
+        => VKnotBlock < 0 ? Span<double>.Empty : new Span<double>(KernelRuntime.DereferenceBlock(VKnotBlock), NVKnots);
+    public readonly Span<int> UKnotMultsSpan()
+        => UKnotMultBlock < 0 ? Span<int>.Empty : new Span<int>(KernelRuntime.DereferenceBlock(UKnotMultBlock), NUKnots);
+    public readonly Span<int> VKnotMultsSpan()
+        => VKnotMultBlock < 0 ? Span<int>.Empty : new Span<int>(KernelRuntime.DereferenceBlock(VKnotMultBlock), NVKnots);
+    public readonly Span<double> UExpandedKnotsSpan()
+        => UExpandedKnotBlock < 0 ? Span<double>.Empty : new Span<double>(KernelRuntime.DereferenceBlock(UExpandedKnotBlock), UExpandedKnotCount);
+    public readonly Span<double> VExpandedKnotsSpan()
+        => VExpandedKnotBlock < 0 ? Span<double>.Empty : new Span<double>(KernelRuntime.DereferenceBlock(VExpandedKnotBlock), VExpandedKnotCount);
 }
 
 // ── Other Curve/Surface Data ──────────────────────────────────────
@@ -473,6 +494,7 @@ internal struct ICurveData
 [StructLayout(LayoutKind.Sequential)]
 internal struct TrimmedCurveData
 {
+    public RecordHeader Header;
     public CurveTag BasisCurveTag;
     public KernelVector3 Point1;
     public KernelVector3 Point2;
@@ -514,6 +536,7 @@ internal struct CPCurveData
 [StructLayout(LayoutKind.Sequential)]
 internal struct SPCurveData
 {
+    public RecordHeader Header;
     public SurfTag SurfTag;         // surface whose UV space is used
     public CurveTag BCurveTag;      // 2D B-curve (vertex dim 3 rational / 2 plain)
     // original/tolerance_to_original are schema placeholders (not used by
@@ -661,6 +684,7 @@ internal struct BlendBoundData
 [StructLayout(LayoutKind.Sequential)]
 internal struct OffsetData
 {
+    public RecordHeader Header;
     public SurfTag BaseSurfTag;
     public double Offset;               // signed offset distance
     public OffsetCheckState Check;      // self-intersection check state
@@ -676,6 +700,7 @@ internal struct OffsetData
 [StructLayout(LayoutKind.Sequential)]
 internal struct SweptData
 {
+    public RecordHeader Header;
     public CurveTag SectionCurveTag;
     public KernelVector3 Sweep;         // unit sweep direction
     public double Scale;                // schema scale (internal)
@@ -692,6 +717,7 @@ internal struct SweptData
 [StructLayout(LayoutKind.Sequential)]
 internal struct SpunData
 {
+    public RecordHeader Header;
     public CurveTag ProfileCurveTag;
     public KernelVector3 Base;          // point on the spin axis
     public KernelVector3 Axis;          // unit spin axis

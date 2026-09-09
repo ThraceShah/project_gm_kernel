@@ -116,6 +116,7 @@ unsafe
                     Console.WriteLine(roundtripFailures[^1]);
                 }
             }
+            CheckDependentGeometryEvaluations();
         }
         finally { Check(KernelRuntime.SessionStop(), "our stop"); }
     }
@@ -687,6 +688,459 @@ static unsafe void CheckRoundtrip(int body, int reference, string path)
         }
         finally { Check(PK_MEMORY_free(parts), "free parts"); }
     }
+}
+
+// ── Dependent geometry: ellipse, B-surface, offset, swept, spun, SP-curve ──
+// Trimmed curves have no PK creation interface, so the trimmed-curve check
+// compares our evaluation against PK_CURVE_eval of the basis curve instead.
+
+static unsafe void CheckDependentGeometryEvaluations()
+{
+    Console.WriteLine("Dependent geometry evaluations (numerical only):");
+    CheckEllipseEvaluation();
+    CheckBSurfaceEvaluation();
+    CheckOffsetEvaluation();
+    CheckSweptEvaluation();
+    CheckSpunEvaluation();
+    CheckSpCurveEvaluation();
+    CheckTrCurveEvaluation();
+}
+
+static unsafe M.PK_AXIS2_sf_s ManagedFrame(PK_AXIS2_sf_t frame)
+{
+    var result = new M.PK_AXIS2_sf_s();
+    for (var i = 0; i < 3; i++)
+    {
+        result.location.coord[i] = frame.location.coord[i];
+        result.axis.coord[i] = frame.axis.coord[i];
+        result.ref_direction.coord[i] = frame.ref_direction.coord[i];
+    }
+    return result;
+}
+
+static unsafe void CheckEllipseEvaluation()
+{
+    var basis = Frame(1, 2, 3, 0, 0, 1, 1, 0, 0);
+    var oracleSf = new PK_ELLIPSE_sf_t { R1 = 4, R2 = 1.5, basis_set = basis };
+    int reference;
+    Check(PK_ELLIPSE_create(&oracleSf, &reference), "oracle ellipse");
+    var managedSf = new M.PK_ELLIPSE_sf_s { R1 = 4, R2 = 1.5, basis_set = ManagedFrame(basis) };
+    int ours;
+    Check(KernelRuntime.EllipseCreate(&managedSf, &ours), "our ellipse");
+    int classCode;
+    Check(PK_ENTITY_ask_class(reference, &classCode), "oracle ellipse class");
+    Equal(M.ParasolidConstants.PK_CLASS_ellipse, classCode, "ellipse class");
+    var samples = new double[65];
+    for (var i = 0; i <= 64; i++) samples[i] = -2 * Math.Tau + 4 * Math.Tau * i / 64;
+    CompareCurveEvaluations(ours, reference, samples, "ellipse", CurveClass.Ellipse);
+    Check(PK_ENTITY_delete(1, &reference), "delete oracle ellipse");
+    Check(KernelRuntime.EntityDelete(1, &ours), "delete our ellipse");
+    Console.WriteLine("  ellipse: passed");
+}
+
+static unsafe int[] CreateBCurveBoth(int degree, double[] poles, double[] knots, int[] mults, int dimension, bool rational, string label)
+{
+    fixed (double* p = poles)
+    fixed (double* k = knots)
+    fixed (int* m = mults)
+    {
+        var oracleSf = new PK_BCURVE_sf_t
+        {
+            degree = degree,
+            n_vertices = poles.Length / dimension,
+            vertex_dim = dimension,
+            is_rational = rational ? PK_LOGICAL_true : PK_LOGICAL_false,
+            vertex = p,
+            form = PK_BCURVE_form_unset_c,
+            n_knots = knots.Length,
+            knot_mult = m,
+            knot = k,
+            knot_type = PK_knot_unset_c,
+            is_periodic = PK_LOGICAL_false,
+            is_closed = PK_LOGICAL_false,
+            self_intersecting = PK_self_intersect_unset_c,
+        };
+        int reference;
+        Check(PK_BCURVE_create(&oracleSf, &reference), label + " oracle bcurve");
+        var managedSf = new M.PK_BCURVE_sf_s
+        {
+            degree = degree,
+            n_vertices = poles.Length / dimension,
+            vertex_dim = dimension,
+            is_rational = (byte)(rational ? 1 : 0),
+            vertex = p,
+            form = M.ParasolidConstants.PK_BCURVE_form_unset_c,
+            n_knots = knots.Length,
+            knot_mult = m,
+            knot = k,
+            knot_type = M.ParasolidConstants.PK_knot_unset_c,
+            self_intersecting = M.ParasolidConstants.PK_self_intersect_unset_c,
+        };
+        int ours;
+        Check(KernelRuntime.BCurveCreate(&managedSf, &ours), label + " our bcurve");
+        return new[] { ours, reference };
+    }
+}
+
+static unsafe void CheckBSurfaceEvaluation()
+{
+    // Cubic Bézier patch, 4x4 poles, clamped knots.
+    var poles = new double[4 * 4 * 3];
+    for (var i = 0; i < 4; i++)
+    for (var j = 0; j < 4; j++)
+    {
+        poles[(i * 4 + j) * 3] = 1 + i - 0.4 * j;
+        poles[(i * 4 + j) * 3 + 1] = -2 + 0.3 * i * i + j;
+        poles[(i * 4 + j) * 3 + 2] = 0.5 + 0.5 * i * j - 0.2 * j * j;
+    }
+    fixed (double* p = poles)
+    fixed (double* uk = new[] { 0.0, 1.0 })
+    fixed (double* vk = new[] { 0.0, 1.0 })
+    fixed (int* um = new[] { 4, 4 })
+    fixed (int* vm = new[] { 4, 4 })
+    {
+        var oracleSf = new PK_BSURF_sf_t
+        {
+            u_degree = 3, v_degree = 3, n_u_vertices = 4, n_v_vertices = 4,
+            vertex_dim = 3, is_rational = PK_LOGICAL_false, vertex = p,
+            form = PK_BSURF_form_unset_c,
+            n_u_knots = 2, n_v_knots = 2,
+            u_knot = uk, v_knot = vk, u_knot_mult = um, v_knot_mult = vm,
+            u_knot_type = PK_knot_unset_c, v_knot_type = PK_knot_unset_c,
+            is_u_periodic = PK_LOGICAL_false, is_v_periodic = PK_LOGICAL_false,
+            is_u_closed = PK_LOGICAL_false, is_v_closed = PK_LOGICAL_false,
+            self_intersecting = PK_self_intersect_unset_c, convexity = PK_convexity_unset_c,
+        };
+        int reference;
+        Check(PK_BSURF_create(&oracleSf, &reference), "oracle bsurf");
+        var managedSf = new M.PK_BSURF_sf_s
+        {
+            u_degree = 3, v_degree = 3, n_u_vertices = 4, n_v_vertices = 4,
+            vertex_dim = 3, is_rational = 0, vertex = p,
+            form = M.ParasolidConstants.PK_BSURF_form_unset_c,
+            n_u_knots = 2, n_v_knots = 2,
+            u_knot = uk, v_knot = vk, u_knot_mult = um, v_knot_mult = vm,
+            u_knot_type = M.ParasolidConstants.PK_knot_unset_c, v_knot_type = M.ParasolidConstants.PK_knot_unset_c,
+            self_intersecting = M.ParasolidConstants.PK_self_intersect_unset_c,
+            convexity = M.ParasolidConstants.PK_convexity_unset_c,
+        };
+        int ours;
+        Check(KernelRuntime.BSurfCreate(&managedSf, &ours), "our bsurf");
+        int classCode;
+        Check(PK_ENTITY_ask_class(reference, &classCode), "oracle bsurf class");
+        Equal(M.ParasolidConstants.PK_CLASS_bsurf, classCode, "bsurf class");
+        var stats = ComparisonStats.For("Surface.BSurface");
+        // In-range and out-of-range points: probes the PK extension behaviour.
+        var us = new[] { 0.0, 0.3, 0.6, 1.0, 1.25, -0.5, -2.0, 4.0 };
+        var vs = new[] { 0.0, 0.4, 0.8, 1.0, 1.75, -1.0, 2.5 };
+        CompareSurfaceEvaluations(ours, reference, us, vs, "bsurf", stats);
+        Check(PK_ENTITY_delete(1, &reference), "delete oracle bsurf");
+        Check(KernelRuntime.EntityDelete(1, &ours), "delete our bsurf");
+        Console.WriteLine("  bsurf: passed");
+    }
+}
+
+static unsafe void CheckOffsetEvaluation()
+{
+    var bsurf = CreateBSurfacePair("offset base");
+    int ours = bsurf[0], reference = bsurf[1];
+    var oracleSf = new PK_OFFSET_sf_t { underlying_surface = reference, offset_distance = 0.4 };
+    int referenceOffset, referenceFirstOffset;
+    Check(PK_OFFSET_create(&oracleSf, &referenceOffset), "oracle offset");
+    referenceFirstOffset = referenceOffset;
+    var managedSf = new M.PK_OFFSET_sf_s { underlying_surface = ours, offset_distance = 0.4 };
+    int ourOffset, ourFirstOffset;
+    Check(KernelRuntime.OffsetCreate(&managedSf, &ourOffset), "our offset");
+    ourFirstOffset = ourOffset;
+    int classCode;
+    Check(PK_ENTITY_ask_class(referenceOffset, &classCode), "oracle offset class");
+    Equal(M.ParasolidConstants.PK_CLASS_offset, classCode, "offset class");
+    var stats = ComparisonStats.For("Surface.Offset");
+    var us = new[] { 0.0, 0.25, 0.6, 1.0, 0.75 };
+    var vs = new[] { 0.0, 0.3, 0.5, 1.0, 1.5 };
+    CompareSurfaceEvaluations(ourOffset, referenceOffset, us, vs, "offset(+0.4)", stats, 0.15);
+    // Negative distance as well.
+    var negativeOracle = new PK_OFFSET_sf_t { underlying_surface = reference, offset_distance = -0.7 };
+    Check(PK_OFFSET_create(&negativeOracle, &referenceOffset), "oracle offset negative");
+    var negativeManaged = new M.PK_OFFSET_sf_s { underlying_surface = ours, offset_distance = -0.7 };
+    Check(KernelRuntime.OffsetCreate(&negativeManaged, &ourOffset), "our offset negative");
+    CompareSurfaceEvaluations(ourOffset, referenceOffset, us, vs, "offset(-0.7)", stats, 0.15);
+    Check(PK_ENTITY_delete(1, &referenceOffset), "delete oracle offset");
+    Check(KernelRuntime.EntityDelete(1, &ourOffset), "delete our offset");
+    Check(PK_ENTITY_delete(1, &referenceFirstOffset), "delete oracle first offset");
+    Check(KernelRuntime.EntityDelete(1, &ourFirstOffset), "delete our first offset");
+    // PK reclaims the base B-surface together with its offsets (its tag is
+    // already gone here), while our kernel keeps the standalone base alive.
+    var baseDeleteError = PK_ENTITY_delete(1, &reference);
+    if (baseDeleteError != 0 && baseDeleteError != PK_ERROR_not_a_tag)
+        Check(baseDeleteError, "delete oracle offset base");
+    Check(KernelRuntime.EntityDelete(1, &ours), "delete our offset base");
+    Console.WriteLine("  offset: passed");
+}
+
+static unsafe void CheckSweptEvaluation()
+{
+    var bcurve = CreateBCurveBoth(2, new[] { 0.0, 0, 0, 1, 2, 0, 3, 1, 2 }, new[] { 0.0, 4.0 }, new[] { 3, 3 }, 3, false, "swept section");
+    int ours = bcurve[0], reference = bcurve[1];
+    PK_VECTOR1_t direction = default;
+    direction.coord[2] = 1;
+    var oracleSf = new PK_SWEPT_sf_t { curve = reference, direction = direction };
+    int referenceSwept;
+    Check(PK_SWEPT_create(&oracleSf, &referenceSwept), "oracle swept");
+    var managedDirection = new M.PK_VECTOR_s();
+    managedDirection.coord[2] = 1;
+    var managedSf = new M.PK_SWEPT_sf_s { curve = ours, direction = managedDirection };
+    int ourSwept;
+    Check(KernelRuntime.SweptCreate(&managedSf, &ourSwept), "our swept");
+    int classCode;
+    Check(PK_ENTITY_ask_class(referenceSwept, &classCode), "oracle swept class");
+    Equal(M.ParasolidConstants.PK_CLASS_swept, classCode, "swept class");
+    var stats = ComparisonStats.For("Surface.Swept");
+    var us = new[] { 0.0, 1.1, 2.0, 4.0, 5.0, -1.0, 6.5 };
+    var vs = new[] { 0.0, 0.5, 1.0, -2.0, 3.0 };
+    CompareSurfaceEvaluations(ourSwept, referenceSwept, us, vs, "swept", stats);
+    Check(PK_ENTITY_delete(1, &referenceSwept), "delete oracle swept");
+    Check(KernelRuntime.EntityDelete(1, &ourSwept), "delete our swept");
+    // PK reclaims the section curve together with the swept surface.
+    var sweptSectionError = PK_ENTITY_delete(1, &reference);
+    if (sweptSectionError != 0 && sweptSectionError != PK_ERROR_not_a_tag)
+        Check(sweptSectionError, "delete oracle swept section");
+    Check(KernelRuntime.EntityDelete(1, &ours), "delete our swept section");
+    Console.WriteLine("  swept: passed");
+}
+
+static unsafe void CheckSpunEvaluation()
+{
+    var bcurve = CreateBCurveBoth(2, new[] { 2.0, 0, 0, 3, 1, 0.5, 4, 0, 1 }, new[] { 0.0, 3.0 }, new[] { 3, 3 }, 3, false, "spun profile");
+    int ours = bcurve[0], reference = bcurve[1];
+    var axis = new PK_AXIS1_sf_t();
+    axis.location.coord[0] = 0.25;
+    axis.location.coord[1] = -0.5;
+    axis.axis.coord[2] = 1;
+    var oracleSf = new PK_SPUN_sf_t { curve = reference, axis = axis };
+    int referenceSpun;
+    Check(PK_SPUN_create(&oracleSf, &referenceSpun), "oracle spun");
+    var managedAxis = new M.PK_AXIS1_sf_s();
+    managedAxis.location.coord[0] = 0.25;
+    managedAxis.location.coord[1] = -0.5;
+    managedAxis.axis.coord[2] = 1;
+    var managedSf = new M.PK_SPUN_sf_s { curve = ours, axis = managedAxis };
+    int ourSpun;
+    Check(KernelRuntime.SpunCreate(&managedSf, &ourSpun), "our spun");
+    int classCode;
+    Check(PK_ENTITY_ask_class(referenceSpun, &classCode), "oracle spun class");
+    Equal(M.ParasolidConstants.PK_CLASS_spun, classCode, "spun class");
+    var stats = ComparisonStats.For("Surface.Spun");
+    var us = new[] { 0.0, 1.2, 3.0, 2.0, -0.5, 4.0 };
+    var vs = new[] { 0.0, 1.0, Math.PI, -2.0, Math.Tau, 4.5 };
+    CompareSurfaceEvaluations(ourSpun, referenceSpun, us, vs, "spun", stats);
+    Check(PK_ENTITY_delete(1, &referenceSpun), "delete oracle spun");
+    Check(KernelRuntime.EntityDelete(1, &ourSpun), "delete our spun");
+    // PK reclaims the profile curve together with the spun surface.
+    var spunProfileError = PK_ENTITY_delete(1, &reference);
+    if (spunProfileError != 0 && spunProfileError != PK_ERROR_not_a_tag)
+        Check(spunProfileError, "delete oracle spun profile");
+    Check(KernelRuntime.EntityDelete(1, &ours), "delete our spun profile");
+    Console.WriteLine("  spun: passed");
+}
+
+static unsafe void CheckSpCurveEvaluation()
+{
+    // A helix: 2D B-curve (u: 0..tau, v: 0..5) embedded in a cylinder of radius 2.
+    var cylinder = new PK_CYL_sf_t { radius = 2, basis_set = Frame(0, 0, 0, 0, 0, 1, 1, 0, 0) };
+    int referenceSurface;
+    Check(PK_CYL_create(&cylinder, &referenceSurface), "oracle spcurve cylinder");
+    var managedCylinder = new M.PK_CYL_sf_s { radius = 2, basis_set = ManagedFrame(cylinder.basis_set) };
+    int ourSurface;
+    Check(KernelRuntime.CylCreate(&managedCylinder, &ourSurface), "our spcurve cylinder");
+    var bcurve = CreateBCurveBoth(1, new[] { 0.0, 0, Math.Tau, 5 }, new[] { 0.0, 2.0 }, new[] { 2, 2 }, 2, false, "spcurve 2d");
+    int ours = bcurve[0], reference = bcurve[1];
+    var oracleSf = new PK_SPCURVE_sf_t { surf = referenceSurface, curve = reference };
+    int referenceSpCurve;
+    Check(PK_SPCURVE_create(&oracleSf, &referenceSpCurve), "oracle spcurve");
+    var managedSf = new M.PK_SPCURVE_sf_s { surf = ourSurface, curve = ours };
+    int ourSpCurve;
+    Check(KernelRuntime.SpCurveCreate(&managedSf, &ourSpCurve), "our spcurve");
+    int classCode;
+    Check(PK_ENTITY_ask_class(referenceSpCurve, &classCode), "oracle spcurve class");
+    Equal(M.ParasolidConstants.PK_CLASS_spcurve, classCode, "spcurve class");
+    var samples = new double[49];
+    for (var i = 0; i <= 48; i++) samples[i] = -1.0 + 4.0 * i / 48;
+    CompareCurveEvaluations(ourSpCurve, referenceSpCurve, samples, "spcurve", CurveClass.SPCurve, maxOrder: 2);
+    {
+        var capExpected = stackalloc PK_VECTOR_t[1];
+        var capOurs = stackalloc M.PK_VECTOR_s[1];
+        Equal(PK_CURVE_eval(referenceSpCurve, -1, 3, capExpected), 1010, "oracle spcurve order cap");
+        Equal(KernelRuntime.CurveEval(ourSpCurve, -1, 3, capOurs), M.ParasolidConstants.PK_ERROR_too_many_derivatives, "our spcurve order cap");
+    }
+    Check(PK_ENTITY_delete(1, &referenceSpCurve), "delete oracle spcurve");
+    Check(KernelRuntime.EntityDelete(1, &ourSpCurve), "delete our spcurve");
+    // PK reclaims the 2D B-curve (and possibly the surface) with the SP-curve.
+    var sp2dError = PK_ENTITY_delete(1, &reference);
+    if (sp2dError != 0 && sp2dError != PK_ERROR_not_a_tag)
+        Check(sp2dError, "delete oracle spcurve 2d");
+    Check(KernelRuntime.EntityDelete(1, &ours), "delete our spcurve 2d");
+    var spSurfError = PK_ENTITY_delete(1, &referenceSurface);
+    if (spSurfError != 0 && spSurfError != PK_ERROR_not_a_tag)
+        Check(spSurfError, "delete oracle spcurve surface");
+    Check(KernelRuntime.EntityDelete(1, &ourSurface), "delete our spcurve surface");
+    Console.WriteLine("  spcurve: passed");
+}
+
+static unsafe void CheckTrCurveEvaluation()
+{
+    // Parasolid has no PK_TRCURVE_create, so the oracle for a trimmed curve is
+    // the basis curve itself: identical parameterisation and derivatives.
+    var basis = Frame(1, 2, 3, 0, 0, 1, 1, 0, 0);
+    var oracleSf = new PK_ELLIPSE_sf_t { R1 = 4, R2 = 1.5, basis_set = basis };
+    int reference;
+    Check(PK_ELLIPSE_create(&oracleSf, &reference), "oracle trcurve basis");
+    var managedSf = new M.PK_ELLIPSE_sf_s { R1 = 4, R2 = 1.5, basis_set = ManagedFrame(basis) };
+    int ourBasis;
+    Check(KernelRuntime.EllipseCreate(&managedSf, &ourBasis), "our trcurve basis");
+    var interval = new M.PK_INTERVAL_s();
+    interval.value[0] = 1.0;
+    interval.value[1] = 4.0;
+    var trSf = new M.PK_TRCURVE_sf_s { basis_curve = ourBasis, t_int = interval };
+    int ours;
+    Check(KernelRuntime.TrCurveCreate(&trSf, &ours), "our trcurve");
+    var samples = new double[49];
+    for (var i = 0; i <= 48; i++) samples[i] = -1.0 + 7.0 * i / 48;
+    CompareCurveEvaluations(ours, reference, samples, "trcurve(basis)", CurveClass.TRCurve);
+    Check(KernelRuntime.EntityDelete(1, &ours), "delete our trcurve");
+    Check(KernelRuntime.EntityDelete(1, &ourBasis), "delete our trcurve basis");
+    Check(PK_ENTITY_delete(1, &reference), "delete oracle trcurve basis");
+    Console.WriteLine("  trcurve (vs basis curve): passed");
+}
+
+static unsafe int[] CreateBSurfacePair(string label)
+{
+    // Cubic Bézier patch shared by the offset check.
+    var poles = new double[4 * 4 * 3];
+    for (var i = 0; i < 4; i++)
+    for (var j = 0; j < 4; j++)
+    {
+        poles[(i * 4 + j) * 3] = 1 + i - 0.4 * j;
+        poles[(i * 4 + j) * 3 + 1] = -2 + 0.3 * i * i + j;
+        poles[(i * 4 + j) * 3 + 2] = 0.5 + 0.5 * i * j - 0.2 * j * j;
+    }
+    fixed (double* p = poles)
+    fixed (double* uk = new[] { 0.0, 1.0 })
+    fixed (double* vk = new[] { 0.0, 1.0 })
+    fixed (int* um = new[] { 4, 4 })
+    fixed (int* vm = new[] { 4, 4 })
+    {
+        var oracleSf = new PK_BSURF_sf_t
+        {
+            u_degree = 3, v_degree = 3, n_u_vertices = 4, n_v_vertices = 4,
+            vertex_dim = 3, is_rational = PK_LOGICAL_false, vertex = p,
+            form = PK_BSURF_form_unset_c,
+            n_u_knots = 2, n_v_knots = 2,
+            u_knot = uk, v_knot = vk, u_knot_mult = um, v_knot_mult = vm,
+            u_knot_type = PK_knot_unset_c, v_knot_type = PK_knot_unset_c,
+            is_u_periodic = PK_LOGICAL_false, is_v_periodic = PK_LOGICAL_false,
+            is_u_closed = PK_LOGICAL_false, is_v_closed = PK_LOGICAL_false,
+            self_intersecting = PK_self_intersect_unset_c, convexity = PK_convexity_unset_c,
+        };
+        int reference;
+        Check(PK_BSURF_create(&oracleSf, &reference), label + " oracle bsurf");
+        var managedSf = new M.PK_BSURF_sf_s
+        {
+            u_degree = 3, v_degree = 3, n_u_vertices = 4, n_v_vertices = 4,
+            vertex_dim = 3, is_rational = 0, vertex = p,
+            form = M.ParasolidConstants.PK_BSURF_form_unset_c,
+            n_u_knots = 2, n_v_knots = 2,
+            u_knot = uk, v_knot = vk, u_knot_mult = um, v_knot_mult = vm,
+            u_knot_type = M.ParasolidConstants.PK_knot_unset_c, v_knot_type = M.ParasolidConstants.PK_knot_unset_c,
+            self_intersecting = M.ParasolidConstants.PK_self_intersect_unset_c,
+            convexity = M.ParasolidConstants.PK_convexity_unset_c,
+        };
+        int ours;
+        Check(KernelRuntime.BSurfCreate(&managedSf, &ours), label + " our bsurf");
+        return new[] { ours, reference };
+    }
+}
+
+static unsafe void CompareCurveEvaluations(int ours, int reference, double[] samples, string label, CurveClass kind, int maxOrder = 10)
+{
+    var ourOutput = stackalloc M.PK_VECTOR_s[11];
+    var expected = stackalloc PK_VECTOR_t[11];
+    var stats = ComparisonStats.For("Curve." + kind);
+    M.PK_VECTOR_s ourTangent;
+    PK_VECTOR_t expectedTangent;
+    foreach (var t in samples)
+    {
+        for (var order = 0; order <= maxOrder; order++)
+        {
+            stats.GridSamples++;
+            var context = $"{label} t={t:R} order={order}";
+            Check(KernelRuntime.CurveEval(ours, t, order, ourOutput), "our " + context);
+            Check(PK_CURVE_eval(reference, t, order, expected), "oracle " + context);
+            Compare(ourOutput, expected, order + 1, context, stats);
+            Check(KernelRuntime.CurveEvalWithTangent(ours, t, order, ourOutput, &ourTangent), "our tangent " + context);
+            Check(PK_CURVE_eval_with_tangent(reference, t, order, expected, &expectedTangent), "oracle tangent " + context);
+            Compare(ourOutput, expected, order + 1, context + " tangent", stats);
+            Compare(&ourTangent, &expectedTangent, 1, context + " unit tangent", stats, tangent: true);
+        }
+    }
+    if (maxOrder >= 11)
+        Equal(PK_CURVE_eval(reference, 0, 11, expected), KernelRuntime.CurveEval(ours, 0, 11, ourOutput), label + " max order");
+}
+
+static unsafe void CompareSurfaceEvaluations(int ours, int reference, double[] us, double[] vs, string label,
+    ComparisonStats stats, double highOrderTolerance = 1e-13)
+{
+    var ourOutput = stackalloc M.PK_VECTOR_s[121];
+    var expected = stackalloc PK_VECTOR_t[121];
+    foreach (var u in us)
+    foreach (var v in vs)
+    foreach (var (du, dv) in new[] { (0, 0), (1, 1), (2, 2), (1, 2), (3, 3), (10, 10), (11, 0), (-1, -1) })
+    foreach (byte triangular in new byte[] { 0, 1 })
+    {
+        if (highOrderTolerance > 1e-12 && ((du > 2 && du < 11) || (dv > 2 && dv < 11))) continue;
+        stats.GridSamples++;
+        var uv = new PK_UV_t();
+        uv.param[0] = u;
+        uv.param[1] = v;
+        var muv = new M.PK_UV_s();
+        muv.param[0] = u;
+        muv.param[1] = v;
+        var context = $"{label} uv={u:R},{v:R} orders={du},{dv} triangular={triangular}";
+        var expectedError = PK_SURF_eval(reference, uv, du, dv, triangular, expected);
+        var error = KernelRuntime.SurfEval(ours, muv, du, dv, triangular, ourOutput);
+        Equal(expectedError, error, context);
+        if (error != 0) continue;
+        var nu = Math.Max(0, du);
+        var nv = Math.Max(0, dv);
+        var length = triangular != 0 ? (nu + 1) * (nu + 2) / 2 : (nu + 1) * (nv + 1);
+        for (var index = 0; index < length; index++)
+        {
+            (int i, int j) order = triangular != 0 ? TriangularDerivativeOrder(index) : (index % (nu + 1), index / (nu + 1));
+            var tolerance = order.i + order.j >= 3 ? highOrderTolerance : 1e-13;
+            for (var axis = 0; axis < 3; axis++)
+            {
+                var a = ourOutput[index].coord[axis];
+                var b = expected[index].coord[axis];
+                var delta = Math.Abs(a - b);
+                stats.Comparisons++;
+                if (index == 0) stats.Point = Math.Max(stats.Point, delta);
+                else stats.Derivative = Math.Max(stats.Derivative, delta);
+                if (!double.IsFinite(a) || !double.IsFinite(b) || delta > tolerance)
+                    throw new InvalidOperationException($"{context}: derivative=({order.i},{order.j}), axis={axis}, ours={a:R}, oracle={b:R}, tolerance={tolerance:R}");
+            }
+        }
+    }
+}
+
+/// <summary>PK's triangular packing walks total-order diagonals: (0,0), (1,0), (0,1), (2,0), ...</summary>
+static (int i, int j) TriangularDerivativeOrder(int index)
+{
+    var total = 0;
+    var offset = 0;
+    while (offset + total + 1 <= index) { offset += total + 1; total++; }
+    var within = index - offset;
+    // Within a diagonal the u order descends from `total`.
+    return (total - within, within);
 }
 
 sealed class ComparisonStats

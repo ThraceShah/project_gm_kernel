@@ -64,6 +64,9 @@ internal static unsafe partial class KernelRuntime
                 TrimEmptyPool(ref CylinderDataPool); TrimEmptyPool(ref PlaneDataPool);
                 TrimEmptyPool(ref ConeDataPool); TrimEmptyPool(ref SphereDataPool); TrimEmptyPool(ref TorusDataPool);
                 TrimEmptyPool(ref BCurveDataStore);
+                TrimEmptyPool(ref EllipseDataPool); TrimEmptyPool(ref TrCurveDataPool);
+                TrimEmptyPool(ref SpCurveDataPool); TrimEmptyPool(ref BSurfaceDataStore);
+                TrimEmptyPool(ref OffsetDataPool); TrimEmptyPool(ref SweptDataPool); TrimEmptyPool(ref SpunDataPool);
                 if (State.Session->Tags.LiveOrKeptCount == 0) State.Session->Tags.Dispose();
             }
             MemoryPointer()->Trim();
@@ -123,6 +126,13 @@ internal static unsafe partial class KernelRuntime
     internal static PagedEntityPool<ConeData> ConeDataPool = default;
     internal static PagedEntityPool<SphereData> SphereDataPool = default;
     internal static PagedEntityPool<TorusData> TorusDataPool = default;
+    internal static PagedEntityPool<EllipseData> EllipseDataPool = default;
+    internal static PagedEntityPool<TrimmedCurveData> TrCurveDataPool = default;
+    internal static PagedEntityPool<SPCurveData> SpCurveDataPool = default;
+    internal static PagedEntityPool<BSurfaceData> BSurfaceDataStore = default;
+    internal static PagedEntityPool<OffsetData> OffsetDataPool = default;
+    internal static PagedEntityPool<SweptData> SweptDataPool = default;
+    internal static PagedEntityPool<SpunData> SpunDataPool = default;
 
     // ── Per-session attach/detach of pool storage ───────────────
 
@@ -150,6 +160,13 @@ internal static unsafe partial class KernelRuntime
         ConeDataPool.Attach(memory, PoolKind.ConeData);
         SphereDataPool.Attach(memory, PoolKind.SphereData);
         TorusDataPool.Attach(memory, PoolKind.TorusData);
+        EllipseDataPool.Attach(memory, PoolKind.EllipseData);
+        TrCurveDataPool.Attach(memory, PoolKind.TrCurveData);
+        SpCurveDataPool.Attach(memory, PoolKind.SpCurveData);
+        BSurfaceDataStore.Attach(memory, PoolKind.BSurfaceData);
+        OffsetDataPool.Attach(memory, PoolKind.OffsetData);
+        SweptDataPool.Attach(memory, PoolKind.SweptData);
+        SpunDataPool.Attach(memory, PoolKind.SpunData);
     }
 
     private static void DisposePools()
@@ -175,6 +192,13 @@ internal static unsafe partial class KernelRuntime
         ConeDataPool.Dispose();
         SphereDataPool.Dispose();
         TorusDataPool.Dispose();
+        EllipseDataPool.Dispose();
+        TrCurveDataPool.Dispose();
+        SpCurveDataPool.Dispose();
+        BSurfaceDataStore.Dispose();
+        OffsetDataPool.Dispose();
+        SweptDataPool.Dispose();
+        SpunDataPool.Dispose();
     }
 
     // ── Session lifecycle ───────────────────────────────────────
@@ -343,6 +367,13 @@ internal static unsafe partial class KernelRuntime
     internal static int TryAllocateConeData() => ConeDataPool.TryAllocate(out var s) ? s : -1;
     internal static int TryAllocateSphereData() => SphereDataPool.TryAllocate(out var s) ? s : -1;
     internal static int TryAllocateTorusData() => TorusDataPool.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateEllipseData() => EllipseDataPool.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateTrCurveData() => TrCurveDataPool.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateSpCurveData() => SpCurveDataPool.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateBSurfaceData() => BSurfaceDataStore.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateOffsetData() => OffsetDataPool.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateSweptData() => SweptDataPool.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateSpunData() => SpunDataPool.TryAllocate(out var s) ? s : -1;
 
     internal static int* AllocateReturnSlice(int count)
     {
