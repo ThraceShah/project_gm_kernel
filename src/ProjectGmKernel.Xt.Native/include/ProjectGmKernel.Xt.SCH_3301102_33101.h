@@ -479,6 +479,14 @@ typedef struct PGM_XT_MARK_s {
     PGM_XT_PMARK_ARRAY_ref_t pmarks_from_following;
     PGM_XT_TAG_MAP_ref_t tag_map;
 } PGM_XT_MARK_t;
+/* XT schema enum SCH_part_state; source: Parasolid XT Format Reference */
+enum PGM_XT_ASSEMBLY_state_e {
+    PGM_XT_ASSEMBLY_state_new_part = 1,
+    PGM_XT_ASSEMBLY_state_stored_part = 2,
+    PGM_XT_ASSEMBLY_state_modified_part = 3,
+    PGM_XT_ASSEMBLY_state_anonymous_part = 4,
+    PGM_XT_ASSEMBLY_state_unloaded_part = 5,
+};
 typedef struct PGM_XT_ASSEMBLY_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -507,6 +515,11 @@ typedef struct PGM_XT_ASSEMBLY_s {
     PGM_XT_INSTANCE_ref_t sub_instance;
     PGM_XT_MESH_OFFSET_DATA_ref_t mesh_offset_data;
 } PGM_XT_ASSEMBLY_t;
+/* XT schema enum SCH_instance_type; source: Parasolid XT Format Reference */
+enum PGM_XT_INSTANCE_type_e {
+    PGM_XT_INSTANCE_type_positive_instance = 1,
+    PGM_XT_INSTANCE_type_negative_instance = 2,
+};
 typedef struct PGM_XT_INSTANCE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -522,6 +535,26 @@ typedef struct PGM_XT_INSTANCE_s {
     PGM_XT_INSTANCE_ref_t next_of_part;
     PGM_XT_INSTANCE_ref_t prev_of_part;
 } PGM_XT_INSTANCE_t;
+/* XT schema enum SCH_part_state; source: Parasolid XT Format Reference */
+enum PGM_XT_BODY_state_e {
+    PGM_XT_BODY_state_new_part = 1,
+    PGM_XT_BODY_state_stored_part = 2,
+    PGM_XT_BODY_state_modified_part = 3,
+    PGM_XT_BODY_state_anonymous_part = 4,
+    PGM_XT_BODY_state_unloaded_part = 5,
+};
+/* XT schema enum SCH_body_type; source: Parasolid XT Format Reference */
+enum PGM_XT_BODY_body_type_e {
+    PGM_XT_BODY_body_type_solid_body = 1,
+    PGM_XT_BODY_body_type_wire_body = 2,
+    PGM_XT_BODY_body_type_sheet_body = 3,
+    PGM_XT_BODY_body_type_general_body = 6,
+};
+/* XT schema enum SCH_nom_geom_state_t; source: Parasolid XT Format Reference */
+enum PGM_XT_BODY_nom_geom_state_e {
+    PGM_XT_BODY_nom_geom_state_off = 1,
+    PGM_XT_BODY_nom_geom_state_on = 2,
+};
 typedef struct PGM_XT_BODY_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -580,6 +613,11 @@ typedef struct PGM_XT_SHELL_s {
     PGM_XT_REGION_ref_t region;
     PGM_XT_FACE_ref_t front_face;
 } PGM_XT_SHELL_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_FACE_sense_e {
+    PGM_XT_FACE_sense_positive = '+',
+    PGM_XT_FACE_sense_negative = '-',
+};
 typedef struct PGM_XT_FACE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -634,6 +672,11 @@ typedef struct PGM_XT_EDGE_s {
     int32_t owner;
     PGM_XT_EDGE_DATA_ref_t data;
 } PGM_XT_EDGE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_HALFEDGE_sense_e {
+    PGM_XT_HALFEDGE_sense_positive = '+',
+    PGM_XT_HALFEDGE_sense_negative = '-',
+};
 typedef struct PGM_XT_HALFEDGE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -665,6 +708,11 @@ typedef struct PGM_XT_VERTEX_s {
     double tolerance;
     int32_t owner;
 } PGM_XT_VERTEX_t;
+/* XT schema enum REGION.type; source: Parasolid XT Format Reference */
+enum PGM_XT_REGION_type_e {
+    PGM_XT_REGION_type_solid = 'S',
+    PGM_XT_REGION_type_void = 'V',
+};
 typedef struct PGM_XT_REGION_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -689,6 +737,11 @@ typedef struct PGM_XT_POINT_s {
     PGM_XT_POINT_ref_t previous;
     PGM_XT_schema_vector_t pvec;
 } PGM_XT_POINT_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_LINE_sense_e {
+    PGM_XT_LINE_sense_positive = '+',
+    PGM_XT_LINE_sense_negative = '-',
+};
 typedef struct PGM_XT_LINE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -703,6 +756,11 @@ typedef struct PGM_XT_LINE_s {
     PGM_XT_schema_vector_t pvec;
     PGM_XT_schema_vector_t direction;
 } PGM_XT_LINE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CIRCLE_sense_e {
+    PGM_XT_CIRCLE_sense_positive = '+',
+    PGM_XT_CIRCLE_sense_negative = '-',
+};
 typedef struct PGM_XT_CIRCLE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -719,6 +777,11 @@ typedef struct PGM_XT_CIRCLE_s {
     PGM_XT_schema_vector_t x_axis;
     double radius;
 } PGM_XT_CIRCLE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_ELLIPSE_sense_e {
+    PGM_XT_ELLIPSE_sense_positive = '+',
+    PGM_XT_ELLIPSE_sense_negative = '-',
+};
 typedef struct PGM_XT_ELLIPSE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -736,6 +799,11 @@ typedef struct PGM_XT_ELLIPSE_s {
     double major_radius;
     double minor_radius;
 } PGM_XT_ELLIPSE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PARABOLA_sense_e {
+    PGM_XT_PARABOLA_sense_positive = '+',
+    PGM_XT_PARABOLA_sense_negative = '-',
+};
 typedef struct PGM_XT_PARABOLA_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -752,6 +820,11 @@ typedef struct PGM_XT_PARABOLA_s {
     PGM_XT_schema_vector_t x_axis;
     double focal_length;
 } PGM_XT_PARABOLA_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_HYPERBOLA_sense_e {
+    PGM_XT_HYPERBOLA_sense_positive = '+',
+    PGM_XT_HYPERBOLA_sense_negative = '-',
+};
 typedef struct PGM_XT_HYPERBOLA_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -769,6 +842,11 @@ typedef struct PGM_XT_HYPERBOLA_s {
     double transverse_radius;
     double conjugate_radius;
 } PGM_XT_HYPERBOLA_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PARACURVE_sense_e {
+    PGM_XT_PARACURVE_sense_positive = '+',
+    PGM_XT_PARACURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_PARACURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -783,6 +861,11 @@ typedef struct PGM_XT_PARACURVE_s {
     int64_t seg;
     PGM_XT_CPC_ref_t cpc;
 } PGM_XT_PARACURVE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_OBSOLETE_CPC_sense_e {
+    PGM_XT_OBSOLETE_CPC_sense_positive = '+',
+    PGM_XT_OBSOLETE_CPC_sense_negative = '-',
+};
 typedef struct PGM_XT_OBSOLETE_CPC_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -800,6 +883,11 @@ typedef struct PGM_XT_OBSOLETE_CPC_s {
     int64_t order;
     PGM_XT_range_t segment;
 } PGM_XT_OBSOLETE_CPC_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PATCH_BOUND_sense_e {
+    PGM_XT_PATCH_BOUND_sense_positive = '+',
+    PGM_XT_PATCH_BOUND_sense_negative = '-',
+};
 typedef struct PGM_XT_PATCH_BOUND_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -815,6 +903,11 @@ typedef struct PGM_XT_PATCH_BOUND_s {
     PGM_XT_PARASURF_ref_t lh_patch;
     PGM_XT_PARASURF_ref_t rh_patch;
 } PGM_XT_PATCH_BOUND_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_INTERSECTION_sense_e {
+    PGM_XT_INTERSECTION_sense_positive = '+',
+    PGM_XT_INTERSECTION_sense_negative = '-',
+};
 typedef struct PGM_XT_INTERSECTION_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -833,6 +926,11 @@ typedef struct PGM_XT_INTERSECTION_s {
     double scale;
     PGM_XT_INTERSECTION_DATA_ref_t intersection_data;
 } PGM_XT_INTERSECTION_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SILHOUETTE_sense_e {
+    PGM_XT_SILHOUETTE_sense_positive = '+',
+    PGM_XT_SILHOUETTE_sense_negative = '-',
+};
 typedef struct PGM_XT_SILHOUETTE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -911,6 +1009,11 @@ typedef struct PGM_XT_BSPLINE_VERTICES_s {
     PGM_XT_range_t _xt_user_fields;
     PGM_XT_range_t vertices;
 } PGM_XT_BSPLINE_VERTICES_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_OFFSET_CURVE_sense_e {
+    PGM_XT_OFFSET_CURVE_sense_positive = '+',
+    PGM_XT_OFFSET_CURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_OFFSET_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -934,6 +1037,11 @@ typedef struct PGM_XT_SUPER_SEGMENT_s {
     int32_t last;
     double t_length;
 } PGM_XT_SUPER_SEGMENT_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CPC_sense_e {
+    PGM_XT_CPC_sense_positive = '+',
+    PGM_XT_CPC_sense_negative = '-',
+};
 typedef struct PGM_XT_CPC_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -948,6 +1056,11 @@ typedef struct PGM_XT_CPC_s {
     PGM_XT_BEZIER_CURVE_ref_t bezier;
     PGM_XT_BSPLINE_CURVE_ref_t bspline;
 } PGM_XT_CPC_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_OBSOLETE_SP_CURVE_sense_e {
+    PGM_XT_OBSOLETE_SP_CURVE_sense_positive = '+',
+    PGM_XT_OBSOLETE_SP_CURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_OBSOLETE_SP_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -966,6 +1079,11 @@ typedef struct PGM_XT_OBSOLETE_SP_CURVE_s {
     int32_t surface;
     PGM_XT_range_t bezier_vertices;
 } PGM_XT_OBSOLETE_SP_CURVE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PLANE_sense_e {
+    PGM_XT_PLANE_sense_positive = '+',
+    PGM_XT_PLANE_sense_negative = '-',
+};
 typedef struct PGM_XT_PLANE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -981,6 +1099,11 @@ typedef struct PGM_XT_PLANE_s {
     PGM_XT_schema_vector_t normal;
     PGM_XT_schema_vector_t x_axis;
 } PGM_XT_PLANE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CYLINDER_sense_e {
+    PGM_XT_CYLINDER_sense_positive = '+',
+    PGM_XT_CYLINDER_sense_negative = '-',
+};
 typedef struct PGM_XT_CYLINDER_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -997,6 +1120,11 @@ typedef struct PGM_XT_CYLINDER_s {
     double radius;
     PGM_XT_schema_vector_t x_axis;
 } PGM_XT_CYLINDER_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CONE_sense_e {
+    PGM_XT_CONE_sense_positive = '+',
+    PGM_XT_CONE_sense_negative = '-',
+};
 typedef struct PGM_XT_CONE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1015,6 +1143,11 @@ typedef struct PGM_XT_CONE_s {
     double cos_half_angle;
     PGM_XT_schema_vector_t x_axis;
 } PGM_XT_CONE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SPHERE_sense_e {
+    PGM_XT_SPHERE_sense_positive = '+',
+    PGM_XT_SPHERE_sense_negative = '-',
+};
 typedef struct PGM_XT_SPHERE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1031,6 +1164,11 @@ typedef struct PGM_XT_SPHERE_s {
     PGM_XT_schema_vector_t axis;
     PGM_XT_schema_vector_t x_axis;
 } PGM_XT_SPHERE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_TORUS_sense_e {
+    PGM_XT_TORUS_sense_positive = '+',
+    PGM_XT_TORUS_sense_negative = '-',
+};
 typedef struct PGM_XT_TORUS_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1048,6 +1186,11 @@ typedef struct PGM_XT_TORUS_s {
     double minor_radius;
     PGM_XT_schema_vector_t x_axis;
 } PGM_XT_TORUS_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PIPE_sense_e {
+    PGM_XT_PIPE_sense_positive = '+',
+    PGM_XT_PIPE_sense_negative = '-',
+};
 typedef struct PGM_XT_PIPE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1062,6 +1205,11 @@ typedef struct PGM_XT_PIPE_s {
     int32_t spine;
     double radius;
 } PGM_XT_PIPE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_BLENDED_EDGE_sense_e {
+    PGM_XT_BLENDED_EDGE_sense_positive = '+',
+    PGM_XT_BLENDED_EDGE_sense_negative = '-',
+};
 typedef struct PGM_XT_BLENDED_EDGE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1084,6 +1232,11 @@ typedef struct PGM_XT_BLENDED_EDGE_s {
     int32_t approx_spine;
     double approx_spine_ctol;
 } PGM_XT_BLENDED_EDGE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_BLENDED_VERTEX_sense_e {
+    PGM_XT_BLENDED_VERTEX_sense_positive = '+',
+    PGM_XT_BLENDED_VERTEX_sense_negative = '-',
+};
 typedef struct PGM_XT_BLENDED_VERTEX_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1103,6 +1256,11 @@ typedef struct PGM_XT_BLENDED_VERTEX_s {
     double thumb_weight[3];
     PGM_XT_schema_vector_t centre;
 } PGM_XT_BLENDED_VERTEX_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_BLEND_OVERLAP_sense_e {
+    PGM_XT_BLEND_OVERLAP_sense_positive = '+',
+    PGM_XT_BLEND_OVERLAP_sense_negative = '-',
+};
 typedef struct PGM_XT_BLEND_OVERLAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1122,6 +1280,11 @@ typedef struct PGM_XT_BLEND_OVERLAP_s {
     uint8_t overlap_type;
     uint8_t swap_u_v;
 } PGM_XT_BLEND_OVERLAP_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_BLEND_BOUND_sense_e {
+    PGM_XT_BLEND_BOUND_sense_positive = '+',
+    PGM_XT_BLEND_BOUND_sense_negative = '-',
+};
 typedef struct PGM_XT_BLEND_BOUND_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1136,6 +1299,11 @@ typedef struct PGM_XT_BLEND_BOUND_s {
     int64_t boundary;
     int32_t blend;
 } PGM_XT_BLEND_BOUND_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_OFFSET_SURF_sense_e {
+    PGM_XT_OFFSET_SURF_sense_positive = '+',
+    PGM_XT_OFFSET_SURF_sense_negative = '-',
+};
 typedef struct PGM_XT_OFFSET_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1160,6 +1328,11 @@ typedef struct PGM_XT_OFFSET_SURF_s {
     uint8_t v_end;
     PGM_XT_SU_TREE_ref_t tree;
 } PGM_XT_OFFSET_SURF_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PARASURF_sense_e {
+    PGM_XT_PARASURF_sense_positive = '+',
+    PGM_XT_PARASURF_sense_negative = '-',
+};
 typedef struct PGM_XT_PARASURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1175,6 +1348,11 @@ typedef struct PGM_XT_PARASURF_s {
     int64_t row;
     PGM_XT_CPS_ref_t cps;
 } PGM_XT_PARASURF_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_OBSOLETE_CPS_sense_e {
+    PGM_XT_OBSOLETE_CPS_sense_positive = '+',
+    PGM_XT_OBSOLETE_CPS_sense_negative = '-',
+};
 typedef struct PGM_XT_OBSOLETE_CPS_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1194,6 +1372,11 @@ typedef struct PGM_XT_OBSOLETE_CPS_s {
     int64_t v_order;
     PGM_XT_range_t patch;
 } PGM_XT_OBSOLETE_CPS_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SILH_SURF_sense_e {
+    PGM_XT_SILH_SURF_sense_positive = '+',
+    PGM_XT_SILH_SURF_sense_negative = '-',
+};
 typedef struct PGM_XT_SILH_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1242,6 +1425,11 @@ typedef struct PGM_XT_BSPLINE_SURF_s {
     int64_t v_order;
     PGM_XT_BSPLINE_VERTICES_ref_t bspline_vertices;
 } PGM_XT_BSPLINE_SURF_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SWEPT_SURF_sense_e {
+    PGM_XT_SWEPT_SURF_sense_positive = '+',
+    PGM_XT_SWEPT_SURF_sense_negative = '-',
+};
 typedef struct PGM_XT_SWEPT_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1257,6 +1445,11 @@ typedef struct PGM_XT_SWEPT_SURF_s {
     PGM_XT_schema_vector_t sweep;
     double scale;
 } PGM_XT_SWEPT_SURF_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SPUN_SURF_sense_e {
+    PGM_XT_SPUN_SURF_sense_positive = '+',
+    PGM_XT_SPUN_SURF_sense_negative = '-',
+};
 typedef struct PGM_XT_SPUN_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1278,6 +1471,11 @@ typedef struct PGM_XT_SPUN_SURF_s {
     PGM_XT_schema_vector_t x_axis;
     double scale;
 } PGM_XT_SPUN_SURF_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CPS_sense_e {
+    PGM_XT_CPS_sense_positive = '+',
+    PGM_XT_CPS_sense_negative = '-',
+};
 typedef struct PGM_XT_CPS_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1469,6 +1667,21 @@ typedef struct PGM_XT_DIRECTION_VALUES_s {
     PGM_XT_range_t _xt_user_fields;
     PGM_XT_range_t values;
 } PGM_XT_DIRECTION_VALUES_t;
+/* XT schema enum SCH_feature_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_FEATURE_type_e {
+    PGM_XT_FEATURE_type_instance_fe = 1,
+    PGM_XT_FEATURE_type_face_fe = 2,
+    PGM_XT_FEATURE_type_loop_fe = 3,
+    PGM_XT_FEATURE_type_edge_fe = 4,
+    PGM_XT_FEATURE_type_vertex_fe = 5,
+    PGM_XT_FEATURE_type_surface_fe = 6,
+    PGM_XT_FEATURE_type_curve_fe = 7,
+    PGM_XT_FEATURE_type_point_fe = 8,
+    PGM_XT_FEATURE_type_mixed_fe = 9,
+    PGM_XT_FEATURE_type_region_fe = 10,
+    PGM_XT_FEATURE_type_pf_pline_fe = 11,
+    PGM_XT_FEATURE_type_feature_fe = 12,
+};
 typedef struct PGM_XT_FEATURE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1663,6 +1876,11 @@ typedef struct PGM_XT_UNSANITISED_s {
     int32_t _xt_variable_length;
     PGM_XT_range_t bad_patch;
 } PGM_XT_UNSANITISED_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PBOX_sense_e {
+    PGM_XT_PBOX_sense_positive = '+',
+    PGM_XT_PBOX_sense_negative = '-',
+};
 typedef struct PGM_XT_PBOX_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1736,6 +1954,11 @@ typedef struct PGM_XT_OBB_TREE_s {
     PGM_XT_OBB_TREE_CB_ref_t ray;
     PGM_XT_OBB_TREE_CB_ref_t subdivide;
 } PGM_XT_OBB_TREE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_OBSOLETE_MESH_sense_e {
+    PGM_XT_OBSOLETE_MESH_sense_positive = '+',
+    PGM_XT_OBSOLETE_MESH_sense_negative = '-',
+};
 typedef struct PGM_XT_OBSOLETE_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1765,6 +1988,11 @@ typedef struct PGM_XT_OBSOLETE_MESH_s {
     uint8_t mesh_state;
     PGM_XT_PSM_MESH_ref_t psm_imesh;
 } PGM_XT_OBSOLETE_MESH_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_OBSOLETE_POLYLINE_sense_e {
+    PGM_XT_OBSOLETE_POLYLINE_sense_positive = '+',
+    PGM_XT_OBSOLETE_POLYLINE_sense_negative = '-',
+};
 typedef struct PGM_XT_OBSOLETE_POLYLINE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1779,6 +2007,11 @@ typedef struct PGM_XT_OBSOLETE_POLYLINE_s {
     PGM_XT_POLYLINE_DATA_ref_t data;
     PGM_XT_ATTRIBUTE_ref_t attr;
 } PGM_XT_OBSOLETE_POLYLINE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PE_SURF_sense_e {
+    PGM_XT_PE_SURF_sense_positive = '+',
+    PGM_XT_PE_SURF_sense_negative = '-',
+};
 typedef struct PGM_XT_PE_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1830,6 +2063,11 @@ typedef struct PGM_XT_SU_PARAM_PROPS_s {
     uint8_t v_start;
     uint8_t v_end;
 } PGM_XT_SU_PARAM_PROPS_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_B_SURFACE_sense_e {
+    PGM_XT_B_SURFACE_sense_positive = '+',
+    PGM_XT_B_SURFACE_sense_negative = '-',
+};
 typedef struct PGM_XT_B_SURFACE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1844,6 +2082,13 @@ typedef struct PGM_XT_B_SURFACE_s {
     PGM_XT_NURBS_SURF_ref_t nurbs;
     PGM_XT_SURFACE_DATA_ref_t data;
 } PGM_XT_B_SURFACE_t;
+/* XT schema enum SCH_self_int_t; source: Parasolid XT Format Reference */
+enum PGM_XT_SURFACE_DATA_self_int_e {
+    PGM_XT_SURFACE_DATA_self_int_unset = 1,
+    PGM_XT_SURFACE_DATA_self_int_no_self_intersections = 2,
+    PGM_XT_SURFACE_DATA_self_int_self_intersects = 3,
+    PGM_XT_SURFACE_DATA_self_int_checked_ok_in_old_version = 4,
+};
 typedef struct PGM_XT_SURFACE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1890,6 +2135,38 @@ typedef struct PGM_XT_SURFACE_DATA_s {
     int32_t spun_form;
     int32_t blend_form;
 } PGM_XT_SURFACE_DATA_t;
+/* XT schema enum SCH_knot_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_NURBS_SURF_u_knot_type_e {
+    PGM_XT_NURBS_SURF_u_knot_type_unset = 1,
+    PGM_XT_NURBS_SURF_u_knot_type_non_uniform = 2,
+    PGM_XT_NURBS_SURF_u_knot_type_uniform = 3,
+    PGM_XT_NURBS_SURF_u_knot_type_quasi_uniform = 4,
+    PGM_XT_NURBS_SURF_u_knot_type_piecewise_bezier = 5,
+    PGM_XT_NURBS_SURF_u_knot_type_bezier_ends = 6,
+};
+/* XT schema enum SCH_knot_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_NURBS_SURF_v_knot_type_e {
+    PGM_XT_NURBS_SURF_v_knot_type_unset = 1,
+    PGM_XT_NURBS_SURF_v_knot_type_non_uniform = 2,
+    PGM_XT_NURBS_SURF_v_knot_type_uniform = 3,
+    PGM_XT_NURBS_SURF_v_knot_type_quasi_uniform = 4,
+    PGM_XT_NURBS_SURF_v_knot_type_piecewise_bezier = 5,
+    PGM_XT_NURBS_SURF_v_knot_type_bezier_ends = 6,
+};
+/* XT schema enum SCH_surface_form_t; source: Parasolid XT Format Reference */
+enum PGM_XT_NURBS_SURF_surface_form_e {
+    PGM_XT_NURBS_SURF_surface_form_unset = 1,
+    PGM_XT_NURBS_SURF_surface_form_arbitrary = 2,
+    PGM_XT_NURBS_SURF_surface_form_planar = 3,
+    PGM_XT_NURBS_SURF_surface_form_cylindrical = 4,
+    PGM_XT_NURBS_SURF_surface_form_conical = 5,
+    PGM_XT_NURBS_SURF_surface_form_spherical = 6,
+    PGM_XT_NURBS_SURF_surface_form_toroidal = 7,
+    PGM_XT_NURBS_SURF_surface_form_surf_of_revolution = 8,
+    PGM_XT_NURBS_SURF_surface_form_ruled = 9,
+    PGM_XT_NURBS_SURF_surface_form_quadric = 10,
+    PGM_XT_NURBS_SURF_surface_form_swept = 11,
+};
 typedef struct PGM_XT_NURBS_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1937,6 +2214,11 @@ typedef struct PGM_XT_KNOT_MULT_SUM_s {
     int32_t _xt_variable_length;
     PGM_XT_range_t mult;
 } PGM_XT_KNOT_MULT_SUM_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PE_CURVE_sense_e {
+    PGM_XT_PE_CURVE_sense_positive = '+',
+    PGM_XT_PE_CURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_PE_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1965,6 +2247,11 @@ typedef struct PGM_XT_CU_PARAM_PROPS_s {
     uint8_t t_start;
     uint8_t t_end;
 } PGM_XT_CU_PARAM_PROPS_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_PCURVE_sense_e {
+    PGM_XT_PCURVE_sense_positive = '+',
+    PGM_XT_PCURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_PCURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1980,6 +2267,11 @@ typedef struct PGM_XT_PCURVE_s {
     int32_t surface;
     PGM_XT_BSPLINE_CURVE_ref_t bspline;
 } PGM_XT_PCURVE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_TRIMMED_CURVE_sense_e {
+    PGM_XT_TRIMMED_CURVE_sense_positive = '+',
+    PGM_XT_TRIMMED_CURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_TRIMMED_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -1997,6 +2289,11 @@ typedef struct PGM_XT_TRIMMED_CURVE_s {
     double parm_1;
     double parm_2;
 } PGM_XT_TRIMMED_CURVE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_B_CURVE_sense_e {
+    PGM_XT_B_CURVE_sense_positive = '+',
+    PGM_XT_B_CURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_B_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2011,6 +2308,13 @@ typedef struct PGM_XT_B_CURVE_s {
     PGM_XT_NURBS_CURVE_ref_t nurbs;
     PGM_XT_CURVE_DATA_ref_t data;
 } PGM_XT_B_CURVE_t;
+/* XT schema enum SCH_self_int_t; source: Parasolid XT Format Reference */
+enum PGM_XT_CURVE_DATA_self_int_e {
+    PGM_XT_CURVE_DATA_self_int_unset = 1,
+    PGM_XT_CURVE_DATA_self_int_no_self_intersections = 2,
+    PGM_XT_CURVE_DATA_self_int_self_intersects = 3,
+    PGM_XT_CURVE_DATA_self_int_checked_ok_in_old_version = 4,
+};
 typedef struct PGM_XT_CURVE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2028,6 +2332,26 @@ typedef struct PGM_XT_CURVE_DATA_s {
     PGM_XT_POLYNOMIAL_SEGMENTS_ref_t polynomial_segments;
     int32_t analytic_form;
 } PGM_XT_CURVE_DATA_t;
+/* XT schema enum SCH_knot_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_NURBS_CURVE_knot_type_e {
+    PGM_XT_NURBS_CURVE_knot_type_unset = 1,
+    PGM_XT_NURBS_CURVE_knot_type_non_uniform = 2,
+    PGM_XT_NURBS_CURVE_knot_type_uniform = 3,
+    PGM_XT_NURBS_CURVE_knot_type_quasi_uniform = 4,
+    PGM_XT_NURBS_CURVE_knot_type_piecewise_bezier = 5,
+    PGM_XT_NURBS_CURVE_knot_type_bezier_ends = 6,
+};
+/* XT schema enum SCH_curve_form_t; source: Parasolid XT Format Reference */
+enum PGM_XT_NURBS_CURVE_curve_form_e {
+    PGM_XT_NURBS_CURVE_curve_form_unset = 1,
+    PGM_XT_NURBS_CURVE_curve_form_arbitrary = 2,
+    PGM_XT_NURBS_CURVE_curve_form_polyline = 3,
+    PGM_XT_NURBS_CURVE_curve_form_circular_arc = 4,
+    PGM_XT_NURBS_CURVE_curve_form_elliptic_arc = 5,
+    PGM_XT_NURBS_CURVE_curve_form_parabolic_arc = 6,
+    PGM_XT_NURBS_CURVE_curve_form_hyperbolic_arc = 7,
+    PGM_XT_NURBS_CURVE_curve_form_helical_arc = 8,
+};
 typedef struct PGM_XT_NURBS_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2046,6 +2370,11 @@ typedef struct PGM_XT_NURBS_CURVE_s {
     PGM_XT_KNOT_SET_ref_t knots;
     PGM_XT_KNOT_MULT_SUM_ref_t knot_mult_sum;
 } PGM_XT_NURBS_CURVE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SP_CURVE_sense_e {
+    PGM_XT_SP_CURVE_sense_positive = '+',
+    PGM_XT_SP_CURVE_sense_negative = '-',
+};
 typedef struct PGM_XT_SP_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2105,6 +2434,11 @@ typedef struct PGM_XT_GEOMETRIC_OWNER_s {
     PGM_XT_GEOMETRIC_OWNER_ref_t previous;
     int32_t shared_geometry;
 } PGM_XT_GEOMETRIC_OWNER_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_MESH_INTERSECTION_sense_e {
+    PGM_XT_MESH_INTERSECTION_sense_positive = '+',
+    PGM_XT_MESH_INTERSECTION_sense_negative = '-',
+};
 typedef struct PGM_XT_MESH_INTERSECTION_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2207,6 +2541,11 @@ typedef struct PGM_XT_PLANE_FORM_s {
     PGM_XT_schema_vector_t pvec;
     PGM_XT_schema_vector_t normal;
 } PGM_XT_PLANE_FORM_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CYLINDER_FORM_sense_e {
+    PGM_XT_CYLINDER_FORM_sense_positive = '+',
+    PGM_XT_CYLINDER_FORM_sense_negative = '-',
+};
 typedef struct PGM_XT_CYLINDER_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2216,6 +2555,11 @@ typedef struct PGM_XT_CYLINDER_FORM_s {
     double radius;
     uint8_t sense;
 } PGM_XT_CYLINDER_FORM_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CONE_FORM_sense_e {
+    PGM_XT_CONE_FORM_sense_positive = '+',
+    PGM_XT_CONE_FORM_sense_negative = '-',
+};
 typedef struct PGM_XT_CONE_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2227,6 +2571,11 @@ typedef struct PGM_XT_CONE_FORM_s {
     double cos_half_angle;
     uint8_t sense;
 } PGM_XT_CONE_FORM_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SPHERE_FORM_sense_e {
+    PGM_XT_SPHERE_FORM_sense_positive = '+',
+    PGM_XT_SPHERE_FORM_sense_negative = '-',
+};
 typedef struct PGM_XT_SPHERE_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2235,6 +2584,11 @@ typedef struct PGM_XT_SPHERE_FORM_s {
     double radius;
     uint8_t sense;
 } PGM_XT_SPHERE_FORM_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_TORUS_FORM_sense_e {
+    PGM_XT_TORUS_FORM_sense_positive = '+',
+    PGM_XT_TORUS_FORM_sense_negative = '-',
+};
 typedef struct PGM_XT_TORUS_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2547,6 +2901,17 @@ typedef struct PGM_XT_PFF_MESH_s {
     int32_t position_pool;
     int32_t normal_pool;
 } PGM_XT_PFF_MESH_t;
+/* XT schema enum SCH_mesh_precision_t; source: Parasolid XT Format Reference */
+enum PGM_XT_PSM_MESH_precision_e {
+    PGM_XT_PSM_MESH_precision_double = 1,
+    PGM_XT_PSM_MESH_precision_single = 2,
+};
+/* XT schema enum SCH_mesh_normal_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_PSM_MESH_normal_type_e {
+    PGM_XT_PSM_MESH_normal_type_none = 1,
+    PGM_XT_PSM_MESH_normal_type_per_vertex = 2,
+    PGM_XT_PSM_MESH_normal_type_per_facet = 3,
+};
 typedef struct PGM_XT_PSM_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2569,6 +2934,10 @@ typedef struct PGM_XT_INTEGER_TOOTH_s {
     PGM_XT_range_t _xt_user_fields;
     PGM_XT_range_t values;
 } PGM_XT_INTEGER_TOOTH_t;
+/* XT schema enum SCH_comb_encoding_t; source: Parasolid XT Format Reference */
+enum PGM_XT_INTEGER_COMB_encoding_e {
+    PGM_XT_INTEGER_COMB_encoding_no_encoding = 1,
+};
 typedef struct PGM_XT_INTEGER_COMB_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2588,6 +2957,11 @@ typedef struct PGM_XT_VECTOR_TOOTH_s {
     PGM_XT_range_t _xt_user_fields;
     PGM_XT_range_t values;
 } PGM_XT_VECTOR_TOOTH_t;
+/* XT schema enum SCH_vector_encoding_t; source: Parasolid XT Format Reference */
+enum PGM_XT_VECTOR_COMB_encoding_e {
+    PGM_XT_VECTOR_COMB_encoding_simple = 1,
+    PGM_XT_VECTOR_COMB_encoding_spherical = 2,
+};
 typedef struct PGM_XT_VECTOR_COMB_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2643,6 +3017,11 @@ typedef struct PGM_XT_FACET_BODY_DATA_s {
     int32_t _xt_order;
     PGM_XT_REAL_VALUES_ref_t global_tols;
 } PGM_XT_FACET_BODY_DATA_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_POLYLINE_sense_e {
+    PGM_XT_POLYLINE_sense_positive = '+',
+    PGM_XT_POLYLINE_sense_negative = '-',
+};
 typedef struct PGM_XT_POLYLINE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2656,6 +3035,11 @@ typedef struct PGM_XT_POLYLINE_s {
     uint8_t sense;
     PGM_XT_POLYLINE_DATA_ref_t data;
 } PGM_XT_POLYLINE_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_MESH_sense_e {
+    PGM_XT_MESH_sense_positive = '+',
+    PGM_XT_MESH_sense_negative = '-',
+};
 typedef struct PGM_XT_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2690,6 +3074,14 @@ typedef struct PGM_XT_MESH_BLOCK_s {
     int64_t size;
     int64_t data;
 } PGM_XT_MESH_BLOCK_t;
+/* XT schema enum SCH_part_state; source: Parasolid XT Format Reference */
+enum PGM_XT_TAG_MAP_state_e {
+    PGM_XT_TAG_MAP_state_new_part = 1,
+    PGM_XT_TAG_MAP_state_stored_part = 2,
+    PGM_XT_TAG_MAP_state_modified_part = 3,
+    PGM_XT_TAG_MAP_state_anonymous_part = 4,
+    PGM_XT_TAG_MAP_state_unloaded_part = 5,
+};
 typedef struct PGM_XT_TAG_MAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2698,6 +3090,13 @@ typedef struct PGM_XT_TAG_MAP_s {
     PGM_XT_TAG_VALUES_ref_t tags;
     PGM_XT_TAG_MAP_ref_t next;
 } PGM_XT_TAG_MAP_t;
+/* XT schema enum SCH_intersection_uv_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_INTERSECTION_DATA_uv_type_e {
+    PGM_XT_INTERSECTION_DATA_uv_type_none = 1,
+    PGM_XT_INTERSECTION_DATA_uv_type_first = 2,
+    PGM_XT_INTERSECTION_DATA_uv_type_second = 3,
+    PGM_XT_INTERSECTION_DATA_uv_type_both = 4,
+};
 typedef struct PGM_XT_INTERSECTION_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2802,6 +3201,10 @@ typedef struct PGM_XT_REAL_TOOTH_s {
     PGM_XT_range_t _xt_user_fields;
     PGM_XT_range_t values;
 } PGM_XT_REAL_TOOTH_t;
+/* XT schema enum SCH_comb_encoding_t; source: Parasolid XT Format Reference */
+enum PGM_XT_REAL_COMB_encoding_e {
+    PGM_XT_REAL_COMB_encoding_no_encoding = 1,
+};
 typedef struct PGM_XT_REAL_COMB_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2813,6 +3216,11 @@ typedef struct PGM_XT_REAL_COMB_s {
     int64_t shift;
     PGM_XT_range_t teeth;
 } PGM_XT_REAL_COMB_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_LATTICE_sense_e {
+    PGM_XT_LATTICE_sense_positive = '+',
+    PGM_XT_LATTICE_sense_negative = '-',
+};
 typedef struct PGM_XT_LATTICE_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2826,6 +3234,27 @@ typedef struct PGM_XT_LATTICE_s {
     uint8_t sense;
     int32_t data;
 } PGM_XT_LATTICE_t;
+/* XT schema enum SCH_lattice_ball_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_LATTICE_DATA_IRREGULAR_ball_type_e {
+    PGM_XT_LATTICE_DATA_IRREGULAR_ball_type_unset = 0,
+    PGM_XT_LATTICE_DATA_IRREGULAR_ball_type_const = 1,
+    PGM_XT_LATTICE_DATA_IRREGULAR_ball_type_variable = 2,
+};
+/* XT schema enum SCH_lattice_rod_term_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_LATTICE_DATA_IRREGULAR_rod_term_type_e {
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_term_type_unset = 0,
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_term_type_const = 1,
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_term_type_derived = 2,
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_term_type_variable_1 = 3,
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_term_type_variable_2 = 4,
+};
+/* XT schema enum SCH_lattice_rod_mid_type_t; source: Parasolid XT Format Reference */
+enum PGM_XT_LATTICE_DATA_IRREGULAR_rod_mid_type_e {
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_mid_type_unset = 0,
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_mid_type_none = 1,
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_mid_type_const = 2,
+    PGM_XT_LATTICE_DATA_IRREGULAR_rod_mid_type_variable = 3,
+};
 typedef struct PGM_XT_LATTICE_DATA_IRREGULAR_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2852,6 +3281,11 @@ typedef struct PGM_XT_GRAPH_COMPACT_s {
     PGM_XT_INTEGER_COMB_ref_t adjacency_indices;
     PGM_XT_INTEGER_COMB_ref_t adjacencies;
 } PGM_XT_GRAPH_COMPACT_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_SURF_STUB_sense_e {
+    PGM_XT_SURF_STUB_sense_positive = '+',
+    PGM_XT_SURF_STUB_sense_negative = '-',
+};
 typedef struct PGM_XT_SURF_STUB_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -2863,6 +3297,11 @@ typedef struct PGM_XT_SURF_STUB_s {
     PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
     uint8_t sense;
 } PGM_XT_SURF_STUB_t;
+/* XT schema enum sense; source: Parasolid XT Format Reference */
+enum PGM_XT_CURVE_STUB_sense_e {
+    PGM_XT_CURVE_STUB_sense_positive = '+',
+    PGM_XT_CURVE_STUB_sense_negative = '-',
+};
 typedef struct PGM_XT_CURVE_STUB_s {
     int32_t _xt_index;
     int32_t _xt_order;
