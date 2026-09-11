@@ -129,6 +129,7 @@ string GenerateBindings(List<VersionSchema> schemas)
     output.AppendLine("using System.Runtime.CompilerServices;");
     output.AppendLine("using System.Runtime.InteropServices;");
     output.AppendLine("using ProjectGmKernel.Xt;");
+    output.AppendLine("using System.Text.Json;");
     foreach (var version in schemas)
     {
         var ns = Namespace(version.Identity);
@@ -247,6 +248,7 @@ string GenerateBindings(List<VersionSchema> schemas)
         output.AppendLine("}");
 
         GenerateCodec(output, version, transmitted);
+        GenerateJson(output, version, transmitted);
         output.AppendLine("}");
     }
     output.AppendLine("namespace ProjectGmKernel.Xt");
@@ -267,6 +269,18 @@ string GenerateBindings(List<VersionSchema> schemas)
     output.AppendLine("        throw new XtFormatException(XtErrorCode.UnsupportedVersion, $\"No generated model binding exists for {document.Schema.Identity}.\");");
     output.AppendLine("    }");
     output.AppendLine("    public static XtDocument RoundTrip(XtDocument document) => Decode(document).ToDocument();");
+    output.AppendLine("}");
+    output.AppendLine("public static class XtGeneratedModelJson");
+    output.AppendLine("{");
+    output.AppendLine("    public static void Write(IXtSchemaModel model, Utf8JsonWriter writer)");
+    output.AppendLine("    {");
+    output.AppendLine("        switch (model)");
+    output.AppendLine("        {");
+    foreach(var version in schemas)
+        output.Append("            case global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).Append(".MODEL typed: global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).AppendLine(".JSON.Write(typed, writer); break;");
+    output.AppendLine("            default: throw new XtFormatException(XtErrorCode.ModelInvalid, $\"Model {model.GetType().FullName} has no generated JSON serializer.\");");
+    output.AppendLine("        }");
+    output.AppendLine("    }");
     output.AppendLine("}");
     output.AppendLine("}");
     return output.ToString();
@@ -397,6 +411,145 @@ void GenerateEncodeTable(StringBuilder output, VersionSchema version, XtNodeDesc
     output.AppendLine("            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();");
     output.Append("            var generated = new XtNode { Type = ").Append(node.Type).Append(", Index = row._xt_index, VariableLength = ").Append(node.Variable?"row._xt_variable_length":"0").AppendLine(", Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);");
     output.AppendLine("        }");
+}
+
+void GenerateJson(StringBuilder output, VersionSchema version, XtNodeDescriptor[] transmitted)
+{
+    var enumNames = new HashSet<string>(StringComparer.Ordinal);
+    output.AppendLine("public static class JSON");
+    output.AppendLine("{");
+    output.AppendLine("    public static void Write(MODEL model, Utf8JsonWriter writer)");
+    output.AppendLine("    {");
+    output.AppendLine("        writer.WriteStartObject();");
+    output.AppendLine("        writer.WriteString(\"schema\", CODEC.SchemaIdentity);");
+    output.AppendLine("        writer.WriteString(\"version_text\", model.VersionText);");
+    output.AppendLine("        writer.WriteNumber(\"user_field_size\", model.UserFieldSize);");
+    foreach (var node in transmitted)
+    {
+        output.Append("        if (model.Storage.").Append(node.Name).AppendLine(".Length != 0)");
+        output.AppendLine("        {");
+        output.Append("            writer.WritePropertyName(\"").Append(node.Name).AppendLine("\");");
+        output.AppendLine("            writer.WriteStartArray();");
+        output.Append("            foreach (ref readonly var row in model.Storage.").Append(node.Name).AppendLine(".AsSpan())");
+        output.Append("                Write").Append(node.Name).AppendLine("(writer, in row, model);");
+        output.AppendLine("            writer.WriteEndArray();");
+        output.AppendLine("        }");
+    }
+    output.AppendLine("        writer.WriteEndObject();");
+    output.AppendLine("    }");
+    foreach (var node in transmitted)
+        GenerateJsonRow(output, version, node, enumNames);
+    foreach (var source in enumNames.Order(StringComparer.Ordinal))
+    {
+        var values = xtEnumValues[source];
+        var isChar = xtEnumSources.Any(pair => pair.Value.Source == source && pair.Value.Type == 'c');
+        output.Append("    private static string? Enum").Append(EnumIdentifier(source)).Append("_Name(long value) => value switch { ");
+        for (var index = 0; index < values.Length; index++)
+        {
+            if (index > 0) output.Append(", ");
+            output.Append(EnumValueLiteral(values[index].Value, isChar, cSharp: true)).Append(" => \"").Append(values[index].Name).Append('"');
+        }
+        output.AppendLine(", _ => null };");
+    }
+    output.AppendLine("}");
+}
+
+void GenerateJsonRow(StringBuilder output, VersionSchema version, XtNodeDescriptor node, HashSet<string> enumNames)
+{
+    var fields = version.Definition.GetFields(node).ToArray();
+    output.Append("    private static void Write").Append(node.Name).Append("(Utf8JsonWriter writer, ref readonly ").Append(node.Name).Append(" row, MODEL model)");
+    output.AppendLine("    {");
+    output.AppendLine("        writer.WriteStartObject();");
+    output.AppendLine("        writer.WriteNumber(\"_xt_index\", row._xt_index);");
+    output.AppendLine("        writer.WriteNumber(\"_xt_order\", row._xt_order);");
+    if (node.Variable)
+        output.AppendLine("        writer.WriteNumber(\"_xt_variable_length\", row._xt_variable_length);");
+    output.AppendLine("        if (row._xt_user_fields.Count != 0)");
+    output.AppendLine("        {");
+    output.AppendLine("            writer.WritePropertyName(\"_xt_user_fields\");");
+    output.AppendLine("            writer.WriteStartArray();");
+    output.AppendLine("            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);");
+    output.AppendLine("            writer.WriteEndArray();");
+    output.AppendLine("        }");
+    foreach (var field in fields)
+    {
+        if (!field.Transmit)
+            continue;
+        var member = "row." + CsName(field.Name);
+        if (field.ElementCount == 1)
+        {
+            output.Append("        writer.WritePropertyName(\"").Append(field.Name).AppendLine("\");");
+            output.AppendLine("        writer.WriteStartArray();");
+            output.AppendLine("        for (var i = 0; i < " + member + ".Count; i++)");
+            output.AppendLine("        {");
+            EmitJsonValue(output, version, field, "model.Storage." + node.Name + "__" + field.Name + "[" + member + ".Offset + i]", "        ", inArray: true);
+            output.AppendLine("        }");
+            output.AppendLine("        writer.WriteEndArray();");
+        }
+        else if (field.ElementCount > 1)
+        {
+            output.Append("        writer.WritePropertyName(\"").Append(field.Name).AppendLine("\");");
+            output.AppendLine("        writer.WriteStartArray();");
+            output.AppendLine("        for (var i = 0; i < " + field.ElementCount + "; i++)");
+            output.AppendLine("        {");
+            EmitJsonValue(output, version, field, member + "[i]", "        ", inArray: true);
+            output.AppendLine("        }");
+            output.AppendLine("        writer.WriteEndArray();");
+        }
+        else
+        {
+            var spec = XtEnumFor(node.Name, field.Name, field.Type);
+            if (spec is not null)
+                enumNames.Add(spec.Value.Source);
+            var nameOf = spec is null ? null : "Enum" + EnumIdentifier(spec.Value.Source) + "_Name(" + (field.Type == 'u' ? "(long)(" + member + ")" : member) + ")";
+            EmitJsonValue(output, version, field, member, "        ", nameOf: nameOf);
+        }
+    }
+    output.AppendLine("        writer.WriteEndObject();");
+    output.AppendLine("    }");
+}
+
+void EmitJsonValue(StringBuilder output, VersionSchema version, XtFieldDescriptor field, string member, string indent, bool inArray = false, string? nameOf = null)
+{
+    var name = field.Name;
+    var pointerMember = RefIndex(version, field, member);
+    string Null() => inArray ? "writer.WriteNullValue();" : $"writer.WriteNull(\"{name}\");";
+    string Number(string value) => inArray ? $"writer.WriteNumberValue({value});" : $"writer.WriteNumber(\"{name}\", {value});";
+    string Bool(string value) => inArray ? $"writer.WriteBooleanValue({value});" : $"writer.WriteBoolean(\"{name}\", {value});";
+    string StartObject() => inArray ? "writer.WriteStartObject();" : $"writer.WriteStartObject(\"{name}\");";
+    var nameStatement = nameOf is null || inArray
+        ? string.Empty
+        : $" writer.WritePropertyName(\"{name}_name\"); {{ var enumName = {nameOf}; if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); }}";
+    switch (field.Type)
+    {
+        case 'p':
+            output.Append(indent).Append("if (").Append(pointerMember).Append(" < 0) { ").Append(Null()).Append(" } else { ").Append(Number(pointerMember)).Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'd' or 'n' or 'w' or 't' or 'q':
+            output.Append(indent).Append("if (").Append(member).Append(" == XtSchemaField.NullInteger) { ").Append(Null()).Append(" } else { ").Append(Number(member)).Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'u':
+            output.Append(indent).Append("if (").Append(member).Append(" == XtSchemaField.NullUnsigned) { ").Append(Null()).Append(" } else { ").Append(Number(member)).Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'f':
+            output.Append(indent).Append("if (double.IsNaN(").Append(member).Append(") || double.IsInfinity(").Append(member).Append(")) { ").Append(Null()).Append(" } else { ").Append(Number(member)).Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'c':
+            output.Append(indent).Append("if (").Append(member).Append(" == XtSchemaField.NullCharacter) { ").Append(Null()).Append(" } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)").Append(member).Append("; ").Append(inArray ? "writer.WriteStringValue(ch);" : $"writer.WriteString(\"{name}\", ch);").Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'l':
+            output.Append(indent).Append("if (").Append(member).Append(" == XtSchemaField.NullLogical) { ").Append(Null()).Append(" } else { ").Append(Bool(member + " != 0")).Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'v' or 'h':
+            output.Append(indent).Append("if (double.IsNaN(").Append(member).Append(".X)) { ").Append(Null()).Append(" } else { ").Append(StartObject()).Append(" writer.WriteNumber(\"x\", ").Append(member).Append(".X); writer.WriteNumber(\"y\", ").Append(member).Append(".Y); writer.WriteNumber(\"z\", ").Append(member).Append(".Z); writer.WriteEndObject();").Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'i':
+            output.Append(indent).Append("if (double.IsNaN(").Append(member).Append(".Low)) { ").Append(Null()).Append(" } else { ").Append(StartObject()).Append(" writer.WriteNumber(\"low\", ").Append(member).Append(".Low); writer.WriteNumber(\"high\", ").Append(member).Append(".High); writer.WriteEndObject();").Append(nameStatement).Append(" }").AppendLine();
+            break;
+        case 'b':
+            output.Append(indent).Append("if (double.IsNaN(").Append(member).Append(".XLow)) { ").Append(Null()).Append(" } else { ").Append(StartObject()).Append(" writer.WriteNumber(\"x_low\", ").Append(member).Append(".XLow); writer.WriteNumber(\"x_high\", ").Append(member).Append(".XHigh); writer.WriteNumber(\"y_low\", ").Append(member).Append(".YLow); writer.WriteNumber(\"y_high\", ").Append(member).Append(".YHigh); writer.WriteNumber(\"z_low\", ").Append(member).Append(".ZLow); writer.WriteNumber(\"z_high\", ").Append(member).Append(".ZHigh); writer.WriteEndObject();").Append(nameStatement).Append(" }").AppendLine();
+            break;
+    }
 }
 
 string GenerateDescriptors(List<VersionSchema> schemas)
@@ -686,6 +839,8 @@ string PointerValidation(VersionSchema version, XtFieldDescriptor field, string 
 
 string RefIndex(VersionSchema version, XtFieldDescriptor field, string value)
     => TryRefTarget(version, field, out _) ? value + ".Index" : value;
+
+string EnumIdentifier(string source) => source.Replace(".", "_", StringComparison.Ordinal);
 
 (string Source, (string Name, long Value)[] Values)? XtEnumFor(string node, string field, char type)
 {
