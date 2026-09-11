@@ -94,6 +94,29 @@ var document = XtCodec.Read(catalog, sourceBytes);
 外部目录只扫描顶层 `sch_*.sch_txt`。若目录包含与内置 identity 同名的 schema，
 其 node/field shape 必须与编译 descriptor 完全一致，否则返回 `SchemaMismatch`。
 
+## JSON 导出工具
+
+`src/ProjectGmKernel.Xt.JsonTool` 是 NativeAOT 控制台程序，把 x_t 转为结构化
+JSON，支持全部 15 个内置 V30–V38 绑定：
+
+```
+dotnet publish src/ProjectGmKernel.Xt.JsonTool -c Release -r linux-x64 -o bin/xt-json-tool/linux-x64
+bin/xt-json-tool/linux-x64/XtToJson <model.x_t> [-o <output.json>] [--compact] [--schema-dir <directory>]
+```
+
+不传 `-o` 时输出到 `<input>.json`；默认缩进，`--compact` 紧凑。JSON 顶层为
+`schema`（绑定 identity）、`version_text`、`user_field_size` 与各传输节点表
+（只含非空表），行内是 `_xt_index`/`_xt_order`（变量节点加
+`_xt_variable_length`）和传输字段：null 哨兵输出 `null`，`c` 字段输出单字符
+字符串，`l` 输出 true/false，向量/区间/包围盒输出具名对象，变长与定长字段
+输出数组；非传输字段省略。带生成枚举的标量字段额外输出 `<字段>_name`
+兄弟键（如 `"body_type": 1, "body_type_name": "solid_body"`；未知值时为
+`null`，null 值时不输出该键）。序列化器由 `GenerateXtSchema.cs` 生成到每个
+schema namespace 的 `JSON` 类（`XtGeneratedModelJson` 统一分发），直读强类型
+行、零反射，AOT 安全。带内嵌 schema 的文件（如 corpus 的
+`managed-embedded.x_t`）需 `--schema-dir` 或 `PARASOLID_SCHEMA_DIR`/`P_SCHEMA`
+提供支撑 schema；工具会按形状兼容规则选择绑定并在 stderr 提示。
+
 ## C ABI 使用方式
 
 `PGM_XT_CONTEXT_create` 的 schema 目录可为 null；此时 V30–V38 仍可使用。通用
