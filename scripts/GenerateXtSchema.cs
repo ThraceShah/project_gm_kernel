@@ -58,11 +58,14 @@ string GenerateBindings(List<VersionSchema> schemas)
         output.Append("namespace ProjectGmKernel.Xt.Schema.").Append(ns).AppendLine();
         output.AppendLine("{");
         output.AppendLine();
+        foreach (var target in RefTargets(version))
+            output.Append("[StructLayout(LayoutKind.Sequential)] public struct ").Append(target.Name).AppendLine("Ref { public XtNodeIndex Index; }");
+        output.AppendLine();
         foreach (var node in version.Definition.Nodes)
         {
             var fields = version.Definition.GetFields(node).ToArray();
             foreach (var field in fields.Where(static field => field.ElementCount > 1))
-                output.Append("[InlineArray(").Append(field.ElementCount).Append(")] public struct ").Append(node.Name).Append("__").Append(field.Name).Append("__ARRAY { private ").Append(FieldType(field.Type)).AppendLine(" _element0; }");
+                output.Append("[InlineArray(").Append(field.ElementCount).Append(")] public struct ").Append(node.Name).Append("__").Append(field.Name).Append("__ARRAY { private ").Append(ManagedFieldElementType(version, field)).AppendLine(" _element0; }");
             output.AppendLine("[StructLayout(LayoutKind.Sequential)]");
             output.Append("public struct ").Append(node.Name).AppendLine();
             output.AppendLine("{");
@@ -74,9 +77,9 @@ string GenerateBindings(List<VersionSchema> schemas)
             {
                 var type = field.ElementCount switch
                 {
-                    1 => "XtVariableRange",
+                    1 => "XtRange",
                     > 1 => node.Name + "__" + field.Name + "__ARRAY",
-                    _ => FieldType(field.Type),
+                    _ => ManagedFieldElementType(version, field),
                 };
                 output.Append("    public ").Append(type).Append(' ').Append(CsName(field.Name)).AppendLine(";");
             }
@@ -102,7 +105,7 @@ string GenerateBindings(List<VersionSchema> schemas)
         {
             output.Append("    internal readonly ").Append(node.Name).Append("[] ").Append(node.Name).AppendLine(";");
             foreach (var field in version.Definition.GetFields(node).ToArray().Where(static field => field.Transmit && field.ElementCount == 1))
-                output.Append("    internal readonly ").Append(FieldType(field.Type)).Append("[] ").Append(node.Name).Append("__").Append(field.Name).AppendLine(";");
+                output.Append("    internal readonly ").Append(ManagedFieldElementType(version, field)).Append("[] ").Append(node.Name).Append("__").Append(field.Name).AppendLine(";");
         }
         output.AppendLine("    internal readonly int[] _xt_user_fields;");
         output.AppendLine("    internal STORAGE(COUNTS counts)");
@@ -111,7 +114,7 @@ string GenerateBindings(List<VersionSchema> schemas)
         {
             output.Append("        ").Append(node.Name).Append(" = A<").Append(node.Name).Append(">(counts.").Append(node.Name).AppendLine(");");
             foreach (var field in version.Definition.GetFields(node).ToArray().Where(static field => field.Transmit && field.ElementCount == 1))
-                output.Append("        ").Append(node.Name).Append("__").Append(field.Name).Append(" = A<").Append(FieldType(field.Type)).Append(">(counts.").Append(node.Name).Append("__").Append(field.Name).AppendLine(");");
+                output.Append("        ").Append(node.Name).Append("__").Append(field.Name).Append(" = A<").Append(ManagedFieldElementType(version, field)).Append(">(counts.").Append(node.Name).Append("__").Append(field.Name).AppendLine(");");
         }
         output.AppendLine("        _xt_user_fields = A<int>(counts._xt_user_fields);");
         output.AppendLine("        static T[] A<T>(int count) => count < 0 ? throw new ArgumentOutOfRangeException(nameof(count)) : GC.AllocateArray<T>(count, pinned: true);");
@@ -130,7 +133,7 @@ string GenerateBindings(List<VersionSchema> schemas)
         {
             output.Append("    public ReadOnlySpan<").Append(node.Name).Append("> ").Append(node.Name).Append(" => Storage.").Append(node.Name).AppendLine(";");
             foreach (var field in version.Definition.GetFields(node).ToArray().Where(static field => field.Transmit && field.ElementCount == 1))
-                output.Append("    public ReadOnlySpan<").Append(FieldType(field.Type)).Append("> ").Append(node.Name).Append("__").Append(field.Name).Append(" => Storage.").Append(node.Name).Append("__").Append(field.Name).AppendLine(";");
+                output.Append("    public ReadOnlySpan<").Append(ManagedFieldElementType(version, field)).Append("> ").Append(node.Name).Append("__").Append(field.Name).Append(" => Storage.").Append(node.Name).Append("__").Append(field.Name).AppendLine(";");
         }
         output.AppendLine("    public ReadOnlySpan<int> _xt_user_fields => Storage._xt_user_fields;");
         output.AppendLine("}");
@@ -145,7 +148,7 @@ string GenerateBindings(List<VersionSchema> schemas)
         {
             output.Append("    public Span<").Append(node.Name).Append("> ").Append(node.Name).Append(" => Writable(Storage.").Append(node.Name).AppendLine(");");
             foreach (var field in version.Definition.GetFields(node).ToArray().Where(static field => field.Transmit && field.ElementCount == 1))
-                output.Append("    public Span<").Append(FieldType(field.Type)).Append("> ").Append(node.Name).Append("__").Append(field.Name).Append(" => Writable(Storage.").Append(node.Name).Append("__").Append(field.Name).AppendLine(");");
+                output.Append("    public Span<").Append(ManagedFieldElementType(version, field)).Append("> ").Append(node.Name).Append("__").Append(field.Name).Append(" => Writable(Storage.").Append(node.Name).Append("__").Append(field.Name).AppendLine(");");
         }
         output.AppendLine("    public Span<int> _xt_user_fields => Writable(Storage._xt_user_fields);");
         output.AppendLine("    public MODEL FinalizeModel() { if (_finalized) throw new InvalidOperationException(\"Model is already finalized.\"); CODEC.Validate(Storage, UserFieldSize); _finalized = true; return new MODEL(Storage, VersionText, UserFieldSize); }");
@@ -254,15 +257,15 @@ void GenerateDecodeCase(StringBuilder output, VersionSchema version, XtNodeDescr
         {
             var offset = node.Name + "__" + field.Name + "_offset";
             var pool = "builder." + node.Name + "__" + field.Name;
-            output.Append("                    ").Append(member).Append(" = new XtVariableRange { State = XtSchemaFieldState.Value, Offset = ").Append(offset).AppendLine(", Count = Math.Max(0, node.VariableLength) };");
-            output.Append("                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) ").Append(pool).Append('[').Append(offset).Append("++] = XtSchemaFieldCodec.To_").Append(field.Type).AppendLine("(node.Fields[valueOffset++]);");
+            output.Append("                    ").Append(member).Append(" = new XtRange { Offset = ").Append(offset).AppendLine(", Count = Math.Max(0, node.VariableLength) };");
+            output.Append("                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) ").Append(pool).Append('[').Append(offset).Append("++] = ").Append(DecodeValue(version, node, field, "node.Fields[valueOffset++]")).AppendLine(";");
         }
         else if (field.ElementCount > 1)
         {
-            output.Append("                    for (var item = 0; item < ").Append(field.ElementCount).Append("; item++) ").Append(member).Append("[item] = XtSchemaFieldCodec.To_").Append(field.Type).AppendLine("(node.Fields[valueOffset++]);");
+            output.Append("                    for (var item = 0; item < ").Append(field.ElementCount).Append("; item++) ").Append(member).Append("[item] = ").Append(DecodeValue(version, node, field, "node.Fields[valueOffset++]")).AppendLine(";");
         }
         else
-            output.Append("                    ").Append(member).Append(" = XtSchemaFieldCodec.To_").Append(field.Type).AppendLine("(node.Fields[valueOffset++]);");
+            output.Append("                    ").Append(member).Append(" = ").Append(DecodeValue(version, node, field, "node.Fields[valueOffset++]")).AppendLine(";");
     }
     output.AppendLine("                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $\"Node {node.Type}/{node.Index} field count mismatch.\"); break;");
     output.AppendLine("                }");
@@ -278,29 +281,26 @@ void GenerateEncodeTable(StringBuilder output, VersionSchema version, XtNodeDesc
     {
         var member = "row." + CsName(field.Name);
         var label = version.Identity + "." + node.Name + "." + field.Name;
-        if (!field.Transmit)
-        {
-            if (field.ElementCount == 1)
-                output.Append("            XtGeneratedSchemaRuntime.RequireUnavailable(").Append(member).Append(".State, \"").Append(label).AppendLine("\");");
-            else if (field.ElementCount > 1)
-                output.Append("            for (var item = 0; item < ").Append(field.ElementCount).Append("; item++) XtSchemaFieldCodec.RequireUnavailable(").Append(member).Append("[item].State, \"").Append(label).AppendLine("\");");
-            else
-                output.Append("            XtSchemaFieldCodec.RequireUnavailable(").Append(member).Append(".State, \"").Append(label).AppendLine("\");");
-            continue;
-        }
+        if (!field.Transmit) continue;
         if (field.ElementCount == 1)
         {
             var pool = "storage." + node.Name + "__" + field.Name;
             output.Append("            XtGeneratedSchemaRuntime.ValidateVariableRange(").Append(member).Append(", row._xt_variable_length, ").Append(pool).Append(".Length, \"").Append(label).AppendLine("\");");
-            output.Append("            for (var item = 0; item < ").Append(member).Append(".Count; item++) {");if(field.Type=='p')output.Append("var pointer=").Append(pool).Append('[').Append(member).Append(".Offset+item];XtGeneratedSchemaRuntime.ValidatePointer(pointer,").Append(field.NodeClass).Append(",nodeTypes,DESCRIPTOR.Definition,\"").Append(label).Append("\");values.Add(XtSchemaFieldCodec.From(pointer));");else output.Append("values.Add(XtSchemaFieldCodec.From(").Append(pool).Append('[').Append(member).Append(".Offset+item]));");output.AppendLine("}");
+            output.Append("            for (var item = 0; item < ").Append(member).Append(".Count; item++) {");
+            output.Append(PointerValidation(version, field, pool + "[" + member + ".Offset+item]", label));
+            output.Append("values.Add(").Append(EncodeValue(version, field, pool + "[" + member + ".Offset+item]")).AppendLine("); }");
         }
         else if (field.ElementCount > 1)
         {
-            output.Append("            for (var item = 0; item < ").Append(field.ElementCount).Append("; item++) { XtSchemaFieldCodec.RequireTransmitted(").Append(member).Append("[item].State, \"").Append(label).Append("\"); ");if(field.Type=='p')output.Append("XtGeneratedSchemaRuntime.ValidatePointer(").Append(member).Append("[item],").Append(field.NodeClass).Append(",nodeTypes,DESCRIPTOR.Definition,\"").Append(label).Append("\"); ");output.Append("values.Add(XtSchemaFieldCodec.From(").Append(member).AppendLine("[item])); }");
+            output.Append("            for (var item = 0; item < ").Append(field.ElementCount).Append("; item++) { ");
+            output.Append(PointerValidation(version, field, member + "[item]", label));
+            output.Append("values.Add(").Append(EncodeValue(version, field, member + "[item]")).AppendLine("); }");
         }
         else
         {
-            output.Append("            XtSchemaFieldCodec.RequireTransmitted(").Append(member).Append(".State, \"").Append(label).Append("\"); ");if(field.Type=='p')output.Append("XtGeneratedSchemaRuntime.ValidatePointer(").Append(member).Append(',').Append(field.NodeClass).Append(",nodeTypes,DESCRIPTOR.Definition,\"").Append(label).Append("\"); ");output.Append("values.Add(XtSchemaFieldCodec.From(").Append(member).AppendLine("));");
+            output.Append("            ");
+            output.Append(PointerValidation(version, field, member, label));
+            output.Append("values.Add(").Append(EncodeValue(version, field, member)).AppendLine(");");
         }
     }
     output.AppendLine("            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();");
@@ -359,6 +359,12 @@ Dictionary<string, string> GenerateHeaders(List<VersionSchema> schemas)
             .AppendLine("#include \"ProjectGmKernel.Xt.h\"")
             .AppendLine("#ifdef __cplusplus").AppendLine("extern \"C\" {").AppendLine("#endif");
         var prefix = "PGM_XT_" + version.Identity;
+        foreach (var target in RefTargets(version))
+        {
+            output.Append("typedef struct PGM_XT_").Append(target.Name).AppendLine("_ref_s {");
+            output.AppendLine("    int32_t index;");
+            output.Append("} PGM_XT_").Append(target.Name).AppendLine("_ref_t;");
+        }
         foreach (var node in version.Definition.Nodes)
         {
             var fields = version.Definition.GetFields(node).ToArray();
@@ -369,7 +375,7 @@ Dictionary<string, string> GenerateHeaders(List<VersionSchema> schemas)
             if (node.Transmit) output.AppendLine("    PGM_XT_range_t _xt_user_fields;");
             foreach (var field in fields)
             {
-                var type = field.ElementCount == 1 ? "PGM_XT_variable_range_t" : "PGM_XT_field_" + field.Type + "_t";
+                var type = field.ElementCount == 1 ? "PGM_XT_range_t" : CFieldElementType(version, field);
                 var suffix = field.ElementCount > 1 ? "[" + field.ElementCount + "]" : "";
                 if (IsCppKeyword(field.Name))
                 {
@@ -412,8 +418,8 @@ Dictionary<string, string> GenerateHeaders(List<VersionSchema> schemas)
             {
                 output.Append("#define PGM_XT_").Append(node.Name).Append('_').Append(field.Name).Append("_get_read_view ").Append(prefix).Append('_').Append(node.Name).Append('_').Append(field.Name).AppendLine("_get_read_view");
                 output.Append("#define PGM_XT_").Append(node.Name).Append('_').Append(field.Name).Append("_get_write_view ").Append(prefix).Append('_').Append(node.Name).Append('_').Append(field.Name).AppendLine("_get_write_view");
-                output.Append("PGM_XT_API PGM_XT_status_t PGM_XT_").Append(node.Name).Append('_').Append(field.Name).Append("_get_read_view(PGM_XT_model_t, const PGM_XT_field_").Append(field.Type).AppendLine("_t **, int32_t *);");
-                output.Append("PGM_XT_API PGM_XT_status_t PGM_XT_").Append(node.Name).Append('_').Append(field.Name).Append("_get_write_view(PGM_XT_model_t, PGM_XT_field_").Append(field.Type).AppendLine("_t **, int32_t *);");
+                output.Append("PGM_XT_API PGM_XT_status_t PGM_XT_").Append(node.Name).Append('_').Append(field.Name).Append("_get_read_view(PGM_XT_model_t, const ").Append(CFieldElementType(version, field)).AppendLine(" **, int32_t *);");
+                output.Append("PGM_XT_API PGM_XT_status_t PGM_XT_").Append(node.Name).Append('_').Append(field.Name).Append("_get_write_view(PGM_XT_model_t, ").Append(CFieldElementType(version, field)).AppendLine(" **, int32_t *);");
             }
         }
         output.AppendLine("#ifdef __cplusplus").AppendLine("}").AppendLine("#endif");
@@ -452,18 +458,17 @@ string GenerateNativeExports(List<VersionSchema> schemas)
         output.AppendLine("    {if(!NativeExports.TrySchemaHolder(model,\""+version.Identity+"\",out var holder))return NativeExports.InvalidHandle();if(document is null||holder!.Model is not "+managed+".MODEL typed)return NativeExports.InvalidState(\"Finalized model and document output are required.\");try{*document=Handles.Add(new DocumentHolder("+managed+".CODEC.Encode(typed)));return NativeExports.Ok();}catch(Exception exception){return NativeExports.Fail(exception);} }");
         foreach(var node in version.Definition.Nodes.ToArray().Where(static node=>node.Transmit))
         {
-            EmitView(output,prefix,managed,node.Name,node.Name,node.Name);
+            EmitView(output,prefix,managed,node.Name,node.Name,managed+"."+node.Name);
             foreach(var field in version.Definition.GetFields(node).ToArray().Where(static field=>field.Transmit&&field.ElementCount==1))
-                EmitView(output,prefix,managed,node.Name+"_"+field.Name,node.Name+"__"+field.Name,"XtField_"+field.Type);
+                EmitView(output,prefix,managed,node.Name+"_"+field.Name,node.Name+"__"+field.Name,ManagedFieldTypeFullName(version,field));
         }
     }
     output.AppendLine("}");return output.ToString();
 }
 
-void EmitView(StringBuilder output,string prefix,string managed,string exportSuffix,string property,string type)
+void EmitView(StringBuilder output,string prefix,string managed,string exportSuffix,string property,string managedType)
 {
     var safe=Safe(prefix+"_"+exportSuffix);
-    var managedType=type.StartsWith("XtField_",StringComparison.Ordinal)?"global::ProjectGmKernel.Xt."+type:managed+"."+type;
     output.AppendLine("    [UnmanagedCallersOnly(EntryPoint = \""+prefix+"_"+exportSuffix+"_get_read_view\", CallConvs = [typeof(CallConvCdecl)])]");
     output.Append("    public static PgmXtStatus ").Append(safe).Append("_read(PgmXtHandle model,").Append(managedType).AppendLine("** data,int* count)");
     output.AppendLine("    {if(!NativeExports.TrySchemaHolder(model,\""+prefix[7..]+"\",out var holder))return NativeExports.InvalidHandle();if(holder!.Model is not "+managed+".MODEL typed)return NativeExports.InvalidState(\"Model is not finalized.\");return NativeExports.ReadView(typed."+property+",(nint*)data,count);}");
@@ -482,7 +487,7 @@ string GenerateMapping(List<VersionSchema> schemas)
             output.Append('|').Append(node.Name).Append('|').Append(node.Type).Append('|').Append(node.Transmit ? 1 : 0).Append('|').Append(node.ParsedFieldCount).Append("|`ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).Append('.').Append(node.Name).Append("`|`PGM_XT_").Append(node.Name).AppendLine("_t`|");
         output.AppendLine().AppendLine("| Schema field | Type | Transmit | Elements | Managed member | C member | Codec |").AppendLine("|---|---|---:|---:|---|---|---|");
         foreach(var node in version.Definition.Nodes)foreach(var field in version.Definition.GetFields(node))
-            output.Append('|').Append(node.Name).Append('.').Append(field.Name).Append('|').Append(field.Type).Append('|').Append(field.Transmit?1:0).Append('|').Append(field.ElementCount).Append("|`").Append(node.Name).Append('.').Append(field.Name).Append("`|`PGM_XT_").Append(node.Name).Append("_t.").Append(field.Name).Append(IsCppKeyword(field.Name)?"` / C++ `."+field.Name+"_":"").Append("`|").Append(field.Transmit?"encode+decode":"Unavailable validation").AppendLine("|");
+            output.Append('|').Append(node.Name).Append('.').Append(field.Name).Append('|').Append(field.Type).Append('|').Append(field.Transmit?1:0).Append('|').Append(field.ElementCount).Append("|`").Append(node.Name).Append('.').Append(field.Name).Append("`|`PGM_XT_").Append(node.Name).Append("_t.").Append(field.Name).Append(IsCppKeyword(field.Name)?"` / C++ `."+field.Name+"_":"").Append("`|").Append(field.Transmit?"encode+decode":"not maintained").AppendLine("|");
         output.AppendLine();
     }
     return output.ToString();
@@ -501,8 +506,85 @@ void WriteOrCheck(string path, string content)
     File.WriteAllText(path, content, new UTF8Encoding(false));
 }
 
+bool TryRefTarget(VersionSchema version, XtFieldDescriptor field, out XtNodeDescriptor target)
+{
+    target = field.Type == 'p' ? version.Definition.GetNode(field.NodeClass) : default;
+    return target.Type != 0;
+}
+
+List<XtNodeDescriptor> RefTargets(VersionSchema version)
+{
+    var targets = new List<XtNodeDescriptor>();
+    var seen = new HashSet<string>(StringComparer.Ordinal);
+    foreach (var node in version.Definition.Nodes)
+        foreach (var field in version.Definition.GetFields(node))
+            if (TryRefTarget(version, field, out var target) && seen.Add(target.Name))
+                targets.Add(target);
+    return targets;
+}
+
+string ManagedFieldElementType(VersionSchema version, XtFieldDescriptor field)
+{
+    if (TryRefTarget(version, field, out var target)) return target.Name + "Ref";
+    return field.Type switch
+    {
+        'p' => "XtNodeIndex",
+        'd' or 'n' or 'w' or 't' or 'q' => "long",
+        'u' => "ulong",
+        'f' => "double",
+        'c' or 'l' => "byte",
+        'v' or 'h' => "XtSchemaVector",
+        'i' => "XtSchemaInterval",
+        'b' => "XtSchemaBox",
+        _ => throw new InvalidOperationException($"Unknown schema field type '{field.Type}'."),
+    };
+}
+
+string ManagedFieldTypeFullName(VersionSchema version, XtFieldDescriptor field)
+{
+    if (TryRefTarget(version, field, out var target)) return "global::ProjectGmKernel.Xt.Schema." + Namespace(version.Identity) + "." + target.Name + "Ref";
+    var type = ManagedFieldElementType(version, field);
+    return type switch
+    {
+        "XtNodeIndex" => "int",
+        "XtSchemaVector" or "XtSchemaInterval" or "XtSchemaBox" => "global::ProjectGmKernel.Xt." + type,
+        _ => type,
+    };
+}
+
+string CFieldElementType(VersionSchema version, XtFieldDescriptor field)
+{
+    if (TryRefTarget(version, field, out var target)) return "PGM_XT_" + target.Name + "_ref_t";
+    return field.Type switch
+    {
+        'p' => "int32_t",
+        'd' or 'n' or 'w' or 't' or 'q' => "int64_t",
+        'u' => "uint64_t",
+        'f' => "double",
+        'c' or 'l' => "uint8_t",
+        'v' or 'h' => "PGM_XT_schema_vector_t",
+        'i' => "PGM_XT_schema_interval_t",
+        'b' => "PGM_XT_schema_box_t",
+        _ => throw new InvalidOperationException($"Unknown schema field type '{field.Type}'."),
+    };
+}
+
+string DecodeValue(VersionSchema version, XtNodeDescriptor node, XtFieldDescriptor field, string source)
+{
+    var call = "XtSchemaFieldCodec.To_" + field.Type + "(" + source + ", \"" + version.Identity + "." + node.Name + "." + field.Name + "\")";
+    return TryRefTarget(version, field, out var target) ? "new " + target.Name + "Ref { Index = " + call + " }" : call;
+}
+
+string EncodeValue(VersionSchema version, XtFieldDescriptor field, string value)
+    => "XtSchemaFieldCodec.From_" + field.Type + "(" + RefIndex(version, field, value) + ")";
+
+string PointerValidation(VersionSchema version, XtFieldDescriptor field, string value, string label)
+    => field.Type == 'p' ? "XtGeneratedSchemaRuntime.ValidatePointer(" + RefIndex(version, field, value) + "," + field.NodeClass + ",nodeTypes,DESCRIPTOR.Definition,\"" + label + "\"); " : string.Empty;
+
+string RefIndex(VersionSchema version, XtFieldDescriptor field, string value)
+    => TryRefTarget(version, field, out _) ? value + ".Index" : value;
+
 static StringBuilder Header(string description) => new StringBuilder().AppendLine("// <auto-generated/>").Append("// ").AppendLine(description).AppendLine("#nullable enable").AppendLine();
-static string FieldType(char type) => "XtField_" + type;
 static string Namespace(string identity) => identity;
 static string Safe(string value) => value.Replace('-', '_');
 static string Bool(bool value) => value ? "true" : "false";

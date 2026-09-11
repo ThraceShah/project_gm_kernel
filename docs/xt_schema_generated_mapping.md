@@ -187,38 +187,38 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -260,11 +260,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -282,7 +282,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
 |BODY.point|p|1|0|`BODY.point`|`PGM_XT_BODY_t.point`|encode+decode|
@@ -291,11 +291,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -315,7 +315,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
 |SHELL.body|p|1|0|`SHELL.body`|`PGM_XT_SHELL_t.body`|encode+decode|
@@ -327,7 +327,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -335,10 +335,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -349,13 +349,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -363,8 +363,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -373,9 +373,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -495,7 +495,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -513,19 +513,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -652,8 +652,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -703,13 +703,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -743,11 +743,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -796,9 +796,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -807,20 +807,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -857,7 +857,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|14|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -891,8 +891,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -905,12 +905,12 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -922,7 +922,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -938,7 +938,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -1017,7 +1017,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -1025,14 +1025,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -1051,14 +1051,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -1066,7 +1066,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -1082,27 +1082,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -1111,14 +1111,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -1143,8 +1143,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -1157,11 +1157,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -1197,17 +1197,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -1221,7 +1221,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -1229,11 +1229,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -1427,11 +1427,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -1465,7 +1465,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -1477,7 +1477,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -1531,21 +1531,21 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3000119_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -1747,38 +1747,38 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -1820,11 +1820,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -1843,7 +1843,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
 |BODY.point|p|1|0|`BODY.point`|`PGM_XT_BODY_t.point`|encode+decode|
@@ -1852,11 +1852,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -1876,7 +1876,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -1889,7 +1889,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -1897,10 +1897,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -1911,13 +1911,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -1925,8 +1925,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -1935,9 +1935,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -2057,7 +2057,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -2075,19 +2075,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -2214,8 +2214,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -2265,13 +2265,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -2305,11 +2305,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -2358,9 +2358,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -2369,20 +2369,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -2419,7 +2419,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|14|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -2453,8 +2453,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -2467,12 +2467,12 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -2484,7 +2484,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -2501,7 +2501,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -2580,7 +2580,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -2588,14 +2588,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -2614,14 +2614,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -2629,7 +2629,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -2645,27 +2645,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -2674,14 +2674,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -2706,8 +2706,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -2720,11 +2720,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -2760,17 +2760,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -2784,7 +2784,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -2792,11 +2792,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -2990,11 +2990,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -3029,7 +3029,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -3041,7 +3041,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -3095,23 +3095,23 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3100020_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -3344,38 +3344,38 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -3417,11 +3417,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -3440,7 +3440,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
 |BODY.point|p|1|0|`BODY.point`|`PGM_XT_BODY_t.point`|encode+decode|
@@ -3449,11 +3449,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -3473,7 +3473,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -3486,7 +3486,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -3494,10 +3494,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -3508,13 +3508,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -3522,8 +3522,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -3532,9 +3532,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -3654,7 +3654,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -3672,19 +3672,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -3811,8 +3811,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -3862,13 +3862,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -3902,11 +3902,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -3955,9 +3955,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -3966,20 +3966,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -4016,7 +4016,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|14|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -4050,8 +4050,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -4064,12 +4064,12 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -4081,7 +4081,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -4098,7 +4098,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -4177,7 +4177,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -4185,14 +4185,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -4211,14 +4211,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -4226,7 +4226,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -4242,27 +4242,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -4271,14 +4271,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -4303,8 +4303,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -4317,11 +4317,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -4357,17 +4357,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -4381,7 +4381,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -4389,11 +4389,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -4587,11 +4587,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -4626,7 +4626,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -4638,7 +4638,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -4692,24 +4692,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3101042_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -4951,38 +4951,38 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_data|p|0|0|`PARTITION.thread_data`|`PGM_XT_PARTITION_t.thread_data`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -5024,11 +5024,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -5047,7 +5047,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
 |BODY.point|p|1|0|`BODY.point`|`PGM_XT_BODY_t.point`|encode+decode|
@@ -5056,11 +5056,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -5080,7 +5080,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -5093,7 +5093,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -5101,10 +5101,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -5115,13 +5115,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -5129,8 +5129,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -5139,9 +5139,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -5261,7 +5261,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -5279,19 +5279,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -5418,8 +5418,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -5469,13 +5469,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -5509,11 +5509,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -5562,9 +5562,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -5573,20 +5573,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -5623,7 +5623,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|14|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -5657,8 +5657,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -5671,12 +5671,12 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -5688,7 +5688,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -5705,7 +5705,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -5784,7 +5784,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -5792,14 +5792,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -5818,14 +5818,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -5833,7 +5833,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -5849,27 +5849,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -5878,14 +5878,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -5910,8 +5910,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -5924,11 +5924,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -5964,17 +5964,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -5988,7 +5988,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -5996,11 +5996,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -6222,11 +6222,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -6261,7 +6261,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -6273,7 +6273,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -6327,24 +6327,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200020_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -6593,39 +6593,39 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -6659,11 +6659,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -6682,7 +6682,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
 |BODY.point|p|1|0|`BODY.point`|`PGM_XT_BODY_t.point`|encode+decode|
@@ -6691,11 +6691,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -6715,7 +6715,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -6728,7 +6728,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -6736,10 +6736,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -6750,13 +6750,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -6764,8 +6764,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -6774,9 +6774,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -6896,7 +6896,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -6914,19 +6914,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -7053,8 +7053,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -7104,13 +7104,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -7144,11 +7144,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -7197,9 +7197,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -7208,20 +7208,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -7258,7 +7258,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|14|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -7292,8 +7292,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -7306,25 +7306,25 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
 |WORLD.point|p|1|0|`WORLD.point`|`PGM_XT_WORLD_t.point`|encode+decode|
 |WORLD.mesh|p|1|0|`WORLD.mesh`|`PGM_XT_WORLD_t.mesh`|encode+decode|
 |WORLD.polyline|p|1|0|`WORLD.polyline`|`PGM_XT_WORLD_t.polyline`|encode+decode|
-|WORLD.lattice|p|0|0|`WORLD.lattice`|`PGM_XT_WORLD_t.lattice`|Unavailable validation|
+|WORLD.lattice|p|0|0|`WORLD.lattice`|`PGM_XT_WORLD_t.lattice`|not maintained|
 |WORLD.alive|l|1|0|`WORLD.alive`|`PGM_XT_WORLD_t.alive`|encode+decode|
 |WORLD.attrib_def|p|1|0|`WORLD.attrib_def`|`PGM_XT_WORLD_t.attrib_def`|encode+decode|
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -7341,7 +7341,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -7420,7 +7420,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -7428,14 +7428,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -7454,14 +7454,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -7469,7 +7469,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -7485,27 +7485,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -7514,14 +7514,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -7546,8 +7546,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -7560,11 +7560,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -7600,17 +7600,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -7624,7 +7624,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -7632,11 +7632,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -7864,11 +7864,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -7903,7 +7903,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -7915,7 +7915,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -7969,24 +7969,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -8044,7 +8044,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3200138_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -8279,39 +8279,39 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -8346,11 +8346,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -8369,7 +8369,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -8379,11 +8379,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -8403,7 +8403,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -8416,7 +8416,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -8424,10 +8424,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -8438,13 +8438,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -8452,8 +8452,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -8462,9 +8462,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -8584,7 +8584,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -8602,19 +8602,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -8741,8 +8741,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -8792,13 +8792,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -8832,11 +8832,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -8885,9 +8885,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -8896,20 +8896,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -8946,7 +8946,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|14|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -8980,8 +8980,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -8994,12 +8994,12 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -9012,7 +9012,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -9029,7 +9029,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -9108,7 +9108,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -9116,14 +9116,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -9142,14 +9142,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -9157,7 +9157,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -9173,27 +9173,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -9202,14 +9202,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -9234,8 +9234,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -9248,11 +9248,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -9288,17 +9288,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -9312,7 +9312,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -9320,11 +9320,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -9553,11 +9553,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -9592,7 +9592,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -9604,7 +9604,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -9658,24 +9658,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -9733,7 +9733,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301102_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -9976,39 +9976,39 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -10043,11 +10043,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -10066,7 +10066,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -10076,11 +10076,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -10100,7 +10100,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -10113,7 +10113,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -10121,10 +10121,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -10135,13 +10135,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -10149,8 +10149,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -10159,9 +10159,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -10281,7 +10281,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -10299,19 +10299,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -10438,8 +10438,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -10489,13 +10489,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -10529,11 +10529,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -10582,9 +10582,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -10593,20 +10593,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -10643,7 +10643,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|14|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -10677,8 +10677,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -10691,13 +10691,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -10710,7 +10710,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -10727,7 +10727,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -10806,7 +10806,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -10814,14 +10814,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -10840,14 +10840,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -10855,7 +10855,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -10871,27 +10871,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -10900,14 +10900,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -10932,8 +10932,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -10946,11 +10946,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -10986,17 +10986,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -11010,7 +11010,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -11018,11 +11018,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -11251,11 +11251,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -11290,7 +11290,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -11302,7 +11302,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -11356,24 +11356,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -11431,7 +11431,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3301152_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -11677,39 +11677,39 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -11744,11 +11744,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -11767,7 +11767,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -11777,11 +11777,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -11802,7 +11802,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -11815,7 +11815,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -11823,10 +11823,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -11837,13 +11837,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -11851,8 +11851,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -11861,9 +11861,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -11984,7 +11984,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -12002,19 +12002,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -12141,8 +12141,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -12192,13 +12192,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -12232,11 +12232,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -12285,9 +12285,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -12296,20 +12296,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -12346,7 +12346,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|16|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -12380,8 +12380,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -12394,13 +12394,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -12413,7 +12413,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -12430,7 +12430,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -12510,7 +12510,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -12518,14 +12518,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -12544,14 +12544,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -12559,7 +12559,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -12575,27 +12575,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -12604,14 +12604,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -12636,8 +12636,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -12650,11 +12650,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -12690,17 +12690,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -12714,7 +12714,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -12722,11 +12722,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -12955,11 +12955,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -12994,7 +12994,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -13006,7 +13006,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -13060,24 +13060,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -13135,7 +13135,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3400066_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -13389,40 +13389,40 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|Unavailable validation|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|Unavailable validation|
-|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|Unavailable validation|
-|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|not maintained|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.n_live_in_new|d|0|0|`PARTITION.n_live_in_new`|`PGM_XT_PARTITION_t.n_live_in_new`|not maintained|
+|PARTITION.n_dead_in_new|d|0|0|`PARTITION.n_dead_in_new`|`PGM_XT_PARTITION_t.n_dead_in_new`|not maintained|
+|PARTITION.n_dead_in_copy|d|0|0|`PARTITION.n_dead_in_copy`|`PGM_XT_PARTITION_t.n_dead_in_copy`|not maintained|
+|PARTITION.n_live_in_copy|d|0|0|`PARTITION.n_live_in_copy`|`PGM_XT_PARTITION_t.n_live_in_copy`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
@@ -13457,11 +13457,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -13480,7 +13480,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -13490,11 +13490,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -13515,7 +13515,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -13528,7 +13528,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -13536,10 +13536,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -13550,13 +13550,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -13564,8 +13564,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -13574,9 +13574,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -13697,7 +13697,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -13715,19 +13715,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -13854,8 +13854,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -13905,13 +13905,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -13945,11 +13945,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -13998,9 +13998,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -14009,20 +14009,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -14059,7 +14059,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|16|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -14093,8 +14093,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -14107,13 +14107,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -14126,7 +14126,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -14143,7 +14143,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -14224,7 +14224,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -14232,14 +14232,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -14258,14 +14258,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -14273,7 +14273,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -14289,27 +14289,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -14318,14 +14318,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -14350,8 +14350,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -14364,11 +14364,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -14404,17 +14404,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -14428,7 +14428,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -14436,11 +14436,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -14669,11 +14669,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -14708,7 +14708,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -14720,7 +14720,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -14774,24 +14774,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -14849,7 +14849,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3401113_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -15104,49 +15104,49 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|Unavailable validation|
-|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|Unavailable validation|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|Unavailable validation|
-|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|Unavailable validation|
-|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|Unavailable validation|
-|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|Unavailable validation|
-|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|not maintained|
+|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|not maintained|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|not maintained|
+|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|not maintained|
+|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|not maintained|
+|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|not maintained|
+|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
-|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|Unavailable validation|
+|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|not maintained|
 |PMARK.delta_key|d|1|0|`PMARK.delta_key`|`PGM_XT_PMARK_t.delta_key`|encode+decode|
 |PMARK.delta_is_forward|l|1|0|`PMARK.delta_is_forward`|`PGM_XT_PMARK_t.delta_is_forward`|encode+decode|
 |PMARK.id|d|1|0|`PMARK.id`|`PGM_XT_PMARK_t.id`|encode+decode|
@@ -15178,11 +15178,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -15201,7 +15201,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -15211,11 +15211,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -15236,7 +15236,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -15249,7 +15249,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -15257,10 +15257,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -15271,13 +15271,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -15285,8 +15285,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -15295,9 +15295,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -15418,7 +15418,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -15436,19 +15436,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -15575,8 +15575,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -15626,13 +15626,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -15666,11 +15666,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -15719,9 +15719,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -15730,20 +15730,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -15780,7 +15780,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|16|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -15814,8 +15814,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -15828,13 +15828,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -15847,7 +15847,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -15864,7 +15864,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -15945,7 +15945,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -15953,14 +15953,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -15979,14 +15979,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -15994,7 +15994,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -16010,27 +16010,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -16039,14 +16039,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -16071,8 +16071,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -16085,11 +16085,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -16125,17 +16125,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -16149,7 +16149,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -16157,11 +16157,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -16391,11 +16391,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -16430,7 +16430,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -16442,7 +16442,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -16496,24 +16496,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -16571,7 +16571,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500127_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -16826,49 +16826,49 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|Unavailable validation|
-|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|Unavailable validation|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|Unavailable validation|
-|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|Unavailable validation|
-|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|Unavailable validation|
-|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|Unavailable validation|
-|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|not maintained|
+|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|not maintained|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|not maintained|
+|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|not maintained|
+|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|not maintained|
+|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|not maintained|
+|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
-|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|Unavailable validation|
+|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|not maintained|
 |PMARK.delta_key|d|1|0|`PMARK.delta_key`|`PGM_XT_PMARK_t.delta_key`|encode+decode|
 |PMARK.delta_is_forward|l|1|0|`PMARK.delta_is_forward`|`PGM_XT_PMARK_t.delta_is_forward`|encode+decode|
 |PMARK.id|d|1|0|`PMARK.id`|`PGM_XT_PMARK_t.id`|encode+decode|
@@ -16900,11 +16900,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -16923,7 +16923,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -16933,11 +16933,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -16958,7 +16958,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -16971,7 +16971,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -16979,10 +16979,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -16993,13 +16993,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -17007,8 +17007,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -17017,9 +17017,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -17140,7 +17140,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -17158,19 +17158,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -17297,8 +17297,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -17348,13 +17348,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -17388,11 +17388,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -17441,9 +17441,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -17452,20 +17452,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -17502,7 +17502,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|16|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -17536,8 +17536,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -17550,13 +17550,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -17569,7 +17569,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -17586,7 +17586,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -17667,7 +17667,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -17675,14 +17675,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -17701,14 +17701,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -17716,7 +17716,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -17732,27 +17732,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -17761,14 +17761,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -17793,8 +17793,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -17807,11 +17807,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -17847,17 +17847,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -17871,7 +17871,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -17879,11 +17879,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -18113,11 +18113,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -18152,7 +18152,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -18164,7 +18164,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -18218,24 +18218,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -18293,7 +18293,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3500137_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -18551,49 +18551,49 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|Unavailable validation|
-|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|Unavailable validation|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|Unavailable validation|
-|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|Unavailable validation|
-|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|Unavailable validation|
-|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|Unavailable validation|
-|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|not maintained|
+|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|not maintained|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|not maintained|
+|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|not maintained|
+|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|not maintained|
+|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|not maintained|
+|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
-|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|Unavailable validation|
+|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|not maintained|
 |PMARK.delta_key|d|1|0|`PMARK.delta_key`|`PGM_XT_PMARK_t.delta_key`|encode+decode|
 |PMARK.delta_is_forward|l|1|0|`PMARK.delta_is_forward`|`PGM_XT_PMARK_t.delta_is_forward`|encode+decode|
 |PMARK.id|d|1|0|`PMARK.id`|`PGM_XT_PMARK_t.id`|encode+decode|
@@ -18625,11 +18625,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -18648,7 +18648,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -18658,11 +18658,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -18683,7 +18683,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -18696,7 +18696,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -18704,10 +18704,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -18718,13 +18718,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -18732,8 +18732,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -18742,9 +18742,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -18865,7 +18865,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -18883,19 +18883,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -19022,8 +19022,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -19073,13 +19073,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -19113,11 +19113,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -19166,9 +19166,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -19177,20 +19177,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -19227,7 +19227,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|16|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -19261,8 +19261,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -19275,13 +19275,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -19294,7 +19294,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -19311,7 +19311,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -19392,7 +19392,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -19400,14 +19400,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -19426,14 +19426,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -19441,7 +19441,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -19457,27 +19457,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -19486,14 +19486,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -19518,8 +19518,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -19532,11 +19532,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -19572,17 +19572,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -19596,7 +19596,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -19604,11 +19604,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -19838,11 +19838,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -19877,7 +19877,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -19889,7 +19889,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -19943,24 +19943,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -20018,7 +20018,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3501127_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -20276,49 +20276,49 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|Unavailable validation|
-|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|Unavailable validation|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|Unavailable validation|
-|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|Unavailable validation|
-|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|Unavailable validation|
-|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|Unavailable validation|
-|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|not maintained|
+|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|not maintained|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|not maintained|
+|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|not maintained|
+|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|not maintained|
+|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|not maintained|
+|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
-|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|Unavailable validation|
+|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|not maintained|
 |PMARK.delta_key|d|1|0|`PMARK.delta_key`|`PGM_XT_PMARK_t.delta_key`|encode+decode|
 |PMARK.delta_is_forward|l|1|0|`PMARK.delta_is_forward`|`PGM_XT_PMARK_t.delta_is_forward`|encode+decode|
 |PMARK.id|d|1|0|`PMARK.id`|`PGM_XT_PMARK_t.id`|encode+decode|
@@ -20350,11 +20350,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -20373,7 +20373,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -20383,11 +20383,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -20408,7 +20408,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -20421,7 +20421,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -20429,10 +20429,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -20443,13 +20443,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -20457,8 +20457,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -20467,9 +20467,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -20590,7 +20590,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -20608,19 +20608,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -20747,8 +20747,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -20798,13 +20798,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -20838,11 +20838,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -20891,9 +20891,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -20902,20 +20902,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -20952,7 +20952,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|17|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -20986,8 +20986,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -21000,13 +21000,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -21019,7 +21019,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -21036,7 +21036,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -21117,7 +21117,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -21125,14 +21125,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -21151,14 +21151,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -21166,7 +21166,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -21182,27 +21182,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -21211,14 +21211,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -21243,8 +21243,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -21257,11 +21257,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -21297,17 +21297,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -21321,7 +21321,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -21329,11 +21329,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -21564,11 +21564,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -21603,7 +21603,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -21615,7 +21615,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -21669,24 +21669,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -21744,7 +21744,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3600031_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -22010,50 +22010,50 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|Unavailable validation|
-|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|Unavailable validation|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|Unavailable validation|
-|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|Unavailable validation|
-|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|Unavailable validation|
-|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|Unavailable validation|
-|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.n_nolog_nodes_at_pmark|d|0|0|`PARTITION.n_nolog_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nolog_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|not maintained|
+|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|not maintained|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|not maintained|
+|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|not maintained|
+|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|not maintained|
+|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|not maintained|
+|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.n_nolog_nodes_at_pmark|d|0|0|`PARTITION.n_nolog_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nolog_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
-|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|Unavailable validation|
+|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|not maintained|
 |PMARK.delta_key|d|1|0|`PMARK.delta_key`|`PGM_XT_PMARK_t.delta_key`|encode+decode|
 |PMARK.delta_is_forward|l|1|0|`PMARK.delta_is_forward`|`PGM_XT_PMARK_t.delta_is_forward`|encode+decode|
 |PMARK.id|d|1|0|`PMARK.id`|`PGM_XT_PMARK_t.id`|encode+decode|
@@ -22088,11 +22088,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -22111,7 +22111,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -22121,11 +22121,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -22146,7 +22146,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -22159,7 +22159,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -22167,10 +22167,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -22181,13 +22181,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -22195,8 +22195,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -22205,9 +22205,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -22328,7 +22328,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -22346,19 +22346,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -22485,8 +22485,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -22536,13 +22536,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -22576,11 +22576,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -22629,9 +22629,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -22640,20 +22640,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -22690,7 +22690,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|17|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -22724,8 +22724,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -22738,13 +22738,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -22757,7 +22757,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -22774,7 +22774,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -22855,7 +22855,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -22863,14 +22863,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -22889,14 +22889,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -22904,7 +22904,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -22920,27 +22920,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -22949,14 +22949,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -22981,8 +22981,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -22995,11 +22995,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -23035,17 +23035,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -23059,7 +23059,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -23067,11 +23067,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -23302,11 +23302,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -23341,7 +23341,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -23353,7 +23353,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -23407,24 +23407,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -23482,7 +23482,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -23534,7 +23534,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |SKEWBOX.corner|v|1|0|`SKEWBOX.corner`|`PGM_XT_SKEWBOX_t.corner`|encode+decode|
 |SKEWBOX.axes|v|1|3|`SKEWBOX.axes`|`PGM_XT_SKEWBOX_t.axes`|encode+decode|
 |SKEWBOX.width|f|1|3|`SKEWBOX.width`|`PGM_XT_SKEWBOX_t.width`|encode+decode|
-|SKEWBOX.form|u|0|0|`SKEWBOX.form`|`PGM_XT_SKEWBOX_t.form`|Unavailable validation|
+|SKEWBOX.form|u|0|0|`SKEWBOX.form`|`PGM_XT_SKEWBOX_t.form`|not maintained|
 |TPMS_SURF.tpms_type|u|1|0|`TPMS_SURF.tpms_type`|`PGM_XT_TPMS_SURF_t.tpms_type`|encode+decode|
 |TPMS_SURF.tpms_shift|u|1|0|`TPMS_SURF.tpms_shift`|`PGM_XT_TPMS_SURF_t.tpms_shift`|encode+decode|
 |IMPLICIT_SURF.pvec|v|1|0|`IMPLICIT_SURF.pvec`|`PGM_XT_IMPLICIT_SURF_t.pvec`|encode+decode|
@@ -23564,7 +23564,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3701097_
 |LATTICE_DATA_PATTERN.cell|p|1|0|`LATTICE_DATA_PATTERN.cell`|`PGM_XT_LATTICE_DATA_PATTERN_t.cell`|encode+decode|
 |LATTICE_DATA_PATTERN.bound|p|1|0|`LATTICE_DATA_PATTERN.bound`|`PGM_XT_LATTICE_DATA_PATTERN_t.bound`|encode+decode|
 |LATTICE_DATA_PATTERN.form|p|1|0|`LATTICE_DATA_PATTERN.form`|`PGM_XT_LATTICE_DATA_PATTERN_t.form`|encode+decode|
-|LATTICE_DATA_PATTERN.core_bx|b|0|0|`LATTICE_DATA_PATTERN.core_bx`|`PGM_XT_LATTICE_DATA_PATTERN_t.core_bx`|Unavailable validation|
+|LATTICE_DATA_PATTERN.core_bx|b|0|0|`LATTICE_DATA_PATTERN.core_bx`|`PGM_XT_LATTICE_DATA_PATTERN_t.core_bx`|not maintained|
 
 ## SCH_3800150_37102
 
@@ -23782,50 +23782,50 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 | Schema field | Type | Transmit | Elements | Managed member | C member | Codec |
 |---|---|---:|---:|---|---|---|
 |WORKSPACE.ws|c|1|1|`WORKSPACE.ws`|`PGM_XT_WORKSPACE_t.ws`|encode+decode|
-|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|Unavailable validation|
-|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|Unavailable validation|
-|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|Unavailable validation|
+|PARTITION.next|p|0|0|`PARTITION.next`|`PGM_XT_PARTITION_t.next`|not maintained|
+|PARTITION.previous|p|0|0|`PARTITION.previous`|`PGM_XT_PARTITION_t.previous`|not maintained|
+|PARTITION.model_data|p|0|0|`PARTITION.model_data`|`PGM_XT_PARTITION_t.model_data`|not maintained|
 |PARTITION.current_pmark|p|1|0|`PARTITION.current_pmark`|`PGM_XT_PARTITION_t.current_pmark`|encode+decode|
-|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|Unavailable validation|
-|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|Unavailable validation|
-|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|Unavailable validation|
-|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|Unavailable validation|
-|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|Unavailable validation|
-|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|Unavailable validation|
-|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|Unavailable validation|
-|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|Unavailable validation|
-|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|Unavailable validation|
-|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|Unavailable validation|
-|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|Unavailable validation|
-|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|Unavailable validation|
-|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|Unavailable validation|
-|PARTITION.n_nolog_nodes_at_pmark|d|0|0|`PARTITION.n_nolog_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nolog_nodes_at_pmark`|Unavailable validation|
-|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|Unavailable validation|
-|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|Unavailable validation|
-|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|Unavailable validation|
-|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|Unavailable validation|
+|PARTITION.initial_pmark|p|0|0|`PARTITION.initial_pmark`|`PGM_XT_PARTITION_t.initial_pmark`|not maintained|
+|PARTITION.old|p|0|0|`PARTITION.old`|`PGM_XT_PARTITION_t.old`|not maintained|
+|PARTITION.new|p|0|0|`PARTITION.new`|`PGM_XT_PARTITION_t.new` / C++ `.new_`|not maintained|
+|PARTITION.new_old|p|0|0|`PARTITION.new_old`|`PGM_XT_PARTITION_t.new_old`|not maintained|
+|PARTITION.new_copy|p|0|0|`PARTITION.new_copy`|`PGM_XT_PARTITION_t.new_copy`|not maintained|
+|PARTITION.new_del|p|0|0|`PARTITION.new_del`|`PGM_XT_PARTITION_t.new_del`|not maintained|
+|PARTITION.del|p|0|0|`PARTITION.del`|`PGM_XT_PARTITION_t.del`|not maintained|
+|PARTITION.del_null|p|0|0|`PARTITION.del_null`|`PGM_XT_PARTITION_t.del_null`|not maintained|
+|PARTITION.copy|p|0|0|`PARTITION.copy`|`PGM_XT_PARTITION_t.copy`|not maintained|
+|PARTITION.mod_old|p|0|0|`PARTITION.mod_old`|`PGM_XT_PARTITION_t.mod_old`|not maintained|
+|PARTITION.mod_copy|p|0|0|`PARTITION.mod_copy`|`PGM_XT_PARTITION_t.mod_copy`|not maintained|
+|PARTITION.mod_del|p|0|0|`PARTITION.mod_del`|`PGM_XT_PARTITION_t.mod_del`|not maintained|
+|PARTITION.n_nodes_at_pmark|d|0|0|`PARTITION.n_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nodes_at_pmark`|not maintained|
+|PARTITION.n_nolog_nodes_at_pmark|d|0|0|`PARTITION.n_nolog_nodes_at_pmark`|`PGM_XT_PARTITION_t.n_nolog_nodes_at_pmark`|not maintained|
+|PARTITION.at_pmark|l|0|0|`PARTITION.at_pmark`|`PGM_XT_PARTITION_t.at_pmark`|not maintained|
+|PARTITION.at_current_mark|l|0|0|`PARTITION.at_current_mark`|`PGM_XT_PARTITION_t.at_current_mark`|not maintained|
+|PARTITION.allow_partial_pmarks|l|0|0|`PARTITION.allow_partial_pmarks`|`PGM_XT_PARTITION_t.allow_partial_pmarks`|not maintained|
+|PARTITION.n_pmarks|d|0|0|`PARTITION.n_pmarks`|`PGM_XT_PARTITION_t.n_pmarks`|not maintained|
 |PARTITION.highest_id|d|1|0|`PARTITION.highest_id`|`PGM_XT_PARTITION_t.highest_id`|encode+decode|
-|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|Unavailable validation|
-|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|Unavailable validation|
-|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|Unavailable validation|
-|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|Unavailable validation|
-|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|Unavailable validation|
-|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|Unavailable validation|
-|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|Unavailable validation|
-|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|Unavailable validation|
-|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|Unavailable validation|
-|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|Unavailable validation|
+|PARTITION.rcv_format|d|0|0|`PARTITION.rcv_format`|`PGM_XT_PARTITION_t.rcv_format`|not maintained|
+|PARTITION.rcv_key|p|0|0|`PARTITION.rcv_key`|`PGM_XT_PARTITION_t.rcv_key`|not maintained|
+|PARTITION.rcv_tags|p|0|0|`PARTITION.rcv_tags`|`PGM_XT_PARTITION_t.rcv_tags`|not maintained|
+|PARTITION.rcv_user_fields|l|0|0|`PARTITION.rcv_user_fields`|`PGM_XT_PARTITION_t.rcv_user_fields`|not maintained|
+|PARTITION.rcv_attrib_def|p|0|0|`PARTITION.rcv_attrib_def`|`PGM_XT_PARTITION_t.rcv_attrib_def`|not maintained|
+|PARTITION.rcv_attdef_list|p|0|0|`PARTITION.rcv_attdef_list`|`PGM_XT_PARTITION_t.rcv_attdef_list`|not maintained|
+|PARTITION.xmt_pmark|p|0|0|`PARTITION.xmt_pmark`|`PGM_XT_PARTITION_t.xmt_pmark`|not maintained|
+|PARTITION.xmt_version|d|0|0|`PARTITION.xmt_version`|`PGM_XT_PARTITION_t.xmt_version`|not maintained|
+|PARTITION.thread_locked|l|0|0|`PARTITION.thread_locked`|`PGM_XT_PARTITION_t.thread_locked`|not maintained|
+|PARTITION.thread_queue|q|0|0|`PARTITION.thread_queue`|`PGM_XT_PARTITION_t.thread_queue`|not maintained|
 |PMARK.preceding|p|1|0|`PMARK.preceding`|`PGM_XT_PMARK_t.preceding`|encode+decode|
 |PMARK.first_following|p|1|0|`PMARK.first_following`|`PGM_XT_PMARK_t.first_following`|encode+decode|
 |PMARK.next_sibling|p|1|0|`PMARK.next_sibling`|`PGM_XT_PMARK_t.next_sibling`|encode+decode|
 |PMARK.prev_sibling|p|1|0|`PMARK.prev_sibling`|`PGM_XT_PMARK_t.prev_sibling`|encode+decode|
-|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|Unavailable validation|
-|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|Unavailable validation|
-|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|Unavailable validation|
+|PMARK.del_nolog|p|0|0|`PMARK.del_nolog`|`PGM_XT_PMARK_t.del_nolog`|not maintained|
+|PMARK.mark_use_count|d|0|0|`PMARK.mark_use_count`|`PGM_XT_PMARK_t.mark_use_count`|not maintained|
+|PMARK.new_at_mark|t|0|0|`PMARK.new_at_mark`|`PGM_XT_PMARK_t.new_at_mark`|not maintained|
 |PMARK.n_new_nodes|d|1|0|`PMARK.n_new_nodes`|`PGM_XT_PMARK_t.n_new_nodes`|encode+decode|
 |PMARK.n_del_nodes|d|1|0|`PMARK.n_del_nodes`|`PGM_XT_PMARK_t.n_del_nodes`|encode+decode|
 |PMARK.n_copy_mod_nodes|d|1|0|`PMARK.n_copy_mod_nodes`|`PGM_XT_PMARK_t.n_copy_mod_nodes`|encode+decode|
-|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|Unavailable validation|
+|PMARK.n_unloaded_nodes|d|0|0|`PMARK.n_unloaded_nodes`|`PGM_XT_PMARK_t.n_unloaded_nodes`|not maintained|
 |PMARK.delta_key|d|1|0|`PMARK.delta_key`|`PGM_XT_PMARK_t.delta_key`|encode+decode|
 |PMARK.delta_is_forward|l|1|0|`PMARK.delta_is_forward`|`PGM_XT_PMARK_t.delta_is_forward`|encode+decode|
 |PMARK.id|d|1|0|`PMARK.id`|`PGM_XT_PMARK_t.id`|encode+decode|
@@ -23860,11 +23860,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |ASSEMBLY.key|p|1|0|`ASSEMBLY.key`|`PGM_XT_ASSEMBLY_t.key`|encode+decode|
 |ASSEMBLY.res_size|f|1|0|`ASSEMBLY.res_size`|`PGM_XT_ASSEMBLY_t.res_size`|encode+decode|
 |ASSEMBLY.res_linear|f|1|0|`ASSEMBLY.res_linear`|`PGM_XT_ASSEMBLY_t.res_linear`|encode+decode|
-|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|Unavailable validation|
+|ASSEMBLY.assembly_box|b|0|0|`ASSEMBLY.assembly_box`|`PGM_XT_ASSEMBLY_t.assembly_box`|not maintained|
 |ASSEMBLY.ref_instance|p|1|0|`ASSEMBLY.ref_instance`|`PGM_XT_ASSEMBLY_t.ref_instance`|encode+decode|
 |ASSEMBLY.next|p|1|0|`ASSEMBLY.next`|`PGM_XT_ASSEMBLY_t.next`|encode+decode|
 |ASSEMBLY.previous|p|1|0|`ASSEMBLY.previous`|`PGM_XT_ASSEMBLY_t.previous`|encode+decode|
-|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|Unavailable validation|
+|ASSEMBLY.assembly_box_tightness|c|0|0|`ASSEMBLY.assembly_box_tightness`|`PGM_XT_ASSEMBLY_t.assembly_box_tightness`|not maintained|
 |ASSEMBLY.state|u|1|0|`ASSEMBLY.state`|`PGM_XT_ASSEMBLY_t.state`|encode+decode|
 |ASSEMBLY.owner|p|1|0|`ASSEMBLY.owner`|`PGM_XT_ASSEMBLY_t.owner`|encode+decode|
 |ASSEMBLY.type|u|1|0|`ASSEMBLY.type`|`PGM_XT_ASSEMBLY_t.type`|encode+decode|
@@ -23883,7 +23883,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |BODY.highest_node_id|d|1|0|`BODY.highest_node_id`|`PGM_XT_BODY_t.highest_node_id`|encode+decode|
 |BODY.attributes_features|p|1|0|`BODY.attributes_features`|`PGM_XT_BODY_t.attributes_features`|encode+decode|
 |BODY.attribute_chains|p|1|0|`BODY.attribute_chains`|`PGM_XT_BODY_t.attribute_chains`|encode+decode|
-|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|Unavailable validation|
+|BODY.list|p|0|0|`BODY.list`|`PGM_XT_BODY_t.list`|not maintained|
 |BODY.lattice|p|1|0|`BODY.lattice`|`PGM_XT_BODY_t.lattice`|encode+decode|
 |BODY.surface|p|1|0|`BODY.surface`|`PGM_XT_BODY_t.surface`|encode+decode|
 |BODY.curve|p|1|0|`BODY.curve`|`PGM_XT_BODY_t.curve`|encode+decode|
@@ -23893,11 +23893,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |BODY.key|p|1|0|`BODY.key`|`PGM_XT_BODY_t.key`|encode+decode|
 |BODY.res_size|f|1|0|`BODY.res_size`|`PGM_XT_BODY_t.res_size`|encode+decode|
 |BODY.res_linear|f|1|0|`BODY.res_linear`|`PGM_XT_BODY_t.res_linear`|encode+decode|
-|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|Unavailable validation|
+|BODY.body_box|b|0|0|`BODY.body_box`|`PGM_XT_BODY_t.body_box`|not maintained|
 |BODY.ref_instance|p|1|0|`BODY.ref_instance`|`PGM_XT_BODY_t.ref_instance`|encode+decode|
 |BODY.next|p|1|0|`BODY.next`|`PGM_XT_BODY_t.next`|encode+decode|
 |BODY.previous|p|1|0|`BODY.previous`|`PGM_XT_BODY_t.previous`|encode+decode|
-|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|Unavailable validation|
+|BODY.body_box_tightness|c|0|0|`BODY.body_box_tightness`|`PGM_XT_BODY_t.body_box_tightness`|not maintained|
 |BODY.state|u|1|0|`BODY.state`|`PGM_XT_BODY_t.state`|encode+decode|
 |BODY.owner|p|1|0|`BODY.owner`|`PGM_XT_BODY_t.owner`|encode+decode|
 |BODY.body_type|u|1|0|`BODY.body_type`|`PGM_XT_BODY_t.body_type`|encode+decode|
@@ -23918,7 +23918,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |BODY.schema_embedding_map|p|1|0|`BODY.schema_embedding_map`|`PGM_XT_BODY_t.schema_embedding_map`|encode+decode|
 |BODY.child|p|1|0|`BODY.child`|`PGM_XT_BODY_t.child`|encode+decode|
 |BODY.lowest_node_id|d|1|0|`BODY.lowest_node_id`|`PGM_XT_BODY_t.lowest_node_id`|encode+decode|
-|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|Unavailable validation|
+|BODY.data|p|0|0|`BODY.data`|`PGM_XT_BODY_t.data`|not maintained|
 |BODY.mesh_offset_data|p|1|0|`BODY.mesh_offset_data`|`PGM_XT_BODY_t.mesh_offset_data`|encode+decode|
 |SHELL.node_id|d|1|0|`SHELL.node_id`|`PGM_XT_SHELL_t.node_id`|encode+decode|
 |SHELL.attributes_features|p|1|0|`SHELL.attributes_features`|`PGM_XT_SHELL_t.attributes_features`|encode+decode|
@@ -23931,7 +23931,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |SHELL.front_face|p|1|0|`SHELL.front_face`|`PGM_XT_SHELL_t.front_face`|encode+decode|
 |FACE.node_id|d|1|0|`FACE.node_id`|`PGM_XT_FACE_t.node_id`|encode+decode|
 |FACE.attributes_features|p|1|0|`FACE.attributes_features`|`PGM_XT_FACE_t.attributes_features`|encode+decode|
-|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|Unavailable validation|
+|FACE.face_box|b|0|0|`FACE.face_box`|`PGM_XT_FACE_t.face_box`|not maintained|
 |FACE.tolerance|f|1|0|`FACE.tolerance`|`PGM_XT_FACE_t.tolerance`|encode+decode|
 |FACE.next|p|1|0|`FACE.next`|`PGM_XT_FACE_t.next`|encode+decode|
 |FACE.previous|p|1|0|`FACE.previous`|`PGM_XT_FACE_t.previous`|encode+decode|
@@ -23939,10 +23939,10 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |FACE.shell|p|1|0|`FACE.shell`|`PGM_XT_FACE_t.shell`|encode+decode|
 |FACE.surface|p|1|0|`FACE.surface`|`PGM_XT_FACE_t.surface`|encode+decode|
 |FACE.sense|c|1|0|`FACE.sense`|`PGM_XT_FACE_t.sense`|encode+decode|
-|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|Unavailable validation|
-|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|Unavailable validation|
-|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|Unavailable validation|
-|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|Unavailable validation|
+|FACE.type|c|0|0|`FACE.type`|`PGM_XT_FACE_t.type`|not maintained|
+|FACE.face_box_tightness|c|0|0|`FACE.face_box_tightness`|`PGM_XT_FACE_t.face_box_tightness`|not maintained|
+|FACE.u_int|i|0|0|`FACE.u_int`|`PGM_XT_FACE_t.u_int`|not maintained|
+|FACE.v_int|i|0|0|`FACE.v_int`|`PGM_XT_FACE_t.v_int`|not maintained|
 |FACE.next_on_surface|p|1|0|`FACE.next_on_surface`|`PGM_XT_FACE_t.next_on_surface`|encode+decode|
 |FACE.previous_on_surface|p|1|0|`FACE.previous_on_surface`|`PGM_XT_FACE_t.previous_on_surface`|encode+decode|
 |FACE.next_front|p|1|0|`FACE.next_front`|`PGM_XT_FACE_t.next_front`|encode+decode|
@@ -23953,13 +23953,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |LOOP.halfedge|p|1|0|`LOOP.halfedge`|`PGM_XT_LOOP_t.halfedge`|encode+decode|
 |LOOP.face|p|1|0|`LOOP.face`|`PGM_XT_LOOP_t.face`|encode+decode|
 |LOOP.next|p|1|0|`LOOP.next`|`PGM_XT_LOOP_t.next`|encode+decode|
-|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|Unavailable validation|
-|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|Unavailable validation|
+|LOOP.type|c|0|0|`LOOP.type`|`PGM_XT_LOOP_t.type`|not maintained|
+|LOOP.pbox|p|0|0|`LOOP.pbox`|`PGM_XT_LOOP_t.pbox`|not maintained|
 |EDGE.node_id|d|1|0|`EDGE.node_id`|`PGM_XT_EDGE_t.node_id`|encode+decode|
 |EDGE.attributes_features|p|1|0|`EDGE.attributes_features`|`PGM_XT_EDGE_t.attributes_features`|encode+decode|
-|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|Unavailable validation|
+|EDGE.edge_box|b|0|0|`EDGE.edge_box`|`PGM_XT_EDGE_t.edge_box`|not maintained|
 |EDGE.tolerance|f|1|0|`EDGE.tolerance`|`PGM_XT_EDGE_t.tolerance`|encode+decode|
-|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|Unavailable validation|
+|EDGE.edge_box_tightness|c|0|0|`EDGE.edge_box_tightness`|`PGM_XT_EDGE_t.edge_box_tightness`|not maintained|
 |EDGE.halfedge|p|1|0|`EDGE.halfedge`|`PGM_XT_EDGE_t.halfedge`|encode+decode|
 |EDGE.previous|p|1|0|`EDGE.previous`|`PGM_XT_EDGE_t.previous`|encode+decode|
 |EDGE.next|p|1|0|`EDGE.next`|`PGM_XT_EDGE_t.next`|encode+decode|
@@ -23967,8 +23967,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |EDGE.next_on_curve|p|1|0|`EDGE.next_on_curve`|`PGM_XT_EDGE_t.next_on_curve`|encode+decode|
 |EDGE.previous_on_curve|p|1|0|`EDGE.previous_on_curve`|`PGM_XT_EDGE_t.previous_on_curve`|encode+decode|
 |EDGE.owner|p|1|0|`EDGE.owner`|`PGM_XT_EDGE_t.owner`|encode+decode|
-|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|Unavailable validation|
-|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|Unavailable validation|
+|EDGE.data|p|0|0|`EDGE.data`|`PGM_XT_EDGE_t.data`|not maintained|
+|HALFEDGE.node_id|d|0|0|`HALFEDGE.node_id`|`PGM_XT_HALFEDGE_t.node_id`|not maintained|
 |HALFEDGE.attributes_features|p|1|0|`HALFEDGE.attributes_features`|`PGM_XT_HALFEDGE_t.attributes_features`|encode+decode|
 |HALFEDGE.loop|p|1|0|`HALFEDGE.loop`|`PGM_XT_HALFEDGE_t.loop`|encode+decode|
 |HALFEDGE.forward|p|1|0|`HALFEDGE.forward`|`PGM_XT_HALFEDGE_t.forward`|encode+decode|
@@ -23977,9 +23977,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |HALFEDGE.other|p|1|0|`HALFEDGE.other`|`PGM_XT_HALFEDGE_t.other`|encode+decode|
 |HALFEDGE.edge|p|1|0|`HALFEDGE.edge`|`PGM_XT_HALFEDGE_t.edge`|encode+decode|
 |HALFEDGE.curve|p|1|0|`HALFEDGE.curve`|`PGM_XT_HALFEDGE_t.curve`|encode+decode|
-|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|Unavailable validation|
+|HALFEDGE.pbox|p|0|0|`HALFEDGE.pbox`|`PGM_XT_HALFEDGE_t.pbox`|not maintained|
 |HALFEDGE.next_at_vx|p|1|0|`HALFEDGE.next_at_vx`|`PGM_XT_HALFEDGE_t.next_at_vx`|encode+decode|
-|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|Unavailable validation|
+|HALFEDGE.polyline|p|0|0|`HALFEDGE.polyline`|`PGM_XT_HALFEDGE_t.polyline`|not maintained|
 |HALFEDGE.sense|c|1|0|`HALFEDGE.sense`|`PGM_XT_HALFEDGE_t.sense`|encode+decode|
 |VERTEX.node_id|d|1|0|`VERTEX.node_id`|`PGM_XT_VERTEX_t.node_id`|encode+decode|
 |VERTEX.attributes_features|p|1|0|`VERTEX.attributes_features`|`PGM_XT_VERTEX_t.attributes_features`|encode+decode|
@@ -24100,7 +24100,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |INTERSECTION.chart|p|1|0|`INTERSECTION.chart`|`PGM_XT_INTERSECTION_t.chart`|encode+decode|
 |INTERSECTION.start|p|1|0|`INTERSECTION.start`|`PGM_XT_INTERSECTION_t.start`|encode+decode|
 |INTERSECTION.end|p|1|0|`INTERSECTION.end`|`PGM_XT_INTERSECTION_t.end`|encode+decode|
-|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|Unavailable validation|
+|INTERSECTION.scale|f|0|0|`INTERSECTION.scale`|`PGM_XT_INTERSECTION_t.scale`|not maintained|
 |INTERSECTION.intersection_data|p|1|0|`INTERSECTION.intersection_data`|`PGM_XT_INTERSECTION_t.intersection_data`|encode+decode|
 |SILHOUETTE.node_id|d|1|0|`SILHOUETTE.node_id`|`PGM_XT_SILHOUETTE_t.node_id`|encode+decode|
 |SILHOUETTE.attributes_features|p|1|0|`SILHOUETTE.attributes_features`|`PGM_XT_SILHOUETTE_t.attributes_features`|encode+decode|
@@ -24118,19 +24118,19 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |CHART.base_parameter|f|1|0|`CHART.base_parameter`|`PGM_XT_CHART_t.base_parameter`|encode+decode|
 |CHART.base_scale|f|1|0|`CHART.base_scale`|`PGM_XT_CHART_t.base_scale`|encode+decode|
 |CHART.chart_count|d|1|0|`CHART.chart_count`|`PGM_XT_CHART_t.chart_count`|encode+decode|
-|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|Unavailable validation|
+|CHART.extended_chart_count|d|0|0|`CHART.extended_chart_count`|`PGM_XT_CHART_t.extended_chart_count`|not maintained|
 |CHART.chordal_error|f|1|0|`CHART.chordal_error`|`PGM_XT_CHART_t.chordal_error`|encode+decode|
 |CHART.angular_error|f|1|0|`CHART.angular_error`|`PGM_XT_CHART_t.angular_error`|encode+decode|
 |CHART.parameter_error|f|1|2|`CHART.parameter_error`|`PGM_XT_CHART_t.parameter_error`|encode+decode|
-|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|Unavailable validation|
-|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|Unavailable validation|
+|CHART.extra_hvecs|p|0|0|`CHART.extra_hvecs`|`PGM_XT_CHART_t.extra_hvecs`|not maintained|
+|CHART.extended_chart_order|p|0|0|`CHART.extended_chart_order`|`PGM_XT_CHART_t.extended_chart_order`|not maintained|
 |CHART.hvec|h|1|1|`CHART.hvec`|`PGM_XT_CHART_t.hvec`|encode+decode|
 |LIMIT.type|c|1|0|`LIMIT.type`|`PGM_XT_LIMIT_t.type`|encode+decode|
 |LIMIT.term_use|c|1|0|`LIMIT.term_use`|`PGM_XT_LIMIT_t.term_use`|encode+decode|
 |LIMIT.hvec|h|1|1|`LIMIT.hvec`|`PGM_XT_LIMIT_t.hvec`|encode+decode|
-|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|Unavailable validation|
+|BASIC_SEGMENT.segment_box|b|0|0|`BASIC_SEGMENT.segment_box`|`PGM_XT_BASIC_SEGMENT_t.segment_box`|not maintained|
 |BASIC_SEGMENT.t_length|f|1|0|`BASIC_SEGMENT.t_length`|`PGM_XT_BASIC_SEGMENT_t.t_length`|encode+decode|
-|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|Unavailable validation|
+|BASIC_SEGMENT.hull|p|0|0|`BASIC_SEGMENT.hull`|`PGM_XT_BASIC_SEGMENT_t.hull`|not maintained|
 |BASIC_SEGMENT.bezier_vertices|f|1|1|`BASIC_SEGMENT.bezier_vertices`|`PGM_XT_BASIC_SEGMENT_t.bezier_vertices`|encode+decode|
 |BSPLINE_CURVE.knot_vector|p|1|0|`BSPLINE_CURVE.knot_vector`|`PGM_XT_BSPLINE_CURVE_t.knot_vector`|encode+decode|
 |BSPLINE_CURVE.vertex_dimension|n|1|0|`BSPLINE_CURVE.vertex_dimension`|`PGM_XT_BSPLINE_CURVE_t.vertex_dimension`|encode+decode|
@@ -24257,8 +24257,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |BLENDED_EDGE.boundary|p|1|2|`BLENDED_EDGE.boundary`|`PGM_XT_BLENDED_EDGE_t.boundary`|encode+decode|
 |BLENDED_EDGE.start|p|1|0|`BLENDED_EDGE.start`|`PGM_XT_BLENDED_EDGE_t.start`|encode+decode|
 |BLENDED_EDGE.end|p|1|0|`BLENDED_EDGE.end`|`PGM_XT_BLENDED_EDGE_t.end`|encode+decode|
-|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|Unavailable validation|
-|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|Unavailable validation|
+|BLENDED_EDGE.approx_spine|p|0|0|`BLENDED_EDGE.approx_spine`|`PGM_XT_BLENDED_EDGE_t.approx_spine`|not maintained|
+|BLENDED_EDGE.approx_spine_ctol|f|0|0|`BLENDED_EDGE.approx_spine_ctol`|`PGM_XT_BLENDED_EDGE_t.approx_spine_ctol`|not maintained|
 |BLENDED_VERTEX.node_id|d|1|0|`BLENDED_VERTEX.node_id`|`PGM_XT_BLENDED_VERTEX_t.node_id`|encode+decode|
 |BLENDED_VERTEX.attributes_features|p|1|0|`BLENDED_VERTEX.attributes_features`|`PGM_XT_BLENDED_VERTEX_t.attributes_features`|encode+decode|
 |BLENDED_VERTEX.owner|p|1|0|`BLENDED_VERTEX.owner`|`PGM_XT_BLENDED_VERTEX_t.owner`|encode+decode|
@@ -24308,13 +24308,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |OFFSET_SURF.surface|p|1|0|`OFFSET_SURF.surface`|`PGM_XT_OFFSET_SURF_t.surface`|encode+decode|
 |OFFSET_SURF.offset|f|1|0|`OFFSET_SURF.offset`|`PGM_XT_OFFSET_SURF_t.offset`|encode+decode|
 |OFFSET_SURF.scale|f|1|0|`OFFSET_SURF.scale`|`PGM_XT_OFFSET_SURF_t.scale`|encode+decode|
-|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|Unavailable validation|
-|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|Unavailable validation|
-|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|Unavailable validation|
-|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|Unavailable validation|
-|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|Unavailable validation|
-|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|Unavailable validation|
-|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|Unavailable validation|
+|OFFSET_SURF.uint|i|0|0|`OFFSET_SURF.uint`|`PGM_XT_OFFSET_SURF_t.uint`|not maintained|
+|OFFSET_SURF.vint|i|0|0|`OFFSET_SURF.vint`|`PGM_XT_OFFSET_SURF_t.vint`|not maintained|
+|OFFSET_SURF.u_start|c|0|0|`OFFSET_SURF.u_start`|`PGM_XT_OFFSET_SURF_t.u_start`|not maintained|
+|OFFSET_SURF.u_end|c|0|0|`OFFSET_SURF.u_end`|`PGM_XT_OFFSET_SURF_t.u_end`|not maintained|
+|OFFSET_SURF.v_start|c|0|0|`OFFSET_SURF.v_start`|`PGM_XT_OFFSET_SURF_t.v_start`|not maintained|
+|OFFSET_SURF.v_end|c|0|0|`OFFSET_SURF.v_end`|`PGM_XT_OFFSET_SURF_t.v_end`|not maintained|
+|OFFSET_SURF.tree|p|0|0|`OFFSET_SURF.tree`|`PGM_XT_OFFSET_SURF_t.tree`|not maintained|
 |PARASURF.node_id|d|1|0|`PARASURF.node_id`|`PGM_XT_PARASURF_t.node_id`|encode+decode|
 |PARASURF.attributes_features|p|1|0|`PARASURF.attributes_features`|`PGM_XT_PARASURF_t.attributes_features`|encode+decode|
 |PARASURF.owner|p|1|0|`PARASURF.owner`|`PGM_XT_PARASURF_t.owner`|encode+decode|
@@ -24348,11 +24348,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |SILH_SURF.from_infinity|l|1|0|`SILH_SURF.from_infinity`|`PGM_XT_SILH_SURF_t.from_infinity`|encode+decode|
 |SILH_SURF.surface|p|1|0|`SILH_SURF.surface`|`PGM_XT_SILH_SURF_t.surface`|encode+decode|
 |SILH_SURF.eye|v|1|0|`SILH_SURF.eye`|`PGM_XT_SILH_SURF_t.eye`|encode+decode|
-|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|Unavailable validation|
+|BASIC_PATCH.patch_box|b|0|0|`BASIC_PATCH.patch_box`|`PGM_XT_BASIC_PATCH_t.patch_box`|not maintained|
 |BASIC_PATCH.u_length|f|1|0|`BASIC_PATCH.u_length`|`PGM_XT_BASIC_PATCH_t.u_length`|encode+decode|
 |BASIC_PATCH.v_length|f|1|0|`BASIC_PATCH.v_length`|`PGM_XT_BASIC_PATCH_t.v_length`|encode+decode|
-|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|Unavailable validation|
-|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|Unavailable validation|
+|BASIC_PATCH.hull|p|0|0|`BASIC_PATCH.hull`|`PGM_XT_BASIC_PATCH_t.hull`|not maintained|
+|BASIC_PATCH.scale|f|0|0|`BASIC_PATCH.scale`|`PGM_XT_BASIC_PATCH_t.scale`|not maintained|
 |BASIC_PATCH.bezier_vertices|f|1|1|`BASIC_PATCH.bezier_vertices`|`PGM_XT_BASIC_PATCH_t.bezier_vertices`|encode+decode|
 |HULL.dimension|n|1|0|`HULL.dimension`|`PGM_XT_HULL_t.dimension`|encode+decode|
 |HULL.plane_count|n|1|0|`HULL.plane_count`|`PGM_XT_HULL_t.plane_count`|encode+decode|
@@ -24401,9 +24401,9 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |CPS.sense|c|1|0|`CPS.sense`|`PGM_XT_CPS_t.sense`|encode+decode|
 |CPS.bezier|p|1|0|`CPS.bezier`|`PGM_XT_CPS_t.bezier`|encode+decode|
 |CPS.bspline|p|1|0|`CPS.bspline`|`PGM_XT_CPS_t.bspline`|encode+decode|
-|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|Unavailable validation|
-|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|Unavailable validation|
-|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|Unavailable validation|
+|CPS.props|p|0|0|`CPS.props`|`PGM_XT_CPS_t.props`|not maintained|
+|CPS.u_parameter_scale|f|0|0|`CPS.u_parameter_scale`|`PGM_XT_CPS_t.u_parameter_scale`|not maintained|
+|CPS.v_parameter_scale|f|0|0|`CPS.v_parameter_scale`|`PGM_XT_CPS_t.v_parameter_scale`|not maintained|
 |LIST.node_id|d|1|0|`LIST.node_id`|`PGM_XT_LIST_t.node_id`|encode+decode|
 |LIST.list_type|u|1|0|`LIST.list_type`|`PGM_XT_LIST_t.list_type`|encode+decode|
 |LIST.notransmit|l|1|0|`LIST.notransmit`|`PGM_XT_LIST_t.notransmit`|encode+decode|
@@ -24412,20 +24412,20 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |LIST.previous|p|1|0|`LIST.previous`|`PGM_XT_LIST_t.previous`|encode+decode|
 |LIST.list_length|d|1|0|`LIST.list_length`|`PGM_XT_LIST_t.list_length`|encode+decode|
 |LIST.block_length|d|1|0|`LIST.block_length`|`PGM_XT_LIST_t.block_length`|encode+decode|
-|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|Unavailable validation|
+|LIST.size_of_entry|d|0|0|`LIST.size_of_entry`|`PGM_XT_LIST_t.size_of_entry`|not maintained|
 |LIST.finger_index|d|1|0|`LIST.finger_index`|`PGM_XT_LIST_t.finger_index`|encode+decode|
 |LIST.finger_block|p|1|0|`LIST.finger_block`|`PGM_XT_LIST_t.finger_block`|encode+decode|
 |LIST.list_block|p|1|0|`LIST.list_block`|`PGM_XT_LIST_t.list_block`|encode+decode|
 |REAL_LIS_BLOCK.n_entries|d|1|0|`REAL_LIS_BLOCK.n_entries`|`PGM_XT_REAL_LIS_BLOCK_t.n_entries`|encode+decode|
-|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|REAL_LIS_BLOCK.dummy_map_offset|d|0|0|`REAL_LIS_BLOCK.dummy_map_offset`|`PGM_XT_REAL_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |REAL_LIS_BLOCK.next_block|p|1|0|`REAL_LIS_BLOCK.next_block`|`PGM_XT_REAL_LIS_BLOCK_t.next_block`|encode+decode|
 |REAL_LIS_BLOCK.entries|f|1|1|`REAL_LIS_BLOCK.entries`|`PGM_XT_REAL_LIS_BLOCK_t.entries`|encode+decode|
 |INTEGER_LIS_BLOCK.n_entries|d|1|0|`INTEGER_LIS_BLOCK.n_entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.n_entries`|encode+decode|
-|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|INTEGER_LIS_BLOCK.dummy_map_offset|d|0|0|`INTEGER_LIS_BLOCK.dummy_map_offset`|`PGM_XT_INTEGER_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |INTEGER_LIS_BLOCK.next_block|p|1|0|`INTEGER_LIS_BLOCK.next_block`|`PGM_XT_INTEGER_LIS_BLOCK_t.next_block`|encode+decode|
 |INTEGER_LIS_BLOCK.entries|d|1|1|`INTEGER_LIS_BLOCK.entries`|`PGM_XT_INTEGER_LIS_BLOCK_t.entries`|encode+decode|
 |TAG_LIS_BLOCK.n_entries|d|1|0|`TAG_LIS_BLOCK.n_entries`|`PGM_XT_TAG_LIS_BLOCK_t.n_entries`|encode+decode|
-|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|Unavailable validation|
+|TAG_LIS_BLOCK.dummy_map_offset|d|0|0|`TAG_LIS_BLOCK.dummy_map_offset`|`PGM_XT_TAG_LIS_BLOCK_t.dummy_map_offset`|not maintained|
 |TAG_LIS_BLOCK.next_block|p|1|0|`TAG_LIS_BLOCK.next_block`|`PGM_XT_TAG_LIS_BLOCK_t.next_block`|encode+decode|
 |TAG_LIS_BLOCK.entries|t|1|1|`TAG_LIS_BLOCK.entries`|`PGM_XT_TAG_LIS_BLOCK_t.entries`|encode+decode|
 |POINTER_LIS_BLOCK.n_entries|d|1|0|`POINTER_LIS_BLOCK.n_entries`|`PGM_XT_POINTER_LIS_BLOCK_t.n_entries`|encode+decode|
@@ -24462,7 +24462,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |ATTRIB_DEF.identifier|p|1|0|`ATTRIB_DEF.identifier`|`PGM_XT_ATTRIB_DEF_t.identifier`|encode+decode|
 |ATTRIB_DEF.type_id|d|1|0|`ATTRIB_DEF.type_id`|`PGM_XT_ATTRIB_DEF_t.type_id`|encode+decode|
 |ATTRIB_DEF.actions|u|1|8|`ATTRIB_DEF.actions`|`PGM_XT_ATTRIB_DEF_t.actions`|encode+decode|
-|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|Unavailable validation|
+|ATTRIB_DEF.callbacks|p|0|0|`ATTRIB_DEF.callbacks`|`PGM_XT_ATTRIB_DEF_t.callbacks`|not maintained|
 |ATTRIB_DEF.field_names|p|1|0|`ATTRIB_DEF.field_names`|`PGM_XT_ATTRIB_DEF_t.field_names`|encode+decode|
 |ATTRIB_DEF.legal_owners|l|1|17|`ATTRIB_DEF.legal_owners`|`PGM_XT_ATTRIB_DEF_t.legal_owners`|encode+decode|
 |ATTRIB_DEF.fields|u|1|1|`ATTRIB_DEF.fields`|`PGM_XT_ATTRIB_DEF_t.fields`|encode+decode|
@@ -24496,8 +24496,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |MEMBER_OF_FEATURE.previous|p|1|0|`MEMBER_OF_FEATURE.previous`|`PGM_XT_MEMBER_OF_FEATURE_t.previous`|encode+decode|
 |MEMBER_OF_FEATURE.next_member|p|1|0|`MEMBER_OF_FEATURE.next_member`|`PGM_XT_MEMBER_OF_FEATURE_t.next_member`|encode+decode|
 |MEMBER_OF_FEATURE.previous_member|p|1|0|`MEMBER_OF_FEATURE.previous_member`|`PGM_XT_MEMBER_OF_FEATURE_t.previous_member`|encode+decode|
-|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|Unavailable validation|
-|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|Unavailable validation|
+|PARM_VALUES.values|f|0|1|`PARM_VALUES.values`|`PGM_XT_PARM_VALUES_t.values`|not maintained|
+|POINTER_VALUES.values|q|0|1|`POINTER_VALUES.values`|`PGM_XT_POINTER_VALUES_t.values`|not maintained|
 |SHORT_VALUES.values|n|1|1|`SHORT_VALUES.values`|`PGM_XT_SHORT_VALUES_t.values`|encode+decode|
 |BOX_VALUES.values|b|1|1|`BOX_VALUES.values`|`PGM_XT_BOX_VALUES_t.values`|encode+decode|
 |UNICODE_VALUES.values|w|1|1|`UNICODE_VALUES.values`|`PGM_XT_UNICODE_VALUES_t.values`|encode+decode|
@@ -24510,13 +24510,13 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |TRANSFORM.translation_vector|v|1|0|`TRANSFORM.translation_vector`|`PGM_XT_TRANSFORM_t.translation_vector`|encode+decode|
 |TRANSFORM.scale|f|1|0|`TRANSFORM.scale`|`PGM_XT_TRANSFORM_t.scale`|encode+decode|
 |TRANSFORM.flag|d|1|0|`TRANSFORM.flag`|`PGM_XT_TRANSFORM_t.flag`|encode+decode|
-|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|Unavailable validation|
+|TRANSFORM.max_scale|f|0|0|`TRANSFORM.max_scale`|`PGM_XT_TRANSFORM_t.max_scale`|not maintained|
 |TRANSFORM.perspective_vector|v|1|0|`TRANSFORM.perspective_vector`|`PGM_XT_TRANSFORM_t.perspective_vector`|encode+decode|
 |TRANSFORM.precision|p|1|0|`TRANSFORM.precision`|`PGM_XT_TRANSFORM_t.precision`|encode+decode|
 |WORLD.assembly|p|1|0|`WORLD.assembly`|`PGM_XT_WORLD_t.assembly`|encode+decode|
 |WORLD.attribute|p|1|0|`WORLD.attribute`|`PGM_XT_WORLD_t.attribute`|encode+decode|
 |WORLD.body|p|1|0|`WORLD.body`|`PGM_XT_WORLD_t.body`|encode+decode|
-|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|Unavailable validation|
+|WORLD.list|p|0|0|`WORLD.list`|`PGM_XT_WORLD_t.list`|not maintained|
 |WORLD.transform|p|1|0|`WORLD.transform`|`PGM_XT_WORLD_t.transform`|encode+decode|
 |WORLD.surface|p|1|0|`WORLD.surface`|`PGM_XT_WORLD_t.surface`|encode+decode|
 |WORLD.curve|p|1|0|`WORLD.curve`|`PGM_XT_WORLD_t.curve`|encode+decode|
@@ -24529,7 +24529,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |WORLD.attdef_list|p|1|0|`WORLD.attdef_list`|`PGM_XT_WORLD_t.attdef_list`|encode+decode|
 |WORLD.highest_id|d|1|0|`WORLD.highest_id`|`PGM_XT_WORLD_t.highest_id`|encode+decode|
 |WORLD.current_id|d|1|0|`WORLD.current_id`|`PGM_XT_WORLD_t.current_id`|encode+decode|
-|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|Unavailable validation|
+|WORLD.appitem|p|0|0|`WORLD.appitem`|`PGM_XT_WORLD_t.appitem`|not maintained|
 |WORLD.index_map_offset|d|1|0|`WORLD.index_map_offset`|`PGM_XT_WORLD_t.index_map_offset`|encode+decode|
 |WORLD.index_map|p|1|0|`WORLD.index_map`|`PGM_XT_WORLD_t.index_map`|encode+decode|
 |WORLD.schema_embedding_map|p|1|0|`WORLD.schema_embedding_map`|`PGM_XT_WORLD_t.schema_embedding_map`|encode+decode|
@@ -24546,7 +24546,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |BEZIER_SURF.u_order|n|1|0|`BEZIER_SURF.u_order`|`PGM_XT_BEZIER_SURF_t.u_order`|encode+decode|
 |BEZIER_SURF.v_order|n|1|0|`BEZIER_SURF.v_order`|`PGM_XT_BEZIER_SURF_t.v_order`|encode+decode|
 |BEZIER_SURF.check|c|1|0|`BEZIER_SURF.check`|`PGM_XT_BEZIER_SURF_t.check`|encode+decode|
-|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|Unavailable validation|
+|BEZIER_SURF.unsanitised|p|0|0|`BEZIER_SURF.unsanitised`|`PGM_XT_BEZIER_SURF_t.unsanitised`|not maintained|
 |BEZIER_SURF.patch|p|1|1|`BEZIER_SURF.patch`|`PGM_XT_BEZIER_SURF_t.patch`|encode+decode|
 |SUPER_PATCH.split|f|1|0|`SUPER_PATCH.split`|`PGM_XT_SUPER_PATCH_t.split`|encode+decode|
 |SUPER_PATCH.split_dir|c|1|0|`SUPER_PATCH.split_dir`|`PGM_XT_SUPER_PATCH_t.split_dir`|encode+decode|
@@ -24627,7 +24627,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |OBSOLETE_MESH.previous|p|1|0|`OBSOLETE_MESH.previous`|`PGM_XT_OBSOLETE_MESH_t.previous`|encode+decode|
 |OBSOLETE_MESH.geometric_owner|p|1|0|`OBSOLETE_MESH.geometric_owner`|`PGM_XT_OBSOLETE_MESH_t.geometric_owner`|encode+decode|
 |OBSOLETE_MESH.sense|c|1|0|`OBSOLETE_MESH.sense`|`PGM_XT_OBSOLETE_MESH_t.sense`|encode+decode|
-|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|Unavailable validation|
+|OBSOLETE_MESH.imesh|q|0|0|`OBSOLETE_MESH.imesh`|`PGM_XT_OBSOLETE_MESH_t.imesh`|not maintained|
 |OBSOLETE_MESH.frustrum|d|1|0|`OBSOLETE_MESH.frustrum`|`PGM_XT_OBSOLETE_MESH_t.frustrum`|encode+decode|
 |OBSOLETE_MESH.key|p|1|0|`OBSOLETE_MESH.key`|`PGM_XT_OBSOLETE_MESH_t.key`|encode+decode|
 |OBSOLETE_MESH.ukey|p|1|0|`OBSOLETE_MESH.ukey`|`PGM_XT_OBSOLETE_MESH_t.ukey`|encode+decode|
@@ -24635,14 +24635,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |OBSOLETE_MESH.index_in_file|d|1|0|`OBSOLETE_MESH.index_in_file`|`PGM_XT_OBSOLETE_MESH_t.index_in_file`|encode+decode|
 |OBSOLETE_MESH.transform|p|1|0|`OBSOLETE_MESH.transform`|`PGM_XT_OBSOLETE_MESH_t.transform`|encode+decode|
 |OBSOLETE_MESH.attr|p|1|0|`OBSOLETE_MESH.attr`|`PGM_XT_OBSOLETE_MESH_t.attr`|encode+decode|
-|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|Unavailable validation|
-|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|Unavailable validation|
-|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|Unavailable validation|
-|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|Unavailable validation|
+|OBSOLETE_MESH.internal_tree|p|0|0|`OBSOLETE_MESH.internal_tree`|`PGM_XT_OBSOLETE_MESH_t.internal_tree`|not maintained|
+|OBSOLETE_MESH.user_tree|p|0|0|`OBSOLETE_MESH.user_tree`|`PGM_XT_OBSOLETE_MESH_t.user_tree`|not maintained|
+|OBSOLETE_MESH.hash_list|p|0|0|`OBSOLETE_MESH.hash_list`|`PGM_XT_OBSOLETE_MESH_t.hash_list`|not maintained|
+|OBSOLETE_MESH.tolerance|f|0|0|`OBSOLETE_MESH.tolerance`|`PGM_XT_OBSOLETE_MESH_t.tolerance`|not maintained|
 |OBSOLETE_MESH.pff_imesh|p|1|0|`OBSOLETE_MESH.pff_imesh`|`PGM_XT_OBSOLETE_MESH_t.pff_imesh`|encode+decode|
-|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|Unavailable validation|
-|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|Unavailable validation|
-|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|Unavailable validation|
+|OBSOLETE_MESH.top_mesh|p|0|0|`OBSOLETE_MESH.top_mesh`|`PGM_XT_OBSOLETE_MESH_t.top_mesh`|not maintained|
+|OBSOLETE_MESH.non_manifold_vxs|c|0|0|`OBSOLETE_MESH.non_manifold_vxs`|`PGM_XT_OBSOLETE_MESH_t.non_manifold_vxs`|not maintained|
+|OBSOLETE_MESH.mesh_state|c|0|0|`OBSOLETE_MESH.mesh_state`|`PGM_XT_OBSOLETE_MESH_t.mesh_state`|not maintained|
 |OBSOLETE_MESH.psm_imesh|p|1|0|`OBSOLETE_MESH.psm_imesh`|`PGM_XT_OBSOLETE_MESH_t.psm_imesh`|encode+decode|
 |OBSOLETE_POLYLINE.node_id|d|1|0|`OBSOLETE_POLYLINE.node_id`|`PGM_XT_OBSOLETE_POLYLINE_t.node_id`|encode+decode|
 |OBSOLETE_POLYLINE.attributes_features|p|1|0|`OBSOLETE_POLYLINE.attributes_features`|`PGM_XT_OBSOLETE_POLYLINE_t.attributes_features`|encode+decode|
@@ -24661,14 +24661,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |PE_SURF.geometric_owner|p|1|0|`PE_SURF.geometric_owner`|`PGM_XT_PE_SURF_t.geometric_owner`|encode+decode|
 |PE_SURF.sense|c|1|0|`PE_SURF.sense`|`PGM_XT_PE_SURF_t.sense`|encode+decode|
 |PE_SURF.type|c|1|0|`PE_SURF.type`|`PGM_XT_PE_SURF_t.type`|encode+decode|
-|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|Unavailable validation|
-|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|Unavailable validation|
-|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|Unavailable validation|
+|PE_SURF.min_radii_curvature|f|0|2|`PE_SURF.min_radii_curvature`|`PGM_XT_PE_SURF_t.min_radii_curvature`|not maintained|
+|PE_SURF.u_parameter_scale|f|0|0|`PE_SURF.u_parameter_scale`|`PGM_XT_PE_SURF_t.u_parameter_scale`|not maintained|
+|PE_SURF.v_parameter_scale|f|0|0|`PE_SURF.v_parameter_scale`|`PGM_XT_PE_SURF_t.v_parameter_scale`|not maintained|
 |PE_SURF.data|p|1|0|`PE_SURF.data`|`PGM_XT_PE_SURF_t.data`|encode+decode|
 |PE_SURF.tf|p|1|0|`PE_SURF.tf`|`PGM_XT_PE_SURF_t.tf`|encode+decode|
-|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|Unavailable validation|
-|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|Unavailable validation|
-|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|Unavailable validation|
+|PE_SURF.props|p|0|0|`PE_SURF.props`|`PGM_XT_PE_SURF_t.props`|not maintained|
+|PE_SURF.tree|p|0|0|`PE_SURF.tree`|`PGM_XT_PE_SURF_t.tree`|not maintained|
+|PE_SURF.approx|p|0|0|`PE_SURF.approx`|`PGM_XT_PE_SURF_t.approx`|not maintained|
 |PE_SURF.internal_geom|p|1|1|`PE_SURF.internal_geom`|`PGM_XT_PE_SURF_t.internal_geom`|encode+decode|
 |INT_PE_DATA.geom_type|d|1|0|`INT_PE_DATA.geom_type`|`PGM_XT_INT_PE_DATA_t.geom_type`|encode+decode|
 |INT_PE_DATA.real_array|p|1|0|`INT_PE_DATA.real_array`|`PGM_XT_INT_PE_DATA_t.real_array`|encode+decode|
@@ -24676,7 +24676,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |EXT_PE_DATA.key|p|1|0|`EXT_PE_DATA.key`|`PGM_XT_EXT_PE_DATA_t.key`|encode+decode|
 |EXT_PE_DATA.real_array|p|1|0|`EXT_PE_DATA.real_array`|`PGM_XT_EXT_PE_DATA_t.real_array`|encode+decode|
 |EXT_PE_DATA.int_array|p|1|0|`EXT_PE_DATA.int_array`|`PGM_XT_EXT_PE_DATA_t.int_array`|encode+decode|
-|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|Unavailable validation|
+|EXT_PE_DATA.data|f|0|1|`EXT_PE_DATA.data`|`PGM_XT_EXT_PE_DATA_t.data`|not maintained|
 |SU_PARAM_PROPS.uint|i|1|0|`SU_PARAM_PROPS.uint`|`PGM_XT_SU_PARAM_PROPS_t.uint`|encode+decode|
 |SU_PARAM_PROPS.vint|i|1|0|`SU_PARAM_PROPS.vint`|`PGM_XT_SU_PARAM_PROPS_t.vint`|encode+decode|
 |SU_PARAM_PROPS.u_start|c|1|0|`SU_PARAM_PROPS.u_start`|`PGM_XT_SU_PARAM_PROPS_t.u_start`|encode+decode|
@@ -24692,27 +24692,27 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |B_SURFACE.sense|c|1|0|`B_SURFACE.sense`|`PGM_XT_B_SURFACE_t.sense`|encode+decode|
 |B_SURFACE.nurbs|p|1|0|`B_SURFACE.nurbs`|`PGM_XT_B_SURFACE_t.nurbs`|encode+decode|
 |B_SURFACE.data|p|1|0|`B_SURFACE.data`|`PGM_XT_B_SURFACE_t.data`|encode+decode|
-|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|Unavailable validation|
-|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|Unavailable validation|
-|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|Unavailable validation|
-|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|Unavailable validation|
-|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|Unavailable validation|
-|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|Unavailable validation|
-|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|Unavailable validation|
-|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|Unavailable validation|
+|SURFACE_DATA.safe_u_range|i|0|0|`SURFACE_DATA.safe_u_range`|`PGM_XT_SURFACE_DATA_t.safe_u_range`|not maintained|
+|SURFACE_DATA.safe_v_range|i|0|0|`SURFACE_DATA.safe_v_range`|`PGM_XT_SURFACE_DATA_t.safe_v_range`|not maintained|
+|SURFACE_DATA.bx|b|0|0|`SURFACE_DATA.bx`|`PGM_XT_SURFACE_DATA_t.bx`|not maintained|
+|SURFACE_DATA.scale|f|0|0|`SURFACE_DATA.scale`|`PGM_XT_SURFACE_DATA_t.scale`|not maintained|
+|SURFACE_DATA.u_parameter_scale|f|0|0|`SURFACE_DATA.u_parameter_scale`|`PGM_XT_SURFACE_DATA_t.u_parameter_scale`|not maintained|
+|SURFACE_DATA.v_parameter_scale|f|0|0|`SURFACE_DATA.v_parameter_scale`|`PGM_XT_SURFACE_DATA_t.v_parameter_scale`|not maintained|
+|SURFACE_DATA.u_tangent_half_angle|f|0|0|`SURFACE_DATA.u_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.u_tangent_half_angle`|not maintained|
+|SURFACE_DATA.v_tangent_half_angle|f|0|0|`SURFACE_DATA.v_tangent_half_angle`|`PGM_XT_SURFACE_DATA_t.v_tangent_half_angle`|not maintained|
+|SURFACE_DATA.uint|i|0|0|`SURFACE_DATA.uint`|`PGM_XT_SURFACE_DATA_t.uint`|not maintained|
+|SURFACE_DATA.vint|i|0|0|`SURFACE_DATA.vint`|`PGM_XT_SURFACE_DATA_t.vint`|not maintained|
 |SURFACE_DATA.original_uint|i|1|0|`SURFACE_DATA.original_uint`|`PGM_XT_SURFACE_DATA_t.original_uint`|encode+decode|
 |SURFACE_DATA.original_vint|i|1|0|`SURFACE_DATA.original_vint`|`PGM_XT_SURFACE_DATA_t.original_vint`|encode+decode|
 |SURFACE_DATA.extended_uint|i|1|0|`SURFACE_DATA.extended_uint`|`PGM_XT_SURFACE_DATA_t.extended_uint`|encode+decode|
 |SURFACE_DATA.extended_vint|i|1|0|`SURFACE_DATA.extended_vint`|`PGM_XT_SURFACE_DATA_t.extended_vint`|encode+decode|
-|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|Unavailable validation|
-|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|Unavailable validation|
+|SURFACE_DATA.convexity|u|0|0|`SURFACE_DATA.convexity`|`PGM_XT_SURFACE_DATA_t.convexity`|not maintained|
+|SURFACE_DATA.continuity|u|0|0|`SURFACE_DATA.continuity`|`PGM_XT_SURFACE_DATA_t.continuity`|not maintained|
 |SURFACE_DATA.self_int|u|1|0|`SURFACE_DATA.self_int`|`PGM_XT_SURFACE_DATA_t.self_int`|encode+decode|
-|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|Unavailable validation|
-|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|Unavailable validation|
-|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|Unavailable validation|
-|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|Unavailable validation|
+|SURFACE_DATA.u_start|c|0|0|`SURFACE_DATA.u_start`|`PGM_XT_SURFACE_DATA_t.u_start`|not maintained|
+|SURFACE_DATA.u_end|c|0|0|`SURFACE_DATA.u_end`|`PGM_XT_SURFACE_DATA_t.u_end`|not maintained|
+|SURFACE_DATA.v_start|c|0|0|`SURFACE_DATA.v_start`|`PGM_XT_SURFACE_DATA_t.v_start`|not maintained|
+|SURFACE_DATA.v_end|c|0|0|`SURFACE_DATA.v_end`|`PGM_XT_SURFACE_DATA_t.v_end`|not maintained|
 |SURFACE_DATA.original_u_start|c|1|0|`SURFACE_DATA.original_u_start`|`PGM_XT_SURFACE_DATA_t.original_u_start`|encode+decode|
 |SURFACE_DATA.original_u_end|c|1|0|`SURFACE_DATA.original_u_end`|`PGM_XT_SURFACE_DATA_t.original_u_end`|encode+decode|
 |SURFACE_DATA.original_v_start|c|1|0|`SURFACE_DATA.original_v_start`|`PGM_XT_SURFACE_DATA_t.original_v_start`|encode+decode|
@@ -24721,14 +24721,14 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |SURFACE_DATA.extended_u_end|c|1|0|`SURFACE_DATA.extended_u_end`|`PGM_XT_SURFACE_DATA_t.extended_u_end`|encode+decode|
 |SURFACE_DATA.extended_v_start|c|1|0|`SURFACE_DATA.extended_v_start`|`PGM_XT_SURFACE_DATA_t.extended_v_start`|encode+decode|
 |SURFACE_DATA.extended_v_end|c|1|0|`SURFACE_DATA.extended_v_end`|`PGM_XT_SURFACE_DATA_t.extended_v_end`|encode+decode|
-|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|Unavailable validation|
+|SURFACE_DATA.degeneracy_status|c|0|0|`SURFACE_DATA.degeneracy_status`|`PGM_XT_SURFACE_DATA_t.degeneracy_status`|not maintained|
 |SURFACE_DATA.analytic_form_type|c|1|0|`SURFACE_DATA.analytic_form_type`|`PGM_XT_SURFACE_DATA_t.analytic_form_type`|encode+decode|
 |SURFACE_DATA.swept_form_type|c|1|0|`SURFACE_DATA.swept_form_type`|`PGM_XT_SURFACE_DATA_t.swept_form_type`|encode+decode|
 |SURFACE_DATA.spun_form_type|c|1|0|`SURFACE_DATA.spun_form_type`|`PGM_XT_SURFACE_DATA_t.spun_form_type`|encode+decode|
 |SURFACE_DATA.blend_form_type|c|1|0|`SURFACE_DATA.blend_form_type`|`PGM_XT_SURFACE_DATA_t.blend_form_type`|encode+decode|
-|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|Unavailable validation|
-|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|Unavailable validation|
-|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|Unavailable validation|
+|SURFACE_DATA.degeneracy|p|0|0|`SURFACE_DATA.degeneracy`|`PGM_XT_SURFACE_DATA_t.degeneracy`|not maintained|
+|SURFACE_DATA.tree|p|0|0|`SURFACE_DATA.tree`|`PGM_XT_SURFACE_DATA_t.tree`|not maintained|
+|SURFACE_DATA.polynomial_patches|p|0|0|`SURFACE_DATA.polynomial_patches`|`PGM_XT_SURFACE_DATA_t.polynomial_patches`|not maintained|
 |SURFACE_DATA.analytic_form|p|1|0|`SURFACE_DATA.analytic_form`|`PGM_XT_SURFACE_DATA_t.analytic_form`|encode+decode|
 |SURFACE_DATA.swept_form|p|1|0|`SURFACE_DATA.swept_form`|`PGM_XT_SURFACE_DATA_t.swept_form`|encode+decode|
 |SURFACE_DATA.spun_form|p|1|0|`SURFACE_DATA.spun_form`|`PGM_XT_SURFACE_DATA_t.spun_form`|encode+decode|
@@ -24753,8 +24753,8 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |NURBS_SURF.v_knot_mult|p|1|0|`NURBS_SURF.v_knot_mult`|`PGM_XT_NURBS_SURF_t.v_knot_mult`|encode+decode|
 |NURBS_SURF.u_knots|p|1|0|`NURBS_SURF.u_knots`|`PGM_XT_NURBS_SURF_t.u_knots`|encode+decode|
 |NURBS_SURF.v_knots|p|1|0|`NURBS_SURF.v_knots`|`PGM_XT_NURBS_SURF_t.v_knots`|encode+decode|
-|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|Unavailable validation|
-|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|Unavailable validation|
+|NURBS_SURF.u_knot_mult_sum|p|0|0|`NURBS_SURF.u_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.u_knot_mult_sum`|not maintained|
+|NURBS_SURF.v_knot_mult_sum|p|0|0|`NURBS_SURF.v_knot_mult_sum`|`PGM_XT_NURBS_SURF_t.v_knot_mult_sum`|not maintained|
 |KNOT_MULT.mult|n|1|1|`KNOT_MULT.mult`|`PGM_XT_KNOT_MULT_t.mult`|encode+decode|
 |KNOT_SET.knots|f|1|1|`KNOT_SET.knots`|`PGM_XT_KNOT_SET_t.knots`|encode+decode|
 |KNOT_MULT_SUM.mult|d|1|1|`KNOT_MULT_SUM.mult`|`PGM_XT_KNOT_MULT_SUM_t.mult`|encode+decode|
@@ -24767,11 +24767,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |PE_CURVE.sense|c|1|0|`PE_CURVE.sense`|`PGM_XT_PE_CURVE_t.sense`|encode+decode|
 |PE_CURVE.type|c|1|0|`PE_CURVE.type`|`PGM_XT_PE_CURVE_t.type`|encode+decode|
 |PE_CURVE.data|p|1|0|`PE_CURVE.data`|`PGM_XT_PE_CURVE_t.data`|encode+decode|
-|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|Unavailable validation|
-|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|Unavailable validation|
+|PE_CURVE.global_scale|f|0|0|`PE_CURVE.global_scale`|`PGM_XT_PE_CURVE_t.global_scale`|not maintained|
+|PE_CURVE.parameter_scale|f|0|0|`PE_CURVE.parameter_scale`|`PGM_XT_PE_CURVE_t.parameter_scale`|not maintained|
 |PE_CURVE.tf|p|1|0|`PE_CURVE.tf`|`PGM_XT_PE_CURVE_t.tf`|encode+decode|
-|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|Unavailable validation|
-|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|Unavailable validation|
+|PE_CURVE.props|p|0|0|`PE_CURVE.props`|`PGM_XT_PE_CURVE_t.props`|not maintained|
+|PE_CURVE.approx|p|0|0|`PE_CURVE.approx`|`PGM_XT_PE_CURVE_t.approx`|not maintained|
 |PE_CURVE.internal_geom|p|1|1|`PE_CURVE.internal_geom`|`PGM_XT_PE_CURVE_t.internal_geom`|encode+decode|
 |CU_PARAM_PROPS.tint|i|1|0|`CU_PARAM_PROPS.tint`|`PGM_XT_CU_PARAM_PROPS_t.tint`|encode+decode|
 |CU_PARAM_PROPS.t_start|c|1|0|`CU_PARAM_PROPS.t_start`|`PGM_XT_CU_PARAM_PROPS_t.t_start`|encode+decode|
@@ -24807,17 +24807,17 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |B_CURVE.sense|c|1|0|`B_CURVE.sense`|`PGM_XT_B_CURVE_t.sense`|encode+decode|
 |B_CURVE.nurbs|p|1|0|`B_CURVE.nurbs`|`PGM_XT_B_CURVE_t.nurbs`|encode+decode|
 |B_CURVE.data|p|1|0|`B_CURVE.data`|`PGM_XT_B_CURVE_t.data`|encode+decode|
-|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|Unavailable validation|
-|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|Unavailable validation|
-|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|Unavailable validation|
-|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|Unavailable validation|
-|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|Unavailable validation|
-|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|Unavailable validation|
+|CURVE_DATA.safe_range|i|0|0|`CURVE_DATA.safe_range`|`PGM_XT_CURVE_DATA_t.safe_range`|not maintained|
+|CURVE_DATA.bx|b|0|0|`CURVE_DATA.bx`|`PGM_XT_CURVE_DATA_t.bx`|not maintained|
+|CURVE_DATA.scale|f|0|0|`CURVE_DATA.scale`|`PGM_XT_CURVE_DATA_t.scale`|not maintained|
+|CURVE_DATA.parameter_scale|f|0|0|`CURVE_DATA.parameter_scale`|`PGM_XT_CURVE_DATA_t.parameter_scale`|not maintained|
+|CURVE_DATA.tangent_half_angle|f|0|0|`CURVE_DATA.tangent_half_angle`|`PGM_XT_CURVE_DATA_t.tangent_half_angle`|not maintained|
+|CURVE_DATA.tint|i|0|0|`CURVE_DATA.tint`|`PGM_XT_CURVE_DATA_t.tint`|not maintained|
 |CURVE_DATA.self_int|u|1|0|`CURVE_DATA.self_int`|`PGM_XT_CURVE_DATA_t.self_int`|encode+decode|
-|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|Unavailable validation|
-|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|Unavailable validation|
-|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|Unavailable validation|
-|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|Unavailable validation|
+|CURVE_DATA.t_start|c|0|0|`CURVE_DATA.t_start`|`PGM_XT_CURVE_DATA_t.t_start`|not maintained|
+|CURVE_DATA.t_end|c|0|0|`CURVE_DATA.t_end`|`PGM_XT_CURVE_DATA_t.t_end`|not maintained|
+|CURVE_DATA.tree|p|0|0|`CURVE_DATA.tree`|`PGM_XT_CURVE_DATA_t.tree`|not maintained|
+|CURVE_DATA.polynomial_segments|p|0|0|`CURVE_DATA.polynomial_segments`|`PGM_XT_CURVE_DATA_t.polynomial_segments`|not maintained|
 |CURVE_DATA.analytic_form|p|1|0|`CURVE_DATA.analytic_form`|`PGM_XT_CURVE_DATA_t.analytic_form`|encode+decode|
 |NURBS_CURVE.degree|n|1|0|`NURBS_CURVE.degree`|`PGM_XT_NURBS_CURVE_t.degree`|encode+decode|
 |NURBS_CURVE.n_vertices|d|1|0|`NURBS_CURVE.n_vertices`|`PGM_XT_NURBS_CURVE_t.n_vertices`|encode+decode|
@@ -24831,7 +24831,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |NURBS_CURVE.bspline_vertices|p|1|0|`NURBS_CURVE.bspline_vertices`|`PGM_XT_NURBS_CURVE_t.bspline_vertices`|encode+decode|
 |NURBS_CURVE.knot_mult|p|1|0|`NURBS_CURVE.knot_mult`|`PGM_XT_NURBS_CURVE_t.knot_mult`|encode+decode|
 |NURBS_CURVE.knots|p|1|0|`NURBS_CURVE.knots`|`PGM_XT_NURBS_CURVE_t.knots`|encode+decode|
-|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|Unavailable validation|
+|NURBS_CURVE.knot_mult_sum|p|0|0|`NURBS_CURVE.knot_mult_sum`|`PGM_XT_NURBS_CURVE_t.knot_mult_sum`|not maintained|
 |SP_CURVE.node_id|d|1|0|`SP_CURVE.node_id`|`PGM_XT_SP_CURVE_t.node_id`|encode+decode|
 |SP_CURVE.attributes_features|p|1|0|`SP_CURVE.attributes_features`|`PGM_XT_SP_CURVE_t.attributes_features`|encode+decode|
 |SP_CURVE.owner|p|1|0|`SP_CURVE.owner`|`PGM_XT_SP_CURVE_t.owner`|encode+decode|
@@ -24839,11 +24839,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |SP_CURVE.previous|p|1|0|`SP_CURVE.previous`|`PGM_XT_SP_CURVE_t.previous`|encode+decode|
 |SP_CURVE.geometric_owner|p|1|0|`SP_CURVE.geometric_owner`|`PGM_XT_SP_CURVE_t.geometric_owner`|encode+decode|
 |SP_CURVE.sense|c|1|0|`SP_CURVE.sense`|`PGM_XT_SP_CURVE_t.sense`|encode+decode|
-|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|Unavailable validation|
-|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|Unavailable validation|
-|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|Unavailable validation|
-|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|Unavailable validation|
-|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|Unavailable validation|
+|SP_CURVE.periodic|u|0|0|`SP_CURVE.periodic`|`PGM_XT_SP_CURVE_t.periodic`|not maintained|
+|SP_CURVE.class|u|0|0|`SP_CURVE.class`|`PGM_XT_SP_CURVE_t.class` / C++ `.class_`|not maintained|
+|SP_CURVE.chart|p|0|0|`SP_CURVE.chart`|`PGM_XT_SP_CURVE_t.chart`|not maintained|
+|SP_CURVE.scale|f|0|0|`SP_CURVE.scale`|`PGM_XT_SP_CURVE_t.scale`|not maintained|
+|SP_CURVE.parameter_scale|f|0|0|`SP_CURVE.parameter_scale`|`PGM_XT_SP_CURVE_t.parameter_scale`|not maintained|
 |SP_CURVE.surface|p|1|0|`SP_CURVE.surface`|`PGM_XT_SP_CURVE_t.surface`|encode+decode|
 |SP_CURVE.b_curve|p|1|0|`SP_CURVE.b_curve`|`PGM_XT_SP_CURVE_t.b_curve`|encode+decode|
 |SP_CURVE.original|p|1|0|`SP_CURVE.original`|`PGM_XT_SP_CURVE_t.original`|encode+decode|
@@ -25074,11 +25074,11 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |SESSION_SWITCH.next|p|1|0|`SESSION_SWITCH.next`|`PGM_XT_SESSION_SWITCH_t.next`|encode+decode|
 |SESSION_SWITCH.id|d|1|0|`SESSION_SWITCH.id`|`PGM_XT_SESSION_SWITCH_t.id`|encode+decode|
 |SESSION_SWITCH.value|d|1|0|`SESSION_SWITCH.value`|`PGM_XT_SESSION_SWITCH_t.value`|encode+decode|
-|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|Unavailable validation|
-|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|Unavailable validation|
-|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|Unavailable validation|
-|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|Unavailable validation|
-|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|Unavailable validation|
+|APPITEM.pointer|q|0|0|`APPITEM.pointer`|`PGM_XT_APPITEM_t.pointer`|not maintained|
+|APPITEM.next|p|0|0|`APPITEM.next`|`PGM_XT_APPITEM_t.next`|not maintained|
+|DEFER_DELTAS.next|q|0|0|`DEFER_DELTAS.next`|`PGM_XT_DEFER_DELTAS_t.next`|not maintained|
+|DEFER_DELTAS.size|d|0|0|`DEFER_DELTAS.size`|`PGM_XT_DEFER_DELTAS_t.size`|not maintained|
+|DEFER_DELTAS.data|q|0|0|`DEFER_DELTAS.data`|`PGM_XT_DEFER_DELTAS_t.data`|not maintained|
 |PART_XMT_BLOCK.n_entries|d|1|0|`PART_XMT_BLOCK.n_entries`|`PGM_XT_PART_XMT_BLOCK_t.n_entries`|encode+decode|
 |PART_XMT_BLOCK.index_map_offset|d|1|0|`PART_XMT_BLOCK.index_map_offset`|`PGM_XT_PART_XMT_BLOCK_t.index_map_offset`|encode+decode|
 |PART_XMT_BLOCK.index_map|p|1|0|`PART_XMT_BLOCK.index_map`|`PGM_XT_PART_XMT_BLOCK_t.index_map`|encode+decode|
@@ -25113,7 +25113,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |POLYLINE_DATA.closed|l|1|0|`POLYLINE_DATA.closed`|`PGM_XT_POLYLINE_DATA_t.closed`|encode+decode|
 |POLYLINE_DATA.base_parm|f|1|0|`POLYLINE_DATA.base_parm`|`PGM_XT_POLYLINE_DATA_t.base_parm`|encode+decode|
 |POLYLINE_DATA.pvec|p|1|0|`POLYLINE_DATA.pvec`|`PGM_XT_POLYLINE_DATA_t.pvec`|encode+decode|
-|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|Unavailable validation|
+|POLYLINE_DATA.parm|p|0|0|`POLYLINE_DATA.parm`|`PGM_XT_POLYLINE_DATA_t.parm`|not maintained|
 |PFF_MESH.version|d|1|0|`PFF_MESH.version`|`PGM_XT_PFF_MESH_t.version`|encode+decode|
 |PFF_MESH.number_of_facets|d|1|0|`PFF_MESH.number_of_facets`|`PGM_XT_PFF_MESH_t.number_of_facets`|encode+decode|
 |PFF_MESH.number_of_fins|d|1|0|`PFF_MESH.number_of_fins`|`PGM_XT_PFF_MESH_t.number_of_fins`|encode+decode|
@@ -25125,7 +25125,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |PFF_MESH.position_pool|p|1|0|`PFF_MESH.position_pool`|`PGM_XT_PFF_MESH_t.position_pool`|encode+decode|
 |PFF_MESH.normal_pool|p|1|0|`PFF_MESH.normal_pool`|`PGM_XT_PFF_MESH_t.normal_pool`|encode+decode|
 |PSM_MESH.precision|u|1|0|`PSM_MESH.precision`|`PGM_XT_PSM_MESH_t.precision`|encode+decode|
-|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|Unavailable validation|
+|PSM_MESH.use_count|d|0|0|`PSM_MESH.use_count`|`PGM_XT_PSM_MESH_t.use_count`|not maintained|
 |PSM_MESH.owner|p|1|0|`PSM_MESH.owner`|`PGM_XT_PSM_MESH_t.owner`|encode+decode|
 |PSM_MESH.position_pool|p|1|0|`PSM_MESH.position_pool`|`PGM_XT_PSM_MESH_t.position_pool`|encode+decode|
 |PSM_MESH.normal_pool|p|1|0|`PSM_MESH.normal_pool`|`PGM_XT_PSM_MESH_t.normal_pool`|encode+decode|
@@ -25179,24 +25179,24 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |MESH.previous|p|1|0|`MESH.previous`|`PGM_XT_MESH_t.previous`|encode+decode|
 |MESH.geometric_owner|p|1|0|`MESH.geometric_owner`|`PGM_XT_MESH_t.geometric_owner`|encode+decode|
 |MESH.sense|c|1|0|`MESH.sense`|`PGM_XT_MESH_t.sense`|encode+decode|
-|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|Unavailable validation|
+|MESH.mesh_state|c|0|0|`MESH.mesh_state`|`PGM_XT_MESH_t.mesh_state`|not maintained|
 |MESH.mesh_box|b|1|0|`MESH.mesh_box`|`PGM_XT_MESH_t.mesh_box`|encode+decode|
 |MESH.transform|p|1|0|`MESH.transform`|`PGM_XT_MESH_t.transform`|encode+decode|
 |MESH.rcv_key|p|1|0|`MESH.rcv_key`|`PGM_XT_MESH_t.rcv_key`|encode+decode|
 |MESH.rcv_index|d|1|0|`MESH.rcv_index`|`PGM_XT_MESH_t.rcv_index`|encode+decode|
-|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|Unavailable validation|
-|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|Unavailable validation|
+|MESH.rcv_offset_high|d|0|0|`MESH.rcv_offset_high`|`PGM_XT_MESH_t.rcv_offset_high`|not maintained|
+|MESH.rcv_offset_low|d|0|0|`MESH.rcv_offset_low`|`PGM_XT_MESH_t.rcv_offset_low`|not maintained|
 |MESH.psm_imesh|p|1|0|`MESH.psm_imesh`|`PGM_XT_MESH_t.psm_imesh`|encode+decode|
 |MESH.pff_imesh|p|1|0|`MESH.pff_imesh`|`PGM_XT_MESH_t.pff_imesh`|encode+decode|
-|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|Unavailable validation|
-|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|Unavailable validation|
-|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|Unavailable validation|
-|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|Unavailable validation|
-|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|Unavailable validation|
-|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|Unavailable validation|
-|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|Unavailable validation|
-|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|Unavailable validation|
-|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|Unavailable validation|
+|MESH.imesh|q|0|0|`MESH.imesh`|`PGM_XT_MESH_t.imesh`|not maintained|
+|MESH.top_mesh|p|0|0|`MESH.top_mesh`|`PGM_XT_MESH_t.top_mesh`|not maintained|
+|MESH.non_manifold_vxs|c|0|0|`MESH.non_manifold_vxs`|`PGM_XT_MESH_t.non_manifold_vxs`|not maintained|
+|MESH.frustrum|d|0|0|`MESH.frustrum`|`PGM_XT_MESH_t.frustrum`|not maintained|
+|MESH.file_format|d|0|0|`MESH.file_format`|`PGM_XT_MESH_t.file_format`|not maintained|
+|MESH.reader_data|p|0|0|`MESH.reader_data`|`PGM_XT_MESH_t.reader_data`|not maintained|
+|MESH_BLOCK.next|q|0|0|`MESH_BLOCK.next`|`PGM_XT_MESH_BLOCK_t.next`|not maintained|
+|MESH_BLOCK.size|d|0|0|`MESH_BLOCK.size`|`PGM_XT_MESH_BLOCK_t.size`|not maintained|
+|MESH_BLOCK.data|q|0|0|`MESH_BLOCK.data`|`PGM_XT_MESH_BLOCK_t.data`|not maintained|
 |TAG_MAP.state|u|1|0|`TAG_MAP.state`|`PGM_XT_TAG_MAP_t.state`|encode+decode|
 |TAG_MAP.pmark|t|1|0|`TAG_MAP.pmark`|`PGM_XT_TAG_MAP_t.pmark`|encode+decode|
 |TAG_MAP.tags|p|1|0|`TAG_MAP.tags`|`PGM_XT_TAG_MAP_t.tags`|encode+decode|
@@ -25254,7 +25254,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |LATTICE.sense|c|1|0|`LATTICE.sense`|`PGM_XT_LATTICE_t.sense`|encode+decode|
 |LATTICE.data|p|1|0|`LATTICE.data`|`PGM_XT_LATTICE_t.data`|encode+decode|
 |LATTICE_DATA_IRREGULAR.connectivity|p|1|0|`LATTICE_DATA_IRREGULAR.connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.connectivity`|encode+decode|
-|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|Unavailable validation|
+|LATTICE_DATA_IRREGULAR.rev_connectivity|p|0|0|`LATTICE_DATA_IRREGULAR.rev_connectivity`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.rev_connectivity`|not maintained|
 |LATTICE_DATA_IRREGULAR.positions|p|1|0|`LATTICE_DATA_IRREGULAR.positions`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.positions`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_type|u|1|0|`LATTICE_DATA_IRREGULAR.ball_type`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_type`|encode+decode|
 |LATTICE_DATA_IRREGULAR.ball_radius|f|1|0|`LATTICE_DATA_IRREGULAR.ball_radius`|`PGM_XT_LATTICE_DATA_IRREGULAR_t.ball_radius`|encode+decode|
@@ -25306,7 +25306,7 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |SKEWBOX.corner|v|1|0|`SKEWBOX.corner`|`PGM_XT_SKEWBOX_t.corner`|encode+decode|
 |SKEWBOX.axes|v|1|3|`SKEWBOX.axes`|`PGM_XT_SKEWBOX_t.axes`|encode+decode|
 |SKEWBOX.width|f|1|3|`SKEWBOX.width`|`PGM_XT_SKEWBOX_t.width`|encode+decode|
-|SKEWBOX.form|u|0|0|`SKEWBOX.form`|`PGM_XT_SKEWBOX_t.form`|Unavailable validation|
+|SKEWBOX.form|u|0|0|`SKEWBOX.form`|`PGM_XT_SKEWBOX_t.form`|not maintained|
 |TPMS_SURF.tpms_type|u|1|0|`TPMS_SURF.tpms_type`|`PGM_XT_TPMS_SURF_t.tpms_type`|encode+decode|
 |TPMS_SURF.tpms_shift|u|1|0|`TPMS_SURF.tpms_shift`|`PGM_XT_TPMS_SURF_t.tpms_shift`|encode+decode|
 |IMPLICIT_SURF.pvec|v|1|0|`IMPLICIT_SURF.pvec`|`PGM_XT_IMPLICIT_SURF_t.pvec`|encode+decode|
@@ -25336,5 +25336,5 @@ C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_3800150_
 |LATTICE_DATA_PATTERN.cell|p|1|0|`LATTICE_DATA_PATTERN.cell`|`PGM_XT_LATTICE_DATA_PATTERN_t.cell`|encode+decode|
 |LATTICE_DATA_PATTERN.bound|p|1|0|`LATTICE_DATA_PATTERN.bound`|`PGM_XT_LATTICE_DATA_PATTERN_t.bound`|encode+decode|
 |LATTICE_DATA_PATTERN.form|p|1|0|`LATTICE_DATA_PATTERN.form`|`PGM_XT_LATTICE_DATA_PATTERN_t.form`|encode+decode|
-|LATTICE_DATA_PATTERN.core_bx|b|0|0|`LATTICE_DATA_PATTERN.core_bx`|`PGM_XT_LATTICE_DATA_PATTERN_t.core_bx`|Unavailable validation|
+|LATTICE_DATA_PATTERN.core_bx|b|0|0|`LATTICE_DATA_PATTERN.core_bx`|`PGM_XT_LATTICE_DATA_PATTERN_t.core_bx`|not maintained|
 

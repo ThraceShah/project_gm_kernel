@@ -4,7 +4,7 @@
 
 - `src/ProjectGmKernel.Xt/`：`.NET 10` managed class library 和本地 NuGet。
 - `src/ProjectGmKernel.Xt.Native/`：NativeAOT C ABI wrapper。
-- `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.h`：ABI 1 公共入口。
+- `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.h`：ABI 2 公共入口。
 - `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.SCH_*.h`：每个 schema
   identity 一份独立头文件，提供短名称的逐节点 C 类型和 typed table API。
 
@@ -35,10 +35,18 @@ var output = XtCodec.Write(catalog, rebuilt);
 struct；字段保持 schema 的 snake_case 名称。每个 transmitted node 有独立连续
 table，每个变长字段有独立 element table。
 
-字段使用显式 `Unavailable`、`Null`、`Value` 状态。`transmit=0` 字段存在于
-struct 中，但 decode 后只能为 `Unavailable`，builder 不能发送它。`p` 字段保存
-原始 x_t node index；finalize 根据编译 descriptor 校验引用。过程几何不求值、
-不 NURBS 化，ICurve、Blend、B-spline 等保持原始节点引用图。
+字段成员自 ABI 2 起为强类型裸值：`d/n/w/t/q` 为 `long`/`int64_t`，`u` 为
+`ulong`/`uint64_t`，`f` 为 `double`，`c`/`l` 为 `byte`/`uint8_t`，`v`/`h`/`i`/`b`
+直接使用向量/区间/包围盒结构体。null 用固定哨兵表示（`XtSchemaField` 常量、
+C 侧 `PGM_XT_NULL_*` 宏）：`p` 为 `-1`，整数为 `INT64_MIN`，无符号为
+`UINT64_MAX`，实数为 NaN，`c`/`l` 为 `0xFF`，复合结构体为全 NaN。decode 遇到
+与哨兵相同的文件值会抛 `XtFormatException`，因此哨兵不会与文件数据混淆。
+`transmit=0` 字段仍存在于 struct 中以保持布局，但成员值不维护、不应读取。
+`p` 字段保存原始 x_t node index；目标节点类在本 schema 内时生成按目标命名
+的强类型引用结构体（如 `PARTITIONRef` / `PGM_XT_PARTITION_ref_t`，含
+`Index`/`index`），否则退化为裸 `int32_t`。finalize 根据编译 descriptor 校验
+引用。过程几何不求值、不 NURBS 化，ICurve、Blend、B-spline 等保持原始节点
+引用图。
 
 构造模型时使用 schema namespace内的 `COUNTS` 和 `MODEL_BUILDER`。Builder
 一次分配 pinned tables；写入各 node/variable-field span 后调用 `FinalizeModel`。
@@ -83,7 +91,9 @@ layout。
 
 不存在 generic geometry row、mesh row、table kind 或 schema-neutral BREP table
 API。C struct 和 managed struct 逐字段对应；固定数组内联，变长字段使用专用
-range 和 element view。
+range 和 element view。判断 null 使用 `PGM_XT_INDEX_IS_NULL`、
+`PGM_XT_INTEGER_IS_NULL`、`PGM_XT_REAL_IS_NULL`、`PGM_XT_VECTOR_IS_NULL`、
+`PGM_XT_BOX_IS_NULL` 等宏（managed 侧比较 `XtSchemaField` 常量）。
 
 Handle 是带 generation 校验的 64-bit token，不是托管对象地址。Table view 由
 model handle 统一释放；XT 输出 buffer 使用 `PGM_XT_BUFFER_free`。
