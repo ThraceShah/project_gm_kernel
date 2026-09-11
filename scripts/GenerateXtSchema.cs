@@ -23,6 +23,84 @@ var versions = catalog.Schemas
 var v37 = versions.Single(static version => version.Definition.SchemaNumber == 37102);
 versions.Add(new VersionSchema("SCH_3800150_37102", v37.Definition, 3800150, true));
 
+// XT schema field value enums. Numeric entries are harvested from the Parasolid
+// XT Format Reference, "Schema Definitions" chapter; char entries store single
+// character codes for schema type 'c' fields and come from the XT topology
+// documentation. Sources map either an explicit "<NODE>.<FIELD>" association or
+// a bare "<FIELD>" name (used only where the doc associates that name with
+// exactly one enum) to a value table; bare names apply to every node declaring
+// the field with the same schema type letter.
+var xtEnumSources = new Dictionary<string, (char Type, string Source)>(StringComparer.Ordinal)
+{
+    ["NURBS_CURVE.knot_type"] = ('u', "SCH_knot_type_t"),
+    ["NURBS_CURVE.curve_form"] = ('u', "SCH_curve_form_t"),
+    ["CURVE_DATA.self_int"] = ('u', "SCH_self_int_t"),
+    ["INTERSECTION_DATA.uv_type"] = ('u', "SCH_intersection_uv_type_t"),
+    ["NURBS_SURF.u_knot_type"] = ('u', "SCH_knot_type_t"),
+    ["NURBS_SURF.v_knot_type"] = ('u', "SCH_knot_type_t"),
+    ["NURBS_SURF.surface_form"] = ('u', "SCH_surface_form_t"),
+    ["SURFACE_DATA.self_int"] = ('u', "SCH_self_int_t"),
+    ["PSM_MESH.precision"] = ('u', "SCH_mesh_precision_t"),
+    ["VECTOR_COMB.encoding"] = ('u', "SCH_vector_encoding_t"),
+    ["INTEGER_COMB.encoding"] = ('u', "SCH_comb_encoding_t"),
+    ["REAL_COMB.encoding"] = ('u', "SCH_comb_encoding_t"),
+    ["INSTANCE.type"] = ('u', "SCH_instance_type"),
+    ["FEATURE.type"] = ('u', "SCH_feature_type_t"),
+    ["PATTERN_AXIAL.hand"] = ('u', "SCH_axial_hand_t"),
+    ["TPMS_SURF.tpms_type"] = ('u', "SCH_TPMS_type_t"),
+    ["TPMS_SURF.tpms_shift"] = ('u', "SCH_TPMS_shift_t"),
+    ["REGION.type"] = ('c', "REGION.type"),
+    ["knot_type"] = ('u', "SCH_knot_type_t"),
+    ["u_knot_type"] = ('u', "SCH_knot_type_t"),
+    ["v_knot_type"] = ('u', "SCH_knot_type_t"),
+    ["curve_form"] = ('u', "SCH_curve_form_t"),
+    ["self_int"] = ('u', "SCH_self_int_t"),
+    ["uv_type"] = ('u', "SCH_intersection_uv_type_t"),
+    ["surface_form"] = ('u', "SCH_surface_form_t"),
+    ["precision"] = ('u', "SCH_mesh_precision_t"),
+    ["normal_type"] = ('u', "SCH_mesh_normal_type_t"),
+    ["ball_type"] = ('u', "SCH_lattice_ball_type_t"),
+    ["ball_blend_type"] = ('u', "SCH_lattice_ball_blend_type_t"),
+    ["rod_term_type"] = ('u', "SCH_lattice_rod_term_type_t"),
+    ["rod_mid_type"] = ('u', "SCH_lattice_rod_mid_type_t"),
+    ["hand"] = ('u', "SCH_axial_hand_t"),
+    ["state"] = ('u', "SCH_part_state"),
+    ["body_type"] = ('u', "SCH_body_type"),
+    ["nom_geom_state"] = ('u', "SCH_nom_geom_state_t"),
+    ["sense"] = ('c', "sense"),
+};
+var xtEnumValues = new Dictionary<string, (string Name, long Value)[]>(StringComparer.Ordinal)
+{
+    ["SCH_axial_hand_t"] = new[] { ("right", 0L), ("left", 1L) },
+    ["SCH_assembly_type"] = new[] { ("collective_assembly", 1L), ("conjunctive_assembly", 2L), ("disjunctive_assembly", 3L) },
+    ["SCH_body_type"] = new[] { ("solid_body", 1L), ("wire_body", 2L), ("sheet_body", 3L), ("general_body", 6L) },
+    ["SCH_comb_encoding_t"] = new[] { ("no_encoding", 1L) },
+    ["SCH_curve_form_t"] = new[] { ("unset", 1L), ("arbitrary", 2L), ("polyline", 3L), ("circular_arc", 4L), ("elliptic_arc", 5L), ("parabolic_arc", 6L), ("hyperbolic_arc", 7L), ("helical_arc", 8L) },
+    // ("helical_arc", 8) is not covered by the XT Format Reference table (stops
+    // at 7); it is observed on b-curves created by PK_POINT_make_helical_curve
+    // in the Parasolid corpus (body.wire.helical-curve cases) and follows the
+    // documented arc-name pattern.
+    ["SCH_feature_type_t"] = new[] { ("instance_fe", 1L), ("face_fe", 2L), ("loop_fe", 3L), ("edge_fe", 4L), ("vertex_fe", 5L), ("surface_fe", 6L), ("curve_fe", 7L), ("point_fe", 8L), ("mixed_fe", 9L), ("region_fe", 10L), ("pf_pline_fe", 11L), ("feature_fe", 12L) },
+    ["SCH_instance_type"] = new[] { ("positive_instance", 1L), ("negative_instance", 2L) },
+    ["SCH_intersection_uv_type_t"] = new[] { ("none", 1L), ("first", 2L), ("second", 3L), ("both", 4L) },
+    ["SCH_knot_type_t"] = new[] { ("unset", 1L), ("non_uniform", 2L), ("uniform", 3L), ("quasi_uniform", 4L), ("piecewise_bezier", 5L), ("bezier_ends", 6L) },
+    ["SCH_lattice_ball_blend_type_t"] = new[] { ("none", 0L), ("absolute", 1L), ("relative", 2L) },
+    ["SCH_lattice_ball_type_t"] = new[] { ("unset", 0L), ("const", 1L), ("variable", 2L) },
+    ["SCH_lattice_rod_mid_type_t"] = new[] { ("unset", 0L), ("none", 1L), ("const", 2L), ("variable", 3L) },
+    ["SCH_lattice_rod_term_type_t"] = new[] { ("unset", 0L), ("const", 1L), ("derived", 2L), ("variable_1", 3L), ("variable_2", 4L) },
+    ["SCH_mesh_normal_type_t"] = new[] { ("none", 1L), ("per_vertex", 2L), ("per_facet", 3L) },
+    ["SCH_mesh_precision_t"] = new[] { ("double", 1L), ("single", 2L) },
+    ["SCH_nom_geom_state_t"] = new[] { ("off", 1L), ("on", 2L) },
+    ["SCH_part_state"] = new[] { ("new_part", 1L), ("stored_part", 2L), ("modified_part", 3L), ("anonymous_part", 4L), ("unloaded_part", 5L) },
+    ["SCH_self_int_t"] = new[] { ("unset", 1L), ("no_self_intersections", 2L), ("self_intersects", 3L), ("checked_ok_in_old_version", 4L) },
+    ["SCH_surface_form_t"] = new[] { ("unset", 1L), ("arbitrary", 2L), ("planar", 3L), ("cylindrical", 4L), ("conical", 5L), ("spherical", 6L), ("toroidal", 7L), ("surf_of_revolution", 8L), ("ruled", 9L), ("quadric", 10L), ("swept", 11L) },
+    ["SCH_TPMS_shift_t"] = new[] { ("none", 0L), ("half", 1L) },
+    ["SCH_TPMS_type_t"] = new[] { ("unset", 0L), ("gyroid", 1L), ("lidinoid", 2L), ("neovius", 3L), ("schoen", 4L), ("schwarz_d", 5L), ("schwarz_p", 6L), ("split_p", 7L), ("schoen_octo", 8L) },
+    ["SCH_vector_encoding_t"] = new[] { ("simple", 1L), ("spherical", 2L) },
+    ["REGION.type"] = new[] { ("solid", (long)'S'), ("void", (long)'V') },
+    ["sense"] = new[] { ("positive", (long)'+'), ("negative", (long)'-') },
+};
+
 var bindings = GenerateBindings(versions);
 var descriptors = GenerateDescriptors(versions);
 var headers = GenerateHeaders(versions);
@@ -64,6 +142,19 @@ string GenerateBindings(List<VersionSchema> schemas)
         foreach (var node in version.Definition.Nodes)
         {
             var fields = version.Definition.GetFields(node).ToArray();
+            foreach (var field in fields)
+            {
+                if (XtEnumFor(node.Name, field.Name, field.Type) is not { } spec)
+                    continue;
+                output.Append("public enum ").Append(node.Name).Append("__").Append(field.Name).Append(" : ").Append(field.Type == 'c' ? "byte" : "ulong").Append(" { ");
+                for (var index = 0; index < spec.Values.Length; index++)
+                {
+                    if (index > 0) output.Append(", ");
+                    output.Append(CsName(spec.Values[index].Name)).Append(" = ").Append(EnumValueLiteral(spec.Values[index].Value, field.Type == 'c', cSharp: true));
+                }
+                output.AppendLine(" }");
+            }
+            output.AppendLine();
             foreach (var field in fields.Where(static field => field.ElementCount > 1))
                 output.Append("[InlineArray(").Append(field.ElementCount).Append(")] public struct ").Append(node.Name).Append("__").Append(field.Name).Append("__ARRAY { private ").Append(ManagedFieldElementType(version, field)).AppendLine(" _element0; }");
             output.AppendLine("[StructLayout(LayoutKind.Sequential)]");
@@ -368,6 +459,18 @@ Dictionary<string, string> GenerateHeaders(List<VersionSchema> schemas)
         foreach (var node in version.Definition.Nodes)
         {
             var fields = version.Definition.GetFields(node).ToArray();
+            foreach (var field in fields)
+            {
+                if (XtEnumFor(node.Name, field.Name, field.Type) is not { } spec)
+                    continue;
+                output.Append("/* XT schema enum ").Append(spec.Source).AppendLine("; source: Parasolid XT Format Reference */");
+                output.Append("enum PGM_XT_").Append(node.Name).Append('_').Append(field.Name).AppendLine("_e {");
+                for (var index = 0; index < spec.Values.Length; index++)
+                {
+                    output.Append("    PGM_XT_").Append(node.Name).Append('_').Append(field.Name).Append('_').Append(spec.Values[index].Name).Append(" = ").Append(EnumValueLiteral(spec.Values[index].Value, field.Type == 'c', cSharp: false)).AppendLine(",");
+                }
+                output.AppendLine("};");
+            }
             output.Append("typedef struct PGM_XT_").Append(node.Name).AppendLine("_s {");
             output.AppendLine("    int32_t _xt_index;");
             output.AppendLine("    int32_t _xt_order;");
@@ -485,9 +588,9 @@ string GenerateMapping(List<VersionSchema> schemas)
         output.Append("## ").Append(version.Identity).AppendLine().AppendLine().Append("C header: `src/ProjectGmKernel.Xt.Native/include/ProjectGmKernel.Xt.").Append(version.Identity).AppendLine(".h`").AppendLine().AppendLine("| Node | Type | Transmit | Fields | Managed type | C type |").AppendLine("|---|---:|---:|---:|---|---|");
         foreach (var node in version.Definition.Nodes)
             output.Append('|').Append(node.Name).Append('|').Append(node.Type).Append('|').Append(node.Transmit ? 1 : 0).Append('|').Append(node.ParsedFieldCount).Append("|`ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).Append('.').Append(node.Name).Append("`|`PGM_XT_").Append(node.Name).AppendLine("_t`|");
-        output.AppendLine().AppendLine("| Schema field | Type | Transmit | Elements | Managed member | C member | Codec |").AppendLine("|---|---|---:|---:|---|---|---|");
+        output.AppendLine().AppendLine("| Schema field | Type | Transmit | Elements | Managed member | C member | Values | Codec |").AppendLine("|---|---|---:|---:|---|---|---|---|");
         foreach(var node in version.Definition.Nodes)foreach(var field in version.Definition.GetFields(node))
-            output.Append('|').Append(node.Name).Append('.').Append(field.Name).Append('|').Append(field.Type).Append('|').Append(field.Transmit?1:0).Append('|').Append(field.ElementCount).Append("|`").Append(node.Name).Append('.').Append(field.Name).Append("`|`PGM_XT_").Append(node.Name).Append("_t.").Append(field.Name).Append(IsCppKeyword(field.Name)?"` / C++ `."+field.Name+"_":"").Append("`|").Append(field.Transmit?"encode+decode":"not maintained").AppendLine("|");
+            output.Append('|').Append(node.Name).Append('.').Append(field.Name).Append('|').Append(field.Type).Append('|').Append(field.Transmit?1:0).Append('|').Append(field.ElementCount).Append("|`").Append(node.Name).Append('.').Append(field.Name).Append("`|`PGM_XT_").Append(node.Name).Append("_t.").Append(field.Name).Append(IsCppKeyword(field.Name)?"` / C++ `."+field.Name+"_":"").Append("`|").Append(XtEnumFor(node.Name, field.Name, field.Type)?.Source ?? "-").Append("|").Append(field.Transmit?"encode+decode":"not maintained").AppendLine("|");
         output.AppendLine();
     }
     return output.ToString();
@@ -584,12 +687,24 @@ string PointerValidation(VersionSchema version, XtFieldDescriptor field, string 
 string RefIndex(VersionSchema version, XtFieldDescriptor field, string value)
     => TryRefTarget(version, field, out _) ? value + ".Index" : value;
 
+(string Source, (string Name, long Value)[] Values)? XtEnumFor(string node, string field, char type)
+{
+    if (!xtEnumSources.TryGetValue(node + "." + field, out var entry) && !xtEnumSources.TryGetValue(field, out entry))
+        return null;
+    if (entry.Type != type || !xtEnumValues.TryGetValue(entry.Source, out var values))
+        return null;
+    return (entry.Source, values);
+}
+
+string EnumValueLiteral(long value, bool charCode, bool cSharp)
+    => !charCode ? value.ToString() : cSharp ? $"(byte)'{(char)value}'" : $"'{(char)value}'";
+
 static StringBuilder Header(string description) => new StringBuilder().AppendLine("// <auto-generated/>").Append("// ").AppendLine(description).AppendLine("#nullable enable").AppendLine();
 static string Namespace(string identity) => identity;
 static string Safe(string value) => value.Replace('-', '_');
 static string Bool(bool value) => value ? "true" : "false";
 static string Escape(string value) => value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
-static string CsName(string name) => name is "class" or "event" or "operator" or "params" or "base" or "ref" or "out" or "in" or "internal" or "public" or "private" or "protected" or "readonly" or "fixed" or "string" or "object" or "int" or "uint" or "long" or "ulong" or "short" or "ushort" or "sbyte" or "byte" or "char" or "double" or "float" or "decimal" or "bool" or "nint" or "nuint" or "new" or "default" or "return" or "this" or "namespace" or "struct" or "enum" or "interface" or "delegate" or "void" or "null" or "true" or "false" or "is" or "as" or "checked" or "unchecked" or "stackalloc" or "sizeof" or "typeof" or "lock" or "using" or "static" or "virtual" or "override" or "abstract" or "sealed" or "partial" or "record" or "required" or "file" or "scoped" ? "@" + name : name;
+static string CsName(string name) => name is "class" or "event" or "operator" or "params" or "base" or "ref" or "out" or "in" or "internal" or "public" or "private" or "protected" or "readonly" or "fixed" or "const" or "string" or "object" or "int" or "uint" or "long" or "ulong" or "short" or "ushort" or "sbyte" or "byte" or "char" or "double" or "float" or "decimal" or "bool" or "nint" or "nuint" or "new" or "default" or "return" or "this" or "namespace" or "struct" or "enum" or "interface" or "delegate" or "void" or "null" or "true" or "false" or "is" or "as" or "checked" or "unchecked" or "stackalloc" or "sizeof" or "typeof" or "lock" or "using" or "static" or "virtual" or "override" or "abstract" or "sealed" or "partial" or "record" or "required" or "file" or "scoped" ? "@" + name : name;
 static bool IsCppKeyword(string name) => name is "alignas" or "alignof" or "and" or "and_eq" or "asm" or "atomic_cancel" or "atomic_commit" or "atomic_noexcept" or "auto" or "bitand" or "bitor" or "bool" or "break" or "case" or "catch" or "char" or "char8_t" or "char16_t" or "char32_t" or "class" or "compl" or "concept" or "const" or "consteval" or "constexpr" or "constinit" or "const_cast" or "continue" or "co_await" or "co_return" or "co_yield" or "decltype" or "default" or "delete" or "do" or "double" or "dynamic_cast" or "else" or "enum" or "explicit" or "export" or "extern" or "false" or "float" or "for" or "friend" or "goto" or "if" or "inline" or "int" or "long" or "mutable" or "namespace" or "new" or "noexcept" or "not" or "not_eq" or "nullptr" or "operator" or "or" or "or_eq" or "private" or "protected" or "public" or "register" or "reinterpret_cast" or "requires" or "return" or "short" or "signed" or "sizeof" or "static" or "static_assert" or "static_cast" or "struct" or "switch" or "template" or "this" or "thread_local" or "throw" or "true" or "try" or "typedef" or "typeid" or "typename" or "union" or "unsigned" or "using" or "virtual" or "void" or "volatile" or "wchar_t" or "while" or "xor" or "xor_eq";
 static string? ReadOption(string[] values, string option) { for (var i = 0; i < values.Length; i++) if (values[i] == option) return i + 1 < values.Length ? values[i + 1] : throw new ArgumentException(option + " requires a value."); return null; }
 static string GetScriptPath([CallerFilePath] string path = "") => path;

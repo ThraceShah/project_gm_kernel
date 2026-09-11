@@ -120,6 +120,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3000119_30000
 [StructLayout(LayoutKind.Sequential)] public struct FACET_BODY_DATARef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct TAG_VALUESRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -127,6 +128,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -137,6 +139,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -171,6 +174,7 @@ public struct PARTITION
     public BYTE_VALUESRef thread_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -192,6 +196,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -207,6 +212,7 @@ public struct UNIVERSE
     public CHAIN_HEADRef del;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -217,6 +223,7 @@ public struct LEAF_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct BRANCH_TAG_TABLE
@@ -226,6 +233,7 @@ public struct BRANCH_TAG_TABLE
     public BRANCH_TAG_TABLE__leaf__ARRAY leaf;
     public long n_live;
 }
+
 
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -241,6 +249,7 @@ public struct ROOT_TAG_TABLE
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
 {
@@ -252,6 +261,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -282,6 +293,8 @@ public struct ASSEMBLY
     public INSTANCERef sub_instance;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -299,6 +312,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -345,6 +362,7 @@ public struct BODY
     public BODY_DATARef data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -361,6 +379,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -389,6 +409,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -403,6 +424,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -425,6 +447,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -446,6 +470,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -461,6 +486,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -478,6 +505,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -491,6 +519,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -508,6 +538,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -527,6 +559,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -548,6 +582,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -566,6 +602,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -587,6 +625,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -603,6 +643,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -624,6 +666,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -641,6 +685,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -664,6 +710,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -685,6 +733,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -705,6 +754,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -717,6 +767,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -728,6 +779,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -742,6 +794,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -754,6 +807,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -763,6 +817,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -782,6 +838,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -792,6 +849,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -809,6 +868,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -831,6 +892,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -848,6 +911,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -867,6 +932,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -889,6 +956,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -907,6 +976,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -928,6 +999,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -944,6 +1017,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -974,6 +1049,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -1000,6 +1077,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -1028,6 +1107,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -1044,6 +1125,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -1072,6 +1155,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -1089,6 +1174,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -1112,6 +1199,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -1130,6 +1219,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -1144,6 +1234,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -1155,6 +1246,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -1171,6 +1263,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -1189,6 +1283,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -1214,6 +1310,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -1233,6 +1331,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -1254,6 +1353,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -1265,6 +1365,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -1278,6 +1379,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -1289,6 +1391,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -1302,6 +1405,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -1335,6 +1439,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -1344,6 +1449,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -1364,6 +1470,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -1381,6 +1488,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -1390,6 +1498,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -1401,6 +1510,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -1410,6 +1520,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -1421,6 +1532,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -1430,6 +1542,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -1441,6 +1554,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -1451,6 +1565,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -1460,6 +1575,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -1476,6 +1593,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -1491,6 +1609,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -1500,6 +1619,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -1508,6 +1628,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -1519,6 +1640,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -1528,6 +1650,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -1539,6 +1662,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -1548,6 +1672,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -1567,6 +1692,7 @@ public struct TRANSFORM
     public double max_scale;
     public XtSchemaVector perspective_vector;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -1595,6 +1721,7 @@ public struct WORLD
     public INT_VALUESRef schema_embedding_map;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -1604,6 +1731,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -1618,6 +1746,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -1636,6 +1765,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -1648,6 +1778,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -1671,6 +1802,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -1692,6 +1824,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -1700,6 +1833,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -1711,6 +1846,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -1726,6 +1862,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -1738,6 +1875,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -1753,6 +1891,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -1763,6 +1902,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -1779,6 +1919,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -1812,6 +1954,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -1828,6 +1972,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -1856,6 +2002,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -1866,6 +2013,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -1880,6 +2028,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -1892,6 +2041,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -1909,6 +2060,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -1959,6 +2112,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -1989,6 +2146,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -1998,6 +2156,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -2009,6 +2168,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -2017,6 +2177,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -2042,6 +2204,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -2051,6 +2214,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -2069,6 +2234,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -2090,6 +2257,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -2106,6 +2275,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -2127,6 +2298,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -2147,6 +2321,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -2172,6 +2348,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -2184,6 +2361,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -2203,6 +2381,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -2215,6 +2394,7 @@ public struct GEOMETRIC_OWNER
     public XtNodeIndex shared_geometry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -2225,6 +2405,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -2238,6 +2419,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -2258,6 +2440,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -2268,6 +2451,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -2282,6 +2466,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -2291,6 +2476,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -2303,6 +2490,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -2318,6 +2507,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -2328,6 +2519,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -2342,6 +2535,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -2351,6 +2545,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -2364,6 +2559,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -2374,6 +2570,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -2387,6 +2584,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -2399,6 +2597,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -2432,6 +2631,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -2441,6 +2641,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -2478,6 +2679,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -2493,6 +2695,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -2500,6 +2703,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -2510,6 +2714,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -2519,6 +2724,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -2545,6 +2751,7 @@ public struct ROLL_DATA
     public long facet_geometry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_DATA
 {
@@ -2565,6 +2772,7 @@ public struct SESSION_DATA
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -2575,6 +2783,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -2583,6 +2792,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -2593,6 +2803,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -2608,6 +2819,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -2618,6 +2830,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -2627,6 +2840,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -2647,6 +2861,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -2656,6 +2871,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -2664,6 +2880,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -2680,6 +2897,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -2692,6 +2910,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -2709,6 +2928,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -2728,6 +2950,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -2737,6 +2960,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -2753,6 +2978,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -2762,6 +2988,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -2777,6 +3005,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -2787,6 +3016,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -2801,6 +3031,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -2808,6 +3039,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -2823,6 +3055,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -2831,6 +3064,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -2838,6 +3072,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -2854,6 +3090,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -2882,6 +3120,7 @@ public struct MESH
     public long file_format;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -2891,6 +3130,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -2902,6 +3143,8 @@ public struct TAG_MAP
     public TAG_VALUESRef tags;
     public TAG_MAPRef next;
 }
+
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
@@ -7988,6 +8231,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3100020_30100
 [StructLayout(LayoutKind.Sequential)] public struct SCHEMA_CHAR_VALUESRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct NEW_FIELD_MAPRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -7995,6 +8239,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -8005,6 +8250,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -8039,6 +8285,7 @@ public struct PARTITION
     public BYTE_VALUESRef thread_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -8060,6 +8307,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -8075,6 +8323,7 @@ public struct UNIVERSE
     public CHAIN_HEADRef del;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -8085,6 +8334,7 @@ public struct LEAF_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct BRANCH_TAG_TABLE
@@ -8094,6 +8344,7 @@ public struct BRANCH_TAG_TABLE
     public BRANCH_TAG_TABLE__leaf__ARRAY leaf;
     public long n_live;
 }
+
 
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -8109,6 +8360,7 @@ public struct ROOT_TAG_TABLE
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
 {
@@ -8120,6 +8372,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -8151,6 +8405,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -8168,6 +8424,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -8215,6 +8475,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -8231,6 +8492,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -8259,6 +8522,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -8273,6 +8537,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -8295,6 +8560,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -8316,6 +8583,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -8331,6 +8599,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -8348,6 +8618,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -8361,6 +8632,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -8378,6 +8651,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -8397,6 +8672,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -8418,6 +8695,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -8436,6 +8715,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -8457,6 +8738,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -8473,6 +8756,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -8494,6 +8779,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -8511,6 +8798,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -8534,6 +8823,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -8555,6 +8846,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -8575,6 +8867,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -8587,6 +8880,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -8598,6 +8892,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -8612,6 +8907,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -8624,6 +8920,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -8633,6 +8930,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -8652,6 +8951,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -8662,6 +8962,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -8679,6 +8981,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -8701,6 +9005,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -8718,6 +9024,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -8737,6 +9045,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -8759,6 +9069,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -8777,6 +9089,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -8798,6 +9112,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -8814,6 +9130,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -8844,6 +9162,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -8870,6 +9190,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -8898,6 +9220,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -8914,6 +9238,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -8942,6 +9268,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -8959,6 +9287,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -8982,6 +9312,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -9000,6 +9332,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -9014,6 +9347,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -9025,6 +9359,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -9041,6 +9376,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -9059,6 +9396,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -9084,6 +9423,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -9103,6 +9444,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -9124,6 +9466,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -9135,6 +9478,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -9148,6 +9492,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -9159,6 +9504,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -9172,6 +9518,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -9205,6 +9552,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -9214,6 +9562,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -9234,6 +9583,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -9251,6 +9601,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -9260,6 +9611,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -9271,6 +9623,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -9280,6 +9633,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -9291,6 +9645,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -9300,6 +9655,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -9311,6 +9667,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -9321,6 +9678,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -9330,6 +9688,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -9346,6 +9706,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -9361,6 +9722,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -9370,6 +9732,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -9378,6 +9741,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -9389,6 +9753,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -9398,6 +9763,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -9409,6 +9775,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -9418,6 +9785,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -9437,6 +9805,7 @@ public struct TRANSFORM
     public double max_scale;
     public XtSchemaVector perspective_vector;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -9466,6 +9835,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -9475,6 +9845,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -9489,6 +9860,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -9507,6 +9879,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -9519,6 +9892,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -9542,6 +9916,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -9563,6 +9938,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -9571,6 +9947,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -9582,6 +9960,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -9597,6 +9976,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -9609,6 +9989,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -9624,6 +10005,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -9634,6 +10016,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -9650,6 +10033,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -9683,6 +10068,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -9699,6 +10086,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -9727,6 +10116,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -9737,6 +10127,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -9751,6 +10142,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -9763,6 +10155,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -9780,6 +10174,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -9830,6 +10226,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -9860,6 +10260,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -9869,6 +10270,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -9880,6 +10282,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -9888,6 +10291,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -9913,6 +10318,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -9922,6 +10328,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -9940,6 +10348,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -9961,6 +10371,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -9977,6 +10389,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -9998,6 +10412,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -10018,6 +10435,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -10043,6 +10462,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -10055,6 +10475,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -10074,6 +10495,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -10086,6 +10508,7 @@ public struct GEOMETRIC_OWNER
     public XtNodeIndex shared_geometry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -10096,6 +10519,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -10109,6 +10533,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -10129,6 +10554,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -10139,6 +10565,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -10153,6 +10580,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -10162,6 +10590,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -10174,6 +10604,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -10189,6 +10621,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -10199,6 +10633,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -10213,6 +10649,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -10222,6 +10659,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -10235,6 +10673,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -10245,6 +10684,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -10258,6 +10698,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -10270,6 +10711,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -10303,6 +10745,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -10312,6 +10755,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -10349,6 +10793,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -10364,6 +10809,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -10371,6 +10817,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -10381,6 +10828,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -10390,6 +10838,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -10416,6 +10865,7 @@ public struct ROLL_DATA
     public long facet_geometry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_DATA
 {
@@ -10436,6 +10886,7 @@ public struct SESSION_DATA
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -10446,6 +10897,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -10454,6 +10906,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -10464,6 +10917,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -10480,6 +10934,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -10490,6 +10945,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -10499,6 +10955,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -10519,6 +10976,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -10528,6 +10986,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -10536,6 +10995,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -10552,6 +11012,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -10564,6 +11025,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -10581,6 +11043,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -10600,6 +11065,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -10609,6 +11075,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -10625,6 +11093,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -10634,6 +11103,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -10649,6 +11120,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -10659,6 +11131,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -10673,6 +11146,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -10680,6 +11154,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -10695,6 +11170,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -10703,6 +11179,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -10710,6 +11187,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -10726,6 +11205,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -10756,6 +11237,7 @@ public struct MESH
     public long file_format;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -10765,6 +11247,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -10777,6 +11261,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -10788,6 +11274,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -10797,6 +11284,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -10810,6 +11298,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -10819,6 +11308,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -10837,6 +11327,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -10852,6 +11343,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -10864,6 +11356,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -10872,6 +11365,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -10884,6 +11378,7 @@ public struct OLD_NODE_MAP
     public long exemplar_offset_low;
     public long node_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
@@ -16284,6 +16779,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3101042_31001
 [StructLayout(LayoutKind.Sequential)] public struct SCHEMA_CHAR_VALUESRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct NEW_FIELD_MAPRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -16291,6 +16787,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -16301,6 +16798,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -16335,6 +16833,7 @@ public struct PARTITION
     public BYTE_VALUESRef thread_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -16356,6 +16855,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -16371,6 +16871,7 @@ public struct UNIVERSE
     public CHAIN_HEADRef del;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -16381,6 +16882,7 @@ public struct LEAF_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct BRANCH_TAG_TABLE
@@ -16390,6 +16892,7 @@ public struct BRANCH_TAG_TABLE
     public BRANCH_TAG_TABLE__leaf__ARRAY leaf;
     public long n_live;
 }
+
 
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -16405,6 +16908,7 @@ public struct ROOT_TAG_TABLE
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
 {
@@ -16416,6 +16920,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -16447,6 +16953,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -16464,6 +16972,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -16511,6 +17023,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -16527,6 +17040,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -16555,6 +17070,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -16569,6 +17085,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -16591,6 +17108,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -16612,6 +17131,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -16627,6 +17147,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -16644,6 +17166,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -16657,6 +17180,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -16674,6 +17199,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -16693,6 +17220,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -16714,6 +17243,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -16732,6 +17263,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -16753,6 +17286,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -16769,6 +17304,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -16790,6 +17327,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -16807,6 +17346,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -16830,6 +17371,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -16851,6 +17394,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -16871,6 +17415,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -16883,6 +17428,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -16894,6 +17440,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -16908,6 +17455,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -16920,6 +17468,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -16929,6 +17478,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -16948,6 +17499,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -16958,6 +17510,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -16975,6 +17529,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -16997,6 +17553,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -17014,6 +17572,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -17033,6 +17593,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -17055,6 +17617,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -17073,6 +17637,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -17094,6 +17660,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -17110,6 +17678,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -17140,6 +17710,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -17166,6 +17738,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -17194,6 +17768,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -17210,6 +17786,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -17238,6 +17816,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -17255,6 +17835,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -17278,6 +17860,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -17296,6 +17880,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -17310,6 +17895,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -17321,6 +17907,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -17337,6 +17924,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -17355,6 +17944,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -17380,6 +17971,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -17399,6 +17992,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -17420,6 +18014,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -17431,6 +18026,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -17444,6 +18040,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -17455,6 +18052,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -17468,6 +18066,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -17501,6 +18100,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -17510,6 +18110,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -17530,6 +18131,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -17547,6 +18149,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -17556,6 +18159,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -17567,6 +18171,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -17576,6 +18181,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -17587,6 +18193,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -17596,6 +18203,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -17607,6 +18215,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -17617,6 +18226,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -17626,6 +18236,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -17642,6 +18254,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -17657,6 +18270,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -17666,6 +18280,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -17674,6 +18289,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -17685,6 +18301,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -17694,6 +18311,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -17705,6 +18323,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -17714,6 +18333,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -17733,6 +18353,7 @@ public struct TRANSFORM
     public double max_scale;
     public XtSchemaVector perspective_vector;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -17762,6 +18383,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -17771,6 +18393,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -17785,6 +18408,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -17803,6 +18427,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -17815,6 +18440,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -17838,6 +18464,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -17859,6 +18486,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -17867,6 +18495,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -17878,6 +18508,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -17893,6 +18524,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -17905,6 +18537,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -17920,6 +18553,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -17930,6 +18564,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -17946,6 +18581,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -17979,6 +18616,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -17995,6 +18634,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -18023,6 +18664,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -18033,6 +18675,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -18047,6 +18690,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -18059,6 +18703,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -18076,6 +18722,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -18126,6 +18774,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -18156,6 +18808,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -18165,6 +18818,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -18176,6 +18830,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -18184,6 +18839,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -18209,6 +18866,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -18218,6 +18876,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -18236,6 +18896,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -18257,6 +18919,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -18273,6 +18937,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -18294,6 +18960,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -18314,6 +18983,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -18339,6 +19010,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -18351,6 +19023,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -18370,6 +19043,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -18382,6 +19056,7 @@ public struct GEOMETRIC_OWNER
     public XtNodeIndex shared_geometry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -18392,6 +19067,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -18405,6 +19081,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -18425,6 +19102,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -18435,6 +19113,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -18449,6 +19128,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -18458,6 +19138,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -18470,6 +19152,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -18485,6 +19169,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -18495,6 +19181,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -18509,6 +19197,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -18518,6 +19207,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -18531,6 +19221,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -18541,6 +19232,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -18554,6 +19246,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -18566,6 +19259,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -18599,6 +19293,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -18608,6 +19303,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -18645,6 +19341,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -18660,6 +19357,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -18667,6 +19365,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -18677,6 +19376,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -18686,6 +19386,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -18712,6 +19413,7 @@ public struct ROLL_DATA
     public long facet_geometry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_DATA
 {
@@ -18732,6 +19434,7 @@ public struct SESSION_DATA
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -18742,6 +19445,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -18750,6 +19454,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -18760,6 +19465,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -18776,6 +19482,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -18786,6 +19493,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -18795,6 +19503,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -18815,6 +19524,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -18824,6 +19534,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -18832,6 +19543,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -18848,6 +19560,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -18860,6 +19573,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -18877,6 +19591,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -18896,6 +19613,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -18905,6 +19623,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -18921,6 +19641,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -18930,6 +19651,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -18945,6 +19668,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -18955,6 +19679,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -18969,6 +19694,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -18976,6 +19702,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -18991,6 +19718,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -18999,6 +19727,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -19006,6 +19735,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -19022,6 +19753,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -19053,6 +19786,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -19062,6 +19796,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -19074,6 +19810,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -19085,6 +19823,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -19094,6 +19833,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -19107,6 +19847,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -19116,6 +19857,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -19134,6 +19876,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -19149,6 +19892,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -19161,6 +19905,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -19169,6 +19914,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -19182,6 +19928,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -19190,6 +19937,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -24597,6 +25345,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3200020_31100
 [StructLayout(LayoutKind.Sequential)] public struct SCHEMA_CHAR_VALUESRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct NEW_FIELD_MAPRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -24604,6 +25353,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -24614,6 +25364,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -24648,6 +25399,7 @@ public struct PARTITION
     public BYTE_VALUESRef thread_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -24669,6 +25421,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -24684,6 +25437,7 @@ public struct UNIVERSE
     public CHAIN_HEADRef del;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -24694,6 +25448,7 @@ public struct LEAF_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct BRANCH_TAG_TABLE
@@ -24703,6 +25458,7 @@ public struct BRANCH_TAG_TABLE
     public BRANCH_TAG_TABLE__leaf__ARRAY leaf;
     public long n_live;
 }
+
 
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -24718,6 +25474,7 @@ public struct ROOT_TAG_TABLE
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
 {
@@ -24729,6 +25486,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -24760,6 +25519,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -24777,6 +25538,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -24824,6 +25589,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -24840,6 +25606,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -24868,6 +25636,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -24882,6 +25651,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -24904,6 +25674,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -24925,6 +25697,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -24940,6 +25713,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -24957,6 +25732,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -24970,6 +25746,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -24987,6 +25765,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -25006,6 +25786,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -25027,6 +25809,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -25045,6 +25829,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -25066,6 +25852,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -25082,6 +25870,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -25103,6 +25893,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -25120,6 +25912,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -25143,6 +25937,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -25164,6 +25960,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -25184,6 +25981,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -25196,6 +25994,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -25207,6 +26006,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -25221,6 +26021,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -25233,6 +26034,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -25242,6 +26044,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -25261,6 +26065,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -25271,6 +26076,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -25288,6 +26095,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -25310,6 +26119,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -25327,6 +26138,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -25346,6 +26159,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -25368,6 +26183,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -25386,6 +26203,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -25407,6 +26226,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -25423,6 +26244,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -25453,6 +26276,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -25479,6 +26304,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -25507,6 +26334,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -25523,6 +26352,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -25551,6 +26382,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -25568,6 +26401,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -25591,6 +26426,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -25609,6 +26446,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -25623,6 +26461,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -25634,6 +26473,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -25650,6 +26490,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -25668,6 +26510,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -25693,6 +26537,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -25712,6 +26558,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -25733,6 +26580,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -25744,6 +26592,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -25757,6 +26606,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -25768,6 +26618,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -25781,6 +26632,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -25814,6 +26666,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -25823,6 +26676,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -25843,6 +26697,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -25860,6 +26715,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -25869,6 +26725,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -25880,6 +26737,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -25889,6 +26747,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -25900,6 +26759,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -25909,6 +26769,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -25920,6 +26781,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -25930,6 +26792,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -25939,6 +26802,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -25955,6 +26820,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -25970,6 +26836,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -25979,6 +26846,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -25987,6 +26855,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -25998,6 +26867,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -26007,6 +26877,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -26018,6 +26889,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -26027,6 +26899,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -26046,6 +26919,7 @@ public struct TRANSFORM
     public double max_scale;
     public XtSchemaVector perspective_vector;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -26075,6 +26949,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -26084,6 +26959,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -26098,6 +26974,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -26116,6 +26993,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -26128,6 +27006,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -26151,6 +27030,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -26172,6 +27052,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -26180,6 +27061,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -26191,6 +27074,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -26206,6 +27090,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -26218,6 +27103,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -26233,6 +27119,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -26243,6 +27130,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -26259,6 +27147,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -26292,6 +27182,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -26308,6 +27200,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -26336,6 +27230,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -26346,6 +27241,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -26360,6 +27256,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -26372,6 +27269,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -26389,6 +27288,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -26439,6 +27340,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -26469,6 +27374,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -26478,6 +27384,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -26489,6 +27396,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -26497,6 +27405,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -26522,6 +27432,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -26531,6 +27442,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -26549,6 +27462,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -26570,6 +27485,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -26586,6 +27503,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -26607,6 +27526,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -26627,6 +27549,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -26652,6 +27576,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -26664,6 +27589,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -26683,6 +27609,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -26694,6 +27621,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -26714,6 +27643,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -26736,6 +27666,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -26748,6 +27679,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -26758,6 +27690,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -26771,6 +27704,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -26791,6 +27725,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -26801,6 +27736,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -26815,6 +27751,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -26824,6 +27761,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -26836,6 +27775,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -26851,6 +27792,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -26861,6 +27804,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -26875,6 +27820,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -26884,6 +27830,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -26897,6 +27844,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -26907,6 +27855,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -26920,6 +27869,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -26932,6 +27882,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -26965,6 +27916,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -26974,6 +27926,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -27011,6 +27964,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -27026,6 +27980,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -27033,6 +27988,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -27043,6 +27999,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -27052,6 +28009,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -27078,6 +28036,7 @@ public struct ROLL_DATA
     public long facet_geometry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_DATA
 {
@@ -27098,6 +28057,7 @@ public struct SESSION_DATA
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -27108,6 +28068,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -27116,6 +28077,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -27126,6 +28088,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -27142,6 +28105,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -27152,6 +28116,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -27161,6 +28126,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -27181,6 +28147,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -27190,6 +28157,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -27198,6 +28166,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -27214,6 +28183,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -27226,6 +28196,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -27243,6 +28214,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -27262,6 +28236,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -27271,6 +28246,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -27287,6 +28264,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -27296,6 +28274,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -27311,6 +28291,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -27321,6 +28302,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -27335,6 +28317,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -27342,6 +28325,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -27357,6 +28341,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -27365,6 +28350,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -27372,6 +28358,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -27388,6 +28376,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -27419,6 +28409,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -27428,6 +28419,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -27440,6 +28433,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -27451,6 +28446,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -27460,6 +28456,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -27473,6 +28470,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -27482,6 +28480,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -27500,6 +28499,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -27515,6 +28515,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -27527,6 +28528,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -27535,6 +28537,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -27548,6 +28551,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -27556,6 +28560,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -33091,6 +34096,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3200138_32001
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -33098,6 +34104,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -33108,6 +34115,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -33143,6 +34151,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -33164,6 +34173,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -33176,6 +34186,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -33185,6 +34196,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -33196,6 +34208,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -33204,6 +34217,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -33216,6 +34230,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -33247,6 +34263,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -33264,6 +34282,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -33311,6 +34333,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -33327,6 +34350,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -33355,6 +34380,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -33369,6 +34395,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -33391,6 +34418,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -33412,6 +34441,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -33427,6 +34457,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -33444,6 +34476,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -33457,6 +34490,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -33474,6 +34509,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -33493,6 +34530,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -33514,6 +34553,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -33532,6 +34573,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -33553,6 +34596,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -33569,6 +34614,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -33590,6 +34637,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -33607,6 +34656,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -33630,6 +34681,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -33651,6 +34704,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -33671,6 +34725,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -33683,6 +34738,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -33694,6 +34750,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -33708,6 +34765,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -33720,6 +34778,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -33729,6 +34788,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -33748,6 +34809,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -33758,6 +34820,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -33775,6 +34839,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -33797,6 +34863,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -33814,6 +34882,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -33833,6 +34903,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -33855,6 +34927,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -33873,6 +34947,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -33894,6 +34970,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -33910,6 +34988,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -33940,6 +35020,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -33966,6 +35048,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -33994,6 +35078,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -34010,6 +35096,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -34038,6 +35126,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -34055,6 +35145,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -34078,6 +35170,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -34096,6 +35190,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -34110,6 +35205,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -34121,6 +35217,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -34137,6 +35234,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -34155,6 +35254,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -34180,6 +35281,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -34199,6 +35302,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -34220,6 +35324,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -34231,6 +35336,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -34244,6 +35350,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -34255,6 +35362,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -34268,6 +35376,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -34301,6 +35410,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -34310,6 +35420,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -34330,6 +35441,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -34347,6 +35459,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -34356,6 +35469,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -34367,6 +35481,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -34376,6 +35491,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -34387,6 +35503,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -34396,6 +35513,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -34407,6 +35525,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -34417,6 +35536,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -34426,6 +35546,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -34442,6 +35564,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -34457,6 +35580,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -34466,6 +35590,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -34474,6 +35599,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -34485,6 +35611,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -34494,6 +35621,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -34505,6 +35633,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -34514,6 +35643,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -34533,6 +35663,7 @@ public struct TRANSFORM
     public double max_scale;
     public XtSchemaVector perspective_vector;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -34563,6 +35694,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -34572,6 +35704,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -34586,6 +35719,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -34604,6 +35738,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -34616,6 +35751,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -34639,6 +35775,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -34660,6 +35797,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -34668,6 +35806,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -34679,6 +35819,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -34694,6 +35835,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -34706,6 +35848,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -34721,6 +35864,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -34731,6 +35875,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -34747,6 +35892,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -34780,6 +35927,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -34796,6 +35945,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -34824,6 +35975,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -34834,6 +35986,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -34848,6 +36001,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -34860,6 +36014,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -34877,6 +36033,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -34927,6 +36085,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -34957,6 +36119,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -34966,6 +36129,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -34977,6 +36141,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -34985,6 +36150,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -35010,6 +36177,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -35019,6 +36187,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -35037,6 +36207,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -35058,6 +36230,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -35074,6 +36248,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -35095,6 +36271,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -35115,6 +36294,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -35140,6 +36321,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -35152,6 +36334,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -35171,6 +36354,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -35182,6 +36366,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -35202,6 +36388,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -35224,6 +36411,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -35236,6 +36424,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -35246,6 +36435,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -35259,6 +36449,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -35279,6 +36470,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -35289,6 +36481,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -35303,6 +36496,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -35312,6 +36506,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -35324,6 +36520,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -35339,6 +36537,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -35349,6 +36549,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -35363,6 +36565,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -35372,6 +36575,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -35385,6 +36589,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -35395,6 +36600,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -35408,6 +36614,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -35420,6 +36627,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -35453,6 +36661,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -35462,6 +36671,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -35499,6 +36709,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -35514,6 +36725,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -35521,6 +36733,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -35531,6 +36744,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -35540,6 +36754,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -35565,6 +36780,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -35592,6 +36808,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -35602,6 +36819,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -35610,6 +36828,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -35620,6 +36839,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -35636,6 +36856,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -35646,6 +36867,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -35655,6 +36877,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -35675,6 +36898,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -35684,6 +36908,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -35692,6 +36917,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -35708,6 +36934,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -35720,6 +36947,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -35737,6 +36965,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -35756,6 +36987,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -35765,6 +36997,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -35781,6 +37015,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -35790,6 +37025,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -35805,6 +37042,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -35815,6 +37053,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -35829,6 +37068,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -35836,6 +37076,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -35851,6 +37092,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -35859,6 +37101,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -35866,6 +37109,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -35882,6 +37127,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -35913,6 +37160,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -35922,6 +37170,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -35934,6 +37184,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -35945,6 +37197,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -35954,6 +37207,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -35967,6 +37221,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -35976,6 +37231,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -35994,6 +37250,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -36009,6 +37266,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -36021,6 +37279,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -36029,6 +37288,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -36042,6 +37302,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -36050,6 +37311,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -36064,6 +37326,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -36072,6 +37335,8 @@ public struct REAL_TOOTH
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -36085,6 +37350,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -36100,6 +37367,10 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -36121,6 +37392,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -36129,6 +37401,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -36143,6 +37417,8 @@ public struct SURF_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
@@ -41679,6 +42955,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3301102_33101
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -41686,6 +42963,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -41696,6 +42974,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -41731,6 +43010,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -41752,6 +43032,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -41764,6 +43045,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -41773,6 +43055,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -41784,6 +43067,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -41792,6 +43076,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -41804,6 +43089,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -41836,6 +43123,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -41853,6 +43142,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -41901,6 +43194,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -41917,6 +43211,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -41945,6 +43241,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -41959,6 +43256,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -41981,6 +43279,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -42002,6 +43302,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -42017,6 +43318,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -42034,6 +43337,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -42047,6 +43351,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -42064,6 +43370,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -42083,6 +43391,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -42104,6 +43414,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -42122,6 +43434,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -42143,6 +43457,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -42159,6 +43475,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -42180,6 +43498,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -42197,6 +43517,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -42220,6 +43542,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -42241,6 +43565,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -42261,6 +43586,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -42273,6 +43599,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -42284,6 +43611,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -42298,6 +43626,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -42310,6 +43639,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -42319,6 +43649,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -42338,6 +43670,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -42348,6 +43681,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -42365,6 +43700,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -42387,6 +43724,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -42404,6 +43743,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -42423,6 +43764,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -42445,6 +43788,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -42463,6 +43808,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -42484,6 +43831,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -42500,6 +43849,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -42530,6 +43881,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -42556,6 +43909,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -42584,6 +43939,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -42600,6 +43957,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -42628,6 +43987,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -42645,6 +44006,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -42668,6 +44031,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -42686,6 +44051,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -42700,6 +44066,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -42711,6 +44078,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -42727,6 +44095,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -42745,6 +44115,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -42770,6 +44142,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -42789,6 +44163,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -42810,6 +44185,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -42821,6 +44197,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -42834,6 +44211,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -42845,6 +44223,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -42858,6 +44237,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -42891,6 +44271,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -42900,6 +44281,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -42920,6 +44302,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -42937,6 +44320,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -42946,6 +44330,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -42957,6 +44342,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -42966,6 +44352,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -42977,6 +44364,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -42986,6 +44374,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -42997,6 +44386,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -43007,6 +44397,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -43016,6 +44407,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -43032,6 +44425,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -43047,6 +44441,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -43056,6 +44451,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -43064,6 +44460,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -43075,6 +44472,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -43084,6 +44482,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -43095,6 +44494,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -43104,6 +44504,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -43123,6 +44524,7 @@ public struct TRANSFORM
     public double max_scale;
     public XtSchemaVector perspective_vector;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -43153,6 +44555,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -43162,6 +44565,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -43176,6 +44580,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -43194,6 +44599,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -43206,6 +44612,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -43229,6 +44636,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -43250,6 +44658,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -43258,6 +44667,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -43269,6 +44680,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -43284,6 +44696,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -43296,6 +44709,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -43311,6 +44725,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -43321,6 +44736,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -43337,6 +44753,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -43370,6 +44788,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -43386,6 +44806,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -43414,6 +44836,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -43424,6 +44847,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -43438,6 +44862,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -43450,6 +44875,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -43467,6 +44894,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -43517,6 +44946,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -43547,6 +44980,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -43556,6 +44990,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -43567,6 +45002,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -43575,6 +45011,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -43600,6 +45038,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -43609,6 +45048,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -43627,6 +45068,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -43648,6 +45091,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -43664,6 +45109,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -43685,6 +45132,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -43705,6 +45155,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -43730,6 +45182,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -43742,6 +45195,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -43761,6 +45215,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -43772,6 +45227,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -43792,6 +45249,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -43814,6 +45272,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -43826,6 +45285,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -43836,6 +45296,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -43849,6 +45310,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -43869,6 +45331,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -43879,6 +45342,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -43893,6 +45357,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -43902,6 +45367,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -43914,6 +45381,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -43929,6 +45398,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -43939,6 +45410,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -43953,6 +45426,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -43962,6 +45436,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -43975,6 +45450,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -43985,6 +45461,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -43998,6 +45475,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -44010,6 +45488,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -44043,6 +45522,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -44052,6 +45532,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -44089,6 +45570,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -44104,6 +45586,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -44111,6 +45594,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -44121,6 +45605,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -44130,6 +45615,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -44155,6 +45641,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -44183,6 +45670,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -44193,6 +45681,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -44201,6 +45690,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -44211,6 +45701,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -44227,6 +45718,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -44237,6 +45729,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -44246,6 +45739,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -44266,6 +45760,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -44275,6 +45770,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -44283,6 +45779,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -44299,6 +45796,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -44311,6 +45809,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -44328,6 +45827,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -44347,6 +45849,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -44356,6 +45859,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -44372,6 +45877,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -44381,6 +45887,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -44396,6 +45904,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -44406,6 +45915,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -44420,6 +45930,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -44427,6 +45938,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -44442,6 +45954,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -44450,6 +45963,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -44457,6 +45971,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -44473,6 +45989,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -44504,6 +46022,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -44513,6 +46032,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -44525,6 +46046,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -44536,6 +46059,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -44545,6 +46069,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -44558,6 +46083,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -44567,6 +46093,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -44585,6 +46112,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -44600,6 +46128,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -44612,6 +46141,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -44620,6 +46150,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -44633,6 +46164,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -44641,6 +46173,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -44655,6 +46188,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -44664,6 +46198,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -44678,6 +46214,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -44694,6 +46232,10 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -44717,6 +46259,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -44726,6 +46269,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -44741,6 +46286,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -44754,6 +46301,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -50490,6 +52038,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3301152_33103
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -50497,6 +52046,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -50507,6 +52057,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -50542,6 +52093,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -50563,6 +52115,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -50575,6 +52128,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -50584,6 +52138,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -50595,6 +52150,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -50603,6 +52159,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -50615,6 +52172,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -50647,6 +52206,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -50664,6 +52225,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -50712,6 +52277,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -50728,6 +52294,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -50756,6 +52324,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -50770,6 +52339,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -50792,6 +52362,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -50813,6 +52385,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -50828,6 +52401,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -50845,6 +52420,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -50858,6 +52434,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -50875,6 +52453,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -50894,6 +52474,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -50915,6 +52497,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -50933,6 +52517,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -50954,6 +52540,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -50970,6 +52558,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -50991,6 +52581,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -51008,6 +52600,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -51031,6 +52625,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -51052,6 +52648,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -51072,6 +52669,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -51084,6 +52682,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -51095,6 +52694,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -51109,6 +52709,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -51121,6 +52722,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -51130,6 +52732,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -51149,6 +52753,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -51159,6 +52764,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -51176,6 +52783,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -51198,6 +52807,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -51215,6 +52826,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -51234,6 +52847,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -51256,6 +52871,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -51274,6 +52891,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -51295,6 +52914,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -51311,6 +52932,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -51341,6 +52964,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -51367,6 +52992,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -51395,6 +53022,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -51411,6 +53040,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -51439,6 +53070,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -51456,6 +53089,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -51479,6 +53114,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -51497,6 +53134,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -51511,6 +53149,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -51522,6 +53161,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -51538,6 +53178,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -51556,6 +53198,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -51581,6 +53225,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -51600,6 +53246,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -51621,6 +53268,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -51632,6 +53280,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -51645,6 +53294,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -51656,6 +53306,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -51669,6 +53320,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -51702,6 +53354,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -51711,6 +53364,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -51731,6 +53385,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -51748,6 +53403,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -51757,6 +53413,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -51768,6 +53425,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -51777,6 +53435,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -51788,6 +53447,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -51797,6 +53457,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -51808,6 +53469,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -51818,6 +53480,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -51827,6 +53490,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -51843,6 +53508,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -51858,6 +53524,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -51867,6 +53534,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -51875,6 +53543,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -51886,6 +53555,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -51895,6 +53565,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -51906,6 +53577,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -51915,6 +53587,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -51935,6 +53608,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -51965,6 +53639,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -51974,6 +53649,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -51988,6 +53664,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -52006,6 +53683,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -52018,6 +53696,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -52041,6 +53720,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -52062,6 +53742,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -52070,6 +53751,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -52081,6 +53764,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -52096,6 +53780,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -52108,6 +53793,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -52123,6 +53809,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -52133,6 +53820,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -52149,6 +53837,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -52182,6 +53872,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -52198,6 +53890,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -52226,6 +53920,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -52236,6 +53931,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -52250,6 +53946,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -52262,6 +53959,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -52279,6 +53978,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -52329,6 +54030,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -52359,6 +54064,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -52368,6 +54074,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -52379,6 +54086,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -52387,6 +54095,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -52412,6 +54122,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -52421,6 +54132,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -52439,6 +54152,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -52460,6 +54175,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -52476,6 +54193,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -52497,6 +54216,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -52517,6 +54239,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -52542,6 +54266,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -52554,6 +54279,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -52573,6 +54299,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -52584,6 +54311,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -52604,6 +54333,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -52626,6 +54356,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -52638,6 +54369,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -52648,6 +54380,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -52661,6 +54394,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -52681,6 +54415,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -52691,6 +54426,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -52705,6 +54441,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -52714,6 +54451,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -52726,6 +54465,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -52741,6 +54482,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -52751,6 +54494,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -52765,6 +54510,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -52774,6 +54520,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -52787,6 +54534,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -52797,6 +54545,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -52810,6 +54559,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -52822,6 +54572,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -52855,6 +54606,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -52864,6 +54616,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -52901,6 +54654,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -52916,6 +54670,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -52923,6 +54678,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -52933,6 +54689,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -52942,6 +54699,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -52967,6 +54725,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -52995,6 +54754,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -53005,6 +54765,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -53013,6 +54774,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -53023,6 +54785,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -53039,6 +54802,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -53049,6 +54813,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -53058,6 +54823,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -53078,6 +54844,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -53087,6 +54854,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -53095,6 +54863,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -53111,6 +54880,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -53123,6 +54893,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -53140,6 +54911,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -53159,6 +54933,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -53168,6 +54943,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -53184,6 +54961,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -53193,6 +54971,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -53208,6 +54988,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -53218,6 +54999,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -53232,6 +55014,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -53239,6 +55022,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -53254,6 +55038,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -53262,6 +55047,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -53269,6 +55055,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -53285,6 +55073,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -53316,6 +55106,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -53325,6 +55116,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -53337,6 +55130,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -53348,6 +55143,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -53357,6 +55153,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -53370,6 +55167,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -53379,6 +55177,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -53397,6 +55196,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -53412,6 +55212,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -53424,6 +55225,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -53432,6 +55234,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -53445,6 +55248,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -53453,6 +55257,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -53467,6 +55272,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -53476,6 +55282,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -53490,6 +55298,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -53506,6 +55316,10 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -53529,6 +55343,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -53538,6 +55353,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -53553,6 +55370,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -53567,6 +55386,7 @@ public struct CURVE_STUB
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
 {
@@ -53580,6 +55400,7 @@ public struct STRUCTURE_COMB
     public long bytes_per_entry;
     public XtRange teeth;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -59343,6 +61164,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3400066_34001
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -59350,6 +61172,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -59360,6 +61183,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -59395,6 +61219,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -59416,6 +61241,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -59428,6 +61254,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -59437,6 +61264,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -59448,6 +61276,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -59456,6 +61285,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -59468,6 +61298,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -59500,6 +61332,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -59517,6 +61351,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -59566,6 +61404,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -59582,6 +61421,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -59610,6 +61451,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -59624,6 +61466,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -59646,6 +61489,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -59667,6 +61512,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -59682,6 +61528,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -59700,6 +61548,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -59713,6 +61562,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -59730,6 +61581,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -59749,6 +61602,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -59770,6 +61625,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -59788,6 +61645,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -59809,6 +61668,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -59825,6 +61686,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -59846,6 +61709,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -59863,6 +61728,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -59886,6 +61753,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -59907,6 +61776,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -59927,6 +61797,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -59939,6 +61810,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -59950,6 +61822,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -59964,6 +61837,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -59976,6 +61850,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -59985,6 +61860,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -60004,6 +61881,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -60014,6 +61892,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -60031,6 +61911,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -60053,6 +61935,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -60070,6 +61954,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -60089,6 +61975,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -60111,6 +61999,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -60129,6 +62019,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -60150,6 +62042,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -60166,6 +62060,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -60196,6 +62092,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -60222,6 +62120,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -60250,6 +62150,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -60266,6 +62168,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -60294,6 +62198,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -60311,6 +62217,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -60334,6 +62242,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -60352,6 +62262,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -60366,6 +62277,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -60377,6 +62289,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -60393,6 +62306,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -60411,6 +62326,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -60436,6 +62353,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -60455,6 +62374,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -60476,6 +62396,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -60487,6 +62408,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -60500,6 +62422,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -60511,6 +62434,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -60524,6 +62448,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -60557,6 +62482,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -60566,6 +62492,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(16)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -60586,6 +62513,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -60603,6 +62531,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -60612,6 +62541,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -60623,6 +62553,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -60632,6 +62563,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -60643,6 +62575,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -60652,6 +62585,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -60663,6 +62597,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -60673,6 +62608,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -60682,6 +62618,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -60698,6 +62636,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -60713,6 +62652,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -60722,6 +62662,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -60730,6 +62671,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -60741,6 +62683,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -60750,6 +62693,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -60761,6 +62705,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -60770,6 +62715,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -60790,6 +62736,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -60820,6 +62767,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -60829,6 +62777,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -60843,6 +62792,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -60861,6 +62811,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -60873,6 +62824,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -60897,6 +62849,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -60918,6 +62871,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -60926,6 +62880,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -60937,6 +62893,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -60952,6 +62909,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -60964,6 +62922,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -60979,6 +62938,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -60989,6 +62949,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -61005,6 +62966,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -61038,6 +63001,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -61054,6 +63019,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -61082,6 +63049,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -61092,6 +63060,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -61106,6 +63075,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -61118,6 +63088,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -61135,6 +63107,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -61185,6 +63159,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -61215,6 +63193,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -61224,6 +63203,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -61235,6 +63215,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -61243,6 +63224,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -61268,6 +63251,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -61277,6 +63261,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -61295,6 +63281,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -61316,6 +63304,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -61332,6 +63322,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -61353,6 +63345,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -61373,6 +63368,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -61398,6 +63395,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -61410,6 +63408,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -61429,6 +63428,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -61440,6 +63440,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -61460,6 +63462,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -61482,6 +63485,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -61494,6 +63498,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -61504,6 +63509,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -61517,6 +63523,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -61537,6 +63544,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -61547,6 +63555,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -61561,6 +63570,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -61570,6 +63580,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -61582,6 +63594,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -61597,6 +63611,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -61607,6 +63623,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -61621,6 +63639,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -61630,6 +63649,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -61643,6 +63663,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -61653,6 +63674,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -61666,6 +63688,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -61678,6 +63701,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -61711,6 +63735,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -61720,6 +63745,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -61757,6 +63783,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -61772,6 +63799,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -61779,6 +63807,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -61789,6 +63818,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -61798,6 +63828,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -61823,6 +63854,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -61851,6 +63883,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -61861,6 +63894,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -61869,6 +63903,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -61879,6 +63914,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -61895,6 +63931,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -61905,6 +63942,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -61914,6 +63952,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -61934,6 +63973,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -61943,6 +63983,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -61951,6 +63992,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -61967,6 +64009,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -61979,6 +64022,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -61996,6 +64040,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -62015,6 +64062,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -62024,6 +64072,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -62040,6 +64090,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -62049,6 +64100,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -62064,6 +64117,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -62074,6 +64128,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -62088,6 +64143,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -62095,6 +64151,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -62110,6 +64167,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -62118,6 +64176,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -62125,6 +64184,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -62141,6 +64202,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -62172,6 +64235,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -62181,6 +64245,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -62193,6 +64259,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -62204,6 +64272,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -62213,6 +64282,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -62226,6 +64296,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -62235,6 +64306,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -62253,6 +64325,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -62268,6 +64341,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -62280,6 +64354,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -62288,6 +64363,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -62301,6 +64377,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -62309,6 +64386,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -62323,6 +64401,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -62332,6 +64411,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -62346,6 +64427,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -62362,6 +64445,10 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -62385,6 +64472,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -62394,6 +64482,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -62409,6 +64499,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -62422,6 +64514,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -62437,6 +64530,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -62447,6 +64541,7 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -68258,6 +70353,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3401113_34101
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -68265,6 +70361,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -68275,6 +70372,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -68311,6 +70409,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -68332,6 +70431,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -68344,6 +70444,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -68353,6 +70454,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -68364,6 +70466,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -68372,6 +70475,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -68384,6 +70488,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -68416,6 +70522,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -68433,6 +70541,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -68482,6 +70594,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -68498,6 +70611,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -68526,6 +70641,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -68540,6 +70656,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -68562,6 +70679,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -68583,6 +70702,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -68598,6 +70718,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -68616,6 +70738,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -68629,6 +70752,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -68646,6 +70771,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -68665,6 +70792,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -68686,6 +70815,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -68704,6 +70835,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -68725,6 +70858,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -68741,6 +70876,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -68762,6 +70899,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -68779,6 +70918,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -68802,6 +70943,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -68823,6 +70966,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -68843,6 +70987,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -68855,6 +71000,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -68866,6 +71012,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -68880,6 +71027,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -68892,6 +71040,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -68901,6 +71050,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -68920,6 +71071,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -68930,6 +71082,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -68947,6 +71101,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -68969,6 +71125,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -68986,6 +71144,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -69005,6 +71165,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -69027,6 +71189,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -69045,6 +71209,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -69066,6 +71232,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -69082,6 +71250,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -69112,6 +71282,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -69138,6 +71310,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -69166,6 +71340,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -69182,6 +71358,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -69210,6 +71388,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -69227,6 +71407,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -69250,6 +71432,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -69268,6 +71452,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -69282,6 +71467,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -69293,6 +71479,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -69309,6 +71496,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -69327,6 +71516,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -69352,6 +71543,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -69371,6 +71564,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -69392,6 +71586,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -69403,6 +71598,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -69416,6 +71612,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -69427,6 +71624,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -69440,6 +71638,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -69473,6 +71672,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -69482,6 +71682,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(16)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -69502,6 +71703,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -69519,6 +71721,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -69528,6 +71731,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -69539,6 +71743,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -69548,6 +71753,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -69559,6 +71765,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -69568,6 +71775,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -69579,6 +71787,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -69589,6 +71798,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -69598,6 +71808,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -69614,6 +71826,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -69629,6 +71842,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -69638,6 +71852,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -69646,6 +71861,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -69657,6 +71873,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -69666,6 +71883,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -69677,6 +71895,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -69686,6 +71905,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -69706,6 +71926,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -69736,6 +71957,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -69745,6 +71967,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -69759,6 +71982,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -69777,6 +72001,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -69789,6 +72014,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -69814,6 +72040,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -69835,6 +72062,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -69843,6 +72071,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -69854,6 +72084,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -69869,6 +72100,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -69881,6 +72113,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -69896,6 +72129,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -69906,6 +72140,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -69922,6 +72157,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -69955,6 +72192,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -69971,6 +72210,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -69999,6 +72240,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -70009,6 +72251,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -70023,6 +72266,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -70035,6 +72279,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -70052,6 +72298,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -70102,6 +72350,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -70132,6 +72384,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -70141,6 +72394,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -70152,6 +72406,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -70160,6 +72415,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -70185,6 +72442,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -70194,6 +72452,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -70212,6 +72472,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -70233,6 +72495,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -70249,6 +72513,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -70270,6 +72536,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -70290,6 +72559,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -70315,6 +72586,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -70327,6 +72599,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -70346,6 +72619,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -70357,6 +72631,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -70377,6 +72653,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -70399,6 +72676,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -70411,6 +72689,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -70421,6 +72700,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -70434,6 +72714,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -70454,6 +72735,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -70464,6 +72746,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -70478,6 +72761,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -70487,6 +72771,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -70499,6 +72785,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -70514,6 +72802,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -70524,6 +72814,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -70538,6 +72830,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -70547,6 +72840,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -70560,6 +72854,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -70570,6 +72865,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -70583,6 +72879,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -70595,6 +72892,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -70628,6 +72926,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -70637,6 +72936,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -70674,6 +72974,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -70689,6 +72990,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -70696,6 +72998,7 @@ public struct CHAIN_HEAD
     public XtTableIndex _xt_order;
     public byte dummy;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -70706,6 +73009,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -70715,6 +73019,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -70740,6 +73045,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -70768,6 +73074,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -70778,6 +73085,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -70786,6 +73094,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -70796,6 +73105,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -70812,6 +73122,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -70822,6 +73133,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -70831,6 +73143,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -70851,6 +73164,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -70860,6 +73174,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -70868,6 +73183,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -70884,6 +73200,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -70896,6 +73213,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -70913,6 +73231,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -70932,6 +73253,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -70941,6 +73263,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -70957,6 +73281,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -70966,6 +73291,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -70981,6 +73308,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -70991,6 +73319,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -71005,6 +73334,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -71012,6 +73342,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -71027,6 +73358,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -71035,6 +73367,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -71042,6 +73375,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -71058,6 +73393,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -71089,6 +73426,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -71098,6 +73436,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -71110,6 +73450,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -71121,6 +73463,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -71130,6 +73473,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -71143,6 +73487,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -71152,6 +73497,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -71170,6 +73516,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -71185,6 +73532,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -71197,6 +73545,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -71205,6 +73554,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -71218,6 +73568,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -71226,6 +73577,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -71240,6 +73592,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -71249,6 +73602,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -71263,6 +73618,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -71279,6 +73636,10 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -71302,6 +73663,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -71311,6 +73673,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -71326,6 +73690,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -71339,6 +73705,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -71354,6 +73721,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -71364,6 +73732,8 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
+public enum FRAME__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -77178,6 +79548,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3500127_35001
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -77185,6 +79556,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -77195,6 +79567,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -77236,6 +79609,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -77258,6 +79632,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -77270,6 +79645,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -77279,6 +79655,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -77290,6 +79667,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -77298,6 +79676,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -77310,6 +79689,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -77342,6 +79723,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -77359,6 +79742,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -77408,6 +79795,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -77424,6 +79812,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -77452,6 +79842,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -77466,6 +79857,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -77488,6 +79880,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -77509,6 +79903,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -77524,6 +79919,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -77542,6 +79939,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -77555,6 +79953,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -77572,6 +79972,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -77591,6 +79993,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -77612,6 +80016,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -77630,6 +80036,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -77651,6 +80059,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -77667,6 +80077,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -77688,6 +80100,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -77705,6 +80119,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -77728,6 +80144,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -77749,6 +80167,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -77769,6 +80188,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -77781,6 +80201,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -77792,6 +80213,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -77806,6 +80228,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -77818,6 +80241,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -77827,6 +80251,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -77846,6 +80272,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -77856,6 +80283,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -77873,6 +80302,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -77895,6 +80326,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -77912,6 +80345,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -77931,6 +80366,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -77953,6 +80390,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -77971,6 +80410,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -77992,6 +80433,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -78008,6 +80451,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -78038,6 +80483,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -78064,6 +80511,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -78092,6 +80541,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -78108,6 +80559,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -78136,6 +80589,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -78153,6 +80608,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -78176,6 +80633,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -78194,6 +80653,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -78208,6 +80668,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -78219,6 +80680,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -78235,6 +80697,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -78253,6 +80717,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -78278,6 +80744,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -78297,6 +80765,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -78318,6 +80787,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -78329,6 +80799,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -78342,6 +80813,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -78353,6 +80825,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -78366,6 +80839,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -78399,6 +80873,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -78408,6 +80883,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(16)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -78428,6 +80904,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -78445,6 +80922,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -78454,6 +80932,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -78465,6 +80944,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -78474,6 +80954,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -78485,6 +80966,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -78494,6 +80976,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -78505,6 +80988,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -78515,6 +80999,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -78524,6 +81009,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -78540,6 +81027,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -78555,6 +81043,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -78564,6 +81053,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -78572,6 +81062,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -78583,6 +81074,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -78592,6 +81084,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -78603,6 +81096,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -78612,6 +81106,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -78632,6 +81127,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -78662,6 +81158,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -78671,6 +81168,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -78685,6 +81183,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -78703,6 +81202,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -78715,6 +81215,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -78740,6 +81241,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -78761,6 +81263,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -78769,6 +81272,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -78780,6 +81285,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -78795,6 +81301,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -78807,6 +81314,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -78822,6 +81330,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -78832,6 +81341,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -78848,6 +81358,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -78881,6 +81393,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -78897,6 +81411,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -78925,6 +81441,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -78935,6 +81452,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -78949,6 +81467,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -78961,6 +81480,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -78978,6 +81499,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -79028,6 +81551,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -79058,6 +81585,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -79067,6 +81595,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -79078,6 +81607,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -79086,6 +81616,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -79111,6 +81643,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -79120,6 +81653,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -79138,6 +81673,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -79159,6 +81696,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -79175,6 +81714,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -79196,6 +81737,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -79216,6 +81760,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -79241,6 +81787,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -79253,6 +81800,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -79272,6 +81820,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -79283,6 +81832,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -79303,6 +81854,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -79325,6 +81877,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -79337,6 +81890,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -79347,6 +81901,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -79360,6 +81915,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -79380,6 +81936,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -79390,6 +81947,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -79404,6 +81962,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -79413,6 +81972,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -79425,6 +81986,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -79440,6 +82003,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -79450,6 +82015,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -79464,6 +82031,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -79473,6 +82041,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -79486,6 +82055,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -79496,6 +82066,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -79509,6 +82080,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -79521,6 +82093,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -79554,6 +82127,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -79563,6 +82137,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -79600,6 +82175,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -79615,6 +82191,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -79623,6 +82200,7 @@ public struct CHAIN_HEAD
     public long n_live;
     public long n_dead;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -79633,6 +82211,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -79642,6 +82221,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -79667,6 +82247,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -79695,6 +82276,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -79705,6 +82287,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -79713,6 +82296,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -79723,6 +82307,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -79739,6 +82324,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -79749,6 +82335,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -79758,6 +82345,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -79778,6 +82366,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -79787,6 +82376,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -79795,6 +82385,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -79811,6 +82402,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -79823,6 +82415,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -79840,6 +82433,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -79859,6 +82455,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -79868,6 +82465,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -79884,6 +82483,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -79893,6 +82493,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -79908,6 +82510,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -79918,6 +82521,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -79932,6 +82536,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -79939,6 +82544,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -79954,6 +82560,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -79962,6 +82569,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -79969,6 +82577,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -79985,6 +82595,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -80016,6 +82628,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -80025,6 +82638,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -80037,6 +82652,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -80048,6 +82665,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -80057,6 +82675,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -80070,6 +82689,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -80079,6 +82699,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -80097,6 +82718,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -80112,6 +82734,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -80124,6 +82747,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -80132,6 +82756,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -80145,6 +82770,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -80153,6 +82779,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -80167,6 +82794,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -80176,6 +82804,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -80190,6 +82820,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -80206,6 +82838,10 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -80229,6 +82865,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -80238,6 +82875,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -80253,6 +82892,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -80266,6 +82907,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -80281,6 +82923,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -80291,6 +82934,8 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
+public enum FRAME__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -86105,6 +88750,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3500137_35002
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -86112,6 +88758,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -86122,6 +88769,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -86163,6 +88811,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -86185,6 +88834,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -86197,6 +88847,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -86206,6 +88857,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -86217,6 +88869,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -86225,6 +88878,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -86237,6 +88891,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -86269,6 +88925,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -86286,6 +88944,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -86335,6 +88997,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -86351,6 +89014,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -86379,6 +89044,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -86393,6 +89059,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -86415,6 +89082,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -86436,6 +89105,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -86451,6 +89121,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -86469,6 +89141,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -86482,6 +89155,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -86499,6 +89174,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -86518,6 +89195,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -86539,6 +89218,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -86557,6 +89238,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -86578,6 +89261,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -86594,6 +89279,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -86615,6 +89302,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -86632,6 +89321,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -86655,6 +89346,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -86676,6 +89369,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -86696,6 +89390,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -86708,6 +89403,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -86719,6 +89415,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -86733,6 +89430,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -86745,6 +89443,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -86754,6 +89453,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -86773,6 +89474,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -86783,6 +89485,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -86800,6 +89504,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -86822,6 +89528,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -86839,6 +89547,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -86858,6 +89568,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -86880,6 +89592,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -86898,6 +89612,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -86919,6 +89635,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -86935,6 +89653,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -86965,6 +89685,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -86991,6 +89713,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -87019,6 +89743,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -87035,6 +89761,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -87063,6 +89791,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -87080,6 +89810,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -87103,6 +89835,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -87121,6 +89855,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -87135,6 +89870,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -87146,6 +89882,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -87162,6 +89899,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -87180,6 +89919,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -87205,6 +89946,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -87224,6 +89967,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -87245,6 +89989,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -87256,6 +90001,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -87269,6 +90015,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -87280,6 +90027,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -87293,6 +90041,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -87326,6 +90075,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -87335,6 +90085,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(16)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -87355,6 +90106,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -87372,6 +90124,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -87381,6 +90134,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -87392,6 +90146,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -87401,6 +90156,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -87412,6 +90168,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -87421,6 +90178,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -87432,6 +90190,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -87442,6 +90201,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -87451,6 +90211,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -87467,6 +90229,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -87482,6 +90245,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -87491,6 +90255,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -87499,6 +90264,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -87510,6 +90276,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -87519,6 +90286,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -87530,6 +90298,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -87539,6 +90308,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -87559,6 +90329,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -87589,6 +90360,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -87598,6 +90370,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -87612,6 +90385,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -87630,6 +90404,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -87642,6 +90417,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -87667,6 +90443,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -87688,6 +90465,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -87696,6 +90474,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -87707,6 +90487,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -87722,6 +90503,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -87734,6 +90516,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -87749,6 +90532,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -87759,6 +90543,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -87775,6 +90560,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -87808,6 +90595,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -87824,6 +90613,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -87852,6 +90643,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -87862,6 +90654,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -87876,6 +90669,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -87888,6 +90682,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -87905,6 +90701,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -87955,6 +90753,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -87985,6 +90787,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -87994,6 +90797,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -88005,6 +90809,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -88013,6 +90818,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -88038,6 +90845,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -88047,6 +90855,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -88065,6 +90875,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -88086,6 +90898,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -88102,6 +90916,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -88123,6 +90939,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -88143,6 +90962,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -88168,6 +90989,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -88180,6 +91002,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -88199,6 +91022,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -88210,6 +91034,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -88230,6 +91056,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -88252,6 +91079,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -88264,6 +91092,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -88274,6 +91103,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -88287,6 +91117,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -88307,6 +91138,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -88317,6 +91149,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -88331,6 +91164,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -88340,6 +91174,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -88352,6 +91188,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -88367,6 +91205,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -88377,6 +91217,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -88391,6 +91233,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -88400,6 +91243,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -88413,6 +91257,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -88423,6 +91268,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -88436,6 +91282,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -88448,6 +91295,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -88481,6 +91329,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -88490,6 +91339,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -88527,6 +91377,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -88542,6 +91393,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -88550,6 +91402,7 @@ public struct CHAIN_HEAD
     public long n_live;
     public long n_dead;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -88560,6 +91413,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -88569,6 +91423,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -88594,6 +91449,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -88622,6 +91478,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -88632,6 +91489,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -88640,6 +91498,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -88650,6 +91509,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -88666,6 +91526,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -88676,6 +91537,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -88685,6 +91547,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -88705,6 +91568,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -88714,6 +91578,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -88722,6 +91587,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -88738,6 +91604,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -88750,6 +91617,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -88767,6 +91635,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -88786,6 +91657,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -88795,6 +91667,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -88811,6 +91685,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -88820,6 +91695,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -88835,6 +91712,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -88845,6 +91723,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -88859,6 +91738,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -88866,6 +91746,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -88881,6 +91762,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -88889,6 +91771,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -88896,6 +91779,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -88912,6 +91797,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -88943,6 +91830,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -88952,6 +91840,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -88964,6 +91854,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -88975,6 +91867,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -88984,6 +91877,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -88997,6 +91891,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -89006,6 +91901,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -89024,6 +91920,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -89039,6 +91936,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -89051,6 +91949,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -89059,6 +91958,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -89072,6 +91972,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -89080,6 +91981,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -89094,6 +91996,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -89103,6 +92006,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -89117,6 +92022,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -89133,6 +92040,11 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__ball_blend_type : ulong { none = 0, absolute = 1, relative = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -89159,6 +92071,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -89168,6 +92081,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -89183,6 +92098,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -89196,6 +92113,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -89211,6 +92129,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -89221,6 +92140,8 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
+public enum FRAME__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -95041,6 +97962,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3501127_35102
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -95048,6 +97970,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -95058,6 +97981,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -95099,6 +98023,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -95121,6 +98046,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -95133,6 +98059,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -95142,6 +98069,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -95153,6 +98081,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -95161,6 +98090,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -95173,6 +98103,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -95205,6 +98137,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -95222,6 +98156,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -95271,6 +98209,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -95287,6 +98226,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -95315,6 +98256,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -95329,6 +98271,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -95351,6 +98294,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -95372,6 +98317,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -95387,6 +98333,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -95405,6 +98353,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -95418,6 +98367,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -95435,6 +98386,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -95454,6 +98407,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -95475,6 +98430,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -95493,6 +98450,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -95514,6 +98473,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -95530,6 +98491,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -95551,6 +98514,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -95568,6 +98533,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -95591,6 +98558,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -95612,6 +98581,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -95632,6 +98602,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -95644,6 +98615,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -95655,6 +98627,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -95669,6 +98642,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -95681,6 +98655,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -95690,6 +98665,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -95709,6 +98686,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -95719,6 +98697,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -95736,6 +98716,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -95758,6 +98740,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -95775,6 +98759,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -95794,6 +98780,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -95816,6 +98804,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -95834,6 +98824,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -95855,6 +98847,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -95871,6 +98865,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -95901,6 +98897,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -95927,6 +98925,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -95955,6 +98955,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -95971,6 +98973,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -95999,6 +99003,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -96016,6 +99022,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -96039,6 +99047,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -96057,6 +99067,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -96071,6 +99082,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -96082,6 +99094,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -96098,6 +99111,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -96116,6 +99131,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -96141,6 +99158,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -96160,6 +99179,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -96181,6 +99201,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -96192,6 +99213,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -96205,6 +99227,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -96216,6 +99239,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -96229,6 +99253,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -96262,6 +99287,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -96271,6 +99297,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(16)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -96291,6 +99318,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -96308,6 +99336,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -96317,6 +99346,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -96328,6 +99358,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -96337,6 +99368,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -96348,6 +99380,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -96357,6 +99390,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -96368,6 +99402,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -96378,6 +99413,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -96387,6 +99423,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -96403,6 +99441,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -96418,6 +99457,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -96427,6 +99467,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -96435,6 +99476,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -96446,6 +99488,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -96455,6 +99498,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -96466,6 +99510,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -96475,6 +99520,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -96495,6 +99541,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -96525,6 +99572,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -96534,6 +99582,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -96548,6 +99597,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -96566,6 +99616,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -96578,6 +99629,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -96603,6 +99655,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -96624,6 +99677,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -96632,6 +99686,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -96643,6 +99699,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -96658,6 +99715,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -96670,6 +99728,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -96685,6 +99744,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -96695,6 +99755,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -96711,6 +99772,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -96744,6 +99807,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -96760,6 +99825,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -96788,6 +99855,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -96798,6 +99866,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -96812,6 +99881,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -96824,6 +99894,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -96841,6 +99913,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -96891,6 +99965,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -96921,6 +99999,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -96930,6 +100009,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -96941,6 +100021,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -96949,6 +100030,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -96974,6 +100057,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -96983,6 +100067,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -97001,6 +100087,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -97022,6 +100110,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -97038,6 +100128,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -97059,6 +100151,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -97079,6 +100174,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -97104,6 +100201,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -97116,6 +100214,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -97135,6 +100234,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -97146,6 +100246,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -97166,6 +100268,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -97188,6 +100291,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -97200,6 +100304,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -97210,6 +100315,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -97223,6 +100329,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -97243,6 +100350,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -97253,6 +100361,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -97267,6 +100376,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -97276,6 +100386,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -97288,6 +100400,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -97303,6 +100417,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -97313,6 +100429,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -97327,6 +100445,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -97336,6 +100455,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -97349,6 +100469,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -97359,6 +100480,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -97372,6 +100494,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -97384,6 +100507,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -97417,6 +100541,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -97426,6 +100551,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -97463,6 +100589,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -97478,6 +100605,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -97486,6 +100614,7 @@ public struct CHAIN_HEAD
     public long n_live;
     public long n_dead;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -97496,6 +100625,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -97505,6 +100635,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -97530,6 +100661,7 @@ public struct ROLL_DATA
     public long continuity_check;
     public long facet_geometry;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -97558,6 +100690,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -97568,6 +100701,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -97576,6 +100710,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -97586,6 +100721,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -97602,6 +100738,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -97612,6 +100749,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -97621,6 +100759,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -97641,6 +100780,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -97650,6 +100790,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -97658,6 +100799,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -97674,6 +100816,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -97686,6 +100829,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -97703,6 +100847,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -97722,6 +100869,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -97731,6 +100879,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -97747,6 +100897,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -97756,6 +100907,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -97771,6 +100924,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -97781,6 +100935,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -97795,6 +100950,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -97802,6 +100958,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -97817,6 +100974,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -97825,6 +100983,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -97832,6 +100991,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -97848,6 +101009,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -97879,6 +101042,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -97888,6 +101052,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -97900,6 +101066,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -97911,6 +101079,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -97920,6 +101089,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -97933,6 +101103,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -97942,6 +101113,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -97960,6 +101132,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -97975,6 +101148,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -97987,6 +101161,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -97995,6 +101170,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -98008,6 +101184,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -98016,6 +101193,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -98030,6 +101208,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -98039,6 +101218,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -98053,6 +101234,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -98069,6 +101252,11 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__ball_blend_type : ulong { none = 0, absolute = 1, relative = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -98095,6 +101283,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -98104,6 +101293,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -98119,6 +101310,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -98132,6 +101325,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -98147,6 +101341,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -98157,6 +101352,8 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
+public enum FRAME__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -103977,6 +107174,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3600031_36001
 [StructLayout(LayoutKind.Sequential)] public struct GRAPH_COMPACTRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct REAL_COMBRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -103984,6 +107182,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -103994,6 +107193,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -104035,6 +107235,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -104057,6 +107258,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -104069,6 +107271,7 @@ public struct UNIVERSE
     public LEAF_TAG_TABLERef null_leaf;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -104078,6 +107281,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -104089,6 +107293,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -104097,6 +107302,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -104109,6 +107315,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -104141,6 +107349,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -104158,6 +107368,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -104207,6 +107421,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -104223,6 +107438,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -104251,6 +107468,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -104265,6 +107483,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -104287,6 +107506,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -104308,6 +107529,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -104323,6 +107545,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -104341,6 +107565,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -104354,6 +107579,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -104371,6 +107598,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -104390,6 +107619,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -104411,6 +107642,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -104429,6 +107662,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -104450,6 +107685,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -104466,6 +107703,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -104487,6 +107726,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -104504,6 +107745,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -104527,6 +107770,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -104548,6 +107793,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -104568,6 +107814,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -104580,6 +107827,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -104591,6 +107839,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -104605,6 +107854,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -104617,6 +107867,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -104626,6 +107877,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -104645,6 +107898,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -104655,6 +107909,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -104672,6 +107928,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -104694,6 +107952,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -104711,6 +107971,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -104730,6 +107992,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -104752,6 +108016,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -104770,6 +108036,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -104791,6 +108059,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -104807,6 +108077,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -104837,6 +108109,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -104863,6 +108137,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -104891,6 +108167,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -104907,6 +108185,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -104935,6 +108215,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -104952,6 +108234,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -104975,6 +108259,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -104993,6 +108279,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -105007,6 +108294,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -105018,6 +108306,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -105034,6 +108323,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -105052,6 +108343,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -105077,6 +108370,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -105096,6 +108391,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -105117,6 +108413,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -105128,6 +108425,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -105141,6 +108439,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -105152,6 +108451,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -105165,6 +108465,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -105198,6 +108499,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -105207,6 +108509,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(17)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -105227,6 +108530,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -105244,6 +108548,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -105253,6 +108558,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -105264,6 +108570,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -105273,6 +108580,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -105284,6 +108592,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -105293,6 +108602,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -105304,6 +108614,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -105314,6 +108625,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -105323,6 +108635,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -105339,6 +108653,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -105354,6 +108669,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -105363,6 +108679,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -105371,6 +108688,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -105382,6 +108700,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -105391,6 +108710,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -105402,6 +108722,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -105411,6 +108732,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -105431,6 +108753,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -105461,6 +108784,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -105470,6 +108794,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -105484,6 +108809,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -105502,6 +108828,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -105514,6 +108841,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -105539,6 +108867,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -105560,6 +108889,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -105568,6 +108898,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -105579,6 +108911,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -105594,6 +108927,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -105606,6 +108940,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -105621,6 +108956,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -105631,6 +108967,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -105647,6 +108984,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -105680,6 +109019,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -105696,6 +109037,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -105724,6 +109067,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -105734,6 +109078,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -105748,6 +109093,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -105760,6 +109106,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -105777,6 +109125,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -105827,6 +109177,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -105857,6 +109211,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -105866,6 +109221,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -105877,6 +109233,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -105885,6 +109242,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -105910,6 +109269,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -105919,6 +109279,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -105937,6 +109299,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -105958,6 +109322,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -105974,6 +109340,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -105995,6 +109363,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -106015,6 +109386,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -106040,6 +109413,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -106052,6 +109426,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -106071,6 +109446,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -106082,6 +109458,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -106102,6 +109480,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -106124,6 +109503,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -106136,6 +109516,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -106146,6 +109527,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -106159,6 +109541,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -106179,6 +109562,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -106189,6 +109573,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -106203,6 +109588,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -106212,6 +109598,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -106224,6 +109612,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -106239,6 +109629,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -106249,6 +109641,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -106263,6 +109657,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -106272,6 +109667,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -106285,6 +109681,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -106295,6 +109692,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -106308,6 +109706,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -106320,6 +109719,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -106353,6 +109753,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -106362,6 +109763,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -106399,6 +109801,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -106414,6 +109817,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -106422,6 +109826,7 @@ public struct CHAIN_HEAD
     public long n_live;
     public long n_dead;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -106432,6 +109837,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -106441,6 +109847,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -106467,6 +109874,7 @@ public struct ROLL_DATA
     public long facet_geometry;
     public long cellular_guise;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -106495,6 +109903,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -106505,6 +109914,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -106513,6 +109923,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -106523,6 +109934,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -106539,6 +109951,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -106549,6 +109962,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -106558,6 +109972,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -106578,6 +109993,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -106587,6 +110003,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -106595,6 +110012,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -106611,6 +110029,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -106623,6 +110042,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -106640,6 +110060,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -106659,6 +110082,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -106668,6 +110092,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -106684,6 +110110,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -106693,6 +110120,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -106708,6 +110137,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -106718,6 +110148,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -106732,6 +110163,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -106739,6 +110171,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -106754,6 +110187,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -106762,6 +110196,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -106769,6 +110204,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -106785,6 +110222,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -106816,6 +110255,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -106825,6 +110265,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -106837,6 +110279,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -106848,6 +110292,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -106857,6 +110302,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -106870,6 +110316,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -106879,6 +110326,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -106897,6 +110345,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -106912,6 +110361,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -106924,6 +110374,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -106932,6 +110383,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -106945,6 +110397,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -106953,6 +110406,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -106967,6 +110421,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -106976,6 +110431,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -106990,6 +110447,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -107006,6 +110465,11 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__ball_blend_type : ulong { none = 0, absolute = 1, relative = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -107032,6 +110496,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -107041,6 +110506,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -107056,6 +110523,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -107069,6 +110538,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -107084,6 +110554,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -107094,6 +110565,8 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
+public enum FRAME__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -112917,6 +116390,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3701097_37102
 [StructLayout(LayoutKind.Sequential)] public struct SKEWBOXRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct PATTERN_BOUNDRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -112924,6 +116398,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -112934,6 +116409,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -112976,6 +116452,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -112998,6 +116475,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -113013,6 +116491,7 @@ public struct UNIVERSE
     public long next_high_tag;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -113022,6 +116501,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -113033,6 +116513,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -113041,6 +116522,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -113053,6 +116535,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -113085,6 +116569,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -113102,6 +116588,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -113151,6 +116641,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -113167,6 +116658,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -113195,6 +116688,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -113209,6 +116703,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -113231,6 +116726,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -113252,6 +116749,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -113267,6 +116765,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -113285,6 +116785,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -113298,6 +116799,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -113315,6 +116818,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -113334,6 +116839,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -113355,6 +116862,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -113373,6 +116882,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -113394,6 +116905,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -113410,6 +116923,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -113431,6 +116946,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -113448,6 +116965,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -113471,6 +116990,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -113492,6 +117013,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -113512,6 +117034,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -113524,6 +117047,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -113535,6 +117059,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -113549,6 +117074,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -113561,6 +117087,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -113570,6 +117097,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -113589,6 +117118,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -113599,6 +117129,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -113616,6 +117148,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -113638,6 +117172,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -113655,6 +117191,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -113674,6 +117212,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -113696,6 +117236,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -113714,6 +117256,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -113735,6 +117279,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -113751,6 +117297,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -113781,6 +117329,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -113807,6 +117357,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -113835,6 +117387,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -113851,6 +117405,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -113879,6 +117435,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -113896,6 +117454,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -113919,6 +117479,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -113937,6 +117499,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -113951,6 +117514,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -113962,6 +117526,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -113978,6 +117543,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -113996,6 +117563,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -114021,6 +117590,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -114040,6 +117611,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -114061,6 +117633,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -114072,6 +117645,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -114085,6 +117659,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -114096,6 +117671,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -114109,6 +117685,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -114142,6 +117719,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -114151,6 +117729,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(17)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -114171,6 +117750,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -114188,6 +117768,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -114197,6 +117778,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -114208,6 +117790,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -114217,6 +117800,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -114228,6 +117812,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -114237,6 +117822,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -114248,6 +117834,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -114258,6 +117845,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -114267,6 +117855,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -114283,6 +117873,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -114298,6 +117889,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -114307,6 +117899,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -114315,6 +117908,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -114326,6 +117920,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -114335,6 +117930,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -114346,6 +117942,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -114355,6 +117952,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -114375,6 +117973,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -114405,6 +118004,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -114414,6 +118014,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -114428,6 +118029,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -114446,6 +118048,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -114458,6 +118061,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -114483,6 +118087,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -114504,6 +118109,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -114512,6 +118118,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -114523,6 +118131,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -114538,6 +118147,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -114550,6 +118160,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -114565,6 +118176,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -114575,6 +118187,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -114591,6 +118204,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -114624,6 +118239,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -114640,6 +118257,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -114668,6 +118287,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -114678,6 +118298,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -114692,6 +118313,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -114704,6 +118326,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -114721,6 +118345,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -114771,6 +118397,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -114801,6 +118431,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -114810,6 +118441,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -114821,6 +118453,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -114829,6 +118462,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -114854,6 +118489,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -114863,6 +118499,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -114881,6 +118519,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -114902,6 +118542,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -114918,6 +118560,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -114939,6 +118583,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -114959,6 +118606,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -114984,6 +118633,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -114996,6 +118646,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -115015,6 +118666,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -115026,6 +118678,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -115046,6 +118700,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -115068,6 +118723,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -115080,6 +118736,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -115090,6 +118747,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -115103,6 +118761,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -115123,6 +118782,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -115133,6 +118793,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -115147,6 +118808,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -115156,6 +118818,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -115168,6 +118832,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -115183,6 +118849,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -115193,6 +118861,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -115207,6 +118877,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -115216,6 +118887,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -115229,6 +118901,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -115239,6 +118912,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -115252,6 +118926,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -115264,6 +118939,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -115297,6 +118973,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -115306,6 +118983,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -115343,6 +119021,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -115358,6 +119037,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -115366,6 +119046,7 @@ public struct CHAIN_HEAD
     public long n_nodes;
     public long n_nolog_nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -115376,6 +119057,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -115385,6 +119067,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -115411,6 +119094,7 @@ public struct ROLL_DATA
     public ulong facet_geometry;
     public ulong cellular_guise;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -115439,6 +119123,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -115449,6 +119134,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -115457,6 +119143,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -115467,6 +119154,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -115483,6 +119171,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -115493,6 +119182,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -115502,6 +119192,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -115522,6 +119213,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -115531,6 +119223,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -115539,6 +119232,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -115555,6 +119249,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -115567,6 +119262,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -115584,6 +119280,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -115603,6 +119302,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -115612,6 +119312,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -115628,6 +119330,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -115637,6 +119340,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -115652,6 +119357,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -115662,6 +119368,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -115676,6 +119383,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -115683,6 +119391,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -115698,6 +119407,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -115706,6 +119416,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -115713,6 +119424,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -115729,6 +119442,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -115760,6 +119475,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -115769,6 +119485,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -115781,6 +119499,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -115792,6 +119512,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -115801,6 +119522,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -115814,6 +119536,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -115823,6 +119546,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -115841,6 +119565,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -115856,6 +119581,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -115868,6 +119594,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -115876,6 +119603,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -115889,6 +119617,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -115897,6 +119626,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -115911,6 +119641,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -115920,6 +119651,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -115934,6 +119667,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -115950,6 +119685,11 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__ball_blend_type : ulong { none = 0, absolute = 1, relative = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -115976,6 +119716,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -115985,6 +119726,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -116000,6 +119743,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -116013,6 +119758,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -116028,6 +119774,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -116038,6 +119785,8 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
+public enum FRAME__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -116056,6 +119805,7 @@ public struct FRAME
     public byte sense;
 }
 
+
 [InlineArray(3)] public struct SKEWBOX__axes__ARRAY { private XtSchemaVector _element0; }
 [InlineArray(3)] public struct SKEWBOX__width__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -116070,6 +119820,9 @@ public struct SKEWBOX
     public ulong form;
 }
 
+public enum TPMS_SURF__tpms_type : ulong { unset = 0, gyroid = 1, lidinoid = 2, neovius = 3, schoen = 4, schwarz_d = 5, schwarz_p = 6, split_p = 7, schoen_octo = 8 }
+public enum TPMS_SURF__tpms_shift : ulong { none = 0, half = 1 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TPMS_SURF
 {
@@ -116079,6 +119832,7 @@ public struct TPMS_SURF
     public ulong tpms_type;
     public ulong tpms_shift;
 }
+
 
 [InlineArray(3)] public struct IMPLICIT_SURF__scale__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -116095,6 +119849,7 @@ public struct IMPLICIT_SURF
     public XtNodeIndex data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct IMPLICIT_VOLUME
 {
@@ -116105,6 +119860,7 @@ public struct IMPLICIT_VOLUME
     public double front_offset;
     public double back_offset;
 }
+
 
 [InlineArray(2)] public struct PATTERN_BOUND__bound_i__ARRAY { private ulong _element0; }
 [InlineArray(2)] public struct PATTERN_BOUND__bound_j__ARRAY { private ulong _element0; }
@@ -116126,6 +119882,7 @@ public struct PATTERN_BOUND
     public PATTERN_BOUND__repetitions_k__ARRAY repetitions_k;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATTERN_RECTILINEAR
 {
@@ -116134,6 +119891,8 @@ public struct PATTERN_RECTILINEAR
     public XtRange _xt_user_fields;
     public SKEWBOXRef skewbox;
 }
+
+public enum PATTERN_AXIAL__hand : ulong { right = 0, left = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PATTERN_AXIAL
@@ -116149,6 +119908,7 @@ public struct PATTERN_AXIAL
     public long reps_per_period;
     public ulong hand;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_PATTERN
@@ -122216,6 +125976,7 @@ namespace ProjectGmKernel.Xt.Schema.SCH_3800150_37102
 [StructLayout(LayoutKind.Sequential)] public struct SKEWBOXRef { public XtNodeIndex Index; }
 [StructLayout(LayoutKind.Sequential)] public struct PATTERN_BOUNDRef { public XtNodeIndex Index; }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NULLP
 {
@@ -122223,6 +125984,7 @@ public struct NULLP
     public XtTableIndex _xt_order;
     public XtRange _xt_user_fields;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORKSPACE
@@ -122233,6 +125995,7 @@ public struct WORKSPACE
     public XtRange _xt_user_fields;
     public XtRange ws;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PARTITION
@@ -122275,6 +126038,7 @@ public struct PARTITION
     public long thread_queue;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK
 {
@@ -122297,6 +126061,7 @@ public struct PMARK
     public long id;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNIVERSE
 {
@@ -122312,6 +126077,7 @@ public struct UNIVERSE
     public long next_high_tag;
 }
 
+
 [InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct LEAF_TAG_TABLE
@@ -122321,6 +126087,7 @@ public struct LEAF_TAG_TABLE
     public LEAF_TAG_TABLE__entity__ARRAY entity;
     public long n_live;
 }
+
 
 [InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -122332,6 +126099,7 @@ public struct BRANCH_TAG_TABLE
     public long n_live;
 }
 
+
 [InlineArray(8192)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct ROOT_TAG_TABLE
@@ -122340,6 +126108,7 @@ public struct ROOT_TAG_TABLE
     public XtTableIndex _xt_order;
     public ROOT_TAG_TABLE__branch__ARRAY branch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MARK
@@ -122352,6 +126121,8 @@ public struct MARK
     public PMARK_ARRAYRef pmarks_from_following;
     public TAG_MAPRef tag_map;
 }
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ASSEMBLY
@@ -122384,6 +126155,8 @@ public struct ASSEMBLY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INSTANCE
 {
@@ -122401,6 +126174,10 @@ public struct INSTANCE
     public INSTANCERef next_of_part;
     public INSTANCERef prev_of_part;
 }
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY
@@ -122450,6 +126227,7 @@ public struct BODY
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SHELL
 {
@@ -122466,6 +126244,8 @@ public struct SHELL
     public REGIONRef region;
     public FACERef front_face;
 }
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE
@@ -122494,6 +126274,7 @@ public struct FACE
     public SHELLRef front_shell;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LOOP
 {
@@ -122508,6 +126289,7 @@ public struct LOOP
     public byte type;
     public PBOXRef pbox;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE
@@ -122530,6 +126312,8 @@ public struct EDGE
     public EDGE_DATARef data;
 }
 
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE
 {
@@ -122551,6 +126335,7 @@ public struct HALFEDGE
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VERTEX
 {
@@ -122566,6 +126351,8 @@ public struct VERTEX
     public double tolerance;
     public XtNodeIndex owner;
 }
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REGION
@@ -122584,6 +126371,7 @@ public struct REGION
     public BODYRef owner;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT
 {
@@ -122597,6 +126385,8 @@ public struct POINT
     public POINTRef previous;
     public XtSchemaVector pvec;
 }
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LINE
@@ -122614,6 +126404,8 @@ public struct LINE
     public XtSchemaVector pvec;
     public XtSchemaVector direction;
 }
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CIRCLE
@@ -122633,6 +126425,8 @@ public struct CIRCLE
     public XtSchemaVector x_axis;
     public double radius;
 }
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ELLIPSE
@@ -122654,6 +126448,8 @@ public struct ELLIPSE
     public double minor_radius;
 }
 
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARABOLA
 {
@@ -122672,6 +126468,8 @@ public struct PARABOLA
     public XtSchemaVector x_axis;
     public double focal_length;
 }
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HYPERBOLA
@@ -122693,6 +126491,8 @@ public struct HYPERBOLA
     public double conjugate_radius;
 }
 
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARACURVE
 {
@@ -122709,6 +126509,8 @@ public struct PARACURVE
     public long seg;
     public CPCRef cpc;
 }
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPC
@@ -122730,6 +126532,8 @@ public struct OBSOLETE_CPC
     public XtRange segment;
 }
 
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATCH_BOUND
 {
@@ -122747,6 +126551,8 @@ public struct PATCH_BOUND
     public PARASURFRef lh_patch;
     public PARASURFRef rh_patch;
 }
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -122770,6 +126576,8 @@ public struct INTERSECTION
     public INTERSECTION_DATARef intersection_data;
 }
 
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILHOUETTE
 {
@@ -122791,6 +126599,7 @@ public struct SILHOUETTE
     public XtSchemaVector eye;
 }
 
+
 [InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct CHART
@@ -122811,6 +126620,7 @@ public struct CHART
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct LIMIT
 {
@@ -122823,6 +126633,7 @@ public struct LIMIT
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_SEGMENT
 {
@@ -122834,6 +126645,7 @@ public struct BASIC_SEGMENT
     public HULLRef hull;
     public XtRange bezier_vertices;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_CURVE
@@ -122848,6 +126660,7 @@ public struct BSPLINE_CURVE
     public BSPLINE_VERTICESRef bspline_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_VECTOR
 {
@@ -122860,6 +126673,7 @@ public struct KNOT_VECTOR
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_VERTICES
 {
@@ -122869,6 +126683,8 @@ public struct BSPLINE_VERTICES
     public XtRange _xt_user_fields;
     public XtRange vertices;
 }
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_CURVE
@@ -122888,6 +126704,7 @@ public struct OFFSET_CURVE
     public double offset;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_SEGMENT
 {
@@ -122898,6 +126715,8 @@ public struct SUPER_SEGMENT
     public XtNodeIndex last;
     public double t_length;
 }
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CPC
@@ -122915,6 +126734,8 @@ public struct CPC
     public BEZIER_CURVERef bezier;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_SP_CURVE
@@ -122937,6 +126758,8 @@ public struct OBSOLETE_SP_CURVE
     public XtRange bezier_vertices;
 }
 
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE
 {
@@ -122954,6 +126777,8 @@ public struct PLANE
     public XtSchemaVector normal;
     public XtSchemaVector x_axis;
 }
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER
@@ -122973,6 +126798,8 @@ public struct CYLINDER
     public double radius;
     public XtSchemaVector x_axis;
 }
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE
@@ -122995,6 +126822,8 @@ public struct CONE
     public XtSchemaVector x_axis;
 }
 
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE
 {
@@ -123013,6 +126842,8 @@ public struct SPHERE
     public XtSchemaVector axis;
     public XtSchemaVector x_axis;
 }
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS
@@ -123034,6 +126865,8 @@ public struct TORUS
     public XtSchemaVector x_axis;
 }
 
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PIPE
 {
@@ -123050,6 +126883,8 @@ public struct PIPE
     public XtNodeIndex spine;
     public double radius;
 }
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
@@ -123080,6 +126915,8 @@ public struct BLENDED_EDGE
     public double approx_spine_ctol;
 }
 
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
@@ -123106,6 +126943,8 @@ public struct BLENDED_VERTEX
     public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
     public XtSchemaVector centre;
 }
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
 [InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
@@ -123134,6 +126973,8 @@ public struct BLEND_OVERLAP
     public byte swap_u_v;
 }
 
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BLEND_BOUND
 {
@@ -123150,6 +126991,8 @@ public struct BLEND_BOUND
     public long boundary;
     public XtNodeIndex blend;
 }
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_SURF
@@ -123178,6 +127021,8 @@ public struct OFFSET_SURF
     public SU_TREERef tree;
 }
 
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARASURF
 {
@@ -123195,6 +127040,8 @@ public struct PARASURF
     public long row;
     public CPSRef cps;
 }
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_CPS
@@ -123218,6 +127065,8 @@ public struct OBSOLETE_CPS
     public XtRange patch;
 }
 
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SILH_SURF
 {
@@ -123236,6 +127085,7 @@ public struct SILH_SURF
     public XtSchemaVector eye;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BASIC_PATCH
 {
@@ -123250,6 +127100,7 @@ public struct BASIC_PATCH
     public XtRange bezier_vertices;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HULL
 {
@@ -123261,6 +127112,7 @@ public struct HULL
     public long corner_count;
     public XtRange vecs;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BSPLINE_SURF
@@ -123277,6 +127129,8 @@ public struct BSPLINE_SURF
     public long v_order;
     public BSPLINE_VERTICESRef bspline_vertices;
 }
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_SURF
@@ -123295,6 +127149,8 @@ public struct SWEPT_SURF
     public XtSchemaVector sweep;
     public double scale;
 }
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_SURF
@@ -123320,6 +127176,8 @@ public struct SPUN_SURF
     public double scale;
 }
 
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CPS
 {
@@ -123339,6 +127197,7 @@ public struct CPS
     public double u_parameter_scale;
     public double v_parameter_scale;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LIST
@@ -123360,6 +127219,7 @@ public struct LIST
     public XtNodeIndex list_block;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_LIS_BLOCK
 {
@@ -123371,6 +127231,7 @@ public struct REAL_LIS_BLOCK
     public REAL_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_LIS_BLOCK
@@ -123384,6 +127245,7 @@ public struct INTEGER_LIS_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_LIS_BLOCK
 {
@@ -123395,6 +127257,7 @@ public struct TAG_LIS_BLOCK
     public TAG_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_LIS_BLOCK
@@ -123408,6 +127271,7 @@ public struct POINTER_LIS_BLOCK
     public POINTER_LIS_BLOCKRef next_block;
     public XtRange entries;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIB_CALLBACKS
@@ -123441,6 +127305,7 @@ public struct ATTRIB_CALLBACKS
     public byte callback_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATT_DEF_ID
 {
@@ -123450,6 +127315,7 @@ public struct ATT_DEF_ID
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
 [InlineArray(17)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
@@ -123470,6 +127336,7 @@ public struct ATTRIB_DEF
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct ATTRIBUTE
 {
@@ -123487,6 +127354,7 @@ public struct ATTRIBUTE
     public XtRange fields;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_VALUES
 {
@@ -123496,6 +127364,7 @@ public struct INT_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_VALUES
@@ -123507,6 +127376,7 @@ public struct REAL_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAR_VALUES
 {
@@ -123516,6 +127386,7 @@ public struct CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POINT_VALUES
@@ -123527,6 +127398,7 @@ public struct POINT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_VALUES
 {
@@ -123536,6 +127408,7 @@ public struct VECTOR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct AXIS_VALUES
@@ -123547,6 +127420,7 @@ public struct AXIS_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_VALUES
 {
@@ -123557,6 +127431,7 @@ public struct TAG_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct DIRECTION_VALUES
 {
@@ -123566,6 +127441,8 @@ public struct DIRECTION_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FEATURE
@@ -123582,6 +127459,7 @@ public struct FEATURE
     public MEMBER_OF_FEATURERef first_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MEMBER_OF_FEATURE
 {
@@ -123597,6 +127475,7 @@ public struct MEMBER_OF_FEATURE
     public MEMBER_OF_FEATURERef previous_member;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PARM_VALUES
 {
@@ -123606,6 +127485,7 @@ public struct PARM_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POINTER_VALUES
 {
@@ -123614,6 +127494,7 @@ public struct POINTER_VALUES
     public XtVariableLength _xt_variable_length;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SHORT_VALUES
@@ -123625,6 +127506,7 @@ public struct SHORT_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BOX_VALUES
 {
@@ -123634,6 +127516,7 @@ public struct BOX_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct UNICODE_VALUES
@@ -123645,6 +127528,7 @@ public struct UNICODE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FIELD_NAMES
 {
@@ -123654,6 +127538,7 @@ public struct FIELD_NAMES
     public XtRange _xt_user_fields;
     public XtRange names;
 }
+
 
 [InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -123674,6 +127559,7 @@ public struct TRANSFORM
     public XtSchemaVector perspective_vector;
     public TRANSFORM_PRECISIONRef precision;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WORLD
@@ -123704,6 +127590,7 @@ public struct WORLD
     public MESH_OFFSET_DATARef mesh_offset_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KEY
 {
@@ -123713,6 +127600,7 @@ public struct KEY
     public XtRange _xt_user_fields;
     public XtRange @string;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_CURVE
@@ -123727,6 +127615,7 @@ public struct BEZIER_CURVE
     public byte check;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct BEZIER_SURF
@@ -123745,6 +127634,7 @@ public struct BEZIER_SURF
     public XtRange patch;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SUPER_PATCH
 {
@@ -123757,6 +127647,7 @@ public struct SUPER_PATCH
     public double u_length;
     public double v_length;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EVENT_FILTER
@@ -123782,6 +127673,7 @@ public struct EVENT_FILTER
     public byte att_def;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BULLETIN_BOARD
 {
@@ -123803,6 +127695,7 @@ public struct BULLETIN_BOARD
     public LISTRef entity_usfld;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct UNSANITISED
 {
@@ -123811,6 +127704,8 @@ public struct UNSANITISED
     public XtVariableLength _xt_variable_length;
     public XtRange bad_patch;
 }
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PBOX
@@ -123822,6 +127717,7 @@ public struct PBOX
     public XtSchemaInterval u_int;
     public XtSchemaInterval v_int;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SET_ELEMENT_TAG
@@ -123837,6 +127733,7 @@ public struct SET_ELEMENT_TAG
     public XtNodeIndex node;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACE_SET
 {
@@ -123849,6 +127746,7 @@ public struct FACE_SET
     public HALFEDGE_SETRef he_set;
     public XtNodeIndex surfaces;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HALFEDGE_SET
@@ -123864,6 +127762,7 @@ public struct HALFEDGE_SET
     public HALFEDGE_SETRef co_he_set;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE_CB
 {
@@ -123874,6 +127773,7 @@ public struct OBB_TREE_CB
     public long cb;
     public byte @internal;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBB_TREE
@@ -123890,6 +127790,8 @@ public struct OBB_TREE
     public OBB_TREE_CBRef ray;
     public OBB_TREE_CBRef subdivide;
 }
+
+public enum OBSOLETE_MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_MESH
@@ -123923,6 +127825,8 @@ public struct OBSOLETE_MESH
     public PSM_MESHRef psm_imesh;
 }
 
+public enum OBSOLETE_POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_POLYLINE
 {
@@ -123939,6 +127843,8 @@ public struct OBSOLETE_POLYLINE
     public POLYLINE_DATARef data;
     public ATTRIBUTERef attr;
 }
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -123967,6 +127873,7 @@ public struct PE_SURF
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INT_PE_DATA
 {
@@ -123977,6 +127884,7 @@ public struct INT_PE_DATA
     public REAL_VALUESRef real_array;
     public INT_VALUESRef int_array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct EXT_PE_DATA
@@ -123991,6 +127899,7 @@ public struct EXT_PE_DATA
     public XtRange data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_PARAM_PROPS
 {
@@ -124003,6 +127912,8 @@ public struct SU_PARAM_PROPS
     public byte v_start;
     public byte v_end;
 }
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct B_SURFACE
@@ -124020,6 +127931,8 @@ public struct B_SURFACE
     public NURBS_SURFRef nurbs;
     public SURFACE_DATARef data;
 }
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURFACE_DATA
@@ -124070,6 +127983,10 @@ public struct SURFACE_DATA
     public XtNodeIndex blend_form;
 }
 
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_SURF
 {
@@ -124100,6 +128017,7 @@ public struct NURBS_SURF
     public KNOT_MULT_SUMRef v_knot_mult_sum;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT
 {
@@ -124109,6 +128027,7 @@ public struct KNOT_MULT
     public XtRange _xt_user_fields;
     public XtRange mult;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_SET
@@ -124120,6 +128039,7 @@ public struct KNOT_SET
     public XtRange knots;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct KNOT_MULT_SUM
 {
@@ -124128,6 +128048,8 @@ public struct KNOT_MULT_SUM
     public XtVariableLength _xt_variable_length;
     public XtRange mult;
 }
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PE_CURVE
@@ -124153,6 +128075,7 @@ public struct PE_CURVE
     public XtRange internal_geom;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_PARAM_PROPS
 {
@@ -124162,6 +128085,8 @@ public struct CU_PARAM_PROPS
     public byte t_start;
     public byte t_end;
 }
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PCURVE
@@ -124180,6 +128105,8 @@ public struct PCURVE
     public XtNodeIndex surface;
     public BSPLINE_CURVERef bspline;
 }
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TRIMMED_CURVE
@@ -124201,6 +128128,8 @@ public struct TRIMMED_CURVE
     public double parm_2;
 }
 
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct B_CURVE
 {
@@ -124217,6 +128146,8 @@ public struct B_CURVE
     public NURBS_CURVERef nurbs;
     public CURVE_DATARef data;
 }
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_DATA
@@ -124238,6 +128169,9 @@ public struct CURVE_DATA
     public XtNodeIndex analytic_form;
 }
 
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NURBS_CURVE
 {
@@ -124258,6 +128192,8 @@ public struct NURBS_CURVE
     public KNOT_SETRef knots;
     public KNOT_MULT_SUMRef knot_mult_sum;
 }
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CURVE
@@ -124283,6 +128219,7 @@ public struct SP_CURVE
     public double tolerance_to_original;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SP_CHART
 {
@@ -124295,6 +128232,7 @@ public struct SP_CHART
     public double chordal_error_2d;
     public XtRange hvec;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CU_TREE
@@ -124314,6 +128252,7 @@ public struct CU_TREE
     public SHORT_VALUESRef leaf_parents;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GEOMETRIC_OWNER
 {
@@ -124325,6 +128264,8 @@ public struct GEOMETRIC_OWNER
     public GEOMETRIC_OWNERRef previous;
     public XtNodeIndex shared_geometry;
 }
+
+public enum MESH_INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [InlineArray(2)] public struct MESH_INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -124345,6 +128286,7 @@ public struct MESH_INTERSECTION
     public byte start_type;
     public byte end_type;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART
@@ -124367,6 +128309,7 @@ public struct MESH_CHART
     public MESH_CHART_SPANRef span;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_CHART_SPAN
 {
@@ -124379,6 +128322,7 @@ public struct MESH_CHART_SPAN
     public CHAR_VALUESRef types;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_SUBNODES
 {
@@ -124389,6 +128333,7 @@ public struct COMB_INT_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_INT_NODES
@@ -124402,6 +128347,7 @@ public struct COMB_INT_NODES
     public long n_used;
     public XtRange nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OBSOLETE_PFF_MESH
@@ -124422,6 +128368,7 @@ public struct OBSOLETE_PFF_MESH
     public LISTRef unused_verts;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_SUBNODES
 {
@@ -124432,6 +128379,7 @@ public struct COMB_REAL_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_REAL_NODES
@@ -124446,6 +128394,7 @@ public struct COMB_REAL_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PLANE_FORM
 {
@@ -124455,6 +128404,8 @@ public struct PLANE_FORM
     public XtSchemaVector pvec;
     public XtSchemaVector normal;
 }
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CYLINDER_FORM
@@ -124467,6 +128418,8 @@ public struct CYLINDER_FORM
     public double radius;
     public byte sense;
 }
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct CONE_FORM
@@ -124482,6 +128435,8 @@ public struct CONE_FORM
     public byte sense;
 }
 
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPHERE_FORM
 {
@@ -124492,6 +128447,8 @@ public struct SPHERE_FORM
     public double radius;
     public byte sense;
 }
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TORUS_FORM
@@ -124506,6 +128463,7 @@ public struct TORUS_FORM
     public byte sense;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_FORM
 {
@@ -124515,6 +128473,7 @@ public struct SWEPT_FORM
     public XtSchemaVector sweep;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SWEPT_UV_FORM
@@ -124528,6 +128487,7 @@ public struct SWEPT_UV_FORM
     public byte subtype_v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SPUN_FORM
 {
@@ -124538,6 +128498,7 @@ public struct SPUN_FORM
     public XtSchemaVector axis;
     public byte subtype;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VAR_RADIUS_PIPE_FORM
@@ -124551,6 +128512,7 @@ public struct VAR_RADIUS_PIPE_FORM
     public byte min_radius_bdry;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_DEGENERACY
 {
@@ -124563,6 +128525,7 @@ public struct SU_DEGENERACY
     public long type;
     public SU_DEGENERACYRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SU_TREE
@@ -124596,6 +128559,7 @@ public struct SU_TREE
     public SHORT_VALUESRef leaf_v_splits;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCHES
 {
@@ -124605,6 +128569,7 @@ public struct POLYNOMIAL_PATCHES
     public long n_patches;
     public XtRange patch;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_PATCH
@@ -124642,6 +128607,7 @@ public struct POLYNOMIAL_PATCH
     public REAL_VALUESRef Wd2ud2v;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_SU_FORM
 {
@@ -124657,6 +128623,7 @@ public struct HELIX_SU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CHAIN_HEAD
 {
@@ -124665,6 +128632,7 @@ public struct CHAIN_HEAD
     public long n_nodes;
     public long n_nolog_nodes;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY_INTERNAL
@@ -124675,6 +128643,7 @@ public struct PMARK_ARRAY_INTERNAL
     public XtRange pmarks;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PMARK_ARRAY
 {
@@ -124684,6 +128653,7 @@ public struct PMARK_ARRAY
     public long size;
     public PMARK_ARRAY_INTERNALRef array;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct ROLL_DATA
@@ -124710,6 +128680,7 @@ public struct ROLL_DATA
     public ulong facet_geometry;
     public ulong cellular_guise;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION
@@ -124738,6 +128709,7 @@ public struct SESSION
     public INT_VALUESRef ds_session_switches;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SESSION_SWITCH
 {
@@ -124748,6 +128720,7 @@ public struct SESSION_SWITCH
     public long value;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct APPITEM
 {
@@ -124756,6 +128729,7 @@ public struct APPITEM
     public long pointer;
     public APPITEMRef next;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct DEFER_DELTAS
@@ -124766,6 +128740,7 @@ public struct DEFER_DELTAS
     public long size;
     public long data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PART_XMT_BLOCK
@@ -124782,6 +128757,7 @@ public struct PART_XMT_BLOCK
     public XtRange entries;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BYTE_VALUES
 {
@@ -124792,6 +128768,7 @@ public struct BYTE_VALUES
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENTS
 {
@@ -124801,6 +128778,7 @@ public struct POLYNOMIAL_SEGMENTS
     public long n_segments;
     public XtRange segment;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYNOMIAL_SEGMENT
@@ -124821,6 +128799,7 @@ public struct POLYNOMIAL_SEGMENT
     public REAL_VALUESRef Wd2t;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ARRAY
 {
@@ -124830,6 +128809,7 @@ public struct HVEC_ARRAY
     public XtRange hvec;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct HVEC_ORDERING
 {
@@ -124838,6 +128818,7 @@ public struct HVEC_ORDERING
     public XtVariableLength _xt_variable_length;
     public XtRange order;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct HELIX_CU_FORM
@@ -124854,6 +128835,7 @@ public struct HELIX_CU_FORM
     public double tol;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE_DATA
 {
@@ -124866,6 +128848,7 @@ public struct POLYLINE_DATA
     public POINT_VALUESRef pvec;
     public PARM_VALUESRef parm;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PFF_MESH
@@ -124883,6 +128866,9 @@ public struct PFF_MESH
     public XtNodeIndex position_pool;
     public XtNodeIndex normal_pool;
 }
+
+public enum PSM_MESH__precision : ulong { @double = 1, single = 2 }
+public enum PSM_MESH__normal_type : ulong { none = 1, per_vertex = 2, per_facet = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PSM_MESH
@@ -124902,6 +128888,7 @@ public struct PSM_MESH
     public XtRange combs;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_TOOTH
 {
@@ -124911,6 +128898,8 @@ public struct INTEGER_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum INTEGER_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct INTEGER_COMB
@@ -124927,6 +128916,7 @@ public struct INTEGER_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_TOOTH
 {
@@ -124936,6 +128926,8 @@ public struct VECTOR_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum VECTOR_COMB__encoding : ulong { simple = 1, spherical = 2 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct VECTOR_COMB
@@ -124951,6 +128943,7 @@ public struct VECTOR_COMB
     public XtRange teeth;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_SUBNODES
 {
@@ -124961,6 +128954,7 @@ public struct COMB_BYTE_SUBNODES
     public long n_used;
     public XtRange data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct COMB_BYTE_NODES
@@ -124975,6 +128969,7 @@ public struct COMB_BYTE_NODES
     public XtRange nodes;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct EDGE_DATA
 {
@@ -124982,6 +128977,7 @@ public struct EDGE_DATA
     public XtTableIndex _xt_order;
     public FACET_EDGE_DATARef facet_edge_data;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_EDGE_DATA
@@ -124997,6 +128993,7 @@ public struct FACET_EDGE_DATA
     public CHAR_VALUESRef const_parm;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct BODY_DATA
 {
@@ -125005,6 +129002,7 @@ public struct BODY_DATA
     public FACET_BODY_DATARef facet_body_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct FACET_BODY_DATA
 {
@@ -125012,6 +129010,8 @@ public struct FACET_BODY_DATA
     public XtTableIndex _xt_order;
     public REAL_VALUESRef global_tols;
 }
+
+public enum POLYLINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct POLYLINE
@@ -125028,6 +129028,8 @@ public struct POLYLINE
     public byte sense;
     public POLYLINE_DATARef data;
 }
+
+public enum MESH__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH
@@ -125059,6 +129061,7 @@ public struct MESH
     public MESH_READER_DATARef reader_data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_BLOCK
 {
@@ -125068,6 +129071,8 @@ public struct MESH_BLOCK
     public long size;
     public long data;
 }
+
+public enum TAG_MAP__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct TAG_MAP
@@ -125080,6 +129085,8 @@ public struct TAG_MAP
     public TAG_MAPRef next;
 }
 
+public enum INTERSECTION_DATA__uv_type : ulong { none = 1, first = 2, second = 3, both = 4 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct INTERSECTION_DATA
 {
@@ -125091,6 +129098,7 @@ public struct INTERSECTION_DATA
     public XtRange values;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OFFSET_VALUES
 {
@@ -125100,6 +129108,7 @@ public struct OFFSET_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_OFFSET_DATA
@@ -125113,6 +129122,7 @@ public struct MESH_OFFSET_DATA
     public long schema_data_offset_low;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_CHAR_VALUES
 {
@@ -125122,6 +129132,7 @@ public struct SCHEMA_CHAR_VALUES
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_NODE_MAP
@@ -125140,6 +129151,7 @@ public struct NEW_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct MOD_NODE_MAP
 {
@@ -125155,6 +129167,7 @@ public struct MOD_NODE_MAP
     public XtRange field_maps;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct NEW_FIELD_MAP
 {
@@ -125167,6 +129180,7 @@ public struct NEW_FIELD_MAP
     public SCHEMA_CHAR_VALUESRef type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct SCHEMA_DATA
 {
@@ -125175,6 +129189,7 @@ public struct SCHEMA_DATA
     public XtRange _xt_user_fields;
     public XtNodeIndex node_map;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_NODE_MAP
@@ -125188,6 +129203,7 @@ public struct OLD_NODE_MAP
     public long node_type;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct OLD_FIELD_MAP
 {
@@ -125196,6 +129212,7 @@ public struct OLD_FIELD_MAP
     public XtRange _xt_user_fields;
     public ulong base_index;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct MESH_READER_DATA
@@ -125210,6 +129227,7 @@ public struct MESH_READER_DATA
     public byte thread_safe;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_TOOTH
 {
@@ -125219,6 +129237,8 @@ public struct REAL_TOOTH
     public XtRange _xt_user_fields;
     public XtRange values;
 }
+
+public enum REAL_COMB__encoding : ulong { no_encoding = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct REAL_COMB
@@ -125233,6 +129253,8 @@ public struct REAL_COMB
     public long shift;
     public XtRange teeth;
 }
+
+public enum LATTICE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE
@@ -125249,6 +129271,11 @@ public struct LATTICE
     public byte sense;
     public XtNodeIndex data;
 }
+
+public enum LATTICE_DATA_IRREGULAR__ball_type : ulong { unset = 0, @const = 1, variable = 2 }
+public enum LATTICE_DATA_IRREGULAR__ball_blend_type : ulong { none = 0, absolute = 1, relative = 2 }
+public enum LATTICE_DATA_IRREGULAR__rod_term_type : ulong { unset = 0, @const = 1, derived = 2, variable_1 = 3, variable_2 = 4 }
+public enum LATTICE_DATA_IRREGULAR__rod_mid_type : ulong { unset = 0, none = 1, @const = 2, variable = 3 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_IRREGULAR
@@ -125275,6 +129302,7 @@ public struct LATTICE_DATA_IRREGULAR
     public REAL_COMBRef rod_mid_radii;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct GRAPH_COMPACT
 {
@@ -125284,6 +129312,8 @@ public struct GRAPH_COMPACT
     public INTEGER_COMBRef adjacency_indices;
     public INTEGER_COMBRef adjacencies;
 }
+
+public enum SURF_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SURF_STUB
@@ -125299,6 +129329,8 @@ public struct SURF_STUB
     public byte sense;
 }
 
+public enum CURVE_STUB__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct CURVE_STUB
 {
@@ -125312,6 +129344,7 @@ public struct CURVE_STUB
     public GEOMETRIC_OWNERRef geometric_owner;
     public byte sense;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct STRUCTURE_COMB
@@ -125327,6 +129360,7 @@ public struct STRUCTURE_COMB
     public XtRange teeth;
 }
 
+
 [InlineArray(9)] public struct TRANSFORM_PRECISION__rotation_matrix__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
 public struct TRANSFORM_PRECISION
@@ -125337,6 +129371,8 @@ public struct TRANSFORM_PRECISION
     public TRANSFORM_PRECISION__rotation_matrix__ARRAY rotation_matrix;
     public XtSchemaVector translation_vector;
 }
+
+public enum FRAME__sense : byte { positive = (byte)'+', negative = (byte)'-' }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct FRAME
@@ -125355,6 +129391,7 @@ public struct FRAME
     public byte sense;
 }
 
+
 [InlineArray(3)] public struct SKEWBOX__axes__ARRAY { private XtSchemaVector _element0; }
 [InlineArray(3)] public struct SKEWBOX__width__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -125369,6 +129406,9 @@ public struct SKEWBOX
     public ulong form;
 }
 
+public enum TPMS_SURF__tpms_type : ulong { unset = 0, gyroid = 1, lidinoid = 2, neovius = 3, schoen = 4, schwarz_d = 5, schwarz_p = 6, split_p = 7, schoen_octo = 8 }
+public enum TPMS_SURF__tpms_shift : ulong { none = 0, half = 1 }
+
 [StructLayout(LayoutKind.Sequential)]
 public struct TPMS_SURF
 {
@@ -125378,6 +129418,7 @@ public struct TPMS_SURF
     public ulong tpms_type;
     public ulong tpms_shift;
 }
+
 
 [InlineArray(3)] public struct IMPLICIT_SURF__scale__ARRAY { private double _element0; }
 [StructLayout(LayoutKind.Sequential)]
@@ -125394,6 +129435,7 @@ public struct IMPLICIT_SURF
     public XtNodeIndex data;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct IMPLICIT_VOLUME
 {
@@ -125404,6 +129446,7 @@ public struct IMPLICIT_VOLUME
     public double front_offset;
     public double back_offset;
 }
+
 
 [InlineArray(2)] public struct PATTERN_BOUND__bound_i__ARRAY { private ulong _element0; }
 [InlineArray(2)] public struct PATTERN_BOUND__bound_j__ARRAY { private ulong _element0; }
@@ -125425,6 +129468,7 @@ public struct PATTERN_BOUND
     public PATTERN_BOUND__repetitions_k__ARRAY repetitions_k;
 }
 
+
 [StructLayout(LayoutKind.Sequential)]
 public struct PATTERN_RECTILINEAR
 {
@@ -125433,6 +129477,8 @@ public struct PATTERN_RECTILINEAR
     public XtRange _xt_user_fields;
     public SKEWBOXRef skewbox;
 }
+
+public enum PATTERN_AXIAL__hand : ulong { right = 0, left = 1 }
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PATTERN_AXIAL
@@ -125448,6 +129494,7 @@ public struct PATTERN_AXIAL
     public long reps_per_period;
     public ulong hand;
 }
+
 
 [StructLayout(LayoutKind.Sequential)]
 public struct LATTICE_DATA_PATTERN

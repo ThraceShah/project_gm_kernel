@@ -52,6 +52,37 @@ C 侧 `PGM_XT_NULL_*` 宏）：`p` 为 `-1`，整数为 `INT64_MIN`，无符号�
 一次分配 pinned tables；写入各 node/variable-field span 后调用 `FinalizeModel`。
 Finalize 之后只允许并发读取。
 
+### 枚举字段常量
+
+部分枚举类字段（schema 类型 `u` 或 `c`）带有全部取值的伴生枚举，成员本身
+保持数值类型，可直接与枚举比较或赋值。数值取值来自 Parasolid XT Format
+Reference 的 "Schema Definitions" 章节（`SCH_*` 枚举，即 x_t 文件真实值域，
+与 PK API 头文件中的 `PK_*_t` 数值**不同**）；字符取值来自 XT 拓扑文档
+（`sense` 的 `'+'`/`'-'`，`REGION.type` 的 `'S'`/`'V'`）。覆盖范围按文档有
+明确记载的字段划定，例如：
+
+```csharp
+(Schema.BODY__body_type)model.BODY[0].body_type   // solid_body=1, wire_body=2, ...
+Schema.REGION__type.solid                          // (byte)'S'
+```
+
+```c
+enum PGM_XT_BODY_body_type_e {
+    PGM_XT_BODY_body_type_solid_body = 1,
+    /* ... */
+};
+row.body_type == PGM_XT_BODY_body_type_solid_body;
+```
+
+C 侧常量名为 `PGM_XT_<节点>_<字段>_<值名>`（枚举标签 `_e` 结尾），C# 侧
+枚举名为 `<节点>__<字段>`，值名保留文档 snake_case。生成映射文档
+（`docs/xt_schema_generated_mapping.md`）的 Values 列逐字段记录枚举来源；
+无文档依据的字段不臆测取值，保持无常量。文档值表若有缺口，以 corpus 实测
+值为证据补录（如 `curve_form` 的 `helical_arc = 8`，见于螺旋 b-curve，表内
+注释标明依据）。corpus 校验脚本（`scripts/ValidateXtSchemaModelCorpus.cs`）
+对 `tests/ParasolidXtCorpus/Fixtures` 和 `bin/parasolid-xt-corpus` 全部生成
+模型持续断言生成枚举与真实 x_t 数据一致。
+
 动态版本使用：
 
 ```csharp
