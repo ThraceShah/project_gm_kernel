@@ -10,6 +10,381 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+typedef struct PGM_XT_PARTITION_ref_s {
+    int32_t index;
+} PGM_XT_PARTITION_ref_t;
+typedef struct PGM_XT_PMARK_ref_s {
+    int32_t index;
+} PGM_XT_PMARK_ref_t;
+typedef struct PGM_XT_CHAIN_HEAD_ref_s {
+    int32_t index;
+} PGM_XT_CHAIN_HEAD_ref_t;
+typedef struct PGM_XT_INT_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_INT_VALUES_ref_t;
+typedef struct PGM_XT_ATTRIB_DEF_ref_s {
+    int32_t index;
+} PGM_XT_ATTRIB_DEF_ref_t;
+typedef struct PGM_XT_POINTER_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_POINTER_VALUES_ref_t;
+typedef struct PGM_XT_TAG_MAP_ref_s {
+    int32_t index;
+} PGM_XT_TAG_MAP_ref_t;
+typedef struct PGM_XT_SESSION_ref_s {
+    int32_t index;
+} PGM_XT_SESSION_ref_t;
+typedef struct PGM_XT_BRANCH_TAG_TABLE_ref_s {
+    int32_t index;
+} PGM_XT_BRANCH_TAG_TABLE_ref_t;
+typedef struct PGM_XT_LEAF_TAG_TABLE_ref_s {
+    int32_t index;
+} PGM_XT_LEAF_TAG_TABLE_ref_t;
+typedef struct PGM_XT_MARK_ref_s {
+    int32_t index;
+} PGM_XT_MARK_ref_t;
+typedef struct PGM_XT_PMARK_ARRAY_ref_s {
+    int32_t index;
+} PGM_XT_PMARK_ARRAY_ref_t;
+typedef struct PGM_XT_LIST_ref_s {
+    int32_t index;
+} PGM_XT_LIST_ref_t;
+typedef struct PGM_XT_LATTICE_ref_s {
+    int32_t index;
+} PGM_XT_LATTICE_ref_t;
+typedef struct PGM_XT_POINT_ref_s {
+    int32_t index;
+} PGM_XT_POINT_ref_t;
+typedef struct PGM_XT_KEY_ref_s {
+    int32_t index;
+} PGM_XT_KEY_ref_t;
+typedef struct PGM_XT_INSTANCE_ref_s {
+    int32_t index;
+} PGM_XT_INSTANCE_ref_t;
+typedef struct PGM_XT_ASSEMBLY_ref_s {
+    int32_t index;
+} PGM_XT_ASSEMBLY_ref_t;
+typedef struct PGM_XT_WORLD_ref_s {
+    int32_t index;
+} PGM_XT_WORLD_ref_t;
+typedef struct PGM_XT_MESH_OFFSET_DATA_ref_s {
+    int32_t index;
+} PGM_XT_MESH_OFFSET_DATA_ref_t;
+typedef struct PGM_XT_TRANSFORM_ref_s {
+    int32_t index;
+} PGM_XT_TRANSFORM_ref_t;
+typedef struct PGM_XT_BODY_ref_s {
+    int32_t index;
+} PGM_XT_BODY_ref_t;
+typedef struct PGM_XT_SHELL_ref_s {
+    int32_t index;
+} PGM_XT_SHELL_ref_t;
+typedef struct PGM_XT_REGION_ref_s {
+    int32_t index;
+} PGM_XT_REGION_ref_t;
+typedef struct PGM_XT_EDGE_ref_s {
+    int32_t index;
+} PGM_XT_EDGE_ref_t;
+typedef struct PGM_XT_VERTEX_ref_s {
+    int32_t index;
+} PGM_XT_VERTEX_ref_t;
+typedef struct PGM_XT_BODY_DATA_ref_s {
+    int32_t index;
+} PGM_XT_BODY_DATA_ref_t;
+typedef struct PGM_XT_FACE_ref_s {
+    int32_t index;
+} PGM_XT_FACE_ref_t;
+typedef struct PGM_XT_LOOP_ref_s {
+    int32_t index;
+} PGM_XT_LOOP_ref_t;
+typedef struct PGM_XT_HALFEDGE_ref_s {
+    int32_t index;
+} PGM_XT_HALFEDGE_ref_t;
+typedef struct PGM_XT_PBOX_ref_s {
+    int32_t index;
+} PGM_XT_PBOX_ref_t;
+typedef struct PGM_XT_EDGE_DATA_ref_s {
+    int32_t index;
+} PGM_XT_EDGE_DATA_ref_t;
+typedef struct PGM_XT_REAL_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_REAL_VALUES_ref_t;
+typedef struct PGM_XT_FRAME_ref_s {
+    int32_t index;
+} PGM_XT_FRAME_ref_t;
+typedef struct PGM_XT_GEOMETRIC_OWNER_ref_s {
+    int32_t index;
+} PGM_XT_GEOMETRIC_OWNER_ref_t;
+typedef struct PGM_XT_CPC_ref_s {
+    int32_t index;
+} PGM_XT_CPC_ref_t;
+typedef struct PGM_XT_PARASURF_ref_s {
+    int32_t index;
+} PGM_XT_PARASURF_ref_t;
+typedef struct PGM_XT_CHART_ref_s {
+    int32_t index;
+} PGM_XT_CHART_ref_t;
+typedef struct PGM_XT_LIMIT_ref_s {
+    int32_t index;
+} PGM_XT_LIMIT_ref_t;
+typedef struct PGM_XT_INTERSECTION_DATA_ref_s {
+    int32_t index;
+} PGM_XT_INTERSECTION_DATA_ref_t;
+typedef struct PGM_XT_HVEC_ARRAY_ref_s {
+    int32_t index;
+} PGM_XT_HVEC_ARRAY_ref_t;
+typedef struct PGM_XT_HVEC_ORDERING_ref_s {
+    int32_t index;
+} PGM_XT_HVEC_ORDERING_ref_t;
+typedef struct PGM_XT_HULL_ref_s {
+    int32_t index;
+} PGM_XT_HULL_ref_t;
+typedef struct PGM_XT_KNOT_VECTOR_ref_s {
+    int32_t index;
+} PGM_XT_KNOT_VECTOR_ref_t;
+typedef struct PGM_XT_BSPLINE_VERTICES_ref_s {
+    int32_t index;
+} PGM_XT_BSPLINE_VERTICES_ref_t;
+typedef struct PGM_XT_BEZIER_CURVE_ref_s {
+    int32_t index;
+} PGM_XT_BEZIER_CURVE_ref_t;
+typedef struct PGM_XT_BSPLINE_CURVE_ref_s {
+    int32_t index;
+} PGM_XT_BSPLINE_CURVE_ref_t;
+typedef struct PGM_XT_SU_TREE_ref_s {
+    int32_t index;
+} PGM_XT_SU_TREE_ref_t;
+typedef struct PGM_XT_CPS_ref_s {
+    int32_t index;
+} PGM_XT_CPS_ref_t;
+typedef struct PGM_XT_BEZIER_SURF_ref_s {
+    int32_t index;
+} PGM_XT_BEZIER_SURF_ref_t;
+typedef struct PGM_XT_BSPLINE_SURF_ref_s {
+    int32_t index;
+} PGM_XT_BSPLINE_SURF_ref_t;
+typedef struct PGM_XT_SU_PARAM_PROPS_ref_s {
+    int32_t index;
+} PGM_XT_SU_PARAM_PROPS_ref_t;
+typedef struct PGM_XT_REAL_LIS_BLOCK_ref_s {
+    int32_t index;
+} PGM_XT_REAL_LIS_BLOCK_ref_t;
+typedef struct PGM_XT_INTEGER_LIS_BLOCK_ref_s {
+    int32_t index;
+} PGM_XT_INTEGER_LIS_BLOCK_ref_t;
+typedef struct PGM_XT_TAG_LIS_BLOCK_ref_s {
+    int32_t index;
+} PGM_XT_TAG_LIS_BLOCK_ref_t;
+typedef struct PGM_XT_POINTER_LIS_BLOCK_ref_s {
+    int32_t index;
+} PGM_XT_POINTER_LIS_BLOCK_ref_t;
+typedef struct PGM_XT_ATT_DEF_ID_ref_s {
+    int32_t index;
+} PGM_XT_ATT_DEF_ID_ref_t;
+typedef struct PGM_XT_ATTRIB_CALLBACKS_ref_s {
+    int32_t index;
+} PGM_XT_ATTRIB_CALLBACKS_ref_t;
+typedef struct PGM_XT_FIELD_NAMES_ref_s {
+    int32_t index;
+} PGM_XT_FIELD_NAMES_ref_t;
+typedef struct PGM_XT_ATTRIBUTE_ref_s {
+    int32_t index;
+} PGM_XT_ATTRIBUTE_ref_t;
+typedef struct PGM_XT_MEMBER_OF_FEATURE_ref_s {
+    int32_t index;
+} PGM_XT_MEMBER_OF_FEATURE_ref_t;
+typedef struct PGM_XT_FEATURE_ref_s {
+    int32_t index;
+} PGM_XT_FEATURE_ref_t;
+typedef struct PGM_XT_TRANSFORM_PRECISION_ref_s {
+    int32_t index;
+} PGM_XT_TRANSFORM_PRECISION_ref_t;
+typedef struct PGM_XT_APPITEM_ref_s {
+    int32_t index;
+} PGM_XT_APPITEM_ref_t;
+typedef struct PGM_XT_UNSANITISED_ref_s {
+    int32_t index;
+} PGM_XT_UNSANITISED_ref_t;
+typedef struct PGM_XT_EVENT_FILTER_ref_s {
+    int32_t index;
+} PGM_XT_EVENT_FILTER_ref_t;
+typedef struct PGM_XT_BASIC_PATCH_ref_s {
+    int32_t index;
+} PGM_XT_BASIC_PATCH_ref_t;
+typedef struct PGM_XT_SET_ELEMENT_TAG_ref_s {
+    int32_t index;
+} PGM_XT_SET_ELEMENT_TAG_ref_t;
+typedef struct PGM_XT_FACE_SET_ref_s {
+    int32_t index;
+} PGM_XT_FACE_SET_ref_t;
+typedef struct PGM_XT_HALFEDGE_SET_ref_s {
+    int32_t index;
+} PGM_XT_HALFEDGE_SET_ref_t;
+typedef struct PGM_XT_COMB_INT_NODES_ref_s {
+    int32_t index;
+} PGM_XT_COMB_INT_NODES_ref_t;
+typedef struct PGM_XT_OBB_TREE_CB_ref_s {
+    int32_t index;
+} PGM_XT_OBB_TREE_CB_ref_t;
+typedef struct PGM_XT_OBB_TREE_ref_s {
+    int32_t index;
+} PGM_XT_OBB_TREE_ref_t;
+typedef struct PGM_XT_PFF_MESH_ref_s {
+    int32_t index;
+} PGM_XT_PFF_MESH_ref_t;
+typedef struct PGM_XT_MESH_ref_s {
+    int32_t index;
+} PGM_XT_MESH_ref_t;
+typedef struct PGM_XT_PSM_MESH_ref_s {
+    int32_t index;
+} PGM_XT_PSM_MESH_ref_t;
+typedef struct PGM_XT_POLYLINE_DATA_ref_s {
+    int32_t index;
+} PGM_XT_POLYLINE_DATA_ref_t;
+typedef struct PGM_XT_NURBS_SURF_ref_s {
+    int32_t index;
+} PGM_XT_NURBS_SURF_ref_t;
+typedef struct PGM_XT_SURFACE_DATA_ref_s {
+    int32_t index;
+} PGM_XT_SURFACE_DATA_ref_t;
+typedef struct PGM_XT_SU_DEGENERACY_ref_s {
+    int32_t index;
+} PGM_XT_SU_DEGENERACY_ref_t;
+typedef struct PGM_XT_POLYNOMIAL_PATCHES_ref_s {
+    int32_t index;
+} PGM_XT_POLYNOMIAL_PATCHES_ref_t;
+typedef struct PGM_XT_KNOT_MULT_ref_s {
+    int32_t index;
+} PGM_XT_KNOT_MULT_ref_t;
+typedef struct PGM_XT_KNOT_SET_ref_s {
+    int32_t index;
+} PGM_XT_KNOT_SET_ref_t;
+typedef struct PGM_XT_KNOT_MULT_SUM_ref_s {
+    int32_t index;
+} PGM_XT_KNOT_MULT_SUM_ref_t;
+typedef struct PGM_XT_CU_PARAM_PROPS_ref_s {
+    int32_t index;
+} PGM_XT_CU_PARAM_PROPS_ref_t;
+typedef struct PGM_XT_NURBS_CURVE_ref_s {
+    int32_t index;
+} PGM_XT_NURBS_CURVE_ref_t;
+typedef struct PGM_XT_CURVE_DATA_ref_s {
+    int32_t index;
+} PGM_XT_CURVE_DATA_ref_t;
+typedef struct PGM_XT_CU_TREE_ref_s {
+    int32_t index;
+} PGM_XT_CU_TREE_ref_t;
+typedef struct PGM_XT_POLYNOMIAL_SEGMENTS_ref_s {
+    int32_t index;
+} PGM_XT_POLYNOMIAL_SEGMENTS_ref_t;
+typedef struct PGM_XT_SP_CHART_ref_s {
+    int32_t index;
+} PGM_XT_SP_CHART_ref_t;
+typedef struct PGM_XT_B_CURVE_ref_s {
+    int32_t index;
+} PGM_XT_B_CURVE_ref_t;
+typedef struct PGM_XT_POINT_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_POINT_VALUES_ref_t;
+typedef struct PGM_XT_SHORT_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_SHORT_VALUES_ref_t;
+typedef struct PGM_XT_MESH_CHART_ref_s {
+    int32_t index;
+} PGM_XT_MESH_CHART_ref_t;
+typedef struct PGM_XT_DIRECTION_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_DIRECTION_VALUES_ref_t;
+typedef struct PGM_XT_MESH_CHART_SPAN_ref_s {
+    int32_t index;
+} PGM_XT_MESH_CHART_SPAN_ref_t;
+typedef struct PGM_XT_CHAR_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_CHAR_VALUES_ref_t;
+typedef struct PGM_XT_COMB_INT_SUBNODES_ref_s {
+    int32_t index;
+} PGM_XT_COMB_INT_SUBNODES_ref_t;
+typedef struct PGM_XT_COMB_REAL_NODES_ref_s {
+    int32_t index;
+} PGM_XT_COMB_REAL_NODES_ref_t;
+typedef struct PGM_XT_COMB_REAL_SUBNODES_ref_s {
+    int32_t index;
+} PGM_XT_COMB_REAL_SUBNODES_ref_t;
+typedef struct PGM_XT_BOX_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_BOX_VALUES_ref_t;
+typedef struct PGM_XT_POLYNOMIAL_PATCH_ref_s {
+    int32_t index;
+} PGM_XT_POLYNOMIAL_PATCH_ref_t;
+typedef struct PGM_XT_VECTOR_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_VECTOR_VALUES_ref_t;
+typedef struct PGM_XT_PMARK_ARRAY_INTERNAL_ref_s {
+    int32_t index;
+} PGM_XT_PMARK_ARRAY_INTERNAL_ref_t;
+typedef struct PGM_XT_BULLETIN_BOARD_ref_s {
+    int32_t index;
+} PGM_XT_BULLETIN_BOARD_ref_t;
+typedef struct PGM_XT_SESSION_SWITCH_ref_s {
+    int32_t index;
+} PGM_XT_SESSION_SWITCH_ref_t;
+typedef struct PGM_XT_ROOT_TAG_TABLE_ref_s {
+    int32_t index;
+} PGM_XT_ROOT_TAG_TABLE_ref_t;
+typedef struct PGM_XT_POLYNOMIAL_SEGMENT_ref_s {
+    int32_t index;
+} PGM_XT_POLYNOMIAL_SEGMENT_ref_t;
+typedef struct PGM_XT_PARM_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_PARM_VALUES_ref_t;
+typedef struct PGM_XT_VECTOR_COMB_ref_s {
+    int32_t index;
+} PGM_XT_VECTOR_COMB_ref_t;
+typedef struct PGM_XT_INTEGER_COMB_ref_s {
+    int32_t index;
+} PGM_XT_INTEGER_COMB_ref_t;
+typedef struct PGM_XT_INTEGER_TOOTH_ref_s {
+    int32_t index;
+} PGM_XT_INTEGER_TOOTH_ref_t;
+typedef struct PGM_XT_VECTOR_TOOTH_ref_s {
+    int32_t index;
+} PGM_XT_VECTOR_TOOTH_ref_t;
+typedef struct PGM_XT_COMB_BYTE_SUBNODES_ref_s {
+    int32_t index;
+} PGM_XT_COMB_BYTE_SUBNODES_ref_t;
+typedef struct PGM_XT_FACET_EDGE_DATA_ref_s {
+    int32_t index;
+} PGM_XT_FACET_EDGE_DATA_ref_t;
+typedef struct PGM_XT_FACET_BODY_DATA_ref_s {
+    int32_t index;
+} PGM_XT_FACET_BODY_DATA_ref_t;
+typedef struct PGM_XT_MESH_READER_DATA_ref_s {
+    int32_t index;
+} PGM_XT_MESH_READER_DATA_ref_t;
+typedef struct PGM_XT_TAG_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_TAG_VALUES_ref_t;
+typedef struct PGM_XT_OFFSET_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_OFFSET_VALUES_ref_t;
+typedef struct PGM_XT_SCHEMA_DATA_ref_s {
+    int32_t index;
+} PGM_XT_SCHEMA_DATA_ref_t;
+typedef struct PGM_XT_SCHEMA_CHAR_VALUES_ref_s {
+    int32_t index;
+} PGM_XT_SCHEMA_CHAR_VALUES_ref_t;
+typedef struct PGM_XT_NEW_FIELD_MAP_ref_s {
+    int32_t index;
+} PGM_XT_NEW_FIELD_MAP_ref_t;
+typedef struct PGM_XT_REAL_TOOTH_ref_s {
+    int32_t index;
+} PGM_XT_REAL_TOOTH_ref_t;
+typedef struct PGM_XT_GRAPH_COMPACT_ref_s {
+    int32_t index;
+} PGM_XT_GRAPH_COMPACT_ref_t;
+typedef struct PGM_XT_REAL_COMB_ref_s {
+    int32_t index;
+} PGM_XT_REAL_COMB_ref_t;
 typedef struct PGM_XT_NULLP_s {
     int32_t _xt_index;
     int32_t _xt_order;
@@ -20,2538 +395,2538 @@ typedef struct PGM_XT_WORKSPACE_s {
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t ws;
+    PGM_XT_range_t ws;
 } PGM_XT_WORKSPACE_t;
 typedef struct PGM_XT_PARTITION_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t model_data;
-    PGM_XT_field_p_t current_pmark;
-    PGM_XT_field_p_t initial_pmark;
-    PGM_XT_field_p_t old;
+    PGM_XT_PARTITION_ref_t next;
+    PGM_XT_PARTITION_ref_t previous;
+    int32_t model_data;
+    PGM_XT_PMARK_ref_t current_pmark;
+    PGM_XT_PMARK_ref_t initial_pmark;
+    PGM_XT_CHAIN_HEAD_ref_t old;
 #ifdef __cplusplus
-    PGM_XT_field_p_t new_;
+    PGM_XT_CHAIN_HEAD_ref_t new_;
 #else
-    PGM_XT_field_p_t new;
+    PGM_XT_CHAIN_HEAD_ref_t new;
 #endif
-    PGM_XT_field_p_t new_old;
-    PGM_XT_field_p_t new_copy;
-    PGM_XT_field_p_t new_del;
-    PGM_XT_field_p_t del;
-    PGM_XT_field_p_t del_null;
-    PGM_XT_field_p_t copy;
-    PGM_XT_field_p_t mod_old;
-    PGM_XT_field_p_t mod_copy;
-    PGM_XT_field_p_t mod_del;
-    PGM_XT_field_d_t n_nodes_at_pmark;
-    PGM_XT_field_l_t at_pmark;
-    PGM_XT_field_l_t at_current_mark;
-    PGM_XT_field_l_t allow_partial_pmarks;
-    PGM_XT_field_d_t n_pmarks;
-    PGM_XT_field_d_t highest_id;
-    PGM_XT_field_p_t rcv_key;
-    PGM_XT_field_d_t rcv_format;
-    PGM_XT_field_p_t rcv_tags;
-    PGM_XT_field_l_t rcv_user_fields;
-    PGM_XT_field_p_t rcv_attrib_def;
-    PGM_XT_field_p_t rcv_attdef_list;
-    PGM_XT_field_p_t xmt_pmark;
-    PGM_XT_field_d_t xmt_version;
-    PGM_XT_field_l_t thread_locked;
-    PGM_XT_field_q_t thread_queue;
+    PGM_XT_CHAIN_HEAD_ref_t new_old;
+    PGM_XT_CHAIN_HEAD_ref_t new_copy;
+    PGM_XT_CHAIN_HEAD_ref_t new_del;
+    PGM_XT_CHAIN_HEAD_ref_t del;
+    PGM_XT_CHAIN_HEAD_ref_t del_null;
+    PGM_XT_CHAIN_HEAD_ref_t copy;
+    PGM_XT_CHAIN_HEAD_ref_t mod_old;
+    PGM_XT_CHAIN_HEAD_ref_t mod_copy;
+    PGM_XT_CHAIN_HEAD_ref_t mod_del;
+    int64_t n_nodes_at_pmark;
+    uint8_t at_pmark;
+    uint8_t at_current_mark;
+    uint8_t allow_partial_pmarks;
+    int64_t n_pmarks;
+    int64_t highest_id;
+    int32_t rcv_key;
+    int64_t rcv_format;
+    PGM_XT_INT_VALUES_ref_t rcv_tags;
+    uint8_t rcv_user_fields;
+    PGM_XT_ATTRIB_DEF_ref_t rcv_attrib_def;
+    PGM_XT_POINTER_VALUES_ref_t rcv_attdef_list;
+    PGM_XT_PMARK_ref_t xmt_pmark;
+    int64_t xmt_version;
+    uint8_t thread_locked;
+    int64_t thread_queue;
 } PGM_XT_PARTITION_t;
 typedef struct PGM_XT_PMARK_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t preceding;
-    PGM_XT_field_p_t first_following;
-    PGM_XT_field_p_t next_sibling;
-    PGM_XT_field_p_t prev_sibling;
-    PGM_XT_field_p_t del_nolog;
-    PGM_XT_field_d_t mark_use_count;
-    PGM_XT_field_t_t new_at_mark;
-    PGM_XT_field_d_t n_new_nodes;
-    PGM_XT_field_d_t n_del_nodes;
-    PGM_XT_field_d_t n_copy_mod_nodes;
-    PGM_XT_field_d_t n_unloaded_nodes;
-    PGM_XT_field_d_t delta_key;
-    PGM_XT_field_l_t delta_is_forward;
-    PGM_XT_field_d_t id;
+    PGM_XT_PMARK_ref_t preceding;
+    PGM_XT_PMARK_ref_t first_following;
+    PGM_XT_PMARK_ref_t next_sibling;
+    PGM_XT_PMARK_ref_t prev_sibling;
+    PGM_XT_CHAIN_HEAD_ref_t del_nolog;
+    int64_t mark_use_count;
+    int64_t new_at_mark;
+    int64_t n_new_nodes;
+    int64_t n_del_nodes;
+    int64_t n_copy_mod_nodes;
+    int64_t n_unloaded_nodes;
+    int64_t delta_key;
+    uint8_t delta_is_forward;
+    int64_t id;
 } PGM_XT_PMARK_t;
 typedef struct PGM_XT_UNIVERSE_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t attrib_def;
-    PGM_XT_field_p_t tag_map;
-    PGM_XT_field_p_t session;
-    PGM_XT_field_p_t null_branch;
-    PGM_XT_field_p_t null_leaf;
+    PGM_XT_ATTRIB_DEF_ref_t attrib_def;
+    PGM_XT_TAG_MAP_ref_t tag_map;
+    PGM_XT_SESSION_ref_t session;
+    PGM_XT_BRANCH_TAG_TABLE_ref_t null_branch;
+    PGM_XT_LEAF_TAG_TABLE_ref_t null_leaf;
 } PGM_XT_UNIVERSE_t;
 typedef struct PGM_XT_LEAF_TAG_TABLE_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t entity[256];
-    PGM_XT_field_d_t n_live;
+    int32_t entity[256];
+    int64_t n_live;
 } PGM_XT_LEAF_TAG_TABLE_t;
 typedef struct PGM_XT_BRANCH_TAG_TABLE_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t leaf[1024];
-    PGM_XT_field_d_t n_live;
+    PGM_XT_LEAF_TAG_TABLE_ref_t leaf[1024];
+    int64_t n_live;
 } PGM_XT_BRANCH_TAG_TABLE_t;
 typedef struct PGM_XT_ROOT_TAG_TABLE_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t branch[8192];
+    PGM_XT_BRANCH_TAG_TABLE_ref_t branch[8192];
 } PGM_XT_ROOT_TAG_TABLE_t;
 typedef struct PGM_XT_MARK_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t following;
-    PGM_XT_field_p_t preceding;
-    PGM_XT_field_p_t pmarks_from_preceding;
-    PGM_XT_field_p_t pmarks_from_following;
-    PGM_XT_field_p_t tag_map;
+    PGM_XT_MARK_ref_t following;
+    PGM_XT_MARK_ref_t preceding;
+    PGM_XT_PMARK_ARRAY_ref_t pmarks_from_preceding;
+    PGM_XT_PMARK_ARRAY_ref_t pmarks_from_following;
+    PGM_XT_TAG_MAP_ref_t tag_map;
 } PGM_XT_MARK_t;
 typedef struct PGM_XT_ASSEMBLY_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t highest_node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t attribute_chains;
-    PGM_XT_field_p_t list;
-    PGM_XT_field_p_t lattice;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_p_t curve;
-    PGM_XT_field_p_t point;
-    PGM_XT_field_p_t mesh;
-    PGM_XT_field_p_t polyline;
-    PGM_XT_field_p_t key;
-    PGM_XT_field_f_t res_size;
-    PGM_XT_field_f_t res_linear;
-    PGM_XT_field_b_t assembly_box;
-    PGM_XT_field_p_t ref_instance;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_c_t assembly_box_tightness;
-    PGM_XT_field_u_t state;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_u_t type;
-    PGM_XT_field_p_t sub_instance;
-    PGM_XT_field_p_t mesh_offset_data;
+    int64_t highest_node_id;
+    int32_t attributes_features;
+    PGM_XT_LIST_ref_t attribute_chains;
+    PGM_XT_LIST_ref_t list;
+    PGM_XT_LATTICE_ref_t lattice;
+    int32_t surface;
+    int32_t curve;
+    PGM_XT_POINT_ref_t point;
+    int32_t mesh;
+    int32_t polyline;
+    PGM_XT_KEY_ref_t key;
+    double res_size;
+    double res_linear;
+    PGM_XT_schema_box_t assembly_box;
+    PGM_XT_INSTANCE_ref_t ref_instance;
+    PGM_XT_ASSEMBLY_ref_t next;
+    PGM_XT_ASSEMBLY_ref_t previous;
+    uint8_t assembly_box_tightness;
+    uint64_t state;
+    PGM_XT_WORLD_ref_t owner;
+    uint64_t type;
+    PGM_XT_INSTANCE_ref_t sub_instance;
+    PGM_XT_MESH_OFFSET_DATA_ref_t mesh_offset_data;
 } PGM_XT_ASSEMBLY_t;
 typedef struct PGM_XT_INSTANCE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_u_t type;
-    PGM_XT_field_p_t part;
-    PGM_XT_field_p_t transform;
-    PGM_XT_field_p_t assembly;
-    PGM_XT_field_p_t next_in_part;
-    PGM_XT_field_p_t prev_in_part;
-    PGM_XT_field_p_t next_of_part;
-    PGM_XT_field_p_t prev_of_part;
+    int64_t node_id;
+    int32_t attributes_features;
+    uint64_t type;
+    int32_t part;
+    PGM_XT_TRANSFORM_ref_t transform;
+    PGM_XT_ASSEMBLY_ref_t assembly;
+    PGM_XT_INSTANCE_ref_t next_in_part;
+    PGM_XT_INSTANCE_ref_t prev_in_part;
+    PGM_XT_INSTANCE_ref_t next_of_part;
+    PGM_XT_INSTANCE_ref_t prev_of_part;
 } PGM_XT_INSTANCE_t;
 typedef struct PGM_XT_BODY_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t highest_node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t attribute_chains;
-    PGM_XT_field_p_t list;
-    PGM_XT_field_p_t lattice;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_p_t curve;
-    PGM_XT_field_p_t point;
-    PGM_XT_field_p_t mesh;
-    PGM_XT_field_p_t polyline;
-    PGM_XT_field_p_t key;
-    PGM_XT_field_f_t res_size;
-    PGM_XT_field_f_t res_linear;
-    PGM_XT_field_b_t body_box;
-    PGM_XT_field_p_t ref_instance;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_c_t body_box_tightness;
-    PGM_XT_field_u_t state;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_u_t body_type;
-    PGM_XT_field_u_t nom_geom_state;
-    PGM_XT_field_p_t shell;
-    PGM_XT_field_p_t boundary_lattice;
-    PGM_XT_field_p_t boundary_surface;
-    PGM_XT_field_p_t boundary_curve;
-    PGM_XT_field_p_t boundary_point;
-    PGM_XT_field_p_t boundary_mesh;
-    PGM_XT_field_p_t boundary_polyline;
-    PGM_XT_field_p_t region;
-    PGM_XT_field_p_t edge;
-    PGM_XT_field_p_t vertex;
-    PGM_XT_field_d_t index_map_offset;
-    PGM_XT_field_p_t index_map;
-    PGM_XT_field_p_t node_id_index_map;
-    PGM_XT_field_p_t schema_embedding_map;
-    PGM_XT_field_p_t child;
-    PGM_XT_field_d_t lowest_node_id;
-    PGM_XT_field_p_t data;
-    PGM_XT_field_p_t mesh_offset_data;
+    int64_t highest_node_id;
+    int32_t attributes_features;
+    PGM_XT_LIST_ref_t attribute_chains;
+    PGM_XT_LIST_ref_t list;
+    PGM_XT_LATTICE_ref_t lattice;
+    int32_t surface;
+    int32_t curve;
+    PGM_XT_POINT_ref_t point;
+    int32_t mesh;
+    int32_t polyline;
+    PGM_XT_KEY_ref_t key;
+    double res_size;
+    double res_linear;
+    PGM_XT_schema_box_t body_box;
+    PGM_XT_INSTANCE_ref_t ref_instance;
+    PGM_XT_BODY_ref_t next;
+    PGM_XT_BODY_ref_t previous;
+    uint8_t body_box_tightness;
+    uint64_t state;
+    int32_t owner;
+    uint64_t body_type;
+    uint64_t nom_geom_state;
+    PGM_XT_SHELL_ref_t shell;
+    PGM_XT_LATTICE_ref_t boundary_lattice;
+    int32_t boundary_surface;
+    int32_t boundary_curve;
+    PGM_XT_POINT_ref_t boundary_point;
+    int32_t boundary_mesh;
+    int32_t boundary_polyline;
+    PGM_XT_REGION_ref_t region;
+    PGM_XT_EDGE_ref_t edge;
+    PGM_XT_VERTEX_ref_t vertex;
+    int64_t index_map_offset;
+    PGM_XT_INT_VALUES_ref_t index_map;
+    PGM_XT_INT_VALUES_ref_t node_id_index_map;
+    PGM_XT_INT_VALUES_ref_t schema_embedding_map;
+    PGM_XT_BODY_ref_t child;
+    int64_t lowest_node_id;
+    PGM_XT_BODY_DATA_ref_t data;
+    PGM_XT_MESH_OFFSET_DATA_ref_t mesh_offset_data;
 } PGM_XT_BODY_t;
 typedef struct PGM_XT_SHELL_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t body;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t face;
-    PGM_XT_field_p_t edge;
-    PGM_XT_field_p_t vertex;
-    PGM_XT_field_p_t region;
-    PGM_XT_field_p_t front_face;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_BODY_ref_t body;
+    PGM_XT_SHELL_ref_t next;
+    PGM_XT_FACE_ref_t face;
+    PGM_XT_EDGE_ref_t edge;
+    PGM_XT_VERTEX_ref_t vertex;
+    PGM_XT_REGION_ref_t region;
+    PGM_XT_FACE_ref_t front_face;
 } PGM_XT_SHELL_t;
 typedef struct PGM_XT_FACE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_b_t face_box;
-    PGM_XT_field_f_t tolerance;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t loop;
-    PGM_XT_field_p_t shell;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t type;
-    PGM_XT_field_c_t face_box_tightness;
-    PGM_XT_field_i_t u_int;
-    PGM_XT_field_i_t v_int;
-    PGM_XT_field_p_t next_on_surface;
-    PGM_XT_field_p_t previous_on_surface;
-    PGM_XT_field_p_t next_front;
-    PGM_XT_field_p_t previous_front;
-    PGM_XT_field_p_t front_shell;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_schema_box_t face_box;
+    double tolerance;
+    PGM_XT_FACE_ref_t next;
+    PGM_XT_FACE_ref_t previous;
+    PGM_XT_LOOP_ref_t loop;
+    PGM_XT_SHELL_ref_t shell;
+    int32_t surface;
+    uint8_t sense;
+    uint8_t type;
+    uint8_t face_box_tightness;
+    PGM_XT_schema_interval_t u_int;
+    PGM_XT_schema_interval_t v_int;
+    PGM_XT_FACE_ref_t next_on_surface;
+    PGM_XT_FACE_ref_t previous_on_surface;
+    PGM_XT_FACE_ref_t next_front;
+    PGM_XT_FACE_ref_t previous_front;
+    PGM_XT_SHELL_ref_t front_shell;
 } PGM_XT_FACE_t;
 typedef struct PGM_XT_LOOP_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t halfedge;
-    PGM_XT_field_p_t face;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_c_t type;
-    PGM_XT_field_p_t pbox;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_HALFEDGE_ref_t halfedge;
+    PGM_XT_FACE_ref_t face;
+    PGM_XT_LOOP_ref_t next;
+    uint8_t type;
+    PGM_XT_PBOX_ref_t pbox;
 } PGM_XT_LOOP_t;
 typedef struct PGM_XT_EDGE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_b_t edge_box;
-    PGM_XT_field_f_t tolerance;
-    PGM_XT_field_c_t edge_box_tightness;
-    PGM_XT_field_p_t halfedge;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t curve;
-    PGM_XT_field_p_t next_on_curve;
-    PGM_XT_field_p_t previous_on_curve;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t data;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_schema_box_t edge_box;
+    double tolerance;
+    uint8_t edge_box_tightness;
+    PGM_XT_HALFEDGE_ref_t halfedge;
+    PGM_XT_EDGE_ref_t previous;
+    PGM_XT_EDGE_ref_t next;
+    int32_t curve;
+    PGM_XT_EDGE_ref_t next_on_curve;
+    PGM_XT_EDGE_ref_t previous_on_curve;
+    int32_t owner;
+    PGM_XT_EDGE_DATA_ref_t data;
 } PGM_XT_EDGE_t;
 typedef struct PGM_XT_HALFEDGE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t loop;
-    PGM_XT_field_p_t forward;
-    PGM_XT_field_p_t backward;
-    PGM_XT_field_p_t vertex;
-    PGM_XT_field_p_t other;
-    PGM_XT_field_p_t edge;
-    PGM_XT_field_p_t curve;
-    PGM_XT_field_p_t pbox;
-    PGM_XT_field_p_t next_at_vx;
-    PGM_XT_field_p_t polyline;
-    PGM_XT_field_c_t sense;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_LOOP_ref_t loop;
+    PGM_XT_HALFEDGE_ref_t forward;
+    PGM_XT_HALFEDGE_ref_t backward;
+    PGM_XT_VERTEX_ref_t vertex;
+    PGM_XT_HALFEDGE_ref_t other;
+    PGM_XT_EDGE_ref_t edge;
+    int32_t curve;
+    PGM_XT_PBOX_ref_t pbox;
+    PGM_XT_HALFEDGE_ref_t next_at_vx;
+    PGM_XT_REAL_VALUES_ref_t polyline;
+    uint8_t sense;
 } PGM_XT_HALFEDGE_t;
 typedef struct PGM_XT_VERTEX_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t halfedge;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t point;
-    PGM_XT_field_f_t tolerance;
-    PGM_XT_field_p_t owner;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_HALFEDGE_ref_t halfedge;
+    PGM_XT_VERTEX_ref_t previous;
+    PGM_XT_VERTEX_ref_t next;
+    PGM_XT_POINT_ref_t point;
+    double tolerance;
+    int32_t owner;
 } PGM_XT_VERTEX_t;
 typedef struct PGM_XT_REGION_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t body;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t shell;
-    PGM_XT_field_p_t frame;
-    PGM_XT_field_c_t type;
-    PGM_XT_field_p_t owner;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_BODY_ref_t body;
+    PGM_XT_REGION_ref_t next;
+    PGM_XT_REGION_ref_t previous;
+    PGM_XT_SHELL_ref_t shell;
+    PGM_XT_FRAME_ref_t frame;
+    uint8_t type;
+    PGM_XT_BODY_ref_t owner;
 } PGM_XT_REGION_t;
 typedef struct PGM_XT_POINT_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_v_t pvec;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    PGM_XT_POINT_ref_t next;
+    PGM_XT_POINT_ref_t previous;
+    PGM_XT_schema_vector_t pvec;
 } PGM_XT_POINT_t;
 typedef struct PGM_XT_LINE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t direction;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t direction;
 } PGM_XT_LINE_t;
 typedef struct PGM_XT_CIRCLE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t centre;
-    PGM_XT_field_v_t normal;
-    PGM_XT_field_v_t x_axis;
-    PGM_XT_field_f_t radius;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t centre;
+    PGM_XT_schema_vector_t normal;
+    PGM_XT_schema_vector_t x_axis;
+    double radius;
 } PGM_XT_CIRCLE_t;
 typedef struct PGM_XT_ELLIPSE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t centre;
-    PGM_XT_field_v_t normal;
-    PGM_XT_field_v_t x_axis;
-    PGM_XT_field_f_t major_radius;
-    PGM_XT_field_f_t minor_radius;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t centre;
+    PGM_XT_schema_vector_t normal;
+    PGM_XT_schema_vector_t x_axis;
+    double major_radius;
+    double minor_radius;
 } PGM_XT_ELLIPSE_t;
 typedef struct PGM_XT_PARABOLA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t origin;
-    PGM_XT_field_v_t normal;
-    PGM_XT_field_v_t x_axis;
-    PGM_XT_field_f_t focal_length;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t origin;
+    PGM_XT_schema_vector_t normal;
+    PGM_XT_schema_vector_t x_axis;
+    double focal_length;
 } PGM_XT_PARABOLA_t;
 typedef struct PGM_XT_HYPERBOLA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t origin;
-    PGM_XT_field_v_t normal;
-    PGM_XT_field_v_t x_axis;
-    PGM_XT_field_f_t transverse_radius;
-    PGM_XT_field_f_t conjugate_radius;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t origin;
+    PGM_XT_schema_vector_t normal;
+    PGM_XT_schema_vector_t x_axis;
+    double transverse_radius;
+    double conjugate_radius;
 } PGM_XT_HYPERBOLA_t;
 typedef struct PGM_XT_PARACURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_d_t seg;
-    PGM_XT_field_p_t cpc;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int64_t seg;
+    PGM_XT_CPC_ref_t cpc;
 } PGM_XT_PARACURVE_t;
 typedef struct PGM_XT_OBSOLETE_CPC_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_n_t vertex_dimension;
-    PGM_XT_field_n_t segment_count;
-    PGM_XT_field_n_t order;
-    PGM_XT_variable_range_t segment;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int64_t vertex_dimension;
+    int64_t segment_count;
+    int64_t order;
+    PGM_XT_range_t segment;
 } PGM_XT_OBSOLETE_CPC_t;
 typedef struct PGM_XT_PATCH_BOUND_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t boundary;
-    PGM_XT_field_p_t lh_patch;
-    PGM_XT_field_p_t rh_patch;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t boundary;
+    PGM_XT_PARASURF_ref_t lh_patch;
+    PGM_XT_PARASURF_ref_t rh_patch;
 } PGM_XT_PATCH_BOUND_t;
 typedef struct PGM_XT_INTERSECTION_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t surface[2];
-    PGM_XT_field_p_t chart;
-    PGM_XT_field_p_t start;
-    PGM_XT_field_p_t end;
-    PGM_XT_field_f_t scale;
-    PGM_XT_field_p_t intersection_data;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t surface[2];
+    PGM_XT_CHART_ref_t chart;
+    PGM_XT_LIMIT_ref_t start;
+    PGM_XT_LIMIT_ref_t end;
+    double scale;
+    PGM_XT_INTERSECTION_DATA_ref_t intersection_data;
 } PGM_XT_INTERSECTION_t;
 typedef struct PGM_XT_SILHOUETTE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t analytic_root;
-    PGM_XT_field_l_t from_infinity;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_p_t start;
-    PGM_XT_field_p_t end;
-    PGM_XT_field_v_t eye;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t analytic_root;
+    uint8_t from_infinity;
+    int32_t surface;
+    PGM_XT_LIMIT_ref_t start;
+    PGM_XT_LIMIT_ref_t end;
+    PGM_XT_schema_vector_t eye;
 } PGM_XT_SILHOUETTE_t;
 typedef struct PGM_XT_CHART_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_f_t base_parameter;
-    PGM_XT_field_f_t base_scale;
-    PGM_XT_field_d_t chart_count;
-    PGM_XT_field_d_t extended_chart_count;
-    PGM_XT_field_f_t chordal_error;
-    PGM_XT_field_f_t angular_error;
-    PGM_XT_field_f_t parameter_error[2];
-    PGM_XT_field_p_t extra_hvecs;
-    PGM_XT_field_p_t extended_chart_order;
-    PGM_XT_variable_range_t hvec;
+    double base_parameter;
+    double base_scale;
+    int64_t chart_count;
+    int64_t extended_chart_count;
+    double chordal_error;
+    double angular_error;
+    double parameter_error[2];
+    PGM_XT_HVEC_ARRAY_ref_t extra_hvecs;
+    PGM_XT_HVEC_ORDERING_ref_t extended_chart_order;
+    PGM_XT_range_t hvec;
 } PGM_XT_CHART_t;
 typedef struct PGM_XT_LIMIT_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_c_t type;
-    PGM_XT_field_c_t term_use;
-    PGM_XT_variable_range_t hvec;
+    uint8_t type;
+    uint8_t term_use;
+    PGM_XT_range_t hvec;
 } PGM_XT_LIMIT_t;
 typedef struct PGM_XT_BASIC_SEGMENT_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_b_t segment_box;
-    PGM_XT_field_f_t t_length;
-    PGM_XT_field_p_t hull;
-    PGM_XT_variable_range_t bezier_vertices;
+    PGM_XT_schema_box_t segment_box;
+    double t_length;
+    PGM_XT_HULL_ref_t hull;
+    PGM_XT_range_t bezier_vertices;
 } PGM_XT_BASIC_SEGMENT_t;
 typedef struct PGM_XT_BSPLINE_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t knot_vector;
-    PGM_XT_field_n_t vertex_dimension;
-    PGM_XT_field_d_t vertex_count;
-    PGM_XT_field_n_t order;
-    PGM_XT_field_p_t bspline_vertices;
+    PGM_XT_KNOT_VECTOR_ref_t knot_vector;
+    int64_t vertex_dimension;
+    int64_t vertex_count;
+    int64_t order;
+    PGM_XT_BSPLINE_VERTICES_ref_t bspline_vertices;
 } PGM_XT_BSPLINE_CURVE_t;
 typedef struct PGM_XT_KNOT_VECTOR_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_l_t periodic;
-    PGM_XT_field_d_t knot_count;
-    PGM_XT_variable_range_t knots;
+    uint8_t periodic;
+    int64_t knot_count;
+    PGM_XT_range_t knots;
 } PGM_XT_KNOT_VECTOR_t;
 typedef struct PGM_XT_BSPLINE_VERTICES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t vertices;
+    PGM_XT_range_t vertices;
 } PGM_XT_BSPLINE_VERTICES_t;
 typedef struct PGM_XT_OFFSET_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_p_t curve;
-    PGM_XT_field_f_t offset;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t surface;
+    int32_t curve;
+    double offset;
 } PGM_XT_OFFSET_CURVE_t;
 typedef struct PGM_XT_SUPER_SEGMENT_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_f_t split;
-    PGM_XT_field_p_t first;
-    PGM_XT_field_p_t last;
-    PGM_XT_field_f_t t_length;
+    double split;
+    int32_t first;
+    int32_t last;
+    double t_length;
 } PGM_XT_SUPER_SEGMENT_t;
 typedef struct PGM_XT_CPC_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t bezier;
-    PGM_XT_field_p_t bspline;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_BEZIER_CURVE_ref_t bezier;
+    PGM_XT_BSPLINE_CURVE_ref_t bspline;
 } PGM_XT_CPC_t;
 typedef struct PGM_XT_OBSOLETE_SP_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_l_t const_param;
-    PGM_XT_field_n_t segment_count;
-    PGM_XT_field_n_t order;
-    PGM_XT_field_p_t surface;
-    PGM_XT_variable_range_t bezier_vertices;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t const_param;
+    int64_t segment_count;
+    int64_t order;
+    int32_t surface;
+    PGM_XT_range_t bezier_vertices;
 } PGM_XT_OBSOLETE_SP_CURVE_t;
 typedef struct PGM_XT_PLANE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t normal;
-    PGM_XT_field_v_t x_axis;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t normal;
+    PGM_XT_schema_vector_t x_axis;
 } PGM_XT_PLANE_t;
 typedef struct PGM_XT_CYLINDER_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_f_t radius;
-    PGM_XT_field_v_t x_axis;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t axis;
+    double radius;
+    PGM_XT_schema_vector_t x_axis;
 } PGM_XT_CYLINDER_t;
 typedef struct PGM_XT_CONE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_f_t radius;
-    PGM_XT_field_f_t sin_half_angle;
-    PGM_XT_field_f_t cos_half_angle;
-    PGM_XT_field_v_t x_axis;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t axis;
+    double radius;
+    double sin_half_angle;
+    double cos_half_angle;
+    PGM_XT_schema_vector_t x_axis;
 } PGM_XT_CONE_t;
 typedef struct PGM_XT_SPHERE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t centre;
-    PGM_XT_field_f_t radius;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_v_t x_axis;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t centre;
+    double radius;
+    PGM_XT_schema_vector_t axis;
+    PGM_XT_schema_vector_t x_axis;
 } PGM_XT_SPHERE_t;
 typedef struct PGM_XT_TORUS_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_v_t centre;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_f_t major_radius;
-    PGM_XT_field_f_t minor_radius;
-    PGM_XT_field_v_t x_axis;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_schema_vector_t centre;
+    PGM_XT_schema_vector_t axis;
+    double major_radius;
+    double minor_radius;
+    PGM_XT_schema_vector_t x_axis;
 } PGM_XT_TORUS_t;
 typedef struct PGM_XT_PIPE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t spine;
-    PGM_XT_field_f_t radius;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t spine;
+    double radius;
 } PGM_XT_PIPE_t;
 typedef struct PGM_XT_BLENDED_EDGE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t blend_type;
-    PGM_XT_field_p_t surface[2];
-    PGM_XT_field_p_t spine;
-    PGM_XT_field_f_t range[2];
-    PGM_XT_field_f_t thumb_weight[2];
-    PGM_XT_field_p_t boundary[2];
-    PGM_XT_field_p_t start;
-    PGM_XT_field_p_t end;
-    PGM_XT_field_p_t approx_spine;
-    PGM_XT_field_f_t approx_spine_ctol;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t blend_type;
+    int32_t surface[2];
+    int32_t spine;
+    double range[2];
+    double thumb_weight[2];
+    int32_t boundary[2];
+    PGM_XT_LIMIT_ref_t start;
+    PGM_XT_LIMIT_ref_t end;
+    int32_t approx_spine;
+    double approx_spine_ctol;
 } PGM_XT_BLENDED_EDGE_t;
 typedef struct PGM_XT_BLENDED_VERTEX_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t blend_type;
-    PGM_XT_field_p_t surface[3];
-    PGM_XT_field_p_t sub_surface[3];
-    PGM_XT_field_p_t boundary[3];
-    PGM_XT_field_f_t range[3];
-    PGM_XT_field_f_t thumb_weight[3];
-    PGM_XT_field_v_t centre;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t blend_type;
+    int32_t surface[3];
+    int32_t sub_surface[3];
+    int32_t boundary[3];
+    double range[3];
+    double thumb_weight[3];
+    PGM_XT_schema_vector_t centre;
 } PGM_XT_BLENDED_VERTEX_t;
 typedef struct PGM_XT_BLEND_OVERLAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t surface[2];
-    PGM_XT_field_p_t sub_surface[4];
-    PGM_XT_field_f_t range[4];
-    PGM_XT_field_f_t thumb_weight[4];
-    PGM_XT_field_c_t blend_type[2];
-    PGM_XT_field_c_t overlap_type;
-    PGM_XT_field_l_t swap_u_v;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t surface[2];
+    int32_t sub_surface[4];
+    double range[4];
+    double thumb_weight[4];
+    uint8_t blend_type[2];
+    uint8_t overlap_type;
+    uint8_t swap_u_v;
 } PGM_XT_BLEND_OVERLAP_t;
 typedef struct PGM_XT_BLEND_BOUND_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_n_t boundary;
-    PGM_XT_field_p_t blend;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int64_t boundary;
+    int32_t blend;
 } PGM_XT_BLEND_BOUND_t;
 typedef struct PGM_XT_OFFSET_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t check;
-    PGM_XT_field_l_t true_offset;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_f_t offset;
-    PGM_XT_field_f_t scale;
-    PGM_XT_field_i_t uint;
-    PGM_XT_field_i_t vint;
-    PGM_XT_field_c_t u_start;
-    PGM_XT_field_c_t u_end;
-    PGM_XT_field_c_t v_start;
-    PGM_XT_field_c_t v_end;
-    PGM_XT_field_p_t tree;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t check;
+    uint8_t true_offset;
+    int32_t surface;
+    double offset;
+    double scale;
+    PGM_XT_schema_interval_t uint;
+    PGM_XT_schema_interval_t vint;
+    uint8_t u_start;
+    uint8_t u_end;
+    uint8_t v_start;
+    uint8_t v_end;
+    PGM_XT_SU_TREE_ref_t tree;
 } PGM_XT_OFFSET_SURF_t;
 typedef struct PGM_XT_PARASURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_d_t col;
-    PGM_XT_field_d_t row;
-    PGM_XT_field_p_t cps;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int64_t col;
+    int64_t row;
+    PGM_XT_CPS_ref_t cps;
 } PGM_XT_PARASURF_t;
 typedef struct PGM_XT_OBSOLETE_CPS_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_n_t vertex_dimension;
-    PGM_XT_field_n_t col_count;
-    PGM_XT_field_n_t row_count;
-    PGM_XT_field_n_t u_order;
-    PGM_XT_field_n_t v_order;
-    PGM_XT_variable_range_t patch;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int64_t vertex_dimension;
+    int64_t col_count;
+    int64_t row_count;
+    int64_t u_order;
+    int64_t v_order;
+    PGM_XT_range_t patch;
 } PGM_XT_OBSOLETE_CPS_t;
 typedef struct PGM_XT_SILH_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_l_t from_infinity;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_v_t eye;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t from_infinity;
+    int32_t surface;
+    PGM_XT_schema_vector_t eye;
 } PGM_XT_SILH_SURF_t;
 typedef struct PGM_XT_BASIC_PATCH_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_b_t patch_box;
-    PGM_XT_field_f_t u_length;
-    PGM_XT_field_f_t v_length;
-    PGM_XT_field_p_t hull;
-    PGM_XT_field_f_t scale;
-    PGM_XT_variable_range_t bezier_vertices;
+    PGM_XT_schema_box_t patch_box;
+    double u_length;
+    double v_length;
+    PGM_XT_HULL_ref_t hull;
+    double scale;
+    PGM_XT_range_t bezier_vertices;
 } PGM_XT_BASIC_PATCH_t;
 typedef struct PGM_XT_HULL_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_n_t dimension;
-    PGM_XT_field_n_t plane_count;
-    PGM_XT_field_n_t corner_count;
-    PGM_XT_variable_range_t vecs;
+    int64_t dimension;
+    int64_t plane_count;
+    int64_t corner_count;
+    PGM_XT_range_t vecs;
 } PGM_XT_HULL_t;
 typedef struct PGM_XT_BSPLINE_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t row_knots;
-    PGM_XT_field_p_t col_knots;
-    PGM_XT_field_n_t vertex_dimension;
-    PGM_XT_field_d_t col_count;
-    PGM_XT_field_d_t row_count;
-    PGM_XT_field_n_t u_order;
-    PGM_XT_field_n_t v_order;
-    PGM_XT_field_p_t bspline_vertices;
+    PGM_XT_KNOT_VECTOR_ref_t row_knots;
+    PGM_XT_KNOT_VECTOR_ref_t col_knots;
+    int64_t vertex_dimension;
+    int64_t col_count;
+    int64_t row_count;
+    int64_t u_order;
+    int64_t v_order;
+    PGM_XT_BSPLINE_VERTICES_ref_t bspline_vertices;
 } PGM_XT_BSPLINE_SURF_t;
 typedef struct PGM_XT_SWEPT_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t section;
-    PGM_XT_field_v_t sweep;
-    PGM_XT_field_f_t scale;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t section;
+    PGM_XT_schema_vector_t sweep;
+    double scale;
 } PGM_XT_SWEPT_SURF_t;
 typedef struct PGM_XT_SPUN_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t profile;
-    PGM_XT_field_v_t base;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_v_t start;
-    PGM_XT_field_v_t end;
-    PGM_XT_field_f_t start_param;
-    PGM_XT_field_f_t end_param;
-    PGM_XT_field_v_t x_axis;
-    PGM_XT_field_f_t scale;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t profile;
+    PGM_XT_schema_vector_t base;
+    PGM_XT_schema_vector_t axis;
+    PGM_XT_schema_vector_t start;
+    PGM_XT_schema_vector_t end;
+    double start_param;
+    double end_param;
+    PGM_XT_schema_vector_t x_axis;
+    double scale;
 } PGM_XT_SPUN_SURF_t;
 typedef struct PGM_XT_CPS_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t bezier;
-    PGM_XT_field_p_t bspline;
-    PGM_XT_field_p_t props;
-    PGM_XT_field_f_t u_parameter_scale;
-    PGM_XT_field_f_t v_parameter_scale;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_BEZIER_SURF_ref_t bezier;
+    PGM_XT_BSPLINE_SURF_ref_t bspline;
+    PGM_XT_SU_PARAM_PROPS_ref_t props;
+    double u_parameter_scale;
+    double v_parameter_scale;
 } PGM_XT_CPS_t;
 typedef struct PGM_XT_LIST_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_u_t list_type;
-    PGM_XT_field_l_t notransmit;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_d_t list_length;
-    PGM_XT_field_d_t block_length;
-    PGM_XT_field_d_t size_of_entry;
-    PGM_XT_field_d_t finger_index;
-    PGM_XT_field_p_t finger_block;
-    PGM_XT_field_p_t list_block;
+    int64_t node_id;
+    uint64_t list_type;
+    uint8_t notransmit;
+    int32_t owner;
+    PGM_XT_LIST_ref_t next;
+    PGM_XT_LIST_ref_t previous;
+    int64_t list_length;
+    int64_t block_length;
+    int64_t size_of_entry;
+    int64_t finger_index;
+    int32_t finger_block;
+    int32_t list_block;
 } PGM_XT_LIST_t;
 typedef struct PGM_XT_REAL_LIS_BLOCK_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_entries;
-    PGM_XT_field_d_t dummy_map_offset;
-    PGM_XT_field_p_t next_block;
-    PGM_XT_variable_range_t entries;
+    int64_t n_entries;
+    int64_t dummy_map_offset;
+    PGM_XT_REAL_LIS_BLOCK_ref_t next_block;
+    PGM_XT_range_t entries;
 } PGM_XT_REAL_LIS_BLOCK_t;
 typedef struct PGM_XT_INTEGER_LIS_BLOCK_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_entries;
-    PGM_XT_field_d_t dummy_map_offset;
-    PGM_XT_field_p_t next_block;
-    PGM_XT_variable_range_t entries;
+    int64_t n_entries;
+    int64_t dummy_map_offset;
+    PGM_XT_INTEGER_LIS_BLOCK_ref_t next_block;
+    PGM_XT_range_t entries;
 } PGM_XT_INTEGER_LIS_BLOCK_t;
 typedef struct PGM_XT_TAG_LIS_BLOCK_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_entries;
-    PGM_XT_field_d_t dummy_map_offset;
-    PGM_XT_field_p_t next_block;
-    PGM_XT_variable_range_t entries;
+    int64_t n_entries;
+    int64_t dummy_map_offset;
+    PGM_XT_TAG_LIS_BLOCK_ref_t next_block;
+    PGM_XT_range_t entries;
 } PGM_XT_TAG_LIS_BLOCK_t;
 typedef struct PGM_XT_POINTER_LIS_BLOCK_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t n_entries;
-    PGM_XT_field_d_t index_map_offset;
-    PGM_XT_field_p_t next_block;
-    PGM_XT_variable_range_t entries;
+    int64_t n_entries;
+    int64_t index_map_offset;
+    PGM_XT_POINTER_LIS_BLOCK_ref_t next_block;
+    PGM_XT_range_t entries;
 } PGM_XT_POINTER_LIS_BLOCK_t;
 typedef struct PGM_XT_ATTRIB_CALLBACKS_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_q_t split_fn;
-    PGM_XT_field_q_t merge_fn;
-    PGM_XT_field_q_t delete_fn;
-    PGM_XT_field_q_t copy_fn;
-    PGM_XT_field_q_t transmit_fn;
-    PGM_XT_field_q_t receive_fn;
-    PGM_XT_field_q_t split_usr_fn;
-    PGM_XT_field_q_t merge_usr_fn;
-    PGM_XT_field_q_t delete_usr_fn;
-    PGM_XT_field_q_t copy_usr_fn;
-    PGM_XT_field_q_t transmit_usr_fn;
-    PGM_XT_field_q_t receive_usr_fn;
-    PGM_XT_field_q_t split_cx;
-    PGM_XT_field_q_t merge_cx;
-    PGM_XT_field_q_t delete_cx;
-    PGM_XT_field_q_t copy_cx;
-    PGM_XT_field_q_t transmit_cx;
-    PGM_XT_field_q_t receive_cx;
-    PGM_XT_field_l_t split_on;
-    PGM_XT_field_l_t merge_on;
-    PGM_XT_field_l_t delete_on;
-    PGM_XT_field_l_t copy_on;
-    PGM_XT_field_l_t transmit_on;
-    PGM_XT_field_l_t receive_on;
-    PGM_XT_field_c_t callback_type;
+    int64_t split_fn;
+    int64_t merge_fn;
+    int64_t delete_fn;
+    int64_t copy_fn;
+    int64_t transmit_fn;
+    int64_t receive_fn;
+    int64_t split_usr_fn;
+    int64_t merge_usr_fn;
+    int64_t delete_usr_fn;
+    int64_t copy_usr_fn;
+    int64_t transmit_usr_fn;
+    int64_t receive_usr_fn;
+    int64_t split_cx;
+    int64_t merge_cx;
+    int64_t delete_cx;
+    int64_t copy_cx;
+    int64_t transmit_cx;
+    int64_t receive_cx;
+    uint8_t split_on;
+    uint8_t merge_on;
+    uint8_t delete_on;
+    uint8_t copy_on;
+    uint8_t transmit_on;
+    uint8_t receive_on;
+    uint8_t callback_type;
 } PGM_XT_ATTRIB_CALLBACKS_t;
 typedef struct PGM_XT_ATT_DEF_ID_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t string;
+    PGM_XT_range_t string;
 } PGM_XT_ATT_DEF_ID_t;
 typedef struct PGM_XT_ATTRIB_DEF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t identifier;
-    PGM_XT_field_d_t type_id;
-    PGM_XT_field_u_t actions[8];
-    PGM_XT_field_p_t callbacks;
-    PGM_XT_field_p_t field_names;
-    PGM_XT_field_l_t legal_owners[16];
-    PGM_XT_variable_range_t fields;
+    PGM_XT_ATTRIB_DEF_ref_t next;
+    PGM_XT_ATT_DEF_ID_ref_t identifier;
+    int64_t type_id;
+    uint64_t actions[8];
+    PGM_XT_ATTRIB_CALLBACKS_ref_t callbacks;
+    PGM_XT_FIELD_NAMES_ref_t field_names;
+    uint8_t legal_owners[16];
+    PGM_XT_range_t fields;
 } PGM_XT_ATTRIB_DEF_t;
 typedef struct PGM_XT_ATTRIBUTE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t definition;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t next_of_type;
-    PGM_XT_field_p_t previous_of_type;
-    PGM_XT_variable_range_t fields;
+    int64_t node_id;
+    PGM_XT_ATTRIB_DEF_ref_t definition;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_ATTRIBUTE_ref_t next_of_type;
+    PGM_XT_ATTRIBUTE_ref_t previous_of_type;
+    PGM_XT_range_t fields;
 } PGM_XT_ATTRIBUTE_t;
 typedef struct PGM_XT_INT_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_INT_VALUES_t;
 typedef struct PGM_XT_REAL_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_REAL_VALUES_t;
 typedef struct PGM_XT_CHAR_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_CHAR_VALUES_t;
 typedef struct PGM_XT_POINT_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_POINT_VALUES_t;
 typedef struct PGM_XT_VECTOR_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_VECTOR_VALUES_t;
 typedef struct PGM_XT_AXIS_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_AXIS_VALUES_t;
 typedef struct PGM_XT_TAG_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_TAG_VALUES_t;
 typedef struct PGM_XT_DIRECTION_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_DIRECTION_VALUES_t;
 typedef struct PGM_XT_FEATURE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_u_t type;
-    PGM_XT_field_p_t first_member;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    uint64_t type;
+    PGM_XT_MEMBER_OF_FEATURE_ref_t first_member;
 } PGM_XT_FEATURE_t;
 typedef struct PGM_XT_MEMBER_OF_FEATURE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t dummy_node_id;
-    PGM_XT_field_p_t owning_feature;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t next_member;
-    PGM_XT_field_p_t previous_member;
+    int64_t dummy_node_id;
+    PGM_XT_FEATURE_ref_t owning_feature;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_MEMBER_OF_FEATURE_ref_t next_member;
+    PGM_XT_MEMBER_OF_FEATURE_ref_t previous_member;
 } PGM_XT_MEMBER_OF_FEATURE_t;
 typedef struct PGM_XT_PARM_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_PARM_VALUES_t;
 typedef struct PGM_XT_POINTER_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_POINTER_VALUES_t;
 typedef struct PGM_XT_SHORT_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_SHORT_VALUES_t;
 typedef struct PGM_XT_BOX_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_BOX_VALUES_t;
 typedef struct PGM_XT_UNICODE_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_UNICODE_VALUES_t;
 typedef struct PGM_XT_FIELD_NAMES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t names;
+    PGM_XT_range_t names;
 } PGM_XT_FIELD_NAMES_t;
 typedef struct PGM_XT_TRANSFORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_f_t rotation_matrix[9];
-    PGM_XT_field_v_t translation_vector;
-    PGM_XT_field_f_t scale;
-    PGM_XT_field_d_t flag;
-    PGM_XT_field_f_t max_scale;
-    PGM_XT_field_v_t perspective_vector;
-    PGM_XT_field_p_t precision;
+    int64_t node_id;
+    int32_t owner;
+    PGM_XT_TRANSFORM_ref_t next;
+    PGM_XT_TRANSFORM_ref_t previous;
+    double rotation_matrix[9];
+    PGM_XT_schema_vector_t translation_vector;
+    double scale;
+    int64_t flag;
+    double max_scale;
+    PGM_XT_schema_vector_t perspective_vector;
+    PGM_XT_TRANSFORM_PRECISION_ref_t precision;
 } PGM_XT_TRANSFORM_t;
 typedef struct PGM_XT_WORLD_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t assembly;
-    PGM_XT_field_p_t attribute;
-    PGM_XT_field_p_t body;
-    PGM_XT_field_p_t list;
-    PGM_XT_field_p_t transform;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_p_t curve;
-    PGM_XT_field_p_t point;
-    PGM_XT_field_p_t mesh;
-    PGM_XT_field_p_t polyline;
-    PGM_XT_field_p_t lattice;
-    PGM_XT_field_l_t alive;
-    PGM_XT_field_p_t attrib_def;
-    PGM_XT_field_p_t attdef_list;
-    PGM_XT_field_d_t highest_id;
-    PGM_XT_field_d_t current_id;
-    PGM_XT_field_p_t appitem;
-    PGM_XT_field_d_t index_map_offset;
-    PGM_XT_field_p_t index_map;
-    PGM_XT_field_p_t schema_embedding_map;
-    PGM_XT_field_p_t mesh_offset_data;
+    PGM_XT_ASSEMBLY_ref_t assembly;
+    PGM_XT_ATTRIBUTE_ref_t attribute;
+    PGM_XT_BODY_ref_t body;
+    PGM_XT_LIST_ref_t list;
+    PGM_XT_TRANSFORM_ref_t transform;
+    int32_t surface;
+    int32_t curve;
+    PGM_XT_POINT_ref_t point;
+    int32_t mesh;
+    int32_t polyline;
+    PGM_XT_LATTICE_ref_t lattice;
+    uint8_t alive;
+    PGM_XT_ATTRIB_DEF_ref_t attrib_def;
+    PGM_XT_POINTER_LIS_BLOCK_ref_t attdef_list;
+    int64_t highest_id;
+    int64_t current_id;
+    PGM_XT_APPITEM_ref_t appitem;
+    int64_t index_map_offset;
+    PGM_XT_INT_VALUES_ref_t index_map;
+    PGM_XT_INT_VALUES_ref_t schema_embedding_map;
+    PGM_XT_MESH_OFFSET_DATA_ref_t mesh_offset_data;
 } PGM_XT_WORLD_t;
 typedef struct PGM_XT_KEY_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t string;
+    PGM_XT_range_t string;
 } PGM_XT_KEY_t;
 typedef struct PGM_XT_BEZIER_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_n_t vertex_dimension;
-    PGM_XT_field_d_t segment_count;
-    PGM_XT_field_n_t order;
-    PGM_XT_field_c_t check;
-    PGM_XT_variable_range_t segment;
+    int64_t vertex_dimension;
+    int64_t segment_count;
+    int64_t order;
+    uint8_t check;
+    PGM_XT_range_t segment;
 } PGM_XT_BEZIER_CURVE_t;
 typedef struct PGM_XT_BEZIER_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_n_t vertex_dimension;
-    PGM_XT_field_d_t col_count;
-    PGM_XT_field_d_t row_count;
-    PGM_XT_field_n_t u_order;
-    PGM_XT_field_n_t v_order;
-    PGM_XT_field_c_t check;
-    PGM_XT_field_p_t unsanitised;
-    PGM_XT_variable_range_t patch;
+    int64_t vertex_dimension;
+    int64_t col_count;
+    int64_t row_count;
+    int64_t u_order;
+    int64_t v_order;
+    uint8_t check;
+    PGM_XT_UNSANITISED_ref_t unsanitised;
+    PGM_XT_range_t patch;
 } PGM_XT_BEZIER_SURF_t;
 typedef struct PGM_XT_SUPER_PATCH_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_f_t split;
-    PGM_XT_field_c_t split_dir;
-    PGM_XT_field_p_t first;
-    PGM_XT_field_p_t last;
-    PGM_XT_field_f_t u_length;
-    PGM_XT_field_f_t v_length;
+    double split;
+    uint8_t split_dir;
+    int32_t first;
+    int32_t last;
+    double u_length;
+    double v_length;
 } PGM_XT_SUPER_PATCH_t;
 typedef struct PGM_XT_EVENT_FILTER_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_l_t face;
-    PGM_XT_field_l_t edge;
-    PGM_XT_field_l_t vertex;
-    PGM_XT_field_l_t loop;
-    PGM_XT_field_l_t shell;
-    PGM_XT_field_l_t region;
-    PGM_XT_field_l_t frame;
-    PGM_XT_field_l_t instance;
-    PGM_XT_field_l_t body;
-    PGM_XT_field_l_t assembly;
-    PGM_XT_field_l_t point;
-    PGM_XT_field_l_t curve;
-    PGM_XT_field_l_t surface;
-    PGM_XT_field_l_t lattice;
-    PGM_XT_field_l_t transform;
-    PGM_XT_field_l_t feature;
-    PGM_XT_field_l_t att_def;
+    uint8_t face;
+    uint8_t edge;
+    uint8_t vertex;
+    uint8_t loop;
+    uint8_t shell;
+    uint8_t region;
+    uint8_t frame;
+    uint8_t instance;
+    uint8_t body;
+    uint8_t assembly;
+    uint8_t point;
+    uint8_t curve;
+    uint8_t surface;
+    uint8_t lattice;
+    uint8_t transform;
+    uint8_t feature;
+    uint8_t att_def;
 } PGM_XT_EVENT_FILTER_t;
 typedef struct PGM_XT_BULLETIN_BOARD_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t create;
+    PGM_XT_EVENT_FILTER_ref_t create;
 #ifdef __cplusplus
-    PGM_XT_field_p_t delete_;
+    PGM_XT_EVENT_FILTER_ref_t delete_;
 #else
-    PGM_XT_field_p_t delete;
+    PGM_XT_EVENT_FILTER_ref_t delete;
 #endif
-    PGM_XT_field_p_t change;
-    PGM_XT_field_p_t transform;
-    PGM_XT_field_p_t split;
-    PGM_XT_field_p_t merge;
-    PGM_XT_field_p_t copy;
-    PGM_XT_field_p_t transfer;
-    PGM_XT_field_p_t change_attribute;
-    PGM_XT_field_p_t event;
-    PGM_XT_field_p_t entities;
-    PGM_XT_field_p_t n_entities;
-    PGM_XT_field_p_t entity_nt;
-    PGM_XT_field_p_t entity_usfld;
+    PGM_XT_EVENT_FILTER_ref_t change;
+    PGM_XT_EVENT_FILTER_ref_t transform;
+    PGM_XT_EVENT_FILTER_ref_t split;
+    PGM_XT_EVENT_FILTER_ref_t merge;
+    PGM_XT_EVENT_FILTER_ref_t copy;
+    PGM_XT_EVENT_FILTER_ref_t transfer;
+    PGM_XT_EVENT_FILTER_ref_t change_attribute;
+    PGM_XT_LIST_ref_t event;
+    PGM_XT_LIST_ref_t entities;
+    PGM_XT_LIST_ref_t n_entities;
+    PGM_XT_LIST_ref_t entity_nt;
+    PGM_XT_LIST_ref_t entity_usfld;
 } PGM_XT_BULLETIN_BOARD_t;
 typedef struct PGM_XT_UNSANITISED_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_variable_range_t bad_patch;
+    PGM_XT_range_t bad_patch;
 } PGM_XT_UNSANITISED_t;
 typedef struct PGM_XT_PBOX_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_c_t type;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_i_t u_int;
-    PGM_XT_field_i_t v_int;
+    uint8_t type;
+    uint8_t sense;
+    PGM_XT_schema_interval_t u_int;
+    PGM_XT_schema_interval_t v_int;
 } PGM_XT_PBOX_t;
 typedef struct PGM_XT_SET_ELEMENT_TAG_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t forward;
-    PGM_XT_field_p_t backward;
+    PGM_XT_SET_ELEMENT_TAG_ref_t next;
+    PGM_XT_SET_ELEMENT_TAG_ref_t forward;
+    PGM_XT_SET_ELEMENT_TAG_ref_t backward;
 #ifdef __cplusplus
-    PGM_XT_field_d_t class_;
+    int64_t class_;
 #else
-    PGM_XT_field_d_t class;
+    int64_t class;
 #endif
-    PGM_XT_field_p_t set;
-    PGM_XT_field_p_t node;
+    int32_t set;
+    int32_t node;
 } PGM_XT_SET_ELEMENT_TAG_t;
 typedef struct PGM_XT_FACE_SET_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t tag;
-    PGM_XT_field_p_t next;
+    PGM_XT_SET_ELEMENT_TAG_ref_t tag;
+    PGM_XT_FACE_SET_ref_t next;
 #ifdef __cplusplus
-    PGM_XT_field_d_t class_;
+    int64_t class_;
 #else
-    PGM_XT_field_d_t class;
+    int64_t class;
 #endif
-    PGM_XT_field_p_t he_set;
-    PGM_XT_field_p_t surfaces;
+    PGM_XT_HALFEDGE_SET_ref_t he_set;
+    int32_t surfaces;
 } PGM_XT_FACE_SET_t;
 typedef struct PGM_XT_HALFEDGE_SET_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t tag;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
+    PGM_XT_SET_ELEMENT_TAG_ref_t tag;
+    PGM_XT_HALFEDGE_SET_ref_t next;
+    PGM_XT_HALFEDGE_SET_ref_t previous;
 #ifdef __cplusplus
-    PGM_XT_field_d_t class_;
+    int64_t class_;
 #else
-    PGM_XT_field_d_t class;
+    int64_t class;
 #endif
-    PGM_XT_field_p_t fa_set;
-    PGM_XT_field_p_t co_he_set;
+    PGM_XT_FACE_SET_ref_t fa_set;
+    PGM_XT_HALFEDGE_SET_ref_t co_he_set;
 } PGM_XT_HALFEDGE_SET_t;
 typedef struct PGM_XT_OBB_TREE_CB_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t version;
-    PGM_XT_field_p_t name;
-    PGM_XT_field_q_t cb;
-    PGM_XT_field_l_t internal;
+    int64_t version;
+    PGM_XT_KEY_ref_t name;
+    int64_t cb;
+    uint8_t internal;
 } PGM_XT_OBB_TREE_CB_t;
 typedef struct PGM_XT_OBB_TREE_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t n_nodes;
-    PGM_XT_field_p_t nodes;
-    PGM_XT_field_p_t entities;
-    PGM_XT_field_d_t min_entity_count;
-    PGM_XT_field_p_t clash;
-    PGM_XT_field_p_t obb;
-    PGM_XT_field_p_t prism;
-    PGM_XT_field_p_t ray;
-    PGM_XT_field_p_t subdivide;
+    int64_t n_nodes;
+    PGM_XT_COMB_INT_NODES_ref_t nodes;
+    PGM_XT_COMB_INT_NODES_ref_t entities;
+    int64_t min_entity_count;
+    PGM_XT_OBB_TREE_CB_ref_t clash;
+    PGM_XT_OBB_TREE_CB_ref_t obb;
+    PGM_XT_OBB_TREE_CB_ref_t prism;
+    PGM_XT_OBB_TREE_CB_ref_t ray;
+    PGM_XT_OBB_TREE_CB_ref_t subdivide;
 } PGM_XT_OBB_TREE_t;
 typedef struct PGM_XT_OBSOLETE_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_q_t imesh;
-    PGM_XT_field_d_t frustrum;
-    PGM_XT_field_p_t key;
-    PGM_XT_field_p_t ukey;
-    PGM_XT_field_d_t file_format;
-    PGM_XT_field_d_t index_in_file;
-    PGM_XT_field_p_t transform;
-    PGM_XT_field_p_t attr;
-    PGM_XT_field_p_t internal_tree;
-    PGM_XT_field_p_t user_tree;
-    PGM_XT_field_p_t hash_list;
-    PGM_XT_field_f_t tolerance;
-    PGM_XT_field_p_t pff_imesh;
-    PGM_XT_field_p_t top_mesh;
-    PGM_XT_field_c_t non_manifold_vxs;
-    PGM_XT_field_c_t mesh_state;
-    PGM_XT_field_p_t psm_imesh;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int64_t imesh;
+    int64_t frustrum;
+    PGM_XT_KEY_ref_t key;
+    int32_t ukey;
+    int64_t file_format;
+    int64_t index_in_file;
+    PGM_XT_TRANSFORM_ref_t transform;
+    PGM_XT_ATTRIBUTE_ref_t attr;
+    PGM_XT_OBB_TREE_ref_t internal_tree;
+    PGM_XT_OBB_TREE_ref_t user_tree;
+    PGM_XT_LIST_ref_t hash_list;
+    double tolerance;
+    PGM_XT_PFF_MESH_ref_t pff_imesh;
+    PGM_XT_MESH_ref_t top_mesh;
+    uint8_t non_manifold_vxs;
+    uint8_t mesh_state;
+    PGM_XT_PSM_MESH_ref_t psm_imesh;
 } PGM_XT_OBSOLETE_MESH_t;
 typedef struct PGM_XT_OBSOLETE_POLYLINE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t data;
-    PGM_XT_field_p_t attr;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_POLYLINE_DATA_ref_t data;
+    PGM_XT_ATTRIBUTE_ref_t attr;
 } PGM_XT_OBSOLETE_POLYLINE_t;
 typedef struct PGM_XT_PE_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t type;
-    PGM_XT_field_f_t min_radii_curvature[2];
-    PGM_XT_field_f_t u_parameter_scale;
-    PGM_XT_field_f_t v_parameter_scale;
-    PGM_XT_field_p_t data;
-    PGM_XT_field_p_t tf;
-    PGM_XT_field_p_t props;
-    PGM_XT_field_p_t tree;
-    PGM_XT_field_p_t approx;
-    PGM_XT_variable_range_t internal_geom;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t type;
+    double min_radii_curvature[2];
+    double u_parameter_scale;
+    double v_parameter_scale;
+    int32_t data;
+    PGM_XT_TRANSFORM_ref_t tf;
+    PGM_XT_SU_PARAM_PROPS_ref_t props;
+    PGM_XT_SU_TREE_ref_t tree;
+    int32_t approx;
+    PGM_XT_range_t internal_geom;
 } PGM_XT_PE_SURF_t;
 typedef struct PGM_XT_INT_PE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t geom_type;
-    PGM_XT_field_p_t real_array;
-    PGM_XT_field_p_t int_array;
+    int64_t geom_type;
+    PGM_XT_REAL_VALUES_ref_t real_array;
+    PGM_XT_INT_VALUES_ref_t int_array;
 } PGM_XT_INT_PE_DATA_t;
 typedef struct PGM_XT_EXT_PE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t key;
-    PGM_XT_field_p_t real_array;
-    PGM_XT_field_p_t int_array;
-    PGM_XT_variable_range_t data;
+    PGM_XT_KEY_ref_t key;
+    PGM_XT_REAL_VALUES_ref_t real_array;
+    PGM_XT_INT_VALUES_ref_t int_array;
+    PGM_XT_range_t data;
 } PGM_XT_EXT_PE_DATA_t;
 typedef struct PGM_XT_SU_PARAM_PROPS_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_i_t uint;
-    PGM_XT_field_i_t vint;
-    PGM_XT_field_c_t u_start;
-    PGM_XT_field_c_t u_end;
-    PGM_XT_field_c_t v_start;
-    PGM_XT_field_c_t v_end;
+    PGM_XT_schema_interval_t uint;
+    PGM_XT_schema_interval_t vint;
+    uint8_t u_start;
+    uint8_t u_end;
+    uint8_t v_start;
+    uint8_t v_end;
 } PGM_XT_SU_PARAM_PROPS_t;
 typedef struct PGM_XT_B_SURFACE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t nurbs;
-    PGM_XT_field_p_t data;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_NURBS_SURF_ref_t nurbs;
+    PGM_XT_SURFACE_DATA_ref_t data;
 } PGM_XT_B_SURFACE_t;
 typedef struct PGM_XT_SURFACE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_i_t safe_u_range;
-    PGM_XT_field_i_t safe_v_range;
-    PGM_XT_field_b_t bx;
-    PGM_XT_field_f_t scale;
-    PGM_XT_field_f_t u_parameter_scale;
-    PGM_XT_field_f_t v_parameter_scale;
-    PGM_XT_field_f_t u_tangent_half_angle;
-    PGM_XT_field_f_t v_tangent_half_angle;
-    PGM_XT_field_i_t uint;
-    PGM_XT_field_i_t vint;
-    PGM_XT_field_i_t original_uint;
-    PGM_XT_field_i_t original_vint;
-    PGM_XT_field_i_t extended_uint;
-    PGM_XT_field_i_t extended_vint;
-    PGM_XT_field_u_t convexity;
-    PGM_XT_field_u_t continuity;
-    PGM_XT_field_u_t self_int;
-    PGM_XT_field_c_t u_start;
-    PGM_XT_field_c_t u_end;
-    PGM_XT_field_c_t v_start;
-    PGM_XT_field_c_t v_end;
-    PGM_XT_field_c_t original_u_start;
-    PGM_XT_field_c_t original_u_end;
-    PGM_XT_field_c_t original_v_start;
-    PGM_XT_field_c_t original_v_end;
-    PGM_XT_field_c_t extended_u_start;
-    PGM_XT_field_c_t extended_u_end;
-    PGM_XT_field_c_t extended_v_start;
-    PGM_XT_field_c_t extended_v_end;
-    PGM_XT_field_c_t degeneracy_status;
-    PGM_XT_field_c_t analytic_form_type;
-    PGM_XT_field_c_t swept_form_type;
-    PGM_XT_field_c_t spun_form_type;
-    PGM_XT_field_c_t blend_form_type;
-    PGM_XT_field_p_t degeneracy;
-    PGM_XT_field_p_t tree;
-    PGM_XT_field_p_t polynomial_patches;
-    PGM_XT_field_p_t analytic_form;
-    PGM_XT_field_p_t swept_form;
-    PGM_XT_field_p_t spun_form;
-    PGM_XT_field_p_t blend_form;
+    PGM_XT_schema_interval_t safe_u_range;
+    PGM_XT_schema_interval_t safe_v_range;
+    PGM_XT_schema_box_t bx;
+    double scale;
+    double u_parameter_scale;
+    double v_parameter_scale;
+    double u_tangent_half_angle;
+    double v_tangent_half_angle;
+    PGM_XT_schema_interval_t uint;
+    PGM_XT_schema_interval_t vint;
+    PGM_XT_schema_interval_t original_uint;
+    PGM_XT_schema_interval_t original_vint;
+    PGM_XT_schema_interval_t extended_uint;
+    PGM_XT_schema_interval_t extended_vint;
+    uint64_t convexity;
+    uint64_t continuity;
+    uint64_t self_int;
+    uint8_t u_start;
+    uint8_t u_end;
+    uint8_t v_start;
+    uint8_t v_end;
+    uint8_t original_u_start;
+    uint8_t original_u_end;
+    uint8_t original_v_start;
+    uint8_t original_v_end;
+    uint8_t extended_u_start;
+    uint8_t extended_u_end;
+    uint8_t extended_v_start;
+    uint8_t extended_v_end;
+    uint8_t degeneracy_status;
+    uint8_t analytic_form_type;
+    uint8_t swept_form_type;
+    uint8_t spun_form_type;
+    uint8_t blend_form_type;
+    PGM_XT_SU_DEGENERACY_ref_t degeneracy;
+    PGM_XT_SU_TREE_ref_t tree;
+    PGM_XT_POLYNOMIAL_PATCHES_ref_t polynomial_patches;
+    int32_t analytic_form;
+    int32_t swept_form;
+    int32_t spun_form;
+    int32_t blend_form;
 } PGM_XT_SURFACE_DATA_t;
 typedef struct PGM_XT_NURBS_SURF_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_l_t u_periodic;
-    PGM_XT_field_l_t v_periodic;
-    PGM_XT_field_n_t u_degree;
-    PGM_XT_field_n_t v_degree;
-    PGM_XT_field_d_t n_u_vertices;
-    PGM_XT_field_d_t n_v_vertices;
-    PGM_XT_field_u_t u_knot_type;
-    PGM_XT_field_u_t v_knot_type;
-    PGM_XT_field_d_t n_u_knots;
-    PGM_XT_field_d_t n_v_knots;
-    PGM_XT_field_l_t rational;
-    PGM_XT_field_l_t u_closed;
-    PGM_XT_field_l_t v_closed;
-    PGM_XT_field_u_t surface_form;
-    PGM_XT_field_n_t vertex_dim;
-    PGM_XT_field_p_t bspline_vertices;
-    PGM_XT_field_p_t u_knot_mult;
-    PGM_XT_field_p_t v_knot_mult;
-    PGM_XT_field_p_t u_knots;
-    PGM_XT_field_p_t v_knots;
-    PGM_XT_field_p_t u_knot_mult_sum;
-    PGM_XT_field_p_t v_knot_mult_sum;
+    uint8_t u_periodic;
+    uint8_t v_periodic;
+    int64_t u_degree;
+    int64_t v_degree;
+    int64_t n_u_vertices;
+    int64_t n_v_vertices;
+    uint64_t u_knot_type;
+    uint64_t v_knot_type;
+    int64_t n_u_knots;
+    int64_t n_v_knots;
+    uint8_t rational;
+    uint8_t u_closed;
+    uint8_t v_closed;
+    uint64_t surface_form;
+    int64_t vertex_dim;
+    PGM_XT_BSPLINE_VERTICES_ref_t bspline_vertices;
+    PGM_XT_KNOT_MULT_ref_t u_knot_mult;
+    PGM_XT_KNOT_MULT_ref_t v_knot_mult;
+    PGM_XT_KNOT_SET_ref_t u_knots;
+    PGM_XT_KNOT_SET_ref_t v_knots;
+    PGM_XT_KNOT_MULT_SUM_ref_t u_knot_mult_sum;
+    PGM_XT_KNOT_MULT_SUM_ref_t v_knot_mult_sum;
 } PGM_XT_NURBS_SURF_t;
 typedef struct PGM_XT_KNOT_MULT_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t mult;
+    PGM_XT_range_t mult;
 } PGM_XT_KNOT_MULT_t;
 typedef struct PGM_XT_KNOT_SET_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t knots;
+    PGM_XT_range_t knots;
 } PGM_XT_KNOT_SET_t;
 typedef struct PGM_XT_KNOT_MULT_SUM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_variable_range_t mult;
+    PGM_XT_range_t mult;
 } PGM_XT_KNOT_MULT_SUM_t;
 typedef struct PGM_XT_PE_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t type;
-    PGM_XT_field_p_t data;
-    PGM_XT_field_f_t global_scale;
-    PGM_XT_field_f_t parameter_scale;
-    PGM_XT_field_p_t tf;
-    PGM_XT_field_p_t props;
-    PGM_XT_field_p_t approx;
-    PGM_XT_variable_range_t internal_geom;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t type;
+    int32_t data;
+    double global_scale;
+    double parameter_scale;
+    PGM_XT_TRANSFORM_ref_t tf;
+    PGM_XT_CU_PARAM_PROPS_ref_t props;
+    int32_t approx;
+    PGM_XT_range_t internal_geom;
 } PGM_XT_PE_CURVE_t;
 typedef struct PGM_XT_CU_PARAM_PROPS_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_i_t tint;
-    PGM_XT_field_c_t t_start;
-    PGM_XT_field_c_t t_end;
+    PGM_XT_schema_interval_t tint;
+    uint8_t t_start;
+    uint8_t t_end;
 } PGM_XT_CU_PARAM_PROPS_t;
 typedef struct PGM_XT_PCURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_l_t bsp_parms;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_p_t bspline;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t bsp_parms;
+    int32_t surface;
+    PGM_XT_BSPLINE_CURVE_ref_t bspline;
 } PGM_XT_PCURVE_t;
 typedef struct PGM_XT_TRIMMED_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t basis_curve;
-    PGM_XT_field_v_t point_1;
-    PGM_XT_field_v_t point_2;
-    PGM_XT_field_f_t parm_1;
-    PGM_XT_field_f_t parm_2;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t basis_curve;
+    PGM_XT_schema_vector_t point_1;
+    PGM_XT_schema_vector_t point_2;
+    double parm_1;
+    double parm_2;
 } PGM_XT_TRIMMED_CURVE_t;
 typedef struct PGM_XT_B_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t nurbs;
-    PGM_XT_field_p_t data;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_NURBS_CURVE_ref_t nurbs;
+    PGM_XT_CURVE_DATA_ref_t data;
 } PGM_XT_B_CURVE_t;
 typedef struct PGM_XT_CURVE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_i_t safe_range;
-    PGM_XT_field_b_t bx;
-    PGM_XT_field_f_t scale;
-    PGM_XT_field_f_t parameter_scale;
-    PGM_XT_field_f_t tangent_half_angle;
-    PGM_XT_field_i_t tint;
-    PGM_XT_field_u_t self_int;
-    PGM_XT_field_c_t t_start;
-    PGM_XT_field_c_t t_end;
-    PGM_XT_field_p_t tree;
-    PGM_XT_field_p_t polynomial_segments;
-    PGM_XT_field_p_t analytic_form;
+    PGM_XT_schema_interval_t safe_range;
+    PGM_XT_schema_box_t bx;
+    double scale;
+    double parameter_scale;
+    double tangent_half_angle;
+    PGM_XT_schema_interval_t tint;
+    uint64_t self_int;
+    uint8_t t_start;
+    uint8_t t_end;
+    PGM_XT_CU_TREE_ref_t tree;
+    PGM_XT_POLYNOMIAL_SEGMENTS_ref_t polynomial_segments;
+    int32_t analytic_form;
 } PGM_XT_CURVE_DATA_t;
 typedef struct PGM_XT_NURBS_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_n_t degree;
-    PGM_XT_field_d_t n_vertices;
-    PGM_XT_field_n_t vertex_dim;
-    PGM_XT_field_d_t n_knots;
-    PGM_XT_field_u_t knot_type;
-    PGM_XT_field_l_t periodic;
-    PGM_XT_field_l_t closed;
-    PGM_XT_field_l_t rational;
-    PGM_XT_field_u_t curve_form;
-    PGM_XT_field_p_t bspline_vertices;
-    PGM_XT_field_p_t knot_mult;
-    PGM_XT_field_p_t knots;
-    PGM_XT_field_p_t knot_mult_sum;
+    int64_t degree;
+    int64_t n_vertices;
+    int64_t vertex_dim;
+    int64_t n_knots;
+    uint64_t knot_type;
+    uint8_t periodic;
+    uint8_t closed;
+    uint8_t rational;
+    uint64_t curve_form;
+    PGM_XT_BSPLINE_VERTICES_ref_t bspline_vertices;
+    PGM_XT_KNOT_MULT_ref_t knot_mult;
+    PGM_XT_KNOT_SET_ref_t knots;
+    PGM_XT_KNOT_MULT_SUM_ref_t knot_mult_sum;
 } PGM_XT_NURBS_CURVE_t;
 typedef struct PGM_XT_SP_CURVE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_u_t periodic;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint64_t periodic;
 #ifdef __cplusplus
-    PGM_XT_field_u_t class_;
+    uint64_t class_;
 #else
-    PGM_XT_field_u_t class;
+    uint64_t class;
 #endif
-    PGM_XT_field_p_t chart;
-    PGM_XT_field_f_t scale;
-    PGM_XT_field_f_t parameter_scale;
-    PGM_XT_field_p_t surface;
-    PGM_XT_field_p_t b_curve;
-    PGM_XT_field_p_t original;
-    PGM_XT_field_f_t tolerance_to_original;
+    PGM_XT_SP_CHART_ref_t chart;
+    double scale;
+    double parameter_scale;
+    int32_t surface;
+    PGM_XT_B_CURVE_ref_t b_curve;
+    int32_t original;
+    double tolerance_to_original;
 } PGM_XT_SP_CURVE_t;
 typedef struct PGM_XT_SP_CHART_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t chart_count;
-    PGM_XT_field_f_t chordal_error;
-    PGM_XT_field_f_t angular_error;
-    PGM_XT_field_f_t chordal_error_2d;
-    PGM_XT_variable_range_t hvec;
+    int64_t chart_count;
+    double chordal_error;
+    double angular_error;
+    double chordal_error_2d;
+    PGM_XT_range_t hvec;
 } PGM_XT_SP_CHART_t;
 typedef struct PGM_XT_CU_TREE_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t n_pvecs;
-    PGM_XT_field_d_t n_branches;
-    PGM_XT_field_d_t n_leaves;
-    PGM_XT_field_f_t chordal_error;
-    PGM_XT_field_f_t angular_error;
-    PGM_XT_field_p_t regular_pvecs;
-    PGM_XT_field_p_t split_parms;
-    PGM_XT_field_p_t branch_parents;
-    PGM_XT_field_p_t branch_lo_children;
-    PGM_XT_field_p_t branch_hi_children;
-    PGM_XT_field_p_t leaf_parents;
+    int64_t n_pvecs;
+    int64_t n_branches;
+    int64_t n_leaves;
+    double chordal_error;
+    double angular_error;
+    PGM_XT_POINT_VALUES_ref_t regular_pvecs;
+    PGM_XT_REAL_VALUES_ref_t split_parms;
+    PGM_XT_SHORT_VALUES_ref_t branch_parents;
+    PGM_XT_SHORT_VALUES_ref_t branch_lo_children;
+    PGM_XT_SHORT_VALUES_ref_t branch_hi_children;
+    PGM_XT_SHORT_VALUES_ref_t leaf_parents;
 } PGM_XT_CU_TREE_t;
 typedef struct PGM_XT_GEOMETRIC_OWNER_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t shared_geometry;
+    int32_t owner;
+    PGM_XT_GEOMETRIC_OWNER_ref_t next;
+    PGM_XT_GEOMETRIC_OWNER_ref_t previous;
+    int32_t shared_geometry;
 } PGM_XT_GEOMETRIC_OWNER_t;
 typedef struct PGM_XT_MESH_INTERSECTION_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t surface[2];
-    PGM_XT_field_p_t chart;
-    PGM_XT_field_c_t start_type;
-    PGM_XT_field_c_t end_type;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t surface[2];
+    PGM_XT_MESH_CHART_ref_t chart;
+    uint8_t start_type;
+    uint8_t end_type;
 } PGM_XT_MESH_INTERSECTION_t;
 typedef struct PGM_XT_MESH_CHART_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_f_t base_parameter;
-    PGM_XT_field_f_t base_scale;
-    PGM_XT_field_d_t chart_count;
-    PGM_XT_field_f_t chordal_error;
-    PGM_XT_field_f_t angular_error;
-    PGM_XT_field_p_t pvecs;
-    PGM_XT_field_p_t ts;
-    PGM_XT_field_p_t us;
-    PGM_XT_field_p_t vs;
-    PGM_XT_field_p_t forward_normals;
-    PGM_XT_field_p_t backward_tangent_sines;
-    PGM_XT_field_p_t forward_tangent_sines;
-    PGM_XT_field_p_t span;
+    double base_parameter;
+    double base_scale;
+    int64_t chart_count;
+    double chordal_error;
+    double angular_error;
+    PGM_XT_POINT_VALUES_ref_t pvecs;
+    PGM_XT_REAL_VALUES_ref_t ts;
+    PGM_XT_REAL_VALUES_ref_t us;
+    PGM_XT_REAL_VALUES_ref_t vs;
+    PGM_XT_DIRECTION_VALUES_ref_t forward_normals;
+    PGM_XT_REAL_VALUES_ref_t backward_tangent_sines;
+    PGM_XT_REAL_VALUES_ref_t forward_tangent_sines;
+    PGM_XT_MESH_CHART_SPAN_ref_t span;
 } PGM_XT_MESH_CHART_t;
 typedef struct PGM_XT_MESH_CHART_SPAN_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t span_count;
-    PGM_XT_field_p_t starts;
-    PGM_XT_field_p_t ends;
-    PGM_XT_field_p_t types;
+    int64_t span_count;
+    PGM_XT_INT_VALUES_ref_t starts;
+    PGM_XT_INT_VALUES_ref_t ends;
+    PGM_XT_CHAR_VALUES_ref_t types;
 } PGM_XT_MESH_CHART_SPAN_t;
 typedef struct PGM_XT_COMB_INT_SUBNODES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_max;
-    PGM_XT_field_d_t n_used;
-    PGM_XT_variable_range_t data;
+    int64_t n_max;
+    int64_t n_used;
+    PGM_XT_range_t data;
 } PGM_XT_COMB_INT_SUBNODES_t;
 typedef struct PGM_XT_COMB_INT_NODES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t len_shft;
-    PGM_XT_field_d_t node_size;
-    PGM_XT_field_d_t n_max;
-    PGM_XT_field_d_t n_used;
-    PGM_XT_variable_range_t nodes;
+    int64_t len_shft;
+    int64_t node_size;
+    int64_t n_max;
+    int64_t n_used;
+    PGM_XT_range_t nodes;
 } PGM_XT_COMB_INT_NODES_t;
 typedef struct PGM_XT_OBSOLETE_PFF_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t number_of_facets;
-    PGM_XT_field_d_t number_of_fins;
-    PGM_XT_field_d_t number_of_verts;
-    PGM_XT_field_n_t use_count;
-    PGM_XT_field_p_t facet_list;
-    PGM_XT_field_p_t fin_list;
-    PGM_XT_field_p_t vertex_list;
-    PGM_XT_field_p_t position_pool;
-    PGM_XT_field_p_t normal_pool;
-    PGM_XT_field_p_t unused_facets;
-    PGM_XT_field_p_t unused_fins;
-    PGM_XT_field_p_t unused_verts;
+    int64_t number_of_facets;
+    int64_t number_of_fins;
+    int64_t number_of_verts;
+    int64_t use_count;
+    PGM_XT_COMB_INT_NODES_ref_t facet_list;
+    PGM_XT_COMB_INT_NODES_ref_t fin_list;
+    PGM_XT_COMB_INT_NODES_ref_t vertex_list;
+    PGM_XT_COMB_REAL_NODES_ref_t position_pool;
+    PGM_XT_COMB_REAL_NODES_ref_t normal_pool;
+    PGM_XT_LIST_ref_t unused_facets;
+    PGM_XT_LIST_ref_t unused_fins;
+    PGM_XT_LIST_ref_t unused_verts;
 } PGM_XT_OBSOLETE_PFF_MESH_t;
 typedef struct PGM_XT_COMB_REAL_SUBNODES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_max;
-    PGM_XT_field_d_t n_used;
-    PGM_XT_variable_range_t data;
+    int64_t n_max;
+    int64_t n_used;
+    PGM_XT_range_t data;
 } PGM_XT_COMB_REAL_SUBNODES_t;
 typedef struct PGM_XT_COMB_REAL_NODES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t len_shft;
-    PGM_XT_field_d_t node_size;
-    PGM_XT_field_d_t n_max;
-    PGM_XT_field_d_t n_used;
-    PGM_XT_variable_range_t nodes;
+    int64_t len_shft;
+    int64_t node_size;
+    int64_t n_max;
+    int64_t n_used;
+    PGM_XT_range_t nodes;
 } PGM_XT_COMB_REAL_NODES_t;
 typedef struct PGM_XT_PLANE_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t normal;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t normal;
 } PGM_XT_PLANE_FORM_t;
 typedef struct PGM_XT_CYLINDER_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_f_t radius;
-    PGM_XT_field_c_t sense;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t axis;
+    double radius;
+    uint8_t sense;
 } PGM_XT_CYLINDER_FORM_t;
 typedef struct PGM_XT_CONE_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_f_t radius;
-    PGM_XT_field_f_t sin_half_angle;
-    PGM_XT_field_f_t cos_half_angle;
-    PGM_XT_field_c_t sense;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t axis;
+    double radius;
+    double sin_half_angle;
+    double cos_half_angle;
+    uint8_t sense;
 } PGM_XT_CONE_FORM_t;
 typedef struct PGM_XT_SPHERE_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t centre;
-    PGM_XT_field_f_t radius;
-    PGM_XT_field_c_t sense;
+    PGM_XT_schema_vector_t centre;
+    double radius;
+    uint8_t sense;
 } PGM_XT_SPHERE_FORM_t;
 typedef struct PGM_XT_TORUS_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t centre;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_f_t major_radius;
-    PGM_XT_field_f_t minor_radius;
-    PGM_XT_field_c_t sense;
+    PGM_XT_schema_vector_t centre;
+    PGM_XT_schema_vector_t axis;
+    double major_radius;
+    double minor_radius;
+    uint8_t sense;
 } PGM_XT_TORUS_FORM_t;
 typedef struct PGM_XT_SWEPT_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t sweep;
-    PGM_XT_field_c_t subtype;
+    PGM_XT_schema_vector_t sweep;
+    uint8_t subtype;
 } PGM_XT_SWEPT_FORM_t;
 typedef struct PGM_XT_SWEPT_UV_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t sweep_u;
-    PGM_XT_field_v_t sweep_v;
-    PGM_XT_field_c_t subtype_u;
-    PGM_XT_field_c_t subtype_v;
+    PGM_XT_schema_vector_t sweep_u;
+    PGM_XT_schema_vector_t sweep_v;
+    uint8_t subtype_u;
+    uint8_t subtype_v;
 } PGM_XT_SWEPT_UV_FORM_t;
 typedef struct PGM_XT_SPUN_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t base;
-    PGM_XT_field_v_t axis;
-    PGM_XT_field_c_t subtype;
+    PGM_XT_schema_vector_t base;
+    PGM_XT_schema_vector_t axis;
+    uint8_t subtype;
 } PGM_XT_SPUN_FORM_t;
 typedef struct PGM_XT_VAR_RADIUS_PIPE_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_f_t max_radius;
-    PGM_XT_field_f_t min_radius;
-    PGM_XT_field_c_t max_radius_bdry;
-    PGM_XT_field_c_t min_radius_bdry;
+    double max_radius;
+    double min_radius;
+    uint8_t max_radius_bdry;
+    uint8_t min_radius_bdry;
 } PGM_XT_VAR_RADIUS_PIPE_FORM_t;
 typedef struct PGM_XT_SU_DEGENERACY_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_v_t pvec;
-    PGM_XT_field_v_t normal;
-    PGM_XT_field_i_t u_range;
-    PGM_XT_field_i_t v_range;
-    PGM_XT_field_d_t type;
-    PGM_XT_field_p_t next;
+    PGM_XT_schema_vector_t pvec;
+    PGM_XT_schema_vector_t normal;
+    PGM_XT_schema_interval_t u_range;
+    PGM_XT_schema_interval_t v_range;
+    int64_t type;
+    PGM_XT_SU_DEGENERACY_ref_t next;
 } PGM_XT_SU_DEGENERACY_t;
 typedef struct PGM_XT_SU_TREE_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t n_u_pvecs;
-    PGM_XT_field_d_t n_v_pvecs;
-    PGM_XT_field_d_t n_branches;
-    PGM_XT_field_d_t n_leaves;
-    PGM_XT_field_f_t distance_error;
-    PGM_XT_field_f_t angular_error;
-    PGM_XT_field_p_t regular_pvecs;
-    PGM_XT_field_p_t split_parms;
-    PGM_XT_field_p_t split_dirs;
-    PGM_XT_field_p_t branch_parents;
-    PGM_XT_field_p_t branch_lo_children;
-    PGM_XT_field_p_t branch_hi_children;
-    PGM_XT_field_p_t leaf_parents;
-    PGM_XT_field_p_t leaf_boxes;
-    PGM_XT_field_p_t leaf_pvecs;
-    PGM_XT_field_p_t leaf_u_lo;
-    PGM_XT_field_p_t leaf_u_hi;
-    PGM_XT_field_p_t leaf_v_lo;
-    PGM_XT_field_p_t leaf_v_hi;
-    PGM_XT_field_p_t bucket_chars;
-    PGM_XT_field_p_t bucket_shorts;
-    PGM_XT_field_p_t bucket_ints;
-    PGM_XT_field_p_t bucket_reals;
-    PGM_XT_field_p_t leaf_u_splits;
-    PGM_XT_field_p_t leaf_v_splits;
+    int64_t n_u_pvecs;
+    int64_t n_v_pvecs;
+    int64_t n_branches;
+    int64_t n_leaves;
+    double distance_error;
+    double angular_error;
+    PGM_XT_POINT_VALUES_ref_t regular_pvecs;
+    PGM_XT_REAL_VALUES_ref_t split_parms;
+    PGM_XT_CHAR_VALUES_ref_t split_dirs;
+    PGM_XT_SHORT_VALUES_ref_t branch_parents;
+    PGM_XT_SHORT_VALUES_ref_t branch_lo_children;
+    PGM_XT_SHORT_VALUES_ref_t branch_hi_children;
+    PGM_XT_SHORT_VALUES_ref_t leaf_parents;
+    PGM_XT_BOX_VALUES_ref_t leaf_boxes;
+    PGM_XT_POINT_VALUES_ref_t leaf_pvecs;
+    PGM_XT_REAL_VALUES_ref_t leaf_u_lo;
+    PGM_XT_REAL_VALUES_ref_t leaf_u_hi;
+    PGM_XT_REAL_VALUES_ref_t leaf_v_lo;
+    PGM_XT_REAL_VALUES_ref_t leaf_v_hi;
+    PGM_XT_CHAR_VALUES_ref_t bucket_chars;
+    PGM_XT_SHORT_VALUES_ref_t bucket_shorts;
+    PGM_XT_INT_VALUES_ref_t bucket_ints;
+    PGM_XT_REAL_VALUES_ref_t bucket_reals;
+    PGM_XT_SHORT_VALUES_ref_t leaf_u_splits;
+    PGM_XT_SHORT_VALUES_ref_t leaf_v_splits;
 } PGM_XT_SU_TREE_t;
 typedef struct PGM_XT_POLYNOMIAL_PATCHES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_patches;
-    PGM_XT_variable_range_t patch;
+    int64_t n_patches;
+    PGM_XT_range_t patch;
 } PGM_XT_POLYNOMIAL_PATCHES_t;
 typedef struct PGM_XT_POLYNOMIAL_PATCH_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t last_used;
-    PGM_XT_field_d_t n_derivatives;
-    PGM_XT_field_l_t triangular;
-    PGM_XT_field_d_t u_knot_index;
-    PGM_XT_field_d_t v_knot_index;
-    PGM_XT_field_i_t uint;
-    PGM_XT_field_i_t vint;
-    PGM_XT_field_f_t u_scale;
-    PGM_XT_field_f_t v_scale;
-    PGM_XT_field_l_t u_on_right;
-    PGM_XT_field_l_t v_on_right;
-    PGM_XT_field_p_t C;
-    PGM_XT_field_p_t Cdu;
-    PGM_XT_field_p_t Cdv;
-    PGM_XT_field_p_t Cd2u;
-    PGM_XT_field_p_t Cdudv;
-    PGM_XT_field_p_t Cd2v;
-    PGM_XT_field_p_t Cd2udv;
-    PGM_XT_field_p_t Cd2vdu;
-    PGM_XT_field_p_t Cd2ud2v;
-    PGM_XT_field_p_t W;
-    PGM_XT_field_p_t Wdu;
-    PGM_XT_field_p_t Wdv;
-    PGM_XT_field_p_t Wd2u;
-    PGM_XT_field_p_t Wdudv;
-    PGM_XT_field_p_t Wd2v;
-    PGM_XT_field_p_t Wd2udv;
-    PGM_XT_field_p_t Wd2vdu;
-    PGM_XT_field_p_t Wd2ud2v;
+    int64_t last_used;
+    int64_t n_derivatives;
+    uint8_t triangular;
+    int64_t u_knot_index;
+    int64_t v_knot_index;
+    PGM_XT_schema_interval_t uint;
+    PGM_XT_schema_interval_t vint;
+    double u_scale;
+    double v_scale;
+    uint8_t u_on_right;
+    uint8_t v_on_right;
+    PGM_XT_VECTOR_VALUES_ref_t C;
+    PGM_XT_VECTOR_VALUES_ref_t Cdu;
+    PGM_XT_VECTOR_VALUES_ref_t Cdv;
+    PGM_XT_VECTOR_VALUES_ref_t Cd2u;
+    PGM_XT_VECTOR_VALUES_ref_t Cdudv;
+    PGM_XT_VECTOR_VALUES_ref_t Cd2v;
+    PGM_XT_VECTOR_VALUES_ref_t Cd2udv;
+    PGM_XT_VECTOR_VALUES_ref_t Cd2vdu;
+    PGM_XT_VECTOR_VALUES_ref_t Cd2ud2v;
+    PGM_XT_REAL_VALUES_ref_t W;
+    PGM_XT_REAL_VALUES_ref_t Wdu;
+    PGM_XT_REAL_VALUES_ref_t Wdv;
+    PGM_XT_REAL_VALUES_ref_t Wd2u;
+    PGM_XT_REAL_VALUES_ref_t Wdudv;
+    PGM_XT_REAL_VALUES_ref_t Wd2v;
+    PGM_XT_REAL_VALUES_ref_t Wd2udv;
+    PGM_XT_REAL_VALUES_ref_t Wd2vdu;
+    PGM_XT_REAL_VALUES_ref_t Wd2ud2v;
 } PGM_XT_POLYNOMIAL_PATCH_t;
 typedef struct PGM_XT_HELIX_SU_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t axis_pt;
-    PGM_XT_field_v_t axis_dir;
-    PGM_XT_field_c_t hand;
-    PGM_XT_field_i_t turns;
-    PGM_XT_field_f_t pitch;
-    PGM_XT_field_f_t gap;
-    PGM_XT_field_f_t tol;
+    PGM_XT_schema_vector_t axis_pt;
+    PGM_XT_schema_vector_t axis_dir;
+    uint8_t hand;
+    PGM_XT_schema_interval_t turns;
+    double pitch;
+    double gap;
+    double tol;
 } PGM_XT_HELIX_SU_FORM_t;
 typedef struct PGM_XT_CHAIN_HEAD_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t n_live;
-    PGM_XT_field_d_t n_dead;
+    int64_t n_live;
+    int64_t n_dead;
 } PGM_XT_CHAIN_HEAD_t;
 typedef struct PGM_XT_PMARK_ARRAY_INTERNAL_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_variable_range_t pmarks;
+    PGM_XT_range_t pmarks;
 } PGM_XT_PMARK_ARRAY_INTERNAL_t;
 typedef struct PGM_XT_PMARK_ARRAY_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t length;
-    PGM_XT_field_d_t size;
-    PGM_XT_field_p_t array;
+    int64_t length;
+    int64_t size;
+    PGM_XT_PMARK_ARRAY_INTERNAL_ref_t array;
 } PGM_XT_PMARK_ARRAY_t;
 typedef struct PGM_XT_ROLL_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t current_partition;
-    PGM_XT_field_p_t bulletin_board;
-    PGM_XT_field_p_t session_switch;
-    PGM_XT_field_f_t linear_prec;
-    PGM_XT_field_f_t angular_prec;
-    PGM_XT_field_f_t mesh_angle;
-    PGM_XT_field_l_t receive_user_fld;
-    PGM_XT_field_l_t local_check_on;
-    PGM_XT_field_l_t data_check_on;
-    PGM_XT_field_l_t self_int_check_on;
-    PGM_XT_field_l_t generated_surfs_on;
-    PGM_XT_field_l_t general_topology_on;
-    PGM_XT_field_l_t keep_edge_curve_on;
-    PGM_XT_field_d_t bulletin_board_on;
-    PGM_XT_field_d_t binary_text;
-    PGM_XT_field_d_t snapshot_binary_text;
-    PGM_XT_field_d_t continuity_check;
-    PGM_XT_field_d_t facet_geometry;
+    PGM_XT_PARTITION_ref_t current_partition;
+    PGM_XT_BULLETIN_BOARD_ref_t bulletin_board;
+    PGM_XT_SESSION_SWITCH_ref_t session_switch;
+    double linear_prec;
+    double angular_prec;
+    double mesh_angle;
+    uint8_t receive_user_fld;
+    uint8_t local_check_on;
+    uint8_t data_check_on;
+    uint8_t self_int_check_on;
+    uint8_t generated_surfs_on;
+    uint8_t general_topology_on;
+    uint8_t keep_edge_curve_on;
+    int64_t bulletin_board_on;
+    int64_t binary_text;
+    int64_t snapshot_binary_text;
+    int64_t continuity_check;
+    int64_t facet_geometry;
 } PGM_XT_ROLL_DATA_t;
 typedef struct PGM_XT_SESSION_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t root_tag_table;
-    PGM_XT_field_p_t first_partition;
-    PGM_XT_field_p_t current_mark;
-    PGM_XT_field_p_t pmarks_at_current;
+    PGM_XT_SESSION_ref_t next;
+    PGM_XT_SESSION_ref_t previous;
+    PGM_XT_ROOT_TAG_TABLE_ref_t root_tag_table;
+    PGM_XT_PARTITION_ref_t first_partition;
+    PGM_XT_MARK_ref_t current_mark;
+    PGM_XT_PMARK_ARRAY_ref_t pmarks_at_current;
 #ifdef __cplusplus
-    PGM_XT_field_p_t new_;
+    PGM_XT_CHAIN_HEAD_ref_t new_;
 #else
-    PGM_XT_field_p_t new;
+    PGM_XT_CHAIN_HEAD_ref_t new;
 #endif
-    PGM_XT_field_p_t del;
-    PGM_XT_field_p_t session_switch;
-    PGM_XT_field_t_t locked_at_mark;
-    PGM_XT_field_l_t roll_forward;
-    PGM_XT_field_l_t error_reports;
-    PGM_XT_field_u_t pending_action;
-    PGM_XT_field_d_t n_partitions;
-    PGM_XT_field_d_t n_partitions_hidden;
-    PGM_XT_field_d_t n_partitions_at_pmark;
-    PGM_XT_field_d_t ds_version;
-    PGM_XT_field_d_t ds_version_type;
-    PGM_XT_field_p_t ds_rebuild_history;
-    PGM_XT_field_p_t ds_session_switches;
+    PGM_XT_CHAIN_HEAD_ref_t del;
+    PGM_XT_SESSION_SWITCH_ref_t session_switch;
+    int64_t locked_at_mark;
+    uint8_t roll_forward;
+    uint8_t error_reports;
+    uint64_t pending_action;
+    int64_t n_partitions;
+    int64_t n_partitions_hidden;
+    int64_t n_partitions_at_pmark;
+    int64_t ds_version;
+    int64_t ds_version_type;
+    PGM_XT_INT_VALUES_ref_t ds_rebuild_history;
+    PGM_XT_INT_VALUES_ref_t ds_session_switches;
 } PGM_XT_SESSION_t;
 typedef struct PGM_XT_SESSION_SWITCH_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_d_t id;
-    PGM_XT_field_d_t value;
+    PGM_XT_SESSION_SWITCH_ref_t next;
+    int64_t id;
+    int64_t value;
 } PGM_XT_SESSION_SWITCH_t;
 typedef struct PGM_XT_APPITEM_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_q_t pointer;
-    PGM_XT_field_p_t next;
+    int64_t pointer;
+    PGM_XT_APPITEM_ref_t next;
 } PGM_XT_APPITEM_t;
 typedef struct PGM_XT_DEFER_DELTAS_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_q_t next;
-    PGM_XT_field_d_t size;
-    PGM_XT_field_q_t data;
+    int64_t next;
+    int64_t size;
+    int64_t data;
 } PGM_XT_DEFER_DELTAS_t;
 typedef struct PGM_XT_PART_XMT_BLOCK_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t n_entries;
-    PGM_XT_field_d_t index_map_offset;
-    PGM_XT_field_p_t index_map;
-    PGM_XT_field_p_t schema_embedding_map;
-    PGM_XT_field_p_t mesh_offset_data;
-    PGM_XT_variable_range_t entries;
+    int64_t n_entries;
+    int64_t index_map_offset;
+    PGM_XT_INT_VALUES_ref_t index_map;
+    PGM_XT_INT_VALUES_ref_t schema_embedding_map;
+    PGM_XT_MESH_OFFSET_DATA_ref_t mesh_offset_data;
+    PGM_XT_range_t entries;
 } PGM_XT_PART_XMT_BLOCK_t;
 typedef struct PGM_XT_BYTE_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_BYTE_VALUES_t;
 typedef struct PGM_XT_POLYNOMIAL_SEGMENTS_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_segments;
-    PGM_XT_variable_range_t segment;
+    int64_t n_segments;
+    PGM_XT_range_t segment;
 } PGM_XT_POLYNOMIAL_SEGMENTS_t;
 typedef struct PGM_XT_POLYNOMIAL_SEGMENT_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t last_used;
-    PGM_XT_field_d_t n_derivatives;
-    PGM_XT_field_d_t knot_index;
-    PGM_XT_field_i_t tint;
-    PGM_XT_field_f_t scale;
-    PGM_XT_field_l_t on_right;
-    PGM_XT_field_p_t C;
-    PGM_XT_field_p_t Cdt;
-    PGM_XT_field_p_t Cd2t;
-    PGM_XT_field_p_t W;
-    PGM_XT_field_p_t Wdt;
-    PGM_XT_field_p_t Wd2t;
+    int64_t last_used;
+    int64_t n_derivatives;
+    int64_t knot_index;
+    PGM_XT_schema_interval_t tint;
+    double scale;
+    uint8_t on_right;
+    PGM_XT_VECTOR_VALUES_ref_t C;
+    PGM_XT_VECTOR_VALUES_ref_t Cdt;
+    PGM_XT_VECTOR_VALUES_ref_t Cd2t;
+    PGM_XT_REAL_VALUES_ref_t W;
+    PGM_XT_REAL_VALUES_ref_t Wdt;
+    PGM_XT_REAL_VALUES_ref_t Wd2t;
 } PGM_XT_POLYNOMIAL_SEGMENT_t;
 typedef struct PGM_XT_HVEC_ARRAY_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_variable_range_t hvec;
+    PGM_XT_range_t hvec;
 } PGM_XT_HVEC_ARRAY_t;
 typedef struct PGM_XT_HVEC_ORDERING_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_variable_range_t order;
+    PGM_XT_range_t order;
 } PGM_XT_HVEC_ORDERING_t;
 typedef struct PGM_XT_HELIX_CU_FORM_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_v_t axis_pt;
-    PGM_XT_field_v_t axis_dir;
-    PGM_XT_field_v_t point;
-    PGM_XT_field_c_t hand;
-    PGM_XT_field_i_t turns;
-    PGM_XT_field_f_t pitch;
-    PGM_XT_field_f_t tol;
+    PGM_XT_schema_vector_t axis_pt;
+    PGM_XT_schema_vector_t axis_dir;
+    PGM_XT_schema_vector_t point;
+    uint8_t hand;
+    PGM_XT_schema_interval_t turns;
+    double pitch;
+    double tol;
 } PGM_XT_HELIX_CU_FORM_t;
 typedef struct PGM_XT_POLYLINE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t n_pvecs;
-    PGM_XT_field_l_t closed;
-    PGM_XT_field_f_t base_parm;
-    PGM_XT_field_p_t pvec;
-    PGM_XT_field_p_t parm;
+    int64_t n_pvecs;
+    uint8_t closed;
+    double base_parm;
+    PGM_XT_POINT_VALUES_ref_t pvec;
+    PGM_XT_PARM_VALUES_ref_t parm;
 } PGM_XT_POLYLINE_DATA_t;
 typedef struct PGM_XT_PFF_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t version;
-    PGM_XT_field_d_t number_of_facets;
-    PGM_XT_field_d_t number_of_fins;
-    PGM_XT_field_d_t number_of_verts;
-    PGM_XT_field_n_t use_count;
-    PGM_XT_field_p_t facet_list;
-    PGM_XT_field_p_t fin_list;
-    PGM_XT_field_p_t vertex_list;
-    PGM_XT_field_p_t position_pool;
-    PGM_XT_field_p_t normal_pool;
+    int64_t version;
+    int64_t number_of_facets;
+    int64_t number_of_fins;
+    int64_t number_of_verts;
+    int64_t use_count;
+    PGM_XT_COMB_INT_NODES_ref_t facet_list;
+    PGM_XT_COMB_INT_NODES_ref_t fin_list;
+    PGM_XT_COMB_INT_NODES_ref_t vertex_list;
+    int32_t position_pool;
+    int32_t normal_pool;
 } PGM_XT_PFF_MESH_t;
 typedef struct PGM_XT_PSM_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_u_t precision;
-    PGM_XT_field_d_t use_count;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t position_pool;
-    PGM_XT_field_p_t normal_pool;
-    PGM_XT_field_p_t position_indices;
-    PGM_XT_field_u_t normal_type;
-    PGM_XT_field_p_t normal_indices;
-    PGM_XT_variable_range_t combs;
+    uint64_t precision;
+    int64_t use_count;
+    PGM_XT_MESH_ref_t owner;
+    PGM_XT_VECTOR_COMB_ref_t position_pool;
+    PGM_XT_VECTOR_COMB_ref_t normal_pool;
+    PGM_XT_INTEGER_COMB_ref_t position_indices;
+    uint64_t normal_type;
+    PGM_XT_INTEGER_COMB_ref_t normal_indices;
+    PGM_XT_range_t combs;
 } PGM_XT_PSM_MESH_t;
 typedef struct PGM_XT_INTEGER_TOOTH_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_INTEGER_TOOTH_t;
 typedef struct PGM_XT_INTEGER_COMB_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_u_t encoding;
-    PGM_XT_field_d_t n_integers;
-    PGM_XT_field_d_t n_max_integers;
-    PGM_XT_field_d_t n_bits_per_integer;
-    PGM_XT_field_d_t shift;
-    PGM_XT_variable_range_t teeth;
+    uint64_t encoding;
+    int64_t n_integers;
+    int64_t n_max_integers;
+    int64_t n_bits_per_integer;
+    int64_t shift;
+    PGM_XT_range_t teeth;
 } PGM_XT_INTEGER_COMB_t;
 typedef struct PGM_XT_VECTOR_TOOTH_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_VECTOR_TOOTH_t;
 typedef struct PGM_XT_VECTOR_COMB_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_u_t encoding;
-    PGM_XT_field_d_t n_vectors;
-    PGM_XT_field_d_t n_max_vectors;
-    PGM_XT_field_d_t shift;
-    PGM_XT_variable_range_t teeth;
+    uint64_t encoding;
+    int64_t n_vectors;
+    int64_t n_max_vectors;
+    int64_t shift;
+    PGM_XT_range_t teeth;
 } PGM_XT_VECTOR_COMB_t;
 typedef struct PGM_XT_COMB_BYTE_SUBNODES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t n_max;
-    PGM_XT_field_d_t n_used;
-    PGM_XT_variable_range_t data;
+    int64_t n_max;
+    int64_t n_used;
+    PGM_XT_range_t data;
 } PGM_XT_COMB_BYTE_SUBNODES_t;
 typedef struct PGM_XT_COMB_BYTE_NODES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_d_t len_shft;
-    PGM_XT_field_d_t node_size;
-    PGM_XT_field_d_t n_max;
-    PGM_XT_field_d_t n_used;
-    PGM_XT_variable_range_t nodes;
+    int64_t len_shft;
+    int64_t node_size;
+    int64_t n_max;
+    int64_t n_used;
+    PGM_XT_range_t nodes;
 } PGM_XT_COMB_BYTE_NODES_t;
 typedef struct PGM_XT_EDGE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t facet_edge_data;
+    PGM_XT_FACET_EDGE_DATA_ref_t facet_edge_data;
 } PGM_XT_EDGE_DATA_t;
 typedef struct PGM_XT_FACET_EDGE_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_c_t involved_in_spike;
-    PGM_XT_field_d_t marched_index;
-    PGM_XT_field_p_t coords;
-    PGM_XT_field_p_t t_parms;
-    PGM_XT_field_p_t ctols;
-    PGM_XT_field_p_t uv_parms;
-    PGM_XT_field_p_t const_parm;
+    uint8_t involved_in_spike;
+    int64_t marched_index;
+    PGM_XT_VECTOR_VALUES_ref_t coords;
+    PGM_XT_REAL_VALUES_ref_t t_parms;
+    PGM_XT_REAL_VALUES_ref_t ctols;
+    PGM_XT_REAL_VALUES_ref_t uv_parms;
+    PGM_XT_CHAR_VALUES_ref_t const_parm;
 } PGM_XT_FACET_EDGE_DATA_t;
 typedef struct PGM_XT_BODY_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t facet_body_data;
+    PGM_XT_FACET_BODY_DATA_ref_t facet_body_data;
 } PGM_XT_BODY_DATA_t;
 typedef struct PGM_XT_FACET_BODY_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_p_t global_tols;
+    PGM_XT_REAL_VALUES_ref_t global_tols;
 } PGM_XT_FACET_BODY_DATA_t;
 typedef struct PGM_XT_POLYLINE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t data;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    PGM_XT_POLYLINE_DATA_ref_t data;
 } PGM_XT_POLYLINE_t;
 typedef struct PGM_XT_MESH_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_c_t mesh_state;
-    PGM_XT_field_b_t mesh_box;
-    PGM_XT_field_p_t transform;
-    PGM_XT_field_p_t rcv_key;
-    PGM_XT_field_d_t rcv_index;
-    PGM_XT_field_d_t rcv_offset_high;
-    PGM_XT_field_d_t rcv_offset_low;
-    PGM_XT_field_p_t psm_imesh;
-    PGM_XT_field_p_t pff_imesh;
-    PGM_XT_field_q_t imesh;
-    PGM_XT_field_p_t top_mesh;
-    PGM_XT_field_c_t non_manifold_vxs;
-    PGM_XT_field_d_t frustrum;
-    PGM_XT_field_d_t file_format;
-    PGM_XT_field_p_t reader_data;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    uint8_t mesh_state;
+    PGM_XT_schema_box_t mesh_box;
+    PGM_XT_TRANSFORM_ref_t transform;
+    int32_t rcv_key;
+    int64_t rcv_index;
+    int64_t rcv_offset_high;
+    int64_t rcv_offset_low;
+    PGM_XT_PSM_MESH_ref_t psm_imesh;
+    PGM_XT_PFF_MESH_ref_t pff_imesh;
+    int64_t imesh;
+    PGM_XT_MESH_ref_t top_mesh;
+    uint8_t non_manifold_vxs;
+    int64_t frustrum;
+    int64_t file_format;
+    PGM_XT_MESH_READER_DATA_ref_t reader_data;
 } PGM_XT_MESH_t;
 typedef struct PGM_XT_MESH_BLOCK_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_q_t next;
-    PGM_XT_field_d_t size;
-    PGM_XT_field_q_t data;
+    int64_t next;
+    int64_t size;
+    int64_t data;
 } PGM_XT_MESH_BLOCK_t;
 typedef struct PGM_XT_TAG_MAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_u_t state;
-    PGM_XT_field_t_t pmark;
-    PGM_XT_field_p_t tags;
-    PGM_XT_field_p_t next;
+    uint64_t state;
+    int64_t pmark;
+    PGM_XT_TAG_VALUES_ref_t tags;
+    PGM_XT_TAG_MAP_ref_t next;
 } PGM_XT_TAG_MAP_t;
 typedef struct PGM_XT_INTERSECTION_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_u_t uv_type;
-    PGM_XT_variable_range_t values;
+    uint64_t uv_type;
+    PGM_XT_range_t values;
 } PGM_XT_INTERSECTION_DATA_t;
 typedef struct PGM_XT_OFFSET_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_OFFSET_VALUES_t;
 typedef struct PGM_XT_MESH_OFFSET_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t mesh_index_map;
-    PGM_XT_field_p_t schema_data;
-    PGM_XT_field_d_t schema_data_offset_high;
-    PGM_XT_field_d_t schema_data_offset_low;
+    PGM_XT_OFFSET_VALUES_ref_t mesh_index_map;
+    PGM_XT_SCHEMA_DATA_ref_t schema_data;
+    int64_t schema_data_offset_high;
+    int64_t schema_data_offset_low;
 } PGM_XT_MESH_OFFSET_DATA_t;
 typedef struct PGM_XT_SCHEMA_CHAR_VALUES_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_SCHEMA_CHAR_VALUES_t;
 typedef struct PGM_XT_NEW_NODE_MAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_d_t exemplar_offset_high;
-    PGM_XT_field_d_t exemplar_offset_low;
-    PGM_XT_field_n_t node_type;
-    PGM_XT_field_l_t vla_field_xmt_code;
-    PGM_XT_field_p_t name;
-    PGM_XT_field_p_t description;
-    PGM_XT_variable_range_t field_maps;
+    int32_t next;
+    int64_t exemplar_offset_high;
+    int64_t exemplar_offset_low;
+    int64_t node_type;
+    uint8_t vla_field_xmt_code;
+    PGM_XT_SCHEMA_CHAR_VALUES_ref_t name;
+    PGM_XT_SCHEMA_CHAR_VALUES_ref_t description;
+    PGM_XT_range_t field_maps;
 } PGM_XT_NEW_NODE_MAP_t;
 typedef struct PGM_XT_MOD_NODE_MAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_d_t exemplar_offset_high;
-    PGM_XT_field_d_t exemplar_offset_low;
-    PGM_XT_field_n_t node_type;
-    PGM_XT_field_l_t vla_field_xmt_code;
-    PGM_XT_variable_range_t field_maps;
+    int32_t next;
+    int64_t exemplar_offset_high;
+    int64_t exemplar_offset_low;
+    int64_t node_type;
+    uint8_t vla_field_xmt_code;
+    PGM_XT_range_t field_maps;
 } PGM_XT_MOD_NODE_MAP_t;
 typedef struct PGM_XT_NEW_FIELD_MAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t name;
-    PGM_XT_field_n_t ptr_class;
-    PGM_XT_field_d_t n_elts;
-    PGM_XT_field_p_t type;
+    PGM_XT_SCHEMA_CHAR_VALUES_ref_t name;
+    int64_t ptr_class;
+    int64_t n_elts;
+    PGM_XT_SCHEMA_CHAR_VALUES_ref_t type;
 } PGM_XT_NEW_FIELD_MAP_t;
 typedef struct PGM_XT_SCHEMA_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t node_map;
+    int32_t node_map;
 } PGM_XT_SCHEMA_DATA_t;
 typedef struct PGM_XT_OLD_NODE_MAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_d_t exemplar_offset_high;
-    PGM_XT_field_d_t exemplar_offset_low;
-    PGM_XT_field_n_t node_type;
+    int32_t next;
+    int64_t exemplar_offset_high;
+    int64_t exemplar_offset_low;
+    int64_t node_type;
 } PGM_XT_OLD_NODE_MAP_t;
 typedef struct PGM_XT_OLD_FIELD_MAP_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_u_t base_index;
+    uint64_t base_index;
 } PGM_XT_OLD_FIELD_MAP_t;
 typedef struct PGM_XT_MESH_READER_DATA_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_q_t facet_reader;
-    PGM_XT_field_q_t context;
-    PGM_XT_field_q_t facet_free;
-    PGM_XT_field_d_t facets_estimate;
-    PGM_XT_field_d_t vertices_estimate;
-    PGM_XT_field_l_t thread_safe;
+    int64_t facet_reader;
+    int64_t context;
+    int64_t facet_free;
+    int64_t facets_estimate;
+    int64_t vertices_estimate;
+    uint8_t thread_safe;
 } PGM_XT_MESH_READER_DATA_t;
 typedef struct PGM_XT_REAL_TOOTH_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_variable_range_t values;
+    PGM_XT_range_t values;
 } PGM_XT_REAL_TOOTH_t;
 typedef struct PGM_XT_REAL_COMB_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_u_t encoding;
-    PGM_XT_field_d_t length;
-    PGM_XT_field_d_t max_length;
-    PGM_XT_field_d_t shift;
-    PGM_XT_variable_range_t teeth;
+    uint64_t encoding;
+    int64_t length;
+    int64_t max_length;
+    int64_t shift;
+    PGM_XT_range_t teeth;
 } PGM_XT_REAL_COMB_t;
 typedef struct PGM_XT_LATTICE_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
-    PGM_XT_field_p_t data;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    PGM_XT_LATTICE_ref_t next;
+    PGM_XT_LATTICE_ref_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
+    int32_t data;
 } PGM_XT_LATTICE_t;
 typedef struct PGM_XT_LATTICE_DATA_IRREGULAR_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t connectivity;
-    PGM_XT_field_p_t rev_connectivity;
-    PGM_XT_field_p_t positions;
-    PGM_XT_field_u_t ball_type;
-    PGM_XT_field_f_t ball_radius;
-    PGM_XT_field_p_t ball_radii;
-    PGM_XT_field_p_t ball_rod_radii;
-    PGM_XT_field_u_t ball_blend_type;
-    PGM_XT_field_f_t ball_blend_size;
-    PGM_XT_field_p_t ball_blend_sizes;
-    PGM_XT_field_u_t rod_term_type;
-    PGM_XT_field_f_t rod_term_radius;
-    PGM_XT_field_p_t rod_start_radii;
-    PGM_XT_field_p_t rod_end_radii;
-    PGM_XT_field_u_t rod_mid_type;
-    PGM_XT_field_f_t rod_mid_radius;
-    PGM_XT_field_p_t rod_mid_radii;
+    PGM_XT_GRAPH_COMPACT_ref_t connectivity;
+    PGM_XT_GRAPH_COMPACT_ref_t rev_connectivity;
+    PGM_XT_VECTOR_COMB_ref_t positions;
+    uint64_t ball_type;
+    double ball_radius;
+    PGM_XT_REAL_COMB_ref_t ball_radii;
+    PGM_XT_REAL_COMB_ref_t ball_rod_radii;
+    uint64_t ball_blend_type;
+    double ball_blend_size;
+    PGM_XT_REAL_COMB_ref_t ball_blend_sizes;
+    uint64_t rod_term_type;
+    double rod_term_radius;
+    PGM_XT_REAL_COMB_ref_t rod_start_radii;
+    PGM_XT_REAL_COMB_ref_t rod_end_radii;
+    uint64_t rod_mid_type;
+    double rod_mid_radius;
+    PGM_XT_REAL_COMB_ref_t rod_mid_radii;
 } PGM_XT_LATTICE_DATA_IRREGULAR_t;
 typedef struct PGM_XT_GRAPH_COMPACT_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_p_t adjacency_indices;
-    PGM_XT_field_p_t adjacencies;
+    PGM_XT_INTEGER_COMB_ref_t adjacency_indices;
+    PGM_XT_INTEGER_COMB_ref_t adjacencies;
 } PGM_XT_GRAPH_COMPACT_t;
 typedef struct PGM_XT_SURF_STUB_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
 } PGM_XT_SURF_STUB_t;
 typedef struct PGM_XT_CURVE_STUB_s {
     int32_t _xt_index;
     int32_t _xt_order;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometric_owner;
-    PGM_XT_field_c_t sense;
+    int64_t node_id;
+    int32_t attributes_features;
+    int32_t owner;
+    int32_t next;
+    int32_t previous;
+    PGM_XT_GEOMETRIC_OWNER_ref_t geometric_owner;
+    uint8_t sense;
 } PGM_XT_CURVE_STUB_t;
 typedef struct PGM_XT_STRUCTURE_COMB_s {
     int32_t _xt_index;
     int32_t _xt_order;
     int32_t _xt_variable_length;
-    PGM_XT_field_u_t encoding;
-    PGM_XT_field_d_t length;
-    PGM_XT_field_d_t max_length;
-    PGM_XT_field_d_t shift;
-    PGM_XT_field_d_t bytes_per_entry;
-    PGM_XT_variable_range_t teeth;
+    uint64_t encoding;
+    int64_t length;
+    int64_t max_length;
+    int64_t shift;
+    int64_t bytes_per_entry;
+    PGM_XT_range_t teeth;
 } PGM_XT_STRUCTURE_COMB_t;
 typedef struct PGM_XT_TRANSFORM_PRECISION_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_f_t rotation_matrix[9];
-    PGM_XT_field_v_t translation_vector;
+    double rotation_matrix[9];
+    PGM_XT_schema_vector_t translation_vector;
 } PGM_XT_TRANSFORM_PRECISION_t;
 typedef struct PGM_XT_FRAME_s {
     int32_t _xt_index;
     int32_t _xt_order;
     PGM_XT_range_t _xt_user_fields;
-    PGM_XT_field_d_t node_id;
-    PGM_XT_field_p_t attributes_features;
-    PGM_XT_field_p_t next;
-    PGM_XT_field_p_t previous;
-    PGM_XT_field_p_t geometry;
-    PGM_XT_field_p_t next_on_geometry;
-    PGM_XT_field_p_t previous_on_geometry;
-    PGM_XT_field_p_t owner;
-    PGM_XT_field_c_t sense;
+    int64_t node_id;
+    int32_t attributes_features;
+    PGM_XT_FRAME_ref_t next;
+    PGM_XT_FRAME_ref_t previous;
+    int32_t geometry;
+    PGM_XT_FRAME_ref_t next_on_geometry;
+    PGM_XT_FRAME_ref_t previous_on_geometry;
+    int32_t owner;
+    uint8_t sense;
 } PGM_XT_FRAME_t;
 typedef struct PGM_XT_COUNTS_s {
     int32_t NULLP;
@@ -2758,8 +3133,8 @@ PGM_XT_API PGM_XT_status_t PGM_XT_WORKSPACE_get_read_view(PGM_XT_model_t, const 
 PGM_XT_API PGM_XT_status_t PGM_XT_WORKSPACE_get_write_view(PGM_XT_model_t, PGM_XT_WORKSPACE_t **, int32_t *);
 #define PGM_XT_WORKSPACE_ws_get_read_view PGM_XT_SCH_3500137_35002_WORKSPACE_ws_get_read_view
 #define PGM_XT_WORKSPACE_ws_get_write_view PGM_XT_SCH_3500137_35002_WORKSPACE_ws_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_WORKSPACE_ws_get_read_view(PGM_XT_model_t, const PGM_XT_field_c_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_WORKSPACE_ws_get_write_view(PGM_XT_model_t, PGM_XT_field_c_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_WORKSPACE_ws_get_read_view(PGM_XT_model_t, const uint8_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_WORKSPACE_ws_get_write_view(PGM_XT_model_t, uint8_t **, int32_t *);
 #define PGM_XT_PARTITION_get_read_view PGM_XT_SCH_3500137_35002_PARTITION_get_read_view
 #define PGM_XT_PARTITION_get_write_view PGM_XT_SCH_3500137_35002_PARTITION_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_PARTITION_get_read_view(PGM_XT_model_t, const PGM_XT_PARTITION_t **, int32_t *);
@@ -2842,8 +3217,8 @@ PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPC_get_read_view(PGM_XT_model_t, con
 PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPC_get_write_view(PGM_XT_model_t, PGM_XT_OBSOLETE_CPC_t **, int32_t *);
 #define PGM_XT_OBSOLETE_CPC_segment_get_read_view PGM_XT_SCH_3500137_35002_OBSOLETE_CPC_segment_get_read_view
 #define PGM_XT_OBSOLETE_CPC_segment_get_write_view PGM_XT_SCH_3500137_35002_OBSOLETE_CPC_segment_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPC_segment_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPC_segment_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPC_segment_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPC_segment_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_PATCH_BOUND_get_read_view PGM_XT_SCH_3500137_35002_PATCH_BOUND_get_read_view
 #define PGM_XT_PATCH_BOUND_get_write_view PGM_XT_SCH_3500137_35002_PATCH_BOUND_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_PATCH_BOUND_get_read_view(PGM_XT_model_t, const PGM_XT_PATCH_BOUND_t **, int32_t *);
@@ -2862,16 +3237,16 @@ PGM_XT_API PGM_XT_status_t PGM_XT_CHART_get_read_view(PGM_XT_model_t, const PGM_
 PGM_XT_API PGM_XT_status_t PGM_XT_CHART_get_write_view(PGM_XT_model_t, PGM_XT_CHART_t **, int32_t *);
 #define PGM_XT_CHART_hvec_get_read_view PGM_XT_SCH_3500137_35002_CHART_hvec_get_read_view
 #define PGM_XT_CHART_hvec_get_write_view PGM_XT_SCH_3500137_35002_CHART_hvec_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_CHART_hvec_get_read_view(PGM_XT_model_t, const PGM_XT_field_h_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_CHART_hvec_get_write_view(PGM_XT_model_t, PGM_XT_field_h_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_CHART_hvec_get_read_view(PGM_XT_model_t, const PGM_XT_schema_vector_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_CHART_hvec_get_write_view(PGM_XT_model_t, PGM_XT_schema_vector_t **, int32_t *);
 #define PGM_XT_LIMIT_get_read_view PGM_XT_SCH_3500137_35002_LIMIT_get_read_view
 #define PGM_XT_LIMIT_get_write_view PGM_XT_SCH_3500137_35002_LIMIT_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_LIMIT_get_read_view(PGM_XT_model_t, const PGM_XT_LIMIT_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_LIMIT_get_write_view(PGM_XT_model_t, PGM_XT_LIMIT_t **, int32_t *);
 #define PGM_XT_LIMIT_hvec_get_read_view PGM_XT_SCH_3500137_35002_LIMIT_hvec_get_read_view
 #define PGM_XT_LIMIT_hvec_get_write_view PGM_XT_SCH_3500137_35002_LIMIT_hvec_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_LIMIT_hvec_get_read_view(PGM_XT_model_t, const PGM_XT_field_h_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_LIMIT_hvec_get_write_view(PGM_XT_model_t, PGM_XT_field_h_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_LIMIT_hvec_get_read_view(PGM_XT_model_t, const PGM_XT_schema_vector_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_LIMIT_hvec_get_write_view(PGM_XT_model_t, PGM_XT_schema_vector_t **, int32_t *);
 #define PGM_XT_BSPLINE_CURVE_get_read_view PGM_XT_SCH_3500137_35002_BSPLINE_CURVE_get_read_view
 #define PGM_XT_BSPLINE_CURVE_get_write_view PGM_XT_SCH_3500137_35002_BSPLINE_CURVE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_BSPLINE_CURVE_get_read_view(PGM_XT_model_t, const PGM_XT_BSPLINE_CURVE_t **, int32_t *);
@@ -2882,16 +3257,16 @@ PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_VECTOR_get_read_view(PGM_XT_model_t, cons
 PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_VECTOR_get_write_view(PGM_XT_model_t, PGM_XT_KNOT_VECTOR_t **, int32_t *);
 #define PGM_XT_KNOT_VECTOR_knots_get_read_view PGM_XT_SCH_3500137_35002_KNOT_VECTOR_knots_get_read_view
 #define PGM_XT_KNOT_VECTOR_knots_get_write_view PGM_XT_SCH_3500137_35002_KNOT_VECTOR_knots_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_VECTOR_knots_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_VECTOR_knots_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_VECTOR_knots_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_VECTOR_knots_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_BSPLINE_VERTICES_get_read_view PGM_XT_SCH_3500137_35002_BSPLINE_VERTICES_get_read_view
 #define PGM_XT_BSPLINE_VERTICES_get_write_view PGM_XT_SCH_3500137_35002_BSPLINE_VERTICES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_BSPLINE_VERTICES_get_read_view(PGM_XT_model_t, const PGM_XT_BSPLINE_VERTICES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_BSPLINE_VERTICES_get_write_view(PGM_XT_model_t, PGM_XT_BSPLINE_VERTICES_t **, int32_t *);
 #define PGM_XT_BSPLINE_VERTICES_vertices_get_read_view PGM_XT_SCH_3500137_35002_BSPLINE_VERTICES_vertices_get_read_view
 #define PGM_XT_BSPLINE_VERTICES_vertices_get_write_view PGM_XT_SCH_3500137_35002_BSPLINE_VERTICES_vertices_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_BSPLINE_VERTICES_vertices_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_BSPLINE_VERTICES_vertices_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BSPLINE_VERTICES_vertices_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BSPLINE_VERTICES_vertices_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_OFFSET_CURVE_get_read_view PGM_XT_SCH_3500137_35002_OFFSET_CURVE_get_read_view
 #define PGM_XT_OFFSET_CURVE_get_write_view PGM_XT_SCH_3500137_35002_OFFSET_CURVE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_OFFSET_CURVE_get_read_view(PGM_XT_model_t, const PGM_XT_OFFSET_CURVE_t **, int32_t *);
@@ -2906,8 +3281,8 @@ PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_SP_CURVE_get_read_view(PGM_XT_model_t
 PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_SP_CURVE_get_write_view(PGM_XT_model_t, PGM_XT_OBSOLETE_SP_CURVE_t **, int32_t *);
 #define PGM_XT_OBSOLETE_SP_CURVE_bezier_vertices_get_read_view PGM_XT_SCH_3500137_35002_OBSOLETE_SP_CURVE_bezier_vertices_get_read_view
 #define PGM_XT_OBSOLETE_SP_CURVE_bezier_vertices_get_write_view PGM_XT_SCH_3500137_35002_OBSOLETE_SP_CURVE_bezier_vertices_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_SP_CURVE_bezier_vertices_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_SP_CURVE_bezier_vertices_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_SP_CURVE_bezier_vertices_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_SP_CURVE_bezier_vertices_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_PLANE_get_read_view PGM_XT_SCH_3500137_35002_PLANE_get_read_view
 #define PGM_XT_PLANE_get_write_view PGM_XT_SCH_3500137_35002_PLANE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_PLANE_get_read_view(PGM_XT_model_t, const PGM_XT_PLANE_t **, int32_t *);
@@ -2962,8 +3337,8 @@ PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPS_get_read_view(PGM_XT_model_t, con
 PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPS_get_write_view(PGM_XT_model_t, PGM_XT_OBSOLETE_CPS_t **, int32_t *);
 #define PGM_XT_OBSOLETE_CPS_patch_get_read_view PGM_XT_SCH_3500137_35002_OBSOLETE_CPS_patch_get_read_view
 #define PGM_XT_OBSOLETE_CPS_patch_get_write_view PGM_XT_SCH_3500137_35002_OBSOLETE_CPS_patch_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPS_patch_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPS_patch_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPS_patch_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OBSOLETE_CPS_patch_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_SILH_SURF_get_read_view PGM_XT_SCH_3500137_35002_SILH_SURF_get_read_view
 #define PGM_XT_SILH_SURF_get_write_view PGM_XT_SCH_3500137_35002_SILH_SURF_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_SILH_SURF_get_read_view(PGM_XT_model_t, const PGM_XT_SILH_SURF_t **, int32_t *);
@@ -2994,96 +3369,96 @@ PGM_XT_API PGM_XT_status_t PGM_XT_POINTER_LIS_BLOCK_get_read_view(PGM_XT_model_t
 PGM_XT_API PGM_XT_status_t PGM_XT_POINTER_LIS_BLOCK_get_write_view(PGM_XT_model_t, PGM_XT_POINTER_LIS_BLOCK_t **, int32_t *);
 #define PGM_XT_POINTER_LIS_BLOCK_entries_get_read_view PGM_XT_SCH_3500137_35002_POINTER_LIS_BLOCK_entries_get_read_view
 #define PGM_XT_POINTER_LIS_BLOCK_entries_get_write_view PGM_XT_SCH_3500137_35002_POINTER_LIS_BLOCK_entries_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_POINTER_LIS_BLOCK_entries_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_POINTER_LIS_BLOCK_entries_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_POINTER_LIS_BLOCK_entries_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_POINTER_LIS_BLOCK_entries_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_ATT_DEF_ID_get_read_view PGM_XT_SCH_3500137_35002_ATT_DEF_ID_get_read_view
 #define PGM_XT_ATT_DEF_ID_get_write_view PGM_XT_SCH_3500137_35002_ATT_DEF_ID_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_ATT_DEF_ID_get_read_view(PGM_XT_model_t, const PGM_XT_ATT_DEF_ID_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_ATT_DEF_ID_get_write_view(PGM_XT_model_t, PGM_XT_ATT_DEF_ID_t **, int32_t *);
 #define PGM_XT_ATT_DEF_ID_string_get_read_view PGM_XT_SCH_3500137_35002_ATT_DEF_ID_string_get_read_view
 #define PGM_XT_ATT_DEF_ID_string_get_write_view PGM_XT_SCH_3500137_35002_ATT_DEF_ID_string_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_ATT_DEF_ID_string_get_read_view(PGM_XT_model_t, const PGM_XT_field_c_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_ATT_DEF_ID_string_get_write_view(PGM_XT_model_t, PGM_XT_field_c_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_ATT_DEF_ID_string_get_read_view(PGM_XT_model_t, const uint8_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_ATT_DEF_ID_string_get_write_view(PGM_XT_model_t, uint8_t **, int32_t *);
 #define PGM_XT_ATTRIB_DEF_get_read_view PGM_XT_SCH_3500137_35002_ATTRIB_DEF_get_read_view
 #define PGM_XT_ATTRIB_DEF_get_write_view PGM_XT_SCH_3500137_35002_ATTRIB_DEF_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIB_DEF_get_read_view(PGM_XT_model_t, const PGM_XT_ATTRIB_DEF_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIB_DEF_get_write_view(PGM_XT_model_t, PGM_XT_ATTRIB_DEF_t **, int32_t *);
 #define PGM_XT_ATTRIB_DEF_fields_get_read_view PGM_XT_SCH_3500137_35002_ATTRIB_DEF_fields_get_read_view
 #define PGM_XT_ATTRIB_DEF_fields_get_write_view PGM_XT_SCH_3500137_35002_ATTRIB_DEF_fields_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIB_DEF_fields_get_read_view(PGM_XT_model_t, const PGM_XT_field_u_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIB_DEF_fields_get_write_view(PGM_XT_model_t, PGM_XT_field_u_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIB_DEF_fields_get_read_view(PGM_XT_model_t, const uint64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIB_DEF_fields_get_write_view(PGM_XT_model_t, uint64_t **, int32_t *);
 #define PGM_XT_ATTRIBUTE_get_read_view PGM_XT_SCH_3500137_35002_ATTRIBUTE_get_read_view
 #define PGM_XT_ATTRIBUTE_get_write_view PGM_XT_SCH_3500137_35002_ATTRIBUTE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIBUTE_get_read_view(PGM_XT_model_t, const PGM_XT_ATTRIBUTE_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIBUTE_get_write_view(PGM_XT_model_t, PGM_XT_ATTRIBUTE_t **, int32_t *);
 #define PGM_XT_ATTRIBUTE_fields_get_read_view PGM_XT_SCH_3500137_35002_ATTRIBUTE_fields_get_read_view
 #define PGM_XT_ATTRIBUTE_fields_get_write_view PGM_XT_SCH_3500137_35002_ATTRIBUTE_fields_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIBUTE_fields_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIBUTE_fields_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIBUTE_fields_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_ATTRIBUTE_fields_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_INT_VALUES_get_read_view PGM_XT_SCH_3500137_35002_INT_VALUES_get_read_view
 #define PGM_XT_INT_VALUES_get_write_view PGM_XT_SCH_3500137_35002_INT_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_INT_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_INT_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_INT_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_INT_VALUES_t **, int32_t *);
 #define PGM_XT_INT_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_INT_VALUES_values_get_read_view
 #define PGM_XT_INT_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_INT_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_INT_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_d_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_INT_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_d_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INT_VALUES_values_get_read_view(PGM_XT_model_t, const int64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INT_VALUES_values_get_write_view(PGM_XT_model_t, int64_t **, int32_t *);
 #define PGM_XT_REAL_VALUES_get_read_view PGM_XT_SCH_3500137_35002_REAL_VALUES_get_read_view
 #define PGM_XT_REAL_VALUES_get_write_view PGM_XT_SCH_3500137_35002_REAL_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_REAL_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_REAL_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_REAL_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_REAL_VALUES_t **, int32_t *);
 #define PGM_XT_REAL_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_REAL_VALUES_values_get_read_view
 #define PGM_XT_REAL_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_REAL_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_REAL_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_REAL_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_REAL_VALUES_values_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_REAL_VALUES_values_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_CHAR_VALUES_get_read_view PGM_XT_SCH_3500137_35002_CHAR_VALUES_get_read_view
 #define PGM_XT_CHAR_VALUES_get_write_view PGM_XT_SCH_3500137_35002_CHAR_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_CHAR_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_CHAR_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_CHAR_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_CHAR_VALUES_t **, int32_t *);
 #define PGM_XT_CHAR_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_CHAR_VALUES_values_get_read_view
 #define PGM_XT_CHAR_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_CHAR_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_CHAR_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_c_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_CHAR_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_c_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_CHAR_VALUES_values_get_read_view(PGM_XT_model_t, const uint8_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_CHAR_VALUES_values_get_write_view(PGM_XT_model_t, uint8_t **, int32_t *);
 #define PGM_XT_POINT_VALUES_get_read_view PGM_XT_SCH_3500137_35002_POINT_VALUES_get_read_view
 #define PGM_XT_POINT_VALUES_get_write_view PGM_XT_SCH_3500137_35002_POINT_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_POINT_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_POINT_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_POINT_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_POINT_VALUES_t **, int32_t *);
 #define PGM_XT_POINT_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_POINT_VALUES_values_get_read_view
 #define PGM_XT_POINT_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_POINT_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_POINT_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_v_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_POINT_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_v_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_POINT_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_schema_vector_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_POINT_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_schema_vector_t **, int32_t *);
 #define PGM_XT_VECTOR_VALUES_get_read_view PGM_XT_SCH_3500137_35002_VECTOR_VALUES_get_read_view
 #define PGM_XT_VECTOR_VALUES_get_write_view PGM_XT_SCH_3500137_35002_VECTOR_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_VECTOR_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_VECTOR_VALUES_t **, int32_t *);
 #define PGM_XT_VECTOR_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_VECTOR_VALUES_values_get_read_view
 #define PGM_XT_VECTOR_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_VECTOR_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_v_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_v_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_schema_vector_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_schema_vector_t **, int32_t *);
 #define PGM_XT_AXIS_VALUES_get_read_view PGM_XT_SCH_3500137_35002_AXIS_VALUES_get_read_view
 #define PGM_XT_AXIS_VALUES_get_write_view PGM_XT_SCH_3500137_35002_AXIS_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_AXIS_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_AXIS_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_AXIS_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_AXIS_VALUES_t **, int32_t *);
 #define PGM_XT_AXIS_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_AXIS_VALUES_values_get_read_view
 #define PGM_XT_AXIS_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_AXIS_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_AXIS_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_v_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_AXIS_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_v_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_AXIS_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_schema_vector_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_AXIS_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_schema_vector_t **, int32_t *);
 #define PGM_XT_TAG_VALUES_get_read_view PGM_XT_SCH_3500137_35002_TAG_VALUES_get_read_view
 #define PGM_XT_TAG_VALUES_get_write_view PGM_XT_SCH_3500137_35002_TAG_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_TAG_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_TAG_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_TAG_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_TAG_VALUES_t **, int32_t *);
 #define PGM_XT_TAG_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_TAG_VALUES_values_get_read_view
 #define PGM_XT_TAG_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_TAG_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_TAG_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_t_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_TAG_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_t_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_TAG_VALUES_values_get_read_view(PGM_XT_model_t, const int64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_TAG_VALUES_values_get_write_view(PGM_XT_model_t, int64_t **, int32_t *);
 #define PGM_XT_DIRECTION_VALUES_get_read_view PGM_XT_SCH_3500137_35002_DIRECTION_VALUES_get_read_view
 #define PGM_XT_DIRECTION_VALUES_get_write_view PGM_XT_SCH_3500137_35002_DIRECTION_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_DIRECTION_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_DIRECTION_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_DIRECTION_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_DIRECTION_VALUES_t **, int32_t *);
 #define PGM_XT_DIRECTION_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_DIRECTION_VALUES_values_get_read_view
 #define PGM_XT_DIRECTION_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_DIRECTION_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_DIRECTION_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_v_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_DIRECTION_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_v_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_DIRECTION_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_schema_vector_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_DIRECTION_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_schema_vector_t **, int32_t *);
 #define PGM_XT_FEATURE_get_read_view PGM_XT_SCH_3500137_35002_FEATURE_get_read_view
 #define PGM_XT_FEATURE_get_write_view PGM_XT_SCH_3500137_35002_FEATURE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_FEATURE_get_read_view(PGM_XT_model_t, const PGM_XT_FEATURE_t **, int32_t *);
@@ -3098,32 +3473,32 @@ PGM_XT_API PGM_XT_status_t PGM_XT_SHORT_VALUES_get_read_view(PGM_XT_model_t, con
 PGM_XT_API PGM_XT_status_t PGM_XT_SHORT_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_SHORT_VALUES_t **, int32_t *);
 #define PGM_XT_SHORT_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_SHORT_VALUES_values_get_read_view
 #define PGM_XT_SHORT_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_SHORT_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_SHORT_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_n_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_SHORT_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_n_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_SHORT_VALUES_values_get_read_view(PGM_XT_model_t, const int64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_SHORT_VALUES_values_get_write_view(PGM_XT_model_t, int64_t **, int32_t *);
 #define PGM_XT_BOX_VALUES_get_read_view PGM_XT_SCH_3500137_35002_BOX_VALUES_get_read_view
 #define PGM_XT_BOX_VALUES_get_write_view PGM_XT_SCH_3500137_35002_BOX_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_BOX_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_BOX_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_BOX_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_BOX_VALUES_t **, int32_t *);
 #define PGM_XT_BOX_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_BOX_VALUES_values_get_read_view
 #define PGM_XT_BOX_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_BOX_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_BOX_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_b_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_BOX_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_b_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BOX_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_schema_box_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BOX_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_schema_box_t **, int32_t *);
 #define PGM_XT_UNICODE_VALUES_get_read_view PGM_XT_SCH_3500137_35002_UNICODE_VALUES_get_read_view
 #define PGM_XT_UNICODE_VALUES_get_write_view PGM_XT_SCH_3500137_35002_UNICODE_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_UNICODE_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_UNICODE_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_UNICODE_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_UNICODE_VALUES_t **, int32_t *);
 #define PGM_XT_UNICODE_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_UNICODE_VALUES_values_get_read_view
 #define PGM_XT_UNICODE_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_UNICODE_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_UNICODE_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_w_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_UNICODE_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_w_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_UNICODE_VALUES_values_get_read_view(PGM_XT_model_t, const int64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_UNICODE_VALUES_values_get_write_view(PGM_XT_model_t, int64_t **, int32_t *);
 #define PGM_XT_FIELD_NAMES_get_read_view PGM_XT_SCH_3500137_35002_FIELD_NAMES_get_read_view
 #define PGM_XT_FIELD_NAMES_get_write_view PGM_XT_SCH_3500137_35002_FIELD_NAMES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_FIELD_NAMES_get_read_view(PGM_XT_model_t, const PGM_XT_FIELD_NAMES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_FIELD_NAMES_get_write_view(PGM_XT_model_t, PGM_XT_FIELD_NAMES_t **, int32_t *);
 #define PGM_XT_FIELD_NAMES_names_get_read_view PGM_XT_SCH_3500137_35002_FIELD_NAMES_names_get_read_view
 #define PGM_XT_FIELD_NAMES_names_get_write_view PGM_XT_SCH_3500137_35002_FIELD_NAMES_names_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_FIELD_NAMES_names_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_FIELD_NAMES_names_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_FIELD_NAMES_names_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_FIELD_NAMES_names_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_TRANSFORM_get_read_view PGM_XT_SCH_3500137_35002_TRANSFORM_get_read_view
 #define PGM_XT_TRANSFORM_get_write_view PGM_XT_SCH_3500137_35002_TRANSFORM_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_TRANSFORM_get_read_view(PGM_XT_model_t, const PGM_XT_TRANSFORM_t **, int32_t *);
@@ -3138,24 +3513,24 @@ PGM_XT_API PGM_XT_status_t PGM_XT_KEY_get_read_view(PGM_XT_model_t, const PGM_XT
 PGM_XT_API PGM_XT_status_t PGM_XT_KEY_get_write_view(PGM_XT_model_t, PGM_XT_KEY_t **, int32_t *);
 #define PGM_XT_KEY_string_get_read_view PGM_XT_SCH_3500137_35002_KEY_string_get_read_view
 #define PGM_XT_KEY_string_get_write_view PGM_XT_SCH_3500137_35002_KEY_string_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_KEY_string_get_read_view(PGM_XT_model_t, const PGM_XT_field_c_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_KEY_string_get_write_view(PGM_XT_model_t, PGM_XT_field_c_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KEY_string_get_read_view(PGM_XT_model_t, const uint8_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KEY_string_get_write_view(PGM_XT_model_t, uint8_t **, int32_t *);
 #define PGM_XT_BEZIER_CURVE_get_read_view PGM_XT_SCH_3500137_35002_BEZIER_CURVE_get_read_view
 #define PGM_XT_BEZIER_CURVE_get_write_view PGM_XT_SCH_3500137_35002_BEZIER_CURVE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_CURVE_get_read_view(PGM_XT_model_t, const PGM_XT_BEZIER_CURVE_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_CURVE_get_write_view(PGM_XT_model_t, PGM_XT_BEZIER_CURVE_t **, int32_t *);
 #define PGM_XT_BEZIER_CURVE_segment_get_read_view PGM_XT_SCH_3500137_35002_BEZIER_CURVE_segment_get_read_view
 #define PGM_XT_BEZIER_CURVE_segment_get_write_view PGM_XT_SCH_3500137_35002_BEZIER_CURVE_segment_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_CURVE_segment_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_CURVE_segment_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_CURVE_segment_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_CURVE_segment_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_BEZIER_SURF_get_read_view PGM_XT_SCH_3500137_35002_BEZIER_SURF_get_read_view
 #define PGM_XT_BEZIER_SURF_get_write_view PGM_XT_SCH_3500137_35002_BEZIER_SURF_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_SURF_get_read_view(PGM_XT_model_t, const PGM_XT_BEZIER_SURF_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_SURF_get_write_view(PGM_XT_model_t, PGM_XT_BEZIER_SURF_t **, int32_t *);
 #define PGM_XT_BEZIER_SURF_patch_get_read_view PGM_XT_SCH_3500137_35002_BEZIER_SURF_patch_get_read_view
 #define PGM_XT_BEZIER_SURF_patch_get_write_view PGM_XT_SCH_3500137_35002_BEZIER_SURF_patch_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_SURF_patch_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_SURF_patch_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_SURF_patch_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BEZIER_SURF_patch_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_SET_ELEMENT_TAG_get_read_view PGM_XT_SCH_3500137_35002_SET_ELEMENT_TAG_get_read_view
 #define PGM_XT_SET_ELEMENT_TAG_get_write_view PGM_XT_SCH_3500137_35002_SET_ELEMENT_TAG_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_SET_ELEMENT_TAG_get_read_view(PGM_XT_model_t, const PGM_XT_SET_ELEMENT_TAG_t **, int32_t *);
@@ -3182,8 +3557,8 @@ PGM_XT_API PGM_XT_status_t PGM_XT_PE_SURF_get_read_view(PGM_XT_model_t, const PG
 PGM_XT_API PGM_XT_status_t PGM_XT_PE_SURF_get_write_view(PGM_XT_model_t, PGM_XT_PE_SURF_t **, int32_t *);
 #define PGM_XT_PE_SURF_internal_geom_get_read_view PGM_XT_SCH_3500137_35002_PE_SURF_internal_geom_get_read_view
 #define PGM_XT_PE_SURF_internal_geom_get_write_view PGM_XT_SCH_3500137_35002_PE_SURF_internal_geom_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_PE_SURF_internal_geom_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_PE_SURF_internal_geom_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PE_SURF_internal_geom_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PE_SURF_internal_geom_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_INT_PE_DATA_get_read_view PGM_XT_SCH_3500137_35002_INT_PE_DATA_get_read_view
 #define PGM_XT_INT_PE_DATA_get_write_view PGM_XT_SCH_3500137_35002_INT_PE_DATA_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_INT_PE_DATA_get_read_view(PGM_XT_model_t, const PGM_XT_INT_PE_DATA_t **, int32_t *);
@@ -3210,24 +3585,24 @@ PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_MULT_get_read_view(PGM_XT_model_t, const 
 PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_MULT_get_write_view(PGM_XT_model_t, PGM_XT_KNOT_MULT_t **, int32_t *);
 #define PGM_XT_KNOT_MULT_mult_get_read_view PGM_XT_SCH_3500137_35002_KNOT_MULT_mult_get_read_view
 #define PGM_XT_KNOT_MULT_mult_get_write_view PGM_XT_SCH_3500137_35002_KNOT_MULT_mult_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_MULT_mult_get_read_view(PGM_XT_model_t, const PGM_XT_field_n_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_MULT_mult_get_write_view(PGM_XT_model_t, PGM_XT_field_n_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_MULT_mult_get_read_view(PGM_XT_model_t, const int64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_MULT_mult_get_write_view(PGM_XT_model_t, int64_t **, int32_t *);
 #define PGM_XT_KNOT_SET_get_read_view PGM_XT_SCH_3500137_35002_KNOT_SET_get_read_view
 #define PGM_XT_KNOT_SET_get_write_view PGM_XT_SCH_3500137_35002_KNOT_SET_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_SET_get_read_view(PGM_XT_model_t, const PGM_XT_KNOT_SET_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_SET_get_write_view(PGM_XT_model_t, PGM_XT_KNOT_SET_t **, int32_t *);
 #define PGM_XT_KNOT_SET_knots_get_read_view PGM_XT_SCH_3500137_35002_KNOT_SET_knots_get_read_view
 #define PGM_XT_KNOT_SET_knots_get_write_view PGM_XT_SCH_3500137_35002_KNOT_SET_knots_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_SET_knots_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_SET_knots_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_SET_knots_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_KNOT_SET_knots_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_PE_CURVE_get_read_view PGM_XT_SCH_3500137_35002_PE_CURVE_get_read_view
 #define PGM_XT_PE_CURVE_get_write_view PGM_XT_SCH_3500137_35002_PE_CURVE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_PE_CURVE_get_read_view(PGM_XT_model_t, const PGM_XT_PE_CURVE_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_PE_CURVE_get_write_view(PGM_XT_model_t, PGM_XT_PE_CURVE_t **, int32_t *);
 #define PGM_XT_PE_CURVE_internal_geom_get_read_view PGM_XT_SCH_3500137_35002_PE_CURVE_internal_geom_get_read_view
 #define PGM_XT_PE_CURVE_internal_geom_get_write_view PGM_XT_SCH_3500137_35002_PE_CURVE_internal_geom_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_PE_CURVE_internal_geom_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_PE_CURVE_internal_geom_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PE_CURVE_internal_geom_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PE_CURVE_internal_geom_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_PCURVE_get_read_view PGM_XT_SCH_3500137_35002_PCURVE_get_read_view
 #define PGM_XT_PCURVE_get_write_view PGM_XT_SCH_3500137_35002_PCURVE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_PCURVE_get_read_view(PGM_XT_model_t, const PGM_XT_PCURVE_t **, int32_t *);
@@ -3314,16 +3689,16 @@ PGM_XT_API PGM_XT_status_t PGM_XT_PART_XMT_BLOCK_get_read_view(PGM_XT_model_t, c
 PGM_XT_API PGM_XT_status_t PGM_XT_PART_XMT_BLOCK_get_write_view(PGM_XT_model_t, PGM_XT_PART_XMT_BLOCK_t **, int32_t *);
 #define PGM_XT_PART_XMT_BLOCK_entries_get_read_view PGM_XT_SCH_3500137_35002_PART_XMT_BLOCK_entries_get_read_view
 #define PGM_XT_PART_XMT_BLOCK_entries_get_write_view PGM_XT_SCH_3500137_35002_PART_XMT_BLOCK_entries_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_PART_XMT_BLOCK_entries_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_PART_XMT_BLOCK_entries_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PART_XMT_BLOCK_entries_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PART_XMT_BLOCK_entries_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_BYTE_VALUES_get_read_view PGM_XT_SCH_3500137_35002_BYTE_VALUES_get_read_view
 #define PGM_XT_BYTE_VALUES_get_write_view PGM_XT_SCH_3500137_35002_BYTE_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_BYTE_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_BYTE_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_BYTE_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_BYTE_VALUES_t **, int32_t *);
 #define PGM_XT_BYTE_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_BYTE_VALUES_values_get_read_view
 #define PGM_XT_BYTE_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_BYTE_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_BYTE_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_u_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_BYTE_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_u_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BYTE_VALUES_values_get_read_view(PGM_XT_model_t, const uint64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_BYTE_VALUES_values_get_write_view(PGM_XT_model_t, uint64_t **, int32_t *);
 #define PGM_XT_HELIX_CU_FORM_get_read_view PGM_XT_SCH_3500137_35002_HELIX_CU_FORM_get_read_view
 #define PGM_XT_HELIX_CU_FORM_get_write_view PGM_XT_SCH_3500137_35002_HELIX_CU_FORM_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_HELIX_CU_FORM_get_read_view(PGM_XT_model_t, const PGM_XT_HELIX_CU_FORM_t **, int32_t *);
@@ -3338,40 +3713,40 @@ PGM_XT_API PGM_XT_status_t PGM_XT_PSM_MESH_get_read_view(PGM_XT_model_t, const P
 PGM_XT_API PGM_XT_status_t PGM_XT_PSM_MESH_get_write_view(PGM_XT_model_t, PGM_XT_PSM_MESH_t **, int32_t *);
 #define PGM_XT_PSM_MESH_combs_get_read_view PGM_XT_SCH_3500137_35002_PSM_MESH_combs_get_read_view
 #define PGM_XT_PSM_MESH_combs_get_write_view PGM_XT_SCH_3500137_35002_PSM_MESH_combs_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_PSM_MESH_combs_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_PSM_MESH_combs_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PSM_MESH_combs_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_PSM_MESH_combs_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_INTEGER_TOOTH_get_read_view PGM_XT_SCH_3500137_35002_INTEGER_TOOTH_get_read_view
 #define PGM_XT_INTEGER_TOOTH_get_write_view PGM_XT_SCH_3500137_35002_INTEGER_TOOTH_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_TOOTH_get_read_view(PGM_XT_model_t, const PGM_XT_INTEGER_TOOTH_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_TOOTH_get_write_view(PGM_XT_model_t, PGM_XT_INTEGER_TOOTH_t **, int32_t *);
 #define PGM_XT_INTEGER_TOOTH_values_get_read_view PGM_XT_SCH_3500137_35002_INTEGER_TOOTH_values_get_read_view
 #define PGM_XT_INTEGER_TOOTH_values_get_write_view PGM_XT_SCH_3500137_35002_INTEGER_TOOTH_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_TOOTH_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_d_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_TOOTH_values_get_write_view(PGM_XT_model_t, PGM_XT_field_d_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_TOOTH_values_get_read_view(PGM_XT_model_t, const int64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_TOOTH_values_get_write_view(PGM_XT_model_t, int64_t **, int32_t *);
 #define PGM_XT_INTEGER_COMB_get_read_view PGM_XT_SCH_3500137_35002_INTEGER_COMB_get_read_view
 #define PGM_XT_INTEGER_COMB_get_write_view PGM_XT_SCH_3500137_35002_INTEGER_COMB_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_COMB_get_read_view(PGM_XT_model_t, const PGM_XT_INTEGER_COMB_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_COMB_get_write_view(PGM_XT_model_t, PGM_XT_INTEGER_COMB_t **, int32_t *);
 #define PGM_XT_INTEGER_COMB_teeth_get_read_view PGM_XT_SCH_3500137_35002_INTEGER_COMB_teeth_get_read_view
 #define PGM_XT_INTEGER_COMB_teeth_get_write_view PGM_XT_SCH_3500137_35002_INTEGER_COMB_teeth_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_COMB_teeth_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_COMB_teeth_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_COMB_teeth_get_read_view(PGM_XT_model_t, const PGM_XT_INTEGER_TOOTH_ref_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INTEGER_COMB_teeth_get_write_view(PGM_XT_model_t, PGM_XT_INTEGER_TOOTH_ref_t **, int32_t *);
 #define PGM_XT_VECTOR_TOOTH_get_read_view PGM_XT_SCH_3500137_35002_VECTOR_TOOTH_get_read_view
 #define PGM_XT_VECTOR_TOOTH_get_write_view PGM_XT_SCH_3500137_35002_VECTOR_TOOTH_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_TOOTH_get_read_view(PGM_XT_model_t, const PGM_XT_VECTOR_TOOTH_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_TOOTH_get_write_view(PGM_XT_model_t, PGM_XT_VECTOR_TOOTH_t **, int32_t *);
 #define PGM_XT_VECTOR_TOOTH_values_get_read_view PGM_XT_SCH_3500137_35002_VECTOR_TOOTH_values_get_read_view
 #define PGM_XT_VECTOR_TOOTH_values_get_write_view PGM_XT_SCH_3500137_35002_VECTOR_TOOTH_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_TOOTH_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_TOOTH_values_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_TOOTH_values_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_TOOTH_values_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_VECTOR_COMB_get_read_view PGM_XT_SCH_3500137_35002_VECTOR_COMB_get_read_view
 #define PGM_XT_VECTOR_COMB_get_write_view PGM_XT_SCH_3500137_35002_VECTOR_COMB_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_COMB_get_read_view(PGM_XT_model_t, const PGM_XT_VECTOR_COMB_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_COMB_get_write_view(PGM_XT_model_t, PGM_XT_VECTOR_COMB_t **, int32_t *);
 #define PGM_XT_VECTOR_COMB_teeth_get_read_view PGM_XT_SCH_3500137_35002_VECTOR_COMB_teeth_get_read_view
 #define PGM_XT_VECTOR_COMB_teeth_get_write_view PGM_XT_SCH_3500137_35002_VECTOR_COMB_teeth_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_COMB_teeth_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_COMB_teeth_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_COMB_teeth_get_read_view(PGM_XT_model_t, const PGM_XT_VECTOR_TOOTH_ref_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_VECTOR_COMB_teeth_get_write_view(PGM_XT_model_t, PGM_XT_VECTOR_TOOTH_ref_t **, int32_t *);
 #define PGM_XT_POLYLINE_get_read_view PGM_XT_SCH_3500137_35002_POLYLINE_get_read_view
 #define PGM_XT_POLYLINE_get_write_view PGM_XT_SCH_3500137_35002_POLYLINE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_POLYLINE_get_read_view(PGM_XT_model_t, const PGM_XT_POLYLINE_t **, int32_t *);
@@ -3386,16 +3761,16 @@ PGM_XT_API PGM_XT_status_t PGM_XT_INTERSECTION_DATA_get_read_view(PGM_XT_model_t
 PGM_XT_API PGM_XT_status_t PGM_XT_INTERSECTION_DATA_get_write_view(PGM_XT_model_t, PGM_XT_INTERSECTION_DATA_t **, int32_t *);
 #define PGM_XT_INTERSECTION_DATA_values_get_read_view PGM_XT_SCH_3500137_35002_INTERSECTION_DATA_values_get_read_view
 #define PGM_XT_INTERSECTION_DATA_values_get_write_view PGM_XT_SCH_3500137_35002_INTERSECTION_DATA_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_INTERSECTION_DATA_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_INTERSECTION_DATA_values_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INTERSECTION_DATA_values_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_INTERSECTION_DATA_values_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_OFFSET_VALUES_get_read_view PGM_XT_SCH_3500137_35002_OFFSET_VALUES_get_read_view
 #define PGM_XT_OFFSET_VALUES_get_write_view PGM_XT_SCH_3500137_35002_OFFSET_VALUES_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_OFFSET_VALUES_get_read_view(PGM_XT_model_t, const PGM_XT_OFFSET_VALUES_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_OFFSET_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_OFFSET_VALUES_t **, int32_t *);
 #define PGM_XT_OFFSET_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_OFFSET_VALUES_values_get_read_view
 #define PGM_XT_OFFSET_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_OFFSET_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_OFFSET_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_d_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_OFFSET_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_d_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OFFSET_VALUES_values_get_read_view(PGM_XT_model_t, const int64_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_OFFSET_VALUES_values_get_write_view(PGM_XT_model_t, int64_t **, int32_t *);
 #define PGM_XT_MESH_OFFSET_DATA_get_read_view PGM_XT_SCH_3500137_35002_MESH_OFFSET_DATA_get_read_view
 #define PGM_XT_MESH_OFFSET_DATA_get_write_view PGM_XT_SCH_3500137_35002_MESH_OFFSET_DATA_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_MESH_OFFSET_DATA_get_read_view(PGM_XT_model_t, const PGM_XT_MESH_OFFSET_DATA_t **, int32_t *);
@@ -3406,24 +3781,24 @@ PGM_XT_API PGM_XT_status_t PGM_XT_SCHEMA_CHAR_VALUES_get_read_view(PGM_XT_model_
 PGM_XT_API PGM_XT_status_t PGM_XT_SCHEMA_CHAR_VALUES_get_write_view(PGM_XT_model_t, PGM_XT_SCHEMA_CHAR_VALUES_t **, int32_t *);
 #define PGM_XT_SCHEMA_CHAR_VALUES_values_get_read_view PGM_XT_SCH_3500137_35002_SCHEMA_CHAR_VALUES_values_get_read_view
 #define PGM_XT_SCHEMA_CHAR_VALUES_values_get_write_view PGM_XT_SCH_3500137_35002_SCHEMA_CHAR_VALUES_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_SCHEMA_CHAR_VALUES_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_c_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_SCHEMA_CHAR_VALUES_values_get_write_view(PGM_XT_model_t, PGM_XT_field_c_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_SCHEMA_CHAR_VALUES_values_get_read_view(PGM_XT_model_t, const uint8_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_SCHEMA_CHAR_VALUES_values_get_write_view(PGM_XT_model_t, uint8_t **, int32_t *);
 #define PGM_XT_NEW_NODE_MAP_get_read_view PGM_XT_SCH_3500137_35002_NEW_NODE_MAP_get_read_view
 #define PGM_XT_NEW_NODE_MAP_get_write_view PGM_XT_SCH_3500137_35002_NEW_NODE_MAP_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_NEW_NODE_MAP_get_read_view(PGM_XT_model_t, const PGM_XT_NEW_NODE_MAP_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_NEW_NODE_MAP_get_write_view(PGM_XT_model_t, PGM_XT_NEW_NODE_MAP_t **, int32_t *);
 #define PGM_XT_NEW_NODE_MAP_field_maps_get_read_view PGM_XT_SCH_3500137_35002_NEW_NODE_MAP_field_maps_get_read_view
 #define PGM_XT_NEW_NODE_MAP_field_maps_get_write_view PGM_XT_SCH_3500137_35002_NEW_NODE_MAP_field_maps_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_NEW_NODE_MAP_field_maps_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_NEW_NODE_MAP_field_maps_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_NEW_NODE_MAP_field_maps_get_read_view(PGM_XT_model_t, const PGM_XT_NEW_FIELD_MAP_ref_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_NEW_NODE_MAP_field_maps_get_write_view(PGM_XT_model_t, PGM_XT_NEW_FIELD_MAP_ref_t **, int32_t *);
 #define PGM_XT_MOD_NODE_MAP_get_read_view PGM_XT_SCH_3500137_35002_MOD_NODE_MAP_get_read_view
 #define PGM_XT_MOD_NODE_MAP_get_write_view PGM_XT_SCH_3500137_35002_MOD_NODE_MAP_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_MOD_NODE_MAP_get_read_view(PGM_XT_model_t, const PGM_XT_MOD_NODE_MAP_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_MOD_NODE_MAP_get_write_view(PGM_XT_model_t, PGM_XT_MOD_NODE_MAP_t **, int32_t *);
 #define PGM_XT_MOD_NODE_MAP_field_maps_get_read_view PGM_XT_SCH_3500137_35002_MOD_NODE_MAP_field_maps_get_read_view
 #define PGM_XT_MOD_NODE_MAP_field_maps_get_write_view PGM_XT_SCH_3500137_35002_MOD_NODE_MAP_field_maps_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_MOD_NODE_MAP_field_maps_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_MOD_NODE_MAP_field_maps_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_MOD_NODE_MAP_field_maps_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_MOD_NODE_MAP_field_maps_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_NEW_FIELD_MAP_get_read_view PGM_XT_SCH_3500137_35002_NEW_FIELD_MAP_get_read_view
 #define PGM_XT_NEW_FIELD_MAP_get_write_view PGM_XT_SCH_3500137_35002_NEW_FIELD_MAP_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_NEW_FIELD_MAP_get_read_view(PGM_XT_model_t, const PGM_XT_NEW_FIELD_MAP_t **, int32_t *);
@@ -3446,16 +3821,16 @@ PGM_XT_API PGM_XT_status_t PGM_XT_REAL_TOOTH_get_read_view(PGM_XT_model_t, const
 PGM_XT_API PGM_XT_status_t PGM_XT_REAL_TOOTH_get_write_view(PGM_XT_model_t, PGM_XT_REAL_TOOTH_t **, int32_t *);
 #define PGM_XT_REAL_TOOTH_values_get_read_view PGM_XT_SCH_3500137_35002_REAL_TOOTH_values_get_read_view
 #define PGM_XT_REAL_TOOTH_values_get_write_view PGM_XT_SCH_3500137_35002_REAL_TOOTH_values_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_REAL_TOOTH_values_get_read_view(PGM_XT_model_t, const PGM_XT_field_f_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_REAL_TOOTH_values_get_write_view(PGM_XT_model_t, PGM_XT_field_f_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_REAL_TOOTH_values_get_read_view(PGM_XT_model_t, const double **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_REAL_TOOTH_values_get_write_view(PGM_XT_model_t, double **, int32_t *);
 #define PGM_XT_REAL_COMB_get_read_view PGM_XT_SCH_3500137_35002_REAL_COMB_get_read_view
 #define PGM_XT_REAL_COMB_get_write_view PGM_XT_SCH_3500137_35002_REAL_COMB_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_REAL_COMB_get_read_view(PGM_XT_model_t, const PGM_XT_REAL_COMB_t **, int32_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_REAL_COMB_get_write_view(PGM_XT_model_t, PGM_XT_REAL_COMB_t **, int32_t *);
 #define PGM_XT_REAL_COMB_teeth_get_read_view PGM_XT_SCH_3500137_35002_REAL_COMB_teeth_get_read_view
 #define PGM_XT_REAL_COMB_teeth_get_write_view PGM_XT_SCH_3500137_35002_REAL_COMB_teeth_get_write_view
-PGM_XT_API PGM_XT_status_t PGM_XT_REAL_COMB_teeth_get_read_view(PGM_XT_model_t, const PGM_XT_field_p_t **, int32_t *);
-PGM_XT_API PGM_XT_status_t PGM_XT_REAL_COMB_teeth_get_write_view(PGM_XT_model_t, PGM_XT_field_p_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_REAL_COMB_teeth_get_read_view(PGM_XT_model_t, const PGM_XT_REAL_TOOTH_ref_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_REAL_COMB_teeth_get_write_view(PGM_XT_model_t, PGM_XT_REAL_TOOTH_ref_t **, int32_t *);
 #define PGM_XT_LATTICE_get_read_view PGM_XT_SCH_3500137_35002_LATTICE_get_read_view
 #define PGM_XT_LATTICE_get_write_view PGM_XT_SCH_3500137_35002_LATTICE_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_LATTICE_get_read_view(PGM_XT_model_t, const PGM_XT_LATTICE_t **, int32_t *);

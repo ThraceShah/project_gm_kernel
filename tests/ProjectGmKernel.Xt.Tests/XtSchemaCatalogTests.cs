@@ -83,12 +83,19 @@ public sealed class XtSchemaCatalogTests : IDisposable
     }
 
     [Fact]
-    public void GeneratedBuilderRejectsUnavailableTransmittedFields()
+    public void GeneratedModelEncodesZeroedRowsAsValuesAndSentinelsAsNull()
     {
         var builder = new Schema37102.MODEL_BUILDER(new Schema37102.COUNTS { BODY = 1 });
         builder.BODY[0]._xt_index = 1;
         builder.BODY[0]._xt_order = 0;
-        Assert.Throws<XtFormatException>(builder.FinalizeModel);
+        builder.BODY[0].res_size = XtSchemaField.NullReal;
+        builder.BODY[0].next = new Schema37102.BODYRef { Index = XtSchemaField.NullPointer };
+        var document = builder.FinalizeModel().ToDocument();
+        Assert.Contains(Assert.Single(document.Nodes).Fields, static field => field.Kind == XtFieldKind.Empty);
+        var redecoded = Schema37102.CODEC.Decode(document);
+        Assert.Equal(XtSchemaField.NullReal, redecoded.BODY[0].res_size);
+        Assert.Equal(XtSchemaField.NullPointer, redecoded.BODY[0].next.Index);
+        Assert.Equal(0, redecoded.BODY[0].highest_node_id);
     }
 
 

@@ -66,28 +66,20 @@ internal static class XtGeneratedSchemaRuntime
             throw new XtFormatException(XtErrorCode.ModelInvalid, "XT user-field count does not match model user-field size.");
     }
 
-    internal static void ValidateVariableRange(XtVariableRange range, int variableLength, int poolLength, string field)
+    internal static void ValidateVariableRange(XtRange range, int variableLength, int poolLength, string field)
     {
-        if (range.State != XtSchemaFieldState.Value)
-            throw new XtFormatException(XtErrorCode.ModelInvalid, $"Transmitted variable field {field} must have Value state.");
         if (range.Count != variableLength || range.Offset < 0 || range.Offset > poolLength - range.Count)
             throw new XtFormatException(XtErrorCode.ModelInvalid, $"Variable field {field} range does not match the node variable length.");
     }
 
-    internal static void RequireUnavailable(XtSchemaFieldState state, string field)
+    internal static void ValidatePointer(int index,int nodeClass,IReadOnlyDictionary<int,int> nodeTypes,XtSchemaDefinition schema,string field)
     {
-        if (state != XtSchemaFieldState.Unavailable)
-            throw new XtFormatException(XtErrorCode.ModelInvalid, $"Non-transmitted variable field {field} must be Unavailable.");
-    }
-
-    internal static void ValidatePointer(XtField_p pointer,int nodeClass,IReadOnlyDictionary<int,int> nodeTypes,XtSchemaDefinition schema,string field)
-    {
-        if(pointer.State!=XtSchemaFieldState.Value||pointer.Value==0)return;
+        if(index<=0)return;
         // Part transmit graphs may legally retain references to entities outside
         // the selected transmit block. Validate class only when the target is
         // present in this model; preserve external node indices verbatim.
-        if(!nodeTypes.TryGetValue(pointer.Value,out var actualType))return;
-        if(schema.GetNode(nodeClass).Type!=0&&actualType!=nodeClass)throw new XtFormatException(XtErrorCode.ModelInvalid,$"Pointer field {field} requires node type {nodeClass}, but node {pointer.Value} has type {actualType}.");
+        if(!nodeTypes.TryGetValue(index,out var actualType))return;
+        if(schema.GetNode(nodeClass).Type!=0&&actualType!=nodeClass)throw new XtFormatException(XtErrorCode.ModelInvalid,$"Pointer field {field} requires node type {nodeClass}, but node {index} has type {actualType}.");
     }
 
     private static XtFormatException Shape(XtSchemaDefinition actual, XtSchemaDefinition expected)

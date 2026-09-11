@@ -2,78 +2,124 @@ using System.Runtime.InteropServices;
 
 namespace ProjectGmKernel.Xt;
 
-public enum XtSchemaFieldState : byte
-{
-    Unavailable = 0,
-    Null = 1,
-    Value = 2,
-}
-
 [StructLayout(LayoutKind.Sequential)] public struct XtRange { public XtTableOffset Offset; public XtTableCount Count; }
-[StructLayout(LayoutKind.Sequential)] public struct XtVariableRange { public XtSchemaFieldState State; public XtTableOffset Offset; public XtTableCount Count; }
 [StructLayout(LayoutKind.Sequential)] public struct XtSchemaVector { public double X; public double Y; public double Z; }
 [StructLayout(LayoutKind.Sequential)] public struct XtSchemaInterval { public double Low; public double High; }
 [StructLayout(LayoutKind.Sequential)] public struct XtSchemaBox { public double XLow; public double XHigh; public double YLow; public double YHigh; public double ZLow; public double ZHigh; }
 
-[StructLayout(LayoutKind.Sequential)] public struct XtField_p { public XtSchemaFieldState State; public XtNodeIndex Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_d { public XtSchemaFieldState State; public long Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_n { public XtSchemaFieldState State; public long Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_w { public XtSchemaFieldState State; public long Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_t { public XtSchemaFieldState State; public long Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_q { public XtSchemaFieldState State; public long Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_u { public XtSchemaFieldState State; public ulong Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_f { public XtSchemaFieldState State; public double Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_c { public XtSchemaFieldState State; public byte Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_l { public XtSchemaFieldState State; public byte Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_v { public XtSchemaFieldState State; public XtSchemaVector Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_h { public XtSchemaFieldState State; public XtSchemaVector Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_i { public XtSchemaFieldState State; public XtSchemaInterval Value; }
-[StructLayout(LayoutKind.Sequential)] public struct XtField_b { public XtSchemaFieldState State; public XtSchemaBox Value; }
+/// <summary>
+/// Null sentinels for strongly-typed generated schema rows (PGM_XT ABI v2).
+/// A schema field is null when its member equals the sentinel for its field kind;
+/// members of fields a schema does not transmit are not maintained.
+/// </summary>
+public static class XtSchemaField
+{
+    public const int NullPointer = -1;
+    public const long NullInteger = long.MinValue;
+    public const ulong NullUnsigned = ulong.MaxValue;
+    public const double NullReal = double.NaN;
+    public const byte NullCharacter = 0xFF;
+    public const byte NullLogical = 0xFF;
+}
 
 internal static class XtSchemaFieldCodec
 {
-    internal static XtField_p To_p(XtFieldValue v) => new() { State = State(v), Value = v.Pointer };
-    internal static XtField_d To_d(XtFieldValue v) => new() { State = State(v), Value = v.Integer };
-    internal static XtField_n To_n(XtFieldValue v) => new() { State = State(v), Value = v.Integer };
-    internal static XtField_w To_w(XtFieldValue v) => new() { State = State(v), Value = v.Integer };
-    internal static XtField_t To_t(XtFieldValue v) => new() { State = State(v), Value = v.Integer };
-    internal static XtField_q To_q(XtFieldValue v) => new() { State = State(v), Value = v.Integer };
-    internal static XtField_u To_u(XtFieldValue v) => new() { State = State(v), Value = unchecked((ulong)v.Integer) };
-    internal static XtField_f To_f(XtFieldValue v) => new() { State = State(v), Value = v.Real };
-    internal static XtField_c To_c(XtFieldValue v) => new() { State = State(v), Value = checked((byte)v.Character) };
-    internal static XtField_l To_l(XtFieldValue v) => new() { State = State(v), Value = (byte)(v.Integer == 0 ? 0 : 1) };
-    internal static XtField_v To_v(XtFieldValue v) => new() { State = State(v), Value = new XtSchemaVector { X = v.Vector.X, Y = v.Vector.Y, Z = v.Vector.Z } };
-    internal static XtField_h To_h(XtFieldValue v) => new() { State = State(v), Value = new XtSchemaVector { X = v.Vector.X, Y = v.Vector.Y, Z = v.Vector.Z } };
-    internal static XtField_i To_i(XtFieldValue v) => new() { State = State(v), Value = new XtSchemaInterval { Low = v.Vector.X, High = v.Vector.Y } };
-    internal static XtField_b To_b(XtFieldValue v) => new() { State = State(v), Value = new XtSchemaBox { XLow = v.Vector.X, XHigh = v.Vector.Y, YLow = v.Vector.Z, YHigh = v.Fourth, ZLow = v.Fifth, ZHigh = v.Sixth } };
-
-    internal static XtFieldValue From(XtField_p v) => Empty(v.State) ?? XtFieldValue.Ptr(v.Value);
-    internal static XtFieldValue From(XtField_d v) => Empty(v.State) ?? XtFieldValue.Int(v.Value);
-    internal static XtFieldValue From(XtField_n v) => Empty(v.State) ?? XtFieldValue.Int(v.Value);
-    internal static XtFieldValue From(XtField_w v) => Empty(v.State) ?? XtFieldValue.Int(v.Value);
-    internal static XtFieldValue From(XtField_t v) => Empty(v.State) ?? XtFieldValue.Int(v.Value);
-    internal static XtFieldValue From(XtField_q v) => Empty(v.State) ?? XtFieldValue.Int(v.Value);
-    internal static XtFieldValue From(XtField_u v) => Empty(v.State) ?? XtFieldValue.Unsigned(checked((long)v.Value));
-    internal static XtFieldValue From(XtField_f v) => Empty(v.State) ?? XtFieldValue.RealValue(v.Value);
-    internal static XtFieldValue From(XtField_c v) => Empty(v.State) ?? XtFieldValue.Char((char)v.Value);
-    internal static XtFieldValue From(XtField_l v) => Empty(v.State) ?? XtFieldValue.Logical(v.Value != 0);
-    internal static XtFieldValue From(XtField_v v) => Empty(v.State) ?? XtFieldValue.Vec(v.Value.X, v.Value.Y, v.Value.Z);
-    internal static XtFieldValue From(XtField_h v) => Empty(v.State) ?? XtFieldValue.Vec(v.Value.X, v.Value.Y, v.Value.Z);
-    internal static XtFieldValue From(XtField_i v) => Empty(v.State) ?? XtFieldValue.IntervalValue(v.Value.Low, v.Value.High);
-    internal static XtFieldValue From(XtField_b v) => Empty(v.State) ?? XtFieldValue.BoxValue(v.Value.XLow, v.Value.XHigh, v.Value.YLow, v.Value.YHigh, v.Value.ZLow, v.Value.ZHigh);
-
-    internal static void RequireUnavailable(XtSchemaFieldState state, string field)
+    internal static int To_p(XtFieldValue value, string field)
     {
-        if (state != XtSchemaFieldState.Unavailable)
-            throw new XtFormatException(XtErrorCode.ModelInvalid, $"Non-transmitted schema field {field} must be Unavailable.");
+        if (IsNull(value)) return XtSchemaField.NullPointer;
+        if (value.Pointer < 0) throw Invalid(field, $"pointer {value.Pointer} collides with the null sentinels.");
+        return value.Pointer;
     }
 
-    internal static void RequireTransmitted(XtSchemaFieldState state, string field)
+    internal static long To_d(XtFieldValue value, string field)
     {
-        if (state == XtSchemaFieldState.Unavailable)
-            throw new XtFormatException(XtErrorCode.ModelInvalid, $"Transmitted schema field {field} is Unavailable.");
+        if (IsNull(value)) return XtSchemaField.NullInteger;
+        if (value.Integer == XtSchemaField.NullInteger) throw Invalid(field, "integer value collides with the null sentinel.");
+        return value.Integer;
     }
 
-    private static XtSchemaFieldState State(XtFieldValue value) => value.Kind == XtFieldKind.Empty ? XtSchemaFieldState.Null : XtSchemaFieldState.Value;
-    private static XtFieldValue? Empty(XtSchemaFieldState state) => state == XtSchemaFieldState.Null ? XtFieldValue.Null() : state == XtSchemaFieldState.Value ? null : throw new XtFormatException(XtErrorCode.ModelInvalid, "Unavailable schema field cannot be encoded.");
+    internal static long To_n(XtFieldValue value, string field) => To_d(value, field);
+    internal static long To_w(XtFieldValue value, string field) => To_d(value, field);
+    internal static long To_t(XtFieldValue value, string field) => To_d(value, field);
+    internal static long To_q(XtFieldValue value, string field) => To_d(value, field);
+
+    internal static ulong To_u(XtFieldValue value, string field)
+    {
+        if (IsNull(value)) return XtSchemaField.NullUnsigned;
+        var raw = unchecked((ulong)value.Integer);
+        if (raw == XtSchemaField.NullUnsigned) throw Invalid(field, "unsigned value collides with the null sentinel.");
+        return raw;
+    }
+
+    internal static double To_f(XtFieldValue value, string field)
+    {
+        if (IsNull(value)) return XtSchemaField.NullReal;
+        EnsureReal(value.Real, field);
+        return value.Real;
+    }
+
+    internal static byte To_c(XtFieldValue value, string field)
+    {
+        if (IsNull(value)) return XtSchemaField.NullCharacter;
+        var raw = checked((byte)value.Character);
+        if (raw == XtSchemaField.NullCharacter) throw Invalid(field, "character value collides with the null sentinel.");
+        return raw;
+    }
+
+    internal static byte To_l(XtFieldValue value, string field) => IsNull(value) ? XtSchemaField.NullLogical : (byte)(value.Integer == 0 ? 0 : 1);
+
+    internal static XtSchemaVector To_v(XtFieldValue value, string field)
+    {
+        if (IsNull(value)) return NullVector();
+        EnsureReal(value.Vector.X, field);
+        EnsureReal(value.Vector.Y, field);
+        EnsureReal(value.Vector.Z, field);
+        return new XtSchemaVector { X = value.Vector.X, Y = value.Vector.Y, Z = value.Vector.Z };
+    }
+
+    internal static XtSchemaVector To_h(XtFieldValue value, string field) => To_v(value, field);
+
+    internal static XtSchemaInterval To_i(XtFieldValue value, string field)
+    {
+        if (IsNull(value)) return new XtSchemaInterval { Low = XtSchemaField.NullReal, High = XtSchemaField.NullReal };
+        EnsureReal(value.Vector.X, field);
+        EnsureReal(value.Vector.Y, field);
+        return new XtSchemaInterval { Low = value.Vector.X, High = value.Vector.Y };
+    }
+
+    internal static XtSchemaBox To_b(XtFieldValue value, string field)
+    {
+        if (IsNull(value)) return NullBox();
+        EnsureReal(value.Vector.X, field);
+        EnsureReal(value.Vector.Y, field);
+        EnsureReal(value.Vector.Z, field);
+        EnsureReal(value.Fourth, field);
+        EnsureReal(value.Fifth, field);
+        EnsureReal(value.Sixth, field);
+        return new XtSchemaBox { XLow = value.Vector.X, XHigh = value.Vector.Y, YLow = value.Vector.Z, YHigh = value.Fourth, ZLow = value.Fifth, ZHigh = value.Sixth };
+    }
+
+    internal static XtFieldValue From_p(int value) => value < 0 ? XtFieldValue.Null() : XtFieldValue.Ptr(value);
+    internal static XtFieldValue From_d(long value) => value == XtSchemaField.NullInteger ? XtFieldValue.Null() : XtFieldValue.Int(value);
+    internal static XtFieldValue From_n(long value) => From_d(value);
+    internal static XtFieldValue From_w(long value) => From_d(value);
+    internal static XtFieldValue From_t(long value) => From_d(value);
+    internal static XtFieldValue From_q(long value) => From_d(value);
+    internal static XtFieldValue From_u(ulong value) => value == XtSchemaField.NullUnsigned ? XtFieldValue.Null() : XtFieldValue.Unsigned(checked((long)value));
+    internal static XtFieldValue From_f(double value) => double.IsNaN(value) ? XtFieldValue.Null() : XtFieldValue.RealValue(value);
+    internal static XtFieldValue From_c(byte value) => value == XtSchemaField.NullCharacter ? XtFieldValue.Null() : XtFieldValue.Char((char)value);
+    internal static XtFieldValue From_l(byte value) => value == XtSchemaField.NullLogical ? XtFieldValue.Null() : XtFieldValue.Logical(value != 0);
+    internal static XtFieldValue From_v(XtSchemaVector value) => double.IsNaN(value.X) ? XtFieldValue.Null() : XtFieldValue.Vec(value.X, value.Y, value.Z);
+    internal static XtFieldValue From_h(XtSchemaVector value) => From_v(value);
+    internal static XtFieldValue From_i(XtSchemaInterval value) => double.IsNaN(value.Low) ? XtFieldValue.Null() : XtFieldValue.IntervalValue(value.Low, value.High);
+    internal static XtFieldValue From_b(XtSchemaBox value) => double.IsNaN(value.XLow) ? XtFieldValue.Null() : XtFieldValue.BoxValue(value.XLow, value.XHigh, value.YLow, value.YHigh, value.ZLow, value.ZHigh);
+
+    private static bool IsNull(XtFieldValue value) => value.Kind == XtFieldKind.Empty;
+    private static XtSchemaVector NullVector() => new() { X = XtSchemaField.NullReal, Y = XtSchemaField.NullReal, Z = XtSchemaField.NullReal };
+    private static XtSchemaBox NullBox() => new() { XLow = XtSchemaField.NullReal, XHigh = XtSchemaField.NullReal, YLow = XtSchemaField.NullReal, YHigh = XtSchemaField.NullReal, ZLow = XtSchemaField.NullReal, ZHigh = XtSchemaField.NullReal };
+    private static void EnsureReal(double value, string field)
+    {
+        if (double.IsNaN(value)) throw Invalid(field, "real value collides with the null sentinel.");
+    }
+    private static XtFormatException Invalid(string field, string message) => new(XtErrorCode.ModelInvalid, $"Schema field {field}: {message}");
 }
