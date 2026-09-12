@@ -67,6 +67,9 @@ internal static unsafe partial class KernelRuntime
                 TrimEmptyPool(ref EllipseDataPool); TrimEmptyPool(ref TrCurveDataPool);
                 TrimEmptyPool(ref SpCurveDataPool); TrimEmptyPool(ref BSurfaceDataStore);
                 TrimEmptyPool(ref OffsetDataPool); TrimEmptyPool(ref SweptDataPool); TrimEmptyPool(ref SpunDataPool);
+                TrimEmptyPool(ref ICurveDataPool); TrimEmptyPool(ref BlendedEdgeDataPool);
+                TrimEmptyPool(ref BlendedVertexDataPool); TrimEmptyPool(ref BlendOverlapDataPool);
+                TrimEmptyPool(ref BlendBoundDataPool);
                 if (State.Session->Tags.LiveOrKeptCount == 0) State.Session->Tags.Dispose();
             }
             MemoryPointer()->Trim();
@@ -133,6 +136,11 @@ internal static unsafe partial class KernelRuntime
     internal static PagedEntityPool<OffsetData> OffsetDataPool = default;
     internal static PagedEntityPool<SweptData> SweptDataPool = default;
     internal static PagedEntityPool<SpunData> SpunDataPool = default;
+    internal static PagedEntityPool<ICurveData> ICurveDataPool = default;
+    internal static PagedEntityPool<BlendedEdgeData> BlendedEdgeDataPool = default;
+    internal static PagedEntityPool<BlendedVertexData> BlendedVertexDataPool = default;
+    internal static PagedEntityPool<BlendOverlapData> BlendOverlapDataPool = default;
+    internal static PagedEntityPool<BlendBoundData> BlendBoundDataPool = default;
 
     // ── Per-session attach/detach of pool storage ───────────────
 
@@ -167,6 +175,11 @@ internal static unsafe partial class KernelRuntime
         OffsetDataPool.Attach(memory, PoolKind.OffsetData);
         SweptDataPool.Attach(memory, PoolKind.SweptData);
         SpunDataPool.Attach(memory, PoolKind.SpunData);
+        ICurveDataPool.Attach(memory, PoolKind.ICurveData);
+        BlendedEdgeDataPool.Attach(memory, PoolKind.BlendedEdgeData);
+        BlendedVertexDataPool.Attach(memory, PoolKind.BlendedVertexData);
+        BlendOverlapDataPool.Attach(memory, PoolKind.BlendOverlapData);
+        BlendBoundDataPool.Attach(memory, PoolKind.BlendBoundData);
     }
 
     private static void DisposePools()
@@ -199,6 +212,11 @@ internal static unsafe partial class KernelRuntime
         OffsetDataPool.Dispose();
         SweptDataPool.Dispose();
         SpunDataPool.Dispose();
+        ICurveDataPool.Dispose();
+        BlendedEdgeDataPool.Dispose();
+        BlendedVertexDataPool.Dispose();
+        BlendOverlapDataPool.Dispose();
+        BlendBoundDataPool.Dispose();
     }
 
     // ── Session lifecycle ───────────────────────────────────────

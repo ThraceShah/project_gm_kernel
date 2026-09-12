@@ -616,6 +616,10 @@ private static int AllocateSurfaceSlot(int dataSlot, SurfaceClass surfaceClass, 
     surface.UMax = uMax;
     surface.VMin = vMin;
     surface.VMax = vMax;
+    // Source surface sense defaults to positive for PK-created surfaces; the
+    // XT import path overwrites it from the node's own sense field. Face use
+    // sense never writes here (spec §3.2).
+    surface.Sense = ParasolidConstants.PK_TOPOL_sense_positive_c;
     surface.OwnerFace = -1;
     surface.OwnerCount = 0;
     surface.PrevInBody = surface.NextInBody = 0;

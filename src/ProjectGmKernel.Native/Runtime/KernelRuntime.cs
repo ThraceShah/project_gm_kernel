@@ -3233,6 +3233,11 @@ internal static unsafe partial class KernelRuntime
             PoolKind.OffsetData => OffsetDataPool.IsAlive(slot),
             PoolKind.SweptData => SweptDataPool.IsAlive(slot),
             PoolKind.SpunData => SpunDataPool.IsAlive(slot),
+            PoolKind.ICurveData => ICurveDataPool.IsAlive(slot),
+            PoolKind.BlendedEdgeData => BlendedEdgeDataPool.IsAlive(slot),
+            PoolKind.BlendedVertexData => BlendedVertexDataPool.IsAlive(slot),
+            PoolKind.BlendOverlapData => BlendOverlapDataPool.IsAlive(slot),
+            PoolKind.BlendBoundData => BlendBoundDataPool.IsAlive(slot),
             _ => false,
         };
     }
@@ -3270,6 +3275,11 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.OffsetData: OffsetDataPool.RecycleRetired(slot); break;
             case PoolKind.SweptData: SweptDataPool.RecycleRetired(slot); break;
             case PoolKind.SpunData: SpunDataPool.RecycleRetired(slot); break;
+            case PoolKind.ICurveData: ICurveDataPool.RecycleRetired(slot); break;
+            case PoolKind.BlendedEdgeData: BlendedEdgeDataPool.RecycleRetired(slot); break;
+            case PoolKind.BlendedVertexData: BlendedVertexDataPool.RecycleRetired(slot); break;
+            case PoolKind.BlendOverlapData: BlendOverlapDataPool.RecycleRetired(slot); break;
+            case PoolKind.BlendBoundData: BlendBoundDataPool.RecycleRetired(slot); break;
         }
     }
 
@@ -3324,6 +3334,11 @@ internal static unsafe partial class KernelRuntime
             PoolKind.OffsetData => OffsetDataPool.GetGeneration(slot),
             PoolKind.SweptData => SweptDataPool.GetGeneration(slot),
             PoolKind.SpunData => SpunDataPool.GetGeneration(slot),
+            PoolKind.ICurveData => ICurveDataPool.GetGeneration(slot),
+            PoolKind.BlendedEdgeData => BlendedEdgeDataPool.GetGeneration(slot),
+            PoolKind.BlendedVertexData => BlendedVertexDataPool.GetGeneration(slot),
+            PoolKind.BlendOverlapData => BlendOverlapDataPool.GetGeneration(slot),
+            PoolKind.BlendBoundData => BlendBoundDataPool.GetGeneration(slot),
             PoolKind.FaceUse => FaceUses.GetGeneration(slot),
             _ => 0,
         };
@@ -3362,6 +3377,11 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.OffsetData: OffsetDataPool.Free(slot); break;
             case PoolKind.SweptData: SweptDataPool.Free(slot); break;
             case PoolKind.SpunData: SpunDataPool.Free(slot); break;
+            case PoolKind.ICurveData: ICurveDataPool.Free(slot); break;
+            case PoolKind.BlendedEdgeData: BlendedEdgeDataPool.Free(slot); break;
+            case PoolKind.BlendedVertexData: BlendedVertexDataPool.Free(slot); break;
+            case PoolKind.BlendOverlapData: BlendOverlapDataPool.Free(slot); break;
+            case PoolKind.BlendBoundData: BlendBoundDataPool.Free(slot); break;
         }
     }
 
@@ -3398,6 +3418,11 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.OffsetData: OffsetDataPool.Retire(slot); break;
             case PoolKind.SweptData: SweptDataPool.Retire(slot); break;
             case PoolKind.SpunData: SpunDataPool.Retire(slot); break;
+            case PoolKind.ICurveData: ICurveDataPool.Retire(slot); break;
+            case PoolKind.BlendedEdgeData: BlendedEdgeDataPool.Retire(slot); break;
+            case PoolKind.BlendedVertexData: BlendedVertexDataPool.Retire(slot); break;
+            case PoolKind.BlendOverlapData: BlendOverlapDataPool.Retire(slot); break;
+            case PoolKind.BlendBoundData: BlendBoundDataPool.Retire(slot); break;
         }
     }
 
@@ -3434,6 +3459,11 @@ internal static unsafe partial class KernelRuntime
             case PoolKind.OffsetData: OffsetDataPool.MarkAlive(slot); break;
             case PoolKind.SweptData: SweptDataPool.MarkAlive(slot); break;
             case PoolKind.SpunData: SpunDataPool.MarkAlive(slot); break;
+            case PoolKind.ICurveData: ICurveDataPool.MarkAlive(slot); break;
+            case PoolKind.BlendedEdgeData: BlendedEdgeDataPool.MarkAlive(slot); break;
+            case PoolKind.BlendedVertexData: BlendedVertexDataPool.MarkAlive(slot); break;
+            case PoolKind.BlendOverlapData: BlendOverlapDataPool.MarkAlive(slot); break;
+            case PoolKind.BlendBoundData: BlendBoundDataPool.MarkAlive(slot); break;
         }
     }
 

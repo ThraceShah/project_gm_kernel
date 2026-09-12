@@ -59,4 +59,9 @@ internal enum PoolKind : byte
     OffsetData = 44,
     SweptData = 45,
     SpunData = 46,
+    ICurveData = 47,
+    BlendedEdgeData = 48,
+    BlendedVertexData = 49,
+    BlendOverlapData = 50,
+    BlendBoundData = 51,
 }
