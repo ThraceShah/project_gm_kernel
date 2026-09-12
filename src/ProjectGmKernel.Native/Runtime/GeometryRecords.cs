@@ -215,6 +215,8 @@ internal struct CurveRecord
 
 /// <summary>
 /// Surface handle record. Discriminant tells which pool holds the specific data.
+/// Sense is the source surface sense carried by the XT surface node itself; it
+/// is never derived from or overwritten by a face's use sense (spec §3.2).
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct SurfaceRecord
@@ -226,6 +228,7 @@ internal struct SurfaceRecord
     public double UMax;           // u parameter interval end
     public double VMin;           // v parameter interval start
     public double VMax;           // v parameter interval end
+    public KernelSense Sense;     // source surface sense (XT node field, not face sense)
     public FaceSlot OwnerFace;
     public SurfTag PrevInBody;
     public SurfTag NextInBody;
@@ -446,15 +449,17 @@ internal unsafe struct BSurfaceData
 /// <summary>
 /// LIMIT record (sch_37102 node 41): one end of an intersection or blend
 /// branch. A Help/Artificial limit carries 1 hull vector; a Terminator
-/// carries 2 (exact singular position + branch point).
+/// carries 2 (exact singular position + branch point). Hull vectors live in
+/// the owning record's hull-vector block; HvecIndex points at the limit's
+/// first vector there (-1 = none), never at a shared arena.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct LimitRecord
 {
     public LimitType Type;
     public LimitTermUse TermUse;
-    public DataSlot HvecOffset;  // offset into the hull-vector arena
-    public int HvecCount;        // 1 for H/L, 2 for T
+    public BufferOffset HvecIndex;  // index into the owner's hull-vector block, -1 = none
+    public int HvecCount;           // 1 for H/L, 2 for T
 }
 
 /// <summary>
@@ -464,25 +469,33 @@ internal struct LimitRecord
 /// Tangent direction is the cross product of the support surface normals
 /// (honouring sense); UV parameters of the branch live per chart hull
 /// vector in INTERSECTION_DATA, not as per-surface boxes.
+/// Hull-vector block layout: start-limit vectors, chart vectors, end-limit
+/// vectors — HvecCount covers all three groups (spec §2.4).
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct ICurveData
 {
+    public RecordHeader Header;      // pool slot header (all pooled records start with one)
     public SurfTag Surface0Tag;      // surface[0], first support surface
     public SurfTag Surface1Tag;      // surface[1], second support surface
     // CHART summary (sch_37102 node 40): parameterisation of the branch
     public double BaseParameter;
     public double BaseScale;
     public int ChartCount;
-    public DataSlot ChartHvecOffset; // chart hull vectors in the hull-vector arena
+    public DataSlot HvecBlock;       // hull-vector block (start + chart + end), -1 = none
+    public int HvecCount;            // total hull vectors in the block
     // Branch identification
     public LimitRecord StartLimit;   // start LIMIT node
     public LimitRecord EndLimit;     // end LIMIT node
     public double Scale;             // optional; unset fields use 0
     // INTERSECTION_DATA (sch_37102 node 204), optional
     public IntersectionUvType UvType;
-    public int UvValueCount;         // 0/2/4 doubles per hull vector
-    public DataSlot UvValueOffset;
+    public int UvValueCount;         // 0/2/4 doubles per hull vector, total = (chart + terminators)·k
+    public DataSlot UvValueBlock;    // UV value block, -1 = none
+    // Import provenance (spec §3.2): the schema the node was decoded from and
+    // per-node decode diagnostics; zero fields stay zero, never rewritten.
+    public int SourceSchema;         // schema id the INTERSECTION node was read from, 0 = unknown
+    public int ImportFlags;          // decode diagnostics bit set, definition comes with the XT decode task
 }
 
 /// <summary>
@@ -591,6 +604,7 @@ internal struct FSurfaceData
 [StructLayout(LayoutKind.Sequential)]
 internal struct BlendedEdgeData
 {
+    public RecordHeader Header;         // pool slot header (all pooled records start with one)
     public BlendType BlendType;
     public SurfTag Surface0Tag;         // surface[0], first support
     public SurfTag Surface1Tag;         // surface[1], second support (may be a blended edge)
@@ -599,10 +613,12 @@ internal struct BlendedEdgeData
     public double Range1;               // offset applied to surface[1]
     public double ThumbWeight0;         // schema constant 1
     public double ThumbWeight1;         // schema constant 1
-    public BlendBoundTag Boundary0Tag;  // blend boundary on the surface[0] side
-    public BlendBoundTag Boundary1Tag;  // blend boundary on the surface[1] side
+    public BlendBoundTag Boundary0Tag;  // blend boundary on the surface[0] side (internal handle)
+    public BlendBoundTag Boundary1Tag;  // blend boundary on the surface[1] side (internal handle)
     public LimitRecord StartLimit;      // only for periodic degenerate spines
     public LimitRecord EndLimit;
+    public DataSlot HvecBlock;          // limit hull vectors, -1 = none
+    public int HvecCount;
     public CurveTag ApproxSpineTag;     // optional approximate spine
     public double ApproxSpineCtol;
 }
@@ -615,6 +631,7 @@ internal struct BlendedEdgeData
 [StructLayout(LayoutKind.Sequential)]
 internal struct BlendedVertexData
 {
+    public RecordHeader Header;         // pool slot header (all pooled records start with one)
     public BlendType BlendType;
     public SurfTag Surface0Tag;
     public SurfTag Surface1Tag;
@@ -643,6 +660,7 @@ internal struct BlendedVertexData
 [StructLayout(LayoutKind.Sequential)]
 internal struct BlendOverlapData
 {
+    public RecordHeader Header;         // pool slot header (all pooled records start with one)
     public SurfTag Surface0Tag;
     public SurfTag Surface1Tag;
     public SurfTag SubSurface0Tag;
@@ -672,6 +690,7 @@ internal struct BlendOverlapData
 [StructLayout(LayoutKind.Sequential)]
 internal struct BlendBoundData
 {
+    public RecordHeader Header;     // pool slot header (all pooled records start with one)
     public short Boundary;          // index into the blend's surface array
     public SurfTag BlendTag;        // the blend surface (blended edge/vertex/overlap)
 }

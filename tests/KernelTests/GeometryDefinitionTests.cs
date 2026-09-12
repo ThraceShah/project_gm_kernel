@@ -133,12 +133,12 @@ public sealed class GeometryDefinitionTests
         {
             ["surface"] = ["Surface0Tag", "Surface1Tag"],
             // CHART (node 40) summary
-            ["chart"] = ["BaseParameter", "BaseScale", "ChartCount", "ChartHvecOffset"],
+            ["chart"] = ["BaseParameter", "BaseScale", "ChartCount", "HvecBlock"],
             ["start"] = ["StartLimit"],
             ["end"] = ["EndLimit"],
             ["scale"] = ["Scale"],
             // INTERSECTION_DATA (node 204)
-            ["intersection_data"] = ["UvType", "UvValueCount", "UvValueOffset"],
+            ["intersection_data"] = ["UvType", "UvValueCount", "UvValueBlock"],
         }, []);
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed class GeometryDefinitionTests
         {
             ["type"] = ["Type"],
             ["term_use"] = ["TermUse"],
-            ["hvec"] = ["HvecOffset", "HvecCount"],
+            ["hvec"] = ["HvecIndex", "HvecCount"],
         }, []);
 
     [Fact]
