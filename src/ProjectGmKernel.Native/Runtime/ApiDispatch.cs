@@ -62,6 +62,18 @@ internal enum ApiId : ushort
     OffsetCreate = 55,
     SweptCreate = 56,
     SpunCreate = 57,
+    LineCreate = 58,
+    LineAsk = 59,
+    CircleCreate = 60,
+    CircleAsk = 61,
+    PlaneCreate = 62,
+    PlaneAsk = 63,
+    ConeCreate = 64,
+    ConeAsk = 65,
+    SphereCreate = 66,
+    SphereAsk = 67,
+    TorusCreate = 68,
+    TorusAsk = 69,
     GeneratedStub = 65535,
 }
 

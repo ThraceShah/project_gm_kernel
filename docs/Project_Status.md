@@ -20,12 +20,14 @@ Verified capabilities:
 - Return arena query results stay valid across repeated queries until session reset or rollback.
 - External ABI smoke coverage loads the published NativeAOT library and calls implemented exports.
 - Allocation baseline reporting covers the implemented hot paths.
-- Block and cylinder `x_t` transmit can be received by Parasolid; multi-body roundtrip coverage is verified.
+- Block, cylinder, cone, sphere, and torus `x_t` transmit can be received by Parasolid; multi-body roundtrip coverage is verified.
+- Standalone analytic geometry create/ask (`PK_LINE/CIRCLE/PLANE/CONE/SPHERE/TORUS`) with Parasolid-probed error contracts.
+- Dependent geometry transmit (ellipse, trimmed curve, SP curve, B-surface, swept, spun, offset) verified against real Parasolid receive, body compare, and evaluation; see `docs/xt_writer_and_analytic_create.md`.
 
 Current implementation surface:
 
-- Manual implemented exports: 38.
-- Generated export stubs: 994.
+- Manual implemented exports: 83.
+- Generated export stubs: 1107.
 - Generated stubs currently return `PK_ERROR_not_implemented`.
 
 ## Verification

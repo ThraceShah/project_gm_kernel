@@ -199,7 +199,8 @@ internal static unsafe partial class KernelRuntime
         ref var data = ref OffsetDataPool[dataSlot];
         data.BaseSurfTag = sf->underlying_surface;
         data.Offset = sf->offset_distance;
-        data.Check = OffsetCheckState.Unchecked;
+        // Parasolid transmits fresh offsets with check state 'V'.
+        data.Check = OffsetCheckState.Valid;
         data.Scale = 0;
 
         if (!Surfaces.TryAllocate(out int slot))
@@ -539,4 +540,429 @@ internal static unsafe partial class KernelRuntime
         }
         return true;
     }
+
+// ── Analytic geometry create/ask (PK_LINE/CIRCLE/PLANE/CONE/SPHERE/TORUS) ──
+// Validation contracts probed against real Parasolid V38: non-unit axis or
+// ref_direction → not_a_unit_vector, ref_direction not orthogonal to the
+// axis → vectors_not_orthogonal, radius ≤ 0 → radius_le_0, cone radius < 0 →
+// radius_lt_0 (zero accepted), cone semi-angle outside (0, π/2) → bad_angle,
+// and apple/lemon tori (minor > major) are accepted.
+
+private static int CheckUnitVector(double x, double y, double z)
+{
+    var length = Math.Sqrt(x * x + y * y + z * z);
+    return double.IsFinite(length) && Math.Abs(length - 1) <= 1e-9
+        ? 0
+        : ParasolidConstants.PK_ERROR_not_a_unit_vector;
+}
+
+private static int CheckAxis1(PK_AXIS1_sf_s* basis)
+{
+    return CheckUnitVector(basis->axis.coord[0], basis->axis.coord[1], basis->axis.coord[2]);
+}
+
+private static int CheckAxis2(PK_AXIS2_sf_s* basis)
+{
+    var error = CheckUnitVector(basis->axis.coord[0], basis->axis.coord[1], basis->axis.coord[2]);
+    if (error != 0) return error;
+    error = CheckUnitVector(basis->ref_direction.coord[0], basis->ref_direction.coord[1], basis->ref_direction.coord[2]);
+    if (error != 0) return error;
+    var dot = basis->axis.coord[0] * basis->ref_direction.coord[0]
+        + basis->axis.coord[1] * basis->ref_direction.coord[1]
+        + basis->axis.coord[2] * basis->ref_direction.coord[2];
+    return Math.Abs(dot) <= 1e-9 ? 0 : ParasolidConstants.PK_ERROR_vectors_not_orthogonal;
+}
+
+private static int AllocateCurveSlot(int dataSlot, CurveClass curveClass, double tMin, double tMax, int* tag)
+{
+    if (!Curves.TryAllocate(out int slot))
+    {
+        FreeCurveData(curveClass, dataSlot);
+        return ParasolidConstants.PK_ERROR_memory_full;
+    }
+    ref var curve = ref Curves[slot];
+    AssignPartition(ref curve.Header, CurrentPartition);
+    curve.Class = curveClass;
+    curve.DataIndex = dataSlot;
+    curve.TMin = tMin;
+    curve.TMax = tMax;
+    curve.Sense = ParasolidConstants.PK_TOPOL_sense_positive_c;
+    curve.OwnerEdge = -1;
+    curve.OwnerCount = 0;
+    curve.PrevInBody = curve.NextInBody = 0;
+    var allocated = AllocateTag(EntityClass.Curve, PoolKind.Curve, slot, curve.Header.Generation);
+    if (allocated <= 0)
+    {
+        FreeCurveData(curveClass, dataSlot);
+        Curves.Free(slot);
+        return ParasolidConstants.PK_ERROR_memory_full;
+    }
+    *tag = allocated;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
+
+private static int AllocateSurfaceSlot(int dataSlot, SurfaceClass surfaceClass, double uMin, double uMax, double vMin, double vMax, int* tag)
+{
+    if (!Surfaces.TryAllocate(out int slot))
+    {
+        FreeSurfaceData(surfaceClass, dataSlot);
+        return ParasolidConstants.PK_ERROR_memory_full;
+    }
+    ref var surface = ref Surfaces[slot];
+    AssignPartition(ref surface.Header, CurrentPartition);
+    surface.Class = surfaceClass;
+    surface.DataIndex = dataSlot;
+    surface.UMin = uMin;
+    surface.UMax = uMax;
+    surface.VMin = vMin;
+    surface.VMax = vMax;
+    surface.OwnerFace = -1;
+    surface.OwnerCount = 0;
+    surface.PrevInBody = surface.NextInBody = 0;
+    var allocated = AllocateTag(EntityClass.Surface, PoolKind.Surface, slot, surface.Header.Generation);
+    if (allocated <= 0)
+    {
+        FreeSurfaceData(surfaceClass, dataSlot);
+        Surfaces.Free(slot);
+        return ParasolidConstants.PK_ERROR_memory_full;
+    }
+    *tag = allocated;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
+
+private static void FreeCurveData(CurveClass curveClass, int dataSlot)
+{
+    switch (curveClass)
+    {
+        case CurveClass.Line: LineDataPool.Free(dataSlot); break;
+        case CurveClass.Circle: CircleDataPool.Free(dataSlot); break;
+        case CurveClass.Ellipse: EllipseDataPool.Free(dataSlot); break;
+    }
+}
+
+private static void FreeSurfaceData(SurfaceClass surfaceClass, int dataSlot)
+{
+    switch (surfaceClass)
+    {
+        case SurfaceClass.Plane: PlaneDataPool.Free(dataSlot); break;
+        case SurfaceClass.Cylinder: CylinderDataPool.Free(dataSlot); break;
+        case SurfaceClass.Cone: ConeDataPool.Free(dataSlot); break;
+        case SurfaceClass.Sphere: SphereDataPool.Free(dataSlot); break;
+        case SurfaceClass.Torus: TorusDataPool.Free(dataSlot); break;
+    }
+}
+
+private static int LineCreateImplementation(PK_LINE_sf_s* sf, int* lineTag)
+{
+    if (lineTag != null) *lineTag = 0;
+    if (sf is null || lineTag is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsSessionStarted)
+        return ParasolidConstants.PK_ERROR_not_in_PK;
+    var error = CheckAxis1(&sf->basis_set);
+    if (error != 0) return error;
+
+    int dataSlot = TryAllocateLineData();
+    if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
+    ref var data = ref LineDataPool[dataSlot];
+    data.LocationX = sf->basis_set.location.coord[0];
+    data.LocationY = sf->basis_set.location.coord[1];
+    data.LocationZ = sf->basis_set.location.coord[2];
+    data.AxisX = sf->basis_set.axis.coord[0];
+    data.AxisY = sf->basis_set.axis.coord[1];
+    data.AxisZ = sf->basis_set.axis.coord[2];
+
+    // PK reports a ±1e4 parameter interval for created lines.
+    return AllocateCurveSlot(dataSlot, CurveClass.Line, -1e4, 1e4, lineTag);
+}
+
+private static int LineAskImplementation(int lineTag, PK_LINE_sf_s* sf)
+{
+    if (sf is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsValidTag(lineTag) || (EntityClass)TagRec(lineTag).ClassCode != EntityClass.Curve)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+    ref var curve = ref Curves[TagRec(lineTag).Slot];
+    if (curve.Class != CurveClass.Line)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+
+    ref readonly var data = ref LineDataPool[curve.DataIndex];
+    sf->basis_set.location.coord[0] = data.LocationX;
+    sf->basis_set.location.coord[1] = data.LocationY;
+    sf->basis_set.location.coord[2] = data.LocationZ;
+    sf->basis_set.axis.coord[0] = data.AxisX;
+    sf->basis_set.axis.coord[1] = data.AxisY;
+    sf->basis_set.axis.coord[2] = data.AxisZ;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
+
+private static int CircleCreateImplementation(PK_CIRCLE_sf_s* sf, int* circleTag)
+{
+    if (circleTag != null) *circleTag = 0;
+    if (sf is null || circleTag is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsSessionStarted)
+        return ParasolidConstants.PK_ERROR_not_in_PK;
+    var error = CheckAxis2(&sf->basis_set);
+    if (error != 0) return error;
+    if (!double.IsFinite(sf->radius) || sf->radius <= 0)
+        return ParasolidConstants.PK_ERROR_radius_le_0;
+
+    int dataSlot = TryAllocateCircleData();
+    if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
+    ref var data = ref CircleDataPool[dataSlot];
+    data.CenterX = sf->basis_set.location.coord[0];
+    data.CenterY = sf->basis_set.location.coord[1];
+    data.CenterZ = sf->basis_set.location.coord[2];
+    data.AxisX = sf->basis_set.axis.coord[0];
+    data.AxisY = sf->basis_set.axis.coord[1];
+    data.AxisZ = sf->basis_set.axis.coord[2];
+    data.RefDirX = sf->basis_set.ref_direction.coord[0];
+    data.RefDirY = sf->basis_set.ref_direction.coord[1];
+    data.RefDirZ = sf->basis_set.ref_direction.coord[2];
+    data.Radius = sf->radius;
+
+    return AllocateCurveSlot(dataSlot, CurveClass.Circle, 0, Math.Tau, circleTag);
+}
+
+private static int CircleAskImplementation(int circleTag, PK_CIRCLE_sf_s* sf)
+{
+    if (sf is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsValidTag(circleTag) || (EntityClass)TagRec(circleTag).ClassCode != EntityClass.Curve)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+    ref var curve = ref Curves[TagRec(circleTag).Slot];
+    if (curve.Class != CurveClass.Circle)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+
+    ref readonly var data = ref CircleDataPool[curve.DataIndex];
+    sf->basis_set.location.coord[0] = data.CenterX;
+    sf->basis_set.location.coord[1] = data.CenterY;
+    sf->basis_set.location.coord[2] = data.CenterZ;
+    sf->basis_set.axis.coord[0] = data.AxisX;
+    sf->basis_set.axis.coord[1] = data.AxisY;
+    sf->basis_set.axis.coord[2] = data.AxisZ;
+    sf->basis_set.ref_direction.coord[0] = data.RefDirX;
+    sf->basis_set.ref_direction.coord[1] = data.RefDirY;
+    sf->basis_set.ref_direction.coord[2] = data.RefDirZ;
+    sf->radius = data.Radius;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
+
+private static int PlaneCreateImplementation(PK_PLANE_sf_s* sf, int* planeTag)
+{
+    if (planeTag != null) *planeTag = 0;
+    if (sf is null || planeTag is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsSessionStarted)
+        return ParasolidConstants.PK_ERROR_not_in_PK;
+    var error = CheckAxis2(&sf->basis_set);
+    if (error != 0) return error;
+
+    int dataSlot = TryAllocatePlaneData();
+    if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
+    ref var data = ref PlaneDataPool[dataSlot];
+    data.LocationX = sf->basis_set.location.coord[0];
+    data.LocationY = sf->basis_set.location.coord[1];
+    data.LocationZ = sf->basis_set.location.coord[2];
+    data.NormalX = sf->basis_set.axis.coord[0];
+    data.NormalY = sf->basis_set.axis.coord[1];
+    data.NormalZ = sf->basis_set.axis.coord[2];
+    data.RefDirX = sf->basis_set.ref_direction.coord[0];
+    data.RefDirY = sf->basis_set.ref_direction.coord[1];
+    data.RefDirZ = sf->basis_set.ref_direction.coord[2];
+
+    // PK reports a ±1e4 UV box for created planes.
+    return AllocateSurfaceSlot(dataSlot, SurfaceClass.Plane, -1e4, 1e4, -1e4, 1e4, planeTag);
+}
+
+private static int PlaneAskImplementation(int planeTag, PK_PLANE_sf_s* sf)
+{
+    if (sf is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsValidTag(planeTag) || (EntityClass)TagRec(planeTag).ClassCode != EntityClass.Surface)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+    ref var surface = ref Surfaces[TagRec(planeTag).Slot];
+    if (surface.Class != SurfaceClass.Plane)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+
+    ref readonly var data = ref PlaneDataPool[surface.DataIndex];
+    sf->basis_set.location.coord[0] = data.LocationX;
+    sf->basis_set.location.coord[1] = data.LocationY;
+    sf->basis_set.location.coord[2] = data.LocationZ;
+    sf->basis_set.axis.coord[0] = data.NormalX;
+    sf->basis_set.axis.coord[1] = data.NormalY;
+    sf->basis_set.axis.coord[2] = data.NormalZ;
+    sf->basis_set.ref_direction.coord[0] = data.RefDirX;
+    sf->basis_set.ref_direction.coord[1] = data.RefDirY;
+    sf->basis_set.ref_direction.coord[2] = data.RefDirZ;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
+
+private static int ConeCreateImplementation(PK_CONE_sf_s* sf, int* coneTag)
+{
+    if (coneTag != null) *coneTag = 0;
+    if (sf is null || coneTag is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsSessionStarted)
+        return ParasolidConstants.PK_ERROR_not_in_PK;
+    var error = CheckAxis2(&sf->basis_set);
+    if (error != 0) return error;
+    if (!double.IsFinite(sf->semi_angle) || sf->semi_angle <= 0 || sf->semi_angle >= Math.PI / 2)
+        return ParasolidConstants.PK_ERROR_bad_angle;
+    if (!double.IsFinite(sf->radius) || sf->radius < 0)
+        return sf->radius < 0 ? ParasolidConstants.PK_ERROR_radius_lt_0 : ParasolidConstants.PK_ERROR_radius_le_0;
+
+    int dataSlot = TryAllocateConeData();
+    if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
+    ref var data = ref ConeDataPool[dataSlot];
+    data.LocationX = sf->basis_set.location.coord[0];
+    data.LocationY = sf->basis_set.location.coord[1];
+    data.LocationZ = sf->basis_set.location.coord[2];
+    data.AxisX = sf->basis_set.axis.coord[0];
+    data.AxisY = sf->basis_set.axis.coord[1];
+    data.AxisZ = sf->basis_set.axis.coord[2];
+    data.RefDirX = sf->basis_set.ref_direction.coord[0];
+    data.RefDirY = sf->basis_set.ref_direction.coord[1];
+    data.RefDirZ = sf->basis_set.ref_direction.coord[2];
+    data.Radius = sf->radius;
+    data.SemiAngle = sf->semi_angle;
+
+    return AllocateSurfaceSlot(dataSlot, SurfaceClass.Cone, 0, Math.Tau, 0, 0, coneTag);
+}
+
+private static int ConeAskImplementation(int coneTag, PK_CONE_sf_s* sf)
+{
+    if (sf is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsValidTag(coneTag) || (EntityClass)TagRec(coneTag).ClassCode != EntityClass.Surface)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+    ref var surface = ref Surfaces[TagRec(coneTag).Slot];
+    if (surface.Class != SurfaceClass.Cone)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+
+    ref readonly var data = ref ConeDataPool[surface.DataIndex];
+    sf->basis_set.location.coord[0] = data.LocationX;
+    sf->basis_set.location.coord[1] = data.LocationY;
+    sf->basis_set.location.coord[2] = data.LocationZ;
+    sf->basis_set.axis.coord[0] = data.AxisX;
+    sf->basis_set.axis.coord[1] = data.AxisY;
+    sf->basis_set.axis.coord[2] = data.AxisZ;
+    sf->basis_set.ref_direction.coord[0] = data.RefDirX;
+    sf->basis_set.ref_direction.coord[1] = data.RefDirY;
+    sf->basis_set.ref_direction.coord[2] = data.RefDirZ;
+    sf->radius = data.Radius;
+    sf->semi_angle = data.SemiAngle;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
+
+private static int SphereCreateImplementation(PK_SPHERE_sf_s* sf, int* sphereTag)
+{
+    if (sphereTag != null) *sphereTag = 0;
+    if (sf is null || sphereTag is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsSessionStarted)
+        return ParasolidConstants.PK_ERROR_not_in_PK;
+    var error = CheckAxis2(&sf->basis_set);
+    if (error != 0) return error;
+    if (!double.IsFinite(sf->radius) || sf->radius <= 0)
+        return ParasolidConstants.PK_ERROR_radius_le_0;
+
+    int dataSlot = TryAllocateSphereData();
+    if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
+    ref var data = ref SphereDataPool[dataSlot];
+    data.CenterX = sf->basis_set.location.coord[0];
+    data.CenterY = sf->basis_set.location.coord[1];
+    data.CenterZ = sf->basis_set.location.coord[2];
+    data.AxisX = sf->basis_set.axis.coord[0];
+    data.AxisY = sf->basis_set.axis.coord[1];
+    data.AxisZ = sf->basis_set.axis.coord[2];
+    data.RefDirX = sf->basis_set.ref_direction.coord[0];
+    data.RefDirY = sf->basis_set.ref_direction.coord[1];
+    data.RefDirZ = sf->basis_set.ref_direction.coord[2];
+    data.Radius = sf->radius;
+
+    return AllocateSurfaceSlot(dataSlot, SurfaceClass.Sphere, 0, Math.Tau, -Math.PI * 0.5, Math.PI * 0.5, sphereTag);
+}
+
+private static int SphereAskImplementation(int sphereTag, PK_SPHERE_sf_s* sf)
+{
+    if (sf is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsValidTag(sphereTag) || (EntityClass)TagRec(sphereTag).ClassCode != EntityClass.Surface)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+    ref var surface = ref Surfaces[TagRec(sphereTag).Slot];
+    if (surface.Class != SurfaceClass.Sphere)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+
+    ref readonly var data = ref SphereDataPool[surface.DataIndex];
+    sf->basis_set.location.coord[0] = data.CenterX;
+    sf->basis_set.location.coord[1] = data.CenterY;
+    sf->basis_set.location.coord[2] = data.CenterZ;
+    sf->basis_set.axis.coord[0] = data.AxisX;
+    sf->basis_set.axis.coord[1] = data.AxisY;
+    sf->basis_set.axis.coord[2] = data.AxisZ;
+    sf->basis_set.ref_direction.coord[0] = data.RefDirX;
+    sf->basis_set.ref_direction.coord[1] = data.RefDirY;
+    sf->basis_set.ref_direction.coord[2] = data.RefDirZ;
+    sf->radius = data.Radius;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
+
+private static int TorusCreateImplementation(PK_TORUS_sf_s* sf, int* torusTag)
+{
+    if (torusTag != null) *torusTag = 0;
+    if (sf is null || torusTag is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsSessionStarted)
+        return ParasolidConstants.PK_ERROR_not_in_PK;
+    var error = CheckAxis2(&sf->basis_set);
+    if (error != 0) return error;
+    // Apple/lemon tori (minor > major) are accepted, matching Parasolid.
+    if (!double.IsFinite(sf->major_radius) || !double.IsFinite(sf->minor_radius)
+        || sf->major_radius <= 0 || sf->minor_radius <= 0)
+        return ParasolidConstants.PK_ERROR_radius_le_0;
+
+    int dataSlot = TryAllocateTorusData();
+    if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
+    ref var data = ref TorusDataPool[dataSlot];
+    data.LocationX = sf->basis_set.location.coord[0];
+    data.LocationY = sf->basis_set.location.coord[1];
+    data.LocationZ = sf->basis_set.location.coord[2];
+    data.AxisX = sf->basis_set.axis.coord[0];
+    data.AxisY = sf->basis_set.axis.coord[1];
+    data.AxisZ = sf->basis_set.axis.coord[2];
+    data.RefDirX = sf->basis_set.ref_direction.coord[0];
+    data.RefDirY = sf->basis_set.ref_direction.coord[1];
+    data.RefDirZ = sf->basis_set.ref_direction.coord[2];
+    data.MajorRadius = sf->major_radius;
+    data.MinorRadius = sf->minor_radius;
+
+    return AllocateSurfaceSlot(dataSlot, SurfaceClass.Torus, 0, Math.Tau, -Math.PI, Math.PI, torusTag);
+}
+
+private static int TorusAskImplementation(int torusTag, PK_TORUS_sf_s* sf)
+{
+    if (sf is null)
+        return ParasolidConstants.PK_ERROR_bad_field_number;
+    if (!IsValidTag(torusTag) || (EntityClass)TagRec(torusTag).ClassCode != EntityClass.Surface)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+    ref var surface = ref Surfaces[TagRec(torusTag).Slot];
+    if (surface.Class != SurfaceClass.Torus)
+        return ParasolidConstants.PK_ERROR_unknown_class;
+
+    ref readonly var data = ref TorusDataPool[surface.DataIndex];
+    sf->basis_set.location.coord[0] = data.LocationX;
+    sf->basis_set.location.coord[1] = data.LocationY;
+    sf->basis_set.location.coord[2] = data.LocationZ;
+    sf->basis_set.axis.coord[0] = data.AxisX;
+    sf->basis_set.axis.coord[1] = data.AxisY;
+    sf->basis_set.axis.coord[2] = data.AxisZ;
+    sf->basis_set.ref_direction.coord[0] = data.RefDirX;
+    sf->basis_set.ref_direction.coord[1] = data.RefDirY;
+    sf->basis_set.ref_direction.coord[2] = data.RefDirZ;
+    sf->major_radius = data.MajorRadius;
+    sf->minor_radius = data.MinorRadius;
+    return ParasolidConstants.PK_ERROR_no_errors;
+}
 }

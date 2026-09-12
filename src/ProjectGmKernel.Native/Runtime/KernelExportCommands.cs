@@ -397,6 +397,102 @@ internal unsafe struct SpunCreateCommand : IKernelCommand
     public int Execute() => KernelRuntime.SpunCreate(SpunSf, Spun);
 }
 
+internal unsafe struct LineCreateCommand : IKernelCommand
+{
+    public PK_LINE_sf_s* LineSf;
+    public EntityTag* Line;
+
+    public int Execute() => KernelRuntime.LineCreate(LineSf, Line);
+}
+
+internal unsafe struct LineAskCommand : IKernelCommand
+{
+    public EntityTag Line;
+    public PK_LINE_sf_s* LineSf;
+
+    public int Execute() => KernelRuntime.LineAsk(Line, LineSf);
+}
+
+internal unsafe struct CircleCreateCommand : IKernelCommand
+{
+    public PK_CIRCLE_sf_s* CircleSf;
+    public EntityTag* Circle;
+
+    public int Execute() => KernelRuntime.CircleCreate(CircleSf, Circle);
+}
+
+internal unsafe struct CircleAskCommand : IKernelCommand
+{
+    public EntityTag Circle;
+    public PK_CIRCLE_sf_s* CircleSf;
+
+    public int Execute() => KernelRuntime.CircleAsk(Circle, CircleSf);
+}
+
+internal unsafe struct PlaneCreateCommand : IKernelCommand
+{
+    public PK_PLANE_sf_s* PlaneSf;
+    public EntityTag* Plane;
+
+    public int Execute() => KernelRuntime.PlaneCreate(PlaneSf, Plane);
+}
+
+internal unsafe struct PlaneAskCommand : IKernelCommand
+{
+    public EntityTag Plane;
+    public PK_PLANE_sf_s* PlaneSf;
+
+    public int Execute() => KernelRuntime.PlaneAsk(Plane, PlaneSf);
+}
+
+internal unsafe struct ConeCreateCommand : IKernelCommand
+{
+    public PK_CONE_sf_s* ConeSf;
+    public EntityTag* Cone;
+
+    public int Execute() => KernelRuntime.ConeCreate(ConeSf, Cone);
+}
+
+internal unsafe struct ConeAskCommand : IKernelCommand
+{
+    public EntityTag Cone;
+    public PK_CONE_sf_s* ConeSf;
+
+    public int Execute() => KernelRuntime.ConeAsk(Cone, ConeSf);
+}
+
+internal unsafe struct SphereCreateCommand : IKernelCommand
+{
+    public PK_SPHERE_sf_s* SphereSf;
+    public EntityTag* Sphere;
+
+    public int Execute() => KernelRuntime.SphereCreate(SphereSf, Sphere);
+}
+
+internal unsafe struct SphereAskCommand : IKernelCommand
+{
+    public EntityTag Sphere;
+    public PK_SPHERE_sf_s* SphereSf;
+
+    public int Execute() => KernelRuntime.SphereAsk(Sphere, SphereSf);
+}
+
+internal unsafe struct TorusCreateCommand : IKernelCommand
+{
+    public PK_TORUS_sf_s* TorusSf;
+    public EntityTag* Torus;
+
+    public int Execute() => KernelRuntime.TorusCreate(TorusSf, Torus);
+}
+
+internal unsafe struct TorusAskCommand : IKernelCommand
+{
+    public EntityTag Torus;
+    public PK_TORUS_sf_s* TorusSf;
+
+    public int Execute() => KernelRuntime.TorusAsk(Torus, TorusSf);
+}
+
 internal unsafe struct CylAskCommand : IKernelCommand
 {
     public EntityTag Cylinder;

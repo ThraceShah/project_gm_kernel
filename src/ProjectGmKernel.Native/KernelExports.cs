@@ -291,6 +291,90 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.Dispatch(ApiId.CylAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Cylinder);
     }
 
+    [UnmanagedCallersOnly(EntryPoint = "PK_LINE_create")]
+    public static int PK_LINE_create(PK_LINE_sf_s* lineSf, int* line)
+    {
+        var command = new LineCreateCommand { LineSf = lineSf, Line = line };
+        return KernelRuntime.Dispatch(ApiId.LineCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_LINE_ask")]
+    public static int PK_LINE_ask(int line, PK_LINE_sf_s* lineSf)
+    {
+        var command = new LineAskCommand { Line = line, LineSf = lineSf };
+        return KernelRuntime.Dispatch(ApiId.LineAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Line);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_CIRCLE_create")]
+    public static int PK_CIRCLE_create(PK_CIRCLE_sf_s* circleSf, int* circle)
+    {
+        var command = new CircleCreateCommand { CircleSf = circleSf, Circle = circle };
+        return KernelRuntime.Dispatch(ApiId.CircleCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_CIRCLE_ask")]
+    public static int PK_CIRCLE_ask(int circle, PK_CIRCLE_sf_s* circleSf)
+    {
+        var command = new CircleAskCommand { Circle = circle, CircleSf = circleSf };
+        return KernelRuntime.Dispatch(ApiId.CircleAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Circle);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_PLANE_create")]
+    public static int PK_PLANE_create(PK_PLANE_sf_s* planeSf, int* plane)
+    {
+        var command = new PlaneCreateCommand { PlaneSf = planeSf, Plane = plane };
+        return KernelRuntime.Dispatch(ApiId.PlaneCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_PLANE_ask")]
+    public static int PK_PLANE_ask(int plane, PK_PLANE_sf_s* planeSf)
+    {
+        var command = new PlaneAskCommand { Plane = plane, PlaneSf = planeSf };
+        return KernelRuntime.Dispatch(ApiId.PlaneAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Plane);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_CONE_create")]
+    public static int PK_CONE_create(PK_CONE_sf_s* coneSf, int* cone)
+    {
+        var command = new ConeCreateCommand { ConeSf = coneSf, Cone = cone };
+        return KernelRuntime.Dispatch(ApiId.ConeCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_CONE_ask")]
+    public static int PK_CONE_ask(int cone, PK_CONE_sf_s* coneSf)
+    {
+        var command = new ConeAskCommand { Cone = cone, ConeSf = coneSf };
+        return KernelRuntime.Dispatch(ApiId.ConeAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Cone);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_SPHERE_create")]
+    public static int PK_SPHERE_create(PK_SPHERE_sf_s* sphereSf, int* sphere)
+    {
+        var command = new SphereCreateCommand { SphereSf = sphereSf, Sphere = sphere };
+        return KernelRuntime.Dispatch(ApiId.SphereCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_SPHERE_ask")]
+    public static int PK_SPHERE_ask(int sphere, PK_SPHERE_sf_s* sphereSf)
+    {
+        var command = new SphereAskCommand { Sphere = sphere, SphereSf = sphereSf };
+        return KernelRuntime.Dispatch(ApiId.SphereAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Sphere);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_TORUS_create")]
+    public static int PK_TORUS_create(PK_TORUS_sf_s* torusSf, int* torus)
+    {
+        var command = new TorusCreateCommand { TorusSf = torusSf, Torus = torus };
+        return KernelRuntime.Dispatch(ApiId.TorusCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command);
+    }
+
+    [UnmanagedCallersOnly(EntryPoint = "PK_TORUS_ask")]
+    public static int PK_TORUS_ask(int torus, PK_TORUS_sf_s* torusSf)
+    {
+        var command = new TorusAskCommand { Torus = torus, TorusSf = torusSf };
+        return KernelRuntime.Dispatch(ApiId.TorusAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Torus);
+    }
+
     // ── Body creation primitives ─────────────────────────────────
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_create_solid_block")]

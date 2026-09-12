@@ -66,6 +66,10 @@ var bcurveEvaluationOracleExit = Run("dotnet", "run scripts/BCurveEvaluationOrac
 if (bcurveEvaluationOracleExit != 0)
     return bcurveEvaluationOracleExit;
 
+var xtGeometryWriterOracleExit = Run("dotnet", "run scripts/XtGeometryWriterOracle.cs", cleanupTesthost: false);
+if (xtGeometryWriterOracleExit != 0)
+    return xtGeometryWriterOracleExit;
+
 var allSchemaOracleExit = Run("dotnet", "run scripts/ParasolidAllSchemaOracle.cs -- --check", cleanupTesthost: false);
 if (allSchemaOracleExit != 0)
     return allSchemaOracleExit;

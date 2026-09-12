@@ -292,6 +292,78 @@ internal static unsafe partial class KernelRuntime
         var command = new SpunCreateCommand { SpunSf = spunSf, Spun = spunTag };
         return Dispatch(ApiId.SpunCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
     }
+    public static int LineCreate(PK_LINE_sf_s* lineSf, int* lineTag)
+    {
+        if (Dispatcher.IsExecuting) return LineCreateImplementation(lineSf, lineTag);
+        var command = new LineCreateCommand { LineSf = lineSf, Line = lineTag };
+        return Dispatch(ApiId.LineCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int LineAsk(int lineTag, PK_LINE_sf_s* lineSf)
+    {
+        if (Dispatcher.IsExecuting) return LineAskImplementation(lineTag, lineSf);
+        var command = new LineAskCommand { Line = lineTag, LineSf = lineSf };
+        return Dispatch(ApiId.LineAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Line);
+    }
+    public static int CircleCreate(PK_CIRCLE_sf_s* circleSf, int* circleTag)
+    {
+        if (Dispatcher.IsExecuting) return CircleCreateImplementation(circleSf, circleTag);
+        var command = new CircleCreateCommand { CircleSf = circleSf, Circle = circleTag };
+        return Dispatch(ApiId.CircleCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int CircleAsk(int circleTag, PK_CIRCLE_sf_s* circleSf)
+    {
+        if (Dispatcher.IsExecuting) return CircleAskImplementation(circleTag, circleSf);
+        var command = new CircleAskCommand { Circle = circleTag, CircleSf = circleSf };
+        return Dispatch(ApiId.CircleAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Circle);
+    }
+    public static int PlaneCreate(PK_PLANE_sf_s* planeSf, int* planeTag)
+    {
+        if (Dispatcher.IsExecuting) return PlaneCreateImplementation(planeSf, planeTag);
+        var command = new PlaneCreateCommand { PlaneSf = planeSf, Plane = planeTag };
+        return Dispatch(ApiId.PlaneCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int PlaneAsk(int planeTag, PK_PLANE_sf_s* planeSf)
+    {
+        if (Dispatcher.IsExecuting) return PlaneAskImplementation(planeTag, planeSf);
+        var command = new PlaneAskCommand { Plane = planeTag, PlaneSf = planeSf };
+        return Dispatch(ApiId.PlaneAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Plane);
+    }
+    public static int ConeCreate(PK_CONE_sf_s* coneSf, int* coneTag)
+    {
+        if (Dispatcher.IsExecuting) return ConeCreateImplementation(coneSf, coneTag);
+        var command = new ConeCreateCommand { ConeSf = coneSf, Cone = coneTag };
+        return Dispatch(ApiId.ConeCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int ConeAsk(int coneTag, PK_CONE_sf_s* coneSf)
+    {
+        if (Dispatcher.IsExecuting) return ConeAskImplementation(coneTag, coneSf);
+        var command = new ConeAskCommand { Cone = coneTag, ConeSf = coneSf };
+        return Dispatch(ApiId.ConeAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Cone);
+    }
+    public static int SphereCreate(PK_SPHERE_sf_s* sphereSf, int* sphereTag)
+    {
+        if (Dispatcher.IsExecuting) return SphereCreateImplementation(sphereSf, sphereTag);
+        var command = new SphereCreateCommand { SphereSf = sphereSf, Sphere = sphereTag };
+        return Dispatch(ApiId.SphereCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int SphereAsk(int sphereTag, PK_SPHERE_sf_s* sphereSf)
+    {
+        if (Dispatcher.IsExecuting) return SphereAskImplementation(sphereTag, sphereSf);
+        var command = new SphereAskCommand { Sphere = sphereTag, SphereSf = sphereSf };
+        return Dispatch(ApiId.SphereAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Sphere);
+    }
+    public static int TorusCreate(PK_TORUS_sf_s* torusSf, int* torusTag)
+    {
+        if (Dispatcher.IsExecuting) return TorusCreateImplementation(torusSf, torusTag);
+        var command = new TorusCreateCommand { TorusSf = torusSf, Torus = torusTag };
+        return Dispatch(ApiId.TorusCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, 0);
+    }
+    public static int TorusAsk(int torusTag, PK_TORUS_sf_s* torusSf)
+    {
+        if (Dispatcher.IsExecuting) return TorusAskImplementation(torusTag, torusSf);
+        var command = new TorusAskCommand { Torus = torusTag, TorusSf = torusSf };
+        return Dispatch(ApiId.TorusAsk, ConcurrencyKind.Concurrent, AccessKind.ReadOnly, ref command, command.Torus);
+    }
     public static int CylAsk(int cylTag, PK_CYL_sf_s* cylSf)
     {
         if (Dispatcher.IsExecuting) return CylAskImplementation(cylTag, cylSf);
