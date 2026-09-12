@@ -487,7 +487,16 @@ internal struct ICurveData
     // Branch identification
     public LimitRecord StartLimit;   // start LIMIT node
     public LimitRecord EndLimit;     // end LIMIT node
-    public double Scale;             // optional; unset fields use 0
+    public double Scale;             // optional; presence tracked by ScaleProvided (null never becomes 0)
+    public KernelLogical ScaleProvided;
+    // CHART error estimates (node 40): chordal/angular are required fields,
+    // parameter_error is optional (ParameterErrorProvided), as is the
+    // extended chart (ExtendedChartCount, -1 = absent).
+    public double ChordalError;
+    public double AngularError;
+    public double ParameterError;
+    public KernelLogical ParameterErrorProvided;
+    public int ExtendedChartCount;
     // INTERSECTION_DATA (sch_37102 node 204), optional
     public IntersectionUvType UvType;
     public int UvValueCount;         // 0/2/4 doubles per hull vector, total = (chart + terminators)·k
