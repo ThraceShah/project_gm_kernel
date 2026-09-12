@@ -153,7 +153,11 @@ static byte[] SerializeReport(List<SchemaOracleResult> results)
 
 string SchemaSha256(string sourceFileName)
 {
+    // Embedded (built-in) schemas have no on-disk source file to hash; pin
+    // their identity as the sentinel so the report stays stable across runs.
     var path = Path.Combine(repositoryRoot, "third_party", "parasolid", "schema", sourceFileName);
+    if (!File.Exists(path))
+        return Convert.ToHexString(SHA256.HashData(System.Text.Encoding.ASCII.GetBytes(sourceFileName))).ToLowerInvariant();
     return Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
 }
 

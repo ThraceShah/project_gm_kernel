@@ -1,7 +1,7 @@
 {
   "generator": "xt-schema-differences-v1",
-  "schemaCount": 101,
-  "transitionCount": 100,
+  "schemaCount": 102,
+  "transitionCount": 101,
   "transitions": [
     {
       "from": "SCH_0_15",
@@ -10517,6 +10517,19 @@
           "to": "name=LATTICE_DATA_PATTERN;transmit=1;variable=0;fields=5"
         }
       ]
+    },
+    {
+      "from": "SCH_3701097_37102",
+      "to": "SCH_3800150_37102",
+      "modelerVersion": 3800150,
+      "schemaNumber": 37102,
+      "nodeAdded": 0,
+      "nodeRemoved": 0,
+      "nodeChanged": 0,
+      "fieldAdded": 0,
+      "fieldRemoved": 0,
+      "fieldChanged": 0,
+      "changes": []
     }
   ]
 }
