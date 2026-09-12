@@ -3,7 +3,7 @@
 本文件由 `scripts/GenerateXtSchemaDifferences.cs` 生成。完整逐字段明细位于
 `tests/ParasolidXtCorpus/coverage/xt-schema-differences.json`；禁止手工维护两份全集。
 
-当前共 101 个 schema、100 个按 modeller version 排序的相邻差异。
+当前共 102 个 schema、101 个按 modeller version 排序的相邻差异。
 
 | From | To | +Node | -Node | ΔNode | +Field | -Field | ΔField |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -107,3 +107,4 @@
 | `SCH_3500137_35002` | `SCH_3501127_35102` | 0 | 0 | 0 | 0 | 0 | 0 |
 | `SCH_3501127_35102` | `SCH_3600031_36001` | 0 | 0 | 1 | 1 | 0 | 1 |
 | `SCH_3600031_36001` | `SCH_3701097_37102` | 8 | 0 | 2 | 6 | 2 | 2 |
+| `SCH_3701097_37102` | `SCH_3800150_37102` | 0 | 0 | 0 | 0 | 0 | 0 |
