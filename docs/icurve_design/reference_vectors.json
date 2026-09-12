@@ -1,0 +1,731 @@
+{
+  "schema_version": "1.0",
+  "purpose": "数学规格单元测试起点；不是已经过真实 XT receive/Parasolid oracle 的夹具。",
+  "numeric_format": "IEEE binary64 approximate expected values",
+  "groups": [
+    {
+      "id": "RV-CHART",
+      "description": "单位圆：support0=z=0，support1=x²+y²=1，自然切向为逆时针；非均匀 chart。",
+      "base_parameter": -2.0,
+      "base_scale": 1.7,
+      "angles": [
+        0.0,
+        0.17,
+        0.62,
+        1.03
+      ],
+      "points": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.9855847669095608,
+          0.16918234906699603,
+          0.0
+        ],
+        [
+          0.8138784566625339,
+          0.5810351605373051,
+          0.0
+        ],
+        [
+          0.5148188449699553,
+          0.8572989891886034,
+          0.0
+        ]
+      ],
+      "tangents": [
+        [
+          -0.0,
+          1.0,
+          0.0
+        ],
+        [
+          -0.16918234906699603,
+          0.9855847669095608,
+          0.0
+        ],
+        [
+          -0.5810351605373051,
+          0.8138784566625339,
+          0.0
+        ],
+        [
+          -0.8572989891886034,
+          0.5148188449699553,
+          0.0
+        ]
+      ],
+      "chord_lengths": [
+        0.16979536560483208,
+        0.44621272426349096,
+        0.40713431980955594
+      ],
+      "chord_units": [
+        [
+          -0.0848976828024157,
+          0.9963896745022904,
+          0.0
+        ],
+        [
+          -0.3848081888082452,
+          0.9229965643631171,
+          0.0
+        ],
+        [
+          -0.7345477822465785,
+          0.6785569656238398,
+          0.0
+        ]
+      ],
+      "segment_scales": [
+        1.7,
+        1.7376617630025266,
+        1.7300888028800296
+      ],
+      "chart_parameters": [
+        -2.0,
+        -1.7113478784717855,
+        -0.9359810893539275,
+        -0.23160256138323776
+      ],
+      "queries": [
+        {
+          "segment": 0,
+          "t": -1.8931987150345606,
+          "position": [
+            0.9980208873282734,
+            0.06288329234769621,
+            0.0
+          ],
+          "D1": [
+            -0.03699918671456238,
+            0.587214183238369,
+            0.0
+          ],
+          "D2": [
+            -0.34502364428074805,
+            -0.029397843696154367,
+            0.0
+          ]
+        },
+        {
+          "segment": 1,
+          "t": -1.424462166498178,
+          "position": [
+            0.9437641861633018,
+            0.3306193595594795,
+            0.0
+          ],
+          "D1": [
+            -0.19058773283279,
+            0.5440391536941673,
+            0.0
+          ],
+          "D2": [
+            -0.3072312019131942,
+            -0.12808832331372091,
+            0.0
+          ]
+        },
+        {
+          "segment": 2,
+          "t": -0.6753610340047723,
+          "position": [
+            0.716483622292384,
+            0.6976039126802429,
+            0.0
+          ],
+          "D1": [
+            -0.403784518905928,
+            0.41471240265808845,
+            0.0
+          ],
+          "D2": [
+            -0.22765488685597204,
+            -0.2464397253720785,
+            0.0
+          ]
+        }
+      ],
+      "suggested_abs_tolerance": 1e-12
+    },
+    {
+      "id": "RV-TUBE",
+      "description": "圆形 spine 的局部管面；非零曲率，原生 s 为角度。",
+      "spine_radius": 2.0,
+      "s": 0.4,
+      "section_angle": 0.43,
+      "tube_radius": 0.25,
+      "point": [
+        2.051425212233302,
+        0.8673286684807344,
+        0.10421770060730269
+      ],
+      "spine_point": [
+        1.8421219880057702,
+        0.778836684617301,
+        0.0
+      ],
+      "spine_D1": [
+        -0.778836684617301,
+        1.8421219880057702,
+        0.0
+      ],
+      "spine_D2": [
+        -1.8421219880057702,
+        -0.778836684617301,
+        -0.0
+      ],
+      "D": 4.454482874837443,
+      "implicit_gradient": [
+        0.4186064484550638,
+        0.17698396772686675,
+        0.20843540121460538
+      ],
+      "implicit_hessian": [
+        [
+          1.727651178217716,
+          0.644165539350694,
+          0.0
+        ],
+        [
+          0.644165539350694,
+          0.4764052241111527,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          2.0
+        ]
+      ],
+      "suggested_abs_tolerance": 1e-12
+    },
+    {
+      "id": "RV-BBOUND-COMPOSITION",
+      "description": "两个球的局部距离组合，仅验证 chain rule；不用于解决 boundary role gate。",
+      "point": [
+        2.0,
+        0.7,
+        0.5
+      ],
+      "distance0_center": [
+        0.3,
+        -0.4,
+        0.2
+      ],
+      "distance0_sphere_radius": 0.8,
+      "distance1_center": [
+        -0.2,
+        0.1,
+        0.3
+      ],
+      "distance1_sphere_radius": 1.1,
+      "offset_r0": 0.25,
+      "offset_r1": 0.3,
+      "value": 1.284312752784525,
+      "gradient": [
+        0.8420948490411034,
+        0.5380025167628464,
+        0.14703185666125354
+      ],
+      "hessian": [
+        [
+          0.13766572029615562,
+          -0.22311258096154538,
+          -0.06114648125013602
+        ],
+        [
+          -0.22311258096154538,
+          0.35688713914050846,
+          -0.03746145139159731
+        ],
+        [
+          -0.06114648125013602,
+          -0.03746145139159732,
+          0.4825822565761844
+        ]
+      ],
+      "required_third_derivative_contraction_term": [
+        [
+          0.003923629781819232,
+          0.0011092311964318784,
+          0.0019411797508511817
+        ],
+        [
+          0.0011092311964318784,
+          -0.0589322228059429,
+          -0.0008342301668278453
+        ],
+        [
+          0.0019411797508511817,
+          -0.0008342301668278453,
+          -0.05527903082891056
+        ]
+      ],
+      "suggested_abs_tolerance": 1e-12
+    },
+    {
+      "id": "RV-SCHUR",
+      "description": "内层 residual 不为零，用于捕获遗漏 Fz Hz^-1 H。",
+      "Fx": [
+        [
+          3.0,
+          0.2,
+          -0.1
+        ],
+        [
+          0.1,
+          2.0,
+          0.3
+        ],
+        [
+          0.2,
+          -0.4,
+          2.5
+        ]
+      ],
+      "Fz": [
+        [
+          0.2,
+          0.3
+        ],
+        [
+          -0.1,
+          0.4
+        ],
+        [
+          0.5,
+          -0.2
+        ]
+      ],
+      "Hx": [
+        [
+          0.3,
+          0.1,
+          0.2
+        ],
+        [
+          -0.2,
+          0.4,
+          0.1
+        ]
+      ],
+      "Hz": [
+        [
+          2.0,
+          0.2
+        ],
+        [
+          0.1,
+          1.5
+        ]
+      ],
+      "F": [
+        0.3,
+        -0.4,
+        0.2
+      ],
+      "H": [
+        0.1,
+        -0.15
+      ],
+      "expected_newton_step": [
+        -0.11495047374815487,
+        0.20044519081558593,
+        -0.027125267557157315,
+        -0.04366119339076882,
+        0.035940316679284844
+      ],
+      "suggested_abs_tolerance": 1e-12
+    },
+    {
+      "id": "RV-LIFTED-J",
+      "description": "A(c)=cx²+cy²-4,D(c)=cz；离根状态下检查六维 Jacobian。",
+      "state_x_then_c": [
+        2.061425212233302,
+        0.8593286684807344,
+        0.10621770060730269,
+        1.84512198800577,
+        0.783836684617301,
+        -0.001
+      ],
+      "tube_radius": 0.25,
+      "outer_plane_z": 0.10421770060730269,
+      "parameter_plane_point": [
+        2.051425212233302,
+        0.8673286684807344,
+        0.10421770060730269
+      ],
+      "parameter_plane_normal": [
+        -0.4364357804719847,
+        0.8728715609439694,
+        0.21821789023599236
+      ],
+      "residual": [
+        0.0188750987742079,
+        -0.001,
+        0.0014817597623799778,
+        0.060508965611886976,
+        0.0020000000000000018,
+        -0.010910894511799532
+      ],
+      "jacobian": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          3.69024397601154,
+          1.567673369234602,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          0.4326064484550636,
+          0.15098396772686673,
+          0.2144354012146054,
+          -0.4326064484550636,
+          -0.15098396772686673,
+          -0.2144354012146054
+        ],
+        [
+          1.567673369234602,
+          -3.69024397601154,
+          0.0,
+          -1.7186573369614688,
+          4.122850424466604,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          -0.4364357804719847,
+          0.8728715609439694,
+          0.21821789023599236,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "suggested_abs_tolerance": 1e-12
+    },
+    {
+      "id": "RV-TERMINATOR",
+      "description": "z=0 与 z=y²-x³ 的 branch；仅验证新版一面两平面构造，不提供待定 t_E。",
+      "h": 0.01,
+      "branch": [
+        0.0001,
+        1.0000000000000002e-06,
+        0.0
+      ],
+      "terminator": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "chord_fraction": 0.5,
+      "expected_position": [
+        5e-05,
+        5.000000000000001e-07,
+        0.0
+      ],
+      "non_defining_surface_y2_minus_x3": 1.2500000000000007e-13,
+      "non_defining_surface_is_not_an_extra_equation": true
+    },
+    {
+      "id": "RV-BBOUND-ROLE",
+      "description": "文档角色的一致性反例，需真实 oracle 确认，不能当作 Siemens 行为结论。",
+      "distance0": "x",
+      "distance1": "y",
+      "r0": 1.0,
+      "r1": 1.0,
+      "contact_on_distance0_surface": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "literal_composition": "x - 1",
+      "expected_literal_value_at_contact": -1.0,
+      "gate": "GATE-B"
+    },
+    {
+      "id": "RV-UV",
+      "description": "四种 UV type 与额外 terminator UV 数量。",
+      "size_cases": [
+        {
+          "uv_type": "none",
+          "chart_count": 4,
+          "terminator_count": 0,
+          "expected_value_count": 0
+        },
+        {
+          "uv_type": "none",
+          "chart_count": 4,
+          "terminator_count": 1,
+          "expected_value_count": 0
+        },
+        {
+          "uv_type": "none",
+          "chart_count": 4,
+          "terminator_count": 2,
+          "expected_value_count": 0
+        },
+        {
+          "uv_type": "first",
+          "chart_count": 4,
+          "terminator_count": 0,
+          "expected_value_count": 8
+        },
+        {
+          "uv_type": "first",
+          "chart_count": 4,
+          "terminator_count": 1,
+          "expected_value_count": 10
+        },
+        {
+          "uv_type": "first",
+          "chart_count": 4,
+          "terminator_count": 2,
+          "expected_value_count": 12
+        },
+        {
+          "uv_type": "second",
+          "chart_count": 4,
+          "terminator_count": 0,
+          "expected_value_count": 8
+        },
+        {
+          "uv_type": "second",
+          "chart_count": 4,
+          "terminator_count": 1,
+          "expected_value_count": 10
+        },
+        {
+          "uv_type": "second",
+          "chart_count": 4,
+          "terminator_count": 2,
+          "expected_value_count": 12
+        },
+        {
+          "uv_type": "both",
+          "chart_count": 4,
+          "terminator_count": 0,
+          "expected_value_count": 16
+        },
+        {
+          "uv_type": "both",
+          "chart_count": 4,
+          "terminator_count": 1,
+          "expected_value_count": 20
+        },
+        {
+          "uv_type": "both",
+          "chart_count": 4,
+          "terminator_count": 2,
+          "expected_value_count": 24
+        }
+      ],
+      "both_start_and_end_terminators_both_uv_order": [
+        "start.hvec[0].u0",
+        "start.hvec[0].v0",
+        "start.hvec[0].u1",
+        "start.hvec[0].v1",
+        "each chart row: u0,v0,u1,v1",
+        "end.hvec[0].u0",
+        "end.hvec[0].v0",
+        "end.hvec[0].u1",
+        "end.hvec[0].v1"
+      ]
+    },
+    {
+      "id": "RV-TERM-SELECT",
+      "description": "p.49 的 OR 选面规则；表只测试选择，不保证选后几何能力足够。",
+      "cases": [
+        {
+          "surface0_singular": false,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": false,
+          "term_use": "?",
+          "expected_selected_surface": 0
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": false,
+          "term_use": "F",
+          "expected_selected_surface": 0
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": false,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": true,
+          "term_use": "?",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": true,
+          "term_use": "F",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": true,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": false,
+          "term_use": "?",
+          "expected_selected_surface": 0
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": false,
+          "term_use": "F",
+          "expected_selected_surface": 0
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": false,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": true,
+          "term_use": "?",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": true,
+          "term_use": "F",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": false,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": true,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": false,
+          "term_use": "?",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": false,
+          "term_use": "F",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": false,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": true,
+          "term_use": "?",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": true,
+          "term_use": "F",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": false,
+          "surface0_is_blend_bound": true,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": false,
+          "term_use": "?",
+          "expected_selected_surface": 0
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": false,
+          "term_use": "F",
+          "expected_selected_surface": 0
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": false,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": true,
+          "term_use": "?",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": true,
+          "term_use": "F",
+          "expected_selected_surface": 1
+        },
+        {
+          "surface0_singular": true,
+          "surface1_singular": true,
+          "surface0_is_blend_bound": true,
+          "term_use": "S",
+          "expected_selected_surface": 1
+        }
+      ]
+    }
+  ]
+}
