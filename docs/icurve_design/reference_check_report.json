@@ -1,0 +1,159 @@
+{
+  "status": "passed",
+  "scope": "文档数学公式的浮点/独立差分自检及 JSON 数据完整性，不是项目或真实 Parasolid 测试",
+  "check_count": 24,
+  "checks": [
+    {
+      "check": "chart_C1_node_1",
+      "observed_max_abs_error": 0.0,
+      "acceptance_bound": 1e-14,
+      "status": "passed"
+    },
+    {
+      "check": "chart_C1_node_2",
+      "observed_max_abs_error": 0.0,
+      "acceptance_bound": 1e-14,
+      "status": "passed"
+    },
+    {
+      "check": "chart_plane_0",
+      "observed_max_abs_error": 1.3877787807814457e-17,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "chart_circle_0",
+      "observed_max_abs_error": 2.220446049250313e-16,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "chart_D1_fd_0",
+      "observed_max_abs_error": 5.535249342214499e-11,
+      "acceptance_bound": 3e-09,
+      "status": "passed"
+    },
+    {
+      "check": "chart_D2_fd_0",
+      "observed_max_abs_error": 2.091287421013277e-08,
+      "acceptance_bound": 2e-07,
+      "status": "passed"
+    },
+    {
+      "check": "chart_plane_1",
+      "observed_max_abs_error": 2.7755575615628914e-17,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "chart_circle_1",
+      "observed_max_abs_error": 1.1102230246251565e-16,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "chart_D1_fd_1",
+      "observed_max_abs_error": 1.0591794108449903e-10,
+      "acceptance_bound": 3e-09,
+      "status": "passed"
+    },
+    {
+      "check": "chart_D2_fd_1",
+      "observed_max_abs_error": 1.668580498770389e-08,
+      "acceptance_bound": 2e-07,
+      "status": "passed"
+    },
+    {
+      "check": "chart_plane_2",
+      "observed_max_abs_error": 8.326672684688674e-17,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "chart_circle_2",
+      "observed_max_abs_error": 3.3306690738754696e-16,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "chart_D1_fd_2",
+      "observed_max_abs_error": 2.604311211129584e-11,
+      "acceptance_bound": 3e-09,
+      "status": "passed"
+    },
+    {
+      "check": "chart_D2_fd_2",
+      "observed_max_abs_error": 2.339350493874015e-08,
+      "acceptance_bound": 2e-07,
+      "status": "passed"
+    },
+    {
+      "check": "tube_E1",
+      "observed_max_abs_error": 2.7755575615628914e-17,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "tube_E2",
+      "observed_max_abs_error": 6.704533878518224e-17,
+      "acceptance_bound": 2e-15,
+      "status": "passed"
+    },
+    {
+      "check": "tube_grad_fd",
+      "observed_max_abs_error": 4.254507857126555e-11,
+      "acceptance_bound": 1e-08,
+      "status": "passed"
+    },
+    {
+      "check": "tube_hessian_fd",
+      "observed_max_abs_error": 2.254418873803843e-10,
+      "acceptance_bound": 1e-08,
+      "status": "passed"
+    },
+    {
+      "check": "blend_bound_composition_grad_fd",
+      "observed_max_abs_error": 2.2594015547383606e-10,
+      "acceptance_bound": 1e-08,
+      "status": "passed"
+    },
+    {
+      "check": "blend_bound_composition_hessian_fd",
+      "observed_max_abs_error": 8.381237370791439e-11,
+      "acceptance_bound": 1e-08,
+      "status": "passed"
+    },
+    {
+      "check": "schur_vs_full_nonzero_inner_residual",
+      "observed_max_abs_error": 2.7755575615628914e-17,
+      "acceptance_bound": 1e-15,
+      "status": "passed"
+    },
+    {
+      "check": "lifted_six_state_jacobian_fd",
+      "observed_max_abs_error": 2.8239410809760557e-10,
+      "acceptance_bound": 5e-08,
+      "status": "passed"
+    },
+    {
+      "check": "terminator_surrogate_omitted_surface_formula",
+      "observed_max_abs_error": 5.048709793414476e-29,
+      "acceptance_bound": 1e-27,
+      "status": "passed"
+    },
+    {
+      "check": "blend_bound_role_counterexample_literal_residual",
+      "observed_max_abs_error": 0.0,
+      "acceptance_bound": 0.0,
+      "status": "passed"
+    }
+  ],
+  "task_dependency_dag_valid": true,
+  "reference_group_count": 9,
+  "uv_count_cases": 12,
+  "terminator_selection_cases": 24,
+  "csharp_compilation": "not_run",
+  "kernel_integration_tests": "not_run",
+  "parasolid_oracle": "not_run",
+  "performance_benchmarks": "not_run"
+}

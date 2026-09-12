@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "chart_chord_definition": "resolved_by_attached_2025_document",
+  "gates": [
+    {
+      "id": "GATE-B",
+      "status": "open",
+      "scope": "BLEND_BOUND 角色映射",
+      "known": "2025 p.63 提供距离组合和无参数化定义",
+      "unknown": "公式角色与对应支持面/boundary/sense/range 映射",
+      "minimum_evidence": [
+        "正交与斜交平面",
+        "plane/cylinder",
+        "正负 range 和 surface/spine sense",
+        "真实 chart 点、node 引用、PK build 和输出"
+      ]
+    },
+    {
+      "id": "GATE-T",
+      "status": "open",
+      "scope": "terminator 参数及端点导数",
+      "known": "2025 p.49 的一面两平面和支持面选择",
+      "unknown": "导入数据重建 t_E、退化平面及公开端点导数规则",
+      "minimum_evidence": [
+        "真实 curve range",
+        "start/end 单端及双端 terminator",
+        "branch point 两侧和 exact endpoint 的 D0/D1/D2",
+        "重建算法无需运行时 Parasolid"
+      ]
+    },
+    {
+      "id": "GATE-A",
+      "status": "open",
+      "scope": "blend 圆弧/特殊范围",
+      "known": "u 继承 spine，v 两端与 spine sense 关系",
+      "unknown": "arc 展开、极端退化与公开延拓范围",
+      "minimum_evidence": [
+        "正负 spine sense",
+        "接触点近重合及近对径",
+        "实际 PK_SURF_eval 范围行为"
+      ]
+    },
+    {
+      "id": "GATE-D",
+      "status": "open",
+      "scope": "公开高阶导数契约",
+      "known": "内部可按适用分片进行隐式求导",
+      "unknown": "目标 PK 各过程类型的最大阶数、节点侧和奇异返回",
+      "minimum_evidence": [
+        "真实 derivative request 梯度扫描",
+        "chart knot 的两侧及精确节点",
+        "完整错误码和输出行为"
+      ]
+    }
+  ]
+}

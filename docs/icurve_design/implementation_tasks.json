@@ -1,0 +1,602 @@
+{
+  "schema_version": "1.0",
+  "design_version": "2.0",
+  "repository": "ThraceShah/project_gm_kernel",
+  "baseline_commit": "5c645cdfc8a0cd8e3f6aac4c25de839653b4daf6",
+  "status": "implementation_not_started",
+  "primary_spec": "icurve_blend_evaluation_spec.md",
+  "task_count": 21,
+  "tasks": [
+    {
+      "id": "T00",
+      "title": "基线与兼容性审计",
+      "status": "not_started",
+      "depends_on": [],
+      "spec_sections": [
+        "1",
+        "2",
+        "3",
+        "23"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "记录实际 HEAD、源 schema、PDF 哈希及真实 PK build/可用性",
+        "读取并遵守 AGENTS.md；列出与固定提交的差异",
+        "GATE-B/T/A/D 各有证据记录，不把推断标为文本事实"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits",
+        "real_pk_build_and_oracle_artifacts"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T01",
+      "title": "持久记录、source sense、构造面引用及池生命周期",
+      "status": "not_started",
+      "depends_on": [
+        "T00"
+      ],
+      "spec_sections": [
+        "3",
+        "4"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "新增池覆盖创建、删除、mark/rollback、slot 复用和变长内存回收",
+        "保留 source surface sense，不从 face sense 复制",
+        "BLEND_BOUND 用内部构造引用，不伪造公开 PK tag"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T02",
+      "title": "INTERSECTION_DATA 解码与锚点数据",
+      "status": "not_started",
+      "depends_on": [
+        "T01"
+      ],
+      "spec_sections": [
+        "2.4",
+        "5.2",
+        "21.3"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "四种 uv_type × 0/1/2 terminator 的长度和顺序正确",
+        "检测 null pair、单分量 null、截断、错长和未知 enum",
+        "branch hvec 已在 chart 中，不重复额外计数"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T03",
+      "title": "解析隐式、局部距离与 sheet guards",
+      "status": "not_started",
+      "depends_on": [
+        "T00"
+      ],
+      "spec_sections": [
+        "8"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "解析值/梯度/Hessian 与制造解及独立差分相容",
+        "错误半锥和环面片的零残差候选被拒绝",
+        "ImplicitJet 与 OrientedDistanceJet 能力不混用，cone XT/PK 轴仅归一化一次"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T04",
+      "title": "原始 chart 参数映射",
+      "status": "not_started",
+      "depends_on": [
+        "T02",
+        "T03"
+      ],
+      "spec_sections": [
+        "5"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "使用归一化余弦和弦平面，无切线投影候选切换",
+        "非均匀 chart 的 t_i/f_i 及左右 D1 检查通过",
+        "原始锚点和 chart 哈希不因自适应采样改变",
+        "捕获零弦、坏方向、比例溢出和 ParameterResolutionLost"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T05",
+      "title": "小型线性代数与校正步骤",
+      "status": "not_started",
+      "depends_on": [
+        "T00"
+      ],
+      "spec_sections": [
+        "14"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "良态、病态、秩亏与零矩阵案例无 NaN/越界",
+        "QR/SVD 后备用正确线性残差验证",
+        "小步或 least-squares stationary 不等于 root success",
+        "trial 比较使用冻结缩放，拒绝步可回退"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T06",
+      "title": "分支、seed、参数展开与连续性 cell",
+      "status": "not_started",
+      "depends_on": [
+        "T04"
+      ],
+      "spec_sections": [
+        "13.5",
+        "13.6",
+        "17"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "空间相近的两个分支不能通过最近点规则混淆",
+        "周期 UV 先展开再插值，保留 lift",
+        "候选顺序和 tie-break 确定，缺乏分支证据报告歧义"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T07",
+      "title": "常规区间五类求解计划",
+      "status": "not_started",
+      "depends_on": [
+        "T03",
+        "T04",
+        "T05",
+        "T06"
+      ],
+      "spec_sections": [
+        "7",
+        "18",
+        "19"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "P4/P2/I3/I2/I1 对同一语义参数和分支结果一致",
+        "节点位置与常规区间分开发布",
+        "返回位置同时满足定义 residual 和参数平面",
+        "所有失败无部分输出"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T08",
+      "title": "D1/D2 与 jet 需求传播",
+      "status": "not_started",
+      "depends_on": [
+        "T07"
+      ],
+      "spec_sections": [
+        "5.5",
+        "16"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "根处重算 J 后复用分解求 D1/D2",
+        "I2 的 Q(t) 导数项存在",
+        "chart 节点允许 D2 不连续，不平均或补零",
+        "最大导数阶数和 side 进入能力/报告"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T09",
+      "title": "操作内缓存与完整状态预测",
+      "status": "not_started",
+      "depends_on": [
+        "T07",
+        "T08"
+      ],
+      "spec_sections": [
+        "13",
+        "19.3"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "同一节点同轮不同参数不发生错误 memo 命中",
+        "高精度请求不能直接复用低精度精确缓存",
+        "trial 与 accepted 完整 nested state 分离",
+        "局部预测值作为 seed，未校正不得精确发布"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T10",
+      "title": "跨调用缓存、版本与淘汰",
+      "status": "not_started",
+      "depends_on": [
+        "T01",
+        "T09"
+      ],
+      "spec_sections": [
+        "13.8",
+        "13.9",
+        "22"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "热/冷、正/逆/随机查询保持语义和分支一致",
+        "reset、rollback、slot ABA、子几何改动使旧样本失效",
+        "L3 与 scratch/return arena 无生命周期混用",
+        "缓存有硬预算且淘汰不使借用数据悬空"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T11",
+      "title": "一般曲面局部距离与 offset",
+      "status": "not_started",
+      "depends_on": [
+        "T03",
+        "T05",
+        "T09"
+      ],
+      "spec_sections": [
+        "9",
+        "15"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "法向坐标 K、distance gradient/Hessian 通过独立验证",
+        "多脚点和 K 病态时不宣称唯一局部 SDF",
+        "普通隐式多项式减 offset 的错误实现被测试拒绝",
+        "扩展 B-surface 域不能被无条件夹紧"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T12",
+      "title": "常规 R blend 参数求值",
+      "status": "not_started",
+      "depends_on": [
+        "T08",
+        "T11"
+      ],
+      "spec_sections": [
+        "10.1",
+        "10.2",
+        "10.3"
+      ],
+      "release_gates": [
+        "GATE-A",
+        "GATE-D"
+      ],
+      "acceptance_criteria": [
+        "u 继承 spine，负 spine sense 的 v 两端映射可复现",
+        "接触点复用 spine witness；frame/arc 不用无符号 acos 决策",
+        "D1/D2 公式通过制造解和分片内差分",
+        "零 range 与未知构造不套常规 r>0 tube"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits",
+        "real_pk_build_and_oracle_artifacts"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T13",
+      "title": "Blend 包络与局部隐式",
+      "status": "not_started",
+      "depends_on": [
+        "T12"
+      ],
+      "spec_sections": [
+        "10.4",
+        "10.5",
+        "10.6"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "离根点的 E1_s 不能提前置零",
+        "局部隐式 gradient/Hessian 与 toroidal 制造解相容",
+        "D 条件差时恢复辅助变量，不对分母随意加 epsilon",
+        "整圈管面的错误圆弧根被拒绝"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T14",
+      "title": "联合约束与 Schur 消元",
+      "status": "not_started",
+      "depends_on": [
+        "T09",
+        "T13"
+      ],
+      "spec_sections": [
+        "12"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "六未知量 residual/Jacobian 方向测试通过",
+        "内层 residual 非零时 Schur 步与完整系统步一致",
+        "不同 occurrence 不因 NodeId 相同而合并",
+        "spine terminator 区间不错误降低成双面交线"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T15",
+      "title": "BLEND_BOUND 距离组合与接触边界",
+      "status": "not_started",
+      "depends_on": [
+        "T11",
+        "T12"
+      ],
+      "spec_sections": [
+        "11"
+      ],
+      "release_gates": [
+        "GATE-B",
+        "GATE-D"
+      ],
+      "acceptance_criteria": [
+        "文档字面式数学模块有独立梯度/Hessian 测试",
+        "非零 D3 收缩用例可捕获遗漏项",
+        "GATE-B 以真实数据关闭后才启用对应生产能力",
+        "无假的 BlendBound UV 或普通参数化"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits",
+        "real_pk_build_and_oracle_artifacts"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T16",
+      "title": "Terminator 专用求值",
+      "status": "not_started",
+      "depends_on": [
+        "T04",
+        "T05"
+      ],
+      "spec_sections": [
+        "6",
+        "16.3"
+      ],
+      "release_gates": [
+        "GATE-T",
+        "GATE-D"
+      ],
+      "acceptance_criteria": [
+        "所有 term_use/奇异/BlendBound 条件按 OR 规则选面",
+        "两个指定平面与一面构造的标量/二维路径相容",
+        "未选面 residual 仅按已声明策略作诊断，不强加等式",
+        "GATE-T 未关闭的 endpoint 参数/导数能力不冒充已支持"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits",
+        "real_pk_build_and_oracle_artifacts"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T17",
+      "title": "诊断、延拓与局部细分",
+      "status": "not_started",
+      "depends_on": [
+        "T07",
+        "T09",
+        "T14"
+      ],
+      "spec_sections": [
+        "14.6",
+        "15",
+        "17"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "内层噪声主导时先收紧内层而非无限缩步",
+        "续接始终恢复原生 t，不能以伪弧长改定义",
+        "所有子层共用基础求值预算，失败可重放",
+        "高频/多根难例不得无证据返回邻近分支"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T18",
+      "title": "有界子集局部认证",
+      "status": "not_started",
+      "depends_on": [
+        "T03",
+        "T17"
+      ],
+      "spec_sections": [
+        "18.3",
+        "18.4"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "区间算术/范围证明覆盖所有参与 residual 和 Jacobian 的操作",
+        "无根、唯一根、不确定三种状态分开",
+        "只对已声明代数/样条/受控过程子集给认证",
+        "多次 Newton/普通高精度采样不被标成 certified"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T19",
+      "title": "Runtime/PK/XT/真实 oracle 集成",
+      "status": "not_started",
+      "depends_on": [
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16"
+      ],
+      "spec_sections": [
+        "19",
+        "21.6"
+      ],
+      "release_gates": [
+        "GATE-B",
+        "GATE-T",
+        "GATE-A",
+        "GATE-D"
+      ],
+      "acceptance_criteria": [
+        "公开最大导数/错误码/side 行为用真实 PK build 验证",
+        "真实 receive 和结构比较通过，参数化差异不能以排序差异降级",
+        "不重定向真实 oracle 到本项目内核",
+        "未运行或跳过的 oracle 明确标为未通过门槛"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits",
+        "real_pk_build_and_oracle_artifacts"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    },
+    {
+      "id": "T20",
+      "title": "性能、内存与发布矩阵",
+      "status": "not_started",
+      "depends_on": [
+        "T10",
+        "T17",
+        "T18",
+        "T19"
+      ],
+      "spec_sections": [
+        "21",
+        "22",
+        "24"
+      ],
+      "release_gates": [],
+      "acceptance_criteria": [
+        "同一查询和正确性门槛下比较各计划成本",
+        "报告冷启动和 P50/P95/P99、基础 jet 次数、缓存命中",
+        "预热后无逐点托管分配，native/scratch 峰值有界",
+        "更新已支持能力、剩余 gate 和失败重放说明"
+      ],
+      "required_evidence": [
+        "changed_files",
+        "tests_and_exit_codes",
+        "allocation_observation",
+        "supported_capabilities_and_limits",
+        "real_pk_build_and_oracle_artifacts"
+      ],
+      "completion_rule": "所有验收项有证据；未运行/跳过不等于通过；依赖 gate 只阻断相关能力发布。"
+    }
+  ]
+}
