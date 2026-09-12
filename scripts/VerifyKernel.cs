@@ -12,6 +12,17 @@ static string GetScriptPath([CallerFilePath] string path = "") => path;
 
 var scriptDir = Path.GetDirectoryName(GetScriptPath()) ?? ".";
 var repoRoot = Path.GetFullPath(Path.Combine(scriptDir, ".."));
+
+// Relative P_SCHEMA/PARASOLID_SCHEMA_DIR values resolve against this script's
+// directory (same rule as GenerateXtSchema). Child processes run with different
+// working directories (dotnet test runs from its bin folder), so a relative
+// path leaks a broken schema location into PK_SESSION_start. Normalize once.
+foreach (var name in new[] { "P_SCHEMA", "PARASOLID_SCHEMA_DIR" })
+{
+    var value = Environment.GetEnvironmentVariable(name);
+    if (string.IsNullOrWhiteSpace(value) || Path.IsPathRooted(value)) continue;
+    Environment.SetEnvironmentVariable(name, Path.GetFullPath(Path.Combine(scriptDir, value)));
+}
 var rid = RuntimeInformation.ProcessArchitecture switch
 {
     Architecture.Arm64 when OperatingSystem.IsMacOS() => "osx-arm64",
