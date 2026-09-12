@@ -1514,18 +1514,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_CIRCLE_ask")]
-    public static int PK_CIRCLE_ask(int arg0, PK_CIRCLE_sf_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_CIRCLE_create")]
-    public static int PK_CIRCLE_create(PK_CIRCLE_sf_t* arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_CLASS_ask_superclass")]
     public static int PK_CLASS_ask_superclass(int arg0, int* arg1)
     {
@@ -1534,18 +1522,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_CLASS_is_subclass")]
     public static int PK_CLASS_is_subclass(int arg0, int arg1, byte* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_CONE_ask")]
-    public static int PK_CONE_ask(int arg0, PK_CONE_sf_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_CONE_create")]
-    public static int PK_CONE_create(PK_CONE_sf_t* arg0, int* arg1)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -3872,18 +3848,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_LINE_ask")]
-    public static int PK_LINE_ask(int arg0, PK_LINE_sf_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_LINE_create")]
-    public static int PK_LINE_create(PK_LINE_sf_t* arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_LOOP_ask_body")]
     public static int PK_LOOP_ask_body(int arg0, int* arg1)
     {
@@ -4988,18 +4952,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_PLANE_ask")]
-    public static int PK_PLANE_ask(int arg0, PK_PLANE_sf_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_PLANE_create")]
-    public static int PK_PLANE_create(PK_PLANE_sf_t* arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_PLINE_ask")]
     public static int PK_PLINE_ask(int arg0, PK_PLINE_sf_t* arg1)
     {
@@ -5852,18 +5804,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_SPHERE_ask")]
-    public static int PK_SPHERE_ask(int arg0, PK_SPHERE_sf_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_SPHERE_create")]
-    public static int PK_SPHERE_create(PK_SPHERE_sf_t* arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_SPHERE_make_solid_body")]
     public static int PK_SPHERE_make_solid_body(int arg0, int* arg1)
     {
@@ -6448,18 +6388,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_TOPOL_track_r_f")]
     public static int PK_TOPOL_track_r_f(PK_TOPOL_track_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_TORUS_ask")]
-    public static int PK_TORUS_ask(int arg0, PK_TORUS_sf_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_TORUS_create")]
-    public static int PK_TORUS_create(PK_TORUS_sf_t* arg0, int* arg1)
     {
         return KernelRuntime.NotImplemented();
     }

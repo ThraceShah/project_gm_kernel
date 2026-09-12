@@ -86,6 +86,8 @@ internal static unsafe class XtWriter
             map.VertexSlots.Add(vertexSlot, AddIndex(nodes, ref graph, ref map));
 
         AddGeometryIndexes(bodySlot, ref graph, ref map, nodes);
+        CollectDependentGeometry(ref map, nodes, ref graph);
+        BuildGeometryChains(bodySlot, ref map);
         AssignPersistentNodeIds(ref map);
 
         var highest = map.PersistentNodeIdCount;
@@ -122,6 +124,7 @@ internal static unsafe class XtWriter
             SetNode(nodes, map, map.VertexSlots[vertexSlot], VertexNode(vertexSlot, map));
 
         WriteGeometryNodes(ref map, nodes, ref graph);
+        WriteGeometricOwnerNodes(ref map, nodes);
         return true;
     }
 
@@ -191,34 +194,253 @@ internal static unsafe class XtWriter
         foreach (var pair in map.SurfaceTags)
         {
             var surface = KernelRuntime.GetSurfaceByTag(pair.Key);
-            var node = surface.Class switch
+            XtNode node;
+            switch (surface.Class)
             {
-                SurfaceClass.Plane => PlaneNode(pair.Value, pair.Key, surface, map),
-                SurfaceClass.Cylinder => CylinderNode(pair.Value, pair.Key, surface, map),
-                SurfaceClass.Cone => ConeNode(pair.Value, pair.Key, surface, map),
-                SurfaceClass.Sphere => SphereNode(pair.Value, pair.Key, surface, map),
-                SurfaceClass.Torus => TorusNode(pair.Value, pair.Key, surface, map),
-                _ => throw new NotSupportedException("Unsupported surface class for XT writer."),
-            };
+                case SurfaceClass.Plane:
+                    node = PlaneNode(pair.Value, pair.Key, surface, map);
+                    break;
+                case SurfaceClass.Cylinder:
+                    node = CylinderNode(pair.Value, pair.Key, surface, map);
+                    break;
+                case SurfaceClass.Cone:
+                    node = ConeNode(pair.Value, pair.Key, surface, map);
+                    break;
+                case SurfaceClass.Sphere:
+                    node = SphereNode(pair.Value, pair.Key, surface, map);
+                    break;
+                case SurfaceClass.Torus:
+                    node = TorusNode(pair.Value, pair.Key, surface, map);
+                    break;
+                case SurfaceClass.BSurface:
+                    node = BSurfaceNode(pair.Value, pair.Key, surface, ref map, nodes, ref graph);
+                    break;
+                case SurfaceClass.Swept:
+                    node = SweptSurfaceNode(pair.Value, pair.Key, surface, map);
+                    break;
+                case SurfaceClass.Spun:
+                    node = SpunSurfaceNode(pair.Value, pair.Key, surface, map);
+                    break;
+                case SurfaceClass.Offset:
+                    node = OffsetSurfaceNode(pair.Value, pair.Key, surface, map);
+                    break;
+                default:
+                    throw new NotSupportedException("Unsupported surface class for XT writer.");
+            }
             SetNode(nodes, map, pair.Value, node);
         }
 
         foreach (var pair in map.CurveTags)
         {
             var curve = KernelRuntime.GetCurveByTag(pair.Key);
-            var node = curve.Class switch
+            XtNode node;
+            switch (curve.Class)
             {
-                CurveClass.Line => LineNode(pair.Value, pair.Key, curve, map),
-                CurveClass.Circle => CircleNode(pair.Value, pair.Key, curve, map),
-                CurveClass.BCurve => BCurveNode(pair.Value, pair.Key, curve, ref map, nodes, ref graph),
-                _ => throw new NotSupportedException("Unsupported curve class for XT writer."),
-            };
+                case CurveClass.Line:
+                    node = LineNode(pair.Value, pair.Key, curve, map);
+                    break;
+                case CurveClass.Circle:
+                    node = CircleNode(pair.Value, pair.Key, curve, map);
+                    break;
+                case CurveClass.Ellipse:
+                    node = EllipseNode(pair.Value, pair.Key, curve, map);
+                    break;
+                case CurveClass.BCurve:
+                    node = BCurveNode(pair.Value, pair.Key, curve, ref map, nodes, ref graph);
+                    break;
+                case CurveClass.TRCurve:
+                    node = TrimmedCurveNode(pair.Value, pair.Key, curve, map);
+                    break;
+                case CurveClass.SPCurve:
+                    node = SpCurveNode(pair.Value, pair.Key, curve, map);
+                    break;
+                default:
+                    throw new NotSupportedException("Unsupported curve class for XT writer.");
+            }
             SetNode(nodes, map, pair.Value, node);
         }
 
         foreach (var pair in map.PointTags)
             SetNode(nodes, map, pair.Value, PointNode(pair.Value, pair.Key, map));
     }
+
+    /// <summary>
+    /// Geometry that depends on other geometry (trimmed basis curves, SP curve
+    /// supports and 2D B-curves, swept/spun sections, offset bases) must be
+    /// transmitted with the body even though no topology owns it. Collect
+    /// transitively until the tag maps stabilise.
+    /// </summary>
+    private static void CollectDependentGeometry(ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        var changed = true;
+        while (changed)
+        {
+            changed = false;
+            foreach (var tag in map.CurveTags.Keys.ToArray())
+            {
+                var curve = KernelRuntime.GetCurveByTag(tag);
+                switch (curve.Class)
+                {
+                    case CurveClass.TRCurve:
+                        changed |= AddCurveTag(KernelRuntime.TrCurveDataPool[curve.DataIndex].BasisCurveTag, tag, isCurve: true, ref map, nodes, ref graph);
+                        break;
+                    case CurveClass.SPCurve:
+                    {
+                        ref readonly var sp = ref KernelRuntime.SpCurveDataPool[curve.DataIndex];
+                        changed |= AddSurfaceTag(sp.SurfTag, tag, isCurve: true, ref map, nodes, ref graph);
+                        changed |= AddFloatingCurveTag(sp.BCurveTag, ref map, nodes, ref graph);
+                        break;
+                    }
+                }
+            }
+            foreach (var tag in map.SurfaceTags.Keys.ToArray())
+            {
+                var surface = KernelRuntime.GetSurfaceByTag(tag);
+                switch (surface.Class)
+                {
+                    case SurfaceClass.Swept:
+                        changed |= AddCurveTag(KernelRuntime.SweptDataPool[surface.DataIndex].SectionCurveTag, tag, isCurve: false, ref map, nodes, ref graph);
+                        break;
+                    case SurfaceClass.Spun:
+                        changed |= AddCurveTag(KernelRuntime.SpunDataPool[surface.DataIndex].ProfileCurveTag, tag, isCurve: false, ref map, nodes, ref graph);
+                        break;
+                    case SurfaceClass.Offset:
+                        changed |= AddSurfaceTag(KernelRuntime.OffsetDataPool[surface.DataIndex].BaseSurfTag, tag, isCurve: false, ref map, nodes, ref graph);
+                        break;
+                }
+            }
+        }
+    }
+
+    private static bool AddCurveTag(CurveTag tag, int dependentTag, bool isCurve, ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        if (tag <= 0 || map.CurveTags.ContainsKey(tag))
+            return false;
+        var nodeIndex = AddIndex(nodes, ref graph, ref map);
+        map.CurveTags.Add(tag, nodeIndex);
+        RecordGeometricOwner(nodeIndex, dependentTag, isCurve, tag, SharedIsCurve: true, ref map, nodes, ref graph);
+        return true;
+    }
+
+    /// <summary>
+    /// An SP curve's 2D B-curve is transmitted as a floating node (no chain,
+    /// owner=0, node_id=0), matching Parasolid's canonical form.
+    /// </summary>
+    private static bool AddFloatingCurveTag(CurveTag tag, ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        if (tag <= 0 || map.CurveTags.ContainsKey(tag))
+            return false;
+        map.CurveTags.Add(tag, AddIndex(nodes, ref graph, ref map));
+        map.FloatingCurves.Add(tag);
+        return true;
+    }
+
+    private static bool AddSurfaceTag(SurfTag tag, int dependentTag, bool isCurve, ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        if (tag <= 0 || map.SurfaceTags.ContainsKey(tag))
+            return false;
+        var nodeIndex = AddIndex(nodes, ref graph, ref map);
+        map.SurfaceTags.Add(tag, nodeIndex);
+        RecordGeometricOwner(nodeIndex, dependentTag, isCurve, tag, SharedIsCurve: false, ref map, nodes, ref graph);
+        return true;
+    }
+
+    /// <summary>
+    /// Ownerless dependency geometry carries a GEOMETRIC_OWNER node (XT node
+    /// 141, {owner: dependent, shared_geometry: the dependency}) and points at
+    /// it from its own geometric_owner field, matching Parasolid's transmit.
+    /// </summary>
+    private static void RecordGeometricOwner(XtNodeIndex sharedNode, int dependentTag, bool isCurve, int sharedTag, bool SharedIsCurve,
+        ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        var ownerNode = AddIndex(nodes, ref graph, ref map);
+        map.GeometricOwnerNodes.Add(sharedTag, ownerNode);
+        map.PendingGeometricOwners.Add((ownerNode, dependentTag, isCurve, sharedTag, SharedIsCurve));
+    }
+
+    private static void WriteGeometricOwnerNodes(ref NodeMap map, List<XtNode> nodes)
+    {
+        foreach (var (node, dependentTag, isCurve, sharedTag, sharedIsCurve) in map.PendingGeometricOwners)
+        {
+            var dependent = isCurve ? map.CurveTags[dependentTag] : map.SurfaceTags[dependentTag];
+            var shared = sharedIsCurve ? map.CurveTags[sharedTag] : map.SurfaceTags[sharedTag];
+            SetNode(nodes, map, node, new XtNode
+            {
+                Type = (int)XtNodeTypes.GeometricOwner,
+                Index = node,
+                Fields =
+                [
+                    XtFieldValue.Ptr(dependent),
+                    XtFieldValue.Ptr(node),
+                    XtFieldValue.Ptr(node),
+                    XtFieldValue.Ptr(shared),
+                ],
+            });
+        }
+    }
+
+    private static XtFieldValue GeometricOwnerField(int tag, NodeMap map)
+        => map.GeometricOwnerNodes.TryGetValue(tag, out var owner) ? XtFieldValue.Ptr(owner) : XtFieldValue.Ptr(0);
+
+    /// <summary>
+    /// The transmitted curve/surface chain is the kernel's topology-owned ring
+    /// (broken at the first edge's curve / first face's surface) with dependent
+    /// geometry appended, so dependency nodes stay reachable from the body.
+    /// </summary>
+    private static void BuildGeometryChains(BodySlot bodySlot, ref NodeMap map)
+    {
+        map.CurveChain = BuildChain(map.CurveTags, FirstCurveTag(bodySlot, map),
+            tag => KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(tag)].NextInBody, map);
+        map.SurfaceChain = BuildChain(map.SurfaceTags, FirstSurfaceTag(bodySlot, map),
+            tag => KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(tag)].NextInBody, map);
+    }
+
+    private static List<int> BuildChain(Dictionary<int, XtNodeIndex> tags, int firstTag, Func<int, int> nextTagOf, NodeMap map)
+    {
+        var chain = new List<int>(tags.Count);
+        if (firstTag > 0 && tags.ContainsKey(firstTag))
+        {
+            var current = firstTag;
+            var guard = 0;
+            do
+            {
+                chain.Add(current);
+                current = nextTagOf(current);
+                if (guard++ > tags.Count)
+                    break;
+            }
+            while (current > 0 && current != firstTag && tags.ContainsKey(current));
+        }
+        foreach (var tag in tags.Keys)
+        {
+            if (!chain.Contains(tag) && !map.FloatingCurves.Contains(tag))
+                chain.Add(tag);
+        }
+        return chain;
+    }
+
+    private static int FirstCurveTag(BodySlot bodySlot, NodeMap map)
+    {
+        var firstEdge = map.FirstEdgeSlot >= 0 ? KernelRuntime.GetEdgeRecord(map.FirstEdgeSlot).CurveTag : 0;
+        if (firstEdge > 0)
+            return firstEdge;
+        foreach (var pair in map.CurveTags)
+            return pair.Key;
+        return 0;
+    }
+
+    private static int FirstSurfaceTag(BodySlot bodySlot, NodeMap map)
+    {
+        var firstFace = map.FirstFaceSlot >= 0 ? KernelRuntime.GetFaceRecord(map.FirstFaceSlot).SurfTag : 0;
+        if (firstFace > 0)
+            return firstFace;
+        foreach (var pair in map.SurfaceTags)
+            return pair.Key;
+        return 0;
+    }
+
+    private static XtNodeIndex ChainHead(List<int> chain, Dictionary<int, XtNodeIndex> tags)
+        => chain.Count > 0 && tags.TryGetValue(chain[0], out var head) ? head : 0;
 
     private static void AssignPersistentNodeIds(ref NodeMap map)
     {
@@ -277,8 +499,8 @@ internal static unsafe class XtWriter
                 XtFieldValue.Unsigned(1),
                 XtFieldValue.Ptr(FirstSolidShell(map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(First(map.SurfaceTags)),
-                XtFieldValue.Ptr(First(map.CurveTags)),
+                XtFieldValue.Ptr(ChainHead(map.SurfaceChain, map.SurfaceTags)),
+                XtFieldValue.Ptr(ChainHead(map.CurveChain, map.CurveTags)),
                 XtFieldValue.Ptr(First(map.PointTags)),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
@@ -499,10 +721,10 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(index, map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
-                XtFieldValue.Ptr(0),
+                GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.NormalX, data.NormalY, data.NormalZ),
@@ -522,10 +744,10 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(index, map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
-                XtFieldValue.Ptr(0),
+                GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
@@ -546,10 +768,10 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(index, map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
-                XtFieldValue.Ptr(0),
+                GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
@@ -572,10 +794,10 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(index, map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
-                XtFieldValue.Ptr(0),
+                GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.CenterX, data.CenterY, data.CenterZ),
                 XtFieldValue.RealValue(data.Radius),
@@ -596,10 +818,10 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(index, map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(Ptr(map.FaceSlots, surface.OwnerFace)),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
-                XtFieldValue.Ptr(0),
+                GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
@@ -621,10 +843,10 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(index, map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(Ptr(map.EdgeSlots, curve.OwnerEdge)),
+                XtFieldValue.Ptr(CurveOwner(curve, map)),
                 XtFieldValue.Ptr(NextCurve(tag, map)),
                 XtFieldValue.Ptr(PreviousCurve(tag, map)),
-                XtFieldValue.Ptr(0),
+                GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
@@ -657,7 +879,7 @@ internal static unsafe class XtWriter
         SetNode(nodes, map, knots, new XtNode { Type=(int)XtNodeTypes.KnotSet, Index=knots, VariableLength=data.NKnots, Fields=knotFields });
         SetNode(nodes, map, mults, new XtNode { Type=(int)XtNodeTypes.KnotMultiplicities, Index=mults, VariableLength=data.NKnots, Fields=multFields });
         SetNode(nodes, map, curveData, new XtNode { Type=(int)XtNodeTypes.CurveData, Index=curveData, Fields=
-            [XtFieldValue.Unsigned(data.SelfIntersecting - ParasolidConstants.PK_self_intersect_unset_c), XtFieldValue.Ptr(0)] });
+            [XtFieldValue.Unsigned(data.SelfIntersecting - ParasolidConstants.PK_self_intersect_unset_c + 1), XtFieldValue.Ptr(0)] });
         SetNode(nodes, map, nurbs, new XtNode
         {
             Type=(int)XtNodeTypes.NurbsCurve, Index=nurbs, Fields=
@@ -669,12 +891,17 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(vertices), XtFieldValue.Ptr(mults), XtFieldValue.Ptr(knots),
             ],
         });
+        var floating = map.FloatingCurves.Contains(tag);
         return new XtNode
         {
             Type=(int)XtNodeTypes.BCurve, Index=index, Fields=
             [
-                XtFieldValue.Int(NodeId(index, map)), XtFieldValue.Ptr(0), XtFieldValue.Ptr(Ptr(map.EdgeSlots, curve.OwnerEdge)),
-                XtFieldValue.Ptr(NextCurve(tag, map)), XtFieldValue.Ptr(PreviousCurve(tag, map)), XtFieldValue.Ptr(0),
+                floating ? XtFieldValue.Int(0) : XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                floating ? XtFieldValue.Ptr(0) : XtFieldValue.Ptr(CurveOwner(curve, map)),
+                floating ? XtFieldValue.Ptr(0) : XtFieldValue.Ptr(NextCurve(tag, map)),
+                floating ? XtFieldValue.Ptr(0) : XtFieldValue.Ptr(PreviousCurve(tag, map)),
+                floating ? XtFieldValue.Ptr(0) : GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'), XtFieldValue.Ptr(nurbs), XtFieldValue.Ptr(curveData),
             ],
         };
@@ -691,15 +918,295 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(index, map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(Ptr(map.EdgeSlots, curve.OwnerEdge)),
+                XtFieldValue.Ptr(CurveOwner(curve, map)),
                 XtFieldValue.Ptr(NextCurve(tag, map)),
                 XtFieldValue.Ptr(PreviousCurve(tag, map)),
-                XtFieldValue.Ptr(0),
+                GeometricOwnerField(tag, map),
                 XtFieldValue.Char('+'),
                 XtFieldValue.Vec(data.CenterX, data.CenterY, data.CenterZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
                 XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
                 XtFieldValue.RealValue(data.Radius),
+            ],
+        };
+    }
+
+    private static XtNode EllipseNode(XtNodeIndex index, CurveTag tag, CurveRecord curve, NodeMap map)
+    {
+        var data = KernelRuntime.EllipseDataPool[curve.DataIndex];
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.Ellipse,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(CurveOwner(curve, map)),
+                XtFieldValue.Ptr(NextCurve(tag, map)),
+                XtFieldValue.Ptr(PreviousCurve(tag, map)),
+                GeometricOwnerField(tag, map),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Vec(data.CenterX, data.CenterY, data.CenterZ),
+                XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
+                XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
+                XtFieldValue.RealValue(data.R1),
+                XtFieldValue.RealValue(data.R2),
+            ],
+        };
+    }
+
+    private static XtNode TrimmedCurveNode(XtNodeIndex index, CurveTag tag, CurveRecord curve, NodeMap map)
+    {
+        ref readonly var data = ref KernelRuntime.TrCurveDataPool[curve.DataIndex];
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.TrimmedCurve,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(CurveOwner(curve, map)),
+                XtFieldValue.Ptr(NextCurve(tag, map)),
+                XtFieldValue.Ptr(PreviousCurve(tag, map)),
+                GeometricOwnerField(tag, map),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Ptr(Ptr(map.CurveTags, data.BasisCurveTag)),
+                XtFieldValue.Vec(data.Point1.X, data.Point1.Y, data.Point1.Z),
+                XtFieldValue.Vec(data.Point2.X, data.Point2.Y, data.Point2.Z),
+                XtFieldValue.RealValue(data.Parm1),
+                XtFieldValue.RealValue(data.Parm2),
+            ],
+        };
+    }
+
+    private static XtNode SpCurveNode(XtNodeIndex index, CurveTag tag, CurveRecord curve, NodeMap map)
+    {
+        ref readonly var data = ref KernelRuntime.SpCurveDataPool[curve.DataIndex];
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.SpCurve,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(CurveOwner(curve, map)),
+                XtFieldValue.Ptr(NextCurve(tag, map)),
+                XtFieldValue.Ptr(PreviousCurve(tag, map)),
+                GeometricOwnerField(tag, map),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.SurfTag)),
+                XtFieldValue.Ptr(Ptr(map.CurveTags, data.BCurveTag)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Null(),
+            ],
+        };
+    }
+
+    private static XtNode BSurfaceNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface,
+        ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        ref readonly var data = ref KernelRuntime.BSurfaceDataStore[surface.DataIndex];
+        var nurbs = AddIndex(nodes, ref graph, ref map);
+        var vertices = AddIndex(nodes, ref graph, ref map);
+        var uMults = AddIndex(nodes, ref graph, ref map);
+        var vMults = AddIndex(nodes, ref graph, ref map);
+        var uKnots = AddIndex(nodes, ref graph, ref map);
+        var vKnots = AddIndex(nodes, ref graph, ref map);
+        var surfaceData = AddIndex(nodes, ref graph, ref map);
+
+        var poles = data.PolesSpan();
+        var poleFields = new XtFieldValue[poles.Length];
+        for (BufferOffset i = 0; i < poles.Length; i++) poleFields[i] = XtFieldValue.RealValue(poles[i]);
+        SetNode(nodes, map, vertices, new XtNode { Type = (int)XtNodeTypes.BSplineVertices, Index = vertices, VariableLength = poles.Length, Fields = poleFields });
+
+        var uKnotValues = data.UKnotsSpan();
+        var vKnotValues = data.VKnotsSpan();
+        var uMultiplicities = data.UKnotMultsSpan();
+        var vMultiplicities = data.VKnotMultsSpan();
+        var uKnotFields = new XtFieldValue[data.NUKnots];
+        var vKnotFields = new XtFieldValue[data.NVKnots];
+        var uMultFields = new XtFieldValue[data.NUKnots];
+        var vMultFields = new XtFieldValue[data.NVKnots];
+        for (KnotIndex i = 0; i < data.NUKnots; i++)
+        {
+            uKnotFields[i] = XtFieldValue.RealValue(uKnotValues[i]);
+            uMultFields[i] = XtFieldValue.Int(uMultiplicities[i]);
+        }
+        for (KnotIndex i = 0; i < data.NVKnots; i++)
+        {
+            vKnotFields[i] = XtFieldValue.RealValue(vKnotValues[i]);
+            vMultFields[i] = XtFieldValue.Int(vMultiplicities[i]);
+        }
+        SetNode(nodes, map, uKnots, new XtNode { Type = (int)XtNodeTypes.KnotSet, Index = uKnots, VariableLength = data.NUKnots, Fields = uKnotFields });
+        SetNode(nodes, map, vKnots, new XtNode { Type = (int)XtNodeTypes.KnotSet, Index = vKnots, VariableLength = data.NVKnots, Fields = vKnotFields });
+        SetNode(nodes, map, uMults, new XtNode { Type = (int)XtNodeTypes.KnotMultiplicities, Index = uMults, VariableLength = data.NUKnots, Fields = uMultFields });
+        SetNode(nodes, map, vMults, new XtNode { Type = (int)XtNodeTypes.KnotMultiplicities, Index = vMults, VariableLength = data.NVKnots, Fields = vMultFields });
+
+        // SURFACE_DATA persistent fields mirror what Parasolid transmits for a
+        // created B-surface: floor/ceil integer bounds of the original UV box,
+        // unset extended box, and 'B' original-range boundary markers.
+        SetNode(nodes, map, surfaceData, new XtNode
+        {
+            Type = (int)XtNodeTypes.SurfaceData,
+            Index = surfaceData,
+            Fields =
+            [
+                XtFieldValue.IntervalValue(Math.Floor(surface.UMin), Math.Ceiling(surface.UMax)),
+                XtFieldValue.IntervalValue(Math.Floor(surface.VMin), Math.Ceiling(surface.VMax)),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Unsigned(data.SelfIntersecting - ParasolidConstants.PK_self_intersect_unset_c + 1),
+                XtFieldValue.Char('B'),
+                XtFieldValue.Char('B'),
+                XtFieldValue.Char('B'),
+                XtFieldValue.Char('B'),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Null(),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(0),
+            ],
+        });
+
+        SetNode(nodes, map, nurbs, new XtNode
+        {
+            Type = (int)XtNodeTypes.NurbsSurf,
+            Index = nurbs,
+            Fields =
+            [
+                XtFieldValue.Logical(data.IsUPeriodic != 0),
+                XtFieldValue.Logical(data.IsVPeriodic != 0),
+                XtFieldValue.Int(data.UDegree),
+                XtFieldValue.Int(data.VDegree),
+                XtFieldValue.Int(data.NUVertices),
+                XtFieldValue.Int(data.NVVertices),
+                XtFieldValue.Unsigned(data.UKnotType - ParasolidConstants.PK_knot_unset_c),
+                XtFieldValue.Unsigned(data.VKnotType - ParasolidConstants.PK_knot_unset_c),
+                XtFieldValue.Int(data.NUKnots),
+                XtFieldValue.Int(data.NVKnots),
+                XtFieldValue.Logical(data.IsRational != 0),
+                XtFieldValue.Logical(data.IsUClosed != 0),
+                XtFieldValue.Logical(data.IsVClosed != 0),
+                XtFieldValue.Unsigned(data.Form - ParasolidConstants.PK_BSURF_form_unset_c),
+                XtFieldValue.Int(data.VertexDim),
+                XtFieldValue.Ptr(vertices),
+                XtFieldValue.Ptr(uMults),
+                XtFieldValue.Ptr(vMults),
+                XtFieldValue.Ptr(uKnots),
+                XtFieldValue.Ptr(vKnots),
+            ],
+        });
+
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.BSurface,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
+                XtFieldValue.Ptr(NextSurface(tag, map)),
+                XtFieldValue.Ptr(PreviousSurface(tag, map)),
+                GeometricOwnerField(tag, map),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Ptr(nurbs),
+                XtFieldValue.Ptr(surfaceData),
+            ],
+        };
+    }
+
+    private static XtNode SweptSurfaceNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
+    {
+        ref readonly var data = ref KernelRuntime.SweptDataPool[surface.DataIndex];
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.SweptSurf,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
+                XtFieldValue.Ptr(NextSurface(tag, map)),
+                XtFieldValue.Ptr(PreviousSurface(tag, map)),
+                GeometricOwnerField(tag, map),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Ptr(Ptr(map.CurveTags, data.SectionCurveTag)),
+                XtFieldValue.Vec(data.Sweep.X, data.Sweep.Y, data.Sweep.Z),
+                XtFieldValue.Null(),
+            ],
+        };
+    }
+
+    private static XtNode SpunSurfaceNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
+    {
+        ref readonly var data = ref KernelRuntime.SpunDataPool[surface.DataIndex];
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.SpunSurf,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
+                XtFieldValue.Ptr(NextSurface(tag, map)),
+                XtFieldValue.Ptr(PreviousSurface(tag, map)),
+                GeometricOwnerField(tag, map),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Ptr(Ptr(map.CurveTags, data.ProfileCurveTag)),
+                XtFieldValue.Vec(data.Base.X, data.Base.Y, data.Base.Z),
+                XtFieldValue.Vec(data.Axis.X, data.Axis.Y, data.Axis.Z),
+                SpunVector(data.Start),
+                SpunVector(data.End),
+                data.StartParam != 0 ? XtFieldValue.RealValue(data.StartParam) : XtFieldValue.Null(),
+                data.EndParam != 0 ? XtFieldValue.RealValue(data.EndParam) : XtFieldValue.Null(),
+                SpunVector(data.XAxis),
+                XtFieldValue.Null(),
+            ],
+        };
+    }
+
+    // Schema-nullable spun fields carry a zero vector only when unset by the
+    // creating API; a real degeneracy point never coincides with the origin
+    // of the axis frame (the profile would be degenerate there).
+    private static XtFieldValue SpunVector(KernelVector3 value)
+        => value.X == 0 && value.Y == 0 && value.Z == 0
+            ? XtFieldValue.Null()
+            : XtFieldValue.Vec(value.X, value.Y, value.Z);
+
+    private static XtNode OffsetSurfaceNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
+    {
+        ref readonly var data = ref KernelRuntime.OffsetDataPool[surface.DataIndex];
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.OffsetSurf,
+            Index = index,
+            Fields =
+            [
+                XtFieldValue.Int(NodeId(index, map)),
+                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(SurfaceOwner(surface, map)),
+                XtFieldValue.Ptr(NextSurface(tag, map)),
+                XtFieldValue.Ptr(PreviousSurface(tag, map)),
+                GeometricOwnerField(tag, map),
+                XtFieldValue.Char('+'),
+                XtFieldValue.Char((char)data.Check),
+                XtFieldValue.Logical(false),
+                XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.BaseSurfTag)),
+                XtFieldValue.RealValue(data.Offset),
+                XtFieldValue.Null(),
             ],
         };
     }
@@ -726,6 +1233,21 @@ internal static unsafe class XtWriter
     private static XtNodeIndex Ptr(Dictionary<int, XtNodeIndex> map, int slotOrTag)
     {
         return slotOrTag >= 0 && map.TryGetValue(slotOrTag, out var value) ? value : 0;
+    }
+
+    // Parasolid chains ownerless dependency geometry (a trimmed curve's basis,
+    // an SP curve's 2D B-curve, a swept section) in the body's boundary chain
+    // with the body itself as owner; owner=0 is rejected on receive.
+    private static XtNodeIndex CurveOwner(CurveRecord curve, NodeMap map)
+    {
+        var edge = Ptr(map.EdgeSlots, curve.OwnerEdge);
+        return edge != 0 ? edge : map.Body;
+    }
+
+    private static XtNodeIndex SurfaceOwner(SurfaceRecord surface, NodeMap map)
+    {
+        var face = Ptr(map.FaceSlots, surface.OwnerFace);
+        return face != 0 ? face : map.Body;
     }
 
     private static XtNodeIndex FirstSolidShell(NodeMap map)
@@ -857,45 +1379,26 @@ internal static unsafe class XtWriter
     }
 
     private static XtNodeIndex NextSurface(SurfTag tag, NodeMap map)
-    {
-        var slot = KernelRuntime.GetSurfaceSlotByTag(tag);
-        if (slot < 0)
-            return 0;
-
-        var surface = KernelRuntime.Surfaces[slot];
-        var firstTag = map.FirstFaceSlot >= 0 ? KernelRuntime.GetFaceRecord(map.FirstFaceSlot).SurfTag : 0;
-        return surface.NextInBody != firstTag ? Ptr(map.SurfaceTags, surface.NextInBody) : 0;
-    }
+        => ChainNeighbour(tag, map.SurfaceChain, map.SurfaceTags, offset: 1);
 
     private static XtNodeIndex PreviousSurface(SurfTag tag, NodeMap map)
-    {
-        var slot = KernelRuntime.GetSurfaceSlotByTag(tag);
-        if (slot < 0)
-            return 0;
-
-        var surface = KernelRuntime.Surfaces[slot];
-        return surface.OwnerFace != map.FirstFaceSlot ? Ptr(map.SurfaceTags, surface.PrevInBody) : 0;
-    }
+        => ChainNeighbour(tag, map.SurfaceChain, map.SurfaceTags, offset: -1);
 
     private static XtNodeIndex NextCurve(CurveTag tag, NodeMap map)
-    {
-        var slot = KernelRuntime.GetCurveSlotByTag(tag);
-        if (slot < 0)
-            return 0;
-
-        var curve = KernelRuntime.Curves[slot];
-        var firstTag = map.FirstEdgeSlot >= 0 ? KernelRuntime.GetEdgeRecord(map.FirstEdgeSlot).CurveTag : 0;
-        return curve.NextInBody != firstTag ? Ptr(map.CurveTags, curve.NextInBody) : 0;
-    }
+        => ChainNeighbour(tag, map.CurveChain, map.CurveTags, offset: 1);
 
     private static XtNodeIndex PreviousCurve(CurveTag tag, NodeMap map)
-    {
-        var slot = KernelRuntime.GetCurveSlotByTag(tag);
-        if (slot < 0)
-            return 0;
+        => ChainNeighbour(tag, map.CurveChain, map.CurveTags, offset: -1);
 
-        var curve = KernelRuntime.Curves[slot];
-        return curve.OwnerEdge != map.FirstEdgeSlot ? Ptr(map.CurveTags, curve.PrevInBody) : 0;
+    private static XtNodeIndex ChainNeighbour(int tag, List<int> chain, Dictionary<int, XtNodeIndex> tags, int offset)
+    {
+        var index = chain.IndexOf(tag);
+        if (index < 0)
+            return 0;
+        var neighbour = index + offset;
+        if (neighbour < 0 || neighbour >= chain.Count)
+            return 0;
+        return tags.TryGetValue(chain[neighbour], out var node) ? node : 0;
     }
 
     private static XtNodeIndex NextPoint(PointTag tag, NodeMap map)
@@ -951,6 +1454,11 @@ internal static unsafe class XtWriter
         public Dictionary<int, XtNodeIndex> SurfaceTags;
         public Dictionary<int, XtNodeIndex> CurveTags;
         public Dictionary<int, XtNodeIndex> PointTags;
+        public List<int> SurfaceChain;
+        public List<int> CurveChain;
+        public HashSet<int> FloatingCurves;
+        public Dictionary<int, XtNodeIndex> GeometricOwnerNodes;
+        public List<(XtNodeIndex Node, int DependentTag, bool DependentIsCurve, int SharedTag, bool SharedIsCurve)> PendingGeometricOwners;
 
         public NodeMap()
         {
@@ -972,6 +1480,11 @@ internal static unsafe class XtWriter
             SurfaceTags = new Dictionary<int, XtNodeIndex>();
             CurveTags = new Dictionary<int, XtNodeIndex>();
             PointTags = new Dictionary<int, XtNodeIndex>();
+            SurfaceChain = [];
+            CurveChain = [];
+            FloatingCurves = new HashSet<int>();
+            GeometricOwnerNodes = new Dictionary<int, XtNodeIndex>();
+            PendingGeometricOwners = new List<(XtNodeIndex, int, bool, int, bool)>();
         }
     }
 
