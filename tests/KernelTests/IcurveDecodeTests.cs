@@ -11,7 +11,7 @@ namespace KernelTests;
 /// unknown enums. Layout is verified against the document order: start
 /// terminator hvec, chart rows, end terminator hvec.
 /// </summary>
-public unsafe class IcurveDecodeTests
+public unsafe class IcurveDecodeTests : IDisposable
 {
     public IcurveDecodeTests()
     {
