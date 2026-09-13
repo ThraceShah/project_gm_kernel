@@ -247,6 +247,8 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_memory_full;
         }
         AttachPools(memory);
+        GeometryEvaluationCache.Attach(memory);
+        GeometryEvaluationCache.BumpModelGeometryEpoch();
         session->Returns.SetFrustrumCallbacks(globalMemoryCallbacks.alloc_fn, globalMemoryCallbacks.free_fn);
         session->SessionGeneration = System.Threading.Interlocked.Increment(ref nextSessionGeneration);
         ResetBCurves();
@@ -270,6 +272,8 @@ internal static unsafe partial class KernelRuntime
         MemoryPointer()->Free(session);
         DisposePools();
         ResetBCurves();
+        GeometryEvaluationCache.Detach(memory);
+        GeometryEvaluationCache.BumpModelGeometryEpoch();
         State.Session = null;
         SessionMemoryOwner.ResetXtAssociations();
         // Sweep the allocator: every block the session owned is returned and
