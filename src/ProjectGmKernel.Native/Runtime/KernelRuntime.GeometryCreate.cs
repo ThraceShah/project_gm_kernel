@@ -580,6 +580,7 @@ private static int AllocateCurveSlot(int dataSlot, CurveClass curveClass, double
         FreeCurveData(curveClass, dataSlot);
         return ParasolidConstants.PK_ERROR_memory_full;
     }
+    GeometryEvaluationCache.BumpModelGeometryEpoch(); // creation invalidates cross-call caches (§13.8)
     ref var curve = ref Curves[slot];
     AssignPartition(ref curve.Header, CurrentPartition);
     curve.Class = curveClass;
@@ -608,6 +609,7 @@ private static int AllocateSurfaceSlot(int dataSlot, SurfaceClass surfaceClass, 
         FreeSurfaceData(surfaceClass, dataSlot);
         return ParasolidConstants.PK_ERROR_memory_full;
     }
+    GeometryEvaluationCache.BumpModelGeometryEpoch(); // creation invalidates cross-call caches (§13.8)
     ref var surface = ref Surfaces[slot];
     AssignPartition(ref surface.Header, CurrentPartition);
     surface.Class = surfaceClass;

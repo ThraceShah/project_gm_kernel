@@ -77,6 +77,7 @@ internal ref struct EvaluationSampleStore
     }
 
     internal readonly BufferCount Count => count;
+    internal readonly BufferCount Capacity => slots.Length;
 
     /// <summary>
     /// Exact hit: bit-identical parameter plus matching query semantics, side,

@@ -2758,6 +2758,7 @@ internal static unsafe partial class KernelRuntime
 
     private static int MarkGotoImplementation(int mark)
     {
+        GeometryEvaluationCache.BumpModelGeometryEpoch(); // rollback invalidates cross-call caches (§13.8)
         if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
         var session = State.Session;
@@ -2886,6 +2887,7 @@ internal static unsafe partial class KernelRuntime
 
     private static int EntityDeleteImplementation(int nEntities, int* entities)
     {
+        GeometryEvaluationCache.BumpModelGeometryEpoch(); // deletion invalidates cross-call caches (§13.8)
         if (entities is null || nEntities <= 0)
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (!IsSessionStarted)
