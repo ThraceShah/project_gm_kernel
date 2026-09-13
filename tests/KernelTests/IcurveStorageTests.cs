@@ -9,7 +9,7 @@ namespace KernelTests;
 /// variable-length blocks, source surface sense independence from face sense,
 /// and the BLEND_BOUND constructive reference that never becomes a public tag.
 /// </summary>
-public unsafe class IcurveStorageTests
+public unsafe class IcurveStorageTests : IDisposable
 {
     public IcurveStorageTests()
     {
