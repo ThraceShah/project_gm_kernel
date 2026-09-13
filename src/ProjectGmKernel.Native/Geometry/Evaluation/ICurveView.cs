@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
@@ -16,20 +17,26 @@ internal enum ICurveQueryKind : byte
 /// <summary>
 /// Evaluation outcome: solver stop and semantic classification travel
 /// together, but only <see cref="Status"/> decides publishability (§18.1).
+/// Plan and derivative side enter the report per §19.2.
 /// </summary>
 internal readonly struct ICurveEvalReport
 {
     internal readonly ICurveQueryKind Kind;
     internal readonly AlgorithmStatus Status;
-    internal readonly BufferOffset Segment;      // original chart segment, -1 = none
+    internal readonly ICurveConstraintPlan Plan;  // selected (or forced) plan; Auto for node/domain queries
+    internal readonly ChartSide Side;             // published derivative side at chart nodes
+    internal readonly BufferOffset Segment;       // original chart segment, -1 = none
     internal readonly BufferOffset NewtonIterations;
-    internal readonly double Residual;           // final max |F| in scaled units
+    internal readonly double Residual;            // final max |F| in scaled units
 
     internal ICurveEvalReport(ICurveQueryKind kind, AlgorithmStatus status,
-        BufferOffset segment, BufferOffset newtonIterations, double residual)
+        ICurveConstraintPlan plan, ChartSide side, BufferOffset segment,
+        BufferOffset newtonIterations, double residual)
     {
         Kind = kind;
         Status = status;
+        Plan = plan;
+        Side = side;
         Segment = segment;
         NewtonIterations = newtonIterations;
         Residual = residual;
