@@ -1,22 +1,20 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
 /// <summary>
-/// Icurve evaluation, regular-interval vertical slice (spec §7.3, §16.1–16.2,
-/// task T07): the implicit/implicit plan I3 over the original chart, plus the
-/// ChartPoint and domain-exit contracts. The two-parameter plans (P4/P2/I2)
-/// and the terminator path attach to the same query classification in later
-/// tasks; GATE-T keeps terminator intervals out of this slice.
-///
-/// Semantics are fixed before any solving: an exact chart node returns the
-/// original point (§5.4), regular intervals solve
-///   F(x,t) = [φ₀(x), φ₁(x), p(x,t)] = 0
-/// with the chord-plane residual from the prepared map, and everything outside
-/// [t₀, t_{m−1}] is refused instead of clamped (§5.4, §9.5).
+/// Icurve evaluation over the original chart (spec §7, §16, tasks T07/T08):
+/// the five regular-interval constraint plans P4/P2/I3/I2/I1 behind one query
+/// classification, plus the ChartPoint and domain-exit contracts. Semantics
+/// are fixed before any solving: an exact chart node returns the original
+/// point (§5.4), regular intervals solve their plan's defining system on the
+/// prepared chord plane, and everything outside [t₀, t_{m−1}] is refused
+/// instead of clamped. The plan is an internal representation choice — it may
+/// not change the requested point, branch or parameter (§7 preamble).
 /// </summary>
 internal static class ICurveEvaluation
 {
@@ -24,105 +22,357 @@ internal static class ICurveEvaluation
     internal const int MaxFastNewtonIterations = 8;
     /// <summary>Convergence target relative to the local length scale.</summary>
     internal const double ResidualTolerance = 1e-13;
+    /// <summary>Highest derivative order this slice provides (§16.4 capability).</summary>
+    internal const int MaxDerivativeOrder = 2;
 
     /// <summary>
     /// Evaluate position and, requested, the derivatives of the defined branch
-    /// at native parameter t. Output is written only when every requested
-    /// order validated — a failed D2 never publishes a partial D0 (§18.5).
+    /// at native parameter t with automatic plan selection. Output is written
+    /// only when every requested order validated — a failed D2 never publishes
+    /// a partial D0 (§18.5).
     /// </summary>
     internal static AlgorithmStatus Evaluate(in ICurveView view, double t, DerivativeOrder order,
         Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        => EvaluateWithPlan(in view, t, order, ICurveConstraintPlan.Auto, derivatives, out report);
+
+    /// <summary>
+    /// Evaluate with an explicit plan. <see cref="ICurveConstraintPlan.Auto"/>
+    /// applies the §7.6 selection rules; an explicit plan is honored when the
+    /// supports carry the required capabilities and refused otherwise (no
+    /// silent fallback — a forced plan that cannot run must say so).
+    /// </summary>
+    internal static AlgorithmStatus EvaluateWithPlan(in ICurveView view, double t, DerivativeOrder order,
+        ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
-        report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun, -1, 0, 0);
-        if (order < 0 || order > 2) return AlgorithmStatus.InvalidInput;
-        if (derivatives.Length <= order || derivatives.Length < 1) return AlgorithmStatus.OutputTooSmall;
+        report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
+            ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
+        if (order < 0 || order > MaxDerivativeOrder) return AlgorithmStatus.InvalidInput;
+        if (derivatives.Length <= order) return AlgorithmStatus.OutputTooSmall;
         if (!double.IsFinite(t)) return AlgorithmStatus.InvalidInput;
 
         var parameters = view.ChartParameters;
         if (t < parameters[0] || t > parameters[^1])
         {
-            report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.InvalidInput, -1, 0, 0);
+            report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.InvalidInput,
+                ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
             return AlgorithmStatus.InvalidInput;
         }
 
         // Exact chart node: the original point is the answer (§5.4); nearby
         // parameters are never snapped here.
         if (OriginalChartParameterMap.IsChartNode(parameters, t))
-            return EvaluateChartPoint(in view, t, order, derivatives, out report);
+            return EvaluateChartPoint(in view, t, order, plan, derivatives, out report);
 
-        return EvaluateRegularInterval(in view, t, order, derivatives, out report);
+        return EvaluateRegularInterval(in view, t, order, plan, derivatives, out report);
     }
 
     /// <summary>Chart node contract: exact position, one-sided derivatives, no averaging.</summary>
     private static AlgorithmStatus EvaluateChartPoint(in ICurveView view, double t, DerivativeOrder order,
-        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
-        // At an interior node the right side is the published derivative side;
-        // LocateSegment's side argument keeps the two sides distinguishable.
+        // The right side is the published derivative side at an interior node.
         var locateStatus = OriginalChartParameterMap.LocateSegment(view.ChartParameters, t, ChartSide.Right, out var segment);
         if (locateStatus != AlgorithmStatus.Success)
         {
-            report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, locateStatus, -1, 0, 0);
+            report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, locateStatus, plan, ChartSide.Right, -1, 0, 0);
             return locateStatus;
         }
 
-        // The node position is the defining data; solve nothing.
-        var position = view.ChartPositions[segment];
         if (order == 0)
         {
-            derivatives[0] = position;
-            report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success, segment, 0, 0);
+            derivatives[0] = view.ChartPositions[segment];
+            report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
+                plan, ChartSide.Right, segment, 0, 0);
             return AlgorithmStatus.Success;
         }
 
-        // Derivatives reuse the regular-interval linearization, evaluated at
-        // the node with the chosen side's chord data. Start the Newton from
-        // the exact node position; it converges without moving the point.
-        var solveStatus = SolveWithDerivatives(in view, in position, t, segment, order, derivatives,
+        // Derivatives reuse the selected plan's defining system, entered at the
+        // node; the published D0 stays the original anchor regardless.
+        var selected = plan == ICurveConstraintPlan.Auto ? ICurveConstraintPlanRules.Select(in view) : plan;
+        var seed = view.ChartPositions[segment];
+        var solveStatus = Solve(in view, in seed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
-        report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, solveStatus, segment, iterations, residual);
+        report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, solveStatus,
+            selected, ChartSide.Right, segment, iterations, residual);
         if (solveStatus != AlgorithmStatus.Success) return solveStatus;
-        derivatives[0] = position; // the published D0 stays the original anchor regardless of the linearization
+        derivatives[0] = seed;
         return AlgorithmStatus.Success;
     }
 
-    /// <summary>Regular interval: I3 Newton from the chord interpolation, then chained derivatives.</summary>
+    /// <summary>Regular interval: classify, select a plan, solve on the chord seed.</summary>
     private static AlgorithmStatus EvaluateRegularInterval(in ICurveView view, double t, DerivativeOrder order,
-        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         var locateStatus = OriginalChartParameterMap.LocateSegment(view.ChartParameters, t, ChartSide.Right, out var segment);
         if (locateStatus != AlgorithmStatus.Success)
         {
-            report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, locateStatus, -1, 0, 0);
+            report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, locateStatus,
+                plan, ChartSide.Right, -1, 0, 0);
             return locateStatus;
         }
 
         // Seed: the chord point Q(t) — inside the parameter plane by construction.
-        var lambda = (t - view.ChartParameters[segment]) / (view.ChartParameters[segment + 1] - view.ChartParameters[segment]);
+        var next = view.ChartParameters[segment + 1] - view.ChartParameters[segment];
+        var lambda = (t - view.ChartParameters[segment]) / next;
         var seed = Add(
             Scale(view.ChartPositions[segment], 1 - lambda),
             Scale(view.ChartPositions[segment + 1], lambda));
 
-        var status = SolveWithDerivatives(in view, in seed, t, segment, order, derivatives,
+        var selected = plan == ICurveConstraintPlan.Auto ? ICurveConstraintPlanRules.Select(in view) : plan;
+        var status = Solve(in view, in seed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
-        report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status, segment, iterations, residual);
+        report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
+            selected, ChartSide.Right, segment, iterations, residual);
         return status;
     }
 
-    /// <summary>
-    /// I3 Newton for [φ₀, φ₁, p] and, on success, D1/D2 through the reused
-    /// root factorization (§16.1: one decomposition, several right sides).
-    /// Implicit jets come from the analytic module with its sheet guards.
-    /// </summary>
-    private static AlgorithmStatus SolveWithDerivatives(in ICurveView view, in KernelVector3 seed,
-        double t, BufferOffset segment, DerivativeOrder order,
+    /// <summary>Finite switch over the plans; no residual callbacks cross this boundary (§19.4).</summary>
+    private static AlgorithmStatus Solve(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
         Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
+    {
+        iterations = 0;
+        residual = 0;
+        return plan switch
+        {
+            ICurveConstraintPlan.I1 => SolveI1(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
+            ICurveConstraintPlan.P2 => SolveP2(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
+            ICurveConstraintPlan.I3 => SolveI3(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
+            ICurveConstraintPlan.I2 => SolveI2(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
+            ICurveConstraintPlan.P4 => SolveP4(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
+            _ => AlgorithmStatus.InvalidInput,
+        };
+    }
+
+    /// <summary>x′ᵀHx′ via the analytic Hessian, contracted without materializing the tensor (§16.2).</summary>
+    private static double SecondDirectional(in AnalyticSurface surface, in KernelVector3 root,
+        in KernelVector3 direction)
+    {
+        if (AnalyticImplicitEvaluation.Evaluate(in surface, in root, 2, out var jet) != AlgorithmStatus.Success)
+            return double.NaN;
+        return jet.Hxx * direction.X * direction.X
+            + 2 * jet.Hxy * direction.X * direction.Y
+            + 2 * jet.Hxz * direction.X * direction.Z
+            + jet.Hyy * direction.Y * direction.Y
+            + 2 * jet.Hyz * direction.Y * direction.Z
+            + jet.Hzz * direction.Z * direction.Z;
+    }
+
+    // ── I1: plane support + implicit other (§7.5) ────────────────
+
+    private static AlgorithmStatus SolveI1(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual)
+    {
+        iterations = 0;
+        residual = 0;
+        var planeIsSupport0 = view.Support0.Kind == SurfaceClass.Plane;
+        var planeIsSupport1 = view.Support1.Kind == SurfaceClass.Plane;
+        if (planeIsSupport0 == planeIsSupport1) return AlgorithmStatus.Unsupported; // needs exactly one plane
+
+        var n = planeIsSupport0 ? view.Support0.Axis : view.Support1.Axis;
+        var c = planeIsSupport0 ? view.Support0.Origin : view.Support1.Origin;
+        var other = planeIsSupport0 ? view.Support1 : view.Support0;
+        var scale = view.ChartScales[segment];
+        var chordUnit = view.ChartChordUnits[segment];
+
+        // Intersection line of the support plane (fixed) and the parameter
+        // plane through Q(t): direction b = unit(n × e); base point
+        // x0(t) = Q + α·n′ with n′ = n − (n·e)e and α = n·(c−Q)/|n×e|²
+        // (projecting along n instead would divide by the identically zero
+        // n·(n×e)).
+        var cross = Cross(n, chordUnit);
+        var crossNormSq = Dot(cross, cross);
+        if (!(crossNormSq > 1e-24)) return AlgorithmStatus.Singular; // near-parallel planes
+        var b = Scale(cross, 1 / Math.Sqrt(crossNormSq));
+        var nTilde = Sub(n, Scale(chordUnit, Dot(n, chordUnit)));
+
+        var next = view.ChartParameters[segment + 1] - view.ChartParameters[segment];
+        var lambda = (t - view.ChartParameters[segment]) / next;
+        var q = Add(
+            Scale(view.ChartPositions[segment], 1 - lambda),
+            Scale(view.ChartPositions[segment + 1], lambda));
+        var alpha = Dot(n, Sub(c, q)) / crossNormSq;
+        var x0 = Add(q, Scale(nTilde, alpha));
+
+        // 1D Newton for φ_other(x0 + μb) = 0 from the projected chord seed μ=0.
+        double mu = 0;
+        var gradient = default(KernelVector3);
+        var converged = false;
+        for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
+        {
+            iterations = iteration + 1;
+            var point = Add(x0, Scale(b, mu));
+            if (AnalyticImplicitEvaluation.Evaluate(in other, in point, 1, out var jet) != AlgorithmStatus.Success)
+                return AlgorithmStatus.Unsupported;
+            gradient = jet.Gradient;
+            residual = Math.Abs(jet.Value);
+            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { point.X, point.Y, point.Z }));
+            if (residual <= ResidualTolerance * lengthScale)
+            {
+                converged = true;
+                break;
+            }
+            var slope = Dot(gradient, b);
+            if (!(Math.Abs(slope) > 1e-300)) return AlgorithmStatus.Singular;
+            mu -= jet.Value / slope;
+            if (!double.IsFinite(mu)) return AlgorithmStatus.NumericalFailure;
+        }
+        if (!converged) return AlgorithmStatus.NotConverged;
+
+        var root = Add(x0, Scale(b, mu));
+        derivatives[0] = root;
+
+        // D1: x0′ = Q′ + α′n′ with Q′ = e/f and α′ = −(n·Q′)/|n×e|²; the
+        // scalar chain μ′ = −(∇φ·x0′)/(∇φ·b).
+        var qPrime = Scale(chordUnit, 1 / scale);
+        var x0Prime = Add(qPrime, Scale(nTilde, -Dot(n, qPrime) / crossNormSq));
+        if (order >= 1)
+        {
+            var slope = Dot(gradient, b);
+            var muPrime = -Dot(gradient, x0Prime) / slope;
+            derivatives[1] = Add(x0Prime, Scale(b, muPrime));
+            if (!IsFinite(derivatives[1])) return AlgorithmStatus.NumericalFailure;
+        }
+
+        // D2: μ″ = −(x′ᵀHx′)/(∇φ·b); x0″ = 0.
+        if (order >= 2)
+        {
+            var xPrime = derivatives[1];
+            var curvature = SecondDirectional(in other, in root, in xPrime);
+            var muDoublePrime = -curvature / Dot(gradient, b);
+            derivatives[2] = Scale(b, muDoublePrime);
+            if (!IsFinite(derivatives[2])) return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    // ── P2: parametric side + implicit other (§7.2) ──────────────
+
+    private static AlgorithmStatus SolveP2(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual)
+    {
+        iterations = 0;
+        residual = 0;
+        // The parametric side is support0 in this slice (both analytic
+        // supports qualify; a flipped-side variant arrives with non-analytic
+        // supports in later tasks).
+        if (AnalyticParametricEvaluation.TryRecoverWitness(in view.Support0, in seed, out var u0, out var v0)
+            != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+        var scale = view.ChartScales[segment];
+        var chordUnit = view.ChartChordUnits[segment];
+
+        Span<double> q = stackalloc double[2] { u0, v0 };
+        Span<double> jacobian = stackalloc double[4];
+        Span<double> jacobianCopy = stackalloc double[4];
+        Span<double> residualVector = stackalloc double[2];
+        Span<double> step = stackalloc double[2];
+        Span<double> model = stackalloc double[2];
+        Span<int> pivots = stackalloc int[2];
+        Span<KernelVector3> jet = stackalloc KernelVector3[4]; // layout(1,1): S, Su, Sv, Suv
+        if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout1))
+            return AlgorithmStatus.InvalidInput;
+
+        var gradient1 = default(KernelVector3);
+        var converged = false;
+        for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
+        {
+            iterations = iteration + 1;
+            if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout1, jet) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NotConverged; // trial left the valid parameter domain
+            if (AnalyticImplicitEvaluation.Evaluate(in view.Support1, in jet[0], 1, out var jet1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.Unsupported;
+            gradient1 = jet1.Gradient;
+
+            residualVector[0] = jet1.Value;
+            residualVector[1] = OriginalChartParameterMap.PlaneResidual(
+                view.ChartPositions, view.ChartParameters, view.ChartScales, view.ChartChordUnits, segment, t, in jet[0]);
+            // Layout index: GetIndex(u,v) = u·(VOrder+1)+v, so Su is (1,0) and Sv is (0,1).
+            var su1 = jet[layout1.GetIndex(1, 0)];
+            var sv1 = jet[layout1.GetIndex(0, 1)];
+            jacobian[0] = Dot(gradient1, su1); jacobian[1] = Dot(gradient1, sv1);
+            jacobian[2] = Dot(chordUnit, su1); jacobian[3] = Dot(chordUnit, sv1);
+
+            residual = SmallLinearSolve.Norm(residualVector);
+            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { jet[0].X, jet[0].Y, jet[0].Z }));
+            if (residual <= ResidualTolerance * lengthScale)
+            {
+                converged = true;
+                break;
+            }
+            var stepStatus = NewtonStep.ComputeStep(jacobian, jacobianCopy, residualVector, 2, pivots, model, step, out var predicted);
+            if (stepStatus != AlgorithmStatus.Success || !(predicted > 0))
+                return stepStatus == AlgorithmStatus.Success ? AlgorithmStatus.Singular : stepStatus;
+            q[0] += step[0];
+            q[1] += step[1];
+            if (!double.IsFinite(q[0]) || !double.IsFinite(q[1])) return AlgorithmStatus.NumericalFailure;
+        }
+        if (!converged) return AlgorithmStatus.NotConverged;
+
+        // Root jets at second order; one factorization serves D1 and D2 (§16.1).
+        if (!SurfaceDerivativeLayout.TryCreate(2, 2, out var layout2))
+            return AlgorithmStatus.InvalidInput;
+        Span<KernelVector3> rootJet = stackalloc KernelVector3[9];
+        if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout2, rootJet) != AlgorithmStatus.Success)
+            return AlgorithmStatus.NotConverged;
+        if (AnalyticImplicitEvaluation.Evaluate(in view.Support1, in rootJet[0], order >= 2 ? 2 : 1, out var rootJet1)
+            != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+
+        var rootSu = rootJet[layout2.GetIndex(1, 0)];
+        var rootSv = rootJet[layout2.GetIndex(0, 1)];
+        jacobian[0] = Dot(rootJet1.Gradient, rootSu); jacobian[1] = Dot(rootJet1.Gradient, rootSv);
+        jacobian[2] = Dot(chordUnit, rootSu); jacobian[3] = Dot(chordUnit, rootSv);
+        if (SmallLinearSolve.LuFactorize(jacobian, 2, pivots) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Singular;
+
+        derivatives[0] = rootJet[0];
+
+        if (order >= 1)
+        {
+            // J (u′,v′) = [0, 1/f]; x′ = Su u′ + Sv v′.
+            Span<double> d1 = stackalloc double[2];
+            d1[0] = 0; d1[1] = 1 / scale;
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            derivatives[1] = Add(Scale(rootSu, d1[0]), Scale(rootSv, d1[1]));
+            if (!IsFinite(derivatives[1])) return AlgorithmStatus.NumericalFailure;
+        }
+
+        if (order >= 2)
+        {
+            // A = Suu u′² + 2Suv u′v′ + Svv v′²;
+            // J (u″,v″) = −[x′ᵀH₁x′ + ∇φ₁·A; e·A]; x″ = A + Su u″ + Sv v″.
+            Span<double> d1 = stackalloc double[2];
+            d1[0] = 0; d1[1] = 1 / scale;
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            var xPrime = Add(Scale(rootSu, d1[0]), Scale(rootSv, d1[1]));
+            var second = ParametricSecondChain(in layout2, rootJet, d1[0], d1[1]);
+            Span<double> d2 = stackalloc double[2];
+            d2[0] = -(SecondDirectional(in view.Support1, in rootJet[0], in xPrime)
+                + Dot(rootJet1.Gradient, second));
+            d2[1] = -Dot(chordUnit, second);
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d2) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            derivatives[2] = Add(second, Add(Scale(rootSu, d2[0]), Scale(rootSv, d2[1])));
+            if (!IsFinite(derivatives[2])) return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    // ── I3: implicit/implicit, 3×3 (§7.3) ────────────────────────
+
+    private static AlgorithmStatus SolveI3(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual)
     {
         iterations = 0;
         residual = 0;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
-        var anchor = view.ChartPositions[segment];
 
         Span<double> x = stackalloc double[3] { seed.X, seed.Y, seed.Z };
         Span<double> jacobian = stackalloc double[9];
@@ -132,8 +382,6 @@ internal static class ICurveEvaluation
         Span<double> model = stackalloc double[3];
         Span<int> pivots = stackalloc int[3];
 
-        var gradient0 = default(KernelVector3);
-        var gradient1 = default(KernelVector3);
         var converged = false;
         for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
         {
@@ -142,15 +390,13 @@ internal static class ICurveEvaluation
             if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0) != AlgorithmStatus.Success
                 || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1) != AlgorithmStatus.Success)
                 return AlgorithmStatus.Unsupported;
-            gradient0 = jet0.Gradient;
-            gradient1 = jet1.Gradient;
             residualVector[0] = jet0.Value;
             residualVector[1] = jet1.Value;
             residualVector[2] = OriginalChartParameterMap.PlaneResidual(
                 view.ChartPositions, view.ChartParameters, view.ChartScales, view.ChartChordUnits, segment, t, in point);
 
-            jacobian[0] = gradient0.X; jacobian[1] = gradient0.Y; jacobian[2] = gradient0.Z;
-            jacobian[3] = gradient1.X; jacobian[4] = gradient1.Y; jacobian[5] = gradient1.Z;
+            jacobian[0] = jet0.Gradient.X; jacobian[1] = jet0.Gradient.Y; jacobian[2] = jet0.Gradient.Z;
+            jacobian[3] = jet1.Gradient.X; jacobian[4] = jet1.Gradient.Y; jacobian[5] = jet1.Gradient.Z;
             jacobian[6] = chordUnit.X; jacobian[7] = chordUnit.Y; jacobian[8] = chordUnit.Z;
 
             residual = SmallLinearSolve.Norm(residualVector);
@@ -176,7 +422,7 @@ internal static class ICurveEvaluation
         var root = Vector(x[0], x[1], x[2]);
 
         // Rebuild the true root Jacobian once, then serve every derivative
-        // right side from this decomposition (§14.2).
+        // right side from this decomposition (§14.2, §16.1).
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in root, order >= 2 ? 2 : 1, out var rootJet0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in root, order >= 2 ? 2 : 1, out var rootJet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
@@ -213,4 +459,247 @@ internal static class ICurveEvaluation
         }
         return AlgorithmStatus.Success;
     }
+
+    // ── I2: implicit/implicit with the plane eliminated, 2×2 (§7.4) ──
+
+    private static AlgorithmStatus SolveI2(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual)
+    {
+        iterations = 0;
+        residual = 0;
+        var scale = view.ChartScales[segment];
+        var chordUnit = view.ChartChordUnits[segment];
+
+        // In-plane orthonormal basis from the least-parallel coordinate axis,
+        // fixed for the whole original segment (§7.4).
+        var axis = LeastParallelAxis(in chordUnit);
+        var u = Unit(Sub(axis, Scale(chordUnit, Dot(axis, chordUnit))));
+        var v = Cross(chordUnit, u);
+        if (!IsFinite(u) || !IsFinite(v)) return AlgorithmStatus.Singular;
+
+        Span<double> xi = stackalloc double[2];
+        Span<double> jacobian = stackalloc double[4];
+        Span<double> jacobianCopy = stackalloc double[4];
+        Span<double> residualVector = stackalloc double[2];
+        Span<double> step = stackalloc double[2];
+        Span<double> model = stackalloc double[2];
+        Span<int> pivots = stackalloc int[2];
+
+        var converged = false;
+        for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
+        {
+            iterations = iteration + 1;
+            var point = Add(seed, Add(Scale(u, xi[0]), Scale(v, xi[1])));
+            if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0) != AlgorithmStatus.Success
+                || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.Unsupported;
+            residualVector[0] = jet0.Value;
+            residualVector[1] = jet1.Value;
+            jacobian[0] = Dot(jet0.Gradient, u); jacobian[1] = Dot(jet0.Gradient, v);
+            jacobian[2] = Dot(jet1.Gradient, u); jacobian[3] = Dot(jet1.Gradient, v);
+
+            residual = SmallLinearSolve.Norm(residualVector);
+            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { point.X, point.Y, point.Z }));
+            if (residual <= ResidualTolerance * lengthScale)
+            {
+                converged = true;
+                break;
+            }
+            var stepStatus = NewtonStep.ComputeStep(jacobian, jacobianCopy, residualVector, 2, pivots, model, step, out var predicted);
+            if (stepStatus != AlgorithmStatus.Success || !(predicted > 0))
+                return stepStatus == AlgorithmStatus.Success ? AlgorithmStatus.Singular : stepStatus;
+            xi[0] += step[0];
+            xi[1] += step[1];
+            if (!double.IsFinite(xi[0]) || !double.IsFinite(xi[1])) return AlgorithmStatus.NumericalFailure;
+        }
+        if (!converged) return AlgorithmStatus.NotConverged;
+
+        var root = Add(seed, Add(Scale(u, xi[0]), Scale(v, xi[1])));
+        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in root, order >= 2 ? 2 : 1, out var rootJet0) != AlgorithmStatus.Success
+            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in root, order >= 2 ? 2 : 1, out var rootJet1) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+        jacobian[0] = Dot(rootJet0.Gradient, u); jacobian[1] = Dot(rootJet0.Gradient, v);
+        jacobian[2] = Dot(rootJet1.Gradient, u); jacobian[3] = Dot(rootJet1.Gradient, v);
+        if (SmallLinearSolve.LuFactorize(jacobian, 2, pivots) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Singular;
+
+        derivatives[0] = root;
+
+        if (order >= 1)
+        {
+            // Q′ = e/f enters the right side — the I2 chain must not drop the
+            // moving base point (§16.2, task T08 check).
+            var qPrime = Scale(chordUnit, 1 / scale);
+            Span<double> d1 = stackalloc double[2];
+            d1[0] = -Dot(rootJet0.Gradient, qPrime);
+            d1[1] = -Dot(rootJet1.Gradient, qPrime);
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            derivatives[1] = Add(qPrime, Add(Scale(u, d1[0]), Scale(v, d1[1])));
+            if (!IsFinite(derivatives[1])) return AlgorithmStatus.NumericalFailure;
+        }
+
+        if (order >= 2)
+        {
+            // J ξ″ = −[x′ᵀH₀x′, x′ᵀH₁x′]; x″ = U ξ″ (Q″ = 0).
+            var qPrime = Scale(chordUnit, 1 / scale);
+            Span<double> d1 = stackalloc double[2];
+            d1[0] = -Dot(rootJet0.Gradient, qPrime);
+            d1[1] = -Dot(rootJet1.Gradient, qPrime);
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            var xPrime = Add(qPrime, Add(Scale(u, d1[0]), Scale(v, d1[1])));
+            Span<double> d2 = stackalloc double[2];
+            d2[0] = -SecondDirectional(in view.Support0, in root, in xPrime);
+            d2[1] = -SecondDirectional(in view.Support1, in root, in xPrime);
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d2) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            derivatives[2] = Add(Scale(u, d2[0]), Scale(v, d2[1]));
+            if (!IsFinite(derivatives[2])) return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    private static KernelVector3 LeastParallelAxis(in KernelVector3 direction)
+    {
+        var ax = Math.Abs(direction.X);
+        var ay = Math.Abs(direction.Y);
+        var az = Math.Abs(direction.Z);
+        if (ax <= ay && ax <= az) return Vector(1, 0, 0);
+        return ay <= az ? Vector(0, 1, 0) : Vector(0, 0, 1);
+    }
+
+    // ── P4: parametric/parametric, 4×4 baseline (§7.1) ───────────
+
+    private static AlgorithmStatus SolveP4(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual)
+    {
+        iterations = 0;
+        residual = 0;
+        if (AnalyticParametricEvaluation.TryRecoverWitness(in view.Support0, in seed, out var u0, out var v0) != AlgorithmStatus.Success
+            || AnalyticParametricEvaluation.TryRecoverWitness(in view.Support1, in seed, out var u1, out var v1) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+        var scale = view.ChartScales[segment];
+        var chordUnit = view.ChartChordUnits[segment];
+
+        Span<double> q = stackalloc double[4] { u0, v0, u1, v1 };
+        Span<double> jacobian = stackalloc double[16];
+        Span<double> jacobianCopy = stackalloc double[16];
+        Span<double> residualVector = stackalloc double[4];
+        Span<double> step = stackalloc double[4];
+        Span<double> model = stackalloc double[4];
+        Span<int> pivots = stackalloc int[4];
+        Span<KernelVector3> jet0 = stackalloc KernelVector3[4];
+        Span<KernelVector3> jet1 = stackalloc KernelVector3[4];
+        if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout1))
+            return AlgorithmStatus.InvalidInput;
+
+        var converged = false;
+        for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
+        {
+            iterations = iteration + 1;
+            if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout1, jet0) != AlgorithmStatus.Success
+                || SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout1, jet1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NotConverged; // trial left a valid parameter domain
+
+            residualVector[0] = jet0[0].X - jet1[0].X;
+            residualVector[1] = jet0[0].Y - jet1[0].Y;
+            residualVector[2] = jet0[0].Z - jet1[0].Z;
+            residualVector[3] = OriginalChartParameterMap.PlaneResidual(
+                view.ChartPositions, view.ChartParameters, view.ChartScales, view.ChartChordUnits, segment, t, in jet0[0]);
+
+            // Layout index: Su is (1,0), Sv is (0,1).
+            var su0 = jet0[layout1.GetIndex(1, 0)];
+            var sv0 = jet0[layout1.GetIndex(0, 1)];
+            var su1 = jet1[layout1.GetIndex(1, 0)];
+            var sv1 = jet1[layout1.GetIndex(0, 1)];
+            jacobian[0] = su0.X; jacobian[1] = sv0.X; jacobian[2] = -su1.X; jacobian[3] = -sv1.X;
+            jacobian[4] = su0.Y; jacobian[5] = sv0.Y; jacobian[6] = -su1.Y; jacobian[7] = -sv1.Y;
+            jacobian[8] = su0.Z; jacobian[9] = sv0.Z; jacobian[10] = -su1.Z; jacobian[11] = -sv1.Z;
+            jacobian[12] = Dot(chordUnit, su0); jacobian[13] = Dot(chordUnit, sv0); jacobian[14] = 0; jacobian[15] = 0;
+
+            residual = SmallLinearSolve.Norm(residualVector);
+            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { jet0[0].X, jet0[0].Y, jet0[0].Z }));
+            if (residual <= ResidualTolerance * lengthScale)
+            {
+                converged = true;
+                break;
+            }
+            var stepStatus = NewtonStep.ComputeStep(jacobian, jacobianCopy, residualVector, 4, pivots, model, step, out var predicted);
+            if (stepStatus != AlgorithmStatus.Success || !(predicted > 0))
+                return stepStatus == AlgorithmStatus.Success ? AlgorithmStatus.Singular : stepStatus;
+            for (var i = 0; i < 4; i++)
+            {
+                q[i] += step[i];
+                if (!double.IsFinite(q[i])) return AlgorithmStatus.NumericalFailure;
+            }
+        }
+        if (!converged) return AlgorithmStatus.NotConverged;
+
+        // Root jets at second order; the agreed output side is x0 (§7.1).
+        if (!SurfaceDerivativeLayout.TryCreate(2, 2, out var layout2))
+            return AlgorithmStatus.InvalidInput;
+        Span<KernelVector3> rootJet0 = stackalloc KernelVector3[9];
+        Span<KernelVector3> rootJet1 = stackalloc KernelVector3[9];
+        if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout2, rootJet0) != AlgorithmStatus.Success
+            || SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout2, rootJet1) != AlgorithmStatus.Success)
+            return AlgorithmStatus.NotConverged;
+
+        var rootSu0 = rootJet0[layout2.GetIndex(1, 0)];
+        var rootSv0 = rootJet0[layout2.GetIndex(0, 1)];
+        var rootSu1 = rootJet1[layout2.GetIndex(1, 0)];
+        var rootSv1 = rootJet1[layout2.GetIndex(0, 1)];
+        jacobian[0] = rootSu0.X; jacobian[1] = rootSv0.X; jacobian[2] = -rootSu1.X; jacobian[3] = -rootSv1.X;
+        jacobian[4] = rootSu0.Y; jacobian[5] = rootSv0.Y; jacobian[6] = -rootSu1.Y; jacobian[7] = -rootSv1.Y;
+        jacobian[8] = rootSu0.Z; jacobian[9] = rootSv0.Z; jacobian[10] = -rootSu1.Z; jacobian[11] = -rootSv1.Z;
+        jacobian[12] = Dot(chordUnit, rootSu0); jacobian[13] = Dot(chordUnit, rootSv0); jacobian[14] = 0; jacobian[15] = 0;
+        if (SmallLinearSolve.LuFactorize(jacobian, 4, pivots) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Singular;
+
+        derivatives[0] = rootJet0[0];
+
+        if (order >= 1)
+        {
+            // J q′ = [0,0,0,1/f]; x′ = S0u u0′ + S0v v0′.
+            Span<double> d1 = stackalloc double[4];
+            d1[0] = 0; d1[1] = 0; d1[2] = 0; d1[3] = 1 / scale;
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 4, pivots, d1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            derivatives[1] = Add(Scale(rootSu0, d1[0]), Scale(rootSv0, d1[1]));
+            if (!IsFinite(derivatives[1])) return AlgorithmStatus.NumericalFailure;
+        }
+
+        if (order >= 2)
+        {
+            // A₀/A₁ are the second-order chain terms of each surface;
+            // J q″ = −[A₀−A₁, e·A₀]; x″ = A₀ + S0u u0″ + S0v v0″.
+            Span<double> d1 = stackalloc double[4];
+            d1[0] = 0; d1[1] = 0; d1[2] = 0; d1[3] = 1 / scale;
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 4, pivots, d1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            var a0 = ParametricSecondChain(in layout2, rootJet0, d1[0], d1[1]);
+            var a1 = ParametricSecondChain(in layout2, rootJet1, d1[2], d1[3]);
+            Span<double> d2 = stackalloc double[4];
+            d2[0] = -(a0.X - a1.X);
+            d2[1] = -(a0.Y - a1.Y);
+            d2[2] = -(a0.Z - a1.Z);
+            d2[3] = -Dot(chordUnit, a0);
+            if (SmallLinearSolve.LuSolveInPlace(jacobian, 4, pivots, d2) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NumericalFailure;
+            derivatives[2] = Add(a0, Add(Scale(rootSu0, d2[0]), Scale(rootSv0, d2[1])));
+            if (!IsFinite(derivatives[2])) return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    private static KernelVector3 ParametricSecondChain(in SurfaceDerivativeLayout layout,
+        ReadOnlySpan<KernelVector3> jet, double du, double dv)
+        => Add(
+            Add(Scale(jet[layout.GetIndex(2, 0)], du * du), Scale(jet[layout.GetIndex(1, 1)], 2 * du * dv)),
+            Scale(jet[layout.GetIndex(0, 2)], dv * dv));
+
+    private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)
+        => Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 }
