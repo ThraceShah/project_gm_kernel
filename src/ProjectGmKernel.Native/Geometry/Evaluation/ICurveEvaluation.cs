@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -44,6 +45,22 @@ internal static class ICurveEvaluation
     internal static AlgorithmStatus EvaluateWithPlan(in ICurveView view, double t, DerivativeOrder order,
         ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
+        var empty = new EvaluationSampleStore(Span<CurveSample>.Empty);
+        return EvaluateWithCache(in view, t, order, plan, ref empty, derivatives, out report);
+    }
+
+    /// <summary>
+    /// Cached evaluation over the operation-level sample atlas (spec §13,
+    /// task T09): an exact verified sample publishes directly; otherwise the
+    /// request is corrected on the defined branch — seeded from a Hermite
+    /// bracket prediction when the atlas offers one — and the validated result
+    /// joins the atlas. Predictions never publish uncorrected, and failed
+    /// requests store nothing.
+    /// </summary>
+    internal static AlgorithmStatus EvaluateWithCache(in ICurveView view, double t, DerivativeOrder order,
+        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, Span<KernelVector3> derivatives,
+        out ICurveEvalReport report)
+    {
         report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
             ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
         if (order < 0 || order > MaxDerivativeOrder) return AlgorithmStatus.InvalidInput;
@@ -61,14 +78,15 @@ internal static class ICurveEvaluation
         // Exact chart node: the original point is the answer (§5.4); nearby
         // parameters are never snapped here.
         if (OriginalChartParameterMap.IsChartNode(parameters, t))
-            return EvaluateChartPoint(in view, t, order, plan, derivatives, out report);
+            return EvaluateChartPoint(in view, t, order, plan, ref cache, derivatives, out report);
 
-        return EvaluateRegularInterval(in view, t, order, plan, derivatives, out report);
+        return EvaluateRegularInterval(in view, t, order, plan, ref cache, derivatives, out report);
     }
 
     /// <summary>Chart node contract: exact position, one-sided derivatives, no averaging.</summary>
     private static AlgorithmStatus EvaluateChartPoint(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, Span<KernelVector3> derivatives,
+        out ICurveEvalReport report)
     {
         // The right side is the published derivative side at an interior node.
         var locateStatus = OriginalChartParameterMap.LocateSegment(view.ChartParameters, t, ChartSide.Right, out var segment);
@@ -82,13 +100,20 @@ internal static class ICurveEvaluation
         {
             derivatives[0] = view.ChartPositions[segment];
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
-                plan, ChartSide.Right, segment, 0, 0);
+                plan, ChartSide.Right, segment, 0, 0, CacheHitKind.Exact);
             return AlgorithmStatus.Success;
         }
 
         // Derivatives reuse the selected plan's defining system, entered at the
         // node; the published D0 stays the original anchor regardless.
         var selected = plan == ICurveConstraintPlan.Auto ? ICurveConstraintPlanRules.Select(in view) : plan;
+        if (cache.TryFindExact(t, ICurveQueryKind.ChartPoint, ChartSide.Right, order, CacheErrorBound, out var hit))
+        {
+            PublishHit(in hit, order, derivatives);
+            report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
+                hit.Plan, ChartSide.Right, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact);
+            return AlgorithmStatus.Success;
+        }
         var seed = view.ChartPositions[segment];
         var solveStatus = Solve(in view, in seed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
@@ -96,12 +121,16 @@ internal static class ICurveEvaluation
             selected, ChartSide.Right, segment, iterations, residual);
         if (solveStatus != AlgorithmStatus.Success) return solveStatus;
         derivatives[0] = seed;
+        _ = cache.TryInsert(new CurveSample(t, in seed, derivatives[1],
+            order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.ChartPoint,
+            ChartSide.Right, segment, residual, SampleSourceKind.CorrectedRoot, selected));
         return AlgorithmStatus.Success;
     }
 
-    /// <summary>Regular interval: classify, select a plan, solve on the chord seed.</summary>
+    /// <summary>Regular interval: classify, select a plan, solve on the seed.</summary>
     private static AlgorithmStatus EvaluateRegularInterval(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, Span<KernelVector3> derivatives,
+        out ICurveEvalReport report)
     {
         var locateStatus = OriginalChartParameterMap.LocateSegment(view.ChartParameters, t, ChartSide.Right, out var segment);
         if (locateStatus != AlgorithmStatus.Success)
@@ -119,11 +148,53 @@ internal static class ICurveEvaluation
             Scale(view.ChartPositions[segment + 1], lambda));
 
         var selected = plan == ICurveConstraintPlan.Auto ? ICurveConstraintPlanRules.Select(in view) : plan;
-        var status = Solve(in view, in seed, t, segment, order, selected, derivatives,
+        if (cache.TryFindExact(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right, order, CacheErrorBound, out var hit))
+        {
+            PublishHit(in hit, order, derivatives);
+            report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, AlgorithmStatus.Success,
+                hit.Plan, ChartSide.Right, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact);
+            return AlgorithmStatus.Success;
+        }
+
+        // Neighbor prediction as the seed when the atlas brackets the request;
+        // the predicted seed is corrected below before anything publishes and
+        // falls back to the chord point when unavailable (§13.4).
+        var hitKind = CacheHitKind.None;
+        var solveSeed = seed;
+        if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right, out var lower, out var upper))
+        {
+            Span<double> predicted = stackalloc double[3];
+            if (ParameterCorrespondence.TryHermitePredict(lower.Parameter,
+                    stackalloc[] { lower.Position.X, lower.Position.Y, lower.Position.Z },
+                    stackalloc[] { lower.First.X, lower.First.Y, lower.First.Z },
+                    upper.Parameter,
+                    stackalloc[] { upper.Position.X, upper.Position.Y, upper.Position.Z },
+                    stackalloc[] { upper.First.X, upper.First.Y, upper.First.Z },
+                    t, predicted) == AlgorithmStatus.Success)
+            {
+                solveSeed = Vector(predicted[0], predicted[1], predicted[2]);
+                hitKind = CacheHitKind.NeighborSeed;
+            }
+        }
+        var status = Solve(in view, in solveSeed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
         report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
-            selected, ChartSide.Right, segment, iterations, residual);
+            selected, ChartSide.Right, segment, iterations, residual, hitKind);
+        if (status != AlgorithmStatus.Success) return status;
+        _ = cache.TryInsert(new CurveSample(t, derivatives[0], derivatives[1],
+            order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
+            ChartSide.Right, segment, residual, SampleSourceKind.CorrectedRoot, selected));
         return status;
+    }
+
+    /// <summary>Sample error bound for exact-hit acceptance (slice default).</summary>
+    internal const double CacheErrorBound = 1e-11;
+
+    private static void PublishHit(in CurveSample hit, DerivativeOrder order, Span<KernelVector3> derivatives)
+    {
+        derivatives[0] = hit.Position;
+        if (order >= 1) derivatives[1] = hit.First;
+        if (order >= 2) derivatives[2] = hit.Second;
     }
 
     /// <summary>Finite switch over the plans; no residual callbacks cross this boundary (§19.4).</summary>

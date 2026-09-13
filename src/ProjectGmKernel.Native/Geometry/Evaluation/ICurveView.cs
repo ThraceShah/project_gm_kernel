@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
 
@@ -28,10 +29,11 @@ internal readonly struct ICurveEvalReport
     internal readonly BufferOffset Segment;       // original chart segment, -1 = none
     internal readonly BufferOffset NewtonIterations;
     internal readonly double Residual;            // final max |F| in scaled units
+    internal readonly CacheHitKind CacheHit;      // how this request was served (§19.2)
 
     internal ICurveEvalReport(ICurveQueryKind kind, AlgorithmStatus status,
         ICurveConstraintPlan plan, ChartSide side, BufferOffset segment,
-        BufferOffset newtonIterations, double residual)
+        BufferOffset newtonIterations, double residual, CacheHitKind cacheHit = CacheHitKind.None)
     {
         Kind = kind;
         Status = status;
@@ -40,6 +42,7 @@ internal readonly struct ICurveEvalReport
         Segment = segment;
         NewtonIterations = newtonIterations;
         Residual = residual;
+        CacheHit = cacheHit;
     }
 }
 
