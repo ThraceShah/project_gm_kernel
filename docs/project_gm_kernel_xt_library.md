@@ -123,7 +123,9 @@ schema namespace 的 `JSON` 类（`XtGeneratedModelJson` 统一分发），直�
 行、零反射，AOT 安全。V13 base schema `SCH_1300120_13006` 是第 16 个编译
 内置绑定，因此 embedded-schema 归档（identity 形如
 `SCH_<版本>_<当前编号>_13006`，如 corpus 的 `managed-embedded.x_t`）无需
-`--schema-dir` 即可解析，工具按形状兼容规则选择内核绑定并在 stderr 提示；
+`--schema-dir` 即可解析，绑定选择按精确 identity → 归档声明的 schema 编号
+（目录层版本规则 + 形状校验，build 号错位的归档因此命中正确内核绑定）→
+全链形状兼容的顺序进行，选择结果在 stderr 提示；
 直连 `SCH_1300120_13006` 的 V13 文件同样可输出 typed JSON。其余未内置
 schema（V29 以前、V39+ 等）需传 `--schema-dir` 或
 `PARASOLID_SCHEMA_DIR`/`P_SCHEMA` 提供支撑 schema；构建时也可用

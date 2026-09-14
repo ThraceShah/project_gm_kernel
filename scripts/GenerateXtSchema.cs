@@ -269,11 +269,35 @@ string GenerateBindings(List<VersionSchema> schemas)
     foreach(var version in schemas)
         output.Append("            case \"").Append(version.Identity).Append("\": return global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).AppendLine(".CODEC.Decode(document);");
     output.AppendLine("        }");
-    foreach(var version in schemas.OrderByDescending(static version=>version.ProducerVersion))
-        output.Append("        if(document.Schema.Identity.StartsWith(\"").Append(version.Identity).Append("_\",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).Append(".DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).AppendLine(".CODEC.Decode(document);");
+    // Embedded-schema archives keep the writing build number in their identity
+    // (e.g. SCH_3500149_35002_13006 vs the vendored SCH_3500137_35002), so an
+    // identity prefix can never match. Prefer the binding declared by the
+    // archive's current schema number (catalog version rule: never skip ahead
+    // to a newer-major binding), still guarded by a shape check.
+    output.AppendLine("        var archiveIdentity = ParseArchiveSchemaIdentity(document.Schema.Identity);");
+    output.AppendLine("        if (archiveIdentity is not null) switch (archiveIdentity.GetValueOrDefault().Number)");
+    output.AppendLine("        {");
+    foreach(var group in schemas.GroupBy(static version => version.Definition.SchemaNumber).OrderBy(static pair => pair.Key))
+    {
+        output.Append("            case ").Append(group.Key).AppendLine(":");
+        foreach(var version in group.OrderByDescending(static version => version.ProducerVersion))
+        {
+            var modelerVersion = version.ProducerVersion;
+            output.Append("                if((").Append(modelerVersion).Append("<=archiveIdentity.GetValueOrDefault().ProducerVersion||").Append(modelerVersion).Append("/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).Append(".DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).AppendLine(".CODEC.Decode(document);");
+        }
+        output.AppendLine("                break;");
+    }
+    output.AppendLine("        }");
     foreach(var version in schemas.Where(static version=>!version.Alias))
         output.Append("        if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).Append(".DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.").Append(Namespace(version.Identity)).AppendLine(".CODEC.Decode(document);");
     output.AppendLine("        throw new XtFormatException(XtErrorCode.UnsupportedVersion, $\"No generated model binding exists for {document.Schema.Identity}.\");");
+    output.AppendLine("    }");
+    output.AppendLine("    private static (int Number, int ProducerVersion)? ParseArchiveSchemaIdentity(string identity)");
+    output.AppendLine("    {");
+    output.AppendLine("        if(!identity.StartsWith(\"SCH_\",StringComparison.Ordinal))return null;");
+    output.AppendLine("        var parts=identity[4..].Split('_');");
+    output.AppendLine("        if(parts.Length<2||!int.TryParse(parts[0],System.Globalization.NumberStyles.None,System.Globalization.CultureInfo.InvariantCulture,out var producer)||!int.TryParse(parts[1],System.Globalization.NumberStyles.None,System.Globalization.CultureInfo.InvariantCulture,out var number))return null;");
+    output.AppendLine("        return (number, producer);");
     output.AppendLine("    }");
     output.AppendLine("    public static XtDocument RoundTrip(XtDocument document) => Decode(document).ToDocument();");
     output.AppendLine("}");

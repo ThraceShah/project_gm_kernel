@@ -209784,22 +209784,56 @@ public static class XtGeneratedModelCodec
             case "SCH_3800150_37102": return global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.CODEC.Decode(document);
             case "SCH_1300120_13006": return global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.CODEC.Decode(document);
         }
-        if(document.Schema.Identity.StartsWith("SCH_3800150_37102_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3701097_37102_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3600031_36001_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3501127_35102_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3501127_35102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3501127_35102.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3500137_35002_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3500137_35002.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3500137_35002.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3500127_35001_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3500127_35001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3500127_35001.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3401113_34101_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3401113_34101.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3401113_34101.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3400066_34001_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3400066_34001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3400066_34001.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3301152_33103_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3301152_33103.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3301152_33103.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3301102_33101_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3301102_33101.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3301102_33101.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3200138_32001_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3200138_32001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3200138_32001.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3200020_31100_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3200020_31100.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3200020_31100.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3101042_31001_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3100020_30100_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_3000119_30000_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.CODEC.Decode(document);
-        if(document.Schema.Identity.StartsWith("SCH_1300120_13006_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.CODEC.Decode(document);
+        var archiveIdentity = ParseArchiveSchemaIdentity(document.Schema.Identity);
+        if (archiveIdentity is not null) switch (archiveIdentity.GetValueOrDefault().Number)
+        {
+            case 13006:
+                if((1300120<=archiveIdentity.GetValueOrDefault().ProducerVersion||1300120/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.CODEC.Decode(document);
+                break;
+            case 30000:
+                if((3000119<=archiveIdentity.GetValueOrDefault().ProducerVersion||3000119/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.CODEC.Decode(document);
+                break;
+            case 30100:
+                if((3100020<=archiveIdentity.GetValueOrDefault().ProducerVersion||3100020/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.CODEC.Decode(document);
+                break;
+            case 31001:
+                if((3101042<=archiveIdentity.GetValueOrDefault().ProducerVersion||3101042/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.CODEC.Decode(document);
+                break;
+            case 31100:
+                if((3200020<=archiveIdentity.GetValueOrDefault().ProducerVersion||3200020/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3200020_31100.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3200020_31100.CODEC.Decode(document);
+                break;
+            case 32001:
+                if((3200138<=archiveIdentity.GetValueOrDefault().ProducerVersion||3200138/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3200138_32001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3200138_32001.CODEC.Decode(document);
+                break;
+            case 33101:
+                if((3301102<=archiveIdentity.GetValueOrDefault().ProducerVersion||3301102/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3301102_33101.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3301102_33101.CODEC.Decode(document);
+                break;
+            case 33103:
+                if((3301152<=archiveIdentity.GetValueOrDefault().ProducerVersion||3301152/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3301152_33103.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3301152_33103.CODEC.Decode(document);
+                break;
+            case 34001:
+                if((3400066<=archiveIdentity.GetValueOrDefault().ProducerVersion||3400066/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3400066_34001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3400066_34001.CODEC.Decode(document);
+                break;
+            case 34101:
+                if((3401113<=archiveIdentity.GetValueOrDefault().ProducerVersion||3401113/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3401113_34101.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3401113_34101.CODEC.Decode(document);
+                break;
+            case 35001:
+                if((3500127<=archiveIdentity.GetValueOrDefault().ProducerVersion||3500127/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3500127_35001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3500127_35001.CODEC.Decode(document);
+                break;
+            case 35002:
+                if((3500137<=archiveIdentity.GetValueOrDefault().ProducerVersion||3500137/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3500137_35002.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3500137_35002.CODEC.Decode(document);
+                break;
+            case 35102:
+                if((3501127<=archiveIdentity.GetValueOrDefault().ProducerVersion||3501127/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3501127_35102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3501127_35102.CODEC.Decode(document);
+                break;
+            case 36001:
+                if((3600031<=archiveIdentity.GetValueOrDefault().ProducerVersion||3600031/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.CODEC.Decode(document);
+                break;
+            case 37102:
+                if((3800150<=archiveIdentity.GetValueOrDefault().ProducerVersion||3800150/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.CODEC.Decode(document);
+                if((3701097<=archiveIdentity.GetValueOrDefault().ProducerVersion||3701097/100000==archiveIdentity.GetValueOrDefault().ProducerVersion/100000)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.CODEC.Decode(document);
+                break;
+        }
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.CODEC.Decode(document);
@@ -209816,6 +209850,13 @@ public static class XtGeneratedModelCodec
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.CODEC.Decode(document);
         throw new XtFormatException(XtErrorCode.UnsupportedVersion, $"No generated model binding exists for {document.Schema.Identity}.");
+    }
+    private static (int Number, int ProducerVersion)? ParseArchiveSchemaIdentity(string identity)
+    {
+        if(!identity.StartsWith("SCH_",StringComparison.Ordinal))return null;
+        var parts=identity[4..].Split('_');
+        if(parts.Length<2||!int.TryParse(parts[0],System.Globalization.NumberStyles.None,System.Globalization.CultureInfo.InvariantCulture,out var producer)||!int.TryParse(parts[1],System.Globalization.NumberStyles.None,System.Globalization.CultureInfo.InvariantCulture,out var number))return null;
+        return (number, producer);
     }
     public static XtDocument RoundTrip(XtDocument document) => Decode(document).ToDocument();
 }
