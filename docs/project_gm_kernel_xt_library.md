@@ -104,8 +104,10 @@ dotnet publish src/ProjectGmKernel.Xt.JsonTool -c Release -r linux-x64 -o bin/xt
 bin/xt-json-tool/linux-x64/XtToJson <model.x_t> [-o <output.json>] [--compact] [--schema-dir <directory>]
 ```
 
-需要内嵌全部 schema（内部构建）时用固定脚本，它会发布到
-`bin/xt-json-tool-embedded/<rid>` 并自校验内嵌生效：
+需要内嵌全部 schema（内部构建）时用固定脚本，默认发布**当前平台**（如
+Windows 上为 win-x64；NativeAOT 不能跨操作系统编译，Windows 需安装 VS
+C++ 桌面开发组件），发布到 `bin/xt-json-tool-embedded/<rid>` 并自校验内嵌
+生效：
 
 ```
 dotnet run --file scripts/PublishXtToJsonEmbedded.cs [--schema-dir <目录>] [--rid <rid>] [--output <目录>]
