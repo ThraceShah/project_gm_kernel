@@ -22,6 +22,13 @@ var versions = catalog.Schemas
     .ToList();
 var v37 = versions.Single(static version => version.Definition.SchemaNumber == 37102);
 versions.Add(new VersionSchema("SCH_3800150_37102", v37.Definition, 3800150, true));
+// The frozen V13 base schema backs every embedded-schema archive
+// (SCH_<version>_<current>_13006); it must resolve without a schema directory.
+var v13 = catalog.Schemas
+    .Where(static info => info.SchemaNumber == 13006)
+    .OrderBy(static info => info.ModelerVersion)
+    .Last();
+versions.Add(new VersionSchema(v13.Identity, catalog.Resolve(v13.Identity), v13.ModelerVersion, false));
 
 // XT schema field value enums. Numeric entries are harvested from the Parasolid
 // XT Format Reference, "Schema Definitions" chapter; char entries store single
@@ -120,7 +127,7 @@ foreach (var staleHeader in Directory.EnumerateFiles(headerDirectory, "ProjectGm
 }
 WriteOrCheck(Path.Combine(repositoryRoot, "src", "ProjectGmKernel.Xt.Native", "Generated", "XtSchemaExports.generated.cs"), nativeExports);
 WriteOrCheck(Path.Combine(repositoryRoot, "docs", "xt_schema_generated_mapping.md"), mapping);
-Console.WriteLine($"Generated {versions.Count} V30-V38 schema bindings ({versions.Sum(static version => version.Definition.Nodes.Length)} node types)." );
+Console.WriteLine($"Generated {versions.Count} schema bindings (V30-V38 kernels plus V13 embedded base, {versions.Sum(static version => version.Definition.Nodes.Length)} node types)." );
 return;
 
 string GenerateBindings(List<VersionSchema> schemas)

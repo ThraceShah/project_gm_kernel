@@ -5,8 +5,8 @@ using System.Text.Json;
 if (args.Length == 0 || args.Any(static argument => argument is "-h" or "--help"))
 {
     Console.Error.WriteLine("Usage: XtToJson <model.x_t> [-o <output.json>] [--compact] [--schema-dir <directory>]");
-    Console.Error.WriteLine("Converts a Parasolid XT text file into a structured JSON document using the built-in V30-V38 schema bindings.");
-    Console.Error.WriteLine("Files with an embedded schema also need --schema-dir (or PARASOLID_SCHEMA_DIR/P_SCHEMA) for the supporting schemas.");
+    Console.Error.WriteLine("Converts a Parasolid XT text file into a structured JSON document using the built-in V30-V38 schema bindings, the V13 embedded-schema base, and any schemas embedded at build time.");
+    Console.Error.WriteLine("--schema-dir (or PARASOLID_SCHEMA_DIR/P_SCHEMA) supplies additional or overriding schema files for schemas that are not built in.");
     return 1;
 }
 
@@ -58,7 +58,7 @@ try
 }
 catch (XtFormatException exception) when (exception.Code == XtErrorCode.SchemaNotFound && schemaDirectory is null)
 {
-    return Fail($"{exception.Message} Files that embed a schema need --schema-dir (or PARASOLID_SCHEMA_DIR/P_SCHEMA) pointing at the supporting schema files.");
+    return Fail($"{exception.Message} The supporting schema files are not built in; pass --schema-dir (or PARASOLID_SCHEMA_DIR/P_SCHEMA) pointing at the directory that contains them.");
 }
 catch (Exception exception)
 {

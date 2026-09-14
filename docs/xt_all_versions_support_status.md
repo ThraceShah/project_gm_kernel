@@ -6,9 +6,9 @@
 managed/C 模型不再使用 `XtGeometryRow`、`XtMeshRow` 或通用 BREP table；它们
 直接映射 V30–V38 schema 的 node 和 field。
 
-- 14 个 V30–V37 schema 和 V38 producer alias 共 15 个独立 managed namespace
-  和独立 C/C++ 头文件。
-- 2,920 个 schema node 全部生成同名 struct，25,186 个字段全部生成同名成员。
+- 14 个 V30–V37 schema、V38 producer alias 和 V13 embedded base
+  （`SCH_1300120_13006`）共 16 个独立 managed namespace 和独立 C/C++ 头文件。
+- 3,062 个 schema node 全部生成同名 struct，23,391 个字段全部生成同名成员。
 - transmitted node 使用独立连续 typed table；variable field 使用专用 element
   table。
 - `transmit=0` 字段保留在类型中并强制为 `Unavailable`。
@@ -16,10 +16,15 @@ managed/C 模型不再使用 `XtGeometryRow`、`XtMeshRow` 或通用 BREP table�
 - ICurve、Blend、B-spline、SPCurve、TRCurve、Swept、Spun、Frame、Mesh 和
   Lattice 均按 schema 原始节点引用图保存，不做几何降级。
 
-V30–V38 编译 descriptor 内置在 managed/native 发布物中，不需要外部 schema。
-V29 以前及未来版本仍可通过调用方目录使用动态 `XtDocument` codec。发布物禁止
-包含 `.sch_txt` 原文、原始 schema header/terminator、私有 schema 路径、
-Parasolid API/header、`pskernel` 或许可材料。
+V30–V38 与 V13 embedded base 的编译 descriptor 内置在 managed/native 发布物
+中，不需要外部 schema；embedded-schema 归档
+（`SCH_<版本>_<当前编号>_13006`）因此无需 schema 目录即可解析。其余 V29
+以前及未来版本仍可通过调用方目录使用动态 `XtDocument` codec。构建可用
+`-p:XtEmbeddedSchemaDir=<目录>` 显式把 schema 原文内嵌进程序集作为补充
+（默认关闭；发布物禁止包含 `.sch_txt` 原文，开启期间 `ScanXtArtifacts`
+泄漏扫描会失败，仅限内部构建使用）。发布物禁止包含 `.sch_txt` 原文、原始
+schema header/terminator、私有 schema 路径、Parasolid API/header、
+`pskernel` 或许可材料。
 
 ## 当前验收结果
 
@@ -28,11 +33,15 @@ Parasolid API/header、`pskernel` 或许可材料。
 - 597 个合法 API corpus case 已通过
   `XT → schema-specific MODEL → 丢弃 XtDocument → XT → Parasolid receive/compare`。
 - 15 组 × 328 个适用 case，即 4,920 个 V30–V38 版本矩阵项全部通过。
-- C# 与 C 对 2,920 个 node struct、31,139 个 schema/metadata 字段完成
-  `sizeof/offsetof` 核对；其中 schema 原字段为 25,186 个。
-- NativeAOT header 声明、实现和 Linux 动态库均包含 5,427 个 schema-specific
+- C# 与 C 对 3,062 个 node struct、32,700 个 schema/metadata 字段完成
+  `sizeof/offsetof` 核对；其中 schema 原字段为 23,391 个。
+- NativeAOT header 声明、实现和 Linux 动态库均包含 5,704 个 schema-specific
   typed API；头文件公开短类型/API 名，真实导出符号保留 identity；旧 generic
   BREP/giant-row 符号为零。
+- 内置 V13 base 使 embedded-schema 归档在无 schema 目录时完成 base 解析、
+  delta 重建与内核绑定回退（Xt 单测覆盖 `ResolveBySchemaNumber(13006)` 与
+  `EncodeWithBaseSchema` 归档往返；直连 V13 非嵌入式文件也可输出 typed
+  JSON）。
 - managed 测试、原内核 82 项回归、NuGet 独立消费、Linux NativeAOT smoke、
   无 schema 目录 build/pack/publish 和原文泄漏扫描通过。
 - typed corpus 门禁（`CheckParasolidTypeCoverage -- --strict`）`missingCount=0`：
@@ -72,6 +81,7 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ValidateXtSchemaModelCorpus.
 MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ParasolidXtFixtureOracle.cs -- <fixture paths...>
 MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ParasolidSchemaCorpusMatrix.cs -- --schema <identity>
 MSBUILDDISABLENODEREUSE=1 dotnet pack src/ProjectGmKernel.Xt/ProjectGmKernel.Xt.csproj -c Release
+dotnet run --file scripts/PublishXtToJsonEmbedded.cs
 MSBUILDDISABLENODEREUSE=1 dotnet publish src/ProjectGmKernel.Xt.Native/ProjectGmKernel.Xt.Native.csproj -c Release -r linux-x64 -o bin/xt-native/linux-x64
 MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/XtNativeAbiSmoke.cs
 ```

@@ -23,15 +23,37 @@ public sealed class XtSchemaCatalog
 
     public static XtSchemaCatalog OpenBuiltIn()
     {
-        var registrations = XtBuiltInSchemas.Identities
-            .Order(StringComparer.Ordinal)
-            .Select(static identity =>
+        var registrations = new List<Registration>();
+        var identities = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var identity in XtBuiltInSchemas.Identities.Order(StringComparer.Ordinal))
+        {
+            var definition = XtBuiltInSchemas.Resolve(identity);
+            registrations.Add(new Registration(null, null, definition.Info, definition));
+            identities.Add(identity);
+        }
+        AppendEmbeddedSchemas(registrations, identities);
+        return new XtSchemaCatalog(string.Empty, registrations.ToArray());
+    }
+
+    // Schema files embedded at build time (XtEmbeddedSchemaDir MSBuild property)
+    // extend the built-in catalog the same way OpenDirectory adds external
+    // files: built-in definitions win, same-identity files are shape-checked,
+    // and the rest are parsed lazily on first use.
+    private static void AppendEmbeddedSchemas(List<Registration> registrations, HashSet<string> identities)
+    {
+        var names = typeof(XtSchemaCatalog).Assembly.GetManifestResourceNames().Order(StringComparer.Ordinal);
+        foreach (var name in names)
+        {
+            if (!IsEmbeddedSchemaResource(name))
+                continue;
+            var info = InspectEmbedded(name);
+            if (!identities.Add(info.Identity))
             {
-                var definition = XtBuiltInSchemas.Resolve(identity);
-                return new Registration(null, definition.Info, definition);
-            })
-            .ToArray();
-        return new XtSchemaCatalog(string.Empty, registrations);
+                XtGeneratedSchemaRuntime.RequireShape(ParseEmbedded(name, info), XtBuiltInSchemas.Resolve(info.Identity));
+                continue;
+            }
+            registrations.Add(new Registration(null, name, info, null));
+        }
     }
 
     public static XtSchemaCatalog OpenDirectory(string schemaDirectory)
@@ -50,7 +72,7 @@ public sealed class XtSchemaCatalog
         foreach (var identity in XtBuiltInSchemas.Identities.Order(StringComparer.Ordinal))
         {
             var definition = XtBuiltInSchemas.Resolve(identity);
-            registrations.Add(new Registration(null, definition.Info, definition));
+            registrations.Add(new Registration(null, null, definition.Info, definition));
             identities.Add(identity);
         }
         foreach (var path in paths)
@@ -58,11 +80,11 @@ public sealed class XtSchemaCatalog
             var info = Inspect(path);
             if (!identities.Add(info.Identity))
             {
-                var external = Parse(new Registration(path, info, null));
+                var external = Parse(new Registration(path, null, info, null));
                 XtGeneratedSchemaRuntime.RequireShape(external, XtBuiltInSchemas.Resolve(info.Identity));
                 continue;
             }
-            registrations.Add(new Registration(path, info, null));
+            registrations.Add(new Registration(path, null, info, null));
         }
         return new XtSchemaCatalog(directory, registrations.ToArray());
     }
@@ -152,13 +174,41 @@ public sealed class XtSchemaCatalog
         }
     }
 
+    private const string EmbeddedSchemaPrefix = "XtSchema.sch_";
+
+    private static bool IsEmbeddedSchemaResource(string name)
+        => name.StartsWith(EmbeddedSchemaPrefix, StringComparison.Ordinal)
+            && (name.EndsWith(".sch_txt", StringComparison.Ordinal) || name.EndsWith(".s_t", StringComparison.Ordinal));
+
+    private static XtSchemaInfo InspectEmbedded(string resourceName)
+    {
+        using var reader = new StreamReader(OpenEmbeddedSchemaStream(resourceName));
+        return Inspect(reader, resourceName);
+    }
+
+    private static XtSchemaDefinition ParseEmbedded(string resourceName, XtSchemaInfo info)
+    {
+        using var reader = new StreamReader(OpenEmbeddedSchemaStream(resourceName));
+        return Parse(reader, new Registration(resourceName, null, info, null));
+    }
+
+    private static Stream OpenEmbeddedSchemaStream(string resourceName)
+        => typeof(XtSchemaCatalog).Assembly.GetManifestResourceStream(resourceName)
+            ?? throw new XtFormatException(XtErrorCode.SchemaDirectoryNotFound, $"Embedded XT schema resource is missing: {resourceName}");
+
     private static XtSchemaInfo Inspect(string path)
+    {
+        using var reader = new StreamReader(path);
+        return Inspect(reader, path);
+    }
+
+    private static XtSchemaInfo Inspect(TextReader reader, string path)
     {
         var modelerVersion = -1;
         var nodeCount = -1;
         var fieldCount = -1;
         var identity = "";
-        foreach (var rawLine in File.ReadLines(path))
+        while (reader.ReadLine() is { } rawLine)
         {
             var line = rawLine.Trim();
             if (modelerVersion < 0 && TryReadModelerVersion(line, out var version))
@@ -183,6 +233,14 @@ public sealed class XtSchemaCatalog
 
     private static XtSchemaDefinition Parse(Registration registration)
     {
+        if (registration.ResourceName is not null)
+            return ParseEmbedded(registration.ResourceName, registration.Info);
+        using var reader = new StreamReader(registration.Path ?? throw new InvalidOperationException("Built-in schema has no source path."));
+        return Parse(reader, registration);
+    }
+
+    private static XtSchemaDefinition Parse(TextReader reader, Registration registration)
+    {
         var nodes = new List<XtNodeDescriptor>(registration.Info.NodeCount);
         var fields = new List<XtFieldDescriptor>(registration.Info.FieldCount);
         var nodeIds = new HashSet<XtNodeType>();
@@ -197,8 +255,8 @@ public sealed class XtSchemaCatalog
         var currentFieldOffset = 0;
         var lineNumber = 0;
 
-        var path = registration.Path ?? throw new InvalidOperationException("Built-in schema has no source path.");
-        foreach (var rawLine in File.ReadLines(path))
+        var path = registration.Path!;
+        while (reader.ReadLine() is { } rawLine)
         {
             lineNumber++;
             var line = rawLine.Trim();
@@ -233,13 +291,13 @@ public sealed class XtSchemaCatalog
                 var header = SplitWords(first);
                 if (header.Length != 2 || tail.Length != 3)
                     throw Invalid("Invalid schema node declaration.");
-                currentNode = ParseInt(header[0], registration.Path, lineNumber);
+                currentNode = ParseInt(header[0], path, lineNumber);
                 if (!nodeIds.Add(currentNode))
                     throw Invalid($"Duplicate schema node {currentNode}.");
                 currentNodeName = header[1];
                 currentNodeDescription = segments[1].Trim();
                 currentNodeTransmit = ParseBit(tail[0]);
-                currentDeclaredFields = ParseInt(tail[1], registration.Path, lineNumber);
+                currentDeclaredFields = ParseInt(tail[1], path, lineNumber);
                 currentNodeVariable = ParseBit(tail[2]);
                 currentFieldOffset = fields.Count;
                 continue;
@@ -250,8 +308,8 @@ public sealed class XtSchemaCatalog
             var typeText = segments[1].Trim();
             if (typeText.Length != 1 || !"bcdfhilnpqtuvw".Contains(typeText[0]))
                 throw Invalid("Invalid schema field type.");
-            var nodeClass = ParseInt(tail[1], registration.Path, lineNumber);
-            var elementCount = ParseInt(tail[2], registration.Path, lineNumber);
+            var nodeClass = ParseInt(tail[1], path, lineNumber);
+            var elementCount = ParseInt(tail[2], path, lineNumber);
             if (typeText[0] != 'p' && nodeClass != 0)
                 throw Invalid($"Non-pointer field {currentNodeName}.{first} has pointer class {nodeClass}.");
             fields.Add(new XtFieldDescriptor(currentNode, first, typeText[0], ParseBit(tail[0]), nodeClass, elementCount));
@@ -360,5 +418,5 @@ public sealed class XtSchemaCatalog
         _ => throw new XtFormatException(XtErrorCode.SchemaMalformed, $"Invalid schema bit {value}."),
     };
 
-    private readonly record struct Registration(string? Path, XtSchemaInfo Info, XtSchemaDefinition? Definition);
+    private readonly record struct Registration(string? Path, string? ResourceName, XtSchemaInfo Info, XtSchemaDefinition? Definition);
 }
