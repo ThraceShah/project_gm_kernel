@@ -13,7 +13,7 @@
 // Usage:
 //   dotnet run --file scripts/PublishXtToJsonEmbedded.cs
 //     --schema-dir <dir>   XT schema directory; default third_party/parasolid/schema
-//     --rid <rid>          target runtime; default linux-x64
+//     --rid <rid>          target runtime; default is the current platform
 //     --output <dir>       output directory; default bin/xt-json-tool-embedded/<rid>
 //
 // The script self-verifies the embedding by converting a probe x_t whose schema
@@ -22,6 +22,7 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ProjectGmKernel.Xt;
 
 static string GetScriptPath([CallerFilePath] string path = "") => path;
@@ -30,7 +31,7 @@ var scriptDirectory = Path.GetDirectoryName(GetScriptPath())!;
 var repositoryRoot = Path.GetFullPath(Path.Combine(scriptDirectory, ".."));
 var schemaDirectory = ReadOption(args, "--schema-dir") ?? Path.Combine(repositoryRoot, "third_party", "parasolid", "schema");
 schemaDirectory = Path.GetFullPath(schemaDirectory);
-var rid = ReadOption(args, "--rid") ?? "linux-x64";
+var rid = ReadOption(args, "--rid") ?? DefaultRid();
 var output = ReadOption(args, "--output") ?? Path.Combine(repositoryRoot, "bin", "xt-json-tool-embedded", rid);
 var project = Path.Combine(repositoryRoot, "src", "ProjectGmKernel.Xt.JsonTool", "ProjectGmKernel.Xt.JsonTool.csproj");
 
@@ -58,6 +59,11 @@ if (!File.Exists(executable))
     Console.Error.WriteLine($"Published executable is missing: {executable}");
     return 1;
 }
+var targetArch = rid.EndsWith("arm64", StringComparison.OrdinalIgnoreCase) ? Architecture.Arm64 : Architecture.X64;
+var runnableOnHost = targetArch == RuntimeInformation.ProcessArchitecture
+    && rid.StartsWith("win", StringComparison.OrdinalIgnoreCase) == OperatingSystem.IsWindows()
+    && rid.StartsWith("linux", StringComparison.OrdinalIgnoreCase) == OperatingSystem.IsLinux()
+    && rid.StartsWith("osx", StringComparison.OrdinalIgnoreCase) == OperatingSystem.IsMacOS();
 
 // Self-verify: pick a schema that is present in the directory but not among the
 // built-in bindings, and check that XtToJson resolves it without --schema-dir.
@@ -75,6 +81,11 @@ foreach (var info in catalog.Schemas)
 if (probe is null)
 {
     Console.WriteLine($"Published {executable} (directory holds only built-in schemas; embedding smoke test skipped).");
+    return 0;
+}
+if (!runnableOnHost)
+{
+    Console.WriteLine($"Published {executable} (embedding smoke test skipped: {rid} cannot run on this host).");
     return 0;
 }
 var probeInfo = probe.Value;
@@ -121,6 +132,15 @@ static string? ReadOption(string[] values, string option)
         return index + 1 < values.Length ? values[index + 1] : throw new ArgumentException(option + " requires a value.");
     }
     return null;
+}
+
+static string DefaultRid()
+{
+    var os = OperatingSystem.IsWindows() ? "win"
+        : OperatingSystem.IsLinux() ? "linux"
+        : OperatingSystem.IsMacOS() ? "osx"
+        : throw new PlatformNotSupportedException("NativeAOT publish is not supported on this host OS.");
+    return os + "-" + (RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "arm64" : "x64");
 }
 
 static int Run(string fileName, string arguments)
