@@ -1,6 +1,7 @@
 using System.Text;
 using ProjectGmKernel.Xt;
 using Schema37102 = ProjectGmKernel.Xt.Schema.SCH_3701097_37102;
+using Schema35002 = ProjectGmKernel.Xt.Schema.SCH_3500137_35002;
 
 namespace ProjectGmKernel.Xt.Tests;
 
@@ -96,6 +97,27 @@ public sealed class XtSchemaCatalogTests : IDisposable
 
         Assert.Equal("SCH_3701097_37102_13006", decoded.Schema.Identity);
         Assert.Equal("SCH_3701097_37102", XtGeneratedModelCodec.Decode(decoded).SchemaIdentity);
+    }
+
+    [Fact]
+    public void EmbeddedSchemaArchivePrefersBindingBySchemaNumber()
+    {
+        // A real Parasolid V35 build (3500149) writes its own build number into
+        // the archive identity, so identity prefixes never match the vendored
+        // SCH_3500137_35002 binding; selection must prefer the declared schema
+        // number over the shape-compatibility chain order.
+        var catalog = XtSchemaCatalog.OpenBuiltIn();
+        var baseSchema = catalog.ResolveBySchemaNumber(13006, 3500149);
+        var builder = new Schema35002.MODEL_BUILDER(new Schema35002.COUNTS { BODY = 1 });
+        builder.BODY[0]._xt_index = 1;
+        builder.BODY[0]._xt_order = 0;
+        builder.BODY[0].res_size = XtSchemaField.NullReal;
+        builder.BODY[0].next = new Schema35002.BODYRef { Index = XtSchemaField.NullPointer };
+        var encoded = XtCodec.EncodeWithBaseSchema(builder.FinalizeModel().ToDocument(), baseSchema);
+        var mismatched = encoded.Replace("3500137", "3500149", StringComparison.Ordinal);
+        var decoded = XtCodec.Read(catalog, Encoding.UTF8.GetBytes(mismatched));
+        Assert.Equal("SCH_3500149_35002_13006", decoded.Schema.Identity);
+        Assert.Equal("SCH_3500137_35002", XtGeneratedModelCodec.Decode(decoded).SchemaIdentity);
     }
 
     private static bool HasEmbeddedSchemaResources()
