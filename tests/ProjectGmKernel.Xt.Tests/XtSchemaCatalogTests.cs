@@ -70,6 +70,39 @@ public sealed class XtSchemaCatalogTests : IDisposable
     }
 
     [Fact]
+    public void BuiltInCatalogResolvesEmbeddedBaseSchema()
+    {
+        var catalog = XtSchemaCatalog.OpenBuiltIn();
+        Assert.Equal(13006, catalog.Resolve("SCH_1300120_13006").SchemaNumber);
+        Assert.Equal(13006, catalog.ResolveBySchemaNumber(13006, 3701097).SchemaNumber);
+        if (HasEmbeddedSchemaResources())
+            Assert.True(catalog.Schemas.Count > XtBuiltInSchemas.Identities.Count,
+                "embedded schema files should extend the built-in catalog");
+    }
+
+    [Fact]
+    public void BuiltInCatalogReadsEmbeddedSchemaArchiveWithoutDirectory()
+    {
+        var catalog = XtSchemaCatalog.OpenBuiltIn();
+        var baseSchema = catalog.ResolveBySchemaNumber(13006, 3701097);
+        var builder = new Schema37102.MODEL_BUILDER(new Schema37102.COUNTS { BODY = 1 });
+        builder.BODY[0]._xt_index = 1;
+        builder.BODY[0]._xt_order = 0;
+        builder.BODY[0].res_size = XtSchemaField.NullReal;
+        builder.BODY[0].next = new Schema37102.BODYRef { Index = XtSchemaField.NullPointer };
+        var embedded = XtCodec.EncodeWithBaseSchema(builder.FinalizeModel().ToDocument(), baseSchema);
+
+        var decoded = XtCodec.Read(catalog, Encoding.UTF8.GetBytes(embedded));
+
+        Assert.Equal("SCH_3701097_37102_13006", decoded.Schema.Identity);
+        Assert.Equal("SCH_3701097_37102", XtGeneratedModelCodec.Decode(decoded).SchemaIdentity);
+    }
+
+    private static bool HasEmbeddedSchemaResources()
+        => typeof(XtSchemaCatalog).Assembly.GetManifestResourceNames()
+            .Any(static name => name.StartsWith("XtSchema.sch_", StringComparison.Ordinal));
+
+    [Fact]
     public void ProcessGeometryTypesMapSchemaFieldsDirectly()
     {
         AssertFields<Schema37102.INTERSECTION>("surface", "chart", "start", "end", "intersection_data", "scale");

@@ -17,7 +17,18 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageOutputPath>..\..\bin\nuget</PackageOutputPath>
+    <!-- Optional: set XtEmbeddedSchemaDir=<schema directory> (e.g.
+         -p:XtEmbeddedSchemaDir=../third_party/parasolid/schema) to embed every
+         sch_*.sch_txt / sch_*.s_t file as XtSchema.* resources so
+         XtSchemaCatalog.OpenBuiltIn() resolves them without a schema directory.
+         Off by default: published artifacts must not contain raw .sch_txt text
+         (scripts/ScanXtArtifacts.cs fails the pack while this is enabled).
+         Embedded-schema archives are always covered by the generated V13 base
+         binding SCH_1300120_13006 instead. -->
   </PropertyGroup>
+  <ItemGroup Condition="'$(XtEmbeddedSchemaDir)' != ''">
+    <EmbeddedResource Include="$(XtEmbeddedSchemaDir)\sch_*.sch_txt;$(XtEmbeddedSchemaDir)\sch_*.s_t" LogicalName="XtSchema.%(Filename)%(Extension)" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>

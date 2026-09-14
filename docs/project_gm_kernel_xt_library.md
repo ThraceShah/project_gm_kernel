@@ -97,11 +97,18 @@ var document = XtCodec.Read(catalog, sourceBytes);
 ## JSON 导出工具
 
 `src/ProjectGmKernel.Xt.JsonTool` 是 NativeAOT 控制台程序，把 x_t 转为结构化
-JSON，支持全部 15 个内置 V30–V38 绑定：
+JSON，支持全部 16 个内置绑定（15 个 V30–V38 kernel + V13 embedded base）：
 
 ```
 dotnet publish src/ProjectGmKernel.Xt.JsonTool -c Release -r linux-x64 -o bin/xt-json-tool/linux-x64
 bin/xt-json-tool/linux-x64/XtToJson <model.x_t> [-o <output.json>] [--compact] [--schema-dir <directory>]
+```
+
+需要内嵌全部 schema（内部构建）时用固定脚本，它会发布到
+`bin/xt-json-tool-embedded/<rid>` 并自校验内嵌生效：
+
+```
+dotnet run --file scripts/PublishXtToJsonEmbedded.cs [--schema-dir <目录>] [--rid <rid>] [--output <目录>]
 ```
 
 不传 `-o` 时输出到 `<input>.json`；默认缩进，`--compact` 紧凑。JSON 顶层为
@@ -113,13 +120,21 @@ bin/xt-json-tool/linux-x64/XtToJson <model.x_t> [-o <output.json>] [--compact] [
 兄弟键（如 `"body_type": 1, "body_type_name": "solid_body"`；未知值时为
 `null`，null 值时不输出该键）。序列化器由 `GenerateXtSchema.cs` 生成到每个
 schema namespace 的 `JSON` 类（`XtGeneratedModelJson` 统一分发），直读强类型
-行、零反射，AOT 安全。带内嵌 schema 的文件（如 corpus 的
-`managed-embedded.x_t`）需 `--schema-dir` 或 `PARASOLID_SCHEMA_DIR`/`P_SCHEMA`
-提供支撑 schema；工具会按形状兼容规则选择绑定并在 stderr 提示。
+行、零反射，AOT 安全。V13 base schema `SCH_1300120_13006` 是第 16 个编译
+内置绑定，因此 embedded-schema 归档（identity 形如
+`SCH_<版本>_<当前编号>_13006`，如 corpus 的 `managed-embedded.x_t`）无需
+`--schema-dir` 即可解析，工具按形状兼容规则选择内核绑定并在 stderr 提示；
+直连 `SCH_1300120_13006` 的 V13 文件同样可输出 typed JSON。其余未内置
+schema（V29 以前、V39+ 等）需传 `--schema-dir` 或
+`PARASOLID_SCHEMA_DIR`/`P_SCHEMA` 提供支撑 schema；构建时也可用
+`-p:XtEmbeddedSchemaDir=<目录>` 把目录下 `sch_*.sch_txt`/`sch_*.s_t` 原文
+内嵌进程序集作为补充（默认关闭：发布物禁止包含 schema 原文，开启期间
+`ScanXtArtifacts` 泄漏扫描会失败，仅限内部构建使用）。
 
 ## C ABI 使用方式
 
-`PGM_XT_CONTEXT_create` 的 schema 目录可为 null；此时 V30–V38 仍可使用。通用
+`PGM_XT_CONTEXT_create` 的 schema 目录可为 null；此时 V30–V38 与 V13 base
+仍可使用，显式内嵌的 schema（见上文 `XtEmbeddedSchemaDir`）也可直接解析。通用
 API 只管理 context、document、buffer 和 diagnostics。每个翻译单元选择一个
 schema 头文件：
 

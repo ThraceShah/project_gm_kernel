@@ -199453,6 +199453,10312 @@ public static class JSON
     private static string? Enumsense_Name(long value) => value switch { (byte)'+' => "positive", (byte)'-' => "negative", _ => null };
 }
 }
+namespace ProjectGmKernel.Xt.Schema.SCH_1300120_13006
+{
+
+[StructLayout(LayoutKind.Sequential)] public struct PARTITIONRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct PMARKRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CHAIN_HEADRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct INT_VALUESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct MARKRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct PMARK_ARRAYRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct ROOT_TAG_TABLERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SESSION_DATARef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct LEAF_TAG_TABLERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BRANCH_TAG_TABLERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct LISTRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct POINTRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct KEYRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct INSTANCERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct ASSEMBLYRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct WORLDRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct TRANSFORMRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BODYRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SHELLRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct REGIONRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct EDGERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct VERTEXRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct FACERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct LOOPRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct HALFEDGERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct PBOXRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct REAL_VALUESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct GEOMETRIC_OWNERRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CPCRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct PARASURFRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CHARTRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct LIMITRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct HVEC_ARRAYRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct HVEC_ORDERINGRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct HULLRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct KNOT_VECTORRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BSPLINE_VERTICESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BEZIER_CURVERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BSPLINE_CURVERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SU_TREERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CPSRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BEZIER_SURFRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BSPLINE_SURFRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SU_PARAM_PROPSRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct REAL_LIS_BLOCKRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct INTEGER_LIS_BLOCKRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct TAG_LIS_BLOCKRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct POINTER_LIS_BLOCKRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct ATTRIB_DEFRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct ATT_DEF_IDRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct ATTRIB_CALLBACKSRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct FIELD_NAMESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct ATTRIBUTERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct MEMBER_OF_FEATURERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct FEATURERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct UNSANITISEDRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct EVENT_FILTERRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BASIC_PATCHRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SET_ELEMENT_TAGRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct FACE_SETRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct HALFEDGE_SETRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct NURBS_SURFRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SURFACE_DATARef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SU_DEGENERACYRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct POLYNOMIAL_PATCHESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct KNOT_MULTRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct KNOT_SETRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct KNOT_MULT_SUMRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CU_PARAM_PROPSRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct NURBS_CURVERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CURVE_DATARef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CU_TREERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct POLYNOMIAL_SEGMENTSRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SP_CHARTRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct B_CURVERef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct POINT_VALUESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct SHORT_VALUESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct CHAR_VALUESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BOX_VALUESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct POLYNOMIAL_PATCHRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct VECTOR_VALUESRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct PMARK_ARRAY_INTERNALRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct BULLETIN_BOARDRef { public XtNodeIndex Index; }
+[StructLayout(LayoutKind.Sequential)] public struct POLYNOMIAL_SEGMENTRef { public XtNodeIndex Index; }
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct NULLP
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct WORKSPACE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange ws;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PARTITION
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public PARTITIONRef next;
+    public PARTITIONRef previous;
+    public XtNodeIndex model_data;
+    public PMARKRef current_pmark;
+    public CHAIN_HEADRef @new;
+    public CHAIN_HEADRef del;
+    public CHAIN_HEADRef copy;
+    public long n_live_in_new;
+    public long n_dead_in_new;
+    public long n_dead_in_copy;
+    public long n_live_in_copy;
+    public byte at_pmark;
+    public byte at_current_mark;
+    public long highest_id;
+    public XtNodeIndex rcv_key;
+    public long rcv_format;
+    public INT_VALUESRef rcv_tags;
+    public byte rcv_user_fields;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PMARK
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public PMARKRef preceding;
+    public PMARKRef first_following;
+    public PMARKRef next_sibling;
+    public PMARKRef prev_sibling;
+    public long mark_use_count;
+    public long n_new_nodes;
+    public long n_del_nodes;
+    public long n_copy_mod_nodes;
+    public long delta_key;
+    public byte delta_is_forward;
+    public long id;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct UNIVERSE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public PARTITIONRef first_partition;
+    public MARKRef current_mark;
+    public PMARK_ARRAYRef pmarks_at_current;
+    public ROOT_TAG_TABLERef root_tag_table;
+    public SESSION_DATARef session_data;
+    public CHAIN_HEADRef @new;
+    public CHAIN_HEADRef del;
+}
+
+
+[InlineArray(256)] public struct LEAF_TAG_TABLE__entity__ARRAY { private XtNodeIndex _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct LEAF_TAG_TABLE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public LEAF_TAG_TABLE__entity__ARRAY entity;
+    public long n_live;
+}
+
+
+[InlineArray(1024)] public struct BRANCH_TAG_TABLE__leaf__ARRAY { private LEAF_TAG_TABLERef _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct BRANCH_TAG_TABLE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public BRANCH_TAG_TABLE__leaf__ARRAY leaf;
+    public long n_live;
+}
+
+
+[InlineArray(4096)] public struct ROOT_TAG_TABLE__branch__ARRAY { private BRANCH_TAG_TABLERef _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct ROOT_TAG_TABLE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public long tag_limit;
+    public BRANCH_TAG_TABLERef null_branch;
+    public LEAF_TAG_TABLERef null_leaf;
+    public long next_low_tag;
+    public long next_high_tag;
+    public ROOT_TAG_TABLE__branch__ARRAY branch;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct MARK
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public MARKRef following;
+    public MARKRef preceding;
+    public PMARK_ARRAYRef pmarks_from_preceding;
+    public PMARK_ARRAYRef pmarks_from_following;
+}
+
+public enum ASSEMBLY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct ASSEMBLY
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long highest_node_id;
+    public XtNodeIndex attributes_features;
+    public LISTRef attribute_chains;
+    public LISTRef list;
+    public XtNodeIndex surface;
+    public XtNodeIndex curve;
+    public POINTRef point;
+    public KEYRef key;
+    public double res_size;
+    public double res_linear;
+    public XtSchemaBox assembly_box;
+    public INSTANCERef ref_instance;
+    public ASSEMBLYRef next;
+    public ASSEMBLYRef previous;
+    public byte assembly_box_tightness;
+    public ulong state;
+    public WORLDRef owner;
+    public ulong type;
+    public INSTANCERef sub_instance;
+}
+
+public enum INSTANCE__type : ulong { positive_instance = 1, negative_instance = 2 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct INSTANCE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public ulong type;
+    public XtNodeIndex part;
+    public TRANSFORMRef transform;
+    public ASSEMBLYRef assembly;
+    public INSTANCERef next_in_part;
+    public INSTANCERef prev_in_part;
+    public INSTANCERef next_of_part;
+    public INSTANCERef prev_of_part;
+}
+
+public enum BODY__state : ulong { new_part = 1, stored_part = 2, modified_part = 3, anonymous_part = 4, unloaded_part = 5 }
+public enum BODY__body_type : ulong { solid_body = 1, wire_body = 2, sheet_body = 3, general_body = 6 }
+public enum BODY__nom_geom_state : ulong { off = 1, on = 2 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BODY
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long highest_node_id;
+    public XtNodeIndex attributes_features;
+    public LISTRef attribute_chains;
+    public LISTRef list;
+    public XtNodeIndex surface;
+    public XtNodeIndex curve;
+    public POINTRef point;
+    public KEYRef key;
+    public double res_size;
+    public double res_linear;
+    public XtSchemaBox body_box;
+    public INSTANCERef ref_instance;
+    public BODYRef next;
+    public BODYRef previous;
+    public byte body_box_tightness;
+    public ulong state;
+    public WORLDRef owner;
+    public ulong body_type;
+    public ulong nom_geom_state;
+    public SHELLRef shell;
+    public XtNodeIndex boundary_surface;
+    public XtNodeIndex boundary_curve;
+    public POINTRef boundary_point;
+    public REGIONRef region;
+    public EDGERef edge;
+    public VERTEXRef vertex;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SHELL
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public BODYRef body;
+    public SHELLRef next;
+    public FACERef face;
+    public EDGERef edge;
+    public VERTEXRef vertex;
+    public REGIONRef region;
+    public FACERef front_face;
+}
+
+public enum FACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct FACE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtSchemaBox face_box;
+    public double tolerance;
+    public FACERef next;
+    public FACERef previous;
+    public LOOPRef loop;
+    public SHELLRef shell;
+    public XtNodeIndex surface;
+    public byte sense;
+    public byte type;
+    public byte face_box_tightness;
+    public XtSchemaInterval u_int;
+    public XtSchemaInterval v_int;
+    public FACERef next_on_surface;
+    public FACERef previous_on_surface;
+    public FACERef next_front;
+    public FACERef previous_front;
+    public SHELLRef front_shell;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct LOOP
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public HALFEDGERef halfedge;
+    public FACERef face;
+    public LOOPRef next;
+    public byte type;
+    public PBOXRef pbox;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct EDGE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtSchemaBox edge_box;
+    public double tolerance;
+    public byte edge_box_tightness;
+    public HALFEDGERef halfedge;
+    public EDGERef previous;
+    public EDGERef next;
+    public XtNodeIndex curve;
+    public EDGERef next_on_curve;
+    public EDGERef previous_on_curve;
+    public XtNodeIndex owner;
+}
+
+public enum HALFEDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HALFEDGE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public LOOPRef loop;
+    public HALFEDGERef forward;
+    public HALFEDGERef backward;
+    public VERTEXRef vertex;
+    public HALFEDGERef other;
+    public EDGERef edge;
+    public XtNodeIndex curve;
+    public PBOXRef pbox;
+    public HALFEDGERef next_at_vx;
+    public REAL_VALUESRef polyline;
+    public byte sense;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct VERTEX
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public HALFEDGERef halfedge;
+    public VERTEXRef previous;
+    public VERTEXRef next;
+    public POINTRef point;
+    public double tolerance;
+    public XtNodeIndex owner;
+}
+
+public enum REGION__type : byte { solid = (byte)'S', @void = (byte)'V' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct REGION
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public BODYRef body;
+    public REGIONRef next;
+    public REGIONRef previous;
+    public SHELLRef shell;
+    public byte type;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POINT
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public POINTRef next;
+    public POINTRef previous;
+    public XtSchemaVector pvec;
+}
+
+public enum LINE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct LINE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector pvec;
+    public XtSchemaVector direction;
+}
+
+public enum CIRCLE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CIRCLE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector centre;
+    public XtSchemaVector normal;
+    public XtSchemaVector x_axis;
+    public double radius;
+}
+
+public enum ELLIPSE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct ELLIPSE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector centre;
+    public XtSchemaVector normal;
+    public XtSchemaVector x_axis;
+    public double major_radius;
+    public double minor_radius;
+}
+
+public enum PARABOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PARABOLA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector origin;
+    public XtSchemaVector normal;
+    public XtSchemaVector x_axis;
+    public double focal_length;
+}
+
+public enum HYPERBOLA__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HYPERBOLA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector origin;
+    public XtSchemaVector normal;
+    public XtSchemaVector x_axis;
+    public double transverse_radius;
+    public double conjugate_radius;
+}
+
+public enum PARACURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PARACURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public long seg;
+    public CPCRef cpc;
+}
+
+public enum OBSOLETE_CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct OBSOLETE_CPC
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public long vertex_dimension;
+    public long segment_count;
+    public long order;
+    public XtRange segment;
+}
+
+public enum PATCH_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PATCH_BOUND
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte boundary;
+    public PARASURFRef lh_patch;
+    public PARASURFRef rh_patch;
+}
+
+public enum INTERSECTION__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[InlineArray(2)] public struct INTERSECTION__surface__ARRAY { private XtNodeIndex _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct INTERSECTION
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public INTERSECTION__surface__ARRAY surface;
+    public CHARTRef chart;
+    public LIMITRef start;
+    public LIMITRef end;
+    public double scale;
+}
+
+public enum SILHOUETTE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SILHOUETTE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte analytic_root;
+    public byte from_infinity;
+    public XtNodeIndex surface;
+    public LIMITRef start;
+    public LIMITRef end;
+    public XtSchemaVector eye;
+}
+
+
+[InlineArray(2)] public struct CHART__parameter_error__ARRAY { private double _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct CHART
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public double base_parameter;
+    public double base_scale;
+    public long chart_count;
+    public long extended_chart_count;
+    public double chordal_error;
+    public double angular_error;
+    public CHART__parameter_error__ARRAY parameter_error;
+    public HVEC_ARRAYRef extra_hvecs;
+    public HVEC_ORDERINGRef extended_chart_order;
+    public XtRange hvec;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct LIMIT
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public byte type;
+    public XtRange hvec;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BASIC_SEGMENT
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtSchemaBox segment_box;
+    public double t_length;
+    public HULLRef hull;
+    public XtRange bezier_vertices;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BSPLINE_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public KNOT_VECTORRef knot_vector;
+    public long vertex_dimension;
+    public long vertex_count;
+    public long order;
+    public BSPLINE_VERTICESRef bspline_vertices;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct KNOT_VECTOR
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public byte periodic;
+    public long knot_count;
+    public XtRange knots;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BSPLINE_VERTICES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange vertices;
+}
+
+public enum OFFSET_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct OFFSET_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtNodeIndex surface;
+    public XtNodeIndex curve;
+    public double offset;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SUPER_SEGMENT
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public double split;
+    public XtNodeIndex first;
+    public XtNodeIndex last;
+    public double t_length;
+}
+
+public enum CPC__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CPC
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public BEZIER_CURVERef bezier;
+    public BSPLINE_CURVERef bspline;
+}
+
+public enum OBSOLETE_SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct OBSOLETE_SP_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte const_param;
+    public long segment_count;
+    public long order;
+    public XtNodeIndex surface;
+    public XtRange bezier_vertices;
+}
+
+public enum PLANE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PLANE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector pvec;
+    public XtSchemaVector normal;
+    public XtSchemaVector x_axis;
+}
+
+public enum CYLINDER__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CYLINDER
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector pvec;
+    public XtSchemaVector axis;
+    public double radius;
+    public XtSchemaVector x_axis;
+}
+
+public enum CONE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CONE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector pvec;
+    public XtSchemaVector axis;
+    public double radius;
+    public double sin_half_angle;
+    public double cos_half_angle;
+    public XtSchemaVector x_axis;
+}
+
+public enum SPHERE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SPHERE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector centre;
+    public double radius;
+    public XtSchemaVector axis;
+    public XtSchemaVector x_axis;
+}
+
+public enum TORUS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct TORUS
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtSchemaVector centre;
+    public XtSchemaVector axis;
+    public double major_radius;
+    public double minor_radius;
+    public XtSchemaVector x_axis;
+}
+
+public enum PIPE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PIPE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtNodeIndex spine;
+    public double radius;
+}
+
+public enum BLENDED_EDGE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[InlineArray(2)] public struct BLENDED_EDGE__surface__ARRAY { private XtNodeIndex _element0; }
+[InlineArray(2)] public struct BLENDED_EDGE__range__ARRAY { private double _element0; }
+[InlineArray(2)] public struct BLENDED_EDGE__thumb_weight__ARRAY { private double _element0; }
+[InlineArray(2)] public struct BLENDED_EDGE__boundary__ARRAY { private XtNodeIndex _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct BLENDED_EDGE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte blend_type;
+    public BLENDED_EDGE__surface__ARRAY surface;
+    public XtNodeIndex spine;
+    public BLENDED_EDGE__range__ARRAY range;
+    public BLENDED_EDGE__thumb_weight__ARRAY thumb_weight;
+    public BLENDED_EDGE__boundary__ARRAY boundary;
+    public LIMITRef start;
+    public LIMITRef end;
+    public XtNodeIndex approx_spine;
+    public double approx_spine_ctol;
+}
+
+public enum BLENDED_VERTEX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[InlineArray(3)] public struct BLENDED_VERTEX__surface__ARRAY { private XtNodeIndex _element0; }
+[InlineArray(3)] public struct BLENDED_VERTEX__sub_surface__ARRAY { private XtNodeIndex _element0; }
+[InlineArray(3)] public struct BLENDED_VERTEX__boundary__ARRAY { private XtNodeIndex _element0; }
+[InlineArray(3)] public struct BLENDED_VERTEX__range__ARRAY { private double _element0; }
+[InlineArray(3)] public struct BLENDED_VERTEX__thumb_weight__ARRAY { private double _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct BLENDED_VERTEX
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte blend_type;
+    public BLENDED_VERTEX__surface__ARRAY surface;
+    public BLENDED_VERTEX__sub_surface__ARRAY sub_surface;
+    public BLENDED_VERTEX__boundary__ARRAY boundary;
+    public BLENDED_VERTEX__range__ARRAY range;
+    public BLENDED_VERTEX__thumb_weight__ARRAY thumb_weight;
+    public XtSchemaVector centre;
+}
+
+public enum BLEND_OVERLAP__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[InlineArray(2)] public struct BLEND_OVERLAP__surface__ARRAY { private XtNodeIndex _element0; }
+[InlineArray(4)] public struct BLEND_OVERLAP__sub_surface__ARRAY { private XtNodeIndex _element0; }
+[InlineArray(4)] public struct BLEND_OVERLAP__range__ARRAY { private double _element0; }
+[InlineArray(4)] public struct BLEND_OVERLAP__thumb_weight__ARRAY { private double _element0; }
+[InlineArray(2)] public struct BLEND_OVERLAP__blend_type__ARRAY { private byte _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct BLEND_OVERLAP
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public BLEND_OVERLAP__surface__ARRAY surface;
+    public BLEND_OVERLAP__sub_surface__ARRAY sub_surface;
+    public BLEND_OVERLAP__range__ARRAY range;
+    public BLEND_OVERLAP__thumb_weight__ARRAY thumb_weight;
+    public BLEND_OVERLAP__blend_type__ARRAY blend_type;
+    public byte overlap_type;
+    public byte swap_u_v;
+}
+
+public enum BLEND_BOUND__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BLEND_BOUND
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public long boundary;
+    public XtNodeIndex blend;
+}
+
+public enum OFFSET_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct OFFSET_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte check;
+    public byte true_offset;
+    public XtNodeIndex surface;
+    public double offset;
+    public double scale;
+    public XtSchemaInterval @uint;
+    public XtSchemaInterval vint;
+    public byte u_start;
+    public byte u_end;
+    public byte v_start;
+    public byte v_end;
+    public SU_TREERef tree;
+}
+
+public enum PARASURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PARASURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public long col;
+    public long row;
+    public CPSRef cps;
+}
+
+public enum OBSOLETE_CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct OBSOLETE_CPS
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public long vertex_dimension;
+    public long col_count;
+    public long row_count;
+    public long u_order;
+    public long v_order;
+    public XtRange patch;
+}
+
+public enum SILH_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SILH_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte from_infinity;
+    public XtNodeIndex surface;
+    public XtSchemaVector eye;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BASIC_PATCH
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtSchemaBox patch_box;
+    public double u_length;
+    public double v_length;
+    public HULLRef hull;
+    public double scale;
+    public XtRange bezier_vertices;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HULL
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public long dimension;
+    public long plane_count;
+    public long corner_count;
+    public XtRange vecs;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BSPLINE_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public KNOT_VECTORRef row_knots;
+    public KNOT_VECTORRef col_knots;
+    public long vertex_dimension;
+    public long col_count;
+    public long row_count;
+    public long u_order;
+    public long v_order;
+    public BSPLINE_VERTICESRef bspline_vertices;
+}
+
+public enum SWEPT_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SWEPT_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtNodeIndex section;
+    public XtSchemaVector sweep;
+    public double scale;
+}
+
+public enum SPUN_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SPUN_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtNodeIndex profile;
+    public XtSchemaVector @base;
+    public XtSchemaVector axis;
+    public XtSchemaVector start;
+    public XtSchemaVector end;
+    public double start_param;
+    public double end_param;
+    public XtSchemaVector x_axis;
+    public double scale;
+}
+
+public enum CPS__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CPS
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public BEZIER_SURFRef bezier;
+    public BSPLINE_SURFRef bspline;
+    public SU_PARAM_PROPSRef props;
+    public double u_parameter_scale;
+    public double v_parameter_scale;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct LIST
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex owner;
+    public LISTRef next;
+    public LISTRef previous;
+    public long list_type;
+    public long list_length;
+    public long block_length;
+    public long size_of_entry;
+    public XtNodeIndex list_block;
+    public XtNodeIndex finger_block;
+    public long finger_index;
+    public byte notransmit;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct REAL_LIS_BLOCK
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public long n_entries;
+    public REAL_LIS_BLOCKRef next_block;
+    public XtRange entries;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct INTEGER_LIS_BLOCK
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public long n_entries;
+    public INTEGER_LIS_BLOCKRef next_block;
+    public XtRange entries;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct TAG_LIS_BLOCK
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public long n_entries;
+    public TAG_LIS_BLOCKRef next_block;
+    public XtRange entries;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POINTER_LIS_BLOCK
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long n_entries;
+    public POINTER_LIS_BLOCKRef next_block;
+    public XtRange entries;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct ATTRIB_CALLBACKS
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public long split_fn;
+    public long merge_fn;
+    public long delete_fn;
+    public long copy_fn;
+    public long transmit_fn;
+    public long receive_fn;
+    public byte split_on;
+    public byte merge_on;
+    public byte delete_on;
+    public byte copy_on;
+    public byte transmit_on;
+    public byte receive_on;
+    public byte callback_type;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct ATT_DEF_ID
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange @string;
+}
+
+
+[InlineArray(8)] public struct ATTRIB_DEF__actions__ARRAY { private ulong _element0; }
+[InlineArray(14)] public struct ATTRIB_DEF__legal_owners__ARRAY { private byte _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct ATTRIB_DEF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public ATTRIB_DEFRef next;
+    public ATT_DEF_IDRef identifier;
+    public long type_id;
+    public ATTRIB_DEF__actions__ARRAY actions;
+    public ATTRIB_CALLBACKSRef callbacks;
+    public FIELD_NAMESRef field_names;
+    public ATTRIB_DEF__legal_owners__ARRAY legal_owners;
+    public XtRange fields;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct ATTRIBUTE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public ATTRIB_DEFRef definition;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public ATTRIBUTERef next_of_type;
+    public ATTRIBUTERef previous_of_type;
+    public XtRange fields;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct INT_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct REAL_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CHAR_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POINT_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct VECTOR_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct AXIS_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct TAG_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct DIRECTION_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+public enum FEATURE__type : ulong { instance_fe = 1, face_fe = 2, loop_fe = 3, edge_fe = 4, vertex_fe = 5, surface_fe = 6, curve_fe = 7, point_fe = 8, mixed_fe = 9, region_fe = 10, pf_pline_fe = 11, feature_fe = 12 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct FEATURE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public ulong type;
+    public MEMBER_OF_FEATURERef first_member;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct MEMBER_OF_FEATURE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long dummy_node_id;
+    public FEATURERef owning_feature;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public MEMBER_OF_FEATURERef next_member;
+    public MEMBER_OF_FEATURERef previous_member;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POINTER_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SHORT_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BOX_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct UNICODE_VALUES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange values;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct FIELD_NAMES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange names;
+}
+
+
+[InlineArray(9)] public struct TRANSFORM__rotation_matrix__ARRAY { private double _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct TRANSFORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex owner;
+    public TRANSFORMRef next;
+    public TRANSFORMRef previous;
+    public TRANSFORM__rotation_matrix__ARRAY rotation_matrix;
+    public XtSchemaVector translation_vector;
+    public double scale;
+    public long flag;
+    public double max_scale;
+    public XtSchemaVector perspective_vector;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct WORLD
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public ASSEMBLYRef assembly;
+    public ATTRIBUTERef attribute;
+    public BODYRef body;
+    public LISTRef list;
+    public TRANSFORMRef transform;
+    public XtNodeIndex surface;
+    public XtNodeIndex curve;
+    public POINTRef point;
+    public byte alive;
+    public ATTRIB_DEFRef attrib_def;
+    public long highest_id;
+    public long current_id;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct KEY
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange @string;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BEZIER_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long vertex_dimension;
+    public long segment_count;
+    public long order;
+    public byte check;
+    public XtRange segment;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BEZIER_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long vertex_dimension;
+    public long col_count;
+    public long row_count;
+    public long u_order;
+    public long v_order;
+    public byte check;
+    public UNSANITISEDRef unsanitised;
+    public XtRange patch;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SUPER_PATCH
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public double split;
+    public byte split_dir;
+    public XtNodeIndex first;
+    public XtNodeIndex last;
+    public double u_length;
+    public double v_length;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct EVENT_FILTER
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public byte face;
+    public byte edge;
+    public byte vertex;
+    public byte loop;
+    public byte shell;
+    public byte region;
+    public byte instance;
+    public byte body;
+    public byte assembly;
+    public byte point;
+    public byte curve;
+    public byte surface;
+    public byte transform;
+    public byte feature;
+    public byte att_def;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct BULLETIN_BOARD
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public EVENT_FILTERRef create;
+    public EVENT_FILTERRef delete;
+    public EVENT_FILTERRef change;
+    public EVENT_FILTERRef transform;
+    public EVENT_FILTERRef split;
+    public EVENT_FILTERRef merge;
+    public EVENT_FILTERRef copy;
+    public EVENT_FILTERRef transfer;
+    public EVENT_FILTERRef change_attribute;
+    public LISTRef @event;
+    public LISTRef entities;
+    public LISTRef n_entities;
+    public LISTRef entity_nt;
+    public LISTRef entity_usfld;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct UNSANITISED
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange bad_patch;
+}
+
+public enum PBOX__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PBOX
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public byte type;
+    public byte sense;
+    public XtSchemaInterval u_int;
+    public XtSchemaInterval v_int;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SET_ELEMENT_TAG
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public SET_ELEMENT_TAGRef next;
+    public SET_ELEMENT_TAGRef forward;
+    public SET_ELEMENT_TAGRef backward;
+    public long @class;
+    public XtNodeIndex set;
+    public XtNodeIndex node;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct FACE_SET
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public SET_ELEMENT_TAGRef tag;
+    public FACE_SETRef next;
+    public long @class;
+    public HALFEDGE_SETRef he_set;
+    public XtNodeIndex surfaces;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HALFEDGE_SET
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public SET_ELEMENT_TAGRef tag;
+    public HALFEDGE_SETRef next;
+    public HALFEDGE_SETRef previous;
+    public long @class;
+    public FACE_SETRef fa_set;
+    public HALFEDGE_SETRef co_he_set;
+}
+
+public enum PE_SURF__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[InlineArray(2)] public struct PE_SURF__min_radii_curvature__ARRAY { private double _element0; }
+[StructLayout(LayoutKind.Sequential)]
+public struct PE_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte type;
+    public PE_SURF__min_radii_curvature__ARRAY min_radii_curvature;
+    public double u_parameter_scale;
+    public double v_parameter_scale;
+    public XtNodeIndex data;
+    public TRANSFORMRef tf;
+    public SU_PARAM_PROPSRef props;
+    public SU_TREERef tree;
+    public XtNodeIndex approx;
+    public XtRange internal_geom;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct INT_PE_DATA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long geom_type;
+    public REAL_VALUESRef real_array;
+    public INT_VALUESRef int_array;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct EXT_PE_DATA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public KEYRef key;
+    public REAL_VALUESRef real_array;
+    public INT_VALUESRef int_array;
+    public XtRange data;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SU_PARAM_PROPS
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtSchemaInterval @uint;
+    public XtSchemaInterval vint;
+    public byte u_start;
+    public byte u_end;
+    public byte v_start;
+    public byte v_end;
+}
+
+public enum B_SURFACE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct B_SURFACE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public NURBS_SURFRef nurbs;
+    public SURFACE_DATARef data;
+}
+
+public enum SURFACE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SURFACE_DATA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaInterval safe_u_range;
+    public XtSchemaInterval safe_v_range;
+    public XtSchemaBox bx;
+    public double scale;
+    public double u_parameter_scale;
+    public double v_parameter_scale;
+    public double u_tangent_half_angle;
+    public double v_tangent_half_angle;
+    public XtSchemaInterval @uint;
+    public XtSchemaInterval vint;
+    public XtSchemaInterval original_uint;
+    public XtSchemaInterval original_vint;
+    public XtSchemaInterval extended_uint;
+    public XtSchemaInterval extended_vint;
+    public ulong convexity;
+    public ulong continuity;
+    public ulong self_int;
+    public byte u_start;
+    public byte u_end;
+    public byte v_start;
+    public byte v_end;
+    public byte original_u_start;
+    public byte original_u_end;
+    public byte original_v_start;
+    public byte original_v_end;
+    public byte extended_u_start;
+    public byte extended_u_end;
+    public byte extended_v_start;
+    public byte extended_v_end;
+    public byte degeneracy_status;
+    public byte analytic_form_type;
+    public byte swept_form_type;
+    public byte spun_form_type;
+    public byte blend_form_type;
+    public SU_DEGENERACYRef degeneracy;
+    public SU_TREERef tree;
+    public POLYNOMIAL_PATCHESRef polynomial_patches;
+    public XtNodeIndex analytic_form;
+    public XtNodeIndex swept_form;
+    public XtNodeIndex spun_form;
+    public XtNodeIndex blend_form;
+}
+
+public enum NURBS_SURF__u_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__v_knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_SURF__surface_form : ulong { unset = 1, arbitrary = 2, planar = 3, cylindrical = 4, conical = 5, spherical = 6, toroidal = 7, surf_of_revolution = 8, ruled = 9, quadric = 10, swept = 11 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct NURBS_SURF
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public byte u_periodic;
+    public byte v_periodic;
+    public long u_degree;
+    public long v_degree;
+    public long n_u_vertices;
+    public long n_v_vertices;
+    public ulong u_knot_type;
+    public ulong v_knot_type;
+    public long n_u_knots;
+    public long n_v_knots;
+    public byte rational;
+    public byte u_closed;
+    public byte v_closed;
+    public ulong surface_form;
+    public long vertex_dim;
+    public BSPLINE_VERTICESRef bspline_vertices;
+    public KNOT_MULTRef u_knot_mult;
+    public KNOT_MULTRef v_knot_mult;
+    public KNOT_SETRef u_knots;
+    public KNOT_SETRef v_knots;
+    public KNOT_MULT_SUMRef u_knot_mult_sum;
+    public KNOT_MULT_SUMRef v_knot_mult_sum;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct KNOT_MULT
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange mult;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct KNOT_SET
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public XtRange knots;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct KNOT_MULT_SUM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange mult;
+}
+
+public enum PE_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PE_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte type;
+    public XtNodeIndex data;
+    public double global_scale;
+    public double parameter_scale;
+    public TRANSFORMRef tf;
+    public CU_PARAM_PROPSRef props;
+    public XtNodeIndex approx;
+    public XtRange internal_geom;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CU_PARAM_PROPS
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtSchemaInterval tint;
+    public byte t_start;
+    public byte t_end;
+}
+
+public enum PCURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PCURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public byte bsp_parms;
+    public XtNodeIndex surface;
+    public BSPLINE_CURVERef bspline;
+}
+
+public enum TRIMMED_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct TRIMMED_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public XtNodeIndex basis_curve;
+    public XtSchemaVector point_1;
+    public XtSchemaVector point_2;
+    public double parm_1;
+    public double parm_2;
+}
+
+public enum B_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct B_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public NURBS_CURVERef nurbs;
+    public CURVE_DATARef data;
+}
+
+public enum CURVE_DATA__self_int : ulong { unset = 1, no_self_intersections = 2, self_intersects = 3, checked_ok_in_old_version = 4 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CURVE_DATA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaInterval safe_range;
+    public XtSchemaBox bx;
+    public double scale;
+    public double parameter_scale;
+    public double tangent_half_angle;
+    public XtSchemaInterval tint;
+    public ulong self_int;
+    public byte t_start;
+    public byte t_end;
+    public CU_TREERef tree;
+    public POLYNOMIAL_SEGMENTSRef polynomial_segments;
+    public XtNodeIndex analytic_form;
+}
+
+public enum NURBS_CURVE__knot_type : ulong { unset = 1, non_uniform = 2, uniform = 3, quasi_uniform = 4, piecewise_bezier = 5, bezier_ends = 6 }
+public enum NURBS_CURVE__curve_form : ulong { unset = 1, arbitrary = 2, polyline = 3, circular_arc = 4, elliptic_arc = 5, parabolic_arc = 6, hyperbolic_arc = 7, helical_arc = 8 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct NURBS_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long degree;
+    public long n_vertices;
+    public long vertex_dim;
+    public long n_knots;
+    public ulong knot_type;
+    public byte periodic;
+    public byte closed;
+    public byte rational;
+    public ulong curve_form;
+    public BSPLINE_VERTICESRef bspline_vertices;
+    public KNOT_MULTRef knot_mult;
+    public KNOT_SETRef knots;
+    public KNOT_MULT_SUMRef knot_mult_sum;
+}
+
+public enum SP_CURVE__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SP_CURVE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public long node_id;
+    public XtNodeIndex attributes_features;
+    public XtNodeIndex owner;
+    public XtNodeIndex next;
+    public XtNodeIndex previous;
+    public GEOMETRIC_OWNERRef geometric_owner;
+    public byte sense;
+    public ulong periodic;
+    public ulong @class;
+    public SP_CHARTRef chart;
+    public double scale;
+    public double parameter_scale;
+    public XtNodeIndex surface;
+    public B_CURVERef b_curve;
+    public XtNodeIndex original;
+    public double tolerance_to_original;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SP_CHART
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public long chart_count;
+    public double chordal_error;
+    public double angular_error;
+    public XtRange hvec;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CU_TREE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public long n_pvecs;
+    public long n_branches;
+    public long n_leaves;
+    public double chordal_error;
+    public double angular_error;
+    public POINT_VALUESRef regular_pvecs;
+    public REAL_VALUESRef split_parms;
+    public SHORT_VALUESRef branch_parents;
+    public SHORT_VALUESRef branch_lo_children;
+    public SHORT_VALUESRef branch_hi_children;
+    public SHORT_VALUESRef leaf_parents;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct GEOMETRIC_OWNER
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtNodeIndex owner;
+    public GEOMETRIC_OWNERRef next;
+    public GEOMETRIC_OWNERRef previous;
+    public XtNodeIndex shared_geometry;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PLANE_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector pvec;
+    public XtSchemaVector normal;
+}
+
+public enum CYLINDER_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CYLINDER_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector pvec;
+    public XtSchemaVector axis;
+    public double radius;
+    public byte sense;
+}
+
+public enum CONE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CONE_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector pvec;
+    public XtSchemaVector axis;
+    public double radius;
+    public double sin_half_angle;
+    public double cos_half_angle;
+    public byte sense;
+}
+
+public enum SPHERE_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SPHERE_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector centre;
+    public double radius;
+    public byte sense;
+}
+
+public enum TORUS_FORM__sense : byte { positive = (byte)'+', negative = (byte)'-' }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct TORUS_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector centre;
+    public XtSchemaVector axis;
+    public double major_radius;
+    public double minor_radius;
+    public byte sense;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SWEPT_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector sweep;
+    public byte subtype;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SWEPT_UV_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector sweep_u;
+    public XtSchemaVector sweep_v;
+    public byte subtype_u;
+    public byte subtype_v;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SPUN_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector @base;
+    public XtSchemaVector axis;
+    public byte subtype;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct VAR_RADIUS_PIPE_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public double max_radius;
+    public double min_radius;
+    public byte max_radius_bdry;
+    public byte min_radius_bdry;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SU_DEGENERACY
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtSchemaVector pvec;
+    public XtSchemaVector normal;
+    public XtSchemaInterval u_range;
+    public XtSchemaInterval v_range;
+    public long type;
+    public SU_DEGENERACYRef next;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SU_TREE
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public long n_u_pvecs;
+    public long n_v_pvecs;
+    public long n_branches;
+    public long n_leaves;
+    public double distance_error;
+    public double angular_error;
+    public POINT_VALUESRef regular_pvecs;
+    public REAL_VALUESRef split_parms;
+    public CHAR_VALUESRef split_dirs;
+    public SHORT_VALUESRef branch_parents;
+    public SHORT_VALUESRef branch_lo_children;
+    public SHORT_VALUESRef branch_hi_children;
+    public SHORT_VALUESRef leaf_parents;
+    public BOX_VALUESRef leaf_boxes;
+    public POINT_VALUESRef leaf_pvecs;
+    public REAL_VALUESRef leaf_u_lo;
+    public REAL_VALUESRef leaf_u_hi;
+    public REAL_VALUESRef leaf_v_lo;
+    public REAL_VALUESRef leaf_v_hi;
+    public CHAR_VALUESRef bucket_chars;
+    public SHORT_VALUESRef bucket_shorts;
+    public INT_VALUESRef bucket_ints;
+    public REAL_VALUESRef bucket_reals;
+    public SHORT_VALUESRef leaf_u_splits;
+    public SHORT_VALUESRef leaf_v_splits;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POLYNOMIAL_PATCHES
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public long n_patches;
+    public XtRange patch;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POLYNOMIAL_PATCH
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public long last_used;
+    public long n_derivatives;
+    public byte triangular;
+    public long u_knot_index;
+    public long v_knot_index;
+    public XtSchemaInterval @uint;
+    public XtSchemaInterval vint;
+    public double u_scale;
+    public double v_scale;
+    public byte u_on_right;
+    public byte v_on_right;
+    public VECTOR_VALUESRef C;
+    public VECTOR_VALUESRef Cdu;
+    public VECTOR_VALUESRef Cdv;
+    public VECTOR_VALUESRef Cd2u;
+    public VECTOR_VALUESRef Cdudv;
+    public VECTOR_VALUESRef Cd2v;
+    public VECTOR_VALUESRef Cd2udv;
+    public VECTOR_VALUESRef Cd2vdu;
+    public VECTOR_VALUESRef Cd2ud2v;
+    public REAL_VALUESRef W;
+    public REAL_VALUESRef Wdu;
+    public REAL_VALUESRef Wdv;
+    public REAL_VALUESRef Wd2u;
+    public REAL_VALUESRef Wdudv;
+    public REAL_VALUESRef Wd2v;
+    public REAL_VALUESRef Wd2udv;
+    public REAL_VALUESRef Wd2vdu;
+    public REAL_VALUESRef Wd2ud2v;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HELIX_SU_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector axis_pt;
+    public XtSchemaVector axis_dir;
+    public byte hand;
+    public XtSchemaInterval turns;
+    public double pitch;
+    public double gap;
+    public double tol;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct CHAIN_HEAD
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public byte dummy;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PMARK_ARRAY_INTERNAL
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange pmarks;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PMARK_ARRAY
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public long length;
+    public long size;
+    public PMARK_ARRAY_INTERNALRef array;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct ROLL_DATA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public PARTITIONRef current_partition;
+    public BULLETIN_BOARDRef bulletin_board;
+    public double linear_prec;
+    public double angular_prec;
+    public byte receive_user_fld;
+    public byte local_check_on;
+    public byte data_check_on;
+    public byte self_int_check_on;
+    public byte generated_surfs_on;
+    public byte general_topology_on;
+    public byte keep_edge_curve_on;
+    public long bulletin_board_on;
+    public long binary_text;
+    public long snapshot_binary_text;
+    public long continuity_check;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct SESSION_DATA
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public ATTRIB_DEFRef attrib_def;
+    public byte parameter_check_on;
+    public byte journal_on;
+    public byte roll_forward;
+    public long journal_open;
+    public long rollback_size;
+    public long tag_limit;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POLYNOMIAL_SEGMENTS
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public long n_segments;
+    public XtRange segment;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct POLYNOMIAL_SEGMENT
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public long last_used;
+    public long n_derivatives;
+    public long knot_index;
+    public XtSchemaInterval tint;
+    public double scale;
+    public byte on_right;
+    public VECTOR_VALUESRef C;
+    public VECTOR_VALUESRef Cdt;
+    public VECTOR_VALUESRef Cd2t;
+    public REAL_VALUESRef W;
+    public REAL_VALUESRef Wdt;
+    public REAL_VALUESRef Wd2t;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HVEC_ARRAY
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange hvec;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HVEC_ORDERING
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtVariableLength _xt_variable_length;
+    public XtRange order;
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+public struct HELIX_CU_FORM
+{
+    public XtNodeIndex _xt_index;
+    public XtTableIndex _xt_order;
+    public XtRange _xt_user_fields;
+    public XtSchemaVector axis_pt;
+    public XtSchemaVector axis_dir;
+    public XtSchemaVector point;
+    public byte hand;
+    public XtSchemaInterval turns;
+    public double pitch;
+    public double tol;
+}
+
+[StructLayout(LayoutKind.Sequential)] public struct COUNTS
+{
+    public XtTableCount NULLP;
+    public XtTableCount WORKSPACE;
+    public XtTableCount WORKSPACE__ws;
+    public XtTableCount PARTITION;
+    public XtTableCount PMARK;
+    public XtTableCount ASSEMBLY;
+    public XtTableCount INSTANCE;
+    public XtTableCount BODY;
+    public XtTableCount SHELL;
+    public XtTableCount FACE;
+    public XtTableCount LOOP;
+    public XtTableCount EDGE;
+    public XtTableCount HALFEDGE;
+    public XtTableCount VERTEX;
+    public XtTableCount REGION;
+    public XtTableCount POINT;
+    public XtTableCount LINE;
+    public XtTableCount CIRCLE;
+    public XtTableCount ELLIPSE;
+    public XtTableCount PARABOLA;
+    public XtTableCount HYPERBOLA;
+    public XtTableCount PARACURVE;
+    public XtTableCount OBSOLETE_CPC;
+    public XtTableCount OBSOLETE_CPC__segment;
+    public XtTableCount PATCH_BOUND;
+    public XtTableCount INTERSECTION;
+    public XtTableCount SILHOUETTE;
+    public XtTableCount CHART;
+    public XtTableCount CHART__hvec;
+    public XtTableCount LIMIT;
+    public XtTableCount LIMIT__hvec;
+    public XtTableCount BSPLINE_CURVE;
+    public XtTableCount KNOT_VECTOR;
+    public XtTableCount KNOT_VECTOR__knots;
+    public XtTableCount BSPLINE_VERTICES;
+    public XtTableCount BSPLINE_VERTICES__vertices;
+    public XtTableCount OFFSET_CURVE;
+    public XtTableCount CPC;
+    public XtTableCount OBSOLETE_SP_CURVE;
+    public XtTableCount OBSOLETE_SP_CURVE__bezier_vertices;
+    public XtTableCount PLANE;
+    public XtTableCount CYLINDER;
+    public XtTableCount CONE;
+    public XtTableCount SPHERE;
+    public XtTableCount TORUS;
+    public XtTableCount PIPE;
+    public XtTableCount BLENDED_EDGE;
+    public XtTableCount BLENDED_VERTEX;
+    public XtTableCount BLEND_OVERLAP;
+    public XtTableCount BLEND_BOUND;
+    public XtTableCount OFFSET_SURF;
+    public XtTableCount PARASURF;
+    public XtTableCount OBSOLETE_CPS;
+    public XtTableCount OBSOLETE_CPS__patch;
+    public XtTableCount SILH_SURF;
+    public XtTableCount BSPLINE_SURF;
+    public XtTableCount SWEPT_SURF;
+    public XtTableCount SPUN_SURF;
+    public XtTableCount CPS;
+    public XtTableCount LIST;
+    public XtTableCount POINTER_LIS_BLOCK;
+    public XtTableCount POINTER_LIS_BLOCK__entries;
+    public XtTableCount ATT_DEF_ID;
+    public XtTableCount ATT_DEF_ID__string;
+    public XtTableCount ATTRIB_DEF;
+    public XtTableCount ATTRIB_DEF__fields;
+    public XtTableCount ATTRIBUTE;
+    public XtTableCount ATTRIBUTE__fields;
+    public XtTableCount INT_VALUES;
+    public XtTableCount INT_VALUES__values;
+    public XtTableCount REAL_VALUES;
+    public XtTableCount REAL_VALUES__values;
+    public XtTableCount CHAR_VALUES;
+    public XtTableCount CHAR_VALUES__values;
+    public XtTableCount POINT_VALUES;
+    public XtTableCount POINT_VALUES__values;
+    public XtTableCount VECTOR_VALUES;
+    public XtTableCount VECTOR_VALUES__values;
+    public XtTableCount AXIS_VALUES;
+    public XtTableCount AXIS_VALUES__values;
+    public XtTableCount TAG_VALUES;
+    public XtTableCount TAG_VALUES__values;
+    public XtTableCount DIRECTION_VALUES;
+    public XtTableCount DIRECTION_VALUES__values;
+    public XtTableCount FEATURE;
+    public XtTableCount MEMBER_OF_FEATURE;
+    public XtTableCount SHORT_VALUES;
+    public XtTableCount SHORT_VALUES__values;
+    public XtTableCount BOX_VALUES;
+    public XtTableCount BOX_VALUES__values;
+    public XtTableCount UNICODE_VALUES;
+    public XtTableCount UNICODE_VALUES__values;
+    public XtTableCount FIELD_NAMES;
+    public XtTableCount FIELD_NAMES__names;
+    public XtTableCount TRANSFORM;
+    public XtTableCount WORLD;
+    public XtTableCount KEY;
+    public XtTableCount KEY__string;
+    public XtTableCount BEZIER_CURVE;
+    public XtTableCount BEZIER_CURVE__segment;
+    public XtTableCount BEZIER_SURF;
+    public XtTableCount BEZIER_SURF__patch;
+    public XtTableCount SET_ELEMENT_TAG;
+    public XtTableCount FACE_SET;
+    public XtTableCount HALFEDGE_SET;
+    public XtTableCount PE_SURF;
+    public XtTableCount PE_SURF__internal_geom;
+    public XtTableCount INT_PE_DATA;
+    public XtTableCount EXT_PE_DATA;
+    public XtTableCount B_SURFACE;
+    public XtTableCount SURFACE_DATA;
+    public XtTableCount NURBS_SURF;
+    public XtTableCount KNOT_MULT;
+    public XtTableCount KNOT_MULT__mult;
+    public XtTableCount KNOT_SET;
+    public XtTableCount KNOT_SET__knots;
+    public XtTableCount PE_CURVE;
+    public XtTableCount PE_CURVE__internal_geom;
+    public XtTableCount PCURVE;
+    public XtTableCount TRIMMED_CURVE;
+    public XtTableCount B_CURVE;
+    public XtTableCount CURVE_DATA;
+    public XtTableCount NURBS_CURVE;
+    public XtTableCount SP_CURVE;
+    public XtTableCount GEOMETRIC_OWNER;
+    public XtTableCount PLANE_FORM;
+    public XtTableCount CYLINDER_FORM;
+    public XtTableCount CONE_FORM;
+    public XtTableCount SPHERE_FORM;
+    public XtTableCount TORUS_FORM;
+    public XtTableCount SWEPT_FORM;
+    public XtTableCount SWEPT_UV_FORM;
+    public XtTableCount SPUN_FORM;
+    public XtTableCount VAR_RADIUS_PIPE_FORM;
+    public XtTableCount HELIX_SU_FORM;
+    public XtTableCount HELIX_CU_FORM;
+    public XtTableCount _xt_user_fields;
+}
+
+internal sealed class STORAGE
+{
+    internal readonly NULLP[] NULLP;
+    internal readonly WORKSPACE[] WORKSPACE;
+    internal readonly byte[] WORKSPACE__ws;
+    internal readonly PARTITION[] PARTITION;
+    internal readonly PMARK[] PMARK;
+    internal readonly ASSEMBLY[] ASSEMBLY;
+    internal readonly INSTANCE[] INSTANCE;
+    internal readonly BODY[] BODY;
+    internal readonly SHELL[] SHELL;
+    internal readonly FACE[] FACE;
+    internal readonly LOOP[] LOOP;
+    internal readonly EDGE[] EDGE;
+    internal readonly HALFEDGE[] HALFEDGE;
+    internal readonly VERTEX[] VERTEX;
+    internal readonly REGION[] REGION;
+    internal readonly POINT[] POINT;
+    internal readonly LINE[] LINE;
+    internal readonly CIRCLE[] CIRCLE;
+    internal readonly ELLIPSE[] ELLIPSE;
+    internal readonly PARABOLA[] PARABOLA;
+    internal readonly HYPERBOLA[] HYPERBOLA;
+    internal readonly PARACURVE[] PARACURVE;
+    internal readonly OBSOLETE_CPC[] OBSOLETE_CPC;
+    internal readonly XtNodeIndex[] OBSOLETE_CPC__segment;
+    internal readonly PATCH_BOUND[] PATCH_BOUND;
+    internal readonly INTERSECTION[] INTERSECTION;
+    internal readonly SILHOUETTE[] SILHOUETTE;
+    internal readonly CHART[] CHART;
+    internal readonly XtSchemaVector[] CHART__hvec;
+    internal readonly LIMIT[] LIMIT;
+    internal readonly XtSchemaVector[] LIMIT__hvec;
+    internal readonly BSPLINE_CURVE[] BSPLINE_CURVE;
+    internal readonly KNOT_VECTOR[] KNOT_VECTOR;
+    internal readonly double[] KNOT_VECTOR__knots;
+    internal readonly BSPLINE_VERTICES[] BSPLINE_VERTICES;
+    internal readonly double[] BSPLINE_VERTICES__vertices;
+    internal readonly OFFSET_CURVE[] OFFSET_CURVE;
+    internal readonly CPC[] CPC;
+    internal readonly OBSOLETE_SP_CURVE[] OBSOLETE_SP_CURVE;
+    internal readonly double[] OBSOLETE_SP_CURVE__bezier_vertices;
+    internal readonly PLANE[] PLANE;
+    internal readonly CYLINDER[] CYLINDER;
+    internal readonly CONE[] CONE;
+    internal readonly SPHERE[] SPHERE;
+    internal readonly TORUS[] TORUS;
+    internal readonly PIPE[] PIPE;
+    internal readonly BLENDED_EDGE[] BLENDED_EDGE;
+    internal readonly BLENDED_VERTEX[] BLENDED_VERTEX;
+    internal readonly BLEND_OVERLAP[] BLEND_OVERLAP;
+    internal readonly BLEND_BOUND[] BLEND_BOUND;
+    internal readonly OFFSET_SURF[] OFFSET_SURF;
+    internal readonly PARASURF[] PARASURF;
+    internal readonly OBSOLETE_CPS[] OBSOLETE_CPS;
+    internal readonly XtNodeIndex[] OBSOLETE_CPS__patch;
+    internal readonly SILH_SURF[] SILH_SURF;
+    internal readonly BSPLINE_SURF[] BSPLINE_SURF;
+    internal readonly SWEPT_SURF[] SWEPT_SURF;
+    internal readonly SPUN_SURF[] SPUN_SURF;
+    internal readonly CPS[] CPS;
+    internal readonly LIST[] LIST;
+    internal readonly POINTER_LIS_BLOCK[] POINTER_LIS_BLOCK;
+    internal readonly XtNodeIndex[] POINTER_LIS_BLOCK__entries;
+    internal readonly ATT_DEF_ID[] ATT_DEF_ID;
+    internal readonly byte[] ATT_DEF_ID__string;
+    internal readonly ATTRIB_DEF[] ATTRIB_DEF;
+    internal readonly ulong[] ATTRIB_DEF__fields;
+    internal readonly ATTRIBUTE[] ATTRIBUTE;
+    internal readonly XtNodeIndex[] ATTRIBUTE__fields;
+    internal readonly INT_VALUES[] INT_VALUES;
+    internal readonly long[] INT_VALUES__values;
+    internal readonly REAL_VALUES[] REAL_VALUES;
+    internal readonly double[] REAL_VALUES__values;
+    internal readonly CHAR_VALUES[] CHAR_VALUES;
+    internal readonly byte[] CHAR_VALUES__values;
+    internal readonly POINT_VALUES[] POINT_VALUES;
+    internal readonly XtSchemaVector[] POINT_VALUES__values;
+    internal readonly VECTOR_VALUES[] VECTOR_VALUES;
+    internal readonly XtSchemaVector[] VECTOR_VALUES__values;
+    internal readonly AXIS_VALUES[] AXIS_VALUES;
+    internal readonly XtSchemaVector[] AXIS_VALUES__values;
+    internal readonly TAG_VALUES[] TAG_VALUES;
+    internal readonly long[] TAG_VALUES__values;
+    internal readonly DIRECTION_VALUES[] DIRECTION_VALUES;
+    internal readonly XtSchemaVector[] DIRECTION_VALUES__values;
+    internal readonly FEATURE[] FEATURE;
+    internal readonly MEMBER_OF_FEATURE[] MEMBER_OF_FEATURE;
+    internal readonly SHORT_VALUES[] SHORT_VALUES;
+    internal readonly long[] SHORT_VALUES__values;
+    internal readonly BOX_VALUES[] BOX_VALUES;
+    internal readonly XtSchemaBox[] BOX_VALUES__values;
+    internal readonly UNICODE_VALUES[] UNICODE_VALUES;
+    internal readonly long[] UNICODE_VALUES__values;
+    internal readonly FIELD_NAMES[] FIELD_NAMES;
+    internal readonly XtNodeIndex[] FIELD_NAMES__names;
+    internal readonly TRANSFORM[] TRANSFORM;
+    internal readonly WORLD[] WORLD;
+    internal readonly KEY[] KEY;
+    internal readonly byte[] KEY__string;
+    internal readonly BEZIER_CURVE[] BEZIER_CURVE;
+    internal readonly XtNodeIndex[] BEZIER_CURVE__segment;
+    internal readonly BEZIER_SURF[] BEZIER_SURF;
+    internal readonly XtNodeIndex[] BEZIER_SURF__patch;
+    internal readonly SET_ELEMENT_TAG[] SET_ELEMENT_TAG;
+    internal readonly FACE_SET[] FACE_SET;
+    internal readonly HALFEDGE_SET[] HALFEDGE_SET;
+    internal readonly PE_SURF[] PE_SURF;
+    internal readonly XtNodeIndex[] PE_SURF__internal_geom;
+    internal readonly INT_PE_DATA[] INT_PE_DATA;
+    internal readonly EXT_PE_DATA[] EXT_PE_DATA;
+    internal readonly B_SURFACE[] B_SURFACE;
+    internal readonly SURFACE_DATA[] SURFACE_DATA;
+    internal readonly NURBS_SURF[] NURBS_SURF;
+    internal readonly KNOT_MULT[] KNOT_MULT;
+    internal readonly long[] KNOT_MULT__mult;
+    internal readonly KNOT_SET[] KNOT_SET;
+    internal readonly double[] KNOT_SET__knots;
+    internal readonly PE_CURVE[] PE_CURVE;
+    internal readonly XtNodeIndex[] PE_CURVE__internal_geom;
+    internal readonly PCURVE[] PCURVE;
+    internal readonly TRIMMED_CURVE[] TRIMMED_CURVE;
+    internal readonly B_CURVE[] B_CURVE;
+    internal readonly CURVE_DATA[] CURVE_DATA;
+    internal readonly NURBS_CURVE[] NURBS_CURVE;
+    internal readonly SP_CURVE[] SP_CURVE;
+    internal readonly GEOMETRIC_OWNER[] GEOMETRIC_OWNER;
+    internal readonly PLANE_FORM[] PLANE_FORM;
+    internal readonly CYLINDER_FORM[] CYLINDER_FORM;
+    internal readonly CONE_FORM[] CONE_FORM;
+    internal readonly SPHERE_FORM[] SPHERE_FORM;
+    internal readonly TORUS_FORM[] TORUS_FORM;
+    internal readonly SWEPT_FORM[] SWEPT_FORM;
+    internal readonly SWEPT_UV_FORM[] SWEPT_UV_FORM;
+    internal readonly SPUN_FORM[] SPUN_FORM;
+    internal readonly VAR_RADIUS_PIPE_FORM[] VAR_RADIUS_PIPE_FORM;
+    internal readonly HELIX_SU_FORM[] HELIX_SU_FORM;
+    internal readonly HELIX_CU_FORM[] HELIX_CU_FORM;
+    internal readonly int[] _xt_user_fields;
+    internal STORAGE(COUNTS counts)
+    {
+        NULLP = A<NULLP>(counts.NULLP);
+        WORKSPACE = A<WORKSPACE>(counts.WORKSPACE);
+        WORKSPACE__ws = A<byte>(counts.WORKSPACE__ws);
+        PARTITION = A<PARTITION>(counts.PARTITION);
+        PMARK = A<PMARK>(counts.PMARK);
+        ASSEMBLY = A<ASSEMBLY>(counts.ASSEMBLY);
+        INSTANCE = A<INSTANCE>(counts.INSTANCE);
+        BODY = A<BODY>(counts.BODY);
+        SHELL = A<SHELL>(counts.SHELL);
+        FACE = A<FACE>(counts.FACE);
+        LOOP = A<LOOP>(counts.LOOP);
+        EDGE = A<EDGE>(counts.EDGE);
+        HALFEDGE = A<HALFEDGE>(counts.HALFEDGE);
+        VERTEX = A<VERTEX>(counts.VERTEX);
+        REGION = A<REGION>(counts.REGION);
+        POINT = A<POINT>(counts.POINT);
+        LINE = A<LINE>(counts.LINE);
+        CIRCLE = A<CIRCLE>(counts.CIRCLE);
+        ELLIPSE = A<ELLIPSE>(counts.ELLIPSE);
+        PARABOLA = A<PARABOLA>(counts.PARABOLA);
+        HYPERBOLA = A<HYPERBOLA>(counts.HYPERBOLA);
+        PARACURVE = A<PARACURVE>(counts.PARACURVE);
+        OBSOLETE_CPC = A<OBSOLETE_CPC>(counts.OBSOLETE_CPC);
+        OBSOLETE_CPC__segment = A<XtNodeIndex>(counts.OBSOLETE_CPC__segment);
+        PATCH_BOUND = A<PATCH_BOUND>(counts.PATCH_BOUND);
+        INTERSECTION = A<INTERSECTION>(counts.INTERSECTION);
+        SILHOUETTE = A<SILHOUETTE>(counts.SILHOUETTE);
+        CHART = A<CHART>(counts.CHART);
+        CHART__hvec = A<XtSchemaVector>(counts.CHART__hvec);
+        LIMIT = A<LIMIT>(counts.LIMIT);
+        LIMIT__hvec = A<XtSchemaVector>(counts.LIMIT__hvec);
+        BSPLINE_CURVE = A<BSPLINE_CURVE>(counts.BSPLINE_CURVE);
+        KNOT_VECTOR = A<KNOT_VECTOR>(counts.KNOT_VECTOR);
+        KNOT_VECTOR__knots = A<double>(counts.KNOT_VECTOR__knots);
+        BSPLINE_VERTICES = A<BSPLINE_VERTICES>(counts.BSPLINE_VERTICES);
+        BSPLINE_VERTICES__vertices = A<double>(counts.BSPLINE_VERTICES__vertices);
+        OFFSET_CURVE = A<OFFSET_CURVE>(counts.OFFSET_CURVE);
+        CPC = A<CPC>(counts.CPC);
+        OBSOLETE_SP_CURVE = A<OBSOLETE_SP_CURVE>(counts.OBSOLETE_SP_CURVE);
+        OBSOLETE_SP_CURVE__bezier_vertices = A<double>(counts.OBSOLETE_SP_CURVE__bezier_vertices);
+        PLANE = A<PLANE>(counts.PLANE);
+        CYLINDER = A<CYLINDER>(counts.CYLINDER);
+        CONE = A<CONE>(counts.CONE);
+        SPHERE = A<SPHERE>(counts.SPHERE);
+        TORUS = A<TORUS>(counts.TORUS);
+        PIPE = A<PIPE>(counts.PIPE);
+        BLENDED_EDGE = A<BLENDED_EDGE>(counts.BLENDED_EDGE);
+        BLENDED_VERTEX = A<BLENDED_VERTEX>(counts.BLENDED_VERTEX);
+        BLEND_OVERLAP = A<BLEND_OVERLAP>(counts.BLEND_OVERLAP);
+        BLEND_BOUND = A<BLEND_BOUND>(counts.BLEND_BOUND);
+        OFFSET_SURF = A<OFFSET_SURF>(counts.OFFSET_SURF);
+        PARASURF = A<PARASURF>(counts.PARASURF);
+        OBSOLETE_CPS = A<OBSOLETE_CPS>(counts.OBSOLETE_CPS);
+        OBSOLETE_CPS__patch = A<XtNodeIndex>(counts.OBSOLETE_CPS__patch);
+        SILH_SURF = A<SILH_SURF>(counts.SILH_SURF);
+        BSPLINE_SURF = A<BSPLINE_SURF>(counts.BSPLINE_SURF);
+        SWEPT_SURF = A<SWEPT_SURF>(counts.SWEPT_SURF);
+        SPUN_SURF = A<SPUN_SURF>(counts.SPUN_SURF);
+        CPS = A<CPS>(counts.CPS);
+        LIST = A<LIST>(counts.LIST);
+        POINTER_LIS_BLOCK = A<POINTER_LIS_BLOCK>(counts.POINTER_LIS_BLOCK);
+        POINTER_LIS_BLOCK__entries = A<XtNodeIndex>(counts.POINTER_LIS_BLOCK__entries);
+        ATT_DEF_ID = A<ATT_DEF_ID>(counts.ATT_DEF_ID);
+        ATT_DEF_ID__string = A<byte>(counts.ATT_DEF_ID__string);
+        ATTRIB_DEF = A<ATTRIB_DEF>(counts.ATTRIB_DEF);
+        ATTRIB_DEF__fields = A<ulong>(counts.ATTRIB_DEF__fields);
+        ATTRIBUTE = A<ATTRIBUTE>(counts.ATTRIBUTE);
+        ATTRIBUTE__fields = A<XtNodeIndex>(counts.ATTRIBUTE__fields);
+        INT_VALUES = A<INT_VALUES>(counts.INT_VALUES);
+        INT_VALUES__values = A<long>(counts.INT_VALUES__values);
+        REAL_VALUES = A<REAL_VALUES>(counts.REAL_VALUES);
+        REAL_VALUES__values = A<double>(counts.REAL_VALUES__values);
+        CHAR_VALUES = A<CHAR_VALUES>(counts.CHAR_VALUES);
+        CHAR_VALUES__values = A<byte>(counts.CHAR_VALUES__values);
+        POINT_VALUES = A<POINT_VALUES>(counts.POINT_VALUES);
+        POINT_VALUES__values = A<XtSchemaVector>(counts.POINT_VALUES__values);
+        VECTOR_VALUES = A<VECTOR_VALUES>(counts.VECTOR_VALUES);
+        VECTOR_VALUES__values = A<XtSchemaVector>(counts.VECTOR_VALUES__values);
+        AXIS_VALUES = A<AXIS_VALUES>(counts.AXIS_VALUES);
+        AXIS_VALUES__values = A<XtSchemaVector>(counts.AXIS_VALUES__values);
+        TAG_VALUES = A<TAG_VALUES>(counts.TAG_VALUES);
+        TAG_VALUES__values = A<long>(counts.TAG_VALUES__values);
+        DIRECTION_VALUES = A<DIRECTION_VALUES>(counts.DIRECTION_VALUES);
+        DIRECTION_VALUES__values = A<XtSchemaVector>(counts.DIRECTION_VALUES__values);
+        FEATURE = A<FEATURE>(counts.FEATURE);
+        MEMBER_OF_FEATURE = A<MEMBER_OF_FEATURE>(counts.MEMBER_OF_FEATURE);
+        SHORT_VALUES = A<SHORT_VALUES>(counts.SHORT_VALUES);
+        SHORT_VALUES__values = A<long>(counts.SHORT_VALUES__values);
+        BOX_VALUES = A<BOX_VALUES>(counts.BOX_VALUES);
+        BOX_VALUES__values = A<XtSchemaBox>(counts.BOX_VALUES__values);
+        UNICODE_VALUES = A<UNICODE_VALUES>(counts.UNICODE_VALUES);
+        UNICODE_VALUES__values = A<long>(counts.UNICODE_VALUES__values);
+        FIELD_NAMES = A<FIELD_NAMES>(counts.FIELD_NAMES);
+        FIELD_NAMES__names = A<XtNodeIndex>(counts.FIELD_NAMES__names);
+        TRANSFORM = A<TRANSFORM>(counts.TRANSFORM);
+        WORLD = A<WORLD>(counts.WORLD);
+        KEY = A<KEY>(counts.KEY);
+        KEY__string = A<byte>(counts.KEY__string);
+        BEZIER_CURVE = A<BEZIER_CURVE>(counts.BEZIER_CURVE);
+        BEZIER_CURVE__segment = A<XtNodeIndex>(counts.BEZIER_CURVE__segment);
+        BEZIER_SURF = A<BEZIER_SURF>(counts.BEZIER_SURF);
+        BEZIER_SURF__patch = A<XtNodeIndex>(counts.BEZIER_SURF__patch);
+        SET_ELEMENT_TAG = A<SET_ELEMENT_TAG>(counts.SET_ELEMENT_TAG);
+        FACE_SET = A<FACE_SET>(counts.FACE_SET);
+        HALFEDGE_SET = A<HALFEDGE_SET>(counts.HALFEDGE_SET);
+        PE_SURF = A<PE_SURF>(counts.PE_SURF);
+        PE_SURF__internal_geom = A<XtNodeIndex>(counts.PE_SURF__internal_geom);
+        INT_PE_DATA = A<INT_PE_DATA>(counts.INT_PE_DATA);
+        EXT_PE_DATA = A<EXT_PE_DATA>(counts.EXT_PE_DATA);
+        B_SURFACE = A<B_SURFACE>(counts.B_SURFACE);
+        SURFACE_DATA = A<SURFACE_DATA>(counts.SURFACE_DATA);
+        NURBS_SURF = A<NURBS_SURF>(counts.NURBS_SURF);
+        KNOT_MULT = A<KNOT_MULT>(counts.KNOT_MULT);
+        KNOT_MULT__mult = A<long>(counts.KNOT_MULT__mult);
+        KNOT_SET = A<KNOT_SET>(counts.KNOT_SET);
+        KNOT_SET__knots = A<double>(counts.KNOT_SET__knots);
+        PE_CURVE = A<PE_CURVE>(counts.PE_CURVE);
+        PE_CURVE__internal_geom = A<XtNodeIndex>(counts.PE_CURVE__internal_geom);
+        PCURVE = A<PCURVE>(counts.PCURVE);
+        TRIMMED_CURVE = A<TRIMMED_CURVE>(counts.TRIMMED_CURVE);
+        B_CURVE = A<B_CURVE>(counts.B_CURVE);
+        CURVE_DATA = A<CURVE_DATA>(counts.CURVE_DATA);
+        NURBS_CURVE = A<NURBS_CURVE>(counts.NURBS_CURVE);
+        SP_CURVE = A<SP_CURVE>(counts.SP_CURVE);
+        GEOMETRIC_OWNER = A<GEOMETRIC_OWNER>(counts.GEOMETRIC_OWNER);
+        PLANE_FORM = A<PLANE_FORM>(counts.PLANE_FORM);
+        CYLINDER_FORM = A<CYLINDER_FORM>(counts.CYLINDER_FORM);
+        CONE_FORM = A<CONE_FORM>(counts.CONE_FORM);
+        SPHERE_FORM = A<SPHERE_FORM>(counts.SPHERE_FORM);
+        TORUS_FORM = A<TORUS_FORM>(counts.TORUS_FORM);
+        SWEPT_FORM = A<SWEPT_FORM>(counts.SWEPT_FORM);
+        SWEPT_UV_FORM = A<SWEPT_UV_FORM>(counts.SWEPT_UV_FORM);
+        SPUN_FORM = A<SPUN_FORM>(counts.SPUN_FORM);
+        VAR_RADIUS_PIPE_FORM = A<VAR_RADIUS_PIPE_FORM>(counts.VAR_RADIUS_PIPE_FORM);
+        HELIX_SU_FORM = A<HELIX_SU_FORM>(counts.HELIX_SU_FORM);
+        HELIX_CU_FORM = A<HELIX_CU_FORM>(counts.HELIX_CU_FORM);
+        _xt_user_fields = A<int>(counts._xt_user_fields);
+        static T[] A<T>(int count) => count < 0 ? throw new ArgumentOutOfRangeException(nameof(count)) : GC.AllocateArray<T>(count, pinned: true);
+    }
+}
+public sealed class MODEL : IXtSchemaModel
+{
+    internal readonly STORAGE Storage;
+    internal MODEL(STORAGE storage, string versionText, int userFieldSize) { Storage = storage; VersionText = versionText; UserFieldSize = userFieldSize; }
+    public string VersionText { get; }
+    public int UserFieldSize { get; }
+    public string SchemaIdentity => CODEC.SchemaIdentity;
+    public XtDocument ToDocument() => CODEC.Encode(this);
+    public ReadOnlySpan<NULLP> NULLP => Storage.NULLP;
+    public ReadOnlySpan<WORKSPACE> WORKSPACE => Storage.WORKSPACE;
+    public ReadOnlySpan<byte> WORKSPACE__ws => Storage.WORKSPACE__ws;
+    public ReadOnlySpan<PARTITION> PARTITION => Storage.PARTITION;
+    public ReadOnlySpan<PMARK> PMARK => Storage.PMARK;
+    public ReadOnlySpan<ASSEMBLY> ASSEMBLY => Storage.ASSEMBLY;
+    public ReadOnlySpan<INSTANCE> INSTANCE => Storage.INSTANCE;
+    public ReadOnlySpan<BODY> BODY => Storage.BODY;
+    public ReadOnlySpan<SHELL> SHELL => Storage.SHELL;
+    public ReadOnlySpan<FACE> FACE => Storage.FACE;
+    public ReadOnlySpan<LOOP> LOOP => Storage.LOOP;
+    public ReadOnlySpan<EDGE> EDGE => Storage.EDGE;
+    public ReadOnlySpan<HALFEDGE> HALFEDGE => Storage.HALFEDGE;
+    public ReadOnlySpan<VERTEX> VERTEX => Storage.VERTEX;
+    public ReadOnlySpan<REGION> REGION => Storage.REGION;
+    public ReadOnlySpan<POINT> POINT => Storage.POINT;
+    public ReadOnlySpan<LINE> LINE => Storage.LINE;
+    public ReadOnlySpan<CIRCLE> CIRCLE => Storage.CIRCLE;
+    public ReadOnlySpan<ELLIPSE> ELLIPSE => Storage.ELLIPSE;
+    public ReadOnlySpan<PARABOLA> PARABOLA => Storage.PARABOLA;
+    public ReadOnlySpan<HYPERBOLA> HYPERBOLA => Storage.HYPERBOLA;
+    public ReadOnlySpan<PARACURVE> PARACURVE => Storage.PARACURVE;
+    public ReadOnlySpan<OBSOLETE_CPC> OBSOLETE_CPC => Storage.OBSOLETE_CPC;
+    public ReadOnlySpan<XtNodeIndex> OBSOLETE_CPC__segment => Storage.OBSOLETE_CPC__segment;
+    public ReadOnlySpan<PATCH_BOUND> PATCH_BOUND => Storage.PATCH_BOUND;
+    public ReadOnlySpan<INTERSECTION> INTERSECTION => Storage.INTERSECTION;
+    public ReadOnlySpan<SILHOUETTE> SILHOUETTE => Storage.SILHOUETTE;
+    public ReadOnlySpan<CHART> CHART => Storage.CHART;
+    public ReadOnlySpan<XtSchemaVector> CHART__hvec => Storage.CHART__hvec;
+    public ReadOnlySpan<LIMIT> LIMIT => Storage.LIMIT;
+    public ReadOnlySpan<XtSchemaVector> LIMIT__hvec => Storage.LIMIT__hvec;
+    public ReadOnlySpan<BSPLINE_CURVE> BSPLINE_CURVE => Storage.BSPLINE_CURVE;
+    public ReadOnlySpan<KNOT_VECTOR> KNOT_VECTOR => Storage.KNOT_VECTOR;
+    public ReadOnlySpan<double> KNOT_VECTOR__knots => Storage.KNOT_VECTOR__knots;
+    public ReadOnlySpan<BSPLINE_VERTICES> BSPLINE_VERTICES => Storage.BSPLINE_VERTICES;
+    public ReadOnlySpan<double> BSPLINE_VERTICES__vertices => Storage.BSPLINE_VERTICES__vertices;
+    public ReadOnlySpan<OFFSET_CURVE> OFFSET_CURVE => Storage.OFFSET_CURVE;
+    public ReadOnlySpan<CPC> CPC => Storage.CPC;
+    public ReadOnlySpan<OBSOLETE_SP_CURVE> OBSOLETE_SP_CURVE => Storage.OBSOLETE_SP_CURVE;
+    public ReadOnlySpan<double> OBSOLETE_SP_CURVE__bezier_vertices => Storage.OBSOLETE_SP_CURVE__bezier_vertices;
+    public ReadOnlySpan<PLANE> PLANE => Storage.PLANE;
+    public ReadOnlySpan<CYLINDER> CYLINDER => Storage.CYLINDER;
+    public ReadOnlySpan<CONE> CONE => Storage.CONE;
+    public ReadOnlySpan<SPHERE> SPHERE => Storage.SPHERE;
+    public ReadOnlySpan<TORUS> TORUS => Storage.TORUS;
+    public ReadOnlySpan<PIPE> PIPE => Storage.PIPE;
+    public ReadOnlySpan<BLENDED_EDGE> BLENDED_EDGE => Storage.BLENDED_EDGE;
+    public ReadOnlySpan<BLENDED_VERTEX> BLENDED_VERTEX => Storage.BLENDED_VERTEX;
+    public ReadOnlySpan<BLEND_OVERLAP> BLEND_OVERLAP => Storage.BLEND_OVERLAP;
+    public ReadOnlySpan<BLEND_BOUND> BLEND_BOUND => Storage.BLEND_BOUND;
+    public ReadOnlySpan<OFFSET_SURF> OFFSET_SURF => Storage.OFFSET_SURF;
+    public ReadOnlySpan<PARASURF> PARASURF => Storage.PARASURF;
+    public ReadOnlySpan<OBSOLETE_CPS> OBSOLETE_CPS => Storage.OBSOLETE_CPS;
+    public ReadOnlySpan<XtNodeIndex> OBSOLETE_CPS__patch => Storage.OBSOLETE_CPS__patch;
+    public ReadOnlySpan<SILH_SURF> SILH_SURF => Storage.SILH_SURF;
+    public ReadOnlySpan<BSPLINE_SURF> BSPLINE_SURF => Storage.BSPLINE_SURF;
+    public ReadOnlySpan<SWEPT_SURF> SWEPT_SURF => Storage.SWEPT_SURF;
+    public ReadOnlySpan<SPUN_SURF> SPUN_SURF => Storage.SPUN_SURF;
+    public ReadOnlySpan<CPS> CPS => Storage.CPS;
+    public ReadOnlySpan<LIST> LIST => Storage.LIST;
+    public ReadOnlySpan<POINTER_LIS_BLOCK> POINTER_LIS_BLOCK => Storage.POINTER_LIS_BLOCK;
+    public ReadOnlySpan<XtNodeIndex> POINTER_LIS_BLOCK__entries => Storage.POINTER_LIS_BLOCK__entries;
+    public ReadOnlySpan<ATT_DEF_ID> ATT_DEF_ID => Storage.ATT_DEF_ID;
+    public ReadOnlySpan<byte> ATT_DEF_ID__string => Storage.ATT_DEF_ID__string;
+    public ReadOnlySpan<ATTRIB_DEF> ATTRIB_DEF => Storage.ATTRIB_DEF;
+    public ReadOnlySpan<ulong> ATTRIB_DEF__fields => Storage.ATTRIB_DEF__fields;
+    public ReadOnlySpan<ATTRIBUTE> ATTRIBUTE => Storage.ATTRIBUTE;
+    public ReadOnlySpan<XtNodeIndex> ATTRIBUTE__fields => Storage.ATTRIBUTE__fields;
+    public ReadOnlySpan<INT_VALUES> INT_VALUES => Storage.INT_VALUES;
+    public ReadOnlySpan<long> INT_VALUES__values => Storage.INT_VALUES__values;
+    public ReadOnlySpan<REAL_VALUES> REAL_VALUES => Storage.REAL_VALUES;
+    public ReadOnlySpan<double> REAL_VALUES__values => Storage.REAL_VALUES__values;
+    public ReadOnlySpan<CHAR_VALUES> CHAR_VALUES => Storage.CHAR_VALUES;
+    public ReadOnlySpan<byte> CHAR_VALUES__values => Storage.CHAR_VALUES__values;
+    public ReadOnlySpan<POINT_VALUES> POINT_VALUES => Storage.POINT_VALUES;
+    public ReadOnlySpan<XtSchemaVector> POINT_VALUES__values => Storage.POINT_VALUES__values;
+    public ReadOnlySpan<VECTOR_VALUES> VECTOR_VALUES => Storage.VECTOR_VALUES;
+    public ReadOnlySpan<XtSchemaVector> VECTOR_VALUES__values => Storage.VECTOR_VALUES__values;
+    public ReadOnlySpan<AXIS_VALUES> AXIS_VALUES => Storage.AXIS_VALUES;
+    public ReadOnlySpan<XtSchemaVector> AXIS_VALUES__values => Storage.AXIS_VALUES__values;
+    public ReadOnlySpan<TAG_VALUES> TAG_VALUES => Storage.TAG_VALUES;
+    public ReadOnlySpan<long> TAG_VALUES__values => Storage.TAG_VALUES__values;
+    public ReadOnlySpan<DIRECTION_VALUES> DIRECTION_VALUES => Storage.DIRECTION_VALUES;
+    public ReadOnlySpan<XtSchemaVector> DIRECTION_VALUES__values => Storage.DIRECTION_VALUES__values;
+    public ReadOnlySpan<FEATURE> FEATURE => Storage.FEATURE;
+    public ReadOnlySpan<MEMBER_OF_FEATURE> MEMBER_OF_FEATURE => Storage.MEMBER_OF_FEATURE;
+    public ReadOnlySpan<SHORT_VALUES> SHORT_VALUES => Storage.SHORT_VALUES;
+    public ReadOnlySpan<long> SHORT_VALUES__values => Storage.SHORT_VALUES__values;
+    public ReadOnlySpan<BOX_VALUES> BOX_VALUES => Storage.BOX_VALUES;
+    public ReadOnlySpan<XtSchemaBox> BOX_VALUES__values => Storage.BOX_VALUES__values;
+    public ReadOnlySpan<UNICODE_VALUES> UNICODE_VALUES => Storage.UNICODE_VALUES;
+    public ReadOnlySpan<long> UNICODE_VALUES__values => Storage.UNICODE_VALUES__values;
+    public ReadOnlySpan<FIELD_NAMES> FIELD_NAMES => Storage.FIELD_NAMES;
+    public ReadOnlySpan<XtNodeIndex> FIELD_NAMES__names => Storage.FIELD_NAMES__names;
+    public ReadOnlySpan<TRANSFORM> TRANSFORM => Storage.TRANSFORM;
+    public ReadOnlySpan<WORLD> WORLD => Storage.WORLD;
+    public ReadOnlySpan<KEY> KEY => Storage.KEY;
+    public ReadOnlySpan<byte> KEY__string => Storage.KEY__string;
+    public ReadOnlySpan<BEZIER_CURVE> BEZIER_CURVE => Storage.BEZIER_CURVE;
+    public ReadOnlySpan<XtNodeIndex> BEZIER_CURVE__segment => Storage.BEZIER_CURVE__segment;
+    public ReadOnlySpan<BEZIER_SURF> BEZIER_SURF => Storage.BEZIER_SURF;
+    public ReadOnlySpan<XtNodeIndex> BEZIER_SURF__patch => Storage.BEZIER_SURF__patch;
+    public ReadOnlySpan<SET_ELEMENT_TAG> SET_ELEMENT_TAG => Storage.SET_ELEMENT_TAG;
+    public ReadOnlySpan<FACE_SET> FACE_SET => Storage.FACE_SET;
+    public ReadOnlySpan<HALFEDGE_SET> HALFEDGE_SET => Storage.HALFEDGE_SET;
+    public ReadOnlySpan<PE_SURF> PE_SURF => Storage.PE_SURF;
+    public ReadOnlySpan<XtNodeIndex> PE_SURF__internal_geom => Storage.PE_SURF__internal_geom;
+    public ReadOnlySpan<INT_PE_DATA> INT_PE_DATA => Storage.INT_PE_DATA;
+    public ReadOnlySpan<EXT_PE_DATA> EXT_PE_DATA => Storage.EXT_PE_DATA;
+    public ReadOnlySpan<B_SURFACE> B_SURFACE => Storage.B_SURFACE;
+    public ReadOnlySpan<SURFACE_DATA> SURFACE_DATA => Storage.SURFACE_DATA;
+    public ReadOnlySpan<NURBS_SURF> NURBS_SURF => Storage.NURBS_SURF;
+    public ReadOnlySpan<KNOT_MULT> KNOT_MULT => Storage.KNOT_MULT;
+    public ReadOnlySpan<long> KNOT_MULT__mult => Storage.KNOT_MULT__mult;
+    public ReadOnlySpan<KNOT_SET> KNOT_SET => Storage.KNOT_SET;
+    public ReadOnlySpan<double> KNOT_SET__knots => Storage.KNOT_SET__knots;
+    public ReadOnlySpan<PE_CURVE> PE_CURVE => Storage.PE_CURVE;
+    public ReadOnlySpan<XtNodeIndex> PE_CURVE__internal_geom => Storage.PE_CURVE__internal_geom;
+    public ReadOnlySpan<PCURVE> PCURVE => Storage.PCURVE;
+    public ReadOnlySpan<TRIMMED_CURVE> TRIMMED_CURVE => Storage.TRIMMED_CURVE;
+    public ReadOnlySpan<B_CURVE> B_CURVE => Storage.B_CURVE;
+    public ReadOnlySpan<CURVE_DATA> CURVE_DATA => Storage.CURVE_DATA;
+    public ReadOnlySpan<NURBS_CURVE> NURBS_CURVE => Storage.NURBS_CURVE;
+    public ReadOnlySpan<SP_CURVE> SP_CURVE => Storage.SP_CURVE;
+    public ReadOnlySpan<GEOMETRIC_OWNER> GEOMETRIC_OWNER => Storage.GEOMETRIC_OWNER;
+    public ReadOnlySpan<PLANE_FORM> PLANE_FORM => Storage.PLANE_FORM;
+    public ReadOnlySpan<CYLINDER_FORM> CYLINDER_FORM => Storage.CYLINDER_FORM;
+    public ReadOnlySpan<CONE_FORM> CONE_FORM => Storage.CONE_FORM;
+    public ReadOnlySpan<SPHERE_FORM> SPHERE_FORM => Storage.SPHERE_FORM;
+    public ReadOnlySpan<TORUS_FORM> TORUS_FORM => Storage.TORUS_FORM;
+    public ReadOnlySpan<SWEPT_FORM> SWEPT_FORM => Storage.SWEPT_FORM;
+    public ReadOnlySpan<SWEPT_UV_FORM> SWEPT_UV_FORM => Storage.SWEPT_UV_FORM;
+    public ReadOnlySpan<SPUN_FORM> SPUN_FORM => Storage.SPUN_FORM;
+    public ReadOnlySpan<VAR_RADIUS_PIPE_FORM> VAR_RADIUS_PIPE_FORM => Storage.VAR_RADIUS_PIPE_FORM;
+    public ReadOnlySpan<HELIX_SU_FORM> HELIX_SU_FORM => Storage.HELIX_SU_FORM;
+    public ReadOnlySpan<HELIX_CU_FORM> HELIX_CU_FORM => Storage.HELIX_CU_FORM;
+    public ReadOnlySpan<int> _xt_user_fields => Storage._xt_user_fields;
+}
+public sealed class MODEL_BUILDER
+{
+    internal readonly STORAGE Storage; private bool _finalized;
+    public MODEL_BUILDER(COUNTS counts) { Storage = new STORAGE(counts); }
+    public string VersionText { get; set; } = ": TRANSMIT FILE created by ProjectGmKernel.Xt for modeller version 1300120";
+    public int UserFieldSize { get; set; }
+    public Span<NULLP> NULLP => Writable(Storage.NULLP);
+    public Span<WORKSPACE> WORKSPACE => Writable(Storage.WORKSPACE);
+    public Span<byte> WORKSPACE__ws => Writable(Storage.WORKSPACE__ws);
+    public Span<PARTITION> PARTITION => Writable(Storage.PARTITION);
+    public Span<PMARK> PMARK => Writable(Storage.PMARK);
+    public Span<ASSEMBLY> ASSEMBLY => Writable(Storage.ASSEMBLY);
+    public Span<INSTANCE> INSTANCE => Writable(Storage.INSTANCE);
+    public Span<BODY> BODY => Writable(Storage.BODY);
+    public Span<SHELL> SHELL => Writable(Storage.SHELL);
+    public Span<FACE> FACE => Writable(Storage.FACE);
+    public Span<LOOP> LOOP => Writable(Storage.LOOP);
+    public Span<EDGE> EDGE => Writable(Storage.EDGE);
+    public Span<HALFEDGE> HALFEDGE => Writable(Storage.HALFEDGE);
+    public Span<VERTEX> VERTEX => Writable(Storage.VERTEX);
+    public Span<REGION> REGION => Writable(Storage.REGION);
+    public Span<POINT> POINT => Writable(Storage.POINT);
+    public Span<LINE> LINE => Writable(Storage.LINE);
+    public Span<CIRCLE> CIRCLE => Writable(Storage.CIRCLE);
+    public Span<ELLIPSE> ELLIPSE => Writable(Storage.ELLIPSE);
+    public Span<PARABOLA> PARABOLA => Writable(Storage.PARABOLA);
+    public Span<HYPERBOLA> HYPERBOLA => Writable(Storage.HYPERBOLA);
+    public Span<PARACURVE> PARACURVE => Writable(Storage.PARACURVE);
+    public Span<OBSOLETE_CPC> OBSOLETE_CPC => Writable(Storage.OBSOLETE_CPC);
+    public Span<XtNodeIndex> OBSOLETE_CPC__segment => Writable(Storage.OBSOLETE_CPC__segment);
+    public Span<PATCH_BOUND> PATCH_BOUND => Writable(Storage.PATCH_BOUND);
+    public Span<INTERSECTION> INTERSECTION => Writable(Storage.INTERSECTION);
+    public Span<SILHOUETTE> SILHOUETTE => Writable(Storage.SILHOUETTE);
+    public Span<CHART> CHART => Writable(Storage.CHART);
+    public Span<XtSchemaVector> CHART__hvec => Writable(Storage.CHART__hvec);
+    public Span<LIMIT> LIMIT => Writable(Storage.LIMIT);
+    public Span<XtSchemaVector> LIMIT__hvec => Writable(Storage.LIMIT__hvec);
+    public Span<BSPLINE_CURVE> BSPLINE_CURVE => Writable(Storage.BSPLINE_CURVE);
+    public Span<KNOT_VECTOR> KNOT_VECTOR => Writable(Storage.KNOT_VECTOR);
+    public Span<double> KNOT_VECTOR__knots => Writable(Storage.KNOT_VECTOR__knots);
+    public Span<BSPLINE_VERTICES> BSPLINE_VERTICES => Writable(Storage.BSPLINE_VERTICES);
+    public Span<double> BSPLINE_VERTICES__vertices => Writable(Storage.BSPLINE_VERTICES__vertices);
+    public Span<OFFSET_CURVE> OFFSET_CURVE => Writable(Storage.OFFSET_CURVE);
+    public Span<CPC> CPC => Writable(Storage.CPC);
+    public Span<OBSOLETE_SP_CURVE> OBSOLETE_SP_CURVE => Writable(Storage.OBSOLETE_SP_CURVE);
+    public Span<double> OBSOLETE_SP_CURVE__bezier_vertices => Writable(Storage.OBSOLETE_SP_CURVE__bezier_vertices);
+    public Span<PLANE> PLANE => Writable(Storage.PLANE);
+    public Span<CYLINDER> CYLINDER => Writable(Storage.CYLINDER);
+    public Span<CONE> CONE => Writable(Storage.CONE);
+    public Span<SPHERE> SPHERE => Writable(Storage.SPHERE);
+    public Span<TORUS> TORUS => Writable(Storage.TORUS);
+    public Span<PIPE> PIPE => Writable(Storage.PIPE);
+    public Span<BLENDED_EDGE> BLENDED_EDGE => Writable(Storage.BLENDED_EDGE);
+    public Span<BLENDED_VERTEX> BLENDED_VERTEX => Writable(Storage.BLENDED_VERTEX);
+    public Span<BLEND_OVERLAP> BLEND_OVERLAP => Writable(Storage.BLEND_OVERLAP);
+    public Span<BLEND_BOUND> BLEND_BOUND => Writable(Storage.BLEND_BOUND);
+    public Span<OFFSET_SURF> OFFSET_SURF => Writable(Storage.OFFSET_SURF);
+    public Span<PARASURF> PARASURF => Writable(Storage.PARASURF);
+    public Span<OBSOLETE_CPS> OBSOLETE_CPS => Writable(Storage.OBSOLETE_CPS);
+    public Span<XtNodeIndex> OBSOLETE_CPS__patch => Writable(Storage.OBSOLETE_CPS__patch);
+    public Span<SILH_SURF> SILH_SURF => Writable(Storage.SILH_SURF);
+    public Span<BSPLINE_SURF> BSPLINE_SURF => Writable(Storage.BSPLINE_SURF);
+    public Span<SWEPT_SURF> SWEPT_SURF => Writable(Storage.SWEPT_SURF);
+    public Span<SPUN_SURF> SPUN_SURF => Writable(Storage.SPUN_SURF);
+    public Span<CPS> CPS => Writable(Storage.CPS);
+    public Span<LIST> LIST => Writable(Storage.LIST);
+    public Span<POINTER_LIS_BLOCK> POINTER_LIS_BLOCK => Writable(Storage.POINTER_LIS_BLOCK);
+    public Span<XtNodeIndex> POINTER_LIS_BLOCK__entries => Writable(Storage.POINTER_LIS_BLOCK__entries);
+    public Span<ATT_DEF_ID> ATT_DEF_ID => Writable(Storage.ATT_DEF_ID);
+    public Span<byte> ATT_DEF_ID__string => Writable(Storage.ATT_DEF_ID__string);
+    public Span<ATTRIB_DEF> ATTRIB_DEF => Writable(Storage.ATTRIB_DEF);
+    public Span<ulong> ATTRIB_DEF__fields => Writable(Storage.ATTRIB_DEF__fields);
+    public Span<ATTRIBUTE> ATTRIBUTE => Writable(Storage.ATTRIBUTE);
+    public Span<XtNodeIndex> ATTRIBUTE__fields => Writable(Storage.ATTRIBUTE__fields);
+    public Span<INT_VALUES> INT_VALUES => Writable(Storage.INT_VALUES);
+    public Span<long> INT_VALUES__values => Writable(Storage.INT_VALUES__values);
+    public Span<REAL_VALUES> REAL_VALUES => Writable(Storage.REAL_VALUES);
+    public Span<double> REAL_VALUES__values => Writable(Storage.REAL_VALUES__values);
+    public Span<CHAR_VALUES> CHAR_VALUES => Writable(Storage.CHAR_VALUES);
+    public Span<byte> CHAR_VALUES__values => Writable(Storage.CHAR_VALUES__values);
+    public Span<POINT_VALUES> POINT_VALUES => Writable(Storage.POINT_VALUES);
+    public Span<XtSchemaVector> POINT_VALUES__values => Writable(Storage.POINT_VALUES__values);
+    public Span<VECTOR_VALUES> VECTOR_VALUES => Writable(Storage.VECTOR_VALUES);
+    public Span<XtSchemaVector> VECTOR_VALUES__values => Writable(Storage.VECTOR_VALUES__values);
+    public Span<AXIS_VALUES> AXIS_VALUES => Writable(Storage.AXIS_VALUES);
+    public Span<XtSchemaVector> AXIS_VALUES__values => Writable(Storage.AXIS_VALUES__values);
+    public Span<TAG_VALUES> TAG_VALUES => Writable(Storage.TAG_VALUES);
+    public Span<long> TAG_VALUES__values => Writable(Storage.TAG_VALUES__values);
+    public Span<DIRECTION_VALUES> DIRECTION_VALUES => Writable(Storage.DIRECTION_VALUES);
+    public Span<XtSchemaVector> DIRECTION_VALUES__values => Writable(Storage.DIRECTION_VALUES__values);
+    public Span<FEATURE> FEATURE => Writable(Storage.FEATURE);
+    public Span<MEMBER_OF_FEATURE> MEMBER_OF_FEATURE => Writable(Storage.MEMBER_OF_FEATURE);
+    public Span<SHORT_VALUES> SHORT_VALUES => Writable(Storage.SHORT_VALUES);
+    public Span<long> SHORT_VALUES__values => Writable(Storage.SHORT_VALUES__values);
+    public Span<BOX_VALUES> BOX_VALUES => Writable(Storage.BOX_VALUES);
+    public Span<XtSchemaBox> BOX_VALUES__values => Writable(Storage.BOX_VALUES__values);
+    public Span<UNICODE_VALUES> UNICODE_VALUES => Writable(Storage.UNICODE_VALUES);
+    public Span<long> UNICODE_VALUES__values => Writable(Storage.UNICODE_VALUES__values);
+    public Span<FIELD_NAMES> FIELD_NAMES => Writable(Storage.FIELD_NAMES);
+    public Span<XtNodeIndex> FIELD_NAMES__names => Writable(Storage.FIELD_NAMES__names);
+    public Span<TRANSFORM> TRANSFORM => Writable(Storage.TRANSFORM);
+    public Span<WORLD> WORLD => Writable(Storage.WORLD);
+    public Span<KEY> KEY => Writable(Storage.KEY);
+    public Span<byte> KEY__string => Writable(Storage.KEY__string);
+    public Span<BEZIER_CURVE> BEZIER_CURVE => Writable(Storage.BEZIER_CURVE);
+    public Span<XtNodeIndex> BEZIER_CURVE__segment => Writable(Storage.BEZIER_CURVE__segment);
+    public Span<BEZIER_SURF> BEZIER_SURF => Writable(Storage.BEZIER_SURF);
+    public Span<XtNodeIndex> BEZIER_SURF__patch => Writable(Storage.BEZIER_SURF__patch);
+    public Span<SET_ELEMENT_TAG> SET_ELEMENT_TAG => Writable(Storage.SET_ELEMENT_TAG);
+    public Span<FACE_SET> FACE_SET => Writable(Storage.FACE_SET);
+    public Span<HALFEDGE_SET> HALFEDGE_SET => Writable(Storage.HALFEDGE_SET);
+    public Span<PE_SURF> PE_SURF => Writable(Storage.PE_SURF);
+    public Span<XtNodeIndex> PE_SURF__internal_geom => Writable(Storage.PE_SURF__internal_geom);
+    public Span<INT_PE_DATA> INT_PE_DATA => Writable(Storage.INT_PE_DATA);
+    public Span<EXT_PE_DATA> EXT_PE_DATA => Writable(Storage.EXT_PE_DATA);
+    public Span<B_SURFACE> B_SURFACE => Writable(Storage.B_SURFACE);
+    public Span<SURFACE_DATA> SURFACE_DATA => Writable(Storage.SURFACE_DATA);
+    public Span<NURBS_SURF> NURBS_SURF => Writable(Storage.NURBS_SURF);
+    public Span<KNOT_MULT> KNOT_MULT => Writable(Storage.KNOT_MULT);
+    public Span<long> KNOT_MULT__mult => Writable(Storage.KNOT_MULT__mult);
+    public Span<KNOT_SET> KNOT_SET => Writable(Storage.KNOT_SET);
+    public Span<double> KNOT_SET__knots => Writable(Storage.KNOT_SET__knots);
+    public Span<PE_CURVE> PE_CURVE => Writable(Storage.PE_CURVE);
+    public Span<XtNodeIndex> PE_CURVE__internal_geom => Writable(Storage.PE_CURVE__internal_geom);
+    public Span<PCURVE> PCURVE => Writable(Storage.PCURVE);
+    public Span<TRIMMED_CURVE> TRIMMED_CURVE => Writable(Storage.TRIMMED_CURVE);
+    public Span<B_CURVE> B_CURVE => Writable(Storage.B_CURVE);
+    public Span<CURVE_DATA> CURVE_DATA => Writable(Storage.CURVE_DATA);
+    public Span<NURBS_CURVE> NURBS_CURVE => Writable(Storage.NURBS_CURVE);
+    public Span<SP_CURVE> SP_CURVE => Writable(Storage.SP_CURVE);
+    public Span<GEOMETRIC_OWNER> GEOMETRIC_OWNER => Writable(Storage.GEOMETRIC_OWNER);
+    public Span<PLANE_FORM> PLANE_FORM => Writable(Storage.PLANE_FORM);
+    public Span<CYLINDER_FORM> CYLINDER_FORM => Writable(Storage.CYLINDER_FORM);
+    public Span<CONE_FORM> CONE_FORM => Writable(Storage.CONE_FORM);
+    public Span<SPHERE_FORM> SPHERE_FORM => Writable(Storage.SPHERE_FORM);
+    public Span<TORUS_FORM> TORUS_FORM => Writable(Storage.TORUS_FORM);
+    public Span<SWEPT_FORM> SWEPT_FORM => Writable(Storage.SWEPT_FORM);
+    public Span<SWEPT_UV_FORM> SWEPT_UV_FORM => Writable(Storage.SWEPT_UV_FORM);
+    public Span<SPUN_FORM> SPUN_FORM => Writable(Storage.SPUN_FORM);
+    public Span<VAR_RADIUS_PIPE_FORM> VAR_RADIUS_PIPE_FORM => Writable(Storage.VAR_RADIUS_PIPE_FORM);
+    public Span<HELIX_SU_FORM> HELIX_SU_FORM => Writable(Storage.HELIX_SU_FORM);
+    public Span<HELIX_CU_FORM> HELIX_CU_FORM => Writable(Storage.HELIX_CU_FORM);
+    public Span<int> _xt_user_fields => Writable(Storage._xt_user_fields);
+    public MODEL FinalizeModel() { if (_finalized) throw new InvalidOperationException("Model is already finalized."); CODEC.Validate(Storage, UserFieldSize); _finalized = true; return new MODEL(Storage, VersionText, UserFieldSize); }
+    private Span<T> Writable<T>(T[] values) { if (_finalized) throw new InvalidOperationException("Model is finalized."); return values; }
+}
+public static class CODEC
+{
+    public const string SchemaIdentity = "SCH_1300120_13006";
+    public static MODEL Decode(XtDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document); XtGeneratedSchemaRuntime.RequireShape(document.Schema, DESCRIPTOR.Definition);
+        var counts = new COUNTS();
+        foreach (var node in document.Nodes) switch (node.Type)
+        {
+            case 1: counts.NULLP++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 2: counts.WORKSPACE++;
+                counts.WORKSPACE__ws += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 3: counts.PARTITION++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 4: counts.PMARK++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 10: counts.ASSEMBLY++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 11: counts.INSTANCE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 12: counts.BODY++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 13: counts.SHELL++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 14: counts.FACE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 15: counts.LOOP++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 16: counts.EDGE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 17: counts.HALFEDGE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 18: counts.VERTEX++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 19: counts.REGION++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 29: counts.POINT++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 30: counts.LINE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 31: counts.CIRCLE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 32: counts.ELLIPSE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 33: counts.PARABOLA++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 34: counts.HYPERBOLA++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 35: counts.PARACURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 36: counts.OBSOLETE_CPC++;
+                counts.OBSOLETE_CPC__segment += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 37: counts.PATCH_BOUND++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 38: counts.INTERSECTION++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 39: counts.SILHOUETTE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 40: counts.CHART++;
+                counts.CHART__hvec += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 41: counts.LIMIT++;
+                counts.LIMIT__hvec += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 43: counts.BSPLINE_CURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 44: counts.KNOT_VECTOR++;
+                counts.KNOT_VECTOR__knots += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 45: counts.BSPLINE_VERTICES++;
+                counts.BSPLINE_VERTICES__vertices += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 46: counts.OFFSET_CURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 48: counts.CPC++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 49: counts.OBSOLETE_SP_CURVE++;
+                counts.OBSOLETE_SP_CURVE__bezier_vertices += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 50: counts.PLANE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 51: counts.CYLINDER++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 52: counts.CONE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 53: counts.SPHERE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 54: counts.TORUS++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 55: counts.PIPE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 56: counts.BLENDED_EDGE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 57: counts.BLENDED_VERTEX++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 58: counts.BLEND_OVERLAP++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 59: counts.BLEND_BOUND++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 60: counts.OFFSET_SURF++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 61: counts.PARASURF++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 62: counts.OBSOLETE_CPS++;
+                counts.OBSOLETE_CPS__patch += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 63: counts.SILH_SURF++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 66: counts.BSPLINE_SURF++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 67: counts.SWEPT_SURF++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 68: counts.SPUN_SURF++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 69: counts.CPS++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 70: counts.LIST++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 74: counts.POINTER_LIS_BLOCK++;
+                counts.POINTER_LIS_BLOCK__entries += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 79: counts.ATT_DEF_ID++;
+                counts.ATT_DEF_ID__string += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 80: counts.ATTRIB_DEF++;
+                counts.ATTRIB_DEF__fields += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 81: counts.ATTRIBUTE++;
+                counts.ATTRIBUTE__fields += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 82: counts.INT_VALUES++;
+                counts.INT_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 83: counts.REAL_VALUES++;
+                counts.REAL_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 84: counts.CHAR_VALUES++;
+                counts.CHAR_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 85: counts.POINT_VALUES++;
+                counts.POINT_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 86: counts.VECTOR_VALUES++;
+                counts.VECTOR_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 87: counts.AXIS_VALUES++;
+                counts.AXIS_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 88: counts.TAG_VALUES++;
+                counts.TAG_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 89: counts.DIRECTION_VALUES++;
+                counts.DIRECTION_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 90: counts.FEATURE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 91: counts.MEMBER_OF_FEATURE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 96: counts.SHORT_VALUES++;
+                counts.SHORT_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 97: counts.BOX_VALUES++;
+                counts.BOX_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 98: counts.UNICODE_VALUES++;
+                counts.UNICODE_VALUES__values += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 99: counts.FIELD_NAMES++;
+                counts.FIELD_NAMES__names += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 100: counts.TRANSFORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 101: counts.WORLD++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 102: counts.KEY++;
+                counts.KEY__string += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 103: counts.BEZIER_CURVE++;
+                counts.BEZIER_CURVE__segment += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 104: counts.BEZIER_SURF++;
+                counts.BEZIER_SURF__patch += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 110: counts.SET_ELEMENT_TAG++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 111: counts.FACE_SET++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 112: counts.HALFEDGE_SET++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 120: counts.PE_SURF++;
+                counts.PE_SURF__internal_geom += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 121: counts.INT_PE_DATA++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 122: counts.EXT_PE_DATA++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 124: counts.B_SURFACE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 125: counts.SURFACE_DATA++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 126: counts.NURBS_SURF++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 127: counts.KNOT_MULT++;
+                counts.KNOT_MULT__mult += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 128: counts.KNOT_SET++;
+                counts.KNOT_SET__knots += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 130: counts.PE_CURVE++;
+                counts.PE_CURVE__internal_geom += Math.Max(0, node.VariableLength);
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 132: counts.PCURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 133: counts.TRIMMED_CURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 134: counts.B_CURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 135: counts.CURVE_DATA++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 136: counts.NURBS_CURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 137: counts.SP_CURVE++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 141: counts.GEOMETRIC_OWNER++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 150: counts.PLANE_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 151: counts.CYLINDER_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 152: counts.CONE_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 153: counts.SPHERE_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 154: counts.TORUS_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 155: counts.SWEPT_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 156: counts.SWEPT_UV_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 157: counts.SPUN_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 158: counts.VAR_RADIUS_PIPE_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 163: counts.HELIX_SU_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            case 184: counts.HELIX_CU_FORM++;
+                counts._xt_user_fields += node.UserFields.Length; break;
+            default: throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node type {node.Type} is not transmitted by {SchemaIdentity}.");
+        }
+        var builder = new MODEL_BUILDER(counts) { VersionText = document.VersionText, UserFieldSize = document.UserFieldSize };
+        var NULLP_index = 0;
+        var WORKSPACE_index = 0;
+        var WORKSPACE__ws_offset = 0;
+        var PARTITION_index = 0;
+        var PMARK_index = 0;
+        var ASSEMBLY_index = 0;
+        var INSTANCE_index = 0;
+        var BODY_index = 0;
+        var SHELL_index = 0;
+        var FACE_index = 0;
+        var LOOP_index = 0;
+        var EDGE_index = 0;
+        var HALFEDGE_index = 0;
+        var VERTEX_index = 0;
+        var REGION_index = 0;
+        var POINT_index = 0;
+        var LINE_index = 0;
+        var CIRCLE_index = 0;
+        var ELLIPSE_index = 0;
+        var PARABOLA_index = 0;
+        var HYPERBOLA_index = 0;
+        var PARACURVE_index = 0;
+        var OBSOLETE_CPC_index = 0;
+        var OBSOLETE_CPC__segment_offset = 0;
+        var PATCH_BOUND_index = 0;
+        var INTERSECTION_index = 0;
+        var SILHOUETTE_index = 0;
+        var CHART_index = 0;
+        var CHART__hvec_offset = 0;
+        var LIMIT_index = 0;
+        var LIMIT__hvec_offset = 0;
+        var BSPLINE_CURVE_index = 0;
+        var KNOT_VECTOR_index = 0;
+        var KNOT_VECTOR__knots_offset = 0;
+        var BSPLINE_VERTICES_index = 0;
+        var BSPLINE_VERTICES__vertices_offset = 0;
+        var OFFSET_CURVE_index = 0;
+        var CPC_index = 0;
+        var OBSOLETE_SP_CURVE_index = 0;
+        var OBSOLETE_SP_CURVE__bezier_vertices_offset = 0;
+        var PLANE_index = 0;
+        var CYLINDER_index = 0;
+        var CONE_index = 0;
+        var SPHERE_index = 0;
+        var TORUS_index = 0;
+        var PIPE_index = 0;
+        var BLENDED_EDGE_index = 0;
+        var BLENDED_VERTEX_index = 0;
+        var BLEND_OVERLAP_index = 0;
+        var BLEND_BOUND_index = 0;
+        var OFFSET_SURF_index = 0;
+        var PARASURF_index = 0;
+        var OBSOLETE_CPS_index = 0;
+        var OBSOLETE_CPS__patch_offset = 0;
+        var SILH_SURF_index = 0;
+        var BSPLINE_SURF_index = 0;
+        var SWEPT_SURF_index = 0;
+        var SPUN_SURF_index = 0;
+        var CPS_index = 0;
+        var LIST_index = 0;
+        var POINTER_LIS_BLOCK_index = 0;
+        var POINTER_LIS_BLOCK__entries_offset = 0;
+        var ATT_DEF_ID_index = 0;
+        var ATT_DEF_ID__string_offset = 0;
+        var ATTRIB_DEF_index = 0;
+        var ATTRIB_DEF__fields_offset = 0;
+        var ATTRIBUTE_index = 0;
+        var ATTRIBUTE__fields_offset = 0;
+        var INT_VALUES_index = 0;
+        var INT_VALUES__values_offset = 0;
+        var REAL_VALUES_index = 0;
+        var REAL_VALUES__values_offset = 0;
+        var CHAR_VALUES_index = 0;
+        var CHAR_VALUES__values_offset = 0;
+        var POINT_VALUES_index = 0;
+        var POINT_VALUES__values_offset = 0;
+        var VECTOR_VALUES_index = 0;
+        var VECTOR_VALUES__values_offset = 0;
+        var AXIS_VALUES_index = 0;
+        var AXIS_VALUES__values_offset = 0;
+        var TAG_VALUES_index = 0;
+        var TAG_VALUES__values_offset = 0;
+        var DIRECTION_VALUES_index = 0;
+        var DIRECTION_VALUES__values_offset = 0;
+        var FEATURE_index = 0;
+        var MEMBER_OF_FEATURE_index = 0;
+        var SHORT_VALUES_index = 0;
+        var SHORT_VALUES__values_offset = 0;
+        var BOX_VALUES_index = 0;
+        var BOX_VALUES__values_offset = 0;
+        var UNICODE_VALUES_index = 0;
+        var UNICODE_VALUES__values_offset = 0;
+        var FIELD_NAMES_index = 0;
+        var FIELD_NAMES__names_offset = 0;
+        var TRANSFORM_index = 0;
+        var WORLD_index = 0;
+        var KEY_index = 0;
+        var KEY__string_offset = 0;
+        var BEZIER_CURVE_index = 0;
+        var BEZIER_CURVE__segment_offset = 0;
+        var BEZIER_SURF_index = 0;
+        var BEZIER_SURF__patch_offset = 0;
+        var SET_ELEMENT_TAG_index = 0;
+        var FACE_SET_index = 0;
+        var HALFEDGE_SET_index = 0;
+        var PE_SURF_index = 0;
+        var PE_SURF__internal_geom_offset = 0;
+        var INT_PE_DATA_index = 0;
+        var EXT_PE_DATA_index = 0;
+        var B_SURFACE_index = 0;
+        var SURFACE_DATA_index = 0;
+        var NURBS_SURF_index = 0;
+        var KNOT_MULT_index = 0;
+        var KNOT_MULT__mult_offset = 0;
+        var KNOT_SET_index = 0;
+        var KNOT_SET__knots_offset = 0;
+        var PE_CURVE_index = 0;
+        var PE_CURVE__internal_geom_offset = 0;
+        var PCURVE_index = 0;
+        var TRIMMED_CURVE_index = 0;
+        var B_CURVE_index = 0;
+        var CURVE_DATA_index = 0;
+        var NURBS_CURVE_index = 0;
+        var SP_CURVE_index = 0;
+        var GEOMETRIC_OWNER_index = 0;
+        var PLANE_FORM_index = 0;
+        var CYLINDER_FORM_index = 0;
+        var CONE_FORM_index = 0;
+        var SPHERE_FORM_index = 0;
+        var TORUS_FORM_index = 0;
+        var SWEPT_FORM_index = 0;
+        var SWEPT_UV_FORM_index = 0;
+        var SPUN_FORM_index = 0;
+        var VAR_RADIUS_PIPE_FORM_index = 0;
+        var HELIX_SU_FORM_index = 0;
+        var HELIX_CU_FORM_index = 0;
+        var userFieldOffset = 0;
+        for (var order = 0; order < document.Nodes.Length; order++)
+        {
+            var node = document.Nodes[order]; switch (node.Type)
+            {
+                case 1:
+                {
+                    ref var row = ref builder.NULLP[NULLP_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 2:
+                {
+                    ref var row = ref builder.WORKSPACE[WORKSPACE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.ws = new XtRange { Offset = WORKSPACE__ws_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.WORKSPACE__ws[WORKSPACE__ws_offset++] = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.WORKSPACE.ws");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 3:
+                {
+                    ref var row = ref builder.PARTITION[PARTITION_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.current_pmark = new PMARKRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARTITION.current_pmark") };
+                    row.highest_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PARTITION.highest_id");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 4:
+                {
+                    ref var row = ref builder.PMARK[PMARK_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.preceding = new PMARKRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.preceding") };
+                    row.first_following = new PMARKRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.first_following") };
+                    row.next_sibling = new PMARKRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.next_sibling") };
+                    row.prev_sibling = new PMARKRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.prev_sibling") };
+                    row.n_new_nodes = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.n_new_nodes");
+                    row.n_del_nodes = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.n_del_nodes");
+                    row.n_copy_mod_nodes = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.n_copy_mod_nodes");
+                    row.delta_key = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.delta_key");
+                    row.delta_is_forward = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.delta_is_forward");
+                    row.id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PMARK.id");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 10:
+                {
+                    ref var row = ref builder.ASSEMBLY[ASSEMBLY_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.highest_node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.highest_node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.attributes_features");
+                    row.attribute_chains = new LISTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.attribute_chains") };
+                    row.list = new LISTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.list") };
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.surface");
+                    row.curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.curve");
+                    row.point = new POINTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.point") };
+                    row.key = new KEYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.key") };
+                    row.res_size = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.res_size");
+                    row.res_linear = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.res_linear");
+                    row.ref_instance = new INSTANCERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.ref_instance") };
+                    row.next = new ASSEMBLYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.next") };
+                    row.previous = new ASSEMBLYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.previous") };
+                    row.state = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.state");
+                    row.owner = new WORLDRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.owner") };
+                    row.type = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.type");
+                    row.sub_instance = new INSTANCERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ASSEMBLY.sub_instance") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 11:
+                {
+                    ref var row = ref builder.INSTANCE[INSTANCE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.attributes_features");
+                    row.type = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.type");
+                    row.part = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.part");
+                    row.transform = new TRANSFORMRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.transform") };
+                    row.assembly = new ASSEMBLYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.assembly") };
+                    row.next_in_part = new INSTANCERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.next_in_part") };
+                    row.prev_in_part = new INSTANCERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.prev_in_part") };
+                    row.next_of_part = new INSTANCERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.next_of_part") };
+                    row.prev_of_part = new INSTANCERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INSTANCE.prev_of_part") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 12:
+                {
+                    ref var row = ref builder.BODY[BODY_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.highest_node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.highest_node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.attributes_features");
+                    row.attribute_chains = new LISTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.attribute_chains") };
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.surface");
+                    row.curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.curve");
+                    row.point = new POINTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.point") };
+                    row.key = new KEYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.key") };
+                    row.res_size = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.res_size");
+                    row.res_linear = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.res_linear");
+                    row.ref_instance = new INSTANCERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.ref_instance") };
+                    row.next = new BODYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.next") };
+                    row.previous = new BODYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.previous") };
+                    row.state = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.state");
+                    row.owner = new WORLDRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.owner") };
+                    row.body_type = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.body_type");
+                    row.nom_geom_state = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.nom_geom_state");
+                    row.shell = new SHELLRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.shell") };
+                    row.boundary_surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.boundary_surface");
+                    row.boundary_curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.boundary_curve");
+                    row.boundary_point = new POINTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.boundary_point") };
+                    row.region = new REGIONRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.region") };
+                    row.edge = new EDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.edge") };
+                    row.vertex = new VERTEXRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BODY.vertex") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 13:
+                {
+                    ref var row = ref builder.SHELL[SHELL_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.attributes_features");
+                    row.body = new BODYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.body") };
+                    row.next = new SHELLRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.next") };
+                    row.face = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.face") };
+                    row.edge = new EDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.edge") };
+                    row.vertex = new VERTEXRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.vertex") };
+                    row.region = new REGIONRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.region") };
+                    row.front_face = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SHELL.front_face") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 14:
+                {
+                    ref var row = ref builder.FACE[FACE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.attributes_features");
+                    row.tolerance = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.tolerance");
+                    row.next = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.next") };
+                    row.previous = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.previous") };
+                    row.loop = new LOOPRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.loop") };
+                    row.shell = new SHELLRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.shell") };
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.surface");
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.sense");
+                    row.next_on_surface = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.next_on_surface") };
+                    row.previous_on_surface = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.previous_on_surface") };
+                    row.next_front = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.next_front") };
+                    row.previous_front = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.previous_front") };
+                    row.front_shell = new SHELLRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE.front_shell") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 15:
+                {
+                    ref var row = ref builder.LOOP[LOOP_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LOOP.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LOOP.attributes_features");
+                    row.halfedge = new HALFEDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LOOP.halfedge") };
+                    row.face = new FACERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LOOP.face") };
+                    row.next = new LOOPRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LOOP.next") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 16:
+                {
+                    ref var row = ref builder.EDGE[EDGE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.attributes_features");
+                    row.tolerance = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.tolerance");
+                    row.halfedge = new HALFEDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.halfedge") };
+                    row.previous = new EDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.previous") };
+                    row.next = new EDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.next") };
+                    row.curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.curve");
+                    row.next_on_curve = new EDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.next_on_curve") };
+                    row.previous_on_curve = new EDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.previous_on_curve") };
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EDGE.owner");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 17:
+                {
+                    ref var row = ref builder.HALFEDGE[HALFEDGE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.attributes_features");
+                    row.loop = new LOOPRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.loop") };
+                    row.forward = new HALFEDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.forward") };
+                    row.backward = new HALFEDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.backward") };
+                    row.vertex = new VERTEXRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.vertex") };
+                    row.other = new HALFEDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.other") };
+                    row.edge = new EDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.edge") };
+                    row.curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.curve");
+                    row.next_at_vx = new HALFEDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.next_at_vx") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE.sense");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 18:
+                {
+                    ref var row = ref builder.VERTEX[VERTEX_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.attributes_features");
+                    row.halfedge = new HALFEDGERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.halfedge") };
+                    row.previous = new VERTEXRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.previous") };
+                    row.next = new VERTEXRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.next") };
+                    row.point = new POINTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.point") };
+                    row.tolerance = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.tolerance");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.VERTEX.owner");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 19:
+                {
+                    ref var row = ref builder.REGION[REGION_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.REGION.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.REGION.attributes_features");
+                    row.body = new BODYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.REGION.body") };
+                    row.next = new REGIONRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.REGION.next") };
+                    row.previous = new REGIONRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.REGION.previous") };
+                    row.shell = new SHELLRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.REGION.shell") };
+                    row.type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.REGION.type");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 29:
+                {
+                    ref var row = ref builder.POINT[POINT_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.POINT.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.POINT.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.POINT.owner");
+                    row.next = new POINTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.POINT.next") };
+                    row.previous = new POINTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.POINT.previous") };
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.POINT.pvec");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 30:
+                {
+                    ref var row = ref builder.LINE[LINE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.sense");
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.pvec");
+                    row.direction = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.LINE.direction");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 31:
+                {
+                    ref var row = ref builder.CIRCLE[CIRCLE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.sense");
+                    row.centre = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.centre");
+                    row.normal = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.normal");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.x_axis");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CIRCLE.radius");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 32:
+                {
+                    ref var row = ref builder.ELLIPSE[ELLIPSE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.sense");
+                    row.centre = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.centre");
+                    row.normal = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.normal");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.x_axis");
+                    row.major_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.major_radius");
+                    row.minor_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.ELLIPSE.minor_radius");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 33:
+                {
+                    ref var row = ref builder.PARABOLA[PARABOLA_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.sense");
+                    row.origin = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.origin");
+                    row.normal = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.normal");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.x_axis");
+                    row.focal_length = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.PARABOLA.focal_length");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 34:
+                {
+                    ref var row = ref builder.HYPERBOLA[HYPERBOLA_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.sense");
+                    row.origin = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.origin");
+                    row.normal = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.normal");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.x_axis");
+                    row.transverse_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.transverse_radius");
+                    row.conjugate_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.HYPERBOLA.conjugate_radius");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 35:
+                {
+                    ref var row = ref builder.PARACURVE[PARACURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.sense");
+                    row.seg = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.seg");
+                    row.cpc = new CPCRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARACURVE.cpc") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 36:
+                {
+                    ref var row = ref builder.OBSOLETE_CPC[OBSOLETE_CPC_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.sense");
+                    row.vertex_dimension = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.vertex_dimension");
+                    row.segment_count = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.segment_count");
+                    row.order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.order");
+                    row.segment = new XtRange { Offset = OBSOLETE_CPC__segment_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.OBSOLETE_CPC__segment[OBSOLETE_CPC__segment_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPC.segment");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 37:
+                {
+                    ref var row = ref builder.PATCH_BOUND[PATCH_BOUND_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.sense");
+                    row.boundary = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.boundary");
+                    row.lh_patch = new PARASURFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.lh_patch") };
+                    row.rh_patch = new PARASURFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PATCH_BOUND.rh_patch") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 38:
+                {
+                    ref var row = ref builder.INTERSECTION[INTERSECTION_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.sense");
+                    for (var item = 0; item < 2; item++) row.surface[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.surface");
+                    row.chart = new CHARTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.chart") };
+                    row.start = new LIMITRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.start") };
+                    row.end = new LIMITRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INTERSECTION.end") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 39:
+                {
+                    ref var row = ref builder.SILHOUETTE[SILHOUETTE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.sense");
+                    row.analytic_root = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.analytic_root");
+                    row.from_infinity = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.from_infinity");
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.surface");
+                    row.start = new LIMITRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.start") };
+                    row.end = new LIMITRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.end") };
+                    row.eye = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SILHOUETTE.eye");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 40:
+                {
+                    ref var row = ref builder.CHART[CHART_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.base_parameter = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CHART.base_parameter");
+                    row.base_scale = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CHART.base_scale");
+                    row.chart_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.CHART.chart_count");
+                    row.chordal_error = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CHART.chordal_error");
+                    row.angular_error = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CHART.angular_error");
+                    for (var item = 0; item < 2; item++) row.parameter_error[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CHART.parameter_error");
+                    row.hvec = new XtRange { Offset = CHART__hvec_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.CHART__hvec[CHART__hvec_offset++] = XtSchemaFieldCodec.To_h(node.Fields[valueOffset++], "SCH_1300120_13006.CHART.hvec");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 41:
+                {
+                    ref var row = ref builder.LIMIT[LIMIT_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.LIMIT.type");
+                    row.hvec = new XtRange { Offset = LIMIT__hvec_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.LIMIT__hvec[LIMIT__hvec_offset++] = XtSchemaFieldCodec.To_h(node.Fields[valueOffset++], "SCH_1300120_13006.LIMIT.hvec");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 43:
+                {
+                    ref var row = ref builder.BSPLINE_CURVE[BSPLINE_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.knot_vector = new KNOT_VECTORRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_CURVE.knot_vector") };
+                    row.vertex_dimension = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_CURVE.vertex_dimension");
+                    row.vertex_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_CURVE.vertex_count");
+                    row.order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_CURVE.order");
+                    row.bspline_vertices = new BSPLINE_VERTICESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_CURVE.bspline_vertices") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 44:
+                {
+                    ref var row = ref builder.KNOT_VECTOR[KNOT_VECTOR_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.periodic = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.KNOT_VECTOR.periodic");
+                    row.knot_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.KNOT_VECTOR.knot_count");
+                    row.knots = new XtRange { Offset = KNOT_VECTOR__knots_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.KNOT_VECTOR__knots[KNOT_VECTOR__knots_offset++] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.KNOT_VECTOR.knots");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 45:
+                {
+                    ref var row = ref builder.BSPLINE_VERTICES[BSPLINE_VERTICES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.vertices = new XtRange { Offset = BSPLINE_VERTICES__vertices_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.BSPLINE_VERTICES__vertices[BSPLINE_VERTICES__vertices_offset++] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_VERTICES.vertices");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 46:
+                {
+                    ref var row = ref builder.OFFSET_CURVE[OFFSET_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.sense");
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.surface");
+                    row.curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.curve");
+                    row.offset = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_CURVE.offset");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 48:
+                {
+                    ref var row = ref builder.CPC[CPC_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.sense");
+                    row.bezier = new BEZIER_CURVERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.bezier") };
+                    row.bspline = new BSPLINE_CURVERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPC.bspline") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 49:
+                {
+                    ref var row = ref builder.OBSOLETE_SP_CURVE[OBSOLETE_SP_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.sense");
+                    row.const_param = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.const_param");
+                    row.segment_count = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.segment_count");
+                    row.order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.order");
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.surface");
+                    row.bezier_vertices = new XtRange { Offset = OBSOLETE_SP_CURVE__bezier_vertices_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.OBSOLETE_SP_CURVE__bezier_vertices[OBSOLETE_SP_CURVE__bezier_vertices_offset++] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_SP_CURVE.bezier_vertices");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 50:
+                {
+                    ref var row = ref builder.PLANE[PLANE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.sense");
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.pvec");
+                    row.normal = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.normal");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE.x_axis");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 51:
+                {
+                    ref var row = ref builder.CYLINDER[CYLINDER_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.sense");
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.pvec");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.axis");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.radius");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER.x_axis");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 52:
+                {
+                    ref var row = ref builder.CONE[CONE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.sense");
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.pvec");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.axis");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.radius");
+                    row.sin_half_angle = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.sin_half_angle");
+                    row.cos_half_angle = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.cos_half_angle");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CONE.x_axis");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 53:
+                {
+                    ref var row = ref builder.SPHERE[SPHERE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.sense");
+                    row.centre = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.centre");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.radius");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.axis");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE.x_axis");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 54:
+                {
+                    ref var row = ref builder.TORUS[TORUS_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.sense");
+                    row.centre = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.centre");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.axis");
+                    row.major_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.major_radius");
+                    row.minor_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.minor_radius");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS.x_axis");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 55:
+                {
+                    ref var row = ref builder.PIPE[PIPE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.sense");
+                    row.spine = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.spine");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.PIPE.radius");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 56:
+                {
+                    ref var row = ref builder.BLENDED_EDGE[BLENDED_EDGE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.sense");
+                    row.blend_type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.blend_type");
+                    for (var item = 0; item < 2; item++) row.surface[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.surface");
+                    row.spine = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.spine");
+                    for (var item = 0; item < 2; item++) row.range[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.range");
+                    for (var item = 0; item < 2; item++) row.thumb_weight[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.thumb_weight");
+                    for (var item = 0; item < 2; item++) row.boundary[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.boundary");
+                    row.start = new LIMITRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.start") };
+                    row.end = new LIMITRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_EDGE.end") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 57:
+                {
+                    ref var row = ref builder.BLENDED_VERTEX[BLENDED_VERTEX_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.sense");
+                    row.blend_type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.blend_type");
+                    for (var item = 0; item < 3; item++) row.surface[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.surface");
+                    for (var item = 0; item < 3; item++) row.sub_surface[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.sub_surface");
+                    for (var item = 0; item < 3; item++) row.boundary[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.boundary");
+                    for (var item = 0; item < 3; item++) row.range[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.range");
+                    for (var item = 0; item < 3; item++) row.thumb_weight[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.thumb_weight");
+                    row.centre = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.BLENDED_VERTEX.centre");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 58:
+                {
+                    ref var row = ref builder.BLEND_OVERLAP[BLEND_OVERLAP_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.sense");
+                    for (var item = 0; item < 2; item++) row.surface[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.surface");
+                    for (var item = 0; item < 4; item++) row.sub_surface[item] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.sub_surface");
+                    for (var item = 0; item < 4; item++) row.range[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.range");
+                    for (var item = 0; item < 4; item++) row.thumb_weight[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.thumb_weight");
+                    for (var item = 0; item < 2; item++) row.blend_type[item] = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.blend_type");
+                    row.overlap_type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.overlap_type");
+                    row.swap_u_v = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_OVERLAP.swap_u_v");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 59:
+                {
+                    ref var row = ref builder.BLEND_BOUND[BLEND_BOUND_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.sense");
+                    row.boundary = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.boundary");
+                    row.blend = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BLEND_BOUND.blend");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 60:
+                {
+                    ref var row = ref builder.OFFSET_SURF[OFFSET_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.sense");
+                    row.check = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.check");
+                    row.true_offset = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.true_offset");
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.surface");
+                    row.offset = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.offset");
+                    row.scale = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.OFFSET_SURF.scale");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 61:
+                {
+                    ref var row = ref builder.PARASURF[PARASURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.sense");
+                    row.col = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.col");
+                    row.row = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.row");
+                    row.cps = new CPSRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PARASURF.cps") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 62:
+                {
+                    ref var row = ref builder.OBSOLETE_CPS[OBSOLETE_CPS_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.sense");
+                    row.vertex_dimension = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.vertex_dimension");
+                    row.col_count = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.col_count");
+                    row.row_count = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.row_count");
+                    row.u_order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.u_order");
+                    row.v_order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.v_order");
+                    row.patch = new XtRange { Offset = OBSOLETE_CPS__patch_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.OBSOLETE_CPS__patch[OBSOLETE_CPS__patch_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.OBSOLETE_CPS.patch");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 63:
+                {
+                    ref var row = ref builder.SILH_SURF[SILH_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.sense");
+                    row.from_infinity = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.from_infinity");
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.surface");
+                    row.eye = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SILH_SURF.eye");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 66:
+                {
+                    ref var row = ref builder.BSPLINE_SURF[BSPLINE_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.row_knots = new KNOT_VECTORRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.row_knots") };
+                    row.col_knots = new KNOT_VECTORRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.col_knots") };
+                    row.vertex_dimension = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.vertex_dimension");
+                    row.col_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.col_count");
+                    row.row_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.row_count");
+                    row.u_order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.u_order");
+                    row.v_order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.v_order");
+                    row.bspline_vertices = new BSPLINE_VERTICESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BSPLINE_SURF.bspline_vertices") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 67:
+                {
+                    ref var row = ref builder.SWEPT_SURF[SWEPT_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.sense");
+                    row.section = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.section");
+                    row.sweep = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.sweep");
+                    row.scale = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_SURF.scale");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 68:
+                {
+                    ref var row = ref builder.SPUN_SURF[SPUN_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.sense");
+                    row.profile = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.profile");
+                    row.@base = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.base");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.axis");
+                    row.start = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.start");
+                    row.end = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.end");
+                    row.start_param = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.start_param");
+                    row.end_param = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.end_param");
+                    row.x_axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.x_axis");
+                    row.scale = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_SURF.scale");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 69:
+                {
+                    ref var row = ref builder.CPS[CPS_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.sense");
+                    row.bezier = new BEZIER_SURFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.bezier") };
+                    row.bspline = new BSPLINE_SURFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CPS.bspline") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 70:
+                {
+                    ref var row = ref builder.LIST[LIST_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.node_id");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.owner");
+                    row.next = new LISTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.next") };
+                    row.previous = new LISTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.previous") };
+                    row.list_type = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.list_type");
+                    row.list_length = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.list_length");
+                    row.block_length = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.block_length");
+                    row.size_of_entry = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.size_of_entry");
+                    row.list_block = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.list_block");
+                    row.finger_block = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.finger_block");
+                    row.finger_index = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.finger_index");
+                    row.notransmit = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.LIST.notransmit");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 74:
+                {
+                    ref var row = ref builder.POINTER_LIS_BLOCK[POINTER_LIS_BLOCK_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.n_entries = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.POINTER_LIS_BLOCK.n_entries");
+                    row.next_block = new POINTER_LIS_BLOCKRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.POINTER_LIS_BLOCK.next_block") };
+                    row.entries = new XtRange { Offset = POINTER_LIS_BLOCK__entries_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.POINTER_LIS_BLOCK__entries[POINTER_LIS_BLOCK__entries_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.POINTER_LIS_BLOCK.entries");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 79:
+                {
+                    ref var row = ref builder.ATT_DEF_ID[ATT_DEF_ID_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.@string = new XtRange { Offset = ATT_DEF_ID__string_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.ATT_DEF_ID__string[ATT_DEF_ID__string_offset++] = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.ATT_DEF_ID.string");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 80:
+                {
+                    ref var row = ref builder.ATTRIB_DEF[ATTRIB_DEF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.next = new ATTRIB_DEFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIB_DEF.next") };
+                    row.identifier = new ATT_DEF_IDRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIB_DEF.identifier") };
+                    row.type_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIB_DEF.type_id");
+                    for (var item = 0; item < 8; item++) row.actions[item] = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIB_DEF.actions");
+                    row.field_names = new FIELD_NAMESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIB_DEF.field_names") };
+                    for (var item = 0; item < 14; item++) row.legal_owners[item] = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIB_DEF.legal_owners");
+                    row.fields = new XtRange { Offset = ATTRIB_DEF__fields_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.ATTRIB_DEF__fields[ATTRIB_DEF__fields_offset++] = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIB_DEF.fields");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 81:
+                {
+                    ref var row = ref builder.ATTRIBUTE[ATTRIBUTE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.node_id");
+                    row.definition = new ATTRIB_DEFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.definition") };
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.previous");
+                    row.next_of_type = new ATTRIBUTERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.next_of_type") };
+                    row.previous_of_type = new ATTRIBUTERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.previous_of_type") };
+                    row.fields = new XtRange { Offset = ATTRIBUTE__fields_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.ATTRIBUTE__fields[ATTRIBUTE__fields_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.ATTRIBUTE.fields");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 82:
+                {
+                    ref var row = ref builder.INT_VALUES[INT_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = INT_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.INT_VALUES__values[INT_VALUES__values_offset++] = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.INT_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 83:
+                {
+                    ref var row = ref builder.REAL_VALUES[REAL_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = REAL_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.REAL_VALUES__values[REAL_VALUES__values_offset++] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.REAL_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 84:
+                {
+                    ref var row = ref builder.CHAR_VALUES[CHAR_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = CHAR_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.CHAR_VALUES__values[CHAR_VALUES__values_offset++] = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CHAR_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 85:
+                {
+                    ref var row = ref builder.POINT_VALUES[POINT_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = POINT_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.POINT_VALUES__values[POINT_VALUES__values_offset++] = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.POINT_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 86:
+                {
+                    ref var row = ref builder.VECTOR_VALUES[VECTOR_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = VECTOR_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.VECTOR_VALUES__values[VECTOR_VALUES__values_offset++] = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.VECTOR_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 87:
+                {
+                    ref var row = ref builder.AXIS_VALUES[AXIS_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = AXIS_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.AXIS_VALUES__values[AXIS_VALUES__values_offset++] = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.AXIS_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 88:
+                {
+                    ref var row = ref builder.TAG_VALUES[TAG_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = TAG_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.TAG_VALUES__values[TAG_VALUES__values_offset++] = XtSchemaFieldCodec.To_t(node.Fields[valueOffset++], "SCH_1300120_13006.TAG_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 89:
+                {
+                    ref var row = ref builder.DIRECTION_VALUES[DIRECTION_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = DIRECTION_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.DIRECTION_VALUES__values[DIRECTION_VALUES__values_offset++] = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.DIRECTION_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 90:
+                {
+                    ref var row = ref builder.FEATURE[FEATURE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.FEATURE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FEATURE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FEATURE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FEATURE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FEATURE.previous");
+                    row.type = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.FEATURE.type");
+                    row.first_member = new MEMBER_OF_FEATURERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FEATURE.first_member") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 91:
+                {
+                    ref var row = ref builder.MEMBER_OF_FEATURE[MEMBER_OF_FEATURE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.dummy_node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.MEMBER_OF_FEATURE.dummy_node_id");
+                    row.owning_feature = new FEATURERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.MEMBER_OF_FEATURE.owning_feature") };
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.MEMBER_OF_FEATURE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.MEMBER_OF_FEATURE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.MEMBER_OF_FEATURE.previous");
+                    row.next_member = new MEMBER_OF_FEATURERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.MEMBER_OF_FEATURE.next_member") };
+                    row.previous_member = new MEMBER_OF_FEATURERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.MEMBER_OF_FEATURE.previous_member") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 96:
+                {
+                    ref var row = ref builder.SHORT_VALUES[SHORT_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = SHORT_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.SHORT_VALUES__values[SHORT_VALUES__values_offset++] = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.SHORT_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 97:
+                {
+                    ref var row = ref builder.BOX_VALUES[BOX_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = BOX_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.BOX_VALUES__values[BOX_VALUES__values_offset++] = XtSchemaFieldCodec.To_b(node.Fields[valueOffset++], "SCH_1300120_13006.BOX_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 98:
+                {
+                    ref var row = ref builder.UNICODE_VALUES[UNICODE_VALUES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.values = new XtRange { Offset = UNICODE_VALUES__values_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.UNICODE_VALUES__values[UNICODE_VALUES__values_offset++] = XtSchemaFieldCodec.To_w(node.Fields[valueOffset++], "SCH_1300120_13006.UNICODE_VALUES.values");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 99:
+                {
+                    ref var row = ref builder.FIELD_NAMES[FIELD_NAMES_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.names = new XtRange { Offset = FIELD_NAMES__names_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.FIELD_NAMES__names[FIELD_NAMES__names_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FIELD_NAMES.names");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 100:
+                {
+                    ref var row = ref builder.TRANSFORM[TRANSFORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.node_id");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.owner");
+                    row.next = new TRANSFORMRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.next") };
+                    row.previous = new TRANSFORMRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.previous") };
+                    for (var item = 0; item < 9; item++) row.rotation_matrix[item] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.rotation_matrix");
+                    row.translation_vector = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.translation_vector");
+                    row.scale = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.scale");
+                    row.flag = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.flag");
+                    row.perspective_vector = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TRANSFORM.perspective_vector");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 101:
+                {
+                    ref var row = ref builder.WORLD[WORLD_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.assembly = new ASSEMBLYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.assembly") };
+                    row.attribute = new ATTRIBUTERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.attribute") };
+                    row.body = new BODYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.body") };
+                    row.transform = new TRANSFORMRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.transform") };
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.surface");
+                    row.curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.curve");
+                    row.point = new POINTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.point") };
+                    row.alive = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.alive");
+                    row.attrib_def = new ATTRIB_DEFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.attrib_def") };
+                    row.highest_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.highest_id");
+                    row.current_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.WORLD.current_id");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 102:
+                {
+                    ref var row = ref builder.KEY[KEY_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.@string = new XtRange { Offset = KEY__string_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.KEY__string[KEY__string_offset++] = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.KEY.string");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 103:
+                {
+                    ref var row = ref builder.BEZIER_CURVE[BEZIER_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.vertex_dimension = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_CURVE.vertex_dimension");
+                    row.segment_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_CURVE.segment_count");
+                    row.order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_CURVE.order");
+                    row.check = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_CURVE.check");
+                    row.segment = new XtRange { Offset = BEZIER_CURVE__segment_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.BEZIER_CURVE__segment[BEZIER_CURVE__segment_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_CURVE.segment");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 104:
+                {
+                    ref var row = ref builder.BEZIER_SURF[BEZIER_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.vertex_dimension = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_SURF.vertex_dimension");
+                    row.col_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_SURF.col_count");
+                    row.row_count = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_SURF.row_count");
+                    row.u_order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_SURF.u_order");
+                    row.v_order = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_SURF.v_order");
+                    row.check = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_SURF.check");
+                    row.patch = new XtRange { Offset = BEZIER_SURF__patch_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.BEZIER_SURF__patch[BEZIER_SURF__patch_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.BEZIER_SURF.patch");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 110:
+                {
+                    ref var row = ref builder.SET_ELEMENT_TAG[SET_ELEMENT_TAG_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.next = new SET_ELEMENT_TAGRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SET_ELEMENT_TAG.next") };
+                    row.forward = new SET_ELEMENT_TAGRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SET_ELEMENT_TAG.forward") };
+                    row.backward = new SET_ELEMENT_TAGRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SET_ELEMENT_TAG.backward") };
+                    row.@class = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SET_ELEMENT_TAG.class");
+                    row.set = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SET_ELEMENT_TAG.set");
+                    row.node = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SET_ELEMENT_TAG.node");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 111:
+                {
+                    ref var row = ref builder.FACE_SET[FACE_SET_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.tag = new SET_ELEMENT_TAGRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE_SET.tag") };
+                    row.next = new FACE_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE_SET.next") };
+                    row.@class = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.FACE_SET.class");
+                    row.he_set = new HALFEDGE_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE_SET.he_set") };
+                    row.surfaces = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.FACE_SET.surfaces");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 112:
+                {
+                    ref var row = ref builder.HALFEDGE_SET[HALFEDGE_SET_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.tag = new SET_ELEMENT_TAGRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE_SET.tag") };
+                    row.next = new HALFEDGE_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE_SET.next") };
+                    row.previous = new HALFEDGE_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE_SET.previous") };
+                    row.@class = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE_SET.class");
+                    row.fa_set = new FACE_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE_SET.fa_set") };
+                    row.co_he_set = new HALFEDGE_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.HALFEDGE_SET.co_he_set") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 120:
+                {
+                    ref var row = ref builder.PE_SURF[PE_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.sense");
+                    row.type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.type");
+                    row.data = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.data");
+                    row.tf = new TRANSFORMRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.tf") };
+                    row.internal_geom = new XtRange { Offset = PE_SURF__internal_geom_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.PE_SURF__internal_geom[PE_SURF__internal_geom_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_SURF.internal_geom");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 121:
+                {
+                    ref var row = ref builder.INT_PE_DATA[INT_PE_DATA_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.geom_type = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.INT_PE_DATA.geom_type");
+                    row.real_array = new REAL_VALUESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INT_PE_DATA.real_array") };
+                    row.int_array = new INT_VALUESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.INT_PE_DATA.int_array") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 122:
+                {
+                    ref var row = ref builder.EXT_PE_DATA[EXT_PE_DATA_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.key = new KEYRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EXT_PE_DATA.key") };
+                    row.real_array = new REAL_VALUESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EXT_PE_DATA.real_array") };
+                    row.int_array = new INT_VALUESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.EXT_PE_DATA.int_array") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 124:
+                {
+                    ref var row = ref builder.B_SURFACE[B_SURFACE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.sense");
+                    row.nurbs = new NURBS_SURFRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.nurbs") };
+                    row.data = new SURFACE_DATARef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_SURFACE.data") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 125:
+                {
+                    ref var row = ref builder.SURFACE_DATA[SURFACE_DATA_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.original_uint = XtSchemaFieldCodec.To_i(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.original_uint");
+                    row.original_vint = XtSchemaFieldCodec.To_i(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.original_vint");
+                    row.extended_uint = XtSchemaFieldCodec.To_i(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.extended_uint");
+                    row.extended_vint = XtSchemaFieldCodec.To_i(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.extended_vint");
+                    row.self_int = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.self_int");
+                    row.original_u_start = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.original_u_start");
+                    row.original_u_end = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.original_u_end");
+                    row.original_v_start = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.original_v_start");
+                    row.original_v_end = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.original_v_end");
+                    row.extended_u_start = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.extended_u_start");
+                    row.extended_u_end = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.extended_u_end");
+                    row.extended_v_start = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.extended_v_start");
+                    row.extended_v_end = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.extended_v_end");
+                    row.analytic_form_type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.analytic_form_type");
+                    row.swept_form_type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.swept_form_type");
+                    row.spun_form_type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.spun_form_type");
+                    row.blend_form_type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.blend_form_type");
+                    row.analytic_form = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.analytic_form");
+                    row.swept_form = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.swept_form");
+                    row.spun_form = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.spun_form");
+                    row.blend_form = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SURFACE_DATA.blend_form");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 126:
+                {
+                    ref var row = ref builder.NURBS_SURF[NURBS_SURF_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.u_periodic = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.u_periodic");
+                    row.v_periodic = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.v_periodic");
+                    row.u_degree = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.u_degree");
+                    row.v_degree = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.v_degree");
+                    row.n_u_vertices = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.n_u_vertices");
+                    row.n_v_vertices = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.n_v_vertices");
+                    row.u_knot_type = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.u_knot_type");
+                    row.v_knot_type = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.v_knot_type");
+                    row.n_u_knots = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.n_u_knots");
+                    row.n_v_knots = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.n_v_knots");
+                    row.rational = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.rational");
+                    row.u_closed = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.u_closed");
+                    row.v_closed = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.v_closed");
+                    row.surface_form = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.surface_form");
+                    row.vertex_dim = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.vertex_dim");
+                    row.bspline_vertices = new BSPLINE_VERTICESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.bspline_vertices") };
+                    row.u_knot_mult = new KNOT_MULTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.u_knot_mult") };
+                    row.v_knot_mult = new KNOT_MULTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.v_knot_mult") };
+                    row.u_knots = new KNOT_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.u_knots") };
+                    row.v_knots = new KNOT_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_SURF.v_knots") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 127:
+                {
+                    ref var row = ref builder.KNOT_MULT[KNOT_MULT_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.mult = new XtRange { Offset = KNOT_MULT__mult_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.KNOT_MULT__mult[KNOT_MULT__mult_offset++] = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.KNOT_MULT.mult");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 128:
+                {
+                    ref var row = ref builder.KNOT_SET[KNOT_SET_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.knots = new XtRange { Offset = KNOT_SET__knots_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.KNOT_SET__knots[KNOT_SET__knots_offset++] = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.KNOT_SET.knots");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 130:
+                {
+                    ref var row = ref builder.PE_CURVE[PE_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_variable_length = Math.Max(0, node.VariableLength);
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.sense");
+                    row.type = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.type");
+                    row.data = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.data");
+                    row.tf = new TRANSFORMRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.tf") };
+                    row.internal_geom = new XtRange { Offset = PE_CURVE__internal_geom_offset, Count = Math.Max(0, node.VariableLength) };
+                    for (var item = 0; item < Math.Max(0, node.VariableLength); item++) builder.PE_CURVE__internal_geom[PE_CURVE__internal_geom_offset++] = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PE_CURVE.internal_geom");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 132:
+                {
+                    ref var row = ref builder.PCURVE[PCURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.sense");
+                    row.bsp_parms = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.bsp_parms");
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.surface");
+                    row.bspline = new BSPLINE_CURVERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.PCURVE.bspline") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 133:
+                {
+                    ref var row = ref builder.TRIMMED_CURVE[TRIMMED_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.sense");
+                    row.basis_curve = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.basis_curve");
+                    row.point_1 = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.point_1");
+                    row.point_2 = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.point_2");
+                    row.parm_1 = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.parm_1");
+                    row.parm_2 = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TRIMMED_CURVE.parm_2");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 134:
+                {
+                    ref var row = ref builder.B_CURVE[B_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.sense");
+                    row.nurbs = new NURBS_CURVERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.nurbs") };
+                    row.data = new CURVE_DATARef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.B_CURVE.data") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 135:
+                {
+                    ref var row = ref builder.CURVE_DATA[CURVE_DATA_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.self_int = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.CURVE_DATA.self_int");
+                    row.analytic_form = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.CURVE_DATA.analytic_form");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 136:
+                {
+                    ref var row = ref builder.NURBS_CURVE[NURBS_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.degree = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.degree");
+                    row.n_vertices = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.n_vertices");
+                    row.vertex_dim = XtSchemaFieldCodec.To_n(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.vertex_dim");
+                    row.n_knots = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.n_knots");
+                    row.knot_type = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.knot_type");
+                    row.periodic = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.periodic");
+                    row.closed = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.closed");
+                    row.rational = XtSchemaFieldCodec.To_l(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.rational");
+                    row.curve_form = XtSchemaFieldCodec.To_u(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.curve_form");
+                    row.bspline_vertices = new BSPLINE_VERTICESRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.bspline_vertices") };
+                    row.knot_mult = new KNOT_MULTRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.knot_mult") };
+                    row.knots = new KNOT_SETRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.NURBS_CURVE.knots") };
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 137:
+                {
+                    ref var row = ref builder.SP_CURVE[SP_CURVE_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.node_id = XtSchemaFieldCodec.To_d(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.node_id");
+                    row.attributes_features = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.attributes_features");
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.owner");
+                    row.next = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.next");
+                    row.previous = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.previous");
+                    row.geometric_owner = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.geometric_owner") };
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.sense");
+                    row.surface = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.surface");
+                    row.b_curve = new B_CURVERef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.b_curve") };
+                    row.original = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.original");
+                    row.tolerance_to_original = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.SP_CURVE.tolerance_to_original");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 141:
+                {
+                    ref var row = ref builder.GEOMETRIC_OWNER[GEOMETRIC_OWNER_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.owner = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.GEOMETRIC_OWNER.owner");
+                    row.next = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.GEOMETRIC_OWNER.next") };
+                    row.previous = new GEOMETRIC_OWNERRef { Index = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.GEOMETRIC_OWNER.previous") };
+                    row.shared_geometry = XtSchemaFieldCodec.To_p(node.Fields[valueOffset++], "SCH_1300120_13006.GEOMETRIC_OWNER.shared_geometry");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 150:
+                {
+                    ref var row = ref builder.PLANE_FORM[PLANE_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE_FORM.pvec");
+                    row.normal = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.PLANE_FORM.normal");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 151:
+                {
+                    ref var row = ref builder.CYLINDER_FORM[CYLINDER_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER_FORM.pvec");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER_FORM.axis");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER_FORM.radius");
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CYLINDER_FORM.sense");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 152:
+                {
+                    ref var row = ref builder.CONE_FORM[CONE_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.pvec = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CONE_FORM.pvec");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.CONE_FORM.axis");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CONE_FORM.radius");
+                    row.sin_half_angle = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CONE_FORM.sin_half_angle");
+                    row.cos_half_angle = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.CONE_FORM.cos_half_angle");
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.CONE_FORM.sense");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 153:
+                {
+                    ref var row = ref builder.SPHERE_FORM[SPHERE_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.centre = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE_FORM.centre");
+                    row.radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE_FORM.radius");
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SPHERE_FORM.sense");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 154:
+                {
+                    ref var row = ref builder.TORUS_FORM[TORUS_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.centre = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS_FORM.centre");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS_FORM.axis");
+                    row.major_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS_FORM.major_radius");
+                    row.minor_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS_FORM.minor_radius");
+                    row.sense = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.TORUS_FORM.sense");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 155:
+                {
+                    ref var row = ref builder.SWEPT_FORM[SWEPT_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.sweep = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_FORM.sweep");
+                    row.subtype = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_FORM.subtype");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 156:
+                {
+                    ref var row = ref builder.SWEPT_UV_FORM[SWEPT_UV_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.sweep_u = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_UV_FORM.sweep_u");
+                    row.sweep_v = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_UV_FORM.sweep_v");
+                    row.subtype_u = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_UV_FORM.subtype_u");
+                    row.subtype_v = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SWEPT_UV_FORM.subtype_v");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 157:
+                {
+                    ref var row = ref builder.SPUN_FORM[SPUN_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.@base = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_FORM.base");
+                    row.axis = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_FORM.axis");
+                    row.subtype = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.SPUN_FORM.subtype");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 158:
+                {
+                    ref var row = ref builder.VAR_RADIUS_PIPE_FORM[VAR_RADIUS_PIPE_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.max_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.VAR_RADIUS_PIPE_FORM.max_radius");
+                    row.min_radius = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.VAR_RADIUS_PIPE_FORM.min_radius");
+                    row.max_radius_bdry = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.VAR_RADIUS_PIPE_FORM.max_radius_bdry");
+                    row.min_radius_bdry = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.VAR_RADIUS_PIPE_FORM.min_radius_bdry");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 163:
+                {
+                    ref var row = ref builder.HELIX_SU_FORM[HELIX_SU_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.axis_pt = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_SU_FORM.axis_pt");
+                    row.axis_dir = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_SU_FORM.axis_dir");
+                    row.hand = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_SU_FORM.hand");
+                    row.turns = XtSchemaFieldCodec.To_i(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_SU_FORM.turns");
+                    row.pitch = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_SU_FORM.pitch");
+                    row.gap = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_SU_FORM.gap");
+                    row.tol = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_SU_FORM.tol");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+                case 184:
+                {
+                    ref var row = ref builder.HELIX_CU_FORM[HELIX_CU_FORM_index++];
+                    row._xt_index = node.Index; row._xt_order = order;
+                    row._xt_user_fields = new XtRange { Offset = userFieldOffset, Count = node.UserFields.Length };
+                    node.UserFields.CopyTo(builder._xt_user_fields[userFieldOffset..]); userFieldOffset += node.UserFields.Length; var valueOffset = 0;
+                    row.axis_pt = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_CU_FORM.axis_pt");
+                    row.axis_dir = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_CU_FORM.axis_dir");
+                    row.point = XtSchemaFieldCodec.To_v(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_CU_FORM.point");
+                    row.hand = XtSchemaFieldCodec.To_c(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_CU_FORM.hand");
+                    row.turns = XtSchemaFieldCodec.To_i(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_CU_FORM.turns");
+                    row.pitch = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_CU_FORM.pitch");
+                    row.tol = XtSchemaFieldCodec.To_f(node.Fields[valueOffset++], "SCH_1300120_13006.HELIX_CU_FORM.tol");
+                    if (valueOffset != node.Fields.Length) throw new XtFormatException(XtErrorCode.ModelInvalid, $"Node {node.Type}/{node.Index} field count mismatch."); break;
+                }
+            }
+        }
+        return builder.FinalizeModel();
+    }
+    public static XtDocument Encode(MODEL model)
+    {
+        ArgumentNullException.ThrowIfNull(model); return EncodeStorage(model.Storage, model.VersionText, model.UserFieldSize);
+    }
+    internal static void Validate(STORAGE storage, int userFieldSize) => _ = EncodeStorage(storage, string.Empty, userFieldSize);
+    private static XtDocument EncodeStorage(STORAGE storage, string versionText, int userFieldSize)
+    {
+        var nodes = new List<XtNode>(); var indexes = new HashSet<int>(); var orders = new HashSet<int>(); var nodeTypes = new Dictionary<int,int>();
+        foreach(ref readonly var row in storage.NULLP.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,1);}
+        foreach(ref readonly var row in storage.WORKSPACE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,2);}
+        foreach(ref readonly var row in storage.PARTITION.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,3);}
+        foreach(ref readonly var row in storage.PMARK.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,4);}
+        foreach(ref readonly var row in storage.ASSEMBLY.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,10);}
+        foreach(ref readonly var row in storage.INSTANCE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,11);}
+        foreach(ref readonly var row in storage.BODY.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,12);}
+        foreach(ref readonly var row in storage.SHELL.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,13);}
+        foreach(ref readonly var row in storage.FACE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,14);}
+        foreach(ref readonly var row in storage.LOOP.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,15);}
+        foreach(ref readonly var row in storage.EDGE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,16);}
+        foreach(ref readonly var row in storage.HALFEDGE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,17);}
+        foreach(ref readonly var row in storage.VERTEX.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,18);}
+        foreach(ref readonly var row in storage.REGION.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,19);}
+        foreach(ref readonly var row in storage.POINT.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,29);}
+        foreach(ref readonly var row in storage.LINE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,30);}
+        foreach(ref readonly var row in storage.CIRCLE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,31);}
+        foreach(ref readonly var row in storage.ELLIPSE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,32);}
+        foreach(ref readonly var row in storage.PARABOLA.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,33);}
+        foreach(ref readonly var row in storage.HYPERBOLA.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,34);}
+        foreach(ref readonly var row in storage.PARACURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,35);}
+        foreach(ref readonly var row in storage.OBSOLETE_CPC.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,36);}
+        foreach(ref readonly var row in storage.PATCH_BOUND.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,37);}
+        foreach(ref readonly var row in storage.INTERSECTION.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,38);}
+        foreach(ref readonly var row in storage.SILHOUETTE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,39);}
+        foreach(ref readonly var row in storage.CHART.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,40);}
+        foreach(ref readonly var row in storage.LIMIT.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,41);}
+        foreach(ref readonly var row in storage.BSPLINE_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,43);}
+        foreach(ref readonly var row in storage.KNOT_VECTOR.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,44);}
+        foreach(ref readonly var row in storage.BSPLINE_VERTICES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,45);}
+        foreach(ref readonly var row in storage.OFFSET_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,46);}
+        foreach(ref readonly var row in storage.CPC.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,48);}
+        foreach(ref readonly var row in storage.OBSOLETE_SP_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,49);}
+        foreach(ref readonly var row in storage.PLANE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,50);}
+        foreach(ref readonly var row in storage.CYLINDER.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,51);}
+        foreach(ref readonly var row in storage.CONE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,52);}
+        foreach(ref readonly var row in storage.SPHERE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,53);}
+        foreach(ref readonly var row in storage.TORUS.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,54);}
+        foreach(ref readonly var row in storage.PIPE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,55);}
+        foreach(ref readonly var row in storage.BLENDED_EDGE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,56);}
+        foreach(ref readonly var row in storage.BLENDED_VERTEX.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,57);}
+        foreach(ref readonly var row in storage.BLEND_OVERLAP.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,58);}
+        foreach(ref readonly var row in storage.BLEND_BOUND.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,59);}
+        foreach(ref readonly var row in storage.OFFSET_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,60);}
+        foreach(ref readonly var row in storage.PARASURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,61);}
+        foreach(ref readonly var row in storage.OBSOLETE_CPS.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,62);}
+        foreach(ref readonly var row in storage.SILH_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,63);}
+        foreach(ref readonly var row in storage.BSPLINE_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,66);}
+        foreach(ref readonly var row in storage.SWEPT_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,67);}
+        foreach(ref readonly var row in storage.SPUN_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,68);}
+        foreach(ref readonly var row in storage.CPS.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,69);}
+        foreach(ref readonly var row in storage.LIST.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,70);}
+        foreach(ref readonly var row in storage.POINTER_LIS_BLOCK.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,74);}
+        foreach(ref readonly var row in storage.ATT_DEF_ID.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,79);}
+        foreach(ref readonly var row in storage.ATTRIB_DEF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,80);}
+        foreach(ref readonly var row in storage.ATTRIBUTE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,81);}
+        foreach(ref readonly var row in storage.INT_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,82);}
+        foreach(ref readonly var row in storage.REAL_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,83);}
+        foreach(ref readonly var row in storage.CHAR_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,84);}
+        foreach(ref readonly var row in storage.POINT_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,85);}
+        foreach(ref readonly var row in storage.VECTOR_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,86);}
+        foreach(ref readonly var row in storage.AXIS_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,87);}
+        foreach(ref readonly var row in storage.TAG_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,88);}
+        foreach(ref readonly var row in storage.DIRECTION_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,89);}
+        foreach(ref readonly var row in storage.FEATURE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,90);}
+        foreach(ref readonly var row in storage.MEMBER_OF_FEATURE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,91);}
+        foreach(ref readonly var row in storage.SHORT_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,96);}
+        foreach(ref readonly var row in storage.BOX_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,97);}
+        foreach(ref readonly var row in storage.UNICODE_VALUES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,98);}
+        foreach(ref readonly var row in storage.FIELD_NAMES.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,99);}
+        foreach(ref readonly var row in storage.TRANSFORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,100);}
+        foreach(ref readonly var row in storage.WORLD.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,101);}
+        foreach(ref readonly var row in storage.KEY.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,102);}
+        foreach(ref readonly var row in storage.BEZIER_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,103);}
+        foreach(ref readonly var row in storage.BEZIER_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,104);}
+        foreach(ref readonly var row in storage.SET_ELEMENT_TAG.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,110);}
+        foreach(ref readonly var row in storage.FACE_SET.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,111);}
+        foreach(ref readonly var row in storage.HALFEDGE_SET.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,112);}
+        foreach(ref readonly var row in storage.PE_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,120);}
+        foreach(ref readonly var row in storage.INT_PE_DATA.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,121);}
+        foreach(ref readonly var row in storage.EXT_PE_DATA.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,122);}
+        foreach(ref readonly var row in storage.B_SURFACE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,124);}
+        foreach(ref readonly var row in storage.SURFACE_DATA.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,125);}
+        foreach(ref readonly var row in storage.NURBS_SURF.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,126);}
+        foreach(ref readonly var row in storage.KNOT_MULT.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,127);}
+        foreach(ref readonly var row in storage.KNOT_SET.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,128);}
+        foreach(ref readonly var row in storage.PE_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,row._xt_variable_length,true,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,130);}
+        foreach(ref readonly var row in storage.PCURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,132);}
+        foreach(ref readonly var row in storage.TRIMMED_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,133);}
+        foreach(ref readonly var row in storage.B_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,134);}
+        foreach(ref readonly var row in storage.CURVE_DATA.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,135);}
+        foreach(ref readonly var row in storage.NURBS_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,136);}
+        foreach(ref readonly var row in storage.SP_CURVE.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,137);}
+        foreach(ref readonly var row in storage.GEOMETRIC_OWNER.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,141);}
+        foreach(ref readonly var row in storage.PLANE_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,150);}
+        foreach(ref readonly var row in storage.CYLINDER_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,151);}
+        foreach(ref readonly var row in storage.CONE_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,152);}
+        foreach(ref readonly var row in storage.SPHERE_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,153);}
+        foreach(ref readonly var row in storage.TORUS_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,154);}
+        foreach(ref readonly var row in storage.SWEPT_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,155);}
+        foreach(ref readonly var row in storage.SWEPT_UV_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,156);}
+        foreach(ref readonly var row in storage.SPUN_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,157);}
+        foreach(ref readonly var row in storage.VAR_RADIUS_PIPE_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,158);}
+        foreach(ref readonly var row in storage.HELIX_SU_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,163);}
+        foreach(ref readonly var row in storage.HELIX_CU_FORM.AsSpan()){XtGeneratedSchemaRuntime.ValidateMetadata(row._xt_index,row._xt_order,0,false,row._xt_user_fields,userFieldSize,storage._xt_user_fields.Length,indexes,orders);nodeTypes.Add(row._xt_index,184);}
+        foreach (ref readonly var row in storage.NULLP.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 1, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.WORKSPACE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.ws, row._xt_variable_length, storage.WORKSPACE__ws.Length, "SCH_1300120_13006.WORKSPACE.ws");
+            for (var item = 0; item < row.ws.Count; item++) {values.Add(XtSchemaFieldCodec.From_c(storage.WORKSPACE__ws[row.ws.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 2, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PARTITION.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.current_pmark.Index,4,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARTITION.current_pmark"); values.Add(XtSchemaFieldCodec.From_p(row.current_pmark.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.highest_id));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 3, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PMARK.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.preceding.Index,4,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PMARK.preceding"); values.Add(XtSchemaFieldCodec.From_p(row.preceding.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.first_following.Index,4,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PMARK.first_following"); values.Add(XtSchemaFieldCodec.From_p(row.first_following.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_sibling.Index,4,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PMARK.next_sibling"); values.Add(XtSchemaFieldCodec.From_p(row.next_sibling.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.prev_sibling.Index,4,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PMARK.prev_sibling"); values.Add(XtSchemaFieldCodec.From_p(row.prev_sibling.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_new_nodes));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_del_nodes));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_copy_mod_nodes));
+            values.Add(XtSchemaFieldCodec.From_d(row.delta_key));
+            values.Add(XtSchemaFieldCodec.From_l(row.delta_is_forward));
+            values.Add(XtSchemaFieldCodec.From_d(row.id));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 4, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.ASSEMBLY.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.highest_node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attribute_chains.Index,70,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.attribute_chains"); values.Add(XtSchemaFieldCodec.From_p(row.attribute_chains.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.list.Index,70,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.list"); values.Add(XtSchemaFieldCodec.From_p(row.list.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.curve"); values.Add(XtSchemaFieldCodec.From_p(row.curve));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.point.Index,29,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.point"); values.Add(XtSchemaFieldCodec.From_p(row.point.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.key.Index,102,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.key"); values.Add(XtSchemaFieldCodec.From_p(row.key.Index));
+            values.Add(XtSchemaFieldCodec.From_f(row.res_size));
+            values.Add(XtSchemaFieldCodec.From_f(row.res_linear));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.ref_instance.Index,11,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.ref_instance"); values.Add(XtSchemaFieldCodec.From_p(row.ref_instance.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,10,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,10,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            values.Add(XtSchemaFieldCodec.From_u(row.state));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner.Index,101,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner.Index));
+            values.Add(XtSchemaFieldCodec.From_u(row.type));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.sub_instance.Index,11,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ASSEMBLY.sub_instance"); values.Add(XtSchemaFieldCodec.From_p(row.sub_instance.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 10, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.INSTANCE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            values.Add(XtSchemaFieldCodec.From_u(row.type));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.part,1005,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.part"); values.Add(XtSchemaFieldCodec.From_p(row.part));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.transform.Index,100,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.transform"); values.Add(XtSchemaFieldCodec.From_p(row.transform.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.assembly.Index,10,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.assembly"); values.Add(XtSchemaFieldCodec.From_p(row.assembly.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_in_part.Index,11,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.next_in_part"); values.Add(XtSchemaFieldCodec.From_p(row.next_in_part.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.prev_in_part.Index,11,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.prev_in_part"); values.Add(XtSchemaFieldCodec.From_p(row.prev_in_part.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_of_part.Index,11,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.next_of_part"); values.Add(XtSchemaFieldCodec.From_p(row.next_of_part.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.prev_of_part.Index,11,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INSTANCE.prev_of_part"); values.Add(XtSchemaFieldCodec.From_p(row.prev_of_part.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 11, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BODY.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.highest_node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attribute_chains.Index,70,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.attribute_chains"); values.Add(XtSchemaFieldCodec.From_p(row.attribute_chains.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.curve"); values.Add(XtSchemaFieldCodec.From_p(row.curve));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.point.Index,29,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.point"); values.Add(XtSchemaFieldCodec.From_p(row.point.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.key.Index,102,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.key"); values.Add(XtSchemaFieldCodec.From_p(row.key.Index));
+            values.Add(XtSchemaFieldCodec.From_f(row.res_size));
+            values.Add(XtSchemaFieldCodec.From_f(row.res_linear));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.ref_instance.Index,11,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.ref_instance"); values.Add(XtSchemaFieldCodec.From_p(row.ref_instance.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,12,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,12,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            values.Add(XtSchemaFieldCodec.From_u(row.state));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner.Index,101,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner.Index));
+            values.Add(XtSchemaFieldCodec.From_u(row.body_type));
+            values.Add(XtSchemaFieldCodec.From_u(row.nom_geom_state));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.shell.Index,13,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.shell"); values.Add(XtSchemaFieldCodec.From_p(row.shell.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.boundary_surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.boundary_surface"); values.Add(XtSchemaFieldCodec.From_p(row.boundary_surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.boundary_curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.boundary_curve"); values.Add(XtSchemaFieldCodec.From_p(row.boundary_curve));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.boundary_point.Index,29,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.boundary_point"); values.Add(XtSchemaFieldCodec.From_p(row.boundary_point.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.region.Index,19,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.region"); values.Add(XtSchemaFieldCodec.From_p(row.region.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.edge.Index,16,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.edge"); values.Add(XtSchemaFieldCodec.From_p(row.edge.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.vertex.Index,18,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BODY.vertex"); values.Add(XtSchemaFieldCodec.From_p(row.vertex.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 12, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SHELL.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.body.Index,12,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.body"); values.Add(XtSchemaFieldCodec.From_p(row.body.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,13,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.face.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.face"); values.Add(XtSchemaFieldCodec.From_p(row.face.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.edge.Index,16,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.edge"); values.Add(XtSchemaFieldCodec.From_p(row.edge.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.vertex.Index,18,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.vertex"); values.Add(XtSchemaFieldCodec.From_p(row.vertex.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.region.Index,19,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.region"); values.Add(XtSchemaFieldCodec.From_p(row.region.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.front_face.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SHELL.front_face"); values.Add(XtSchemaFieldCodec.From_p(row.front_face.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 13, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.FACE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            values.Add(XtSchemaFieldCodec.From_f(row.tolerance));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.loop.Index,15,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.loop"); values.Add(XtSchemaFieldCodec.From_p(row.loop.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.shell.Index,13,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.shell"); values.Add(XtSchemaFieldCodec.From_p(row.shell.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_on_surface.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.next_on_surface"); values.Add(XtSchemaFieldCodec.From_p(row.next_on_surface.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous_on_surface.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.previous_on_surface"); values.Add(XtSchemaFieldCodec.From_p(row.previous_on_surface.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_front.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.next_front"); values.Add(XtSchemaFieldCodec.From_p(row.next_front.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous_front.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.previous_front"); values.Add(XtSchemaFieldCodec.From_p(row.previous_front.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.front_shell.Index,13,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE.front_shell"); values.Add(XtSchemaFieldCodec.From_p(row.front_shell.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 14, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.LOOP.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LOOP.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.halfedge.Index,17,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LOOP.halfedge"); values.Add(XtSchemaFieldCodec.From_p(row.halfedge.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.face.Index,14,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LOOP.face"); values.Add(XtSchemaFieldCodec.From_p(row.face.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,15,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LOOP.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 15, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.EDGE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            values.Add(XtSchemaFieldCodec.From_f(row.tolerance));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.halfedge.Index,17,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.halfedge"); values.Add(XtSchemaFieldCodec.From_p(row.halfedge.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,16,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,16,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.curve"); values.Add(XtSchemaFieldCodec.From_p(row.curve));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_on_curve.Index,16,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.next_on_curve"); values.Add(XtSchemaFieldCodec.From_p(row.next_on_curve.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous_on_curve.Index,16,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.previous_on_curve"); values.Add(XtSchemaFieldCodec.From_p(row.previous_on_curve.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1029,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EDGE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 16, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.HALFEDGE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.loop.Index,15,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.loop"); values.Add(XtSchemaFieldCodec.From_p(row.loop.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.forward.Index,17,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.forward"); values.Add(XtSchemaFieldCodec.From_p(row.forward.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.backward.Index,17,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.backward"); values.Add(XtSchemaFieldCodec.From_p(row.backward.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.vertex.Index,18,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.vertex"); values.Add(XtSchemaFieldCodec.From_p(row.vertex.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.other.Index,17,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.other"); values.Add(XtSchemaFieldCodec.From_p(row.other.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.edge.Index,16,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.edge"); values.Add(XtSchemaFieldCodec.From_p(row.edge.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.curve"); values.Add(XtSchemaFieldCodec.From_p(row.curve));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_at_vx.Index,17,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE.next_at_vx"); values.Add(XtSchemaFieldCodec.From_p(row.next_at_vx.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 17, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.VERTEX.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.VERTEX.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.halfedge.Index,17,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.VERTEX.halfedge"); values.Add(XtSchemaFieldCodec.From_p(row.halfedge.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,18,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.VERTEX.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,18,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.VERTEX.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.point.Index,29,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.VERTEX.point"); values.Add(XtSchemaFieldCodec.From_p(row.point.Index));
+            values.Add(XtSchemaFieldCodec.From_f(row.tolerance));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1029,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.VERTEX.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 18, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.REGION.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.REGION.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.body.Index,12,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.REGION.body"); values.Add(XtSchemaFieldCodec.From_p(row.body.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,19,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.REGION.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,19,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.REGION.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.shell.Index,13,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.REGION.shell"); values.Add(XtSchemaFieldCodec.From_p(row.shell.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.type));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 19, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.POINT.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.POINT.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1011,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.POINT.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,29,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.POINT.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,29,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.POINT.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 29, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.LINE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LINE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LINE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LINE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LINE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LINE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            values.Add(XtSchemaFieldCodec.From_v(row.direction));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 30, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CIRCLE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CIRCLE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CIRCLE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CIRCLE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CIRCLE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CIRCLE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.centre));
+            values.Add(XtSchemaFieldCodec.From_v(row.normal));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 31, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.ELLIPSE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ELLIPSE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ELLIPSE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ELLIPSE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ELLIPSE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ELLIPSE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.centre));
+            values.Add(XtSchemaFieldCodec.From_v(row.normal));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.major_radius));
+            values.Add(XtSchemaFieldCodec.From_f(row.minor_radius));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 32, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PARABOLA.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARABOLA.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARABOLA.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARABOLA.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARABOLA.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARABOLA.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.origin));
+            values.Add(XtSchemaFieldCodec.From_v(row.normal));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.focal_length));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 33, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.HYPERBOLA.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HYPERBOLA.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HYPERBOLA.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HYPERBOLA.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HYPERBOLA.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HYPERBOLA.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.origin));
+            values.Add(XtSchemaFieldCodec.From_v(row.normal));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.transverse_radius));
+            values.Add(XtSchemaFieldCodec.From_f(row.conjugate_radius));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 34, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PARACURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARACURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARACURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARACURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARACURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARACURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_d(row.seg));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.cpc.Index,48,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARACURVE.cpc"); values.Add(XtSchemaFieldCodec.From_p(row.cpc.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 35, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.OBSOLETE_CPC.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPC.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPC.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPC.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPC.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPC.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dimension));
+            values.Add(XtSchemaFieldCodec.From_n(row.segment_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.order));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.segment, row._xt_variable_length, storage.OBSOLETE_CPC__segment.Length, "SCH_1300120_13006.OBSOLETE_CPC.segment");
+            for (var item = 0; item < row.segment.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.OBSOLETE_CPC__segment[row.segment.Offset+item],1025,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPC.segment"); values.Add(XtSchemaFieldCodec.From_p(storage.OBSOLETE_CPC__segment[row.segment.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 36, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PATCH_BOUND.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PATCH_BOUND.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PATCH_BOUND.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PATCH_BOUND.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PATCH_BOUND.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PATCH_BOUND.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_c(row.boundary));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.lh_patch.Index,61,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PATCH_BOUND.lh_patch"); values.Add(XtSchemaFieldCodec.From_p(row.lh_patch.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.rh_patch.Index,61,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PATCH_BOUND.rh_patch"); values.Add(XtSchemaFieldCodec.From_p(row.rh_patch.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 37, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.INTERSECTION.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            for (var item = 0; item < 2; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.surface[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface[item])); }
+            XtGeneratedSchemaRuntime.ValidatePointer(row.chart.Index,40,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.chart"); values.Add(XtSchemaFieldCodec.From_p(row.chart.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.start.Index,41,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.start"); values.Add(XtSchemaFieldCodec.From_p(row.start.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.end.Index,41,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INTERSECTION.end"); values.Add(XtSchemaFieldCodec.From_p(row.end.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 38, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SILHOUETTE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_c(row.analytic_root));
+            values.Add(XtSchemaFieldCodec.From_l(row.from_infinity));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.start.Index,41,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.start"); values.Add(XtSchemaFieldCodec.From_p(row.start.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.end.Index,41,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILHOUETTE.end"); values.Add(XtSchemaFieldCodec.From_p(row.end.Index));
+            values.Add(XtSchemaFieldCodec.From_v(row.eye));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 39, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CHART.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_f(row.base_parameter));
+            values.Add(XtSchemaFieldCodec.From_f(row.base_scale));
+            values.Add(XtSchemaFieldCodec.From_d(row.chart_count));
+            values.Add(XtSchemaFieldCodec.From_f(row.chordal_error));
+            values.Add(XtSchemaFieldCodec.From_f(row.angular_error));
+            for (var item = 0; item < 2; item++) { values.Add(XtSchemaFieldCodec.From_f(row.parameter_error[item])); }
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.hvec, row._xt_variable_length, storage.CHART__hvec.Length, "SCH_1300120_13006.CHART.hvec");
+            for (var item = 0; item < row.hvec.Count; item++) {values.Add(XtSchemaFieldCodec.From_h(storage.CHART__hvec[row.hvec.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 40, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.LIMIT.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_c(row.type));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.hvec, row._xt_variable_length, storage.LIMIT__hvec.Length, "SCH_1300120_13006.LIMIT.hvec");
+            for (var item = 0; item < row.hvec.Count; item++) {values.Add(XtSchemaFieldCodec.From_h(storage.LIMIT__hvec[row.hvec.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 41, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BSPLINE_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.knot_vector.Index,44,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BSPLINE_CURVE.knot_vector"); values.Add(XtSchemaFieldCodec.From_p(row.knot_vector.Index));
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dimension));
+            values.Add(XtSchemaFieldCodec.From_d(row.vertex_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.order));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bspline_vertices.Index,45,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BSPLINE_CURVE.bspline_vertices"); values.Add(XtSchemaFieldCodec.From_p(row.bspline_vertices.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 43, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.KNOT_VECTOR.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_l(row.periodic));
+            values.Add(XtSchemaFieldCodec.From_d(row.knot_count));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.knots, row._xt_variable_length, storage.KNOT_VECTOR__knots.Length, "SCH_1300120_13006.KNOT_VECTOR.knots");
+            for (var item = 0; item < row.knots.Count; item++) {values.Add(XtSchemaFieldCodec.From_f(storage.KNOT_VECTOR__knots[row.knots.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 44, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BSPLINE_VERTICES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.vertices, row._xt_variable_length, storage.BSPLINE_VERTICES__vertices.Length, "SCH_1300120_13006.BSPLINE_VERTICES.vertices");
+            for (var item = 0; item < row.vertices.Count; item++) {values.Add(XtSchemaFieldCodec.From_f(storage.BSPLINE_VERTICES__vertices[row.vertices.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 45, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.OFFSET_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_CURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_CURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_CURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_CURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_CURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_CURVE.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_CURVE.curve"); values.Add(XtSchemaFieldCodec.From_p(row.curve));
+            values.Add(XtSchemaFieldCodec.From_f(row.offset));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 46, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CPC.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPC.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPC.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPC.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPC.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPC.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bezier.Index,103,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPC.bezier"); values.Add(XtSchemaFieldCodec.From_p(row.bezier.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bspline.Index,43,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPC.bspline"); values.Add(XtSchemaFieldCodec.From_p(row.bspline.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 48, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.OBSOLETE_SP_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_SP_CURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_SP_CURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_SP_CURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_SP_CURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_SP_CURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_l(row.const_param));
+            values.Add(XtSchemaFieldCodec.From_n(row.segment_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.order));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_SP_CURVE.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.bezier_vertices, row._xt_variable_length, storage.OBSOLETE_SP_CURVE__bezier_vertices.Length, "SCH_1300120_13006.OBSOLETE_SP_CURVE.bezier_vertices");
+            for (var item = 0; item < row.bezier_vertices.Count; item++) {values.Add(XtSchemaFieldCodec.From_f(storage.OBSOLETE_SP_CURVE__bezier_vertices[row.bezier_vertices.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 49, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PLANE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PLANE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PLANE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PLANE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PLANE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PLANE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            values.Add(XtSchemaFieldCodec.From_v(row.normal));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 50, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CYLINDER.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CYLINDER.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CYLINDER.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CYLINDER.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CYLINDER.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CYLINDER.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 51, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CONE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CONE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CONE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CONE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CONE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CONE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            values.Add(XtSchemaFieldCodec.From_f(row.sin_half_angle));
+            values.Add(XtSchemaFieldCodec.From_f(row.cos_half_angle));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 52, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SPHERE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPHERE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPHERE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPHERE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPHERE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPHERE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.centre));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 53, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.TORUS.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TORUS.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TORUS.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TORUS.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TORUS.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TORUS.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_v(row.centre));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.major_radius));
+            values.Add(XtSchemaFieldCodec.From_f(row.minor_radius));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 54, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PIPE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PIPE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PIPE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PIPE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PIPE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PIPE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.spine,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PIPE.spine"); values.Add(XtSchemaFieldCodec.From_p(row.spine));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 55, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BLENDED_EDGE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_c(row.blend_type));
+            for (var item = 0; item < 2; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.surface[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface[item])); }
+            XtGeneratedSchemaRuntime.ValidatePointer(row.spine,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.spine"); values.Add(XtSchemaFieldCodec.From_p(row.spine));
+            for (var item = 0; item < 2; item++) { values.Add(XtSchemaFieldCodec.From_f(row.range[item])); }
+            for (var item = 0; item < 2; item++) { values.Add(XtSchemaFieldCodec.From_f(row.thumb_weight[item])); }
+            for (var item = 0; item < 2; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.boundary[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.boundary"); values.Add(XtSchemaFieldCodec.From_p(row.boundary[item])); }
+            XtGeneratedSchemaRuntime.ValidatePointer(row.start.Index,41,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.start"); values.Add(XtSchemaFieldCodec.From_p(row.start.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.end.Index,41,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_EDGE.end"); values.Add(XtSchemaFieldCodec.From_p(row.end.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 56, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BLENDED_VERTEX.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_c(row.blend_type));
+            for (var item = 0; item < 3; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.surface[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface[item])); }
+            for (var item = 0; item < 3; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.sub_surface[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.sub_surface"); values.Add(XtSchemaFieldCodec.From_p(row.sub_surface[item])); }
+            for (var item = 0; item < 3; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.boundary[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLENDED_VERTEX.boundary"); values.Add(XtSchemaFieldCodec.From_p(row.boundary[item])); }
+            for (var item = 0; item < 3; item++) { values.Add(XtSchemaFieldCodec.From_f(row.range[item])); }
+            for (var item = 0; item < 3; item++) { values.Add(XtSchemaFieldCodec.From_f(row.thumb_weight[item])); }
+            values.Add(XtSchemaFieldCodec.From_v(row.centre));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 57, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BLEND_OVERLAP.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_OVERLAP.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_OVERLAP.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_OVERLAP.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_OVERLAP.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_OVERLAP.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            for (var item = 0; item < 2; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.surface[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_OVERLAP.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface[item])); }
+            for (var item = 0; item < 4; item++) { XtGeneratedSchemaRuntime.ValidatePointer(row.sub_surface[item],1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_OVERLAP.sub_surface"); values.Add(XtSchemaFieldCodec.From_p(row.sub_surface[item])); }
+            for (var item = 0; item < 4; item++) { values.Add(XtSchemaFieldCodec.From_f(row.range[item])); }
+            for (var item = 0; item < 4; item++) { values.Add(XtSchemaFieldCodec.From_f(row.thumb_weight[item])); }
+            for (var item = 0; item < 2; item++) { values.Add(XtSchemaFieldCodec.From_c(row.blend_type[item])); }
+            values.Add(XtSchemaFieldCodec.From_c(row.overlap_type));
+            values.Add(XtSchemaFieldCodec.From_l(row.swap_u_v));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 58, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BLEND_BOUND.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_BOUND.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_BOUND.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_BOUND.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_BOUND.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_BOUND.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_n(row.boundary));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.blend,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BLEND_BOUND.blend"); values.Add(XtSchemaFieldCodec.From_p(row.blend));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 59, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.OFFSET_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_SURF.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_SURF.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_SURF.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_SURF.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_SURF.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_c(row.check));
+            values.Add(XtSchemaFieldCodec.From_l(row.true_offset));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OFFSET_SURF.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            values.Add(XtSchemaFieldCodec.From_f(row.offset));
+            values.Add(XtSchemaFieldCodec.From_f(row.scale));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 60, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PARASURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARASURF.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARASURF.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARASURF.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARASURF.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARASURF.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_d(row.col));
+            values.Add(XtSchemaFieldCodec.From_d(row.row));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.cps.Index,69,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PARASURF.cps"); values.Add(XtSchemaFieldCodec.From_p(row.cps.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 61, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.OBSOLETE_CPS.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPS.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPS.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPS.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPS.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPS.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dimension));
+            values.Add(XtSchemaFieldCodec.From_n(row.col_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.row_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.u_order));
+            values.Add(XtSchemaFieldCodec.From_n(row.v_order));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.patch, row._xt_variable_length, storage.OBSOLETE_CPS__patch.Length, "SCH_1300120_13006.OBSOLETE_CPS.patch");
+            for (var item = 0; item < row.patch.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.OBSOLETE_CPS__patch[row.patch.Offset+item],1026,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.OBSOLETE_CPS.patch"); values.Add(XtSchemaFieldCodec.From_p(storage.OBSOLETE_CPS__patch[row.patch.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 62, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SILH_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILH_SURF.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILH_SURF.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILH_SURF.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILH_SURF.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILH_SURF.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_l(row.from_infinity));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SILH_SURF.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            values.Add(XtSchemaFieldCodec.From_v(row.eye));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 63, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BSPLINE_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.row_knots.Index,44,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BSPLINE_SURF.row_knots"); values.Add(XtSchemaFieldCodec.From_p(row.row_knots.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.col_knots.Index,44,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BSPLINE_SURF.col_knots"); values.Add(XtSchemaFieldCodec.From_p(row.col_knots.Index));
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dimension));
+            values.Add(XtSchemaFieldCodec.From_d(row.col_count));
+            values.Add(XtSchemaFieldCodec.From_d(row.row_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.u_order));
+            values.Add(XtSchemaFieldCodec.From_n(row.v_order));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bspline_vertices.Index,45,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BSPLINE_SURF.bspline_vertices"); values.Add(XtSchemaFieldCodec.From_p(row.bspline_vertices.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 66, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SWEPT_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SWEPT_SURF.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SWEPT_SURF.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SWEPT_SURF.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SWEPT_SURF.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SWEPT_SURF.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.section,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SWEPT_SURF.section"); values.Add(XtSchemaFieldCodec.From_p(row.section));
+            values.Add(XtSchemaFieldCodec.From_v(row.sweep));
+            values.Add(XtSchemaFieldCodec.From_f(row.scale));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 67, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SPUN_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPUN_SURF.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPUN_SURF.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPUN_SURF.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPUN_SURF.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPUN_SURF.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.profile,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SPUN_SURF.profile"); values.Add(XtSchemaFieldCodec.From_p(row.profile));
+            values.Add(XtSchemaFieldCodec.From_v(row.@base));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_v(row.start));
+            values.Add(XtSchemaFieldCodec.From_v(row.end));
+            values.Add(XtSchemaFieldCodec.From_f(row.start_param));
+            values.Add(XtSchemaFieldCodec.From_f(row.end_param));
+            values.Add(XtSchemaFieldCodec.From_v(row.x_axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.scale));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 68, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CPS.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPS.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPS.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPS.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPS.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPS.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bezier.Index,104,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPS.bezier"); values.Add(XtSchemaFieldCodec.From_p(row.bezier.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bspline.Index,66,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CPS.bspline"); values.Add(XtSchemaFieldCodec.From_p(row.bspline.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 69, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.LIST.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1013,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LIST.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,70,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LIST.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,70,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LIST.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.list_type));
+            values.Add(XtSchemaFieldCodec.From_d(row.list_length));
+            values.Add(XtSchemaFieldCodec.From_d(row.block_length));
+            values.Add(XtSchemaFieldCodec.From_d(row.size_of_entry));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.list_block,1012,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LIST.list_block"); values.Add(XtSchemaFieldCodec.From_p(row.list_block));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.finger_block,1012,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.LIST.finger_block"); values.Add(XtSchemaFieldCodec.From_p(row.finger_block));
+            values.Add(XtSchemaFieldCodec.From_d(row.finger_index));
+            values.Add(XtSchemaFieldCodec.From_l(row.notransmit));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 70, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.POINTER_LIS_BLOCK.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.n_entries));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_block.Index,74,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.POINTER_LIS_BLOCK.next_block"); values.Add(XtSchemaFieldCodec.From_p(row.next_block.Index));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.entries, row._xt_variable_length, storage.POINTER_LIS_BLOCK__entries.Length, "SCH_1300120_13006.POINTER_LIS_BLOCK.entries");
+            for (var item = 0; item < row.entries.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.POINTER_LIS_BLOCK__entries[row.entries.Offset+item],1001,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.POINTER_LIS_BLOCK.entries"); values.Add(XtSchemaFieldCodec.From_p(storage.POINTER_LIS_BLOCK__entries[row.entries.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 74, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.ATT_DEF_ID.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.@string, row._xt_variable_length, storage.ATT_DEF_ID__string.Length, "SCH_1300120_13006.ATT_DEF_ID.string");
+            for (var item = 0; item < row.@string.Count; item++) {values.Add(XtSchemaFieldCodec.From_c(storage.ATT_DEF_ID__string[row.@string.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 79, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.ATTRIB_DEF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,80,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIB_DEF.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.identifier.Index,79,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIB_DEF.identifier"); values.Add(XtSchemaFieldCodec.From_p(row.identifier.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.type_id));
+            for (var item = 0; item < 8; item++) { values.Add(XtSchemaFieldCodec.From_u(row.actions[item])); }
+            XtGeneratedSchemaRuntime.ValidatePointer(row.field_names.Index,99,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIB_DEF.field_names"); values.Add(XtSchemaFieldCodec.From_p(row.field_names.Index));
+            for (var item = 0; item < 14; item++) { values.Add(XtSchemaFieldCodec.From_l(row.legal_owners[item])); }
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.fields, row._xt_variable_length, storage.ATTRIB_DEF__fields.Length, "SCH_1300120_13006.ATTRIB_DEF.fields");
+            for (var item = 0; item < row.fields.Count; item++) {values.Add(XtSchemaFieldCodec.From_u(storage.ATTRIB_DEF__fields[row.fields.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 80, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.ATTRIBUTE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.definition.Index,80,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIBUTE.definition"); values.Add(XtSchemaFieldCodec.From_p(row.definition.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1015,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIBUTE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIBUTE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIBUTE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_of_type.Index,81,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIBUTE.next_of_type"); values.Add(XtSchemaFieldCodec.From_p(row.next_of_type.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous_of_type.Index,81,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIBUTE.previous_of_type"); values.Add(XtSchemaFieldCodec.From_p(row.previous_of_type.Index));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.fields, row._xt_variable_length, storage.ATTRIBUTE__fields.Length, "SCH_1300120_13006.ATTRIBUTE.fields");
+            for (var item = 0; item < row.fields.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.ATTRIBUTE__fields[row.fields.Offset+item],1018,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.ATTRIBUTE.fields"); values.Add(XtSchemaFieldCodec.From_p(storage.ATTRIBUTE__fields[row.fields.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 81, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.INT_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.INT_VALUES__values.Length, "SCH_1300120_13006.INT_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_d(storage.INT_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 82, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.REAL_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.REAL_VALUES__values.Length, "SCH_1300120_13006.REAL_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_f(storage.REAL_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 83, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CHAR_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.CHAR_VALUES__values.Length, "SCH_1300120_13006.CHAR_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_c(storage.CHAR_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 84, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.POINT_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.POINT_VALUES__values.Length, "SCH_1300120_13006.POINT_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_v(storage.POINT_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 85, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.VECTOR_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.VECTOR_VALUES__values.Length, "SCH_1300120_13006.VECTOR_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_v(storage.VECTOR_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 86, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.AXIS_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.AXIS_VALUES__values.Length, "SCH_1300120_13006.AXIS_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_v(storage.AXIS_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 87, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.TAG_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.TAG_VALUES__values.Length, "SCH_1300120_13006.TAG_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_t(storage.TAG_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 88, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.DIRECTION_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.DIRECTION_VALUES__values.Length, "SCH_1300120_13006.DIRECTION_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_v(storage.DIRECTION_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 89, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.FEATURE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FEATURE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1005,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FEATURE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FEATURE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FEATURE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            values.Add(XtSchemaFieldCodec.From_u(row.type));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.first_member.Index,91,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FEATURE.first_member"); values.Add(XtSchemaFieldCodec.From_p(row.first_member.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 90, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.MEMBER_OF_FEATURE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.dummy_node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owning_feature.Index,90,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.MEMBER_OF_FEATURE.owning_feature"); values.Add(XtSchemaFieldCodec.From_p(row.owning_feature.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1017,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.MEMBER_OF_FEATURE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.MEMBER_OF_FEATURE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.MEMBER_OF_FEATURE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next_member.Index,91,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.MEMBER_OF_FEATURE.next_member"); values.Add(XtSchemaFieldCodec.From_p(row.next_member.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous_member.Index,91,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.MEMBER_OF_FEATURE.previous_member"); values.Add(XtSchemaFieldCodec.From_p(row.previous_member.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 91, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SHORT_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.SHORT_VALUES__values.Length, "SCH_1300120_13006.SHORT_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_n(storage.SHORT_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 96, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BOX_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.BOX_VALUES__values.Length, "SCH_1300120_13006.BOX_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_b(storage.BOX_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 97, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.UNICODE_VALUES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.values, row._xt_variable_length, storage.UNICODE_VALUES__values.Length, "SCH_1300120_13006.UNICODE_VALUES.values");
+            for (var item = 0; item < row.values.Count; item++) {values.Add(XtSchemaFieldCodec.From_w(storage.UNICODE_VALUES__values[row.values.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 98, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.FIELD_NAMES.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.names, row._xt_variable_length, storage.FIELD_NAMES__names.Length, "SCH_1300120_13006.FIELD_NAMES.names");
+            for (var item = 0; item < row.names.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.FIELD_NAMES__names[row.names.Offset+item],1037,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FIELD_NAMES.names"); values.Add(XtSchemaFieldCodec.From_p(storage.FIELD_NAMES__names[row.names.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 99, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.TRANSFORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1023,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRANSFORM.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,100,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRANSFORM.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,100,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRANSFORM.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            for (var item = 0; item < 9; item++) { values.Add(XtSchemaFieldCodec.From_f(row.rotation_matrix[item])); }
+            values.Add(XtSchemaFieldCodec.From_v(row.translation_vector));
+            values.Add(XtSchemaFieldCodec.From_f(row.scale));
+            values.Add(XtSchemaFieldCodec.From_d(row.flag));
+            values.Add(XtSchemaFieldCodec.From_v(row.perspective_vector));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 100, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.WORLD.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.assembly.Index,10,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.assembly"); values.Add(XtSchemaFieldCodec.From_p(row.assembly.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attribute.Index,81,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.attribute"); values.Add(XtSchemaFieldCodec.From_p(row.attribute.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.body.Index,12,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.body"); values.Add(XtSchemaFieldCodec.From_p(row.body.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.transform.Index,100,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.transform"); values.Add(XtSchemaFieldCodec.From_p(row.transform.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.curve"); values.Add(XtSchemaFieldCodec.From_p(row.curve));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.point.Index,29,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.point"); values.Add(XtSchemaFieldCodec.From_p(row.point.Index));
+            values.Add(XtSchemaFieldCodec.From_l(row.alive));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attrib_def.Index,80,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.WORLD.attrib_def"); values.Add(XtSchemaFieldCodec.From_p(row.attrib_def.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.highest_id));
+            values.Add(XtSchemaFieldCodec.From_d(row.current_id));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 101, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.KEY.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.@string, row._xt_variable_length, storage.KEY__string.Length, "SCH_1300120_13006.KEY.string");
+            for (var item = 0; item < row.@string.Count; item++) {values.Add(XtSchemaFieldCodec.From_c(storage.KEY__string[row.@string.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 102, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BEZIER_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dimension));
+            values.Add(XtSchemaFieldCodec.From_d(row.segment_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.order));
+            values.Add(XtSchemaFieldCodec.From_c(row.check));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.segment, row._xt_variable_length, storage.BEZIER_CURVE__segment.Length, "SCH_1300120_13006.BEZIER_CURVE.segment");
+            for (var item = 0; item < row.segment.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.BEZIER_CURVE__segment[row.segment.Offset+item],1025,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BEZIER_CURVE.segment"); values.Add(XtSchemaFieldCodec.From_p(storage.BEZIER_CURVE__segment[row.segment.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 103, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.BEZIER_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dimension));
+            values.Add(XtSchemaFieldCodec.From_d(row.col_count));
+            values.Add(XtSchemaFieldCodec.From_d(row.row_count));
+            values.Add(XtSchemaFieldCodec.From_n(row.u_order));
+            values.Add(XtSchemaFieldCodec.From_n(row.v_order));
+            values.Add(XtSchemaFieldCodec.From_c(row.check));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.patch, row._xt_variable_length, storage.BEZIER_SURF__patch.Length, "SCH_1300120_13006.BEZIER_SURF.patch");
+            for (var item = 0; item < row.patch.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.BEZIER_SURF__patch[row.patch.Offset+item],1026,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.BEZIER_SURF.patch"); values.Add(XtSchemaFieldCodec.From_p(storage.BEZIER_SURF__patch[row.patch.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 104, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SET_ELEMENT_TAG.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,110,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SET_ELEMENT_TAG.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.forward.Index,110,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SET_ELEMENT_TAG.forward"); values.Add(XtSchemaFieldCodec.From_p(row.forward.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.backward.Index,110,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SET_ELEMENT_TAG.backward"); values.Add(XtSchemaFieldCodec.From_p(row.backward.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.@class));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.set,1021,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SET_ELEMENT_TAG.set"); values.Add(XtSchemaFieldCodec.From_p(row.set));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.node,1022,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SET_ELEMENT_TAG.node"); values.Add(XtSchemaFieldCodec.From_p(row.node));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 110, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.FACE_SET.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.tag.Index,110,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE_SET.tag"); values.Add(XtSchemaFieldCodec.From_p(row.tag.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,111,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE_SET.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.@class));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.he_set.Index,112,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE_SET.he_set"); values.Add(XtSchemaFieldCodec.From_p(row.he_set.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surfaces,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.FACE_SET.surfaces"); values.Add(XtSchemaFieldCodec.From_p(row.surfaces));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 111, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.HALFEDGE_SET.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.tag.Index,110,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE_SET.tag"); values.Add(XtSchemaFieldCodec.From_p(row.tag.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,112,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE_SET.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,112,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE_SET.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            values.Add(XtSchemaFieldCodec.From_d(row.@class));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.fa_set.Index,111,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE_SET.fa_set"); values.Add(XtSchemaFieldCodec.From_p(row.fa_set.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.co_he_set.Index,112,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.HALFEDGE_SET.co_he_set"); values.Add(XtSchemaFieldCodec.From_p(row.co_he_set.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 112, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PE_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_c(row.type));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.data,1027,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.data"); values.Add(XtSchemaFieldCodec.From_p(row.data));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.tf.Index,100,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.tf"); values.Add(XtSchemaFieldCodec.From_p(row.tf.Index));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.internal_geom, row._xt_variable_length, storage.PE_SURF__internal_geom.Length, "SCH_1300120_13006.PE_SURF.internal_geom");
+            for (var item = 0; item < row.internal_geom.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.PE_SURF__internal_geom[row.internal_geom.Offset+item],1028,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_SURF.internal_geom"); values.Add(XtSchemaFieldCodec.From_p(storage.PE_SURF__internal_geom[row.internal_geom.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 120, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.INT_PE_DATA.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.geom_type));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.real_array.Index,83,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INT_PE_DATA.real_array"); values.Add(XtSchemaFieldCodec.From_p(row.real_array.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.int_array.Index,82,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.INT_PE_DATA.int_array"); values.Add(XtSchemaFieldCodec.From_p(row.int_array.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 121, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.EXT_PE_DATA.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.key.Index,102,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EXT_PE_DATA.key"); values.Add(XtSchemaFieldCodec.From_p(row.key.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.real_array.Index,83,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EXT_PE_DATA.real_array"); values.Add(XtSchemaFieldCodec.From_p(row.real_array.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.int_array.Index,82,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.EXT_PE_DATA.int_array"); values.Add(XtSchemaFieldCodec.From_p(row.int_array.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 122, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.B_SURFACE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_SURFACE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1007,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_SURFACE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_SURFACE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_SURFACE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_SURFACE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.nurbs.Index,126,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_SURFACE.nurbs"); values.Add(XtSchemaFieldCodec.From_p(row.nurbs.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.data.Index,125,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_SURFACE.data"); values.Add(XtSchemaFieldCodec.From_p(row.data.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 124, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SURFACE_DATA.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_i(row.original_uint));
+            values.Add(XtSchemaFieldCodec.From_i(row.original_vint));
+            values.Add(XtSchemaFieldCodec.From_i(row.extended_uint));
+            values.Add(XtSchemaFieldCodec.From_i(row.extended_vint));
+            values.Add(XtSchemaFieldCodec.From_u(row.self_int));
+            values.Add(XtSchemaFieldCodec.From_c(row.original_u_start));
+            values.Add(XtSchemaFieldCodec.From_c(row.original_u_end));
+            values.Add(XtSchemaFieldCodec.From_c(row.original_v_start));
+            values.Add(XtSchemaFieldCodec.From_c(row.original_v_end));
+            values.Add(XtSchemaFieldCodec.From_c(row.extended_u_start));
+            values.Add(XtSchemaFieldCodec.From_c(row.extended_u_end));
+            values.Add(XtSchemaFieldCodec.From_c(row.extended_v_start));
+            values.Add(XtSchemaFieldCodec.From_c(row.extended_v_end));
+            values.Add(XtSchemaFieldCodec.From_c(row.analytic_form_type));
+            values.Add(XtSchemaFieldCodec.From_c(row.swept_form_type));
+            values.Add(XtSchemaFieldCodec.From_c(row.spun_form_type));
+            values.Add(XtSchemaFieldCodec.From_c(row.blend_form_type));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.analytic_form,1030,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SURFACE_DATA.analytic_form"); values.Add(XtSchemaFieldCodec.From_p(row.analytic_form));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.swept_form,1031,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SURFACE_DATA.swept_form"); values.Add(XtSchemaFieldCodec.From_p(row.swept_form));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.spun_form,1032,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SURFACE_DATA.spun_form"); values.Add(XtSchemaFieldCodec.From_p(row.spun_form));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.blend_form,1033,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SURFACE_DATA.blend_form"); values.Add(XtSchemaFieldCodec.From_p(row.blend_form));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 125, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.NURBS_SURF.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_l(row.u_periodic));
+            values.Add(XtSchemaFieldCodec.From_l(row.v_periodic));
+            values.Add(XtSchemaFieldCodec.From_n(row.u_degree));
+            values.Add(XtSchemaFieldCodec.From_n(row.v_degree));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_u_vertices));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_v_vertices));
+            values.Add(XtSchemaFieldCodec.From_u(row.u_knot_type));
+            values.Add(XtSchemaFieldCodec.From_u(row.v_knot_type));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_u_knots));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_v_knots));
+            values.Add(XtSchemaFieldCodec.From_l(row.rational));
+            values.Add(XtSchemaFieldCodec.From_l(row.u_closed));
+            values.Add(XtSchemaFieldCodec.From_l(row.v_closed));
+            values.Add(XtSchemaFieldCodec.From_u(row.surface_form));
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dim));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bspline_vertices.Index,45,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_SURF.bspline_vertices"); values.Add(XtSchemaFieldCodec.From_p(row.bspline_vertices.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.u_knot_mult.Index,127,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_SURF.u_knot_mult"); values.Add(XtSchemaFieldCodec.From_p(row.u_knot_mult.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.v_knot_mult.Index,127,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_SURF.v_knot_mult"); values.Add(XtSchemaFieldCodec.From_p(row.v_knot_mult.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.u_knots.Index,128,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_SURF.u_knots"); values.Add(XtSchemaFieldCodec.From_p(row.u_knots.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.v_knots.Index,128,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_SURF.v_knots"); values.Add(XtSchemaFieldCodec.From_p(row.v_knots.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 126, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.KNOT_MULT.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.mult, row._xt_variable_length, storage.KNOT_MULT__mult.Length, "SCH_1300120_13006.KNOT_MULT.mult");
+            for (var item = 0; item < row.mult.Count; item++) {values.Add(XtSchemaFieldCodec.From_n(storage.KNOT_MULT__mult[row.mult.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 127, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.KNOT_SET.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.knots, row._xt_variable_length, storage.KNOT_SET__knots.Length, "SCH_1300120_13006.KNOT_SET.knots");
+            for (var item = 0; item < row.knots.Count; item++) {values.Add(XtSchemaFieldCodec.From_f(storage.KNOT_SET__knots[row.knots.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 128, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PE_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_c(row.type));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.data,1027,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.data"); values.Add(XtSchemaFieldCodec.From_p(row.data));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.tf.Index,100,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.tf"); values.Add(XtSchemaFieldCodec.From_p(row.tf.Index));
+            XtGeneratedSchemaRuntime.ValidateVariableRange(row.internal_geom, row._xt_variable_length, storage.PE_CURVE__internal_geom.Length, "SCH_1300120_13006.PE_CURVE.internal_geom");
+            for (var item = 0; item < row.internal_geom.Count; item++) {XtGeneratedSchemaRuntime.ValidatePointer(storage.PE_CURVE__internal_geom[row.internal_geom.Offset+item],1028,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PE_CURVE.internal_geom"); values.Add(XtSchemaFieldCodec.From_p(storage.PE_CURVE__internal_geom[row.internal_geom.Offset+item])); }
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 130, Index = row._xt_index, VariableLength = row._xt_variable_length, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PCURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PCURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PCURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PCURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PCURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PCURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            values.Add(XtSchemaFieldCodec.From_l(row.bsp_parms));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PCURVE.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bspline.Index,43,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.PCURVE.bspline"); values.Add(XtSchemaFieldCodec.From_p(row.bspline.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 132, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.TRIMMED_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRIMMED_CURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRIMMED_CURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRIMMED_CURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRIMMED_CURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRIMMED_CURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.basis_curve,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.TRIMMED_CURVE.basis_curve"); values.Add(XtSchemaFieldCodec.From_p(row.basis_curve));
+            values.Add(XtSchemaFieldCodec.From_v(row.point_1));
+            values.Add(XtSchemaFieldCodec.From_v(row.point_2));
+            values.Add(XtSchemaFieldCodec.From_f(row.parm_1));
+            values.Add(XtSchemaFieldCodec.From_f(row.parm_2));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 133, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.B_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_CURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_CURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_CURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_CURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_CURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.nurbs.Index,136,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_CURVE.nurbs"); values.Add(XtSchemaFieldCodec.From_p(row.nurbs.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.data.Index,135,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.B_CURVE.data"); values.Add(XtSchemaFieldCodec.From_p(row.data.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 134, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CURVE_DATA.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_u(row.self_int));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.analytic_form,1036,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.CURVE_DATA.analytic_form"); values.Add(XtSchemaFieldCodec.From_p(row.analytic_form));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 135, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.NURBS_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_n(row.degree));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_vertices));
+            values.Add(XtSchemaFieldCodec.From_n(row.vertex_dim));
+            values.Add(XtSchemaFieldCodec.From_d(row.n_knots));
+            values.Add(XtSchemaFieldCodec.From_u(row.knot_type));
+            values.Add(XtSchemaFieldCodec.From_l(row.periodic));
+            values.Add(XtSchemaFieldCodec.From_l(row.closed));
+            values.Add(XtSchemaFieldCodec.From_l(row.rational));
+            values.Add(XtSchemaFieldCodec.From_u(row.curve_form));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.bspline_vertices.Index,45,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_CURVE.bspline_vertices"); values.Add(XtSchemaFieldCodec.From_p(row.bspline_vertices.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.knot_mult.Index,127,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_CURVE.knot_mult"); values.Add(XtSchemaFieldCodec.From_p(row.knot_mult.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.knots.Index,128,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.NURBS_CURVE.knots"); values.Add(XtSchemaFieldCodec.From_p(row.knots.Index));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 136, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SP_CURVE.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_d(row.node_id));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.attributes_features,1019,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.attributes_features"); values.Add(XtSchemaFieldCodec.From_p(row.attributes_features));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1010,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.next"); values.Add(XtSchemaFieldCodec.From_p(row.next));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.geometric_owner.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.geometric_owner"); values.Add(XtSchemaFieldCodec.From_p(row.geometric_owner.Index));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.surface,1006,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.surface"); values.Add(XtSchemaFieldCodec.From_p(row.surface));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.b_curve.Index,134,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.b_curve"); values.Add(XtSchemaFieldCodec.From_p(row.b_curve.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.original,1008,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.SP_CURVE.original"); values.Add(XtSchemaFieldCodec.From_p(row.original));
+            values.Add(XtSchemaFieldCodec.From_f(row.tolerance_to_original));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 137, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.GEOMETRIC_OWNER.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            XtGeneratedSchemaRuntime.ValidatePointer(row.owner,1003,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.GEOMETRIC_OWNER.owner"); values.Add(XtSchemaFieldCodec.From_p(row.owner));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.next.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.GEOMETRIC_OWNER.next"); values.Add(XtSchemaFieldCodec.From_p(row.next.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.previous.Index,141,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.GEOMETRIC_OWNER.previous"); values.Add(XtSchemaFieldCodec.From_p(row.previous.Index));
+            XtGeneratedSchemaRuntime.ValidatePointer(row.shared_geometry,1003,nodeTypes,DESCRIPTOR.Definition,"SCH_1300120_13006.GEOMETRIC_OWNER.shared_geometry"); values.Add(XtSchemaFieldCodec.From_p(row.shared_geometry));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 141, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.PLANE_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            values.Add(XtSchemaFieldCodec.From_v(row.normal));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 150, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CYLINDER_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 151, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.CONE_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.pvec));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            values.Add(XtSchemaFieldCodec.From_f(row.sin_half_angle));
+            values.Add(XtSchemaFieldCodec.From_f(row.cos_half_angle));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 152, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SPHERE_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.centre));
+            values.Add(XtSchemaFieldCodec.From_f(row.radius));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 153, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.TORUS_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.centre));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_f(row.major_radius));
+            values.Add(XtSchemaFieldCodec.From_f(row.minor_radius));
+            values.Add(XtSchemaFieldCodec.From_c(row.sense));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 154, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SWEPT_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.sweep));
+            values.Add(XtSchemaFieldCodec.From_c(row.subtype));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 155, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SWEPT_UV_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.sweep_u));
+            values.Add(XtSchemaFieldCodec.From_v(row.sweep_v));
+            values.Add(XtSchemaFieldCodec.From_c(row.subtype_u));
+            values.Add(XtSchemaFieldCodec.From_c(row.subtype_v));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 156, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.SPUN_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.@base));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis));
+            values.Add(XtSchemaFieldCodec.From_c(row.subtype));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 157, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.VAR_RADIUS_PIPE_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_f(row.max_radius));
+            values.Add(XtSchemaFieldCodec.From_f(row.min_radius));
+            values.Add(XtSchemaFieldCodec.From_c(row.max_radius_bdry));
+            values.Add(XtSchemaFieldCodec.From_c(row.min_radius_bdry));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 158, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.HELIX_SU_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.axis_pt));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis_dir));
+            values.Add(XtSchemaFieldCodec.From_c(row.hand));
+            values.Add(XtSchemaFieldCodec.From_i(row.turns));
+            values.Add(XtSchemaFieldCodec.From_f(row.pitch));
+            values.Add(XtSchemaFieldCodec.From_f(row.gap));
+            values.Add(XtSchemaFieldCodec.From_f(row.tol));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 163, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        foreach (ref readonly var row in storage.HELIX_CU_FORM.AsSpan())
+        {
+            var values = new List<XtFieldValue>();
+            values.Add(XtSchemaFieldCodec.From_v(row.axis_pt));
+            values.Add(XtSchemaFieldCodec.From_v(row.axis_dir));
+            values.Add(XtSchemaFieldCodec.From_v(row.point));
+            values.Add(XtSchemaFieldCodec.From_c(row.hand));
+            values.Add(XtSchemaFieldCodec.From_i(row.turns));
+            values.Add(XtSchemaFieldCodec.From_f(row.pitch));
+            values.Add(XtSchemaFieldCodec.From_f(row.tol));
+            var users = row._xt_user_fields.Count == 0 ? Array.Empty<int>() : storage._xt_user_fields.AsSpan(row._xt_user_fields.Offset, row._xt_user_fields.Count).ToArray();
+            var generated = new XtNode { Type = 184, Index = row._xt_index, VariableLength = 0, Fields = values.ToArray(), UserFields = users, TransmitOrder = row._xt_order }; nodes.Add(generated);
+        }
+        nodes.Sort(static (left, right) => left.TransmitOrder.CompareTo(right.TransmitOrder));
+        var document = new XtDocument { VersionText = versionText, HeaderSchemaIdentity = SchemaIdentity, Schema = DESCRIPTOR.Definition, UserFieldSize = userFieldSize, Nodes = nodes.ToArray() }; if(nodes.Count!=0)_=XtPartGraph.GetRootIndexes(document); return document;
+    }
+}
+public static class DESCRIPTOR { public static XtSchemaDefinition Definition => XtBuiltInSchemas.Resolve(SchemaIdentity); private const string SchemaIdentity = CODEC.SchemaIdentity; }
+public static class JSON
+{
+    public static void Write(MODEL model, Utf8JsonWriter writer)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("schema", CODEC.SchemaIdentity);
+        writer.WriteString("version_text", model.VersionText);
+        writer.WriteNumber("user_field_size", model.UserFieldSize);
+        if (model.Storage.NULLP.Length != 0)
+        {
+            writer.WritePropertyName("NULLP");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.NULLP.AsSpan())
+                WriteNULLP(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.WORKSPACE.Length != 0)
+        {
+            writer.WritePropertyName("WORKSPACE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.WORKSPACE.AsSpan())
+                WriteWORKSPACE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PARTITION.Length != 0)
+        {
+            writer.WritePropertyName("PARTITION");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PARTITION.AsSpan())
+                WritePARTITION(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PMARK.Length != 0)
+        {
+            writer.WritePropertyName("PMARK");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PMARK.AsSpan())
+                WritePMARK(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.ASSEMBLY.Length != 0)
+        {
+            writer.WritePropertyName("ASSEMBLY");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.ASSEMBLY.AsSpan())
+                WriteASSEMBLY(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.INSTANCE.Length != 0)
+        {
+            writer.WritePropertyName("INSTANCE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.INSTANCE.AsSpan())
+                WriteINSTANCE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BODY.Length != 0)
+        {
+            writer.WritePropertyName("BODY");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BODY.AsSpan())
+                WriteBODY(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SHELL.Length != 0)
+        {
+            writer.WritePropertyName("SHELL");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SHELL.AsSpan())
+                WriteSHELL(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.FACE.Length != 0)
+        {
+            writer.WritePropertyName("FACE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.FACE.AsSpan())
+                WriteFACE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.LOOP.Length != 0)
+        {
+            writer.WritePropertyName("LOOP");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.LOOP.AsSpan())
+                WriteLOOP(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.EDGE.Length != 0)
+        {
+            writer.WritePropertyName("EDGE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.EDGE.AsSpan())
+                WriteEDGE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.HALFEDGE.Length != 0)
+        {
+            writer.WritePropertyName("HALFEDGE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.HALFEDGE.AsSpan())
+                WriteHALFEDGE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.VERTEX.Length != 0)
+        {
+            writer.WritePropertyName("VERTEX");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.VERTEX.AsSpan())
+                WriteVERTEX(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.REGION.Length != 0)
+        {
+            writer.WritePropertyName("REGION");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.REGION.AsSpan())
+                WriteREGION(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.POINT.Length != 0)
+        {
+            writer.WritePropertyName("POINT");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.POINT.AsSpan())
+                WritePOINT(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.LINE.Length != 0)
+        {
+            writer.WritePropertyName("LINE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.LINE.AsSpan())
+                WriteLINE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CIRCLE.Length != 0)
+        {
+            writer.WritePropertyName("CIRCLE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CIRCLE.AsSpan())
+                WriteCIRCLE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.ELLIPSE.Length != 0)
+        {
+            writer.WritePropertyName("ELLIPSE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.ELLIPSE.AsSpan())
+                WriteELLIPSE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PARABOLA.Length != 0)
+        {
+            writer.WritePropertyName("PARABOLA");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PARABOLA.AsSpan())
+                WritePARABOLA(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.HYPERBOLA.Length != 0)
+        {
+            writer.WritePropertyName("HYPERBOLA");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.HYPERBOLA.AsSpan())
+                WriteHYPERBOLA(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PARACURVE.Length != 0)
+        {
+            writer.WritePropertyName("PARACURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PARACURVE.AsSpan())
+                WritePARACURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.OBSOLETE_CPC.Length != 0)
+        {
+            writer.WritePropertyName("OBSOLETE_CPC");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.OBSOLETE_CPC.AsSpan())
+                WriteOBSOLETE_CPC(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PATCH_BOUND.Length != 0)
+        {
+            writer.WritePropertyName("PATCH_BOUND");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PATCH_BOUND.AsSpan())
+                WritePATCH_BOUND(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.INTERSECTION.Length != 0)
+        {
+            writer.WritePropertyName("INTERSECTION");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.INTERSECTION.AsSpan())
+                WriteINTERSECTION(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SILHOUETTE.Length != 0)
+        {
+            writer.WritePropertyName("SILHOUETTE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SILHOUETTE.AsSpan())
+                WriteSILHOUETTE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CHART.Length != 0)
+        {
+            writer.WritePropertyName("CHART");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CHART.AsSpan())
+                WriteCHART(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.LIMIT.Length != 0)
+        {
+            writer.WritePropertyName("LIMIT");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.LIMIT.AsSpan())
+                WriteLIMIT(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BSPLINE_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("BSPLINE_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BSPLINE_CURVE.AsSpan())
+                WriteBSPLINE_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.KNOT_VECTOR.Length != 0)
+        {
+            writer.WritePropertyName("KNOT_VECTOR");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.KNOT_VECTOR.AsSpan())
+                WriteKNOT_VECTOR(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BSPLINE_VERTICES.Length != 0)
+        {
+            writer.WritePropertyName("BSPLINE_VERTICES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BSPLINE_VERTICES.AsSpan())
+                WriteBSPLINE_VERTICES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.OFFSET_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("OFFSET_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.OFFSET_CURVE.AsSpan())
+                WriteOFFSET_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CPC.Length != 0)
+        {
+            writer.WritePropertyName("CPC");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CPC.AsSpan())
+                WriteCPC(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.OBSOLETE_SP_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("OBSOLETE_SP_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.OBSOLETE_SP_CURVE.AsSpan())
+                WriteOBSOLETE_SP_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PLANE.Length != 0)
+        {
+            writer.WritePropertyName("PLANE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PLANE.AsSpan())
+                WritePLANE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CYLINDER.Length != 0)
+        {
+            writer.WritePropertyName("CYLINDER");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CYLINDER.AsSpan())
+                WriteCYLINDER(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CONE.Length != 0)
+        {
+            writer.WritePropertyName("CONE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CONE.AsSpan())
+                WriteCONE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SPHERE.Length != 0)
+        {
+            writer.WritePropertyName("SPHERE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SPHERE.AsSpan())
+                WriteSPHERE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.TORUS.Length != 0)
+        {
+            writer.WritePropertyName("TORUS");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.TORUS.AsSpan())
+                WriteTORUS(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PIPE.Length != 0)
+        {
+            writer.WritePropertyName("PIPE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PIPE.AsSpan())
+                WritePIPE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BLENDED_EDGE.Length != 0)
+        {
+            writer.WritePropertyName("BLENDED_EDGE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BLENDED_EDGE.AsSpan())
+                WriteBLENDED_EDGE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BLENDED_VERTEX.Length != 0)
+        {
+            writer.WritePropertyName("BLENDED_VERTEX");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BLENDED_VERTEX.AsSpan())
+                WriteBLENDED_VERTEX(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BLEND_OVERLAP.Length != 0)
+        {
+            writer.WritePropertyName("BLEND_OVERLAP");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BLEND_OVERLAP.AsSpan())
+                WriteBLEND_OVERLAP(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BLEND_BOUND.Length != 0)
+        {
+            writer.WritePropertyName("BLEND_BOUND");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BLEND_BOUND.AsSpan())
+                WriteBLEND_BOUND(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.OFFSET_SURF.Length != 0)
+        {
+            writer.WritePropertyName("OFFSET_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.OFFSET_SURF.AsSpan())
+                WriteOFFSET_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PARASURF.Length != 0)
+        {
+            writer.WritePropertyName("PARASURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PARASURF.AsSpan())
+                WritePARASURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.OBSOLETE_CPS.Length != 0)
+        {
+            writer.WritePropertyName("OBSOLETE_CPS");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.OBSOLETE_CPS.AsSpan())
+                WriteOBSOLETE_CPS(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SILH_SURF.Length != 0)
+        {
+            writer.WritePropertyName("SILH_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SILH_SURF.AsSpan())
+                WriteSILH_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BSPLINE_SURF.Length != 0)
+        {
+            writer.WritePropertyName("BSPLINE_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BSPLINE_SURF.AsSpan())
+                WriteBSPLINE_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SWEPT_SURF.Length != 0)
+        {
+            writer.WritePropertyName("SWEPT_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SWEPT_SURF.AsSpan())
+                WriteSWEPT_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SPUN_SURF.Length != 0)
+        {
+            writer.WritePropertyName("SPUN_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SPUN_SURF.AsSpan())
+                WriteSPUN_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CPS.Length != 0)
+        {
+            writer.WritePropertyName("CPS");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CPS.AsSpan())
+                WriteCPS(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.LIST.Length != 0)
+        {
+            writer.WritePropertyName("LIST");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.LIST.AsSpan())
+                WriteLIST(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.POINTER_LIS_BLOCK.Length != 0)
+        {
+            writer.WritePropertyName("POINTER_LIS_BLOCK");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.POINTER_LIS_BLOCK.AsSpan())
+                WritePOINTER_LIS_BLOCK(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.ATT_DEF_ID.Length != 0)
+        {
+            writer.WritePropertyName("ATT_DEF_ID");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.ATT_DEF_ID.AsSpan())
+                WriteATT_DEF_ID(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.ATTRIB_DEF.Length != 0)
+        {
+            writer.WritePropertyName("ATTRIB_DEF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.ATTRIB_DEF.AsSpan())
+                WriteATTRIB_DEF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.ATTRIBUTE.Length != 0)
+        {
+            writer.WritePropertyName("ATTRIBUTE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.ATTRIBUTE.AsSpan())
+                WriteATTRIBUTE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.INT_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("INT_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.INT_VALUES.AsSpan())
+                WriteINT_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.REAL_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("REAL_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.REAL_VALUES.AsSpan())
+                WriteREAL_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CHAR_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("CHAR_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CHAR_VALUES.AsSpan())
+                WriteCHAR_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.POINT_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("POINT_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.POINT_VALUES.AsSpan())
+                WritePOINT_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.VECTOR_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("VECTOR_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.VECTOR_VALUES.AsSpan())
+                WriteVECTOR_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.AXIS_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("AXIS_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.AXIS_VALUES.AsSpan())
+                WriteAXIS_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.TAG_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("TAG_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.TAG_VALUES.AsSpan())
+                WriteTAG_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.DIRECTION_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("DIRECTION_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.DIRECTION_VALUES.AsSpan())
+                WriteDIRECTION_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.FEATURE.Length != 0)
+        {
+            writer.WritePropertyName("FEATURE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.FEATURE.AsSpan())
+                WriteFEATURE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.MEMBER_OF_FEATURE.Length != 0)
+        {
+            writer.WritePropertyName("MEMBER_OF_FEATURE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.MEMBER_OF_FEATURE.AsSpan())
+                WriteMEMBER_OF_FEATURE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SHORT_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("SHORT_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SHORT_VALUES.AsSpan())
+                WriteSHORT_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BOX_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("BOX_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BOX_VALUES.AsSpan())
+                WriteBOX_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.UNICODE_VALUES.Length != 0)
+        {
+            writer.WritePropertyName("UNICODE_VALUES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.UNICODE_VALUES.AsSpan())
+                WriteUNICODE_VALUES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.FIELD_NAMES.Length != 0)
+        {
+            writer.WritePropertyName("FIELD_NAMES");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.FIELD_NAMES.AsSpan())
+                WriteFIELD_NAMES(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.TRANSFORM.Length != 0)
+        {
+            writer.WritePropertyName("TRANSFORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.TRANSFORM.AsSpan())
+                WriteTRANSFORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.WORLD.Length != 0)
+        {
+            writer.WritePropertyName("WORLD");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.WORLD.AsSpan())
+                WriteWORLD(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.KEY.Length != 0)
+        {
+            writer.WritePropertyName("KEY");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.KEY.AsSpan())
+                WriteKEY(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BEZIER_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("BEZIER_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BEZIER_CURVE.AsSpan())
+                WriteBEZIER_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.BEZIER_SURF.Length != 0)
+        {
+            writer.WritePropertyName("BEZIER_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.BEZIER_SURF.AsSpan())
+                WriteBEZIER_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SET_ELEMENT_TAG.Length != 0)
+        {
+            writer.WritePropertyName("SET_ELEMENT_TAG");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SET_ELEMENT_TAG.AsSpan())
+                WriteSET_ELEMENT_TAG(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.FACE_SET.Length != 0)
+        {
+            writer.WritePropertyName("FACE_SET");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.FACE_SET.AsSpan())
+                WriteFACE_SET(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.HALFEDGE_SET.Length != 0)
+        {
+            writer.WritePropertyName("HALFEDGE_SET");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.HALFEDGE_SET.AsSpan())
+                WriteHALFEDGE_SET(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PE_SURF.Length != 0)
+        {
+            writer.WritePropertyName("PE_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PE_SURF.AsSpan())
+                WritePE_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.INT_PE_DATA.Length != 0)
+        {
+            writer.WritePropertyName("INT_PE_DATA");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.INT_PE_DATA.AsSpan())
+                WriteINT_PE_DATA(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.EXT_PE_DATA.Length != 0)
+        {
+            writer.WritePropertyName("EXT_PE_DATA");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.EXT_PE_DATA.AsSpan())
+                WriteEXT_PE_DATA(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.B_SURFACE.Length != 0)
+        {
+            writer.WritePropertyName("B_SURFACE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.B_SURFACE.AsSpan())
+                WriteB_SURFACE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SURFACE_DATA.Length != 0)
+        {
+            writer.WritePropertyName("SURFACE_DATA");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SURFACE_DATA.AsSpan())
+                WriteSURFACE_DATA(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.NURBS_SURF.Length != 0)
+        {
+            writer.WritePropertyName("NURBS_SURF");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.NURBS_SURF.AsSpan())
+                WriteNURBS_SURF(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.KNOT_MULT.Length != 0)
+        {
+            writer.WritePropertyName("KNOT_MULT");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.KNOT_MULT.AsSpan())
+                WriteKNOT_MULT(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.KNOT_SET.Length != 0)
+        {
+            writer.WritePropertyName("KNOT_SET");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.KNOT_SET.AsSpan())
+                WriteKNOT_SET(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PE_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("PE_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PE_CURVE.AsSpan())
+                WritePE_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PCURVE.Length != 0)
+        {
+            writer.WritePropertyName("PCURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PCURVE.AsSpan())
+                WritePCURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.TRIMMED_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("TRIMMED_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.TRIMMED_CURVE.AsSpan())
+                WriteTRIMMED_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.B_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("B_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.B_CURVE.AsSpan())
+                WriteB_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CURVE_DATA.Length != 0)
+        {
+            writer.WritePropertyName("CURVE_DATA");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CURVE_DATA.AsSpan())
+                WriteCURVE_DATA(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.NURBS_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("NURBS_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.NURBS_CURVE.AsSpan())
+                WriteNURBS_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SP_CURVE.Length != 0)
+        {
+            writer.WritePropertyName("SP_CURVE");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SP_CURVE.AsSpan())
+                WriteSP_CURVE(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.GEOMETRIC_OWNER.Length != 0)
+        {
+            writer.WritePropertyName("GEOMETRIC_OWNER");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.GEOMETRIC_OWNER.AsSpan())
+                WriteGEOMETRIC_OWNER(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.PLANE_FORM.Length != 0)
+        {
+            writer.WritePropertyName("PLANE_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.PLANE_FORM.AsSpan())
+                WritePLANE_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CYLINDER_FORM.Length != 0)
+        {
+            writer.WritePropertyName("CYLINDER_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CYLINDER_FORM.AsSpan())
+                WriteCYLINDER_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.CONE_FORM.Length != 0)
+        {
+            writer.WritePropertyName("CONE_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.CONE_FORM.AsSpan())
+                WriteCONE_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SPHERE_FORM.Length != 0)
+        {
+            writer.WritePropertyName("SPHERE_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SPHERE_FORM.AsSpan())
+                WriteSPHERE_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.TORUS_FORM.Length != 0)
+        {
+            writer.WritePropertyName("TORUS_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.TORUS_FORM.AsSpan())
+                WriteTORUS_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SWEPT_FORM.Length != 0)
+        {
+            writer.WritePropertyName("SWEPT_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SWEPT_FORM.AsSpan())
+                WriteSWEPT_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SWEPT_UV_FORM.Length != 0)
+        {
+            writer.WritePropertyName("SWEPT_UV_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SWEPT_UV_FORM.AsSpan())
+                WriteSWEPT_UV_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.SPUN_FORM.Length != 0)
+        {
+            writer.WritePropertyName("SPUN_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.SPUN_FORM.AsSpan())
+                WriteSPUN_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.VAR_RADIUS_PIPE_FORM.Length != 0)
+        {
+            writer.WritePropertyName("VAR_RADIUS_PIPE_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.VAR_RADIUS_PIPE_FORM.AsSpan())
+                WriteVAR_RADIUS_PIPE_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.HELIX_SU_FORM.Length != 0)
+        {
+            writer.WritePropertyName("HELIX_SU_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.HELIX_SU_FORM.AsSpan())
+                WriteHELIX_SU_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        if (model.Storage.HELIX_CU_FORM.Length != 0)
+        {
+            writer.WritePropertyName("HELIX_CU_FORM");
+            writer.WriteStartArray();
+            foreach (ref readonly var row in model.Storage.HELIX_CU_FORM.AsSpan())
+                WriteHELIX_CU_FORM(writer, in row, model);
+            writer.WriteEndArray();
+        }
+        writer.WriteEndObject();
+    }
+    private static void WriteNULLP(Utf8JsonWriter writer, ref readonly NULLP row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WriteEndObject();
+    }
+    private static void WriteWORKSPACE(Utf8JsonWriter writer, ref readonly WORKSPACE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("ws");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.ws.Count; i++)
+        {
+        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.current_pmark.Index < 0) { writer.WriteNull("current_pmark"); } else { writer.WriteNumber("current_pmark", row.current_pmark.Index); }
+        if (row.highest_id == XtSchemaField.NullInteger) { writer.WriteNull("highest_id"); } else { writer.WriteNumber("highest_id", row.highest_id); }
+        writer.WriteEndObject();
+    }
+    private static void WritePMARK(Utf8JsonWriter writer, ref readonly PMARK row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.preceding.Index < 0) { writer.WriteNull("preceding"); } else { writer.WriteNumber("preceding", row.preceding.Index); }
+        if (row.first_following.Index < 0) { writer.WriteNull("first_following"); } else { writer.WriteNumber("first_following", row.first_following.Index); }
+        if (row.next_sibling.Index < 0) { writer.WriteNull("next_sibling"); } else { writer.WriteNumber("next_sibling", row.next_sibling.Index); }
+        if (row.prev_sibling.Index < 0) { writer.WriteNull("prev_sibling"); } else { writer.WriteNumber("prev_sibling", row.prev_sibling.Index); }
+        if (row.n_new_nodes == XtSchemaField.NullInteger) { writer.WriteNull("n_new_nodes"); } else { writer.WriteNumber("n_new_nodes", row.n_new_nodes); }
+        if (row.n_del_nodes == XtSchemaField.NullInteger) { writer.WriteNull("n_del_nodes"); } else { writer.WriteNumber("n_del_nodes", row.n_del_nodes); }
+        if (row.n_copy_mod_nodes == XtSchemaField.NullInteger) { writer.WriteNull("n_copy_mod_nodes"); } else { writer.WriteNumber("n_copy_mod_nodes", row.n_copy_mod_nodes); }
+        if (row.delta_key == XtSchemaField.NullInteger) { writer.WriteNull("delta_key"); } else { writer.WriteNumber("delta_key", row.delta_key); }
+        if (row.delta_is_forward == XtSchemaField.NullLogical) { writer.WriteNull("delta_is_forward"); } else { writer.WriteBoolean("delta_is_forward", row.delta_is_forward != 0); }
+        if (row.id == XtSchemaField.NullInteger) { writer.WriteNull("id"); } else { writer.WriteNumber("id", row.id); }
+        writer.WriteEndObject();
+    }
+    private static void WriteASSEMBLY(Utf8JsonWriter writer, ref readonly ASSEMBLY row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.highest_node_id == XtSchemaField.NullInteger) { writer.WriteNull("highest_node_id"); } else { writer.WriteNumber("highest_node_id", row.highest_node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.attribute_chains.Index < 0) { writer.WriteNull("attribute_chains"); } else { writer.WriteNumber("attribute_chains", row.attribute_chains.Index); }
+        if (row.list.Index < 0) { writer.WriteNull("list"); } else { writer.WriteNumber("list", row.list.Index); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.curve < 0) { writer.WriteNull("curve"); } else { writer.WriteNumber("curve", row.curve); }
+        if (row.point.Index < 0) { writer.WriteNull("point"); } else { writer.WriteNumber("point", row.point.Index); }
+        if (row.key.Index < 0) { writer.WriteNull("key"); } else { writer.WriteNumber("key", row.key.Index); }
+        if (double.IsNaN(row.res_size) || double.IsInfinity(row.res_size)) { writer.WriteNull("res_size"); } else { writer.WriteNumber("res_size", row.res_size); }
+        if (double.IsNaN(row.res_linear) || double.IsInfinity(row.res_linear)) { writer.WriteNull("res_linear"); } else { writer.WriteNumber("res_linear", row.res_linear); }
+        if (row.ref_instance.Index < 0) { writer.WriteNull("ref_instance"); } else { writer.WriteNumber("ref_instance", row.ref_instance.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.state == XtSchemaField.NullUnsigned) { writer.WriteNull("state"); } else { writer.WriteNumber("state", row.state); writer.WritePropertyName("state_name"); { var enumName = EnumSCH_part_state_Name((long)(row.state)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.owner.Index < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner.Index); }
+        if (row.type == XtSchemaField.NullUnsigned) { writer.WriteNull("type"); } else { writer.WriteNumber("type", row.type); }
+        if (row.sub_instance.Index < 0) { writer.WriteNull("sub_instance"); } else { writer.WriteNumber("sub_instance", row.sub_instance.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteINSTANCE(Utf8JsonWriter writer, ref readonly INSTANCE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.type == XtSchemaField.NullUnsigned) { writer.WriteNull("type"); } else { writer.WriteNumber("type", row.type); writer.WritePropertyName("type_name"); { var enumName = EnumSCH_instance_type_Name((long)(row.type)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.part < 0) { writer.WriteNull("part"); } else { writer.WriteNumber("part", row.part); }
+        if (row.transform.Index < 0) { writer.WriteNull("transform"); } else { writer.WriteNumber("transform", row.transform.Index); }
+        if (row.assembly.Index < 0) { writer.WriteNull("assembly"); } else { writer.WriteNumber("assembly", row.assembly.Index); }
+        if (row.next_in_part.Index < 0) { writer.WriteNull("next_in_part"); } else { writer.WriteNumber("next_in_part", row.next_in_part.Index); }
+        if (row.prev_in_part.Index < 0) { writer.WriteNull("prev_in_part"); } else { writer.WriteNumber("prev_in_part", row.prev_in_part.Index); }
+        if (row.next_of_part.Index < 0) { writer.WriteNull("next_of_part"); } else { writer.WriteNumber("next_of_part", row.next_of_part.Index); }
+        if (row.prev_of_part.Index < 0) { writer.WriteNull("prev_of_part"); } else { writer.WriteNumber("prev_of_part", row.prev_of_part.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteBODY(Utf8JsonWriter writer, ref readonly BODY row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.highest_node_id == XtSchemaField.NullInteger) { writer.WriteNull("highest_node_id"); } else { writer.WriteNumber("highest_node_id", row.highest_node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.attribute_chains.Index < 0) { writer.WriteNull("attribute_chains"); } else { writer.WriteNumber("attribute_chains", row.attribute_chains.Index); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.curve < 0) { writer.WriteNull("curve"); } else { writer.WriteNumber("curve", row.curve); }
+        if (row.point.Index < 0) { writer.WriteNull("point"); } else { writer.WriteNumber("point", row.point.Index); }
+        if (row.key.Index < 0) { writer.WriteNull("key"); } else { writer.WriteNumber("key", row.key.Index); }
+        if (double.IsNaN(row.res_size) || double.IsInfinity(row.res_size)) { writer.WriteNull("res_size"); } else { writer.WriteNumber("res_size", row.res_size); }
+        if (double.IsNaN(row.res_linear) || double.IsInfinity(row.res_linear)) { writer.WriteNull("res_linear"); } else { writer.WriteNumber("res_linear", row.res_linear); }
+        if (row.ref_instance.Index < 0) { writer.WriteNull("ref_instance"); } else { writer.WriteNumber("ref_instance", row.ref_instance.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.state == XtSchemaField.NullUnsigned) { writer.WriteNull("state"); } else { writer.WriteNumber("state", row.state); writer.WritePropertyName("state_name"); { var enumName = EnumSCH_part_state_Name((long)(row.state)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.owner.Index < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner.Index); }
+        if (row.body_type == XtSchemaField.NullUnsigned) { writer.WriteNull("body_type"); } else { writer.WriteNumber("body_type", row.body_type); writer.WritePropertyName("body_type_name"); { var enumName = EnumSCH_body_type_Name((long)(row.body_type)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.nom_geom_state == XtSchemaField.NullUnsigned) { writer.WriteNull("nom_geom_state"); } else { writer.WriteNumber("nom_geom_state", row.nom_geom_state); writer.WritePropertyName("nom_geom_state_name"); { var enumName = EnumSCH_nom_geom_state_t_Name((long)(row.nom_geom_state)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.shell.Index < 0) { writer.WriteNull("shell"); } else { writer.WriteNumber("shell", row.shell.Index); }
+        if (row.boundary_surface < 0) { writer.WriteNull("boundary_surface"); } else { writer.WriteNumber("boundary_surface", row.boundary_surface); }
+        if (row.boundary_curve < 0) { writer.WriteNull("boundary_curve"); } else { writer.WriteNumber("boundary_curve", row.boundary_curve); }
+        if (row.boundary_point.Index < 0) { writer.WriteNull("boundary_point"); } else { writer.WriteNumber("boundary_point", row.boundary_point.Index); }
+        if (row.region.Index < 0) { writer.WriteNull("region"); } else { writer.WriteNumber("region", row.region.Index); }
+        if (row.edge.Index < 0) { writer.WriteNull("edge"); } else { writer.WriteNumber("edge", row.edge.Index); }
+        if (row.vertex.Index < 0) { writer.WriteNull("vertex"); } else { writer.WriteNumber("vertex", row.vertex.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSHELL(Utf8JsonWriter writer, ref readonly SHELL row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.body.Index < 0) { writer.WriteNull("body"); } else { writer.WriteNumber("body", row.body.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.face.Index < 0) { writer.WriteNull("face"); } else { writer.WriteNumber("face", row.face.Index); }
+        if (row.edge.Index < 0) { writer.WriteNull("edge"); } else { writer.WriteNumber("edge", row.edge.Index); }
+        if (row.vertex.Index < 0) { writer.WriteNull("vertex"); } else { writer.WriteNumber("vertex", row.vertex.Index); }
+        if (row.region.Index < 0) { writer.WriteNull("region"); } else { writer.WriteNumber("region", row.region.Index); }
+        if (row.front_face.Index < 0) { writer.WriteNull("front_face"); } else { writer.WriteNumber("front_face", row.front_face.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteFACE(Utf8JsonWriter writer, ref readonly FACE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (double.IsNaN(row.tolerance) || double.IsInfinity(row.tolerance)) { writer.WriteNull("tolerance"); } else { writer.WriteNumber("tolerance", row.tolerance); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.loop.Index < 0) { writer.WriteNull("loop"); } else { writer.WriteNumber("loop", row.loop.Index); }
+        if (row.shell.Index < 0) { writer.WriteNull("shell"); } else { writer.WriteNumber("shell", row.shell.Index); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.next_on_surface.Index < 0) { writer.WriteNull("next_on_surface"); } else { writer.WriteNumber("next_on_surface", row.next_on_surface.Index); }
+        if (row.previous_on_surface.Index < 0) { writer.WriteNull("previous_on_surface"); } else { writer.WriteNumber("previous_on_surface", row.previous_on_surface.Index); }
+        if (row.next_front.Index < 0) { writer.WriteNull("next_front"); } else { writer.WriteNumber("next_front", row.next_front.Index); }
+        if (row.previous_front.Index < 0) { writer.WriteNull("previous_front"); } else { writer.WriteNumber("previous_front", row.previous_front.Index); }
+        if (row.front_shell.Index < 0) { writer.WriteNull("front_shell"); } else { writer.WriteNumber("front_shell", row.front_shell.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteLOOP(Utf8JsonWriter writer, ref readonly LOOP row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.halfedge.Index < 0) { writer.WriteNull("halfedge"); } else { writer.WriteNumber("halfedge", row.halfedge.Index); }
+        if (row.face.Index < 0) { writer.WriteNull("face"); } else { writer.WriteNumber("face", row.face.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteEDGE(Utf8JsonWriter writer, ref readonly EDGE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (double.IsNaN(row.tolerance) || double.IsInfinity(row.tolerance)) { writer.WriteNull("tolerance"); } else { writer.WriteNumber("tolerance", row.tolerance); }
+        if (row.halfedge.Index < 0) { writer.WriteNull("halfedge"); } else { writer.WriteNumber("halfedge", row.halfedge.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.curve < 0) { writer.WriteNull("curve"); } else { writer.WriteNumber("curve", row.curve); }
+        if (row.next_on_curve.Index < 0) { writer.WriteNull("next_on_curve"); } else { writer.WriteNumber("next_on_curve", row.next_on_curve.Index); }
+        if (row.previous_on_curve.Index < 0) { writer.WriteNull("previous_on_curve"); } else { writer.WriteNumber("previous_on_curve", row.previous_on_curve.Index); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        writer.WriteEndObject();
+    }
+    private static void WriteHALFEDGE(Utf8JsonWriter writer, ref readonly HALFEDGE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.loop.Index < 0) { writer.WriteNull("loop"); } else { writer.WriteNumber("loop", row.loop.Index); }
+        if (row.forward.Index < 0) { writer.WriteNull("forward"); } else { writer.WriteNumber("forward", row.forward.Index); }
+        if (row.backward.Index < 0) { writer.WriteNull("backward"); } else { writer.WriteNumber("backward", row.backward.Index); }
+        if (row.vertex.Index < 0) { writer.WriteNull("vertex"); } else { writer.WriteNumber("vertex", row.vertex.Index); }
+        if (row.other.Index < 0) { writer.WriteNull("other"); } else { writer.WriteNumber("other", row.other.Index); }
+        if (row.edge.Index < 0) { writer.WriteNull("edge"); } else { writer.WriteNumber("edge", row.edge.Index); }
+        if (row.curve < 0) { writer.WriteNull("curve"); } else { writer.WriteNumber("curve", row.curve); }
+        if (row.next_at_vx.Index < 0) { writer.WriteNull("next_at_vx"); } else { writer.WriteNumber("next_at_vx", row.next_at_vx.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WriteEndObject();
+    }
+    private static void WriteVERTEX(Utf8JsonWriter writer, ref readonly VERTEX row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.halfedge.Index < 0) { writer.WriteNull("halfedge"); } else { writer.WriteNumber("halfedge", row.halfedge.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.point.Index < 0) { writer.WriteNull("point"); } else { writer.WriteNumber("point", row.point.Index); }
+        if (double.IsNaN(row.tolerance) || double.IsInfinity(row.tolerance)) { writer.WriteNull("tolerance"); } else { writer.WriteNumber("tolerance", row.tolerance); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        writer.WriteEndObject();
+    }
+    private static void WriteREGION(Utf8JsonWriter writer, ref readonly REGION row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.body.Index < 0) { writer.WriteNull("body"); } else { writer.WriteNumber("body", row.body.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.shell.Index < 0) { writer.WriteNull("shell"); } else { writer.WriteNumber("shell", row.shell.Index); }
+        if (row.type == XtSchemaField.NullCharacter) { writer.WriteNull("type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.type; writer.WriteString("type", ch); writer.WritePropertyName("type_name"); { var enumName = EnumREGION_type_Name(row.type); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WriteEndObject();
+    }
+    private static void WritePOINT(Utf8JsonWriter writer, ref readonly POINT row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteLINE(Utf8JsonWriter writer, ref readonly LINE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.direction.X)) { writer.WriteNull("direction"); } else { writer.WriteStartObject("direction"); writer.WriteNumber("x", row.direction.X); writer.WriteNumber("y", row.direction.Y); writer.WriteNumber("z", row.direction.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCIRCLE(Utf8JsonWriter writer, ref readonly CIRCLE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.centre.X)) { writer.WriteNull("centre"); } else { writer.WriteStartObject("centre"); writer.WriteNumber("x", row.centre.X); writer.WriteNumber("y", row.centre.Y); writer.WriteNumber("z", row.centre.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.normal.X)) { writer.WriteNull("normal"); } else { writer.WriteStartObject("normal"); writer.WriteNumber("x", row.normal.X); writer.WriteNumber("y", row.normal.Y); writer.WriteNumber("z", row.normal.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        writer.WriteEndObject();
+    }
+    private static void WriteELLIPSE(Utf8JsonWriter writer, ref readonly ELLIPSE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.centre.X)) { writer.WriteNull("centre"); } else { writer.WriteStartObject("centre"); writer.WriteNumber("x", row.centre.X); writer.WriteNumber("y", row.centre.Y); writer.WriteNumber("z", row.centre.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.normal.X)) { writer.WriteNull("normal"); } else { writer.WriteStartObject("normal"); writer.WriteNumber("x", row.normal.X); writer.WriteNumber("y", row.normal.Y); writer.WriteNumber("z", row.normal.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.major_radius) || double.IsInfinity(row.major_radius)) { writer.WriteNull("major_radius"); } else { writer.WriteNumber("major_radius", row.major_radius); }
+        if (double.IsNaN(row.minor_radius) || double.IsInfinity(row.minor_radius)) { writer.WriteNull("minor_radius"); } else { writer.WriteNumber("minor_radius", row.minor_radius); }
+        writer.WriteEndObject();
+    }
+    private static void WritePARABOLA(Utf8JsonWriter writer, ref readonly PARABOLA row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.origin.X)) { writer.WriteNull("origin"); } else { writer.WriteStartObject("origin"); writer.WriteNumber("x", row.origin.X); writer.WriteNumber("y", row.origin.Y); writer.WriteNumber("z", row.origin.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.normal.X)) { writer.WriteNull("normal"); } else { writer.WriteStartObject("normal"); writer.WriteNumber("x", row.normal.X); writer.WriteNumber("y", row.normal.Y); writer.WriteNumber("z", row.normal.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.focal_length) || double.IsInfinity(row.focal_length)) { writer.WriteNull("focal_length"); } else { writer.WriteNumber("focal_length", row.focal_length); }
+        writer.WriteEndObject();
+    }
+    private static void WriteHYPERBOLA(Utf8JsonWriter writer, ref readonly HYPERBOLA row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.origin.X)) { writer.WriteNull("origin"); } else { writer.WriteStartObject("origin"); writer.WriteNumber("x", row.origin.X); writer.WriteNumber("y", row.origin.Y); writer.WriteNumber("z", row.origin.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.normal.X)) { writer.WriteNull("normal"); } else { writer.WriteStartObject("normal"); writer.WriteNumber("x", row.normal.X); writer.WriteNumber("y", row.normal.Y); writer.WriteNumber("z", row.normal.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.transverse_radius) || double.IsInfinity(row.transverse_radius)) { writer.WriteNull("transverse_radius"); } else { writer.WriteNumber("transverse_radius", row.transverse_radius); }
+        if (double.IsNaN(row.conjugate_radius) || double.IsInfinity(row.conjugate_radius)) { writer.WriteNull("conjugate_radius"); } else { writer.WriteNumber("conjugate_radius", row.conjugate_radius); }
+        writer.WriteEndObject();
+    }
+    private static void WritePARACURVE(Utf8JsonWriter writer, ref readonly PARACURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.seg == XtSchemaField.NullInteger) { writer.WriteNull("seg"); } else { writer.WriteNumber("seg", row.seg); }
+        if (row.cpc.Index < 0) { writer.WriteNull("cpc"); } else { writer.WriteNumber("cpc", row.cpc.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteOBSOLETE_CPC(Utf8JsonWriter writer, ref readonly OBSOLETE_CPC row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.vertex_dimension == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dimension"); } else { writer.WriteNumber("vertex_dimension", row.vertex_dimension); }
+        if (row.segment_count == XtSchemaField.NullInteger) { writer.WriteNull("segment_count"); } else { writer.WriteNumber("segment_count", row.segment_count); }
+        if (row.order == XtSchemaField.NullInteger) { writer.WriteNull("order"); } else { writer.WriteNumber("order", row.order); }
+        writer.WritePropertyName("segment");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.segment.Count; i++)
+        {
+        if (model.Storage.OBSOLETE_CPC__segment[row.segment.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.OBSOLETE_CPC__segment[row.segment.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WritePATCH_BOUND(Utf8JsonWriter writer, ref readonly PATCH_BOUND row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.boundary == XtSchemaField.NullCharacter) { writer.WriteNull("boundary"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.boundary; writer.WriteString("boundary", ch); }
+        if (row.lh_patch.Index < 0) { writer.WriteNull("lh_patch"); } else { writer.WriteNumber("lh_patch", row.lh_patch.Index); }
+        if (row.rh_patch.Index < 0) { writer.WriteNull("rh_patch"); } else { writer.WriteNumber("rh_patch", row.rh_patch.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteINTERSECTION(Utf8JsonWriter writer, ref readonly INTERSECTION row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WritePropertyName("surface");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (row.surface[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.surface[i]); }
+        }
+        writer.WriteEndArray();
+        if (row.chart.Index < 0) { writer.WriteNull("chart"); } else { writer.WriteNumber("chart", row.chart.Index); }
+        if (row.start.Index < 0) { writer.WriteNull("start"); } else { writer.WriteNumber("start", row.start.Index); }
+        if (row.end.Index < 0) { writer.WriteNull("end"); } else { writer.WriteNumber("end", row.end.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSILHOUETTE(Utf8JsonWriter writer, ref readonly SILHOUETTE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.analytic_root == XtSchemaField.NullCharacter) { writer.WriteNull("analytic_root"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.analytic_root; writer.WriteString("analytic_root", ch); }
+        if (row.from_infinity == XtSchemaField.NullLogical) { writer.WriteNull("from_infinity"); } else { writer.WriteBoolean("from_infinity", row.from_infinity != 0); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.start.Index < 0) { writer.WriteNull("start"); } else { writer.WriteNumber("start", row.start.Index); }
+        if (row.end.Index < 0) { writer.WriteNull("end"); } else { writer.WriteNumber("end", row.end.Index); }
+        if (double.IsNaN(row.eye.X)) { writer.WriteNull("eye"); } else { writer.WriteStartObject("eye"); writer.WriteNumber("x", row.eye.X); writer.WriteNumber("y", row.eye.Y); writer.WriteNumber("z", row.eye.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCHART(Utf8JsonWriter writer, ref readonly CHART row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.base_parameter) || double.IsInfinity(row.base_parameter)) { writer.WriteNull("base_parameter"); } else { writer.WriteNumber("base_parameter", row.base_parameter); }
+        if (double.IsNaN(row.base_scale) || double.IsInfinity(row.base_scale)) { writer.WriteNull("base_scale"); } else { writer.WriteNumber("base_scale", row.base_scale); }
+        if (row.chart_count == XtSchemaField.NullInteger) { writer.WriteNull("chart_count"); } else { writer.WriteNumber("chart_count", row.chart_count); }
+        if (double.IsNaN(row.chordal_error) || double.IsInfinity(row.chordal_error)) { writer.WriteNull("chordal_error"); } else { writer.WriteNumber("chordal_error", row.chordal_error); }
+        if (double.IsNaN(row.angular_error) || double.IsInfinity(row.angular_error)) { writer.WriteNull("angular_error"); } else { writer.WriteNumber("angular_error", row.angular_error); }
+        writer.WritePropertyName("parameter_error");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (double.IsNaN(row.parameter_error[i]) || double.IsInfinity(row.parameter_error[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.parameter_error[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("hvec");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.hvec.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.CHART__hvec[row.hvec.Offset + i].X)) { writer.WriteNullValue(); } else { writer.WriteStartObject(); writer.WriteNumber("x", model.Storage.CHART__hvec[row.hvec.Offset + i].X); writer.WriteNumber("y", model.Storage.CHART__hvec[row.hvec.Offset + i].Y); writer.WriteNumber("z", model.Storage.CHART__hvec[row.hvec.Offset + i].Z); writer.WriteEndObject(); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteLIMIT(Utf8JsonWriter writer, ref readonly LIMIT row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.type == XtSchemaField.NullCharacter) { writer.WriteNull("type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.type; writer.WriteString("type", ch); }
+        writer.WritePropertyName("hvec");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.hvec.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.LIMIT__hvec[row.hvec.Offset + i].X)) { writer.WriteNullValue(); } else { writer.WriteStartObject(); writer.WriteNumber("x", model.Storage.LIMIT__hvec[row.hvec.Offset + i].X); writer.WriteNumber("y", model.Storage.LIMIT__hvec[row.hvec.Offset + i].Y); writer.WriteNumber("z", model.Storage.LIMIT__hvec[row.hvec.Offset + i].Z); writer.WriteEndObject(); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteBSPLINE_CURVE(Utf8JsonWriter writer, ref readonly BSPLINE_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.knot_vector.Index < 0) { writer.WriteNull("knot_vector"); } else { writer.WriteNumber("knot_vector", row.knot_vector.Index); }
+        if (row.vertex_dimension == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dimension"); } else { writer.WriteNumber("vertex_dimension", row.vertex_dimension); }
+        if (row.vertex_count == XtSchemaField.NullInteger) { writer.WriteNull("vertex_count"); } else { writer.WriteNumber("vertex_count", row.vertex_count); }
+        if (row.order == XtSchemaField.NullInteger) { writer.WriteNull("order"); } else { writer.WriteNumber("order", row.order); }
+        if (row.bspline_vertices.Index < 0) { writer.WriteNull("bspline_vertices"); } else { writer.WriteNumber("bspline_vertices", row.bspline_vertices.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteKNOT_VECTOR(Utf8JsonWriter writer, ref readonly KNOT_VECTOR row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.periodic == XtSchemaField.NullLogical) { writer.WriteNull("periodic"); } else { writer.WriteBoolean("periodic", row.periodic != 0); }
+        if (row.knot_count == XtSchemaField.NullInteger) { writer.WriteNull("knot_count"); } else { writer.WriteNumber("knot_count", row.knot_count); }
+        writer.WritePropertyName("knots");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.knots.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.KNOT_VECTOR__knots[row.knots.Offset + i]) || double.IsInfinity(model.Storage.KNOT_VECTOR__knots[row.knots.Offset + i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.KNOT_VECTOR__knots[row.knots.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteBSPLINE_VERTICES(Utf8JsonWriter writer, ref readonly BSPLINE_VERTICES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("vertices");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.vertices.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.BSPLINE_VERTICES__vertices[row.vertices.Offset + i]) || double.IsInfinity(model.Storage.BSPLINE_VERTICES__vertices[row.vertices.Offset + i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.BSPLINE_VERTICES__vertices[row.vertices.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteOFFSET_CURVE(Utf8JsonWriter writer, ref readonly OFFSET_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.curve < 0) { writer.WriteNull("curve"); } else { writer.WriteNumber("curve", row.curve); }
+        if (double.IsNaN(row.offset) || double.IsInfinity(row.offset)) { writer.WriteNull("offset"); } else { writer.WriteNumber("offset", row.offset); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCPC(Utf8JsonWriter writer, ref readonly CPC row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.bezier.Index < 0) { writer.WriteNull("bezier"); } else { writer.WriteNumber("bezier", row.bezier.Index); }
+        if (row.bspline.Index < 0) { writer.WriteNull("bspline"); } else { writer.WriteNumber("bspline", row.bspline.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteOBSOLETE_SP_CURVE(Utf8JsonWriter writer, ref readonly OBSOLETE_SP_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.const_param == XtSchemaField.NullLogical) { writer.WriteNull("const_param"); } else { writer.WriteBoolean("const_param", row.const_param != 0); }
+        if (row.segment_count == XtSchemaField.NullInteger) { writer.WriteNull("segment_count"); } else { writer.WriteNumber("segment_count", row.segment_count); }
+        if (row.order == XtSchemaField.NullInteger) { writer.WriteNull("order"); } else { writer.WriteNumber("order", row.order); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        writer.WritePropertyName("bezier_vertices");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.bezier_vertices.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.OBSOLETE_SP_CURVE__bezier_vertices[row.bezier_vertices.Offset + i]) || double.IsInfinity(model.Storage.OBSOLETE_SP_CURVE__bezier_vertices[row.bezier_vertices.Offset + i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.OBSOLETE_SP_CURVE__bezier_vertices[row.bezier_vertices.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WritePLANE(Utf8JsonWriter writer, ref readonly PLANE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.normal.X)) { writer.WriteNull("normal"); } else { writer.WriteStartObject("normal"); writer.WriteNumber("x", row.normal.X); writer.WriteNumber("y", row.normal.Y); writer.WriteNumber("z", row.normal.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCYLINDER(Utf8JsonWriter writer, ref readonly CYLINDER row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCONE(Utf8JsonWriter writer, ref readonly CONE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        if (double.IsNaN(row.sin_half_angle) || double.IsInfinity(row.sin_half_angle)) { writer.WriteNull("sin_half_angle"); } else { writer.WriteNumber("sin_half_angle", row.sin_half_angle); }
+        if (double.IsNaN(row.cos_half_angle) || double.IsInfinity(row.cos_half_angle)) { writer.WriteNull("cos_half_angle"); } else { writer.WriteNumber("cos_half_angle", row.cos_half_angle); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSPHERE(Utf8JsonWriter writer, ref readonly SPHERE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.centre.X)) { writer.WriteNull("centre"); } else { writer.WriteStartObject("centre"); writer.WriteNumber("x", row.centre.X); writer.WriteNumber("y", row.centre.Y); writer.WriteNumber("z", row.centre.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteTORUS(Utf8JsonWriter writer, ref readonly TORUS row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (double.IsNaN(row.centre.X)) { writer.WriteNull("centre"); } else { writer.WriteStartObject("centre"); writer.WriteNumber("x", row.centre.X); writer.WriteNumber("y", row.centre.Y); writer.WriteNumber("z", row.centre.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.major_radius) || double.IsInfinity(row.major_radius)) { writer.WriteNull("major_radius"); } else { writer.WriteNumber("major_radius", row.major_radius); }
+        if (double.IsNaN(row.minor_radius) || double.IsInfinity(row.minor_radius)) { writer.WriteNull("minor_radius"); } else { writer.WriteNumber("minor_radius", row.minor_radius); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WritePIPE(Utf8JsonWriter writer, ref readonly PIPE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.spine < 0) { writer.WriteNull("spine"); } else { writer.WriteNumber("spine", row.spine); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        writer.WriteEndObject();
+    }
+    private static void WriteBLENDED_EDGE(Utf8JsonWriter writer, ref readonly BLENDED_EDGE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.blend_type == XtSchemaField.NullCharacter) { writer.WriteNull("blend_type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.blend_type; writer.WriteString("blend_type", ch); }
+        writer.WritePropertyName("surface");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (row.surface[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.surface[i]); }
+        }
+        writer.WriteEndArray();
+        if (row.spine < 0) { writer.WriteNull("spine"); } else { writer.WriteNumber("spine", row.spine); }
+        writer.WritePropertyName("range");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (double.IsNaN(row.range[i]) || double.IsInfinity(row.range[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.range[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("thumb_weight");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (double.IsNaN(row.thumb_weight[i]) || double.IsInfinity(row.thumb_weight[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.thumb_weight[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("boundary");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (row.boundary[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.boundary[i]); }
+        }
+        writer.WriteEndArray();
+        if (row.start.Index < 0) { writer.WriteNull("start"); } else { writer.WriteNumber("start", row.start.Index); }
+        if (row.end.Index < 0) { writer.WriteNull("end"); } else { writer.WriteNumber("end", row.end.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteBLENDED_VERTEX(Utf8JsonWriter writer, ref readonly BLENDED_VERTEX row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.blend_type == XtSchemaField.NullCharacter) { writer.WriteNull("blend_type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.blend_type; writer.WriteString("blend_type", ch); }
+        writer.WritePropertyName("surface");
+        writer.WriteStartArray();
+        for (var i = 0; i < 3; i++)
+        {
+        if (row.surface[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.surface[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("sub_surface");
+        writer.WriteStartArray();
+        for (var i = 0; i < 3; i++)
+        {
+        if (row.sub_surface[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.sub_surface[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("boundary");
+        writer.WriteStartArray();
+        for (var i = 0; i < 3; i++)
+        {
+        if (row.boundary[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.boundary[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("range");
+        writer.WriteStartArray();
+        for (var i = 0; i < 3; i++)
+        {
+        if (double.IsNaN(row.range[i]) || double.IsInfinity(row.range[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.range[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("thumb_weight");
+        writer.WriteStartArray();
+        for (var i = 0; i < 3; i++)
+        {
+        if (double.IsNaN(row.thumb_weight[i]) || double.IsInfinity(row.thumb_weight[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.thumb_weight[i]); }
+        }
+        writer.WriteEndArray();
+        if (double.IsNaN(row.centre.X)) { writer.WriteNull("centre"); } else { writer.WriteStartObject("centre"); writer.WriteNumber("x", row.centre.X); writer.WriteNumber("y", row.centre.Y); writer.WriteNumber("z", row.centre.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteBLEND_OVERLAP(Utf8JsonWriter writer, ref readonly BLEND_OVERLAP row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WritePropertyName("surface");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (row.surface[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.surface[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("sub_surface");
+        writer.WriteStartArray();
+        for (var i = 0; i < 4; i++)
+        {
+        if (row.sub_surface[i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.sub_surface[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("range");
+        writer.WriteStartArray();
+        for (var i = 0; i < 4; i++)
+        {
+        if (double.IsNaN(row.range[i]) || double.IsInfinity(row.range[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.range[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("thumb_weight");
+        writer.WriteStartArray();
+        for (var i = 0; i < 4; i++)
+        {
+        if (double.IsNaN(row.thumb_weight[i]) || double.IsInfinity(row.thumb_weight[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.thumb_weight[i]); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("blend_type");
+        writer.WriteStartArray();
+        for (var i = 0; i < 2; i++)
+        {
+        if (row.blend_type[i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.blend_type[i]; writer.WriteStringValue(ch); }
+        }
+        writer.WriteEndArray();
+        if (row.overlap_type == XtSchemaField.NullCharacter) { writer.WriteNull("overlap_type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.overlap_type; writer.WriteString("overlap_type", ch); }
+        if (row.swap_u_v == XtSchemaField.NullLogical) { writer.WriteNull("swap_u_v"); } else { writer.WriteBoolean("swap_u_v", row.swap_u_v != 0); }
+        writer.WriteEndObject();
+    }
+    private static void WriteBLEND_BOUND(Utf8JsonWriter writer, ref readonly BLEND_BOUND row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.boundary == XtSchemaField.NullInteger) { writer.WriteNull("boundary"); } else { writer.WriteNumber("boundary", row.boundary); }
+        if (row.blend < 0) { writer.WriteNull("blend"); } else { writer.WriteNumber("blend", row.blend); }
+        writer.WriteEndObject();
+    }
+    private static void WriteOFFSET_SURF(Utf8JsonWriter writer, ref readonly OFFSET_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.check == XtSchemaField.NullCharacter) { writer.WriteNull("check"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.check; writer.WriteString("check", ch); }
+        if (row.true_offset == XtSchemaField.NullLogical) { writer.WriteNull("true_offset"); } else { writer.WriteBoolean("true_offset", row.true_offset != 0); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (double.IsNaN(row.offset) || double.IsInfinity(row.offset)) { writer.WriteNull("offset"); } else { writer.WriteNumber("offset", row.offset); }
+        if (double.IsNaN(row.scale) || double.IsInfinity(row.scale)) { writer.WriteNull("scale"); } else { writer.WriteNumber("scale", row.scale); }
+        writer.WriteEndObject();
+    }
+    private static void WritePARASURF(Utf8JsonWriter writer, ref readonly PARASURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.col == XtSchemaField.NullInteger) { writer.WriteNull("col"); } else { writer.WriteNumber("col", row.col); }
+        if (row.row == XtSchemaField.NullInteger) { writer.WriteNull("row"); } else { writer.WriteNumber("row", row.row); }
+        if (row.cps.Index < 0) { writer.WriteNull("cps"); } else { writer.WriteNumber("cps", row.cps.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteOBSOLETE_CPS(Utf8JsonWriter writer, ref readonly OBSOLETE_CPS row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.vertex_dimension == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dimension"); } else { writer.WriteNumber("vertex_dimension", row.vertex_dimension); }
+        if (row.col_count == XtSchemaField.NullInteger) { writer.WriteNull("col_count"); } else { writer.WriteNumber("col_count", row.col_count); }
+        if (row.row_count == XtSchemaField.NullInteger) { writer.WriteNull("row_count"); } else { writer.WriteNumber("row_count", row.row_count); }
+        if (row.u_order == XtSchemaField.NullInteger) { writer.WriteNull("u_order"); } else { writer.WriteNumber("u_order", row.u_order); }
+        if (row.v_order == XtSchemaField.NullInteger) { writer.WriteNull("v_order"); } else { writer.WriteNumber("v_order", row.v_order); }
+        writer.WritePropertyName("patch");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.patch.Count; i++)
+        {
+        if (model.Storage.OBSOLETE_CPS__patch[row.patch.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.OBSOLETE_CPS__patch[row.patch.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteSILH_SURF(Utf8JsonWriter writer, ref readonly SILH_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.from_infinity == XtSchemaField.NullLogical) { writer.WriteNull("from_infinity"); } else { writer.WriteBoolean("from_infinity", row.from_infinity != 0); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (double.IsNaN(row.eye.X)) { writer.WriteNull("eye"); } else { writer.WriteStartObject("eye"); writer.WriteNumber("x", row.eye.X); writer.WriteNumber("y", row.eye.Y); writer.WriteNumber("z", row.eye.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteBSPLINE_SURF(Utf8JsonWriter writer, ref readonly BSPLINE_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.row_knots.Index < 0) { writer.WriteNull("row_knots"); } else { writer.WriteNumber("row_knots", row.row_knots.Index); }
+        if (row.col_knots.Index < 0) { writer.WriteNull("col_knots"); } else { writer.WriteNumber("col_knots", row.col_knots.Index); }
+        if (row.vertex_dimension == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dimension"); } else { writer.WriteNumber("vertex_dimension", row.vertex_dimension); }
+        if (row.col_count == XtSchemaField.NullInteger) { writer.WriteNull("col_count"); } else { writer.WriteNumber("col_count", row.col_count); }
+        if (row.row_count == XtSchemaField.NullInteger) { writer.WriteNull("row_count"); } else { writer.WriteNumber("row_count", row.row_count); }
+        if (row.u_order == XtSchemaField.NullInteger) { writer.WriteNull("u_order"); } else { writer.WriteNumber("u_order", row.u_order); }
+        if (row.v_order == XtSchemaField.NullInteger) { writer.WriteNull("v_order"); } else { writer.WriteNumber("v_order", row.v_order); }
+        if (row.bspline_vertices.Index < 0) { writer.WriteNull("bspline_vertices"); } else { writer.WriteNumber("bspline_vertices", row.bspline_vertices.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSWEPT_SURF(Utf8JsonWriter writer, ref readonly SWEPT_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.section < 0) { writer.WriteNull("section"); } else { writer.WriteNumber("section", row.section); }
+        if (double.IsNaN(row.sweep.X)) { writer.WriteNull("sweep"); } else { writer.WriteStartObject("sweep"); writer.WriteNumber("x", row.sweep.X); writer.WriteNumber("y", row.sweep.Y); writer.WriteNumber("z", row.sweep.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.scale) || double.IsInfinity(row.scale)) { writer.WriteNull("scale"); } else { writer.WriteNumber("scale", row.scale); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSPUN_SURF(Utf8JsonWriter writer, ref readonly SPUN_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.profile < 0) { writer.WriteNull("profile"); } else { writer.WriteNumber("profile", row.profile); }
+        if (double.IsNaN(row.@base.X)) { writer.WriteNull("base"); } else { writer.WriteStartObject("base"); writer.WriteNumber("x", row.@base.X); writer.WriteNumber("y", row.@base.Y); writer.WriteNumber("z", row.@base.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.start.X)) { writer.WriteNull("start"); } else { writer.WriteStartObject("start"); writer.WriteNumber("x", row.start.X); writer.WriteNumber("y", row.start.Y); writer.WriteNumber("z", row.start.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.end.X)) { writer.WriteNull("end"); } else { writer.WriteStartObject("end"); writer.WriteNumber("x", row.end.X); writer.WriteNumber("y", row.end.Y); writer.WriteNumber("z", row.end.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.start_param) || double.IsInfinity(row.start_param)) { writer.WriteNull("start_param"); } else { writer.WriteNumber("start_param", row.start_param); }
+        if (double.IsNaN(row.end_param) || double.IsInfinity(row.end_param)) { writer.WriteNull("end_param"); } else { writer.WriteNumber("end_param", row.end_param); }
+        if (double.IsNaN(row.x_axis.X)) { writer.WriteNull("x_axis"); } else { writer.WriteStartObject("x_axis"); writer.WriteNumber("x", row.x_axis.X); writer.WriteNumber("y", row.x_axis.Y); writer.WriteNumber("z", row.x_axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.scale) || double.IsInfinity(row.scale)) { writer.WriteNull("scale"); } else { writer.WriteNumber("scale", row.scale); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCPS(Utf8JsonWriter writer, ref readonly CPS row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.bezier.Index < 0) { writer.WriteNull("bezier"); } else { writer.WriteNumber("bezier", row.bezier.Index); }
+        if (row.bspline.Index < 0) { writer.WriteNull("bspline"); } else { writer.WriteNumber("bspline", row.bspline.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteLIST(Utf8JsonWriter writer, ref readonly LIST row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.list_type == XtSchemaField.NullInteger) { writer.WriteNull("list_type"); } else { writer.WriteNumber("list_type", row.list_type); }
+        if (row.list_length == XtSchemaField.NullInteger) { writer.WriteNull("list_length"); } else { writer.WriteNumber("list_length", row.list_length); }
+        if (row.block_length == XtSchemaField.NullInteger) { writer.WriteNull("block_length"); } else { writer.WriteNumber("block_length", row.block_length); }
+        if (row.size_of_entry == XtSchemaField.NullInteger) { writer.WriteNull("size_of_entry"); } else { writer.WriteNumber("size_of_entry", row.size_of_entry); }
+        if (row.list_block < 0) { writer.WriteNull("list_block"); } else { writer.WriteNumber("list_block", row.list_block); }
+        if (row.finger_block < 0) { writer.WriteNull("finger_block"); } else { writer.WriteNumber("finger_block", row.finger_block); }
+        if (row.finger_index == XtSchemaField.NullInteger) { writer.WriteNull("finger_index"); } else { writer.WriteNumber("finger_index", row.finger_index); }
+        if (row.notransmit == XtSchemaField.NullLogical) { writer.WriteNull("notransmit"); } else { writer.WriteBoolean("notransmit", row.notransmit != 0); }
+        writer.WriteEndObject();
+    }
+    private static void WritePOINTER_LIS_BLOCK(Utf8JsonWriter writer, ref readonly POINTER_LIS_BLOCK row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.n_entries == XtSchemaField.NullInteger) { writer.WriteNull("n_entries"); } else { writer.WriteNumber("n_entries", row.n_entries); }
+        if (row.next_block.Index < 0) { writer.WriteNull("next_block"); } else { writer.WriteNumber("next_block", row.next_block.Index); }
+        writer.WritePropertyName("entries");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.entries.Count; i++)
+        {
+        if (model.Storage.POINTER_LIS_BLOCK__entries[row.entries.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.POINTER_LIS_BLOCK__entries[row.entries.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteATT_DEF_ID(Utf8JsonWriter writer, ref readonly ATT_DEF_ID row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("string");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.@string.Count; i++)
+        {
+        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.identifier.Index < 0) { writer.WriteNull("identifier"); } else { writer.WriteNumber("identifier", row.identifier.Index); }
+        if (row.type_id == XtSchemaField.NullInteger) { writer.WriteNull("type_id"); } else { writer.WriteNumber("type_id", row.type_id); }
+        writer.WritePropertyName("actions");
+        writer.WriteStartArray();
+        for (var i = 0; i < 8; i++)
+        {
+        if (row.actions[i] == XtSchemaField.NullUnsigned) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.actions[i]); }
+        }
+        writer.WriteEndArray();
+        if (row.field_names.Index < 0) { writer.WriteNull("field_names"); } else { writer.WriteNumber("field_names", row.field_names.Index); }
+        writer.WritePropertyName("legal_owners");
+        writer.WriteStartArray();
+        for (var i = 0; i < 14; i++)
+        {
+        if (row.legal_owners[i] == XtSchemaField.NullLogical) { writer.WriteNullValue(); } else { writer.WriteBooleanValue(row.legal_owners[i] != 0); }
+        }
+        writer.WriteEndArray();
+        writer.WritePropertyName("fields");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.fields.Count; i++)
+        {
+        if (model.Storage.ATTRIB_DEF__fields[row.fields.Offset + i] == XtSchemaField.NullUnsigned) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.ATTRIB_DEF__fields[row.fields.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteATTRIBUTE(Utf8JsonWriter writer, ref readonly ATTRIBUTE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.definition.Index < 0) { writer.WriteNull("definition"); } else { writer.WriteNumber("definition", row.definition.Index); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.next_of_type.Index < 0) { writer.WriteNull("next_of_type"); } else { writer.WriteNumber("next_of_type", row.next_of_type.Index); }
+        if (row.previous_of_type.Index < 0) { writer.WriteNull("previous_of_type"); } else { writer.WriteNumber("previous_of_type", row.previous_of_type.Index); }
+        writer.WritePropertyName("fields");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.fields.Count; i++)
+        {
+        if (model.Storage.ATTRIBUTE__fields[row.fields.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.ATTRIBUTE__fields[row.fields.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteINT_VALUES(Utf8JsonWriter writer, ref readonly INT_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (model.Storage.INT_VALUES__values[row.values.Offset + i] == XtSchemaField.NullInteger) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.INT_VALUES__values[row.values.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteREAL_VALUES(Utf8JsonWriter writer, ref readonly REAL_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.REAL_VALUES__values[row.values.Offset + i]) || double.IsInfinity(model.Storage.REAL_VALUES__values[row.values.Offset + i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.REAL_VALUES__values[row.values.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteCHAR_VALUES(Utf8JsonWriter writer, ref readonly CHAR_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.POINT_VALUES__values[row.values.Offset + i].X)) { writer.WriteNullValue(); } else { writer.WriteStartObject(); writer.WriteNumber("x", model.Storage.POINT_VALUES__values[row.values.Offset + i].X); writer.WriteNumber("y", model.Storage.POINT_VALUES__values[row.values.Offset + i].Y); writer.WriteNumber("z", model.Storage.POINT_VALUES__values[row.values.Offset + i].Z); writer.WriteEndObject(); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteVECTOR_VALUES(Utf8JsonWriter writer, ref readonly VECTOR_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.VECTOR_VALUES__values[row.values.Offset + i].X)) { writer.WriteNullValue(); } else { writer.WriteStartObject(); writer.WriteNumber("x", model.Storage.VECTOR_VALUES__values[row.values.Offset + i].X); writer.WriteNumber("y", model.Storage.VECTOR_VALUES__values[row.values.Offset + i].Y); writer.WriteNumber("z", model.Storage.VECTOR_VALUES__values[row.values.Offset + i].Z); writer.WriteEndObject(); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteAXIS_VALUES(Utf8JsonWriter writer, ref readonly AXIS_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.AXIS_VALUES__values[row.values.Offset + i].X)) { writer.WriteNullValue(); } else { writer.WriteStartObject(); writer.WriteNumber("x", model.Storage.AXIS_VALUES__values[row.values.Offset + i].X); writer.WriteNumber("y", model.Storage.AXIS_VALUES__values[row.values.Offset + i].Y); writer.WriteNumber("z", model.Storage.AXIS_VALUES__values[row.values.Offset + i].Z); writer.WriteEndObject(); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteTAG_VALUES(Utf8JsonWriter writer, ref readonly TAG_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (model.Storage.TAG_VALUES__values[row.values.Offset + i] == XtSchemaField.NullInteger) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.TAG_VALUES__values[row.values.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteDIRECTION_VALUES(Utf8JsonWriter writer, ref readonly DIRECTION_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.DIRECTION_VALUES__values[row.values.Offset + i].X)) { writer.WriteNullValue(); } else { writer.WriteStartObject(); writer.WriteNumber("x", model.Storage.DIRECTION_VALUES__values[row.values.Offset + i].X); writer.WriteNumber("y", model.Storage.DIRECTION_VALUES__values[row.values.Offset + i].Y); writer.WriteNumber("z", model.Storage.DIRECTION_VALUES__values[row.values.Offset + i].Z); writer.WriteEndObject(); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteFEATURE(Utf8JsonWriter writer, ref readonly FEATURE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.type == XtSchemaField.NullUnsigned) { writer.WriteNull("type"); } else { writer.WriteNumber("type", row.type); writer.WritePropertyName("type_name"); { var enumName = EnumSCH_feature_type_t_Name((long)(row.type)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.first_member.Index < 0) { writer.WriteNull("first_member"); } else { writer.WriteNumber("first_member", row.first_member.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteMEMBER_OF_FEATURE(Utf8JsonWriter writer, ref readonly MEMBER_OF_FEATURE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.dummy_node_id == XtSchemaField.NullInteger) { writer.WriteNull("dummy_node_id"); } else { writer.WriteNumber("dummy_node_id", row.dummy_node_id); }
+        if (row.owning_feature.Index < 0) { writer.WriteNull("owning_feature"); } else { writer.WriteNumber("owning_feature", row.owning_feature.Index); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.next_member.Index < 0) { writer.WriteNull("next_member"); } else { writer.WriteNumber("next_member", row.next_member.Index); }
+        if (row.previous_member.Index < 0) { writer.WriteNull("previous_member"); } else { writer.WriteNumber("previous_member", row.previous_member.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSHORT_VALUES(Utf8JsonWriter writer, ref readonly SHORT_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (model.Storage.SHORT_VALUES__values[row.values.Offset + i] == XtSchemaField.NullInteger) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.SHORT_VALUES__values[row.values.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteBOX_VALUES(Utf8JsonWriter writer, ref readonly BOX_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.BOX_VALUES__values[row.values.Offset + i].XLow)) { writer.WriteNullValue(); } else { writer.WriteStartObject(); writer.WriteNumber("x_low", model.Storage.BOX_VALUES__values[row.values.Offset + i].XLow); writer.WriteNumber("x_high", model.Storage.BOX_VALUES__values[row.values.Offset + i].XHigh); writer.WriteNumber("y_low", model.Storage.BOX_VALUES__values[row.values.Offset + i].YLow); writer.WriteNumber("y_high", model.Storage.BOX_VALUES__values[row.values.Offset + i].YHigh); writer.WriteNumber("z_low", model.Storage.BOX_VALUES__values[row.values.Offset + i].ZLow); writer.WriteNumber("z_high", model.Storage.BOX_VALUES__values[row.values.Offset + i].ZHigh); writer.WriteEndObject(); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteUNICODE_VALUES(Utf8JsonWriter writer, ref readonly UNICODE_VALUES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("values");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.values.Count; i++)
+        {
+        if (model.Storage.UNICODE_VALUES__values[row.values.Offset + i] == XtSchemaField.NullInteger) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.UNICODE_VALUES__values[row.values.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteFIELD_NAMES(Utf8JsonWriter writer, ref readonly FIELD_NAMES row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("names");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.names.Count; i++)
+        {
+        if (model.Storage.FIELD_NAMES__names[row.names.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.FIELD_NAMES__names[row.names.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteTRANSFORM(Utf8JsonWriter writer, ref readonly TRANSFORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        writer.WritePropertyName("rotation_matrix");
+        writer.WriteStartArray();
+        for (var i = 0; i < 9; i++)
+        {
+        if (double.IsNaN(row.rotation_matrix[i]) || double.IsInfinity(row.rotation_matrix[i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(row.rotation_matrix[i]); }
+        }
+        writer.WriteEndArray();
+        if (double.IsNaN(row.translation_vector.X)) { writer.WriteNull("translation_vector"); } else { writer.WriteStartObject("translation_vector"); writer.WriteNumber("x", row.translation_vector.X); writer.WriteNumber("y", row.translation_vector.Y); writer.WriteNumber("z", row.translation_vector.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.scale) || double.IsInfinity(row.scale)) { writer.WriteNull("scale"); } else { writer.WriteNumber("scale", row.scale); }
+        if (row.flag == XtSchemaField.NullInteger) { writer.WriteNull("flag"); } else { writer.WriteNumber("flag", row.flag); }
+        if (double.IsNaN(row.perspective_vector.X)) { writer.WriteNull("perspective_vector"); } else { writer.WriteStartObject("perspective_vector"); writer.WriteNumber("x", row.perspective_vector.X); writer.WriteNumber("y", row.perspective_vector.Y); writer.WriteNumber("z", row.perspective_vector.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteWORLD(Utf8JsonWriter writer, ref readonly WORLD row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.assembly.Index < 0) { writer.WriteNull("assembly"); } else { writer.WriteNumber("assembly", row.assembly.Index); }
+        if (row.attribute.Index < 0) { writer.WriteNull("attribute"); } else { writer.WriteNumber("attribute", row.attribute.Index); }
+        if (row.body.Index < 0) { writer.WriteNull("body"); } else { writer.WriteNumber("body", row.body.Index); }
+        if (row.transform.Index < 0) { writer.WriteNull("transform"); } else { writer.WriteNumber("transform", row.transform.Index); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.curve < 0) { writer.WriteNull("curve"); } else { writer.WriteNumber("curve", row.curve); }
+        if (row.point.Index < 0) { writer.WriteNull("point"); } else { writer.WriteNumber("point", row.point.Index); }
+        if (row.alive == XtSchemaField.NullLogical) { writer.WriteNull("alive"); } else { writer.WriteBoolean("alive", row.alive != 0); }
+        if (row.attrib_def.Index < 0) { writer.WriteNull("attrib_def"); } else { writer.WriteNumber("attrib_def", row.attrib_def.Index); }
+        if (row.highest_id == XtSchemaField.NullInteger) { writer.WriteNull("highest_id"); } else { writer.WriteNumber("highest_id", row.highest_id); }
+        if (row.current_id == XtSchemaField.NullInteger) { writer.WriteNull("current_id"); } else { writer.WriteNumber("current_id", row.current_id); }
+        writer.WriteEndObject();
+    }
+    private static void WriteKEY(Utf8JsonWriter writer, ref readonly KEY row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("string");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.@string.Count; i++)
+        {
+        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.vertex_dimension == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dimension"); } else { writer.WriteNumber("vertex_dimension", row.vertex_dimension); }
+        if (row.segment_count == XtSchemaField.NullInteger) { writer.WriteNull("segment_count"); } else { writer.WriteNumber("segment_count", row.segment_count); }
+        if (row.order == XtSchemaField.NullInteger) { writer.WriteNull("order"); } else { writer.WriteNumber("order", row.order); }
+        if (row.check == XtSchemaField.NullCharacter) { writer.WriteNull("check"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.check; writer.WriteString("check", ch); }
+        writer.WritePropertyName("segment");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.segment.Count; i++)
+        {
+        if (model.Storage.BEZIER_CURVE__segment[row.segment.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.BEZIER_CURVE__segment[row.segment.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteBEZIER_SURF(Utf8JsonWriter writer, ref readonly BEZIER_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.vertex_dimension == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dimension"); } else { writer.WriteNumber("vertex_dimension", row.vertex_dimension); }
+        if (row.col_count == XtSchemaField.NullInteger) { writer.WriteNull("col_count"); } else { writer.WriteNumber("col_count", row.col_count); }
+        if (row.row_count == XtSchemaField.NullInteger) { writer.WriteNull("row_count"); } else { writer.WriteNumber("row_count", row.row_count); }
+        if (row.u_order == XtSchemaField.NullInteger) { writer.WriteNull("u_order"); } else { writer.WriteNumber("u_order", row.u_order); }
+        if (row.v_order == XtSchemaField.NullInteger) { writer.WriteNull("v_order"); } else { writer.WriteNumber("v_order", row.v_order); }
+        if (row.check == XtSchemaField.NullCharacter) { writer.WriteNull("check"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.check; writer.WriteString("check", ch); }
+        writer.WritePropertyName("patch");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.patch.Count; i++)
+        {
+        if (model.Storage.BEZIER_SURF__patch[row.patch.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.BEZIER_SURF__patch[row.patch.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteSET_ELEMENT_TAG(Utf8JsonWriter writer, ref readonly SET_ELEMENT_TAG row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.forward.Index < 0) { writer.WriteNull("forward"); } else { writer.WriteNumber("forward", row.forward.Index); }
+        if (row.backward.Index < 0) { writer.WriteNull("backward"); } else { writer.WriteNumber("backward", row.backward.Index); }
+        if (row.@class == XtSchemaField.NullInteger) { writer.WriteNull("class"); } else { writer.WriteNumber("class", row.@class); }
+        if (row.set < 0) { writer.WriteNull("set"); } else { writer.WriteNumber("set", row.set); }
+        if (row.node < 0) { writer.WriteNull("node"); } else { writer.WriteNumber("node", row.node); }
+        writer.WriteEndObject();
+    }
+    private static void WriteFACE_SET(Utf8JsonWriter writer, ref readonly FACE_SET row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.tag.Index < 0) { writer.WriteNull("tag"); } else { writer.WriteNumber("tag", row.tag.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.@class == XtSchemaField.NullInteger) { writer.WriteNull("class"); } else { writer.WriteNumber("class", row.@class); }
+        if (row.he_set.Index < 0) { writer.WriteNull("he_set"); } else { writer.WriteNumber("he_set", row.he_set.Index); }
+        if (row.surfaces < 0) { writer.WriteNull("surfaces"); } else { writer.WriteNumber("surfaces", row.surfaces); }
+        writer.WriteEndObject();
+    }
+    private static void WriteHALFEDGE_SET(Utf8JsonWriter writer, ref readonly HALFEDGE_SET row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.tag.Index < 0) { writer.WriteNull("tag"); } else { writer.WriteNumber("tag", row.tag.Index); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.@class == XtSchemaField.NullInteger) { writer.WriteNull("class"); } else { writer.WriteNumber("class", row.@class); }
+        if (row.fa_set.Index < 0) { writer.WriteNull("fa_set"); } else { writer.WriteNumber("fa_set", row.fa_set.Index); }
+        if (row.co_he_set.Index < 0) { writer.WriteNull("co_he_set"); } else { writer.WriteNumber("co_he_set", row.co_he_set.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WritePE_SURF(Utf8JsonWriter writer, ref readonly PE_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.type == XtSchemaField.NullCharacter) { writer.WriteNull("type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.type; writer.WriteString("type", ch); }
+        if (row.data < 0) { writer.WriteNull("data"); } else { writer.WriteNumber("data", row.data); }
+        if (row.tf.Index < 0) { writer.WriteNull("tf"); } else { writer.WriteNumber("tf", row.tf.Index); }
+        writer.WritePropertyName("internal_geom");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.internal_geom.Count; i++)
+        {
+        if (model.Storage.PE_SURF__internal_geom[row.internal_geom.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.PE_SURF__internal_geom[row.internal_geom.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteINT_PE_DATA(Utf8JsonWriter writer, ref readonly INT_PE_DATA row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.geom_type == XtSchemaField.NullInteger) { writer.WriteNull("geom_type"); } else { writer.WriteNumber("geom_type", row.geom_type); }
+        if (row.real_array.Index < 0) { writer.WriteNull("real_array"); } else { writer.WriteNumber("real_array", row.real_array.Index); }
+        if (row.int_array.Index < 0) { writer.WriteNull("int_array"); } else { writer.WriteNumber("int_array", row.int_array.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteEXT_PE_DATA(Utf8JsonWriter writer, ref readonly EXT_PE_DATA row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.key.Index < 0) { writer.WriteNull("key"); } else { writer.WriteNumber("key", row.key.Index); }
+        if (row.real_array.Index < 0) { writer.WriteNull("real_array"); } else { writer.WriteNumber("real_array", row.real_array.Index); }
+        if (row.int_array.Index < 0) { writer.WriteNull("int_array"); } else { writer.WriteNumber("int_array", row.int_array.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteB_SURFACE(Utf8JsonWriter writer, ref readonly B_SURFACE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.nurbs.Index < 0) { writer.WriteNull("nurbs"); } else { writer.WriteNumber("nurbs", row.nurbs.Index); }
+        if (row.data.Index < 0) { writer.WriteNull("data"); } else { writer.WriteNumber("data", row.data.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSURFACE_DATA(Utf8JsonWriter writer, ref readonly SURFACE_DATA row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.original_uint.Low)) { writer.WriteNull("original_uint"); } else { writer.WriteStartObject("original_uint"); writer.WriteNumber("low", row.original_uint.Low); writer.WriteNumber("high", row.original_uint.High); writer.WriteEndObject(); }
+        if (double.IsNaN(row.original_vint.Low)) { writer.WriteNull("original_vint"); } else { writer.WriteStartObject("original_vint"); writer.WriteNumber("low", row.original_vint.Low); writer.WriteNumber("high", row.original_vint.High); writer.WriteEndObject(); }
+        if (double.IsNaN(row.extended_uint.Low)) { writer.WriteNull("extended_uint"); } else { writer.WriteStartObject("extended_uint"); writer.WriteNumber("low", row.extended_uint.Low); writer.WriteNumber("high", row.extended_uint.High); writer.WriteEndObject(); }
+        if (double.IsNaN(row.extended_vint.Low)) { writer.WriteNull("extended_vint"); } else { writer.WriteStartObject("extended_vint"); writer.WriteNumber("low", row.extended_vint.Low); writer.WriteNumber("high", row.extended_vint.High); writer.WriteEndObject(); }
+        if (row.self_int == XtSchemaField.NullUnsigned) { writer.WriteNull("self_int"); } else { writer.WriteNumber("self_int", row.self_int); writer.WritePropertyName("self_int_name"); { var enumName = EnumSCH_self_int_t_Name((long)(row.self_int)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.original_u_start == XtSchemaField.NullCharacter) { writer.WriteNull("original_u_start"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.original_u_start; writer.WriteString("original_u_start", ch); }
+        if (row.original_u_end == XtSchemaField.NullCharacter) { writer.WriteNull("original_u_end"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.original_u_end; writer.WriteString("original_u_end", ch); }
+        if (row.original_v_start == XtSchemaField.NullCharacter) { writer.WriteNull("original_v_start"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.original_v_start; writer.WriteString("original_v_start", ch); }
+        if (row.original_v_end == XtSchemaField.NullCharacter) { writer.WriteNull("original_v_end"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.original_v_end; writer.WriteString("original_v_end", ch); }
+        if (row.extended_u_start == XtSchemaField.NullCharacter) { writer.WriteNull("extended_u_start"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.extended_u_start; writer.WriteString("extended_u_start", ch); }
+        if (row.extended_u_end == XtSchemaField.NullCharacter) { writer.WriteNull("extended_u_end"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.extended_u_end; writer.WriteString("extended_u_end", ch); }
+        if (row.extended_v_start == XtSchemaField.NullCharacter) { writer.WriteNull("extended_v_start"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.extended_v_start; writer.WriteString("extended_v_start", ch); }
+        if (row.extended_v_end == XtSchemaField.NullCharacter) { writer.WriteNull("extended_v_end"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.extended_v_end; writer.WriteString("extended_v_end", ch); }
+        if (row.analytic_form_type == XtSchemaField.NullCharacter) { writer.WriteNull("analytic_form_type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.analytic_form_type; writer.WriteString("analytic_form_type", ch); }
+        if (row.swept_form_type == XtSchemaField.NullCharacter) { writer.WriteNull("swept_form_type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.swept_form_type; writer.WriteString("swept_form_type", ch); }
+        if (row.spun_form_type == XtSchemaField.NullCharacter) { writer.WriteNull("spun_form_type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.spun_form_type; writer.WriteString("spun_form_type", ch); }
+        if (row.blend_form_type == XtSchemaField.NullCharacter) { writer.WriteNull("blend_form_type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.blend_form_type; writer.WriteString("blend_form_type", ch); }
+        if (row.analytic_form < 0) { writer.WriteNull("analytic_form"); } else { writer.WriteNumber("analytic_form", row.analytic_form); }
+        if (row.swept_form < 0) { writer.WriteNull("swept_form"); } else { writer.WriteNumber("swept_form", row.swept_form); }
+        if (row.spun_form < 0) { writer.WriteNull("spun_form"); } else { writer.WriteNumber("spun_form", row.spun_form); }
+        if (row.blend_form < 0) { writer.WriteNull("blend_form"); } else { writer.WriteNumber("blend_form", row.blend_form); }
+        writer.WriteEndObject();
+    }
+    private static void WriteNURBS_SURF(Utf8JsonWriter writer, ref readonly NURBS_SURF row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.u_periodic == XtSchemaField.NullLogical) { writer.WriteNull("u_periodic"); } else { writer.WriteBoolean("u_periodic", row.u_periodic != 0); }
+        if (row.v_periodic == XtSchemaField.NullLogical) { writer.WriteNull("v_periodic"); } else { writer.WriteBoolean("v_periodic", row.v_periodic != 0); }
+        if (row.u_degree == XtSchemaField.NullInteger) { writer.WriteNull("u_degree"); } else { writer.WriteNumber("u_degree", row.u_degree); }
+        if (row.v_degree == XtSchemaField.NullInteger) { writer.WriteNull("v_degree"); } else { writer.WriteNumber("v_degree", row.v_degree); }
+        if (row.n_u_vertices == XtSchemaField.NullInteger) { writer.WriteNull("n_u_vertices"); } else { writer.WriteNumber("n_u_vertices", row.n_u_vertices); }
+        if (row.n_v_vertices == XtSchemaField.NullInteger) { writer.WriteNull("n_v_vertices"); } else { writer.WriteNumber("n_v_vertices", row.n_v_vertices); }
+        if (row.u_knot_type == XtSchemaField.NullUnsigned) { writer.WriteNull("u_knot_type"); } else { writer.WriteNumber("u_knot_type", row.u_knot_type); writer.WritePropertyName("u_knot_type_name"); { var enumName = EnumSCH_knot_type_t_Name((long)(row.u_knot_type)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.v_knot_type == XtSchemaField.NullUnsigned) { writer.WriteNull("v_knot_type"); } else { writer.WriteNumber("v_knot_type", row.v_knot_type); writer.WritePropertyName("v_knot_type_name"); { var enumName = EnumSCH_knot_type_t_Name((long)(row.v_knot_type)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.n_u_knots == XtSchemaField.NullInteger) { writer.WriteNull("n_u_knots"); } else { writer.WriteNumber("n_u_knots", row.n_u_knots); }
+        if (row.n_v_knots == XtSchemaField.NullInteger) { writer.WriteNull("n_v_knots"); } else { writer.WriteNumber("n_v_knots", row.n_v_knots); }
+        if (row.rational == XtSchemaField.NullLogical) { writer.WriteNull("rational"); } else { writer.WriteBoolean("rational", row.rational != 0); }
+        if (row.u_closed == XtSchemaField.NullLogical) { writer.WriteNull("u_closed"); } else { writer.WriteBoolean("u_closed", row.u_closed != 0); }
+        if (row.v_closed == XtSchemaField.NullLogical) { writer.WriteNull("v_closed"); } else { writer.WriteBoolean("v_closed", row.v_closed != 0); }
+        if (row.surface_form == XtSchemaField.NullUnsigned) { writer.WriteNull("surface_form"); } else { writer.WriteNumber("surface_form", row.surface_form); writer.WritePropertyName("surface_form_name"); { var enumName = EnumSCH_surface_form_t_Name((long)(row.surface_form)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.vertex_dim == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dim"); } else { writer.WriteNumber("vertex_dim", row.vertex_dim); }
+        if (row.bspline_vertices.Index < 0) { writer.WriteNull("bspline_vertices"); } else { writer.WriteNumber("bspline_vertices", row.bspline_vertices.Index); }
+        if (row.u_knot_mult.Index < 0) { writer.WriteNull("u_knot_mult"); } else { writer.WriteNumber("u_knot_mult", row.u_knot_mult.Index); }
+        if (row.v_knot_mult.Index < 0) { writer.WriteNull("v_knot_mult"); } else { writer.WriteNumber("v_knot_mult", row.v_knot_mult.Index); }
+        if (row.u_knots.Index < 0) { writer.WriteNull("u_knots"); } else { writer.WriteNumber("u_knots", row.u_knots.Index); }
+        if (row.v_knots.Index < 0) { writer.WriteNull("v_knots"); } else { writer.WriteNumber("v_knots", row.v_knots.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteKNOT_MULT(Utf8JsonWriter writer, ref readonly KNOT_MULT row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("mult");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.mult.Count; i++)
+        {
+        if (model.Storage.KNOT_MULT__mult[row.mult.Offset + i] == XtSchemaField.NullInteger) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.KNOT_MULT__mult[row.mult.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WriteKNOT_SET(Utf8JsonWriter writer, ref readonly KNOT_SET row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        writer.WritePropertyName("knots");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.knots.Count; i++)
+        {
+        if (double.IsNaN(model.Storage.KNOT_SET__knots[row.knots.Offset + i]) || double.IsInfinity(model.Storage.KNOT_SET__knots[row.knots.Offset + i])) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.KNOT_SET__knots[row.knots.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WritePE_CURVE(Utf8JsonWriter writer, ref readonly PE_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        writer.WriteNumber("_xt_variable_length", row._xt_variable_length);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.type == XtSchemaField.NullCharacter) { writer.WriteNull("type"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.type; writer.WriteString("type", ch); }
+        if (row.data < 0) { writer.WriteNull("data"); } else { writer.WriteNumber("data", row.data); }
+        if (row.tf.Index < 0) { writer.WriteNull("tf"); } else { writer.WriteNumber("tf", row.tf.Index); }
+        writer.WritePropertyName("internal_geom");
+        writer.WriteStartArray();
+        for (var i = 0; i < row.internal_geom.Count; i++)
+        {
+        if (model.Storage.PE_CURVE__internal_geom[row.internal_geom.Offset + i] < 0) { writer.WriteNullValue(); } else { writer.WriteNumberValue(model.Storage.PE_CURVE__internal_geom[row.internal_geom.Offset + i]); }
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+    private static void WritePCURVE(Utf8JsonWriter writer, ref readonly PCURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.bsp_parms == XtSchemaField.NullLogical) { writer.WriteNull("bsp_parms"); } else { writer.WriteBoolean("bsp_parms", row.bsp_parms != 0); }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.bspline.Index < 0) { writer.WriteNull("bspline"); } else { writer.WriteNumber("bspline", row.bspline.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteTRIMMED_CURVE(Utf8JsonWriter writer, ref readonly TRIMMED_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.basis_curve < 0) { writer.WriteNull("basis_curve"); } else { writer.WriteNumber("basis_curve", row.basis_curve); }
+        if (double.IsNaN(row.point_1.X)) { writer.WriteNull("point_1"); } else { writer.WriteStartObject("point_1"); writer.WriteNumber("x", row.point_1.X); writer.WriteNumber("y", row.point_1.Y); writer.WriteNumber("z", row.point_1.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.point_2.X)) { writer.WriteNull("point_2"); } else { writer.WriteStartObject("point_2"); writer.WriteNumber("x", row.point_2.X); writer.WriteNumber("y", row.point_2.Y); writer.WriteNumber("z", row.point_2.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.parm_1) || double.IsInfinity(row.parm_1)) { writer.WriteNull("parm_1"); } else { writer.WriteNumber("parm_1", row.parm_1); }
+        if (double.IsNaN(row.parm_2) || double.IsInfinity(row.parm_2)) { writer.WriteNull("parm_2"); } else { writer.WriteNumber("parm_2", row.parm_2); }
+        writer.WriteEndObject();
+    }
+    private static void WriteB_CURVE(Utf8JsonWriter writer, ref readonly B_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.nurbs.Index < 0) { writer.WriteNull("nurbs"); } else { writer.WriteNumber("nurbs", row.nurbs.Index); }
+        if (row.data.Index < 0) { writer.WriteNull("data"); } else { writer.WriteNumber("data", row.data.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCURVE_DATA(Utf8JsonWriter writer, ref readonly CURVE_DATA row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.self_int == XtSchemaField.NullUnsigned) { writer.WriteNull("self_int"); } else { writer.WriteNumber("self_int", row.self_int); writer.WritePropertyName("self_int_name"); { var enumName = EnumSCH_self_int_t_Name((long)(row.self_int)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.analytic_form < 0) { writer.WriteNull("analytic_form"); } else { writer.WriteNumber("analytic_form", row.analytic_form); }
+        writer.WriteEndObject();
+    }
+    private static void WriteNURBS_CURVE(Utf8JsonWriter writer, ref readonly NURBS_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.degree == XtSchemaField.NullInteger) { writer.WriteNull("degree"); } else { writer.WriteNumber("degree", row.degree); }
+        if (row.n_vertices == XtSchemaField.NullInteger) { writer.WriteNull("n_vertices"); } else { writer.WriteNumber("n_vertices", row.n_vertices); }
+        if (row.vertex_dim == XtSchemaField.NullInteger) { writer.WriteNull("vertex_dim"); } else { writer.WriteNumber("vertex_dim", row.vertex_dim); }
+        if (row.n_knots == XtSchemaField.NullInteger) { writer.WriteNull("n_knots"); } else { writer.WriteNumber("n_knots", row.n_knots); }
+        if (row.knot_type == XtSchemaField.NullUnsigned) { writer.WriteNull("knot_type"); } else { writer.WriteNumber("knot_type", row.knot_type); writer.WritePropertyName("knot_type_name"); { var enumName = EnumSCH_knot_type_t_Name((long)(row.knot_type)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.periodic == XtSchemaField.NullLogical) { writer.WriteNull("periodic"); } else { writer.WriteBoolean("periodic", row.periodic != 0); }
+        if (row.closed == XtSchemaField.NullLogical) { writer.WriteNull("closed"); } else { writer.WriteBoolean("closed", row.closed != 0); }
+        if (row.rational == XtSchemaField.NullLogical) { writer.WriteNull("rational"); } else { writer.WriteBoolean("rational", row.rational != 0); }
+        if (row.curve_form == XtSchemaField.NullUnsigned) { writer.WriteNull("curve_form"); } else { writer.WriteNumber("curve_form", row.curve_form); writer.WritePropertyName("curve_form_name"); { var enumName = EnumSCH_curve_form_t_Name((long)(row.curve_form)); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.bspline_vertices.Index < 0) { writer.WriteNull("bspline_vertices"); } else { writer.WriteNumber("bspline_vertices", row.bspline_vertices.Index); }
+        if (row.knot_mult.Index < 0) { writer.WriteNull("knot_mult"); } else { writer.WriteNumber("knot_mult", row.knot_mult.Index); }
+        if (row.knots.Index < 0) { writer.WriteNull("knots"); } else { writer.WriteNumber("knots", row.knots.Index); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSP_CURVE(Utf8JsonWriter writer, ref readonly SP_CURVE row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.node_id == XtSchemaField.NullInteger) { writer.WriteNull("node_id"); } else { writer.WriteNumber("node_id", row.node_id); }
+        if (row.attributes_features < 0) { writer.WriteNull("attributes_features"); } else { writer.WriteNumber("attributes_features", row.attributes_features); }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next); }
+        if (row.previous < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous); }
+        if (row.geometric_owner.Index < 0) { writer.WriteNull("geometric_owner"); } else { writer.WriteNumber("geometric_owner", row.geometric_owner.Index); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        if (row.surface < 0) { writer.WriteNull("surface"); } else { writer.WriteNumber("surface", row.surface); }
+        if (row.b_curve.Index < 0) { writer.WriteNull("b_curve"); } else { writer.WriteNumber("b_curve", row.b_curve.Index); }
+        if (row.original < 0) { writer.WriteNull("original"); } else { writer.WriteNumber("original", row.original); }
+        if (double.IsNaN(row.tolerance_to_original) || double.IsInfinity(row.tolerance_to_original)) { writer.WriteNull("tolerance_to_original"); } else { writer.WriteNumber("tolerance_to_original", row.tolerance_to_original); }
+        writer.WriteEndObject();
+    }
+    private static void WriteGEOMETRIC_OWNER(Utf8JsonWriter writer, ref readonly GEOMETRIC_OWNER row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (row.owner < 0) { writer.WriteNull("owner"); } else { writer.WriteNumber("owner", row.owner); }
+        if (row.next.Index < 0) { writer.WriteNull("next"); } else { writer.WriteNumber("next", row.next.Index); }
+        if (row.previous.Index < 0) { writer.WriteNull("previous"); } else { writer.WriteNumber("previous", row.previous.Index); }
+        if (row.shared_geometry < 0) { writer.WriteNull("shared_geometry"); } else { writer.WriteNumber("shared_geometry", row.shared_geometry); }
+        writer.WriteEndObject();
+    }
+    private static void WritePLANE_FORM(Utf8JsonWriter writer, ref readonly PLANE_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.normal.X)) { writer.WriteNull("normal"); } else { writer.WriteStartObject("normal"); writer.WriteNumber("x", row.normal.X); writer.WriteNumber("y", row.normal.Y); writer.WriteNumber("z", row.normal.Z); writer.WriteEndObject(); }
+        writer.WriteEndObject();
+    }
+    private static void WriteCYLINDER_FORM(Utf8JsonWriter writer, ref readonly CYLINDER_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WriteEndObject();
+    }
+    private static void WriteCONE_FORM(Utf8JsonWriter writer, ref readonly CONE_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.pvec.X)) { writer.WriteNull("pvec"); } else { writer.WriteStartObject("pvec"); writer.WriteNumber("x", row.pvec.X); writer.WriteNumber("y", row.pvec.Y); writer.WriteNumber("z", row.pvec.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        if (double.IsNaN(row.sin_half_angle) || double.IsInfinity(row.sin_half_angle)) { writer.WriteNull("sin_half_angle"); } else { writer.WriteNumber("sin_half_angle", row.sin_half_angle); }
+        if (double.IsNaN(row.cos_half_angle) || double.IsInfinity(row.cos_half_angle)) { writer.WriteNull("cos_half_angle"); } else { writer.WriteNumber("cos_half_angle", row.cos_half_angle); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WriteEndObject();
+    }
+    private static void WriteSPHERE_FORM(Utf8JsonWriter writer, ref readonly SPHERE_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.centre.X)) { writer.WriteNull("centre"); } else { writer.WriteStartObject("centre"); writer.WriteNumber("x", row.centre.X); writer.WriteNumber("y", row.centre.Y); writer.WriteNumber("z", row.centre.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.radius) || double.IsInfinity(row.radius)) { writer.WriteNull("radius"); } else { writer.WriteNumber("radius", row.radius); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WriteEndObject();
+    }
+    private static void WriteTORUS_FORM(Utf8JsonWriter writer, ref readonly TORUS_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.centre.X)) { writer.WriteNull("centre"); } else { writer.WriteStartObject("centre"); writer.WriteNumber("x", row.centre.X); writer.WriteNumber("y", row.centre.Y); writer.WriteNumber("z", row.centre.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.major_radius) || double.IsInfinity(row.major_radius)) { writer.WriteNull("major_radius"); } else { writer.WriteNumber("major_radius", row.major_radius); }
+        if (double.IsNaN(row.minor_radius) || double.IsInfinity(row.minor_radius)) { writer.WriteNull("minor_radius"); } else { writer.WriteNumber("minor_radius", row.minor_radius); }
+        if (row.sense == XtSchemaField.NullCharacter) { writer.WriteNull("sense"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.sense; writer.WriteString("sense", ch); writer.WritePropertyName("sense_name"); { var enumName = Enumsense_Name(row.sense); if (enumName is null) writer.WriteNullValue(); else writer.WriteStringValue(enumName); } }
+        writer.WriteEndObject();
+    }
+    private static void WriteSWEPT_FORM(Utf8JsonWriter writer, ref readonly SWEPT_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.sweep.X)) { writer.WriteNull("sweep"); } else { writer.WriteStartObject("sweep"); writer.WriteNumber("x", row.sweep.X); writer.WriteNumber("y", row.sweep.Y); writer.WriteNumber("z", row.sweep.Z); writer.WriteEndObject(); }
+        if (row.subtype == XtSchemaField.NullCharacter) { writer.WriteNull("subtype"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.subtype; writer.WriteString("subtype", ch); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSWEPT_UV_FORM(Utf8JsonWriter writer, ref readonly SWEPT_UV_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.sweep_u.X)) { writer.WriteNull("sweep_u"); } else { writer.WriteStartObject("sweep_u"); writer.WriteNumber("x", row.sweep_u.X); writer.WriteNumber("y", row.sweep_u.Y); writer.WriteNumber("z", row.sweep_u.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.sweep_v.X)) { writer.WriteNull("sweep_v"); } else { writer.WriteStartObject("sweep_v"); writer.WriteNumber("x", row.sweep_v.X); writer.WriteNumber("y", row.sweep_v.Y); writer.WriteNumber("z", row.sweep_v.Z); writer.WriteEndObject(); }
+        if (row.subtype_u == XtSchemaField.NullCharacter) { writer.WriteNull("subtype_u"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.subtype_u; writer.WriteString("subtype_u", ch); }
+        if (row.subtype_v == XtSchemaField.NullCharacter) { writer.WriteNull("subtype_v"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.subtype_v; writer.WriteString("subtype_v", ch); }
+        writer.WriteEndObject();
+    }
+    private static void WriteSPUN_FORM(Utf8JsonWriter writer, ref readonly SPUN_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.@base.X)) { writer.WriteNull("base"); } else { writer.WriteStartObject("base"); writer.WriteNumber("x", row.@base.X); writer.WriteNumber("y", row.@base.Y); writer.WriteNumber("z", row.@base.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis.X)) { writer.WriteNull("axis"); } else { writer.WriteStartObject("axis"); writer.WriteNumber("x", row.axis.X); writer.WriteNumber("y", row.axis.Y); writer.WriteNumber("z", row.axis.Z); writer.WriteEndObject(); }
+        if (row.subtype == XtSchemaField.NullCharacter) { writer.WriteNull("subtype"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.subtype; writer.WriteString("subtype", ch); }
+        writer.WriteEndObject();
+    }
+    private static void WriteVAR_RADIUS_PIPE_FORM(Utf8JsonWriter writer, ref readonly VAR_RADIUS_PIPE_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.max_radius) || double.IsInfinity(row.max_radius)) { writer.WriteNull("max_radius"); } else { writer.WriteNumber("max_radius", row.max_radius); }
+        if (double.IsNaN(row.min_radius) || double.IsInfinity(row.min_radius)) { writer.WriteNull("min_radius"); } else { writer.WriteNumber("min_radius", row.min_radius); }
+        if (row.max_radius_bdry == XtSchemaField.NullCharacter) { writer.WriteNull("max_radius_bdry"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.max_radius_bdry; writer.WriteString("max_radius_bdry", ch); }
+        if (row.min_radius_bdry == XtSchemaField.NullCharacter) { writer.WriteNull("min_radius_bdry"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.min_radius_bdry; writer.WriteString("min_radius_bdry", ch); }
+        writer.WriteEndObject();
+    }
+    private static void WriteHELIX_SU_FORM(Utf8JsonWriter writer, ref readonly HELIX_SU_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.axis_pt.X)) { writer.WriteNull("axis_pt"); } else { writer.WriteStartObject("axis_pt"); writer.WriteNumber("x", row.axis_pt.X); writer.WriteNumber("y", row.axis_pt.Y); writer.WriteNumber("z", row.axis_pt.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis_dir.X)) { writer.WriteNull("axis_dir"); } else { writer.WriteStartObject("axis_dir"); writer.WriteNumber("x", row.axis_dir.X); writer.WriteNumber("y", row.axis_dir.Y); writer.WriteNumber("z", row.axis_dir.Z); writer.WriteEndObject(); }
+        if (row.hand == XtSchemaField.NullCharacter) { writer.WriteNull("hand"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.hand; writer.WriteString("hand", ch); }
+        if (double.IsNaN(row.turns.Low)) { writer.WriteNull("turns"); } else { writer.WriteStartObject("turns"); writer.WriteNumber("low", row.turns.Low); writer.WriteNumber("high", row.turns.High); writer.WriteEndObject(); }
+        if (double.IsNaN(row.pitch) || double.IsInfinity(row.pitch)) { writer.WriteNull("pitch"); } else { writer.WriteNumber("pitch", row.pitch); }
+        if (double.IsNaN(row.gap) || double.IsInfinity(row.gap)) { writer.WriteNull("gap"); } else { writer.WriteNumber("gap", row.gap); }
+        if (double.IsNaN(row.tol) || double.IsInfinity(row.tol)) { writer.WriteNull("tol"); } else { writer.WriteNumber("tol", row.tol); }
+        writer.WriteEndObject();
+    }
+    private static void WriteHELIX_CU_FORM(Utf8JsonWriter writer, ref readonly HELIX_CU_FORM row, MODEL model)    {
+        writer.WriteStartObject();
+        writer.WriteNumber("_xt_index", row._xt_index);
+        writer.WriteNumber("_xt_order", row._xt_order);
+        if (row._xt_user_fields.Count != 0)
+        {
+            writer.WritePropertyName("_xt_user_fields");
+            writer.WriteStartArray();
+            for (var i = 0; i < row._xt_user_fields.Count; i++) writer.WriteNumberValue(model.Storage._xt_user_fields[row._xt_user_fields.Offset + i]);
+            writer.WriteEndArray();
+        }
+        if (double.IsNaN(row.axis_pt.X)) { writer.WriteNull("axis_pt"); } else { writer.WriteStartObject("axis_pt"); writer.WriteNumber("x", row.axis_pt.X); writer.WriteNumber("y", row.axis_pt.Y); writer.WriteNumber("z", row.axis_pt.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.axis_dir.X)) { writer.WriteNull("axis_dir"); } else { writer.WriteStartObject("axis_dir"); writer.WriteNumber("x", row.axis_dir.X); writer.WriteNumber("y", row.axis_dir.Y); writer.WriteNumber("z", row.axis_dir.Z); writer.WriteEndObject(); }
+        if (double.IsNaN(row.point.X)) { writer.WriteNull("point"); } else { writer.WriteStartObject("point"); writer.WriteNumber("x", row.point.X); writer.WriteNumber("y", row.point.Y); writer.WriteNumber("z", row.point.Z); writer.WriteEndObject(); }
+        if (row.hand == XtSchemaField.NullCharacter) { writer.WriteNull("hand"); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)row.hand; writer.WriteString("hand", ch); }
+        if (double.IsNaN(row.turns.Low)) { writer.WriteNull("turns"); } else { writer.WriteStartObject("turns"); writer.WriteNumber("low", row.turns.Low); writer.WriteNumber("high", row.turns.High); writer.WriteEndObject(); }
+        if (double.IsNaN(row.pitch) || double.IsInfinity(row.pitch)) { writer.WriteNull("pitch"); } else { writer.WriteNumber("pitch", row.pitch); }
+        if (double.IsNaN(row.tol) || double.IsInfinity(row.tol)) { writer.WriteNull("tol"); } else { writer.WriteNumber("tol", row.tol); }
+        writer.WriteEndObject();
+    }
+    private static string? EnumREGION_type_Name(long value) => value switch { (byte)'S' => "solid", (byte)'V' => "void", _ => null };
+    private static string? EnumSCH_body_type_Name(long value) => value switch { 1 => "solid_body", 2 => "wire_body", 3 => "sheet_body", 6 => "general_body", _ => null };
+    private static string? EnumSCH_curve_form_t_Name(long value) => value switch { 1 => "unset", 2 => "arbitrary", 3 => "polyline", 4 => "circular_arc", 5 => "elliptic_arc", 6 => "parabolic_arc", 7 => "hyperbolic_arc", 8 => "helical_arc", _ => null };
+    private static string? EnumSCH_feature_type_t_Name(long value) => value switch { 1 => "instance_fe", 2 => "face_fe", 3 => "loop_fe", 4 => "edge_fe", 5 => "vertex_fe", 6 => "surface_fe", 7 => "curve_fe", 8 => "point_fe", 9 => "mixed_fe", 10 => "region_fe", 11 => "pf_pline_fe", 12 => "feature_fe", _ => null };
+    private static string? EnumSCH_instance_type_Name(long value) => value switch { 1 => "positive_instance", 2 => "negative_instance", _ => null };
+    private static string? EnumSCH_knot_type_t_Name(long value) => value switch { 1 => "unset", 2 => "non_uniform", 3 => "uniform", 4 => "quasi_uniform", 5 => "piecewise_bezier", 6 => "bezier_ends", _ => null };
+    private static string? EnumSCH_nom_geom_state_t_Name(long value) => value switch { 1 => "off", 2 => "on", _ => null };
+    private static string? EnumSCH_part_state_Name(long value) => value switch { 1 => "new_part", 2 => "stored_part", 3 => "modified_part", 4 => "anonymous_part", 5 => "unloaded_part", _ => null };
+    private static string? EnumSCH_self_int_t_Name(long value) => value switch { 1 => "unset", 2 => "no_self_intersections", 3 => "self_intersects", 4 => "checked_ok_in_old_version", _ => null };
+    private static string? EnumSCH_surface_form_t_Name(long value) => value switch { 1 => "unset", 2 => "arbitrary", 3 => "planar", 4 => "cylindrical", 5 => "conical", 6 => "spherical", 7 => "toroidal", 8 => "surf_of_revolution", 9 => "ruled", 10 => "quadric", 11 => "swept", _ => null };
+    private static string? Enumsense_Name(long value) => value switch { (byte)'+' => "positive", (byte)'-' => "negative", _ => null };
+}
+}
 namespace ProjectGmKernel.Xt
 {
 public static class XtGeneratedModelCodec
@@ -199476,6 +209782,7 @@ public static class XtGeneratedModelCodec
             case "SCH_3600031_36001": return global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.CODEC.Decode(document);
             case "SCH_3701097_37102": return global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.CODEC.Decode(document);
             case "SCH_3800150_37102": return global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.CODEC.Decode(document);
+            case "SCH_1300120_13006": return global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.CODEC.Decode(document);
         }
         if(document.Schema.Identity.StartsWith("SCH_3800150_37102_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.CODEC.Decode(document);
         if(document.Schema.Identity.StartsWith("SCH_3701097_37102_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.CODEC.Decode(document);
@@ -199492,6 +209799,7 @@ public static class XtGeneratedModelCodec
         if(document.Schema.Identity.StartsWith("SCH_3101042_31001_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.CODEC.Decode(document);
         if(document.Schema.Identity.StartsWith("SCH_3100020_30100_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.CODEC.Decode(document);
         if(document.Schema.Identity.StartsWith("SCH_3000119_30000_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.CODEC.Decode(document);
+        if(document.Schema.Identity.StartsWith("SCH_1300120_13006_",StringComparison.Ordinal)&&XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3000119_30000.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3100020_30100.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3101042_31001.CODEC.Decode(document);
@@ -199506,6 +209814,7 @@ public static class XtGeneratedModelCodec
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3501127_35102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3501127_35102.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.CODEC.Decode(document);
         if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.CODEC.Decode(document);
+        if(XtGeneratedSchemaRuntime.CompatibleShape(document.Schema,global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.DESCRIPTOR.Definition))return global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.CODEC.Decode(document);
         throw new XtFormatException(XtErrorCode.UnsupportedVersion, $"No generated model binding exists for {document.Schema.Identity}.");
     }
     public static XtDocument RoundTrip(XtDocument document) => Decode(document).ToDocument();
@@ -199531,6 +209840,7 @@ public static class XtGeneratedModelJson
             case global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.MODEL typed: global::ProjectGmKernel.Xt.Schema.SCH_3600031_36001.JSON.Write(typed, writer); break;
             case global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.MODEL typed: global::ProjectGmKernel.Xt.Schema.SCH_3701097_37102.JSON.Write(typed, writer); break;
             case global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.MODEL typed: global::ProjectGmKernel.Xt.Schema.SCH_3800150_37102.JSON.Write(typed, writer); break;
+            case global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.MODEL typed: global::ProjectGmKernel.Xt.Schema.SCH_1300120_13006.JSON.Write(typed, writer); break;
             default: throw new XtFormatException(XtErrorCode.ModelInvalid, $"Model {model.GetType().FullName} has no generated JSON serializer.");
         }
     }
