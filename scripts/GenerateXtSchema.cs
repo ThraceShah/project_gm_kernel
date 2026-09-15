@@ -706,11 +706,19 @@ Dictionary<string, string> GenerateHeaders(List<VersionSchema> schemas)
         output.Append("#define PGM_XT_MODEL_delete ").AppendLine(prefix + "_MODEL_delete");
         output.Append("#define PGM_XT_DOCUMENT_to_MODEL PGM_XT_DOCUMENT_to_").Append(version.Identity).AppendLine("_MODEL");
         output.Append("#define PGM_XT_MODEL_to_DOCUMENT PGM_XT_").Append(version.Identity).AppendLine("_MODEL_to_DOCUMENT");
+        output.Append("#define PGM_XT_MODEL_set_user_field_size ").AppendLine(prefix + "_MODEL_set_user_field_size");
+        output.Append("#define PGM_XT_MODEL_ask_user_field_size ").AppendLine(prefix + "_MODEL_ask_user_field_size");
+        output.Append("#define PGM_XT_MODEL_user_fields_get_read_view ").AppendLine(prefix + "_MODEL_user_fields_get_read_view");
+        output.Append("#define PGM_XT_MODEL_user_fields_get_write_view ").AppendLine(prefix + "_MODEL_user_fields_get_write_view");
         output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_create(const PGM_XT_COUNTS_t *, PGM_XT_model_t *);");
         output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_finalize(PGM_XT_model_t);");
         output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_delete(PGM_XT_model_t);");
         output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_DOCUMENT_to_MODEL(PGM_XT_document_t, PGM_XT_model_t *);");
         output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_to_DOCUMENT(PGM_XT_model_t, PGM_XT_document_t *);");
+        output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_set_user_field_size(PGM_XT_model_t, int32_t);");
+        output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_ask_user_field_size(PGM_XT_model_t, int32_t *);");
+        output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_user_fields_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);");
+        output.AppendLine("PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_user_fields_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);");
         foreach (var node in version.Definition.Nodes.ToArray().Where(static node => node.Transmit))
         {
             output.Append("#define PGM_XT_").Append(node.Name).Append("_get_read_view ").Append(prefix).Append('_').Append(node.Name).AppendLine("_get_read_view");
@@ -759,6 +767,18 @@ string GenerateNativeExports(List<VersionSchema> schemas)
         output.AppendLine("    [UnmanagedCallersOnly(EntryPoint = \"PGM_XT_"+version.Identity+"_MODEL_to_DOCUMENT\", CallConvs = [typeof(CallConvCdecl)])]");
         output.Append("    public static PgmXtStatus ").Append(Safe(version.Identity)).AppendLine("_MODEL_to_DOCUMENT(PgmXtHandle model,PgmXtHandle* document)");
         output.AppendLine("    {if(!NativeExports.TrySchemaHolder(model,\""+version.Identity+"\",out var holder))return NativeExports.InvalidHandle();if(document is null||holder!.Model is not "+managed+".MODEL typed)return NativeExports.InvalidState(\"Finalized model and document output are required.\");try{*document=Handles.Add(new DocumentHolder("+managed+".CODEC.Encode(typed)));return NativeExports.Ok();}catch(Exception exception){return NativeExports.Fail(exception);} }");
+        output.AppendLine("    [UnmanagedCallersOnly(EntryPoint = \""+prefix+"_MODEL_set_user_field_size\", CallConvs = [typeof(CallConvCdecl)])]");
+        output.Append("    public static PgmXtStatus ").Append(Safe(prefix)).AppendLine("_MODEL_set_user_field_size(PgmXtHandle model,int size)");
+        output.AppendLine("    {if(!NativeExports.TrySchemaHolder(model,\""+version.Identity+"\",out var holder))return NativeExports.InvalidHandle();if(holder!.Model is not null)return NativeExports.InvalidState(\"Model is finalized.\");if(size<0)return NativeExports.InvalidArgument(\"User-field size must not be negative.\");try{(("+managed+".MODEL_BUILDER)holder.Builder).UserFieldSize=size;return NativeExports.Ok();}catch(Exception exception){return NativeExports.Fail(exception);} }");
+        output.AppendLine("    [UnmanagedCallersOnly(EntryPoint = \""+prefix+"_MODEL_ask_user_field_size\", CallConvs = [typeof(CallConvCdecl)])]");
+        output.Append("    public static PgmXtStatus ").Append(Safe(prefix)).AppendLine("_MODEL_ask_user_field_size(PgmXtHandle model,int* size)");
+        output.AppendLine("    {if(!NativeExports.TrySchemaHolder(model,\""+version.Identity+"\",out var holder))return NativeExports.InvalidHandle();if(size is null)return NativeExports.InvalidArgument(\"User-field size output is null.\");try{*size=holder!.Model is "+managed+".MODEL typed?typed.UserFieldSize:(("+managed+".MODEL_BUILDER)holder.Builder).UserFieldSize;return NativeExports.Ok();}catch(Exception exception){return NativeExports.Fail(exception);} }");
+        output.AppendLine("    [UnmanagedCallersOnly(EntryPoint = \""+prefix+"_MODEL_user_fields_get_read_view\", CallConvs = [typeof(CallConvCdecl)])]");
+        output.Append("    public static PgmXtStatus ").Append(Safe(prefix)).AppendLine("_MODEL_user_fields_get_read_view(PgmXtHandle model,int** data,int* count)");
+        output.AppendLine("    {if(!NativeExports.TrySchemaHolder(model,\""+version.Identity+"\",out var holder))return NativeExports.InvalidHandle();if(holder!.Model is not "+managed+".MODEL typed)return NativeExports.InvalidState(\"Model is not finalized.\");return NativeExports.ReadView(typed._xt_user_fields,(nint*)data,count);}");
+        output.AppendLine("    [UnmanagedCallersOnly(EntryPoint = \""+prefix+"_MODEL_user_fields_get_write_view\", CallConvs = [typeof(CallConvCdecl)])]");
+        output.Append("    public static PgmXtStatus ").Append(Safe(prefix)).AppendLine("_MODEL_user_fields_get_write_view(PgmXtHandle model,int** data,int* count)");
+        output.AppendLine("    {if(!NativeExports.TrySchemaHolder(model,\""+version.Identity+"\",out var holder))return NativeExports.InvalidHandle();if(holder!.Model is not null)return NativeExports.InvalidState(\"Model is finalized.\");return NativeExports.WriteView((("+managed+".MODEL_BUILDER)holder.Builder)._xt_user_fields,(nint*)data,count);}");
         foreach(var node in version.Definition.Nodes.ToArray().Where(static node=>node.Transmit))
         {
             EmitView(output,prefix,managed,node.Name,node.Name,managed+"."+node.Name);
