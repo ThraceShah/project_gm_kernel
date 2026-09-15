@@ -232,17 +232,17 @@ static unsafe PK_BODY_t CreateTorusTypical()
     return body;
 }
 
-static byte[] ManagedBlockTypical() => CorpusManagedKernel.Transmit(CreateManagedBlockTypical);
-static byte[] ManagedBlockMinimumPositive() => CorpusManagedKernel.Transmit(CreateManagedBlockMinimumPositive);
-static byte[] ManagedBlockOriented() => CorpusManagedKernel.Transmit(CreateManagedBlockOriented);
-static byte[] ManagedCylinderTypical() => CorpusManagedKernel.Transmit(CreateManagedCylinderTypical);
-static byte[] ManagedCylinderMinimumPositive() => CorpusManagedKernel.Transmit(CreateManagedCylinderMinimumPositive);
-static byte[] ManagedConeTypical() => CorpusManagedKernel.Transmit(CreateManagedConeTypical);
-static byte[] ManagedConeApex() => CorpusManagedKernel.Transmit(CreateManagedConeApex);
-static byte[] ManagedPrismTypical() => CorpusManagedKernel.Transmit(CreateManagedPrismTypical);
-static byte[] ManagedPrismMinimumSides() => CorpusManagedKernel.Transmit(CreateManagedPrismMinimumSides);
-static byte[] ManagedSphereTypical() => CorpusManagedKernel.Transmit(CreateManagedSphereTypical);
-static byte[] ManagedTorusTypical() => CorpusManagedKernel.Transmit(CreateManagedTorusTypical);
+static byte[] ManagedBlockTypical(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedBlockTypical, transmitVersion);
+static byte[] ManagedBlockMinimumPositive(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedBlockMinimumPositive, transmitVersion);
+static byte[] ManagedBlockOriented(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedBlockOriented, transmitVersion);
+static byte[] ManagedCylinderTypical(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedCylinderTypical, transmitVersion);
+static byte[] ManagedCylinderMinimumPositive(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedCylinderMinimumPositive, transmitVersion);
+static byte[] ManagedConeTypical(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedConeTypical, transmitVersion);
+static byte[] ManagedConeApex(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedConeApex, transmitVersion);
+static byte[] ManagedPrismTypical(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedPrismTypical, transmitVersion);
+static byte[] ManagedPrismMinimumSides(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedPrismMinimumSides, transmitVersion);
+static byte[] ManagedSphereTypical(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedSphereTypical, transmitVersion);
+static byte[] ManagedTorusTypical(int transmitVersion) => CorpusManagedKernel.Transmit(CreateManagedTorusTypical, transmitVersion);
 
 static unsafe PK_BODY_t CreateManagedBlockTypical()
 {

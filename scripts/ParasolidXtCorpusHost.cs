@@ -25,7 +25,7 @@ public sealed class CorpusCaseSpec
         IReadOnlyList<string> coverage,
         Func<PK_BODY_t> create,
         CorpusBodyCounts? expectedCounts = null,
-        Func<byte[]>? managedTransmit = null,
+        Func<int, byte[]>? managedTransmit = null,
         string? parameters = null,
         int sessionUserFieldLength = 0,
         bool transmitUserFields = false,
@@ -60,7 +60,8 @@ public sealed class CorpusCaseSpec
     public IReadOnlyList<string> Coverage { get; }
     public Func<PK_BODY_t> Create { get; }
     public CorpusBodyCounts? ExpectedCounts { get; }
-    public Func<byte[]>? ManagedTransmit { get; }
+    /// <summary>Optional managed-kernel producer; receives the resolved transmit version.</summary>
+    public Func<int, byte[]>? ManagedTransmit { get; }
     public string Parameters { get; }
     public int SessionUserFieldLength { get; }
     public bool TransmitUserFields { get; }
@@ -158,7 +159,6 @@ internal partial class CorpusJsonContext : JsonSerializerContext
 
 public static unsafe class ParasolidXtCorpusHost
 {
-    private const int TransmitVersion = 371;
     private const string GeneratorVersion = "corpus-host-v1";
 
     public static int RunGroup(
@@ -176,7 +176,7 @@ public static unsafe class ParasolidXtCorpusHost
         var options = ParseOptions(group, args, scriptPath);
         if (!options.IsValid)
         {
-            Console.Error.WriteLine("usage: dotnet run <case-group.cs> -- [--list-json] [--check] [--case CASE_ID] [--group GROUP] [--output PATH]");
+            Console.Error.WriteLine("usage: dotnet run <case-group.cs> -- [--list-json] [--check] [--case CASE_ID] [--group GROUP] [--output PATH] [--xt-only] [--transmit-version N|auto]");
             return 2;
         }
         if (options.ListJson)
@@ -200,11 +200,12 @@ public static unsafe class ParasolidXtCorpusHost
         using (session)
         {
             var schema = AskSchemaVersion();
+            var transmitVersion = ResolveTransmitVersion(group, options.TransmitVersion);
             foreach (var spec in selected)
             {
                 try
                 {
-                    RunCase(group, spec, schema, options.OutputRoot, options.Check);
+                    RunCase(group, spec, schema, transmitVersion, options.XtOnly, options.OutputRoot, options.Check);
                     Console.WriteLine("PASS " + spec.CaseId);
                 }
                 catch (Exception ex)
@@ -234,7 +235,7 @@ public static unsafe class ParasolidXtCorpusHost
         var options = ParseOptions(group, args, scriptPath);
         if (!options.IsValid)
         {
-            Console.Error.WriteLine("usage: dotnet run <case-group.cs> -- [--list-json] [--check] [--case CASE_ID] [--group GROUP] [--output PATH]");
+            Console.Error.WriteLine("usage: dotnet run <case-group.cs> -- [--list-json] [--check] [--case CASE_ID] [--group GROUP] [--output PATH] [--xt-only] [--transmit-version N|auto]");
             return 2;
         }
         if (options.ListJson)
@@ -269,11 +270,12 @@ public static unsafe class ParasolidXtCorpusHost
         using (session)
         {
             var schema = AskSchemaVersion();
+            var transmitVersion = ResolveTransmitVersion(group, options.TransmitVersion);
             foreach (var spec in selected)
             {
                 try
                 {
-                    RunAssemblyCase(group, spec, schema, options.OutputRoot, options.Check);
+                    RunAssemblyCase(group, spec, schema, transmitVersion, options.XtOnly, options.OutputRoot, options.Check);
                     Console.WriteLine("PASS " + spec.CaseId);
                 }
                 catch (Exception ex)
@@ -299,6 +301,8 @@ public static unsafe class ParasolidXtCorpusHost
         var caseId = (string?)null;
         var listJson = false;
         var check = false;
+        var xtOnly = false;
+        int? transmitVersion = null;
         var output = DefaultOutputRoot(group, scriptPath);
         for (var i = 0; i < args.Length; i++)
         {
@@ -310,6 +314,25 @@ public static unsafe class ParasolidXtCorpusHost
                 case "--check":
                     check = true;
                     break;
+                case "--xt-only":
+                    xtOnly = true;
+                    break;
+                case "--transmit-version" when i + 1 < args.Length:
+                    var value = args[++i];
+                    if (string.Equals(value, "auto", StringComparison.OrdinalIgnoreCase))
+                    {
+                        transmitVersion = null;
+                    }
+                    else if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var parsed) || parsed < 0)
+                    {
+                        Console.Error.WriteLine("--transmit-version expects a non-negative integer or 'auto', got: " + value);
+                        return new CorpusRunOptions(caseId, listJson, check, xtOnly, transmitVersion, output, Invalid: true);
+                    }
+                    else
+                    {
+                        transmitVersion = parsed;
+                    }
+                    break;
                 case "--case" when i + 1 < args.Length:
                     caseId = args[++i];
                     break;
@@ -318,14 +341,35 @@ public static unsafe class ParasolidXtCorpusHost
                     break;
                 case "--group" when i + 1 < args.Length:
                     if (!string.Equals(group, args[++i], StringComparison.Ordinal))
-                        return new CorpusRunOptions(caseId, listJson, check, output, Invalid: true);
+                        return new CorpusRunOptions(caseId, listJson, check, xtOnly, transmitVersion, output, Invalid: true);
                     break;
                 default:
-                    return new CorpusRunOptions(caseId, listJson, check, output, Invalid: true);
+                    return new CorpusRunOptions(caseId, listJson, check, xtOnly, transmitVersion, output, Invalid: true);
             }
         }
 
-        return new CorpusRunOptions(caseId, listJson, check, output, Invalid: false);
+        return new CorpusRunOptions(caseId, listJson, check, xtOnly, transmitVersion, output, Invalid: false);
+    }
+
+    /// <summary>
+    /// Pick the transmit version for this run.  An explicit request wins;
+    /// otherwise the connected session's kernel version decides, walking down
+    /// to the newest transmit version this repo's schema bindings support.
+    /// </summary>
+    private static int ResolveTransmitVersion(string group, int? requested)
+    {
+        if (requested is { } version)
+            return version;
+
+        var kernel = new PK_SESSION_kernel_version_t();
+        Check(PK_SESSION_ask_kernel_version(&kernel), "PK_SESSION_ask_kernel_version");
+        var modelerVersion = kernel.major_revision * 100000 + kernel.minor_revision * 10000 + kernel.build_number;
+        var selected = XtCorpusInspection.GetCompatibleTransmitVersion(modelerVersion);
+        if (selected == 0)
+            throw new InvalidOperationException(
+                $"no managed XT schema binding matches the connected Parasolid runtime {kernel.major_revision}.{kernel.minor_revision}.{kernel.build_number}; pass --transmit-version N to select one explicitly");
+        Console.WriteLine($"corpus {group}: transmit-version={selected} (session {kernel.major_revision}.{kernel.minor_revision}.{kernel.build_number})");
+        return selected;
     }
 
     private static string ResolvePath(string path, string scriptPath)
@@ -415,6 +459,8 @@ public static unsafe class ParasolidXtCorpusHost
         string group,
         CorpusCaseSpec spec,
         int schemaVersion,
+        int transmitVersion,
+        bool xtOnly,
         string outputRoot,
         bool check)
     {
@@ -442,38 +488,48 @@ public static unsafe class ParasolidXtCorpusHost
         var manifestPath = Path.Combine(caseDirectory, "manifest.json");
         var diagnosticsPath = Path.Combine(caseDirectory, "diagnostics.json");
 
-        var xt = Transmit(body, spec.TransmitUserFields);
+        var xt = Transmit(body, spec.TransmitUserFields, transmitVersion);
         File.WriteAllBytes(xtPath, xt);
-        if (spec.IsCompound)
-            ReceiveCompoundAndCompare(xt, body, counts, spec.CaseId);
-        else
-            ReceiveAndCompare(xt, body, counts, spec.CaseId, spec.TransmitUserFields);
-
-        var managedRoundTrip = CorpusManagedKernel.RoundTrip(xt, TransmitVersion, spec.TransmitUserFields, spec.IsCompound);
-        RequireStructuralRoundTrip(xt, managedRoundTrip, spec.CaseId + " managed round-trip");
-        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-roundtrip.x_t"), managedRoundTrip);
-        if (spec.IsCompound)
-            ReceiveCompoundAndCompare(managedRoundTrip, body, counts, spec.CaseId + " managed round-trip");
-        else
-            ReceiveAndCompare(managedRoundTrip, body, counts, spec.CaseId + " managed round-trip", spec.TransmitUserFields);
-        var managedEmbedded = CorpusManagedKernel.RoundTrip(xt, 0, spec.TransmitUserFields, spec.IsCompound);
-        RequireStructuralRoundTrip(xt, managedEmbedded, spec.CaseId + " managed embedded");
-        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-embedded.x_t"), managedEmbedded);
-        if (spec.IsCompound)
-            ReceiveCompoundAndCompare(managedEmbedded, body, counts, spec.CaseId + " managed embedded");
-        else
-            ReceiveAndCompare(managedEmbedded, body, counts, spec.CaseId + " managed embedded", spec.TransmitUserFields);
         var managedVerification = "passed";
-        if (spec.ManagedTransmit is not null)
+        if (xtOnly)
         {
-            var managedXt = spec.ManagedTransmit();
-            if (managedXt.Length == 0)
-                throw new InvalidOperationException("managed kernel produced an empty x_t");
-            File.WriteAllBytes(Path.Combine(caseDirectory, "managed-model.x_t"), managedXt);
+            // Caller-owned runtime without a usable oracle: keep only the x_t and
+            // the bookkeeping; skip the self-receive compare and every managed
+            // round-trip check.
+            managedVerification = "skipped";
+        }
+        else
+        {
             if (spec.IsCompound)
-                ReceiveCompoundAndCompare(managedXt, body, counts, spec.CaseId + " managed");
+                ReceiveCompoundAndCompare(xt, body, counts, spec.CaseId);
             else
-                ReceiveAndCompare(managedXt, body, counts, spec.CaseId + " managed", false);
+                ReceiveAndCompare(xt, body, counts, spec.CaseId, spec.TransmitUserFields);
+
+            var managedRoundTrip = CorpusManagedKernel.RoundTrip(xt, transmitVersion, spec.TransmitUserFields, spec.IsCompound);
+            RequireStructuralRoundTrip(xt, managedRoundTrip, spec.CaseId + " managed round-trip");
+            File.WriteAllBytes(Path.Combine(caseDirectory, "managed-roundtrip.x_t"), managedRoundTrip);
+            if (spec.IsCompound)
+                ReceiveCompoundAndCompare(managedRoundTrip, body, counts, spec.CaseId + " managed round-trip");
+            else
+                ReceiveAndCompare(managedRoundTrip, body, counts, spec.CaseId + " managed round-trip", spec.TransmitUserFields);
+            var managedEmbedded = CorpusManagedKernel.RoundTrip(xt, 0, spec.TransmitUserFields, spec.IsCompound);
+            RequireStructuralRoundTrip(xt, managedEmbedded, spec.CaseId + " managed embedded");
+            File.WriteAllBytes(Path.Combine(caseDirectory, "managed-embedded.x_t"), managedEmbedded);
+            if (spec.IsCompound)
+                ReceiveCompoundAndCompare(managedEmbedded, body, counts, spec.CaseId + " managed embedded");
+            else
+                ReceiveAndCompare(managedEmbedded, body, counts, spec.CaseId + " managed embedded", spec.TransmitUserFields);
+            if (spec.ManagedTransmit is not null)
+            {
+                var managedXt = spec.ManagedTransmit(transmitVersion);
+                if (managedXt.Length == 0)
+                    throw new InvalidOperationException("managed kernel produced an empty x_t");
+                File.WriteAllBytes(Path.Combine(caseDirectory, "managed-model.x_t"), managedXt);
+                if (spec.IsCompound)
+                    ReceiveCompoundAndCompare(managedXt, body, counts, spec.CaseId + " managed");
+                else
+                    ReceiveAndCompare(managedXt, body, counts, spec.CaseId + " managed", false);
+            }
         }
 
         var schemaInventory = !spec.InspectSchema || spec.TransmitUserFields
@@ -489,11 +545,11 @@ public static unsafe class ParasolidXtCorpusHost
             spec.Parameters,
             spec.Coverage.Order(StringComparer.Ordinal).ToArray(),
             schemaVersion,
-            TransmitVersion,
+            transmitVersion,
             counts,
             semanticHash,
             GeneratorVersion,
-            "ParasolidVerified",
+            xtOnly ? "Skipped" : "ParasolidVerified",
             managedVerification,
             schemaInventory.Nodes,
             schemaInventory.Dependencies,
@@ -510,7 +566,9 @@ public static unsafe class ParasolidXtCorpusHost
 
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, CorpusJsonContext.Default.CorpusManifest));
         File.WriteAllText(diagnosticsPath, JsonSerializer.Serialize(
-            new CorpusDiagnostics(spec.CaseId, "pass", "self-receive and body compare passed; managed verification=" + managedVerification, null),
+            new CorpusDiagnostics(spec.CaseId, "pass", xtOnly
+                ? "xt-only generation; comparison validation skipped; managed verification=" + managedVerification
+                : "self-receive and body compare passed; managed verification=" + managedVerification, null),
             CorpusJsonContext.Default.CorpusDiagnostics));
     }
 
@@ -518,6 +576,8 @@ public static unsafe class ParasolidXtCorpusHost
         string group,
         CorpusAssemblyCaseSpec spec,
         int schemaVersion,
+        int transmitVersion,
+        bool xtOnly,
         string outputRoot,
         bool check)
     {
@@ -528,17 +588,25 @@ public static unsafe class ParasolidXtCorpusHost
         var caseDirectory = Path.Combine(outputRoot, spec.CaseId);
         Directory.CreateDirectory(caseDirectory);
         var manifestPath = Path.Combine(caseDirectory, "manifest.json");
-        var bytes = Transmit(assembly);
+        var bytes = Transmit(assembly, false, transmitVersion);
         File.WriteAllBytes(Path.Combine(caseDirectory, "model.x_t"), bytes);
-        var counts = ReceiveAssemblyAndCheck(bytes, assembly, spec.ExpectedCounts, spec.CaseId);
-        var managedRoundTrip = CorpusManagedKernel.RoundTrip(bytes, TransmitVersion);
-        RequireStructuralRoundTrip(bytes, managedRoundTrip, spec.CaseId + " managed round-trip");
-        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-roundtrip.x_t"), managedRoundTrip);
-        _ = ReceiveAssemblyAndCheck(managedRoundTrip, assembly, spec.ExpectedCounts, spec.CaseId + " managed round-trip");
-        var managedEmbedded = CorpusManagedKernel.RoundTrip(bytes, 0);
-        RequireStructuralRoundTrip(bytes, managedEmbedded, spec.CaseId + " managed embedded");
-        File.WriteAllBytes(Path.Combine(caseDirectory, "managed-embedded.x_t"), managedEmbedded);
-        _ = ReceiveAssemblyAndCheck(managedEmbedded, assembly, spec.ExpectedCounts, spec.CaseId + " managed embedded");
+        CorpusAssemblyCounts counts;
+        if (xtOnly)
+        {
+            counts = spec.ExpectedCounts;
+        }
+        else
+        {
+            counts = ReceiveAssemblyAndCheck(bytes, assembly, spec.ExpectedCounts, spec.CaseId);
+            var managedRoundTrip = CorpusManagedKernel.RoundTrip(bytes, transmitVersion);
+            RequireStructuralRoundTrip(bytes, managedRoundTrip, spec.CaseId + " managed round-trip");
+            File.WriteAllBytes(Path.Combine(caseDirectory, "managed-roundtrip.x_t"), managedRoundTrip);
+            _ = ReceiveAssemblyAndCheck(managedRoundTrip, assembly, spec.ExpectedCounts, spec.CaseId + " managed round-trip");
+            var managedEmbedded = CorpusManagedKernel.RoundTrip(bytes, 0);
+            RequireStructuralRoundTrip(bytes, managedEmbedded, spec.CaseId + " managed embedded");
+            File.WriteAllBytes(Path.Combine(caseDirectory, "managed-embedded.x_t"), managedEmbedded);
+            _ = ReceiveAssemblyAndCheck(managedEmbedded, assembly, spec.ExpectedCounts, spec.CaseId + " managed embedded");
+        }
         var semanticHash = ComputeAssemblySemanticHash(spec, schemaVersion, counts);
         var manifest = new CorpusAssemblyManifest(
             spec.CaseId,
@@ -548,11 +616,11 @@ public static unsafe class ParasolidXtCorpusHost
             spec.Parameters,
             spec.Coverage.Order(StringComparer.Ordinal).ToArray(),
             schemaVersion,
-            TransmitVersion,
+            transmitVersion,
             counts,
             semanticHash,
             GeneratorVersion,
-            "ParasolidVerified",
+            xtOnly ? "Skipped" : "ParasolidVerified",
             spec.TypeCoverage.Order(StringComparer.Ordinal).ToArray());
 
         if (check)
@@ -567,7 +635,11 @@ public static unsafe class ParasolidXtCorpusHost
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, CorpusJsonContext.Default.CorpusAssemblyManifest));
         File.WriteAllText(
             Path.Combine(caseDirectory, "diagnostics.json"),
-            JsonSerializer.Serialize(new CorpusDiagnostics(spec.CaseId, "pass", "assembly self-receive and structural checks passed", null), CorpusJsonContext.Default.CorpusDiagnostics));
+            JsonSerializer.Serialize(
+                new CorpusDiagnostics(spec.CaseId, "pass", xtOnly
+                    ? "xt-only generation; comparison validation skipped"
+                    : "assembly self-receive and structural checks passed", null),
+                CorpusJsonContext.Default.CorpusDiagnostics));
     }
 
     private static CorpusAssemblyCounts ReceiveAssemblyAndCheck(
@@ -650,13 +722,13 @@ public static unsafe class ParasolidXtCorpusHost
     }
 
 
-    private static byte[] Transmit(PK_BODY_t body, bool transmitUserFields = false)
+    private static byte[] Transmit(PK_BODY_t body, bool transmitUserFields, int transmitVersion)
     {
         var options = new PK_PART_transmit_o_t
         {
             o_t_version = 1,
             transmit_format = PK_transmit_format_text_c,
-            transmit_version = TransmitVersion,
+            transmit_version = transmitVersion,
             transmit_user_fields = transmitUserFields ? PK_LOGICAL_true : PK_LOGICAL_false,
         };
         var block = new PK_MEMORY_block_t();
@@ -1087,6 +1159,8 @@ public static unsafe class ParasolidXtCorpusHost
         string? CaseId,
         bool ListJson,
         bool Check,
+        bool XtOnly,
+        int? TransmitVersion,
         string OutputRoot,
         bool Invalid)
     {

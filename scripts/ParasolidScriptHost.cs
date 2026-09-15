@@ -57,11 +57,14 @@ internal static unsafe class ParasolidScriptHost
 
         var scriptDir = Path.GetDirectoryName(scriptPath);
         var repoRoot = FindRepositoryRoot(scriptDir ?? ".");
-        var schemaSourceDir = Path.Combine(repoRoot, "third_party", "parasolid", "schema");
-        var candidateLibraryPath = GetDynamicLibraryPath(repoRoot, platform);
+        var schemaSourceDir = ResolveConfiguredPath(scriptDir, "PARASOLID_SCHEMA_DIR")
+            ?? Path.Combine(repoRoot, "third_party", "parasolid", "schema");
+        var candidateLibraryPath = ResolveConfiguredPath(scriptDir, "PARASOLID_LIBRARY")
+            ?? GetDynamicLibraryPath(repoRoot, platform);
         if (!Directory.Exists(schemaSourceDir) || !File.Exists(candidateLibraryPath))
         {
-            message = label + " skipped: third_party/parasolid schema or dynamic library is missing.";
+            message = label + " skipped: Parasolid schema directory or dynamic library is missing"
+                + " (set PARASOLID_SCHEMA_DIR and PARASOLID_LIBRARY to point at an external runtime).";
             return false;
         }
 
@@ -86,17 +89,42 @@ internal static unsafe class ParasolidScriptHost
         return true;
     }
 
+    // Caller-provided runtime override (external Parasolid).  Relative values
+    // resolve against the script's own directory, matching PARASOLID_SCHEMA_DIR
+    // handling in the other scripts.  The resolved absolute path is written
+    // back so in-process consumers that re-read the variable (e.g.
+    // XtSchemaRegistry, which resolves relative values against the process
+    // working directory) see a valid location regardless of the caller's CWD.
+    private static string? ResolveConfiguredPath(string? scriptDirectory, string environmentVariable)
+    {
+        var configured = Environment.GetEnvironmentVariable(environmentVariable);
+        if (string.IsNullOrWhiteSpace(configured))
+            return null;
+        var resolved = Path.IsPathRooted(configured)
+            ? Path.GetFullPath(configured)
+            : Path.GetFullPath(Path.Combine(scriptDirectory ?? ".", configured));
+        Environment.SetEnvironmentVariable(environmentVariable, resolved);
+        return resolved;
+    }
+
     private static string PrepareSchemaCache(string repoRoot, string sourceDirectory)
     {
         var cacheDirectory = Path.Combine(repoRoot, "bin", "parasolid-schema-cache");
         Directory.CreateDirectory(cacheDirectory);
-        foreach (var source in Directory.EnumerateFiles(sourceDirectory, "sch_*.sch_txt", SearchOption.TopDirectoryOnly))
+        foreach (var source in Directory.EnumerateFiles(sourceDirectory, "sch_*", SearchOption.TopDirectoryOnly))
         {
-            var stem = Path.GetFileName(source)[..^".sch_txt".Length];
-            var destination = Path.Combine(cacheDirectory, stem.ToLowerInvariant() + ".s_t");
+            var fileName = Path.GetFileName(source);
+            string name;
+            if (fileName.EndsWith(".sch_txt", StringComparison.OrdinalIgnoreCase))
+                name = fileName[..^".sch_txt".Length].ToLowerInvariant() + ".s_t";
+            else if (fileName.EndsWith(".s_t", StringComparison.OrdinalIgnoreCase))
+                name = fileName.ToLowerInvariant();
+            else
+                continue;
+            var destination = Path.Combine(cacheDirectory, name);
             var sourceInfo = new FileInfo(source);
             var destinationInfo = new FileInfo(destination);
-            if (!destinationInfo.Exists || destinationInfo.Length != sourceInfo.Length || destinationInfo.LastWriteTimeUtc < sourceInfo.LastWriteTimeUtc)
+            if (!destinationInfo.Exists || destinationInfo.Length != sourceInfo.Length || destinationInfo.LastWriteTimeUtc != sourceInfo.LastWriteTimeUtc)
                 File.Copy(source, destination, overwrite: true);
         }
         return cacheDirectory;

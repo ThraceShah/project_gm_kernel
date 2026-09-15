@@ -86,6 +86,13 @@ foreach (var group in selectedGroups)
     var childArguments = new List<string>();
     if (options.Check)
         childArguments.Add("--check");
+    if (options.XtOnly)
+        childArguments.Add("--xt-only");
+    if (options.TransmitVersion is { } transmitVersion)
+    {
+        childArguments.Add("--transmit-version");
+        childArguments.Add(transmitVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
     if (options.CaseId is not null)
     {
         childArguments.Add("--case");
@@ -121,7 +128,7 @@ if (options.Check)
     }
 }
 
-Console.WriteLine($"corpus groups={selectedGroups.Count} failures={failures} mode={(options.Check ? "check" : "generate")}");
+Console.WriteLine($"corpus groups={selectedGroups.Count} failures={failures} mode={(options.Check ? "check" : "generate")}{(options.XtOnly ? " xt-only" : "")}");
 return failures == 0 ? 0 : 1;
 
 static string FindRepositoryRoot(string startDirectory)
@@ -143,6 +150,8 @@ static CorpusOptions ParseArguments(string[] args, string repositoryRoot, string
 {
     var list = false;
     var check = false;
+    var xtOnly = false;
+    int? transmitVersion = null;
     string? group = null;
     string? caseId = null;
     var output = Path.Combine(repositoryRoot, "bin", "parasolid-xt-corpus");
@@ -157,6 +166,25 @@ static CorpusOptions ParseArguments(string[] args, string repositoryRoot, string
             case "--check":
                 check = true;
                 break;
+            case "--xt-only":
+                xtOnly = true;
+                break;
+            case "--transmit-version" when index + 1 < args.Length:
+                var value = args[++index];
+                if (string.Equals(value, "auto", StringComparison.OrdinalIgnoreCase))
+                {
+                    transmitVersion = null;
+                }
+                else if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var parsed) || parsed < 0)
+                {
+                    Console.Error.WriteLine("--transmit-version expects a non-negative integer or 'auto', got: " + value);
+                    return new CorpusOptions(list, check, xtOnly, transmitVersion, group, caseId, output, Invalid: true);
+                }
+                else
+                {
+                    transmitVersion = parsed;
+                }
+                break;
             case "--group" when index + 1 < args.Length:
                 group = args[++index];
                 break;
@@ -167,16 +195,16 @@ static CorpusOptions ParseArguments(string[] args, string repositoryRoot, string
                 output = ResolvePath(args[++index], scriptPath);
                 break;
             default:
-                return new CorpusOptions(list, check, group, caseId, output, Invalid: true);
+                return new CorpusOptions(list, check, xtOnly, transmitVersion, group, caseId, output, Invalid: true);
         }
     }
 
     if (list && (check || group is not null || caseId is not null))
-        return new CorpusOptions(list, check, group, caseId, output, Invalid: true);
+        return new CorpusOptions(list, check, xtOnly, transmitVersion, group, caseId, output, Invalid: true);
     if (group is not null && caseId is not null)
-        return new CorpusOptions(list, check, group, caseId, output, Invalid: true);
+        return new CorpusOptions(list, check, xtOnly, transmitVersion, group, caseId, output, Invalid: true);
 
-    return new CorpusOptions(list, check, group, caseId, output, Invalid: false);
+    return new CorpusOptions(list, check, xtOnly, transmitVersion, group, caseId, output, Invalid: false);
 }
 
 static string ResolvePath(string path, string scriptPath)
@@ -204,7 +232,9 @@ static List<CaseGroup> SelectGroups(IReadOnlyList<CaseGroup> groups, string? gro
 
 static void PrintUsage()
 {
-    Console.Error.WriteLine("usage: dotnet run scripts/GenerateParasolidXtCorpus.cs -- [--list] [--check] [--group GROUP | --case CASE_ID] [--output PATH]");
+    Console.Error.WriteLine("usage: dotnet run scripts/GenerateParasolidXtCorpus.cs -- [--list] [--check] [--xt-only] [--transmit-version N|auto] [--group GROUP | --case CASE_ID] [--output PATH]");
+    Console.Error.WriteLine("  --xt-only            write model.x_t only; skip oracle comparison and managed verification");
+    Console.Error.WriteLine("  --transmit-version   explicit transmit version, or 'auto' to derive it from the connected session (default)");
 }
 
 static async Task<ProcessResult> InvokeAsync(string scriptPath, IReadOnlyList<string> arguments, string repositoryRoot)
@@ -235,6 +265,8 @@ static async Task<ProcessResult> InvokeAsync(string scriptPath, IReadOnlyList<st
 internal readonly record struct CorpusOptions(
     bool List,
     bool Check,
+    bool XtOnly,
+    int? TransmitVersion,
     string? Group,
     string? CaseId,
     string OutputRoot,
