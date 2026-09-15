@@ -3568,11 +3568,19 @@ typedef struct PGM_XT_COUNTS_s {
 #define PGM_XT_MODEL_delete PGM_XT_SCH_3501127_35102_MODEL_delete
 #define PGM_XT_DOCUMENT_to_MODEL PGM_XT_DOCUMENT_to_SCH_3501127_35102_MODEL
 #define PGM_XT_MODEL_to_DOCUMENT PGM_XT_SCH_3501127_35102_MODEL_to_DOCUMENT
+#define PGM_XT_MODEL_set_user_field_size PGM_XT_SCH_3501127_35102_MODEL_set_user_field_size
+#define PGM_XT_MODEL_ask_user_field_size PGM_XT_SCH_3501127_35102_MODEL_ask_user_field_size
+#define PGM_XT_MODEL_user_fields_get_read_view PGM_XT_SCH_3501127_35102_MODEL_user_fields_get_read_view
+#define PGM_XT_MODEL_user_fields_get_write_view PGM_XT_SCH_3501127_35102_MODEL_user_fields_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_create(const PGM_XT_COUNTS_t *, PGM_XT_model_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_finalize(PGM_XT_model_t);
 PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_delete(PGM_XT_model_t);
 PGM_XT_API PGM_XT_status_t PGM_XT_DOCUMENT_to_MODEL(PGM_XT_document_t, PGM_XT_model_t *);
 PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_to_DOCUMENT(PGM_XT_model_t, PGM_XT_document_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_set_user_field_size(PGM_XT_model_t, int32_t);
+PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_ask_user_field_size(PGM_XT_model_t, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_user_fields_get_read_view(PGM_XT_model_t, const int32_t **, int32_t *);
+PGM_XT_API PGM_XT_status_t PGM_XT_MODEL_user_fields_get_write_view(PGM_XT_model_t, int32_t **, int32_t *);
 #define PGM_XT_NULLP_get_read_view PGM_XT_SCH_3501127_35102_NULLP_get_read_view
 #define PGM_XT_NULLP_get_write_view PGM_XT_SCH_3501127_35102_NULLP_get_write_view
 PGM_XT_API PGM_XT_status_t PGM_XT_NULLP_get_read_view(PGM_XT_model_t, const PGM_XT_NULLP_t **, int32_t *);

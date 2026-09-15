@@ -171,6 +171,18 @@ range 和 element view。判断 null 使用 `PGM_XT_INDEX_IS_NULL`、
 `PGM_XT_INTEGER_IS_NULL`、`PGM_XT_REAL_IS_NULL`、`PGM_XT_VECTOR_IS_NULL`、
 `PGM_XT_BOX_IS_NULL` 等宏（managed 侧比较 `XtSchemaField` 常量）。
 
+XT user fields 通过每个 schema 的四个 model 级入口完整暴露：finalize 前
+`PGM_XT_MODEL_set_user_field_size(model, width)` 设定每实体宽度、
+`PGM_XT_MODEL_user_fields_get_write_view` 取得拼接池写入具体数据（每行的
+`_xt_user_fields` range 字段声明该实体在池中的 `{offset,count}` 区间）；
+finalize 后 `PGM_XT_MODEL_ask_user_field_size` 读取宽度（对 builder 与
+finalized model 均可用）、`PGM_XT_MODEL_user_fields_get_read_view` 读取池数据。
+宽度非负且只能对未 finalized 的 builder 修改；行 range 必须落在池内，且
+count 非 0 时必须等于宽度。从 document 解码的 model（`PGM_XT_DOCUMENT_to_MODEL`）
+自带源文件声明的宽度与数据，读取路径相同。user field 相关 schema 每行的
+`_xt_user_fields` range 与 `PGM_XT_COUNTS_t._xt_user_fields` 池容量字段随
+schema 头文件一并生成。
+
 Handle 是带 generation 校验的 64-bit token，不是托管对象地址。Table view 由
 model handle 统一释放；XT 输出 buffer 使用 `PGM_XT_BUFFER_free`。
 
