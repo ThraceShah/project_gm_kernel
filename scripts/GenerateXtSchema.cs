@@ -507,6 +507,22 @@ void GenerateJsonRow(StringBuilder output, VersionSchema version, XtNodeDescript
         if (!field.Transmit)
             continue;
         var member = "row." + CsName(field.Name);
+        if (field.ElementCount == 1 && field.Type == 'c')
+        {
+            // Variable-length char fields carry XT text (CHAR_VALUES.values,
+            // ATT_DEF_ID.string, KEY.string, WORKSPACE.ws); emit one JSON
+            // string. The text-format null marker '?' is stored as the 0xFF
+            // sentinel byte, so map it back to keep the text verbatim.
+            output.Append("        writer.WritePropertyName(\"").Append(field.Name).AppendLine("\");");
+            output.AppendLine("        Span<char> text = " + member + ".Count <= 256 ? stackalloc char[" + member + ".Count] : new char[" + member + ".Count];");
+            output.AppendLine("        for (var i = 0; i < " + member + ".Count; i++)");
+            output.AppendLine("        {");
+            output.Append("            var raw = model.Storage.").Append(node.Name).Append("__").Append(field.Name).Append('[').Append(member).AppendLine(".Offset + i];");
+            output.AppendLine("            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;");
+            output.AppendLine("        }");
+            output.AppendLine("        writer.WriteStringValue(text);");
+            continue;
+        }
         if (field.ElementCount == 1)
         {
             output.Append("        writer.WritePropertyName(\"").Append(field.Name).AppendLine("\");");
