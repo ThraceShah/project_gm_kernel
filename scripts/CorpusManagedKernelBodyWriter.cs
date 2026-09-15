@@ -3,7 +3,7 @@ using ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class CorpusManagedKernel
 {
-    public static byte[] Transmit(Func<PK_BODY_t> createBody)
+    public static byte[] Transmit(Func<PK_BODY_t> createBody, int transmitVersion)
     {
         var startOptions = new PK_SESSION_start_o_s { o_t_version = 1 };
         Check(KernelRuntime.SessionStart(&startOptions), "managed PK_SESSION_start");
@@ -14,7 +14,7 @@ internal static unsafe partial class CorpusManagedKernel
             {
                 o_t_version = 1,
                 transmit_format = ParasolidConstants.PK_transmit_format_text_c,
-                transmit_version = 371,
+                transmit_version = transmitVersion,
             };
             var block = new PK_MEMORY_block_s();
             Check(KernelRuntime.PartTransmitB(1, &body, &transmitOptions, &block), "managed PK_PART_transmit_b");

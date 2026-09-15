@@ -36,7 +36,8 @@ non-manifold topology、edge blend、three-face blend 以及 `PK_SURF_create_ble
 - `scripts/GenerateParasolidApiCoverage.cs`：从 header 和 PKToy P/Invoke 绑定
   生成 API、参数、结构体和 enum 清单及 Markdown 视图。
 - `scripts/GenerateParasolidXtCorpus.cs`：发现并调度 case-group 脚本，聚合
-  manifest、覆盖率和诊断，提供 `--list`、`--case`、`--group` 和 `--check`。
+  manifest、覆盖率和诊断，提供 `--list`、`--case`、`--group`、`--check`、
+  `--xt-only` 和 `--transmit-version N|auto`。
 - `scripts/CheckParasolidXtCorpusCoverage.cs`：将 API 清单中的 Producer/Mutator
   与 canonical case manifest 对齐，生成稳定缺口报告；`--strict` 在仍有未覆盖且
   未具备不可达分支审计的持久 API 时失败。
@@ -77,6 +78,24 @@ non-manifold topology、edge blend、three-face blend 以及 `PK_SURF_create_ble
 
 生成器必须支持确定性运行和 `--check`。连续两次运行必须产生相同 case 集、
 每个 case 相同的规范语义 hash，以及不依赖发现顺序的聚合 manifest。
+
+Parasolid runtime 与 transmit version 必须可参数化，禁止写死仓库内置路径：
+
+- `ParasolidScriptHost` 优先读取 `PARASOLID_LIBRARY`（pskernel 动态库完整路径）
+  和 `PARASOLID_SCHEMA_DIR`（schema 目录，支持 `sch_*.sch_txt` 与 `sch_*.s_t`
+  两种布局）；两者未设置时回退到 `third_party/parasolid/` 下的内置 runtime。
+  相对路径按脚本自身目录解析。
+- `--transmit-version N` 显式指定 transmit version；省略（或 `auto`）时按实际
+  session 解析：读取 `PK_SESSION_ask_kernel_version` 推导 modeler version，再经
+  `XtCorpusInspection.GetCompatibleTransmitVersion` 下行找到内置 schema 绑定
+  支持的最新 transmit version；没有可用绑定时报错并提示显式传参。选中的
+  version 写入 manifest 的 `transmitVersion` 字段并用于 managed round-trip。
+  `--transmit-version 371` 可逐字节复现历史 golden fixture。
+- `--xt-only` 只生成 `model.x_t`（外加 manifest/diagnostics），跳过真实
+  Parasolid 自接收比较与全部 managed round-trip 校验，供没有完整 oracle 环境
+  的外部 runtime 使用；manifest 的 `verification` 记为 `Skipped`、
+  `managedVerification` 记为 `skipped`，coverage 报告的 `verificationCounts`
+  会单列该桶。
 
 ## 3. 主 agent 与 subagent 并行实施计划
 
