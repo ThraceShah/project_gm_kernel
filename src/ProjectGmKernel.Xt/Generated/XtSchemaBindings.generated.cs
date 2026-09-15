@@ -9091,12 +9091,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -10452,12 +10453,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -10582,12 +10584,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -10890,12 +10893,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -21493,12 +21497,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -22856,12 +22861,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -22986,12 +22992,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -23295,12 +23302,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -24334,12 +24342,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -34090,12 +34099,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -35453,12 +35463,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -35583,12 +35594,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -35892,12 +35904,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -36931,12 +36944,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -46896,12 +46910,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -48259,12 +48274,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -48389,12 +48405,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -48698,12 +48715,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -49810,12 +49828,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -59886,12 +59905,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -61249,12 +61269,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -61379,12 +61400,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -61688,12 +61710,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -62800,12 +62823,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -73139,12 +73163,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -74504,12 +74529,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -74634,12 +74660,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -74944,12 +74971,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -76056,12 +76084,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -86557,12 +86586,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -87922,12 +87952,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -88052,12 +88083,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -88363,12 +88395,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -89475,12 +89508,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -100069,12 +100103,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -101436,12 +101471,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -101566,12 +101602,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -101877,12 +101914,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -102989,12 +103027,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -113610,12 +113649,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -114977,12 +115017,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -115107,12 +115148,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -115418,12 +115460,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -116530,12 +116573,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -127159,12 +127203,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -128526,12 +128571,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -128656,12 +128702,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -128967,12 +129014,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -130079,12 +130127,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -140718,12 +140767,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -142085,12 +142135,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -142215,12 +142266,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -142526,12 +142578,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -143638,12 +143691,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -154281,12 +154335,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -155648,12 +155703,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -155778,12 +155834,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -156089,12 +156146,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -157201,12 +157259,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -167845,12 +167904,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -169212,12 +169272,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -169342,12 +169403,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -169653,12 +169715,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -170765,12 +170828,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -181846,12 +181910,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -183213,12 +183278,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -183343,12 +183409,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -183654,12 +183721,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -184766,12 +184834,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -196040,12 +196109,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -197407,12 +197477,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -197537,12 +197608,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -197848,12 +197920,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {
@@ -198960,12 +199033,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.SCHEMA_CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteNEW_NODE_MAP(Utf8JsonWriter writer, ref readonly NEW_NODE_MAP row, MODEL model)    {
@@ -207285,12 +207359,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("ws");
-        writer.WriteStartArray();
+        Span<char> text = row.ws.Count <= 256 ? stackalloc char[row.ws.Count] : new char[row.ws.Count];
         for (var i = 0; i < row.ws.Count; i++)
         {
-        if (model.Storage.WORKSPACE__ws[row.ws.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.WORKSPACE__ws[row.ws.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.WORKSPACE__ws[row.ws.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePARTITION(Utf8JsonWriter writer, ref readonly PARTITION row, MODEL model)    {
@@ -208631,12 +208706,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.ATT_DEF_ID__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.ATT_DEF_ID__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.ATT_DEF_ID__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteATTRIB_DEF(Utf8JsonWriter writer, ref readonly ATTRIB_DEF row, MODEL model)    {
@@ -208761,12 +208837,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("values");
-        writer.WriteStartArray();
+        Span<char> text = row.values.Count <= 256 ? stackalloc char[row.values.Count] : new char[row.values.Count];
         for (var i = 0; i < row.values.Count; i++)
         {
-        if (model.Storage.CHAR_VALUES__values[row.values.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.CHAR_VALUES__values[row.values.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.CHAR_VALUES__values[row.values.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WritePOINT_VALUES(Utf8JsonWriter writer, ref readonly POINT_VALUES row, MODEL model)    {
@@ -209063,12 +209140,13 @@ public static class JSON
             writer.WriteEndArray();
         }
         writer.WritePropertyName("string");
-        writer.WriteStartArray();
+        Span<char> text = row.@string.Count <= 256 ? stackalloc char[row.@string.Count] : new char[row.@string.Count];
         for (var i = 0; i < row.@string.Count; i++)
         {
-        if (model.Storage.KEY__string[row.@string.Offset + i] == XtSchemaField.NullCharacter) { writer.WriteNullValue(); } else { Span<char> ch = stackalloc char[1]; ch[0] = (char)model.Storage.KEY__string[row.@string.Offset + i]; writer.WriteStringValue(ch); }
+            var raw = model.Storage.KEY__string[row.@string.Offset + i];
+            text[i] = raw == XtSchemaField.NullCharacter ? '?' : (char)raw;
         }
-        writer.WriteEndArray();
+        writer.WriteStringValue(text);
         writer.WriteEndObject();
     }
     private static void WriteBEZIER_CURVE(Utf8JsonWriter writer, ref readonly BEZIER_CURVE row, MODEL model)    {

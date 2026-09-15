@@ -117,8 +117,11 @@ dotnet run --file scripts/PublishXtToJsonEmbedded.cs [--schema-dir <目录>] [--
 `schema`（绑定 identity）、`version_text`、`user_field_size` 与各传输节点表
 （只含非空表），行内是 `_xt_index`/`_xt_order`（变量节点加
 `_xt_variable_length`）和传输字段：null 哨兵输出 `null`，`c` 字段输出单字符
-字符串，`l` 输出 true/false，向量/区间/包围盒输出具名对象，变长与定长字段
-输出数组；非传输字段省略。带生成枚举的标量字段额外输出 `<字段>_name`
+字符串，`l` 输出 true/false，向量/区间/包围盒输出具名对象，变长字段输出
+数组，但变长 `c` 字段（`CHAR_VALUES.values`、`SCHEMA_CHAR_VALUES.values`、
+`ATT_DEF_ID.string`、`KEY.string`、`WORKSPACE.ws`）特化为单个字符串，文本
+null 标记 `?`（解码为 0xFF 哨兵字节）原样还原；定长字段输出数组；非传输
+字段省略。带生成枚举的标量字段额外输出 `<字段>_name`
 兄弟键（如 `"body_type": 1, "body_type_name": "solid_body"`；未知值时为
 `null`，null 值时不输出该键）。序列化器由 `GenerateXtSchema.cs` 生成到每个
 schema namespace 的 `JSON` 类（`XtGeneratedModelJson` 统一分发），直读强类型
