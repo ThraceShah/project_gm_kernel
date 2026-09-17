@@ -20,7 +20,7 @@ internal sealed class SchemaModelHolder
 
 public static unsafe class NativeExports
 {
-    private const uint AbiVersion=1;
+    private const uint AbiVersion=2;
 
     [UnmanagedCallersOnly(EntryPoint="PGM_XT_CONTEXT_create",CallConvs=[typeof(CallConvCdecl)])]
     public static PgmXtStatus ContextCreate(PgmXtContextOptions* options,PgmXtHandle* context)

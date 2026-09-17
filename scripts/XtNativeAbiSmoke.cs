@@ -20,7 +20,10 @@ unsafe
     var setUserFieldSize=(delegate* unmanaged[Cdecl]<ulong,int,int>)NativeLibrary.GetExport(library,"PGM_XT_SCH_3701097_37102_MODEL_set_user_field_size");var askUserFieldSize=(delegate* unmanaged[Cdecl]<ulong,int*,int>)NativeLibrary.GetExport(library,"PGM_XT_SCH_3701097_37102_MODEL_ask_user_field_size");
     var userFieldsRead=(delegate* unmanaged[Cdecl]<ulong,int**,int*,int>)NativeLibrary.GetExport(library,"PGM_XT_SCH_3701097_37102_MODEL_user_fields_get_read_view");var userFieldsWrite=(delegate* unmanaged[Cdecl]<ulong,int**,int*,int>)NativeLibrary.GetExport(library,"PGM_XT_SCH_3701097_37102_MODEL_user_fields_get_write_view");
     var bodyRead=(delegate* unmanaged[Cdecl]<ulong,Schema37102.BODY**,int*,int>)NativeLibrary.GetExport(library,"PGM_XT_SCH_3701097_37102_BODY_get_read_view");var bodyWrite=(delegate* unmanaged[Cdecl]<ulong,Schema37102.BODY**,int*,int>)NativeLibrary.GetExport(library,"PGM_XT_SCH_3701097_37102_BODY_get_write_view");
-    var options=new ContextOptions{StructSize=(uint)sizeof(ContextOptions),Version=1};ulong context;Check(contextCreate(&options,&context),"context create without external schema");
+    // Must match PGM_XT_ABI_VERSION in ProjectGmKernel.Xt.h; VerifyHeader
+    // static-asserts the header value so the two sides cannot drift apart.
+    const uint AbiVersion=2;
+    var options=new ContextOptions{StructSize=(uint)sizeof(ContextOptions),Version=AbiVersion};ulong context;Check(contextCreate(&options,&context),"context create without external schema");
     fixed(byte* source=sourceBytes)
     {
         ulong document;Check(documentRead(context,source,(nuint)sourceBytes.Length,&document),"document read");ulong model;Check(toModel(document,&model),"document to generated model");Schema37102.BODY* bodies;int bodyCount;Check(bodyRead(model,&bodies,&bodyCount),"BODY read view");if(bodyCount!=1||bodies is null)throw new InvalidOperationException("BODY typed view is invalid.");
@@ -55,6 +58,7 @@ static void VerifyHeader(string root)
     var work=Path.Combine(root,"bin","xt-native-abi-smoke");Directory.CreateDirectory(work);var source=Path.Combine(work,"header-layout.c");var executable=Path.Combine(work,"header-layout");var header=Path.Combine(root,"src","ProjectGmKernel.Xt.Native","include","ProjectGmKernel.Xt.SCH_3701097_37102.h").Replace("\\","/",StringComparison.Ordinal);
     File.WriteAllText(source,$$"""
 #include "{{header}}"
+_Static_assert(PGM_XT_ABI_VERSION == 2,"PGM_XT_ABI_VERSION drifted from the XT native ABI smoke");
 _Static_assert(sizeof(PGM_XT_INTERSECTION_t)=={{Unsafe.SizeOf<Schema37102.INTERSECTION>()}},"INTERSECTION layout mismatch");
 _Static_assert(sizeof(PGM_XT_BLENDED_EDGE_t)=={{Unsafe.SizeOf<Schema37102.BLENDED_EDGE>()}},"BLENDED_EDGE layout mismatch");
 _Static_assert(sizeof(PGM_XT_NURBS_SURF_t)=={{Unsafe.SizeOf<Schema37102.NURBS_SURF>()}},"NURBS_SURF layout mismatch");
