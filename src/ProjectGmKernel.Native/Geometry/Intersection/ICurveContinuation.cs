@@ -229,8 +229,19 @@ internal static class ICurveContinuation
                     if (separation > 1e-6 * scale
                         && residualGap <= 1e-6 * Math.Max(1.0, Math.Max(midResidual, otherResidual)))
                     {
-                        detail = ICurveEvalDetail.AmbiguousBranch;
-                        return AlgorithmStatus.NotConverged;
+                        // Interval cert may resolve Unique vs Empty (§18.3); otherwise refuse.
+                        if (plan == ICurveConstraintPlan.I3
+                            && TryPreferCertifiedI3Root(in view, tMid, segment,
+                                midDeriv[0], otherDeriv[0], out var preferMid))
+                        {
+                            if (!preferMid)
+                                midDeriv[0] = otherDeriv[0];
+                        }
+                        else
+                        {
+                            detail = ICurveEvalDetail.AmbiguousBranch;
+                            return AlgorithmStatus.NotConverged;
+                        }
                     }
                 }
             }
@@ -247,6 +258,24 @@ internal static class ICurveContinuation
 
         if (detail == ICurveEvalDetail.None) detail = ICurveEvalDetail.Stagnation;
         return AlgorithmStatus.NotConverged;
+    }
+
+    /// <summary>
+    /// Prefer a Unique-certified I3 cell over an Empty sibling when two Newton
+    /// hits disagree (§17.5 + §18.3). Returns false when certification cannot
+    /// break the tie.
+    /// </summary>
+    private static bool TryPreferCertifiedI3Root(in ICurveView view, double t, BufferOffset segment,
+        in KernelVector3 candidateA, in KernelVector3 candidateB, out bool preferA)
+    {
+        preferA = true;
+        var chordUnit = view.ChartChordUnits[segment];
+        var planeOffset = IntervalRootCheck.ChordPlaneOffset(in chordUnit, view.ChartPositions[segment],
+            view.ChartParameters[segment], view.ChartScales[segment], t);
+        var cellRadius = Math.Max(1e-4, 1e-3 * Math.Max(1.0, Norm(candidateA)));
+        return IntervalRootCheck.TryDisambiguateI3Pair(
+            in view.Support0, in view.Support1, in chordUnit, planeOffset,
+            in candidateA, in candidateB, cellRadius, out preferA);
     }
 
     /// <summary>
