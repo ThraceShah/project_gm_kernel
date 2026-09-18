@@ -9,8 +9,8 @@ namespace KernelTests;
 /// <summary>
 /// Local Moore–Krawczyk certification for analytic I3 cells (spec §18.3–§18.4,
 /// task T18). Empty / Unique / Undetermined are distinct; Newton samples alone
-/// are never labelled certified; unsupported process surfaces report
-/// BoundsUnavailable via Unsupported status.
+/// are never labelled certified; unsupported process surfaces (torus / B-surface)
+/// report BoundsUnavailable via Unsupported status. Cone is interval-capable.
 /// </summary>
 public class IntervalRootCheckTests
 {
@@ -20,6 +20,8 @@ public class IntervalRootCheckTests
         new(SurfaceClass.Cylinder, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0);
     private static readonly AnalyticSurface Cone =
         new(SurfaceClass.Cone, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 0.5);
+    private static readonly AnalyticSurface Torus =
+        new(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 3.0, 1.0);
 
     [Fact]
     public void TryCertifyI3_TightBoxAroundCirclePoint_Unique()
@@ -61,13 +63,27 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_UnsupportedCone_BoundsUnavailable()
+    public void TryCertifyI3_PlaneCone_TightBox_Unique()
+    {
+        // Cone R=1, k=0.5: at z=0 the section is the unit circle; plane z=0 ∩
+        // cone shares the same (1,0,0) root used by the cylinder fixture.
+        var chord = Vector(0, 1, 0);
+        var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
+
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+            in PlaneZ0, in Cone, in chord, planeOffset: 0, in box,
+            out var status, out _));
+        Assert.Equal(IntervalRootStatus.Unique, status);
+    }
+
+    [Fact]
+    public void TryCertifyI3_UnsupportedTorus_BoundsUnavailable()
     {
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
 
         Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
-            in PlaneZ0, in Cone, in chord, planeOffset: 0, in box,
+            in PlaneZ0, in Torus, in chord, planeOffset: 0, in box,
             out var status, out _));
         Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
