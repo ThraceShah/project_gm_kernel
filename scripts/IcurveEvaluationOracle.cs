@@ -53,11 +53,14 @@ using (host)
             Log("=== Case C: XT receive → DecodeIcurve hydrate (PK transmit chart) ===");
             RunXtHydrateCase(Log, repoRoot);
 
+            Log("=== Case D: our XT INTERSECTION writer → codec re-read ===");
+            RunOurWriterRoundtrip(Log);
+
             Log("=== GATE probes ===");
             Log("NotRun: GATE-T — terminator t_E reconstruction vs PK_CURVE_ask_interval not closed.");
             Log("NotRun: GATE-D — public high-order (>2) PK_CURVE_eval contract not closed; Runtime rejects order>2.");
             Log("NotRun: GATE-B/A — BlendBound role map / blend arc extremes open.");
-            Log("NotRun: XT INTERSECTION writer + live PK_PART_transmit hydrate — pending (add_geoms shared-dep / writer).");
+            Log("NotRun: XT INTERSECTION live PK_PART_transmit receive/compare — writer emits 38/40/41/204; PK receive oracle pending.");
             Log("PASS: chart-interior D0 geometric comparisons above (see case logs).");
         }
         finally
@@ -272,6 +275,66 @@ static unsafe void RunXtHydrateCase(Action<string> log, string repoRoot)
         throw new InvalidOperationException($"xt-hydrate residual {maxRes}");
     log("xt-hydrate: PASS (corpus CHART extract + DecodeIcurve with PK chart samples)");
     log("NotRun: XT full INTERSECTION entity hydrate via live PK_PART_transmit (add_geoms shared-dep).");
+}
+
+static unsafe void RunOurWriterRoundtrip(Action<string> log)
+{
+    // Attach a plane∩sphere icurve to a block edge, transmit with our writer,
+    // and confirm INTERSECTION/CHART/LIMIT/INTERSECTION_DATA round-trip through
+    // XtCodec (structure). Live Parasolid receive remains NotRun.
+    int body = 0;
+    CheckOur(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body), "BodyCreateSolidBlock");
+    if (!KernelRuntime.TryResolveBodySlot(body, out var bodySlot))
+        throw new InvalidOperationException("body slot");
+    var edgeSlot = KernelRuntime.GetBodyRecord(bodySlot).FirstEdgeBody;
+    int edge = KernelRuntime.TagOf(PoolKind.Edge, edgeSlot);
+
+    var plane = CreateOurPlaneZ0();
+    var sphere = CreateOurUnitSphere();
+    double[] chart = [1, 0, 0, 0, 1, 0, -1, 0, 0, 0, -1, 0];
+    var input = BuildDecodeInput(plane, sphere, chart, baseParameter: -0.25, baseScale: 1.5);
+    CheckStatus(KernelRuntime.DecodeIcurve(input, out var slot, out _, out _), "DecodeIcurve writer");
+    CheckStatus(KernelRuntime.TryBindICurveEntity(slot, out var icurve), "TryBindICurveEntity writer");
+    CheckOur(KernelRuntime.TopologyDetachGeometry(edge), "detach");
+    CheckOur(KernelRuntime.EdgeAttachCurves(1, &edge, &icurve), "attach icurve");
+
+    var parts = stackalloc int[1] { body };
+    var options = new M.PK_PART_transmit_o_s
+    {
+        o_t_version = 4,
+        transmit_format = M.ParasolidConstants.PK_transmit_format_text_c,
+        transmit_version = 371,
+        transmit_meshes = M.ParasolidConstants.PK_transmit_meshes_separate_c,
+    };
+    var block = new M.PK_MEMORY_block_s();
+    CheckOur(KernelRuntime.PartTransmitB(1, parts, &options, &block), "our PartTransmitB");
+    string text;
+    try
+    {
+        text = System.Text.Encoding.ASCII.GetString(block.bytes, checked((int)block.n_bytes));
+    }
+    finally
+    {
+        CheckOur(KernelRuntime.MemoryBlockFree(&block), "MemoryBlockFree");
+    }
+
+    var doc = XtCodec.Read(XtSchemaCatalog.OpenBuiltIn(), System.Text.Encoding.ASCII.GetBytes(text));
+    var intersection = doc.Nodes.Single(n => n.Type == (int)XtNodeTypes.Intersection);
+    var chartNode = doc.Nodes.Single(n => n.Index == intersection.Fields[9].Pointer);
+    if (chartNode.Type != (int)XtNodeTypes.Chart || chartNode.VariableLength != 4)
+        throw new InvalidOperationException("writer round-trip CHART missing or wrong length");
+    if (Math.Abs(chartNode.Fields[0].Real - (-0.25)) > 1e-15 || Math.Abs(chartNode.Fields[1].Real - 1.5) > 1e-15)
+        throw new InvalidOperationException("writer round-trip CHART base fields mismatch");
+
+    var chartBuf = new double[32];
+    if (!KernelRuntime.TryExtractIcurveChartFromXt(doc, chartBuf, out var count, out var bp, out var bs, out _, out _))
+        throw new InvalidOperationException("writer round-trip extract failed");
+    if (count != 4 || Math.Abs(bp - (-0.25)) > 0 || Math.Abs(bs - 1.5) > 0)
+        throw new InvalidOperationException("writer round-trip extract values mismatch");
+    if (Math.Abs(chartBuf[0] - 1) > 0 || Math.Abs(chartBuf[10] + 1) > 0)
+        throw new InvalidOperationException("writer round-trip chart hvecs mismatch");
+
+    log($"our-writer: INTERSECTION fields={intersection.Fields.Length} chartCount={count} PASS (codec re-read)");
 }
 
 static unsafe bool TryIntersectFaces(PK_SURF_t leftSurf, PK_SURF_t rightSurf,
