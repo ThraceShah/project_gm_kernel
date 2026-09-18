@@ -254,6 +254,9 @@ internal static unsafe class XtWriter
                 case CurveClass.SPCurve:
                     node = SpCurveNode(pair.Value, pair.Key, curve, map);
                     break;
+                case CurveClass.ICurve:
+                    node = IntersectionNode(pair.Value, pair.Key, curve, ref map, nodes, ref graph);
+                    break;
                 default:
                     throw new NotSupportedException("Unsupported curve class for XT writer.");
             }
@@ -289,6 +292,13 @@ internal static unsafe class XtWriter
                         ref readonly var sp = ref KernelRuntime.SpCurveDataPool[curve.DataIndex];
                         changed |= AddSurfaceTag(sp.SurfTag, tag, isCurve: true, ref map, nodes, ref graph);
                         changed |= AddFloatingCurveTag(sp.BCurveTag, ref map, nodes, ref graph);
+                        break;
+                    }
+                    case CurveClass.ICurve:
+                    {
+                        ref readonly var ic = ref KernelRuntime.ICurveDataPool[curve.DataIndex];
+                        changed |= AddSurfaceTag(ic.Surface0Tag, tag, isCurve: true, ref map, nodes, ref graph);
+                        changed |= AddSurfaceTag(ic.Surface1Tag, tag, isCurve: true, ref map, nodes, ref graph);
                         break;
                     }
                 }
@@ -1003,6 +1013,150 @@ internal static unsafe class XtWriter
                 XtFieldValue.Null(),
             ],
         };
+    }
+
+    /// <summary>
+    /// INTERSECTION (node 38) with CHART (40), LIMIT (41) and INTERSECTION_DATA
+    /// (204). Optional <c>scale</c> is omitted when absent; optional CHART
+    /// extended fields are unsupported for transmit until hydrate covers them.
+    /// </summary>
+    private static XtNode IntersectionNode(XtNodeIndex index, CurveTag tag, CurveRecord curve,
+        ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
+    {
+        ref readonly var data = ref KernelRuntime.ICurveDataPool[curve.DataIndex];
+        if (data.ExtendedChartCount != 0)
+            throw new NotSupportedException("XT INTERSECTION writer does not transmit extended charts.");
+        if (data.ChartCount < 2 || data.HvecCount < 2)
+            throw new NotSupportedException("XT INTERSECTION writer requires a chart with at least two hull vectors.");
+
+        var hvecs = ICurveHvecs(in data);
+        var chartNode = AddIndex(nodes, ref graph, ref map);
+        var startNode = AddIndex(nodes, ref graph, ref map);
+        var endNode = AddIndex(nodes, ref graph, ref map);
+        var dataNode = AddIndex(nodes, ref graph, ref map);
+
+        SetNode(nodes, map, chartNode, ChartNode(chartNode, in data, hvecs));
+        SetNode(nodes, map, startNode, LimitNode(startNode, in data.StartLimit, hvecs));
+        SetNode(nodes, map, endNode, LimitNode(endNode, in data.EndLimit, hvecs));
+        SetNode(nodes, map, dataNode, IntersectionDataNode(dataNode, in data));
+
+        var sense = curve.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c ? '-' : '+';
+        var hasScale = data.ScaleProvided != 0;
+        var fields = new XtFieldValue[hasScale ? 14 : 13];
+        fields[0] = XtFieldValue.Int(NodeId(index, map));
+        fields[1] = XtFieldValue.Ptr(0);
+        fields[2] = XtFieldValue.Ptr(CurveOwner(curve, map));
+        fields[3] = XtFieldValue.Ptr(NextCurve(tag, map));
+        fields[4] = XtFieldValue.Ptr(PreviousCurve(tag, map));
+        fields[5] = GeometricOwnerField(tag, map);
+        fields[6] = XtFieldValue.Char(sense);
+        fields[7] = XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.Surface0Tag));
+        fields[8] = XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.Surface1Tag));
+        fields[9] = XtFieldValue.Ptr(chartNode);
+        fields[10] = XtFieldValue.Ptr(startNode);
+        fields[11] = XtFieldValue.Ptr(endNode);
+        if (hasScale)
+        {
+            fields[12] = XtFieldValue.RealValue(data.Scale);
+            fields[13] = XtFieldValue.Ptr(dataNode);
+        }
+        else
+            fields[12] = XtFieldValue.Ptr(dataNode);
+
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.Intersection,
+            Index = index,
+            Fields = fields,
+        };
+    }
+
+    private static XtNode ChartNode(XtNodeIndex index, in ICurveData data, ReadOnlySpan<double> hvecs)
+    {
+        var chartCount = data.ChartCount;
+        var chartOffset = data.StartLimit.HvecCount * 3;
+        // Common Parasolid layout: omit optional extended_chart_count / extra_hvecs /
+        // extended_chart_order; keep parameter_error as two nulls when absent.
+        var fields = new XtFieldValue[7 + chartCount];
+        fields[0] = XtFieldValue.RealValue(data.BaseParameter);
+        fields[1] = XtFieldValue.RealValue(data.BaseScale);
+        fields[2] = XtFieldValue.Int(chartCount);
+        fields[3] = XtFieldValue.RealValue(data.ChordalError);
+        fields[4] = XtFieldValue.RealValue(data.AngularError);
+        if (data.ParameterErrorProvided != 0)
+        {
+            fields[5] = XtFieldValue.RealValue(data.ParameterError);
+            fields[6] = XtFieldValue.RealValue(data.ParameterError);
+        }
+        else
+        {
+            fields[5] = XtFieldValue.Null();
+            fields[6] = XtFieldValue.Null();
+        }
+        for (BufferOffset i = 0; i < chartCount; i++)
+        {
+            var o = chartOffset + i * 3;
+            fields[7 + i] = XtFieldValue.Vec(hvecs[o], hvecs[o + 1], hvecs[o + 2]);
+        }
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.Chart,
+            Index = index,
+            VariableLength = chartCount,
+            Fields = fields,
+        };
+    }
+
+    private static XtNode LimitNode(XtNodeIndex index, in LimitRecord limit, ReadOnlySpan<double> hvecs)
+    {
+        var count = limit.HvecCount;
+        var fields = new XtFieldValue[2 + count];
+        fields[0] = XtFieldValue.Char((char)limit.Type);
+        fields[1] = limit.TermUse == LimitTermUse.Unset
+            ? XtFieldValue.Null()
+            : XtFieldValue.Char((char)limit.TermUse);
+        for (BufferOffset i = 0; i < count; i++)
+        {
+            var o = (limit.HvecIndex + i) * 3;
+            fields[2 + i] = XtFieldValue.Vec(hvecs[o], hvecs[o + 1], hvecs[o + 2]);
+        }
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.Limit,
+            Index = index,
+            VariableLength = count,
+            Fields = fields,
+        };
+    }
+
+    private static XtNode IntersectionDataNode(XtNodeIndex index, in ICurveData data)
+    {
+        var uvCount = data.UvValueCount;
+        var fields = new XtFieldValue[1 + uvCount];
+        fields[0] = XtFieldValue.Unsigned((long)data.UvType);
+        if (uvCount > 0)
+        {
+            var block = KernelRuntime.DereferenceBlock(data.UvValueBlock);
+            if (block is null)
+                throw new InvalidOperationException("INTERSECTION_DATA UV block is missing.");
+            var values = new ReadOnlySpan<double>((double*)block, uvCount);
+            for (BufferOffset i = 0; i < uvCount; i++)
+                fields[1 + i] = XtFieldValue.RealValue(values[i]);
+        }
+        return new XtNode
+        {
+            Type = (int)XtNodeTypes.IntersectionData,
+            Index = index,
+            VariableLength = uvCount,
+            Fields = fields,
+        };
+    }
+
+    private static ReadOnlySpan<double> ICurveHvecs(in ICurveData data)
+    {
+        var block = KernelRuntime.DereferenceBlock(data.HvecBlock);
+        if (block is null || data.HvecCount <= 0) return ReadOnlySpan<double>.Empty;
+        return new ReadOnlySpan<double>((double*)block, data.HvecCount * 3);
     }
 
     private static XtNode BSurfaceNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface,

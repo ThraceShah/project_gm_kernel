@@ -1,3 +1,4 @@
+using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
 using ProjectGmKernel.Xt;
@@ -180,6 +181,111 @@ public unsafe class XtGeometryWriterTests : IDisposable
             Assert.False(ChainNodes(document, CurveChainHead).Contains(pcurveNode.Index));
             AssertInChain(document, CurveChainHead, spNode.Index);
         }
+    }
+
+    [Fact]
+    public void ICurveAttachedToBlockEdge_TransmitsIntersectionChartLimitsAndSupports()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body));
+        KernelRuntime.TryResolveBodySlot(body, out var bodySlot);
+        var edgeSlot = KernelRuntime.GetBodyRecord(bodySlot).FirstEdgeBody;
+        int edge = KernelRuntime.TagOf(PoolKind.Edge, edgeSlot);
+
+        var planeSf = new PK_PLANE_sf_s();
+        planeSf.basis_set.axis.coord[2] = 1;
+        planeSf.basis_set.ref_direction.coord[0] = 1;
+        int plane = 0;
+        Assert.Equal(0, KernelRuntime.PlaneCreate(&planeSf, &plane));
+
+        var sphereSf = new PK_SPHERE_sf_s { radius = 1 };
+        sphereSf.basis_set.axis.coord[2] = 1;
+        sphereSf.basis_set.ref_direction.coord[0] = 1;
+        int sphere = 0;
+        Assert.Equal(0, KernelRuntime.SphereCreate(&sphereSf, &sphere));
+
+        double[] chart =
+        [
+            1, 0, 0,
+            0, 1, 0,
+            -1, 0, 0,
+            0, -1, 0,
+        ];
+        var input = new IcurveDecodeInput
+        {
+            Surface0Tag = plane,
+            Surface1Tag = sphere,
+            BaseParameter = -0.5,
+            BaseScale = 1.25,
+            ChartCount = 4,
+            ChartHvecs = chart,
+            Start = new IcurveLimitInput
+            {
+                Type = LimitType.Help,
+                TermUse = LimitTermUse.Unset,
+                Hvecs = chart.AsSpan(0, 3).ToArray(),
+            },
+            End = new IcurveLimitInput
+            {
+                Type = LimitType.Help,
+                TermUse = LimitTermUse.Unset,
+                Hvecs = chart.AsSpan(9, 3).ToArray(),
+            },
+            UvType = IntersectionUvType.None,
+            ChordalError = 1e-4,
+            AngularError = 1e-6,
+        };
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var dataSlot, out var failure, out _));
+        Assert.Equal(IcurveDecodeFailure.None, failure);
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(dataSlot, out var icurve));
+
+        Assert.Equal(0, KernelRuntime.TopologyDetachGeometry(edge));
+        Assert.Equal(0, KernelRuntime.EdgeAttachCurves(1, &edge, &icurve));
+
+        var document = Decode(Transmit(body));
+        var intersection = SingleNode(document, XtNodeTypes.Intersection);
+        Assert.Equal(13, intersection.Fields.Length); // scale omitted
+        Assert.Equal('+', intersection.Fields[6].Character);
+
+        var surf0 = Deref(document, intersection.Fields[7]);
+        var surf1 = Deref(document, intersection.Fields[8]);
+        Assert.Contains((XtNodeTypes)surf0.Type, new[] { XtNodeTypes.Plane, XtNodeTypes.Sphere });
+        Assert.Contains((XtNodeTypes)surf1.Type, new[] { XtNodeTypes.Plane, XtNodeTypes.Sphere });
+        Assert.NotEqual(surf0.Type, surf1.Type);
+        AssertInChain(document, SurfaceChainHead, surf0.Index);
+        AssertInChain(document, SurfaceChainHead, surf1.Index);
+
+        var chartNode = Deref(document, intersection.Fields[9]);
+        Assert.Equal(XtNodeTypes.Chart, (XtNodeTypes)chartNode.Type);
+        Assert.Equal(4, chartNode.VariableLength);
+        Assert.Equal(-0.5, chartNode.Fields[0].Real, 14);
+        Assert.Equal(1.25, chartNode.Fields[1].Real, 14);
+        Assert.Equal(4, chartNode.Fields[2].Integer);
+        Assert.Equal(1e-4, chartNode.Fields[3].Real, 14);
+        Assert.Equal(1e-6, chartNode.Fields[4].Real, 14);
+        Assert.Equal(XtFieldKind.Empty, chartNode.Fields[5].Kind);
+        Assert.Equal(XtFieldKind.Empty, chartNode.Fields[6].Kind);
+        Assert.Equal(1.0, chartNode.Fields[7].Vector.X, 14);
+        Assert.Equal(0.0, chartNode.Fields[7].Vector.Y, 14);
+        Assert.Equal(0.0, chartNode.Fields[10].Vector.X, 14);
+        Assert.Equal(-1.0, chartNode.Fields[10].Vector.Y, 14);
+
+        var start = Deref(document, intersection.Fields[10]);
+        var end = Deref(document, intersection.Fields[11]);
+        Assert.Equal(XtNodeTypes.Limit, (XtNodeTypes)start.Type);
+        Assert.Equal(XtNodeTypes.Limit, (XtNodeTypes)end.Type);
+        Assert.Equal('H', start.Fields[0].Character);
+        Assert.Equal(XtFieldKind.Empty, start.Fields[1].Kind);
+        Assert.Equal(1.0, start.Fields[2].Vector.X, 14);
+        Assert.Equal(0.0, end.Fields[2].Vector.X, 14);
+        Assert.Equal(-1.0, end.Fields[2].Vector.Y, 14);
+
+        var dataNode = Deref(document, intersection.Fields[12]);
+        Assert.Equal(XtNodeTypes.IntersectionData, (XtNodeTypes)dataNode.Type);
+        Assert.Equal(0, dataNode.VariableLength);
+        Assert.Equal((long)IntersectionUvType.None, dataNode.Fields[0].Integer);
+
+        AssertInChain(document, CurveChainHead, intersection.Index);
     }
 
     [Fact]
