@@ -23,6 +23,7 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | XT INTERSECTION writer (Help limits, analytic supports) | Node 38/40/41/204 | `XtWriter` + `XtGeometryWriterTests` |
 | XT CHART extract → DecodeIcurve | Node 40 common layout | `TryExtractIcurveChartFromXt` |
 | XT INTERSECTION materialize → `CurveClass.ICurve` | Analytic supports + LIMIT + DATA | `TryMaterializeICurveFromXt` |
+| Ring-torus oriented distance | `a > b > 0` sheet | Exact SDF √((ρ−a)²+z²)−b; spindle Unsupported |
 
 ## Explicitly unsupported / gated
 
@@ -36,6 +37,7 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | B-surface / offset / swept supports for icurve prepare | Unsupported |
 | XT INTERSECTION writer + live `PK_PART_transmit` hydrate | Writer + local materialize done; live PK receive/compare **NotRun** |
 | Torus / B-surface interval cert | BoundsUnavailable |
+| Spindle/apple torus oriented distance | Unsupported (`a ≤ b`) |
 | Pseudo-arclength as public parameter | forbidden by §17.4 |
 | T20 publish matrix / P95 budgets | skeleton only (`scripts/IcurveEvalBenchmark.cs`) |
 

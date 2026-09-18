@@ -48,8 +48,9 @@ internal readonly struct OrientedDistanceJet
 /// Analytic local oriented distances aligned with the source surface sense
 /// (spec §8.1). Valid only on the near side of the regular region around the
 /// selected sheet; centers/axes (no unique normal) return
-/// <see cref="AlgorithmStatus.Singular"/>. Tori and cones away from the foot
-/// region are not offered here in this slice.
+/// <see cref="AlgorithmStatus.Singular"/>. Cone jets away from the foot region
+/// degrade to a first-order estimate; ring-torus distance is exact on the
+/// selected profile sheet away from the axis and medial circle.
 /// </summary>
 internal static class SurfaceDistanceEvaluation
 {
@@ -80,8 +81,9 @@ internal static class SurfaceDistanceEvaluation
                 return Cylinder(in surface, in r, sense, order, out jet);
             case SurfaceClass.Cone:
                 return Cone(in surface, in r, sense, order, out jet);
+            case SurfaceClass.Torus:
+                return Torus(in surface, in r, sense, order, out jet);
             default:
-                // Ring-torus and general surface distances arrive with T11.
                 return AlgorithmStatus.Unsupported;
         }
     }
@@ -212,6 +214,69 @@ internal static class SurfaceDistanceEvaluation
             hScale * (pyy - ny * ny), hScale * (pyz - ny * nz),
             hScale * (pzz - nz * nz),
             Add(surface.Origin, foot), grade);
+        return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus Torus(in AnalyticSurface surface, in KernelVector3 r,
+        KernelSense sense, DerivativeOrder order, out OrientedDistanceJet jet)
+    {
+        // d = s·(√((ρ−a)² + z²) − b) on the selected profile sheet (spec §8.1).
+        // Exact SDF for a ring torus (a > b > 0) away from the axis and the
+        // medial major circle. Spindle/apple (a ≤ b) stay Unsupported.
+        jet = default;
+        var a = surface.Radius;
+        var b = surface.Secondary;
+        if (!(a > b) || !(b > 0)) return AlgorithmStatus.Unsupported;
+
+        var axial = Dot(surface.Axis, r);
+        var radial = Sub(r, Scale(surface.Axis, axial));
+        var rho = Math.Sqrt(Dot(radial, radial));
+        if (rho <= 0) return AlgorithmStatus.Singular;
+
+        var sigma = rho - a;
+        var delta = Math.Sqrt(sigma * sigma + axial * axial);
+        if (delta <= 0) return AlgorithmStatus.Singular;
+
+        var distance = sense * (delta - b);
+        var meridian = Scale(radial, 1 / rho);
+        var footRel = Add(
+            Scale(meridian, a + b * sigma / delta),
+            Scale(surface.Axis, b * axial / delta));
+        var foot = Add(surface.Origin, footRel);
+        if (order == 0)
+        {
+            jet = new(distance, default, 0, 0, 0, 0, 0, 0, foot, DistanceGrade.Exact);
+            return AlgorithmStatus.Success;
+        }
+
+        var alpha = sigma / delta;
+        var beta = axial / delta;
+        var gradient = Add(Scale(meridian, sense * alpha), Scale(surface.Axis, sense * beta));
+        if (order == 1)
+        {
+            jet = new(distance, gradient, 0, 0, 0, 0, 0, 0, foot, DistanceGrade.Exact);
+            return AlgorithmStatus.Success;
+        }
+
+        // H_δ = (mmᵀ + AAᵀ − nnᵀ)/δ + (α/ρ)(P − mmᵀ), n = α m + β A, then H_d = s H_δ.
+        var mx = meridian.X; var my = meridian.Y; var mz = meridian.Z;
+        var ax = surface.Axis.X; var ay = surface.Axis.Y; var az = surface.Axis.Z;
+        var nx = alpha * mx + beta * ax;
+        var ny = alpha * my + beta * ay;
+        var nz = alpha * mz + beta * az;
+        var invDelta = 1.0 / delta;
+        var alphaOverRho = alpha / rho;
+        var pxx = 1 - ax * ax; var pxy = -ax * ay; var pxz = -ax * az;
+        var pyy = 1 - ay * ay; var pyz = -ay * az;
+        var pzz = 1 - az * az;
+        jet = new(distance, gradient,
+            sense * (invDelta * (mx * mx + ax * ax - nx * nx) + alphaOverRho * (pxx - mx * mx)),
+            sense * (invDelta * (mx * my + ax * ay - nx * ny) + alphaOverRho * (pxy - mx * my)),
+            sense * (invDelta * (mx * mz + ax * az - nx * nz) + alphaOverRho * (pxz - mx * mz)),
+            sense * (invDelta * (my * my + ay * ay - ny * ny) + alphaOverRho * (pyy - my * my)),
+            sense * (invDelta * (my * mz + ay * az - ny * nz) + alphaOverRho * (pyz - my * mz)),
+            sense * (invDelta * (mz * mz + az * az - nz * nz) + alphaOverRho * (pzz - mz * mz)),
+            foot, DistanceGrade.Exact);
         return AlgorithmStatus.Success;
     }
 
