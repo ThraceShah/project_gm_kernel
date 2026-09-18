@@ -71,6 +71,29 @@ public class LocalDistanceTests
     }
 
     [Fact]
+    public void FootElimination_MatchesClosedForm_OnRingTorus()
+    {
+        var torus = new AnalyticSurface(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 3.0, 1.0);
+        CheckAgainstClosedForm(in torus, Vector(5, 0, 0.5));
+        CheckAgainstClosedForm(in torus, Vector(3.5, 0.8, -0.4));
+        CheckAgainstClosedForm(in torus, Vector(1.2, 0, 0)); // inner equator side
+    }
+
+    [Fact]
+    public void RingTorusDistance_RefusesAxisMedialAndSpindle()
+    {
+        var ring = new AnalyticSurface(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 3.0, 1.0);
+        Assert.Equal(AlgorithmStatus.Singular,
+            SurfaceDistanceEvaluation.Evaluate(in ring, Vector(0, 0, 1), 1, 1, out _));
+        Assert.Equal(AlgorithmStatus.Singular,
+            SurfaceDistanceEvaluation.Evaluate(in ring, Vector(3, 0, 0), 1, 1, out _)); // medial circle
+
+        var spindle = new AnalyticSurface(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 2.0);
+        Assert.Equal(AlgorithmStatus.Unsupported,
+            SurfaceDistanceEvaluation.Evaluate(in spindle, Vector(2, 0, 0.5), 1, 1, out _));
+    }
+
+    [Fact]
     public void FootElimination_MatchesClosedForm_OnCone()
     {
         var cone = new AnalyticSurface(SurfaceClass.Cone, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 0.5);
@@ -186,11 +209,18 @@ public class LocalDistanceTests
         var farNappe = Vector(1, 0, -4);
         Assert.Equal(AlgorithmStatus.Unsupported,
             LocalDistanceEvaluation.TryOffsetDistance(in cone, 1, 0.5, in farNappe, 1, out _));
-        // Torus has no distance capability in this slice at all.
+        // Ring torus now has Exact distance; offset elimination is allowed.
         var torus = new AnalyticSurface(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 3.0, 1.0);
         var torusPoint = Vector(5, 0, 0.5);
+        Assert.Equal(AlgorithmStatus.Success,
+            LocalDistanceEvaluation.TryOffsetDistance(in torus, 1, 0.5, in torusPoint, 1, out var torusOffset));
+        Assert.Equal(AlgorithmStatus.Success,
+            SurfaceDistanceEvaluation.Evaluate(in torus, in torusPoint, 1, 1, out var torusBase));
+        Assert.InRange(Math.Abs(torusOffset.Distance - (torusBase.Distance - 0.5)), 0, ValueTol);
+        // Spindle torus still has no distance capability.
+        var spindle = new AnalyticSurface(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 2.0);
         Assert.Equal(AlgorithmStatus.Unsupported,
-            LocalDistanceEvaluation.TryOffsetDistance(in torus, 1, 0.5, in torusPoint, 1, out _));
+            LocalDistanceEvaluation.TryOffsetDistance(in spindle, 1, 0.5, in torusPoint, 1, out _));
 
         var cylinder = new AnalyticSurface(SurfaceClass.Cylinder, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0);
         Assert.Equal(AlgorithmStatus.InvalidInput,

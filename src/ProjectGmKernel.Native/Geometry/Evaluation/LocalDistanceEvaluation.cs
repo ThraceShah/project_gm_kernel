@@ -242,8 +242,8 @@ internal static class LocalDistanceEvaluation
 
     /// <summary>
     /// Offset zero-set via a true oriented distance (spec §9.3): when the base
-    /// surface provides an exact local distance (plane/sphere/cylinder), the
-    /// offset of signed distance a has the local distance d_base − a with the
+    /// surface provides an exact local distance (plane/sphere/cylinder/ring-torus),
+    /// the offset of signed distance a has the local distance d_base − a with the
     /// same foot branch. First-order or implicit-only bases are refused —
     /// φ_base − a is a different surface, and no averaging of any kind is
     /// performed here.
