@@ -9,8 +9,8 @@ namespace KernelTests;
 /// <summary>
 /// Local Moore–Krawczyk certification for analytic I3 cells (spec §18.3–§18.4,
 /// task T18). Empty / Unique / Undetermined are distinct; Newton samples alone
-/// are never labelled certified; unsupported process surfaces (torus / B-surface)
-/// report BoundsUnavailable via Unsupported status. Cone is interval-capable.
+/// are never labelled certified; B-surface and spindle torus report
+/// BoundsUnavailable via Unsupported status. Ring torus is interval-capable.
 /// </summary>
 public class IntervalRootCheckTests
 {
@@ -20,8 +20,10 @@ public class IntervalRootCheckTests
         new(SurfaceClass.Cylinder, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0);
     private static readonly AnalyticSurface Cone =
         new(SurfaceClass.Cone, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 0.5);
-    private static readonly AnalyticSurface Torus =
+    private static readonly AnalyticSurface RingTorus =
         new(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 3.0, 1.0);
+    private static readonly AnalyticSurface SpindleTorus =
+        new(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 2.0);
 
     [Fact]
     public void TryCertifyI3_TightBoxAroundCirclePoint_Unique()
@@ -77,15 +79,69 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_UnsupportedTorus_BoundsUnavailable()
+    public void TryCertifyI3_PlaneRingTorus_TightBox_Unique()
+    {
+        // Outer equator of a=3,b=1 torus in z=0 is ρ=4; root (4,0,0), e=(0,1,0).
+        var chord = Vector(0, 1, 0);
+        var box = new IntervalBox3(3.9, 4.1, -0.05, 0.05, -0.05, 0.05);
+
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+            in PlaneZ0, in RingTorus, in chord, planeOffset: 0, in box,
+            out var status, out _));
+        Assert.Equal(IntervalRootStatus.Unique, status);
+    }
+
+    [Fact]
+    public void TryCertifyI3_PlaneRingTorus_BoxAway_Empty()
+    {
+        var chord = Vector(0, 1, 0);
+        var box = new IntervalBox3(7.0, 7.2, -0.05, 0.05, -0.05, 0.05);
+
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+            in PlaneZ0, in RingTorus, in chord, planeOffset: 0, in box,
+            out var status, out _));
+        Assert.Equal(IntervalRootStatus.Empty, status);
+    }
+
+    [Fact]
+    public void TryCertifyI3_SpindleTorus_BoundsUnavailable()
     {
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
 
         Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
-            in PlaneZ0, in Torus, in chord, planeOffset: 0, in box,
+            in PlaneZ0, in SpindleTorus, in chord, planeOffset: 0, in box,
             out var status, out _));
         Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+    }
+
+    [Fact]
+    public void TryDisambiguateI3Pair_PrefersUniqueOverEmpty()
+    {
+        var chord = Vector(0, 1, 0);
+        var nearRoot = Vector(1, 0, 0);
+        var farAway = Vector(3.1, 0, 0);
+        Assert.True(IntervalRootCheck.TryDisambiguateI3Pair(
+            in PlaneZ0, in CylinderR1, in chord, planeOffset: 0,
+            in nearRoot, in farAway, cellRadius: 0.08, out var preferNear));
+        Assert.True(preferNear);
+
+        Assert.True(IntervalRootCheck.TryDisambiguateI3Pair(
+            in PlaneZ0, in CylinderR1, in chord, planeOffset: 0,
+            in farAway, in nearRoot, cellRadius: 0.08, out var preferFarFirst));
+        Assert.False(preferFarFirst);
+    }
+
+    [Fact]
+    public void TryDisambiguateI3Pair_TwoUndetermined_DoesNotResolve()
+    {
+        var chord = Vector(0, 1, 0);
+        // Large cells around distant points → not Unique/Empty pair.
+        var a = Vector(0.5, 0, 0);
+        var b = Vector(-0.5, 0, 0);
+        Assert.False(IntervalRootCheck.TryDisambiguateI3Pair(
+            in PlaneZ0, in CylinderR1, in chord, planeOffset: 0,
+            in a, in b, cellRadius: 2.0, out _));
     }
 
     [Fact]

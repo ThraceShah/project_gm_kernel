@@ -47,6 +47,9 @@ using (host)
             Log("=== Case A: plane ∩ sphere (analytic circle as icurve chart) ===");
             RunPlaneSphereCase(Log);
 
+            Log("=== Case A2: plane ∩ cone (analytic circle via cone section) ===");
+            RunPlaneConeCase(Log);
+
             Log("=== Case B: true PK_CLASS_icurve via skew cylinders (analytic supports) ===");
             RunSkewCylinderCase(Log);
 
@@ -134,6 +137,59 @@ static unsafe void RunPlaneSphereCase(Action<string> log)
     if (maxTan > 1e-6)
         throw new InvalidOperationException($"plane/sphere unit-tangent mismatch {maxTan}");
     log("plane/sphere: PASS (D0+D1 unit tangent vs PK circle; order>2 rejected)");
+}
+
+static unsafe void RunPlaneConeCase(Action<string> log)
+{
+    // Cone R=1, θ=atan(0.5): z=0 section is the unit circle — same chart as Case A.
+    var circleSf = new PK_CIRCLE_sf_t(
+        new PK_AXIS2_sf_t(new PK_VECTOR_t(0, 0, 0), new PK_VECTOR1_t(0, 0, 1), new PK_VECTOR1_t(1, 0, 0)),
+        1.0);
+    PK_CIRCLE_t pkCircle;
+    ParasolidScriptHost.Check(PK_CIRCLE_create(&circleSf, &pkCircle), "PK_CIRCLE_create cone-case");
+    PK_INTERVAL_t pkInterval;
+    ParasolidScriptHost.Check(PK_CURVE_ask_interval(pkCircle, &pkInterval), "PK_CURVE_ask_interval cone-case");
+
+    var plane = CreateOurPlaneZ0();
+    var cone = CreateOurUnitSectionCone();
+    double[] angles = [0.0, 0.5, 1.1, 1.8, 2.5, 3.3, 4.0, 4.8, 5.5];
+    var chart = new double[angles.Length * 3];
+    for (var i = 0; i < angles.Length; i++)
+    {
+        chart[i * 3] = Math.Cos(angles[i]);
+        chart[i * 3 + 1] = Math.Sin(angles[i]);
+        chart[i * 3 + 2] = 0;
+    }
+    var input = BuildDecodeInput(plane, cone, chart, baseParameter: 0, baseScale: 1);
+    CheckStatus(KernelRuntime.DecodeIcurve(input, out var slot, out _, out _), "DecodeIcurve plane/cone");
+    CheckStatus(KernelRuntime.TryBindICurveEntity(slot, out var ourCurve), "TryBindICurveEntity plane/cone");
+    var record = KernelRuntime.GetCurveByTag(ourCurve);
+
+    var ours = stackalloc M.PK_VECTOR_s[3];
+    var reference = stackalloc PK_VECTOR_t[3];
+    double maxPos = 0;
+    double maxTan = 0;
+    double maxCone = 0;
+    var samples = 0;
+    for (var i = 0; i < 48; i++)
+    {
+        var t = record.TMin + (record.TMax - record.TMin) * i / 47.0;
+        CheckOur(KernelRuntime.CurveEval(ourCurve, t, 2, ours), "our CurveEval plane/cone");
+        var angle = Math.Atan2(ours[0].coord[1], ours[0].coord[0]);
+        if (angle < pkInterval.value[0]) angle += Math.Tau;
+        ParasolidScriptHost.Check(PK_CURVE_eval(pkCircle, angle, 1, reference), "PK_CURVE_eval circle cone-case");
+        maxPos = Math.Max(maxPos, Distance(ours, reference));
+        maxTan = Math.Max(maxTan, UnitTangentDelta(&ours[1], &reference[1]));
+        // Cone residual: ρ − (R + k z) with R=1, k=0.5, z=0 → |ρ−1|.
+        var rho = Math.Sqrt(ours[0].coord[0] * ours[0].coord[0] + ours[0].coord[1] * ours[0].coord[1]);
+        maxCone = Math.Max(maxCone, Math.Abs(rho - 1.0) + Math.Abs(ours[0].coord[2]));
+        samples++;
+    }
+
+    log($"plane/cone: samples={samples} max|Δpos|={maxPos:E3} max|Δû|={maxTan:E3} max cone-res={maxCone:E3}");
+    if (maxPos > 1e-8 || maxTan > 1e-6 || maxCone > 1e-8)
+        throw new InvalidOperationException($"plane/cone mismatch pos={maxPos} tan={maxTan} cone={maxCone}");
+    log("plane/cone: PASS (D0+D1 vs PK circle; cone section residual)");
 }
 
 static unsafe void RunSkewCylinderCase(Action<string> log)

@@ -45,9 +45,9 @@ internal readonly struct IntervalBox3
 
 /// <summary>
 /// Local Moore–Krawczyk certification for the I3 residual on analytic supports
-/// (spec §18.3–§18.4, task T18). Covers plane, sphere, cylinder and cone zero
-/// sets. Ordinary Newton samples are never labelled certified — only the
-/// inclusion and contraction tests below produce Unique / Empty.
+/// (spec §18.3–§18.4, task T18). Covers plane, sphere, cylinder, cone and
+/// ring-torus zero sets. Ordinary Newton samples are never labelled certified —
+/// only the inclusion and contraction tests below produce Unique / Empty.
 /// </summary>
 internal static class IntervalRootCheck
 {
@@ -63,7 +63,7 @@ internal static class IntervalRootCheck
         status = IntervalRootStatus.BoundsUnavailable;
         image = default;
         if (box.IsEmpty) return AlgorithmStatus.InvalidInput;
-        if (!IsIntervalCapable(support0.Kind) || !IsIntervalCapable(support1.Kind))
+        if (!IsIntervalCapable(in support0) || !IsIntervalCapable(in support1))
             return AlgorithmStatus.Unsupported;
 
         box.Midpoint(out var x0);
@@ -129,9 +129,61 @@ internal static class IntervalRootCheck
         return AlgorithmStatus.Success;
     }
 
-    private static bool IsIntervalCapable(SurfaceClass kind)
-        => kind is SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere
-            or SurfaceClass.Cone;
+    /// <summary>
+    /// When two I3 Newton hits disagree spatially with comparable residual,
+    /// certify tight cells around each. Prefer Unique over Empty; otherwise
+    /// leave AmbiguousBranch to the caller (spec §17.5 / §18.3).
+    /// </summary>
+    internal static bool TryDisambiguateI3Pair(in AnalyticSurface support0, in AnalyticSurface support1,
+        in KernelVector3 chordUnit, double planeOffset,
+        in KernelVector3 candidateA, in KernelVector3 candidateB, double cellRadius,
+        out bool preferA)
+    {
+        preferA = true;
+        if (!(cellRadius > 0)) return false;
+        var boxA = BoxAround(in candidateA, cellRadius);
+        var boxB = BoxAround(in candidateB, cellRadius);
+        if (TryCertifyI3(in support0, in support1, in chordUnit, planeOffset, in boxA,
+                out var statusA, out _) != AlgorithmStatus.Success)
+            return false;
+        if (TryCertifyI3(in support0, in support1, in chordUnit, planeOffset, in boxB,
+                out var statusB, out _) != AlgorithmStatus.Success)
+            return false;
+        if (statusA == IntervalRootStatus.Unique && statusB == IntervalRootStatus.Empty)
+        {
+            preferA = true;
+            return true;
+        }
+        if (statusA == IntervalRootStatus.Empty && statusB == IntervalRootStatus.Unique)
+        {
+            preferA = false;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>Chord-plane offset for p(x)=e·x − offset matching <see cref="OriginalChartParameterMap.PlaneResidual"/>.</summary>
+    internal static double ChordPlaneOffset(in KernelVector3 chordUnit, in KernelVector3 segmentAnchor,
+        double segmentParameter, double segmentScale, double t)
+    {
+        var anchored = t - segmentParameter;
+        return Dot(chordUnit, segmentAnchor) + anchored / segmentScale;
+    }
+
+    private static IntervalBox3 BoxAround(in KernelVector3 center, double radius)
+        => new(center.X - radius, center.X + radius,
+            center.Y - radius, center.Y + radius,
+            center.Z - radius, center.Z + radius);
+
+    private static bool IsIntervalCapable(in AnalyticSurface surface)
+        => surface.Kind switch
+        {
+            SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere
+                or SurfaceClass.Cone => true,
+            // Ring torus only: spindle/apple (a ≤ b) have no interval Jacobian here.
+            SurfaceClass.Torus => surface.Radius > surface.Secondary && surface.Secondary > 0,
+            _ => false,
+        };
 
     private static AlgorithmStatus PointResidual(in AnalyticSurface s0, in AnalyticSurface s1,
         in KernelVector3 chordUnit, double planeOffset, in KernelVector3 x,
@@ -257,9 +309,99 @@ internal static class IntervalRootCheck
                 gHi = Vector(OutwardUp(gHi.X), OutwardUp(gHi.Y), OutwardUp(gHi.Z));
                 return AlgorithmStatus.Success;
             }
+            case SurfaceClass.Torus:
+                return TorusGradientRange(in surface, in box, out gLo, out gHi);
             default:
                 return AlgorithmStatus.Unsupported;
         }
+    }
+
+    /// <summary>
+    /// Natural interval extension of ∇φ = 4·common·r − 8a²·radial for the
+    /// algebraic torus residual (spec §8.1 / §18.4). Ring only (a &gt; b &gt; 0);
+    /// spindle/apple stay Unsupported. Sheet selection stays in the point path.
+    /// </summary>
+    private static AlgorithmStatus TorusGradientRange(in AnalyticSurface surface, in IntervalBox3 box,
+        out KernelVector3 gLo, out KernelVector3 gHi)
+    {
+        gLo = gHi = default;
+        var a = surface.Radius;
+        var b = surface.Secondary;
+        if (!(a > b) || !(b > 0)) return AlgorithmStatus.Unsupported;
+
+        var rxLo = box.XLo - surface.Origin.X; var rxHi = box.XHi - surface.Origin.X;
+        var ryLo = box.YLo - surface.Origin.Y; var ryHi = box.YHi - surface.Origin.Y;
+        var rzLo = box.ZLo - surface.Origin.Z; var rzHi = box.ZHi - surface.Origin.Z;
+
+        var (qxLo, qxHi) = SquareInterval(rxLo, rxHi);
+        var (qyLo, qyHi) = SquareInterval(ryLo, ryHi);
+        var (qzLo, qzHi) = SquareInterval(rzLo, rzHi);
+        var qLo = OutwardAddLo(OutwardAddLo(qxLo, qyLo), qzLo);
+        var qHi = OutwardAddHi(OutwardAddHi(qxHi, qyHi), qzHi);
+
+        var ax = surface.Axis.X; var ay = surface.Axis.Y; var az = surface.Axis.Z;
+        var (txLo, txHi) = MulScalarInterval(ax, rxLo, rxHi);
+        var (tyLo, tyHi) = MulScalarInterval(ay, ryLo, ryHi);
+        var (tzLo, tzHi) = MulScalarInterval(az, rzLo, rzHi);
+        var axialLo = OutwardAddLo(OutwardAddLo(txLo, tyLo), tzLo);
+        var axialHi = OutwardAddHi(OutwardAddHi(txHi, tyHi), tzHi);
+
+        var (axAxLo, axAxHi) = MulScalarInterval(ax, axialLo, axialHi);
+        var (ayAxLo, ayAxHi) = MulScalarInterval(ay, axialLo, axialHi);
+        var (azAxLo, azAxHi) = MulScalarInterval(az, axialLo, axialHi);
+        var radXLo = OutwardSubLo(rxLo, axAxHi); var radXHi = OutwardSubHi(rxHi, axAxLo);
+        var radYLo = OutwardSubLo(ryLo, ayAxHi); var radYHi = OutwardSubHi(ryHi, ayAxLo);
+        var radZLo = OutwardSubLo(rzLo, azAxHi); var radZHi = OutwardSubHi(rzHi, azAxLo);
+        if (radXLo > radXHi) (radXLo, radXHi) = (radXHi, radXLo);
+        if (radYLo > radYHi) (radYLo, radYHi) = (radYHi, radYLo);
+        if (radZLo > radZHi) (radZLo, radZHi) = (radZHi, radZLo);
+
+        var commonShift = a * a - b * b;
+        var cLo = OutwardAddLo(qLo, commonShift);
+        var cHi = OutwardAddHi(qHi, commonShift);
+
+        // ∇φ = 4·common·r − 8a²·radial
+        var (cxLo, cxHi) = MulInterval(cLo, cHi, rxLo, rxHi);
+        var (cyLo, cyHi) = MulInterval(cLo, cHi, ryLo, ryHi);
+        var (czLo, czHi) = MulInterval(cLo, cHi, rzLo, rzHi);
+        var (rx4Lo, rx4Hi) = MulScalarInterval(4, cxLo, cxHi);
+        var (ry4Lo, ry4Hi) = MulScalarInterval(4, cyLo, cyHi);
+        var (rz4Lo, rz4Hi) = MulScalarInterval(4, czLo, czHi);
+
+        var eightA2 = 8 * a * a;
+        var (sxLo, sxHi) = MulScalarInterval(eightA2, radXLo, radXHi);
+        var (syLo, syHi) = MulScalarInterval(eightA2, radYLo, radYHi);
+        var (szLo, szHi) = MulScalarInterval(eightA2, radZLo, radZHi);
+
+        gLo = Vector(
+            Math.Min(OutwardSubLo(rx4Lo, sxHi), OutwardSubHi(rx4Hi, sxLo)),
+            Math.Min(OutwardSubLo(ry4Lo, syHi), OutwardSubHi(ry4Hi, syLo)),
+            Math.Min(OutwardSubLo(rz4Lo, szHi), OutwardSubHi(rz4Hi, szLo)));
+        gHi = Vector(
+            Math.Max(OutwardSubLo(rx4Lo, sxHi), OutwardSubHi(rx4Hi, sxLo)),
+            Math.Max(OutwardSubLo(ry4Lo, syHi), OutwardSubHi(ry4Hi, syLo)),
+            Math.Max(OutwardSubLo(rz4Lo, szHi), OutwardSubHi(rz4Hi, szLo)));
+        return AlgorithmStatus.Success;
+    }
+
+    private static (double Lo, double Hi) SquareInterval(double lo, double hi)
+    {
+        if (lo > hi) (lo, hi) = (hi, lo);
+        if (lo >= 0)
+        {
+            var a = OutwardMul(lo, lo);
+            var b = OutwardMul(hi, hi);
+            return (Math.Min(a, b), Math.Max(a, b));
+        }
+        if (hi <= 0)
+        {
+            var a = OutwardMul(lo, lo);
+            var b = OutwardMul(hi, hi);
+            return (Math.Min(a, b), Math.Max(a, b));
+        }
+        var neg = OutwardMul(lo, lo);
+        var pos = OutwardMul(hi, hi);
+        return (0, Math.Max(neg, pos));
     }
 
     private static void MatVec3(ReadOnlySpan<double> m, ReadOnlySpan<double> v, Span<double> result)
