@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
@@ -11,8 +12,21 @@ internal enum ICurveQueryKind : byte
     RegularChartInterval = 0,
     ChartPoint = 1,
     OutsideSupportedDomain = 2,
-    /// <summary>Terminator intervals need the dedicated GATE-T path; never merged into this slice.</summary>
-    TerminatorUnsupported = 3,
+    /// <summary>Interval between the start chart boundary and a start terminator (§6).</summary>
+    StartTerminatorInterval = 3,
+    /// <summary>Interval between the end chart boundary and an end terminator (§6).</summary>
+    EndTerminatorInterval = 4,
+    /// <summary>The terminator point itself, at the resolved native parameter (§6.5).</summary>
+    ExactTerminator = 5,
+}
+
+/// <summary>Locatable sub-reason published inside <see cref="ICurveEvalReport"/> (§18.5).</summary>
+internal enum ICurveEvalDetail : byte
+{
+    None = 0,
+    /// <summary>The request needs a compatibility gate (GATE-T) that is still open;
+    /// nothing was guessed and nothing was published.</summary>
+    CompatibilityGateOpen = 1,
 }
 
 /// <summary>
@@ -30,10 +44,13 @@ internal readonly struct ICurveEvalReport
     internal readonly BufferOffset NewtonIterations;
     internal readonly double Residual;            // final max |F| in scaled units
     internal readonly CacheHitKind CacheHit;      // how this request was served (§19.2)
+    internal readonly double NonDefiningResidual; // |φ| of the unselected terminator support (§6.4 diagnostic)
+    internal readonly ICurveEvalDetail Detail;    // locatable sub-reason (§18.5)
 
     internal ICurveEvalReport(ICurveQueryKind kind, AlgorithmStatus status,
         ICurveConstraintPlan plan, ChartSide side, BufferOffset segment,
-        BufferOffset newtonIterations, double residual, CacheHitKind cacheHit = CacheHitKind.None)
+        BufferOffset newtonIterations, double residual, CacheHitKind cacheHit = CacheHitKind.None,
+        double nonDefiningResidual = 0, ICurveEvalDetail detail = ICurveEvalDetail.None)
     {
         Kind = kind;
         Status = status;
@@ -43,6 +60,28 @@ internal readonly struct ICurveEvalReport
         NewtonIterations = newtonIterations;
         Residual = residual;
         CacheHit = cacheHit;
+        NonDefiningResidual = nonDefiningResidual;
+        Detail = detail;
+    }
+}
+
+/// <summary>
+/// A terminator LIMIT (type T): hvec[0] is the terminator position, hvec[1]
+/// the branch point that also appears in the chart (§6.1). Stored verbatim —
+/// the terminator's native parameter is not transmitted and only becomes
+/// available through a resolved GATE-T rule.
+/// </summary>
+internal readonly struct TerminatorLimit
+{
+    internal readonly LimitTermUse TermUse;
+    internal readonly KernelVector3 Endpoint;     // terminator position (limit hvec[0])
+    internal readonly KernelVector3 BranchPoint;  // branch point (limit hvec[1])
+
+    internal TerminatorLimit(LimitTermUse termUse, in KernelVector3 endpoint, in KernelVector3 branchPoint)
+    {
+        TermUse = termUse;
+        Endpoint = endpoint;
+        BranchPoint = branchPoint;
     }
 }
 
@@ -62,6 +101,10 @@ internal readonly ref struct ICurveView
     internal readonly ReadOnlySpan<double> ChartParameters;
     internal readonly ReadOnlySpan<double> ChartScales;
     internal readonly ReadOnlySpan<KernelVector3> ChartChordUnits;
+    internal readonly bool HasStartTerminator;
+    internal readonly bool HasEndTerminator;
+    internal readonly TerminatorLimit StartTerminator;
+    internal readonly TerminatorLimit EndTerminator;
 
     internal ICurveView(in AnalyticSurface support0, KernelSense sense0,
         in AnalyticSurface support1, KernelSense sense1,
@@ -76,5 +119,35 @@ internal readonly ref struct ICurveView
         ChartParameters = chartParameters;
         ChartScales = chartScales;
         ChartChordUnits = chartChordUnits;
+        HasStartTerminator = false;
+        HasEndTerminator = false;
+        StartTerminator = default;
+        EndTerminator = default;
     }
+
+    internal ICurveView(in AnalyticSurface support0, KernelSense sense0,
+        in AnalyticSurface support1, KernelSense sense1,
+        ReadOnlySpan<KernelVector3> chartPositions, ReadOnlySpan<double> chartParameters,
+        ReadOnlySpan<double> chartScales, ReadOnlySpan<KernelVector3> chartChordUnits,
+        TerminatorLimit startTerminator, TerminatorLimit endTerminator)
+    {
+        Support0 = support0;
+        Sense0 = sense0;
+        Support1 = support1;
+        Sense1 = sense1;
+        ChartPositions = chartPositions;
+        ChartParameters = chartParameters;
+        ChartScales = chartScales;
+        ChartChordUnits = chartChordUnits;
+        // A terminator limit is present when its endpoint data is finite;
+        // absent ends stay default and never classify as terminator queries.
+        HasStartTerminator = IsPresent(in startTerminator);
+        HasEndTerminator = IsPresent(in endTerminator);
+        StartTerminator = startTerminator;
+        EndTerminator = endTerminator;
+    }
+
+    private static bool IsPresent(in TerminatorLimit limit)
+        => limit.TermUse != LimitTermUse.Unset
+            && IsFinite(limit.Endpoint) && IsFinite(limit.BranchPoint);
 }

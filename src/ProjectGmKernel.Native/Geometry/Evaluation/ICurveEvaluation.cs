@@ -30,7 +30,8 @@ internal static class ICurveEvaluation
     /// Evaluate position and, requested, the derivatives of the defined branch
     /// at native parameter t with automatic plan selection. Output is written
     /// only when every requested order validated — a failed D2 never publishes
-    /// a partial D0 (§18.5).
+    /// a partial D0 (§18.5). Terminator intervals need an explicit rule entry
+    /// (GATE-T, §6.5); this production entry never guesses one.
     /// </summary>
     internal static AlgorithmStatus Evaluate(in ICurveView view, double t, DerivativeOrder order,
         Span<KernelVector3> derivatives, out ICurveEvalReport report)
@@ -44,9 +45,20 @@ internal static class ICurveEvaluation
     /// </summary>
     internal static AlgorithmStatus EvaluateWithPlan(in ICurveView view, double t, DerivativeOrder order,
         ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        => EvaluateWithRule(in view, t, order, plan, TerminatorParameterRule.Unresolved, derivatives, out report);
+
+    /// <summary>
+    /// Evaluate with an explicit plan and terminator-parameter rule. The rule
+    /// is an experiment selector (§6.5, GATE-T): named rules run the
+    /// terminator paths deterministically; <see cref="TerminatorParameterRule.Unresolved"/>
+    /// refuses them with a located gate diagnostic.
+    /// </summary>
+    internal static AlgorithmStatus EvaluateWithRule(in ICurveView view, double t, DerivativeOrder order,
+        ICurveConstraintPlan plan, TerminatorParameterRule rule, Span<KernelVector3> derivatives,
+        out ICurveEvalReport report)
     {
         var empty = new EvaluationSampleStore(Span<CurveSample>.Empty);
-        return EvaluateWithCache(in view, t, order, plan, ref empty, derivatives, out report);
+        return EvaluateWithCache(in view, t, order, plan, rule, ref empty, derivatives, out report);
     }
 
     /// <summary>
@@ -60,6 +72,13 @@ internal static class ICurveEvaluation
     internal static AlgorithmStatus EvaluateWithCache(in ICurveView view, double t, DerivativeOrder order,
         ICurveConstraintPlan plan, ref EvaluationSampleStore cache, Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
+        => EvaluateWithCache(in view, t, order, plan, TerminatorParameterRule.Unresolved, ref cache,
+            derivatives, out report);
+
+    /// <summary>Cached evaluation with an explicit terminator-parameter rule (§6.5).</summary>
+    internal static AlgorithmStatus EvaluateWithCache(in ICurveView view, double t, DerivativeOrder order,
+        ICurveConstraintPlan plan, TerminatorParameterRule rule, ref EvaluationSampleStore cache,
+        Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
             ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
@@ -70,6 +89,13 @@ internal static class ICurveEvaluation
         var parameters = view.ChartParameters;
         if (t < parameters[0] || t > parameters[^1])
         {
+            // Outside the chart only a terminator limit can extend the domain;
+            // classification precedes any solver choice (§6.1).
+            if (t < parameters[0] && view.HasStartTerminator)
+                return EvaluateTerminator(in view, t, order, rule, false, ref cache, derivatives, out report);
+            if (t > parameters[^1] && view.HasEndTerminator)
+                return EvaluateTerminator(in view, t, order, rule, true, ref cache, derivatives, out report);
+
             report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.InvalidInput,
                 ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
             return AlgorithmStatus.InvalidInput;
@@ -95,10 +121,14 @@ internal static class ICurveEvaluation
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, locateStatus, plan, ChartSide.Right, -1, 0, 0);
             return locateStatus;
         }
+        // The last node belongs to segment [m−2, m−1] but its anchor is the
+        // final chart position itself — LocateSegment's segment is a
+        // derivative-side locator, never a position index shortcut.
+        var anchorIndex = t == view.ChartParameters[^1] ? view.ChartPositions.Length - 1 : segment;
 
         if (order == 0)
         {
-            derivatives[0] = view.ChartPositions[segment];
+            derivatives[0] = view.ChartPositions[anchorIndex];
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
                 plan, ChartSide.Right, segment, 0, 0, CacheHitKind.Exact);
             return AlgorithmStatus.Success;
@@ -114,7 +144,7 @@ internal static class ICurveEvaluation
                 hit.Plan, ChartSide.Right, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact);
             return AlgorithmStatus.Success;
         }
-        var seed = view.ChartPositions[segment];
+        var seed = view.ChartPositions[anchorIndex];
         var solveStatus = Solve(in view, in seed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
         report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, solveStatus,
@@ -189,6 +219,125 @@ internal static class ICurveEvaluation
 
     /// <summary>Sample error bound for exact-hit acceptance (slice default).</summary>
     internal const double CacheErrorBound = 1e-11;
+
+    /// <summary>
+    /// Terminator queries beyond a chart boundary (§6): classification has
+    /// already selected the end; this path resolves the GATE-T parameter rule,
+    /// honors the exact-terminator D0 contract, and solves the one-surface /
+    /// two-planes interval construction with its §16.3 scalar derivatives. The
+    /// unselected support's deviation is published as a diagnostic only (§6.4)
+    /// — never added as a fourth defining equation.
+    /// </summary>
+    private static AlgorithmStatus EvaluateTerminator(in ICurveView view, double t, DerivativeOrder order,
+        TerminatorParameterRule rule, bool isEnd, ref EvaluationSampleStore cache,
+        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+    {
+        var kind = isEnd ? ICurveQueryKind.EndTerminatorInterval : ICurveQueryKind.StartTerminatorInterval;
+        var side = isEnd ? ChartSide.Right : ChartSide.Left;
+        var segment = isEnd ? view.ChartParameters.Length - 2 : 0;
+
+        // GATE-T: without an explicitly selected reconstruction rule there is
+        // no defined parameter beyond the chart boundary (§6.5).
+        if (rule == TerminatorParameterRule.Unresolved)
+        {
+            report = new ICurveEvalReport(kind, AlgorithmStatus.Unsupported, ICurveConstraintPlan.Auto,
+                side, segment, 0, 0, CacheHitKind.None, 0, ICurveEvalDetail.CompatibilityGateOpen);
+            return AlgorithmStatus.Unsupported;
+        }
+
+        var limit = isEnd ? view.EndTerminator : view.StartTerminator;
+        var resolveStatus = TerminatorEvaluation.TryResolveTerminatorParameter(in view, isEnd, rule,
+            in limit.Endpoint, in limit.BranchPoint, out var terminatorParameter);
+        if (resolveStatus != AlgorithmStatus.Success)
+        {
+            report = new ICurveEvalReport(kind, resolveStatus, ICurveConstraintPlan.Auto, side, segment, 0, 0);
+            return resolveStatus;
+        }
+
+        // The terminator itself: D0 is the defining position, bit-exact like a
+        // chart anchor (§6.5). Higher orders stay behind the open endpoint
+        // contract and never publish a partial result (§18.5).
+        if (t == terminatorParameter)
+        {
+            if (order > 0)
+            {
+                report = new ICurveEvalReport(ICurveQueryKind.ExactTerminator, AlgorithmStatus.Unsupported,
+                    ICurveConstraintPlan.Auto, side, segment, 0, 0, CacheHitKind.None, 0,
+                    ICurveEvalDetail.CompatibilityGateOpen);
+                return AlgorithmStatus.Unsupported;
+            }
+            derivatives[0] = limit.Endpoint;
+            _ = cache.TryInsert(new CurveSample(t, in limit.Endpoint, default, default, 0,
+                ICurveQueryKind.ExactTerminator, side, segment, 0, SampleSourceKind.ImportedChartAnchor,
+                ICurveConstraintPlan.Auto));
+            report = new ICurveEvalReport(ICurveQueryKind.ExactTerminator, AlgorithmStatus.Success,
+                ICurveConstraintPlan.Auto, side, segment, 0, 0);
+            return AlgorithmStatus.Success;
+        }
+        if (isEnd ? t > terminatorParameter : t < terminatorParameter)
+        {
+            // Beyond the resolved terminator: no defined geometry.
+            report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.InvalidInput,
+                ICurveConstraintPlan.Auto, side, segment, 0, 0);
+            return AlgorithmStatus.InvalidInput;
+        }
+
+        var prepareStatus = TerminatorEvaluation.Prepare(in view, isEnd, in limit.Endpoint,
+            in limit.BranchPoint, limit.TermUse, terminatorParameter, out var anchor);
+        if (prepareStatus != AlgorithmStatus.Success)
+        {
+            report = new ICurveEvalReport(kind, prepareStatus, ICurveConstraintPlan.Auto, side, segment, 0, 0);
+            return prepareStatus;
+        }
+
+        if (cache.TryFindExact(t, kind, side, order, CacheErrorBound, out var hit))
+        {
+            PublishHit(in hit, order, derivatives);
+            report = new ICurveEvalReport(kind, AlgorithmStatus.Success, hit.Plan, side, segment,
+                0, hit.ErrorEstimate, CacheHitKind.Exact);
+            return AlgorithmStatus.Success;
+        }
+
+        var selectedSurface = anchor.SelectedSurface == 0 ? view.Support0 : view.Support1;
+        var otherSurface = anchor.SelectedSurface == 0 ? view.Support1 : view.Support0;
+        var solveStatus = TerminatorEvaluation.SolveIntervalPoint(in selectedSurface, in anchor, t,
+            out _, out var point, out var residual, out var evaluations);
+        if (solveStatus != AlgorithmStatus.Success)
+        {
+            report = new ICurveEvalReport(kind, solveStatus, ICurveConstraintPlan.Auto,
+                side, segment, evaluations, residual);
+            return solveStatus;
+        }
+
+        // Non-defining support deviation: diagnostics, not a constraint (§6.4).
+        var nonDefining = 0.0;
+        if (AnalyticImplicitEvaluation.Evaluate(in otherSurface, in point, 0, out var otherJet)
+            == AlgorithmStatus.Success)
+            nonDefining = Math.Abs(otherJet.Value);
+
+        var first = default(KernelVector3);
+        var second = default(KernelVector3);
+        if (order >= 1)
+        {
+            var derivativeStatus = TerminatorEvaluation.IntervalDerivatives(in selectedSurface,
+                in anchor, t, order, out first, out second);
+            if (derivativeStatus != AlgorithmStatus.Success)
+            {
+                report = new ICurveEvalReport(kind, derivativeStatus, ICurveConstraintPlan.Auto,
+                    side, segment, evaluations, residual, CacheHitKind.None, nonDefining);
+                return derivativeStatus;
+            }
+        }
+
+        derivatives[0] = point;
+        if (order >= 1) derivatives[1] = first;
+        if (order >= 2) derivatives[2] = second;
+        _ = cache.TryInsert(new CurveSample(t, in point, first, second, order, kind,
+            side, segment, residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
+        report = new ICurveEvalReport(kind, AlgorithmStatus.Success, ICurveConstraintPlan.Auto,
+            side, segment, evaluations, residual, CacheHitKind.None, nonDefining);
+        return AlgorithmStatus.Success;
+    }
 
     private static void PublishHit(in CurveSample hit, DerivativeOrder order, Span<KernelVector3> derivatives)
     {
@@ -289,10 +438,26 @@ internal static class ICurveEvaluation
             mu -= jet.Value / slope;
             if (!double.IsFinite(mu)) return AlgorithmStatus.NumericalFailure;
         }
-        if (!converged) return AlgorithmStatus.NotConverged;
+        if (!converged)
+        {
+            Span<double> refined = stackalloc double[1];
+            var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I1, t, segment,
+                in seed, refined, out iterations, out residual);
+            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+            mu = refined[0];
+        }
 
         var root = Add(x0, Scale(b, mu));
         derivatives[0] = root;
+        if (!converged && order >= 1)
+        {
+            // The fallback corrector moved μ; the derivative chain needs the
+            // gradient at the refined root, not the abandoned fast-loop point.
+            if (AnalyticImplicitEvaluation.Evaluate(in other, in root, 1, out var rootJet)
+                != AlgorithmStatus.Success)
+                return AlgorithmStatus.Unsupported;
+            gradient = rootJet.Gradient;
+        }
 
         // D1: x0′ = Q′ + α′n′ with Q′ = e/f and α′ = −(n·Q′)/|n×e|²; the
         // scalar chain μ′ = −(∇φ·x0′)/(∇φ·b).
@@ -380,7 +545,12 @@ internal static class ICurveEvaluation
             q[1] += step[1];
             if (!double.IsFinite(q[0]) || !double.IsFinite(q[1])) return AlgorithmStatus.NumericalFailure;
         }
-        if (!converged) return AlgorithmStatus.NotConverged;
+        if (!converged)
+        {
+            var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P2, t, segment,
+                in seed, q, out iterations, out residual);
+            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+        }
 
         // Root jets at second order; one factorization serves D1 and D2 (§16.1).
         if (!SurfaceDerivativeLayout.TryCreate(2, 2, out var layout2))
@@ -488,7 +658,11 @@ internal static class ICurveEvaluation
                 return AlgorithmStatus.NumericalFailure;
         }
         if (!converged)
-            return AlgorithmStatus.NotConverged;
+        {
+            var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I3, t, segment,
+                in seed, x, out iterations, out residual);
+            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+        }
 
         var root = Vector(x[0], x[1], x[2]);
 
@@ -543,13 +717,24 @@ internal static class ICurveEvaluation
         var chordUnit = view.ChartChordUnits[segment];
 
         // In-plane orthonormal basis from the least-parallel coordinate axis,
-        // fixed for the whole original segment (§7.4).
+        // fixed for the whole original segment (§7.4). The eliminated plane
+        // passes through Q(t) — never through the seed, which may sit off the
+        // plane when it comes from a cache prediction.
         var axis = LeastParallelAxis(in chordUnit);
         var u = Unit(Sub(axis, Scale(chordUnit, Dot(axis, chordUnit))));
         var v = Cross(chordUnit, u);
         if (!IsFinite(u) || !IsFinite(v)) return AlgorithmStatus.Singular;
+        var next = view.ChartParameters[segment + 1] - view.ChartParameters[segment];
+        var lambda = (t - view.ChartParameters[segment]) / next;
+        var planeBase = Add(
+            Scale(view.ChartPositions[segment], 1 - lambda),
+            Scale(view.ChartPositions[segment + 1], lambda));
 
-        Span<double> xi = stackalloc double[2];
+        Span<double> xi = stackalloc double[2]
+        {
+            Dot(Sub(seed, planeBase), u),
+            Dot(Sub(seed, planeBase), v),
+        };
         Span<double> jacobian = stackalloc double[4];
         Span<double> jacobianCopy = stackalloc double[4];
         Span<double> residualVector = stackalloc double[2];
@@ -561,7 +746,7 @@ internal static class ICurveEvaluation
         for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
         {
             iterations = iteration + 1;
-            var point = Add(seed, Add(Scale(u, xi[0]), Scale(v, xi[1])));
+            var point = Add(planeBase, Add(Scale(u, xi[0]), Scale(v, xi[1])));
             if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0) != AlgorithmStatus.Success
                 || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1) != AlgorithmStatus.Success)
                 return AlgorithmStatus.Unsupported;
@@ -584,9 +769,13 @@ internal static class ICurveEvaluation
             xi[1] += step[1];
             if (!double.IsFinite(xi[0]) || !double.IsFinite(xi[1])) return AlgorithmStatus.NumericalFailure;
         }
-        if (!converged) return AlgorithmStatus.NotConverged;
-
-        var root = Add(seed, Add(Scale(u, xi[0]), Scale(v, xi[1])));
+        if (!converged)
+        {
+            var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I2, t, segment,
+                in seed, xi, out iterations, out residual);
+            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+        }
+        var root = Add(planeBase, Add(Scale(u, xi[0]), Scale(v, xi[1])));
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in root, order >= 2 ? 2 : 1, out var rootJet0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in root, order >= 2 ? 2 : 1, out var rootJet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
@@ -707,7 +896,12 @@ internal static class ICurveEvaluation
                 if (!double.IsFinite(q[i])) return AlgorithmStatus.NumericalFailure;
             }
         }
-        if (!converged) return AlgorithmStatus.NotConverged;
+        if (!converged)
+        {
+            var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P4, t, segment,
+                in seed, q, out iterations, out residual);
+            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+        }
 
         // Root jets at second order; the agreed output side is x0 (§7.1).
         if (!SurfaceDerivativeLayout.TryCreate(2, 2, out var layout2))
