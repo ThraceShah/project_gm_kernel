@@ -3182,6 +3182,7 @@ internal static unsafe partial class KernelRuntime
                 case CurveClass.Ellipse: EllipseDataPool.Free(curve.DataIndex); break;
                 case CurveClass.TRCurve: TrCurveDataPool.Free(curve.DataIndex); break;
                 case CurveClass.SPCurve: SpCurveDataPool.Free(curve.DataIndex); break;
+                case CurveClass.ICurve: FreeICurveData(curve.DataIndex); break;
             }
         }
         else if (pool == PoolKind.Surface)

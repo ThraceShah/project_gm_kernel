@@ -36,6 +36,9 @@ internal static unsafe partial class KernelRuntime
         // rejects higher orders outright (verified against PK_CURVE_eval).
         if (record.Class == CurveClass.SPCurve && order > 2)
             return ParasolidConstants.PK_ERROR_too_many_derivatives;
+        // Internal icurve D0–D2 only until GATE-D closes the public high-order contract.
+        if (record.Class == CurveClass.ICurve && order > ICurveEvaluation.MaxDerivativeOrder)
+            return ParasolidConstants.PK_ERROR_too_many_derivatives;
         Span<KernelVector3> values = stackalloc KernelVector3[11];
         var status = EvaluateCurveCore(in record, t, order, values, out KernelVector3 direction);
         if (status != AlgorithmStatus.Success) return EvaluationError(status);
@@ -105,9 +108,31 @@ internal static unsafe partial class KernelRuntime
                 direction = Unit(values[1]);
                 return IsFinite(direction) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
             }
+            case CurveClass.ICurve:
+                return EvaluateICurve(in record, t, order, values, out direction);
             default:
                 return AlgorithmStatus.Unsupported;
         }
+    }
+
+    /// <summary>
+    /// Prepare the pooled icurve into command scratch and evaluate through the
+    /// shared <see cref="ICurveEvaluation"/> entry (spec §19, task T19).
+    /// </summary>
+    private static AlgorithmStatus EvaluateICurve(in CurveRecord record, double t, DerivativeOrder order,
+        Span<KernelVector3> values, out KernelVector3 direction)
+    {
+        direction = default;
+        var prepareStatus = TryPrepareICurveView(in record, out var view, out _);
+        if (prepareStatus != AlgorithmStatus.Success) return prepareStatus;
+        var status = ICurveEvaluation.Evaluate(in view, t, order, values, out _);
+        if (status != AlgorithmStatus.Success) return status;
+        if (order >= 1)
+        {
+            direction = Unit(values[1]);
+            if (!IsFinite(direction)) return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
     }
 
     private static int SurfEvalImplementation(SurfTag surface, PK_UV_s uv, DerivativeOrder uOrder, DerivativeOrder vOrder,

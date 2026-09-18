@@ -643,6 +643,7 @@ private static void FreeCurveData(CurveClass curveClass, int dataSlot)
         case CurveClass.Line: LineDataPool.Free(dataSlot); break;
         case CurveClass.Circle: CircleDataPool.Free(dataSlot); break;
         case CurveClass.Ellipse: EllipseDataPool.Free(dataSlot); break;
+        case CurveClass.ICurve: FreeICurveData(dataSlot); break;
     }
 }
 
