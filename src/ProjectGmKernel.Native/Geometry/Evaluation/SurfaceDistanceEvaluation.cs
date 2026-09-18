@@ -6,7 +6,7 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
 /// <summary>
 /// Local oriented-distance quality: the distance is exact on the surface and,
-/// for plane/sphere/cylinder, in a full regular neighborhood; the cone jet is
+/// for plane/sphere/cylinder/ring-torus, in a full regular neighborhood; the cone jet is
 /// exact only on the surface and degrades to a first-order estimate away from
 /// it. Reported per jet so a valid D0 never advertises a D2 it lacks
 /// (spec §8.2, §9.2).
