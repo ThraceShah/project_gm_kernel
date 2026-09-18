@@ -27,6 +27,12 @@ internal enum ICurveEvalDetail : byte
     /// <summary>The request needs a compatibility gate (GATE-T) that is still open;
     /// nothing was guessed and nothing was published.</summary>
     CompatibilityGateOpen = 1,
+    /// <summary>Shared base-evaluation budget exhausted (§14.7 / §15).</summary>
+    BudgetExceeded = 2,
+    /// <summary>Multiple same-quality roots on different branches; no evidence to pick (§17.5).</summary>
+    AmbiguousBranch = 3,
+    /// <summary>Corrector stagnated (small step, large residual, or reverse oscillation) (§14.6).</summary>
+    Stagnation = 4,
 }
 
 /// <summary>
