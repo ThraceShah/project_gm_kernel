@@ -22,6 +22,7 @@
     <InternalsVisibleTo Include="ParasolidThreadOracle" />
     <InternalsVisibleTo Include="BCurveEvaluationOracle" />
     <InternalsVisibleTo Include="IcurveEvalBenchmark" />
+    <InternalsVisibleTo Include="IcurveEvaluationOracle" />
     <InternalsVisibleTo Include="ParasolidXtCorpusBodyBasics" />
     <InternalsVisibleTo Include="ParasolidXtCorpusCases" />
     <InternalsVisibleTo Include="TopologyDump" />

@@ -19,6 +19,8 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | BLEND_BOUND distance composition | Math only | GATE-B open; not production |
 | Interval certification (I3) | Plane/sphere/cylinder | §18.3; Empty/Unique/Undetermined |
 | Runtime `PK_CURVE_eval` for icurve | Analytic supports | Decode → bind → prepare → eval |
+| Real Parasolid oracle (analytic) | Plane∩sphere; skew cylinders | `scripts/IcurveEvaluationOracle.cs` |
+| XT CHART extract → DecodeIcurve | Node 40 common layout | `TryExtractIcurveChartFromXt` |
 
 ## Explicitly unsupported / gated
 
@@ -29,8 +31,9 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | GATE-A blend arc extremes | open |
 | GATE-D public high-order PK contract | open (Runtime rejects order > 2) |
 | Procedural / BlendBound icurve supports | Unsupported at prepare |
-| Real Parasolid oracle for icurve/blend | **NotRun** (T19 remainder) |
-| XT import → `CurveClass.ICurve` entity | decode+bind only; no XT receive path yet |
+| B-surface / offset / swept supports for icurve prepare | Unsupported |
+| XT INTERSECTION writer + live `PK_PART_transmit` hydrate | **NotRun** (add_geoms shared-dep / writer pending) |
+| Full XT import → `CurveClass.ICurve` entity (supports+LIMIT+DATA) | CHART extract only |
 | Cone/torus/B-surface interval cert | BoundsUnavailable |
 | Pseudo-arclength as public parameter | forbidden by §17.4 |
 | T20 publish matrix / P95 budgets | skeleton only (`scripts/IcurveEvalBenchmark.cs`) |
@@ -39,5 +42,8 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 
 ```sh
 MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests && pkill -f testhost.dll 2>/dev/null; true
+P_SCHEMA=third_party/parasolid/schema dotnet run scripts/IcurveEvaluationOracle.cs
 dotnet run scripts/IcurveEvalBenchmark.cs
 ```
+
+Oracle report: `temp_docs/icurve-evaluation/oracle-latest.txt`.
