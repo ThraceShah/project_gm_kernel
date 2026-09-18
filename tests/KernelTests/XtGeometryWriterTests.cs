@@ -473,6 +473,81 @@ public unsafe class XtGeometryWriterTests : IDisposable
     }
 
     [Fact]
+    public void ICurveTerminatorLimits_TransmitMaterialize_PreservesEndpoints()
+    {
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body));
+        KernelRuntime.TryResolveBodySlot(body, out var bodySlot);
+        var edgeSlot = KernelRuntime.GetBodyRecord(bodySlot).FirstEdgeBody;
+        int edge = KernelRuntime.TagOf(PoolKind.Edge, edgeSlot);
+
+        var planeSf = new PK_PLANE_sf_s();
+        planeSf.basis_set.axis.coord[2] = 1;
+        planeSf.basis_set.ref_direction.coord[0] = 1;
+        int plane = 0;
+        Assert.Equal(0, KernelRuntime.PlaneCreate(&planeSf, &plane));
+        var sphereSf = new PK_SPHERE_sf_s { radius = 1 };
+        sphereSf.basis_set.axis.coord[2] = 1;
+        sphereSf.basis_set.ref_direction.coord[0] = 1;
+        int sphere = 0;
+        Assert.Equal(0, KernelRuntime.SphereCreate(&sphereSf, &sphere));
+
+        // Chart plus terminator hulls: each terminator carries endpoint then branch.
+        double[] chart = [1, 0, 0, 0, 1, 0, -1, 0, 0];
+        var input = new IcurveDecodeInput
+        {
+            Surface0Tag = plane,
+            Surface1Tag = sphere,
+            BaseParameter = 0,
+            BaseScale = 1,
+            ChartCount = 3,
+            ChartHvecs = chart,
+            Start = new IcurveLimitInput
+            {
+                Type = LimitType.Terminator,
+                TermUse = LimitTermUse.First,
+                Hvecs = [0.95, 0.05, 0, 1, 0, 0],
+            },
+            End = new IcurveLimitInput
+            {
+                Type = LimitType.Terminator,
+                TermUse = LimitTermUse.First,
+                Hvecs = [-0.95, 0.05, 0, -1, 0, 0],
+            },
+            UvType = IntersectionUvType.None,
+            ChordalError = 1e-4,
+            AngularError = 1e-6,
+        };
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var dataSlot, out var failure, out _));
+        Assert.Equal(IcurveDecodeFailure.None, failure);
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(dataSlot, out var icurve));
+
+        Assert.Equal(0, KernelRuntime.TopologyDetachGeometry(edge));
+        Assert.Equal(0, KernelRuntime.EdgeAttachCurves(1, &edge, &icurve));
+
+        var document = Decode(Transmit(body));
+        var intersection = SingleNode(document, XtNodeTypes.Intersection);
+        var start = Deref(document, intersection.Fields[10]);
+        var end = Deref(document, intersection.Fields[11]);
+        Assert.Equal(XtNodeTypes.Limit, (XtNodeTypes)start.Type);
+        Assert.Equal(XtNodeTypes.Limit, (XtNodeTypes)end.Type);
+        Assert.Equal('T', start.Fields[0].Character);
+        Assert.Equal('T', end.Fields[0].Character);
+        Assert.Equal(2, start.VariableLength);
+        Assert.Equal(2, end.VariableLength);
+
+        Assert.Equal(AlgorithmStatus.Success,
+            KernelRuntime.TryMaterializeICurveFromXt(document, intersection.Index,
+                out var hydrated, out var hydrateFailure));
+        Assert.Equal(IcurveDecodeFailure.None, hydrateFailure);
+        var record = KernelRuntime.GetCurveByTag(hydrated);
+        Assert.Equal(CurveClass.ICurve, record.Class);
+        PK_VECTOR_s* evalOut = stackalloc PK_VECTOR_s[1];
+        Assert.Equal(0, KernelRuntime.CurveEval(hydrated, record.TMin, 0, evalOut));
+        Assert.Equal(1.0, evalOut[0].coord[0], 12);
+    }
+
+    [Fact]
     public void BSurfaceAttachedToBlockTopFace_TransmitsNurbsAndSurfaceData()
     {
         int body;

@@ -209,6 +209,159 @@ internal static class SmallLinearSolve
         return AlgorithmStatus.Success;
     }
 
+    /// <summary>
+    /// Square SVD via Jacobi diagonalization of AᵀA (spec §14.2). On success
+    /// <paramref name="singularValues"/> holds σ descending, <paramref name="u"/>
+    /// and <paramref name="v"/> are orthogonal (row-major n×n). Input
+    /// <paramref name="a"/> is preserved. Rank uses
+    /// <paramref name="rankTolerance"/>·σ_max.
+    /// </summary>
+    internal static AlgorithmStatus SvdFactorizeSquare(ReadOnlySpan<double> a, BufferCount n,
+        Span<double> singularValues, Span<double> u, Span<double> v,
+        double rankTolerance, out BufferCount rank)
+    {
+        rank = 0;
+        if (n <= 0 || a.Length < n * n || singularValues.Length < n
+            || u.Length < n * n || v.Length < n * n)
+            return AlgorithmStatus.InvalidInput;
+        for (BufferOffset i = 0; i < n * n; i++)
+            if (!double.IsFinite(a[i])) return AlgorithmStatus.InvalidInput;
+
+        // Build S = AᵀA into the upper triangle of work, then Jacobi-rotate V.
+        Span<double> s = stackalloc double[36]; // n ≤ 6
+        if (n > 6) return AlgorithmStatus.Unsupported;
+        for (BufferOffset i = 0; i < n; i++)
+        for (BufferOffset j = i; j < n; j++)
+        {
+            var sum = 0.0;
+            for (BufferOffset k = 0; k < n; k++)
+                sum += a[k * n + i] * a[k * n + j];
+            s[i * n + j] = sum;
+            s[j * n + i] = sum;
+        }
+        for (BufferOffset i = 0; i < n; i++)
+        for (BufferOffset j = 0; j < n; j++)
+            v[i * n + j] = i == j ? 1.0 : 0.0;
+
+        const int maxSweeps = 32;
+        for (BufferOffset sweep = 0; sweep < maxSweeps; sweep++)
+        {
+            var off = 0.0;
+            for (BufferOffset p = 0; p < n - 1; p++)
+            for (BufferOffset q = p + 1; q < n; q++)
+            {
+                var app = s[p * n + p];
+                var aqq = s[q * n + q];
+                var apq = s[p * n + q];
+                off += Math.Abs(apq);
+                if (!(Math.Abs(apq) > MachineEpsilon * (Math.Abs(app) + Math.Abs(aqq))))
+                    continue;
+                var tau = (aqq - app) / (2 * apq);
+                var absTau = Math.Abs(tau);
+                var t = (tau >= 0 ? 1.0 : -1.0) / (absTau + Math.Sqrt(1 + tau * tau));
+                if (!double.IsFinite(t)) t = 0;
+                var c = 1 / Math.Sqrt(1 + t * t);
+                var sAng = t * c;
+                // Rotate S.
+                for (BufferOffset k = 0; k < n; k++)
+                {
+                    if (k == p || k == q) continue;
+                    var skp = s[k * n + p];
+                    var skq = s[k * n + q];
+                    s[k * n + p] = c * skp - sAng * skq;
+                    s[p * n + k] = s[k * n + p];
+                    s[k * n + q] = sAng * skp + c * skq;
+                    s[q * n + k] = s[k * n + q];
+                }
+                s[p * n + p] = app - t * apq;
+                s[q * n + q] = aqq + t * apq;
+                s[p * n + q] = 0;
+                s[q * n + p] = 0;
+                // Accumulate V.
+                for (BufferOffset k = 0; k < n; k++)
+                {
+                    var vkp = v[k * n + p];
+                    var vkq = v[k * n + q];
+                    v[k * n + p] = c * vkp - sAng * vkq;
+                    v[k * n + q] = sAng * vkp + c * vkq;
+                }
+            }
+            if (!(off > n * n * MachineEpsilon * (1 + Math.Abs(s[0]))))
+                break;
+        }
+
+        for (BufferOffset j = 0; j < n; j++)
+        {
+            var eig = s[j * n + j];
+            singularValues[j] = eig > 0 ? Math.Sqrt(eig) : 0;
+        }
+        // Sort σ descending and permute V columns.
+        for (BufferOffset i = 0; i < n; i++)
+        for (BufferOffset j = i + 1; j < n; j++)
+            if (singularValues[j] > singularValues[i])
+            {
+                (singularValues[i], singularValues[j]) = (singularValues[j], singularValues[i]);
+                for (BufferOffset k = 0; k < n; k++)
+                    (v[k * n + i], v[k * n + j]) = (v[k * n + j], v[k * n + i]);
+            }
+
+        var sigmaMax = singularValues[0];
+        var threshold = rankTolerance * sigmaMax;
+        for (BufferOffset j = 0; j < n; j++)
+        {
+            if (singularValues[j] > threshold) rank = j + 1;
+            // u_j = A v_j / σ_j
+            if (singularValues[j] > threshold)
+            {
+                for (BufferOffset i = 0; i < n; i++)
+                {
+                    var sum = 0.0;
+                    for (BufferOffset k = 0; k < n; k++)
+                        sum += a[i * n + k] * v[k * n + j];
+                    u[i * n + j] = sum / singularValues[j];
+                }
+            }
+            else
+            {
+                for (BufferOffset i = 0; i < n; i++) u[i * n + j] = 0;
+            }
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    /// <summary>
+    /// Minimum-norm solution of A x = b from a square SVD: x = V Σ⁺ Uᵀ b.
+    /// Components for σ below the factorization's rank stay zero.
+    /// </summary>
+    internal static AlgorithmStatus SvdMinNormSolve(ReadOnlySpan<double> singularValues,
+        ReadOnlySpan<double> u, ReadOnlySpan<double> v, BufferCount n, BufferCount rank,
+        ReadOnlySpan<double> b, Span<double> x)
+    {
+        if (x.Length < n || b.Length < n) return AlgorithmStatus.InvalidInput;
+        Span<double> utb = stackalloc double[6];
+        if (n > 6) return AlgorithmStatus.Unsupported;
+        for (BufferOffset j = 0; j < n; j++)
+        {
+            var sum = 0.0;
+            if (j < rank)
+            {
+                for (BufferOffset i = 0; i < n; i++)
+                    sum += u[i * n + j] * b[i];
+                sum /= singularValues[j];
+            }
+            utb[j] = sum;
+        }
+        for (BufferOffset i = 0; i < n; i++)
+        {
+            var sum = 0.0;
+            for (BufferOffset j = 0; j < rank; j++)
+                sum += v[i * n + j] * utb[j];
+            x[i] = sum;
+            if (!double.IsFinite(x[i])) return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
     /// <summary>y = A x for a row-major m×n matrix, accumulated into <paramref name="y"/>.</summary>
     internal static void Multiply(ReadOnlySpan<double> a, BufferCount m, BufferCount n,
         ReadOnlySpan<double> x, Span<double> y)

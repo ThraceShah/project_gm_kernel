@@ -139,6 +139,41 @@ public class IcurveNumericsTests
     }
 
     [Fact]
+    public void SvdMinNorm_RankDeficientSquare_RecoversKnownSolution()
+    {
+        // A = [[1,0,0],[0,1,0],[0,0,0]], b = [2,3,0] → min-norm x = [2,3,0].
+        Span<double> a = [1, 0, 0, 0, 1, 0, 0, 0, 0];
+        Span<double> sigma = new double[3];
+        Span<double> u = new double[9];
+        Span<double> v = new double[9];
+        Assert.Equal(AlgorithmStatus.Success, SmallLinearSolve.SvdFactorizeSquare(
+            a, 3, sigma, u, v, 1e-14, out var rank));
+        Assert.Equal(2, rank);
+        Assert.True(sigma[0] >= sigma[1] && sigma[1] > sigma[2]);
+        Span<double> b = [2, 3, 0];
+        Span<double> x = new double[3];
+        Assert.Equal(AlgorithmStatus.Success, SmallLinearSolve.SvdMinNormSolve(sigma, u, v, 3, rank, b, x));
+        Assert.Equal(2, x[0], 10);
+        Assert.Equal(3, x[1], 10);
+        Assert.InRange(Math.Abs(x[2]), 0, 1e-12);
+    }
+
+    [Fact]
+    public void SvdFactorize_FullRank_MatchesIdentitySingularValues()
+    {
+        Span<double> a = [2, 0, 0, 0, 3, 0, 0, 0, 4];
+        Span<double> sigma = new double[3];
+        Span<double> u = new double[9];
+        Span<double> v = new double[9];
+        Assert.Equal(AlgorithmStatus.Success, SmallLinearSolve.SvdFactorizeSquare(
+            a, 3, sigma, u, v, 0, out var rank));
+        Assert.Equal(3, rank);
+        Assert.Equal(4, sigma[0], 10);
+        Assert.Equal(3, sigma[1], 10);
+        Assert.Equal(2, sigma[2], 10);
+    }
+
+    [Fact]
     public void NewtonStep_QuadraticWithArmijo_ConvergesToRoot()
     {
         // SPD system: F(y) = A (y − y*), root y* = (1, −2, 0.5).
