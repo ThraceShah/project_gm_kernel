@@ -19,11 +19,12 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | BLEND_BOUND distance composition | Math only | GATE-B open; not production |
 | Interval certification (I3) | Plane/sphere/cylinder/cone | §18.3; Empty/Unique/Undetermined |
 | Runtime `PK_CURVE_eval` for icurve | Analytic supports | Decode → bind → prepare → eval |
-| Real Parasolid oracle (analytic) | Plane∩sphere; skew cylinders | `scripts/IcurveEvaluationOracle.cs` |
+| Real Parasolid oracle (analytic) | Plane∩sphere D0+D1; skew cylinders | `scripts/IcurveEvaluationOracle.cs` |
 | XT INTERSECTION writer (Help limits, analytic supports) | Node 38/40/41/204 | `XtWriter` + `XtGeometryWriterTests` |
 | XT CHART extract → DecodeIcurve | Node 40 common layout | `TryExtractIcurveChartFromXt` |
 | XT INTERSECTION materialize → `CurveClass.ICurve` | Analytic supports + LIMIT + DATA | `TryMaterializeICurveFromXt` |
 | Ring-torus oriented distance | `a > b > 0` sheet | Exact SDF √((ρ−a)²+z²)−b; spindle Unsupported |
+| T20 eval micro-benchmark | plane∩sphere/cyl/cone | cold + hot p50/p95 (`scripts/IcurveEvalBenchmark.cs`) |
 
 ## Explicitly unsupported / gated
 
@@ -39,7 +40,7 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | Torus / B-surface interval cert | BoundsUnavailable |
 | Spindle/apple torus oriented distance | Unsupported (`a ≤ b`) |
 | Pseudo-arclength as public parameter | forbidden by §17.4 |
-| T20 publish matrix / P95 budgets | skeleton only (`scripts/IcurveEvalBenchmark.cs`) |
+| T20 publish speed gates | measured locally; thresholds not yet locked |
 
 ## Verification
 
