@@ -3,9 +3,9 @@
 #:property AllowUnsafeBlocks=true
 #:property AssemblyName=IcurveEvalBenchmark
 
-// ICurve evaluation micro-benchmark skeleton (spec §22, task T20 subset).
-// Cold/hot wall times for ChartPoint and RegularChartInterval through the
-// Runtime PK_CURVE_eval path (decode → bind → prepare → eval). Not a publish
+// ICurve evaluation micro-benchmark (spec §22, task T20 subset).
+// Cold/hot wall times and sample percentiles for ChartPoint and RegularChartInterval
+// through Runtime PK_CURVE_eval (decode → bind → prepare → eval). Not a publish
 // gate — oracle/correctness thresholds wait on T19 closure.
 
 using System.Diagnostics;
@@ -18,7 +18,6 @@ static string GetScriptPath([CallerFilePath] string path = "") => path;
 
 var scriptDir = Path.GetDirectoryName(GetScriptPath()) ?? ".";
 var repoRoot = Path.GetFullPath(Path.Combine(scriptDir, ".."));
-// Same P_SCHEMA normalization as VerifyKernel — SessionStart needs the schema dir.
 foreach (var name in new[] { "P_SCHEMA", "PARASOLID_SCHEMA_DIR" })
 {
     var value = Environment.GetEnvironmentVariable(name);
@@ -31,99 +30,193 @@ var outPath = args.SkipWhile(a => a != "--out").Skip(1).FirstOrDefault();
 
 unsafe
 {
+    string TryHead()
+    {
+        try
+        {
+            var psi = new ProcessStartInfo("git", "rev-parse --short HEAD")
+            {
+                WorkingDirectory = repoRoot,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+            };
+            using var p = Process.Start(psi)!;
+            var text = p.StandardOutput.ReadToEnd().Trim();
+            p.WaitForExit();
+            return string.IsNullOrEmpty(text) ? "unknown" : text;
+        }
+        catch { return "unknown"; }
+    }
+
+    static double Pct(double[] sorted, double q)
+    {
+        var idx = (int)Math.Clamp(Math.Ceiling(q * sorted.Length) - 1, 0, sorted.Length - 1);
+        return sorted[idx];
+    }
+
+    int BindUnitCircleChart(int s0, int s1)
+    {
+        double[] angles = [0.0, 0.4, 0.9, 1.4, 2.0, 2.6];
+        var chart = new double[angles.Length * 3];
+        for (var i = 0; i < angles.Length; i++)
+        {
+            chart[i * 3] = Math.Cos(angles[i]);
+            chart[i * 3 + 1] = Math.Sin(angles[i]);
+            chart[i * 3 + 2] = 0;
+        }
+
+        var input = new IcurveDecodeInput
+        {
+            Surface0Tag = s0,
+            Surface1Tag = s1,
+            BaseParameter = 0,
+            BaseScale = 1,
+            ChartCount = angles.Length,
+            ChartHvecs = chart,
+            Start = new IcurveLimitInput
+            {
+                Type = LimitType.Help,
+                TermUse = LimitTermUse.Unset,
+                Hvecs = [chart[0], chart[1], chart[2]],
+            },
+            End = new IcurveLimitInput
+            {
+                Type = LimitType.Help,
+                TermUse = LimitTermUse.Unset,
+                Hvecs = [chart[^3], chart[^2], chart[^1]],
+            },
+            UvType = IntersectionUvType.None,
+            ChordalError = 1e-4,
+            AngularError = 1e-6,
+        };
+
+        if (KernelRuntime.DecodeIcurve(input, out var slot, out _, out _) != AlgorithmStatus.Success
+            || KernelRuntime.TryBindICurveEntity(slot, out var tag) != AlgorithmStatus.Success)
+            throw new InvalidOperationException("icurve bind failed");
+        return tag;
+    }
+
+    int CreatePlaneSphere()
+    {
+        var planeSf = new PK_PLANE_sf_s();
+        planeSf.basis_set.axis.coord[2] = 1;
+        planeSf.basis_set.ref_direction.coord[0] = 1;
+        int plane = 0;
+        if (KernelRuntime.PlaneCreate(&planeSf, &plane) != 0)
+            throw new InvalidOperationException("PlaneCreate failed");
+
+        var sphereSf = new PK_SPHERE_sf_s { radius = 1 };
+        sphereSf.basis_set.axis.coord[2] = 1;
+        sphereSf.basis_set.ref_direction.coord[0] = 1;
+        int sphere = 0;
+        if (KernelRuntime.SphereCreate(&sphereSf, &sphere) != 0)
+            throw new InvalidOperationException("SphereCreate failed");
+
+        return BindUnitCircleChart(plane, sphere);
+    }
+
+    int CreatePlaneCylinder()
+    {
+        var planeSf = new PK_PLANE_sf_s();
+        planeSf.basis_set.axis.coord[2] = 1;
+        planeSf.basis_set.ref_direction.coord[0] = 1;
+        int plane = 0;
+        if (KernelRuntime.PlaneCreate(&planeSf, &plane) != 0)
+            throw new InvalidOperationException("PlaneCreate failed");
+
+        var cylSf = new PK_CYL_sf_s { radius = 1 };
+        cylSf.basis_set.axis.coord[2] = 1;
+        cylSf.basis_set.ref_direction.coord[0] = 1;
+        int cyl = 0;
+        if (KernelRuntime.CylCreate(&cylSf, &cyl) != 0)
+            throw new InvalidOperationException("CylCreate failed");
+
+        return BindUnitCircleChart(plane, cyl);
+    }
+
+    int CreatePlaneCone()
+    {
+        var planeSf = new PK_PLANE_sf_s();
+        planeSf.basis_set.axis.coord[2] = 1;
+        planeSf.basis_set.ref_direction.coord[0] = 1;
+        int plane = 0;
+        if (KernelRuntime.PlaneCreate(&planeSf, &plane) != 0)
+            throw new InvalidOperationException("PlaneCreate failed");
+
+        var coneSf = new PK_CONE_sf_s { radius = 1, semi_angle = Math.Atan(0.5) };
+        coneSf.basis_set.axis.coord[2] = 1;
+        coneSf.basis_set.ref_direction.coord[0] = 1;
+        int cone = 0;
+        if (KernelRuntime.ConeCreate(&coneSf, &cone) != 0)
+            throw new InvalidOperationException("ConeCreate failed");
+
+        return BindUnitCircleChart(plane, cone);
+    }
+
+    void MeasureFixture(System.Text.StringBuilder sb, string name, Func<int> build)
+    {
+        var curve = build();
+        var record = KernelRuntime.GetCurveByTag(curve);
+        var tNode = record.TMin;
+        var tMid = 0.5 * (record.TMin + record.TMax);
+        PK_VECTOR_s* output = stackalloc PK_VECTOR_s[3];
+
+        var sw = Stopwatch.StartNew();
+        _ = KernelRuntime.CurveEval(curve, tNode, 0, output);
+        var coldNodeNs = sw.Elapsed.TotalNanoseconds;
+        sw.Restart();
+        _ = KernelRuntime.CurveEval(curve, tMid, 2, output);
+        var coldMidNs = sw.Elapsed.TotalNanoseconds;
+
+        const int warmup = 50;
+        const int samples = 400;
+        for (var i = 0; i < warmup; i++)
+        {
+            _ = KernelRuntime.CurveEval(curve, tNode, 0, output);
+            _ = KernelRuntime.CurveEval(curve, tMid, 2, output);
+        }
+
+        var nodeSamples = new double[samples];
+        var midSamples = new double[samples];
+        for (var i = 0; i < samples; i++)
+        {
+            sw.Restart();
+            _ = KernelRuntime.CurveEval(curve, tNode, 0, output);
+            nodeSamples[i] = sw.Elapsed.TotalNanoseconds;
+            sw.Restart();
+            _ = KernelRuntime.CurveEval(curve, tMid, 2, output);
+            midSamples[i] = sw.Elapsed.TotalNanoseconds;
+        }
+
+        Array.Sort(nodeSamples);
+        Array.Sort(midSamples);
+        sb.AppendLine($"fixture: {name}");
+        sb.AppendLine($"  cold ChartPoint D0:         {coldNodeNs:F0} ns");
+        sb.AppendLine($"  cold RegularInterval D0–D2: {coldMidNs:F0} ns");
+        sb.AppendLine($"  hot  ChartPoint D0:         p50={Pct(nodeSamples, 0.50):F1} p95={Pct(nodeSamples, 0.95):F1} ns/eval (n={samples})");
+        sb.AppendLine($"  hot  RegularInterval D0–D2: p50={Pct(midSamples, 0.50):F1} p95={Pct(midSamples, 0.95):F1} ns/eval");
+        sb.AppendLine();
+    }
+
     KernelRuntime.SessionStop();
     var options = new PK_SESSION_start_o_s { o_t_version = 1 };
     var start = KernelRuntime.SessionStart(&options);
     if (start != 0)
         throw new InvalidOperationException($"SessionStart failed: {start}");
 
-    var planeSf = new PK_PLANE_sf_s();
-    planeSf.basis_set.axis.coord[2] = 1;
-    planeSf.basis_set.ref_direction.coord[0] = 1;
-    int plane = 0;
-    if (KernelRuntime.PlaneCreate(&planeSf, &plane) != 0)
-        throw new InvalidOperationException("PlaneCreate failed");
+    var sb = new System.Text.StringBuilder();
+    sb.AppendLine("icurve evaluation benchmark (T20)");
+    sb.AppendLine($"  RID={System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier} HEAD={TryHead()}");
+    sb.AppendLine("  note: not a publish gate; correctness lives in T19 oracle / KernelTests");
+    sb.AppendLine();
 
-    var sphereSf = new PK_SPHERE_sf_s();
-    sphereSf.basis_set.axis.coord[2] = 1;
-    sphereSf.basis_set.ref_direction.coord[0] = 1;
-    sphereSf.radius = 1;
-    int sphere = 0;
-    if (KernelRuntime.SphereCreate(&sphereSf, &sphere) != 0)
-        throw new InvalidOperationException("SphereCreate failed");
-
-    double[] angles = [0.0, 0.4, 0.9, 1.4, 2.0, 2.6];
-    var chart = new double[angles.Length * 3];
-    for (var i = 0; i < angles.Length; i++)
-    {
-        chart[i * 3] = Math.Cos(angles[i]);
-        chart[i * 3 + 1] = Math.Sin(angles[i]);
-        chart[i * 3 + 2] = 0;
-    }
-
-    var input = new IcurveDecodeInput
-    {
-        Surface0Tag = plane,
-        Surface1Tag = sphere,
-        BaseParameter = 0,
-        BaseScale = 1,
-        ChartCount = angles.Length,
-        ChartHvecs = chart,
-        Start = new IcurveLimitInput
-        {
-            Type = LimitType.Help,
-            TermUse = LimitTermUse.Unset,
-            Hvecs = [chart[0], chart[1], chart[2]],
-        },
-        End = new IcurveLimitInput
-        {
-            Type = LimitType.Help,
-            TermUse = LimitTermUse.Unset,
-            Hvecs = [chart[^3], chart[^2], chart[^1]],
-        },
-        UvType = IntersectionUvType.None,
-        ChordalError = 1e-4,
-        AngularError = 1e-6,
-    };
-
-    if (KernelRuntime.DecodeIcurve(input, out var slot, out _, out _) != AlgorithmStatus.Success
-        || KernelRuntime.TryBindICurveEntity(slot, out var curve) != AlgorithmStatus.Success)
-        throw new InvalidOperationException("icurve bind failed");
-
-    var record = KernelRuntime.GetCurveByTag(curve);
-    var tNode = record.TMin;
-    var tMid = 0.5 * (record.TMin + record.TMax);
-    PK_VECTOR_s* output = stackalloc PK_VECTOR_s[3];
-
-    var sw = Stopwatch.StartNew();
-    _ = KernelRuntime.CurveEval(curve, tNode, 0, output);
-    var coldNodeNs = sw.Elapsed.TotalNanoseconds;
-    sw.Restart();
-    _ = KernelRuntime.CurveEval(curve, tMid, 2, output);
-    var coldMidNs = sw.Elapsed.TotalNanoseconds;
-
-    const int iterations = 500;
-    sw.Restart();
-    for (var i = 0; i < iterations; i++)
-        _ = KernelRuntime.CurveEval(curve, tNode, 0, output);
-    var hotNodeNs = sw.Elapsed.TotalNanoseconds / iterations;
-    sw.Restart();
-    for (var i = 0; i < iterations; i++)
-        _ = KernelRuntime.CurveEval(curve, tMid, 2, output);
-    var hotMidNs = sw.Elapsed.TotalNanoseconds / iterations;
+    MeasureFixture(sb, "plane∩sphere", CreatePlaneSphere);
+    MeasureFixture(sb, "plane∩cylinder", CreatePlaneCylinder);
+    MeasureFixture(sb, "plane∩cone", CreatePlaneCone);
 
     KernelRuntime.SessionStop();
 
-    var report = $"""
-icurve evaluation benchmark (T20 skeleton)
-  fixture: plane ∩ sphere unit circle via Runtime PK_CURVE_eval
-  cold ChartPoint D0:              {coldNodeNs:F0} ns
-  cold RegularInterval D0–D2:      {coldMidNs:F0} ns
-  hot  ChartPoint D0 ({iterations}×):  {hotNodeNs:F1} ns/eval
-  hot  RegularInterval D0–D2:      {hotMidNs:F1} ns/eval
-  note: not a publish gate; oracle/correctness thresholds live in T19/T20 matrix
-""";
-
+    var report = sb.ToString();
     Console.Write(report);
     if (!string.IsNullOrWhiteSpace(outPath))
     {

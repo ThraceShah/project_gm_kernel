@@ -61,7 +61,7 @@ using (host)
             Log("NotRun: GATE-D — public high-order (>2) PK_CURVE_eval contract not closed; Runtime rejects order>2.");
             Log("NotRun: GATE-B/A — BlendBound role map / blend arc extremes open.");
             Log("NotRun: XT INTERSECTION live PK_PART_transmit receive/compare — writer emits 38/40/41/204; PK receive oracle pending.");
-            Log("PASS: chart-interior D0 geometric comparisons above (see case logs).");
+            Log("PASS: chart-interior D0/D1 geometric comparisons above (see case logs).");
         }
         finally
         {
@@ -109,6 +109,7 @@ static unsafe void RunPlaneSphereCase(Action<string> log)
     var ours = stackalloc M.PK_VECTOR_s[3];
     var reference = stackalloc PK_VECTOR_t[3];
     double maxPos = 0;
+    double maxTan = 0;
     var samples = 0;
     for (var i = 0; i < 64; i++)
     {
@@ -116,8 +117,10 @@ static unsafe void RunPlaneSphereCase(Action<string> log)
         CheckOur(KernelRuntime.CurveEval(ourCurve, t, 2, ours), "our CurveEval plane/sphere");
         var angle = Math.Atan2(ours[0].coord[1], ours[0].coord[0]);
         if (angle < pkInterval.value[0]) angle += Math.Tau;
-        ParasolidScriptHost.Check(PK_CURVE_eval(pkCircle, angle, 0, reference), "PK_CURVE_eval circle");
+        ParasolidScriptHost.Check(PK_CURVE_eval(pkCircle, angle, 1, reference), "PK_CURVE_eval circle D1");
         maxPos = Math.Max(maxPos, Distance(ours, reference));
+        // Parameter speeds differ; compare unit tangents.
+        maxTan = Math.Max(maxTan, UnitTangentDelta(&ours[1], &reference[1]));
         samples++;
     }
 
@@ -125,10 +128,12 @@ static unsafe void RunPlaneSphereCase(Action<string> log)
     if (tooMany != M.ParasolidConstants.PK_ERROR_too_many_derivatives)
         throw new InvalidOperationException($"expected too_many_derivatives for order 3, got {tooMany}");
 
-    log($"plane/sphere: samples={samples} max|Δpos|={maxPos:E3}");
+    log($"plane/sphere: samples={samples} max|Δpos|={maxPos:E3} max|Δû|={maxTan:E3}");
     if (maxPos > 1e-8)
         throw new InvalidOperationException($"plane/sphere position mismatch {maxPos}");
-    log("plane/sphere: PASS (D0 vs PK circle; order>2 rejected)");
+    if (maxTan > 1e-6)
+        throw new InvalidOperationException($"plane/sphere unit-tangent mismatch {maxTan}");
+    log("plane/sphere: PASS (D0+D1 unit tangent vs PK circle; order>2 rejected)");
 }
 
 static unsafe void RunSkewCylinderCase(Action<string> log)
@@ -493,6 +498,20 @@ static unsafe double Distance(M.PK_VECTOR_s* a, PK_VECTOR_t* b)
     var dy = a->coord[1] - b->coord[1];
     var dz = a->coord[2] - b->coord[2];
     return Math.Sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+static unsafe double UnitTangentDelta(M.PK_VECTOR_s* a, PK_VECTOR_t* b)
+{
+    var la = Math.Sqrt(a->coord[0] * a->coord[0] + a->coord[1] * a->coord[1] + a->coord[2] * a->coord[2]);
+    var lb = Math.Sqrt(b->coord[0] * b->coord[0] + b->coord[1] * b->coord[1] + b->coord[2] * b->coord[2]);
+    if (!(la > 0) || !(lb > 0)) return double.PositiveInfinity;
+    var ax = a->coord[0] / la; var ay = a->coord[1] / la; var az = a->coord[2] / la;
+    var bx = b->coord[0] / lb; var by = b->coord[1] / lb; var bz = b->coord[2] / lb;
+    var dx = ax - bx; var dy = ay - by; var dz = az - bz;
+    var same = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+    dx = ax + bx; dy = ay + by; dz = az + bz;
+    var opposite = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+    return Math.Min(same, opposite);
 }
 
 static unsafe double CylinderPairResidual(M.PK_VECTOR_s* p,
