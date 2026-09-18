@@ -208,13 +208,66 @@ internal static class ICurveEvaluation
         }
         var status = Solve(in view, in solveSeed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
-        report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
-            selected, ChartSide.Right, segment, iterations, residual, hitKind);
-        if (status != AlgorithmStatus.Success) return status;
-        _ = cache.TryInsert(new CurveSample(t, derivatives[0], derivatives[1],
+        if (status == AlgorithmStatus.Success)
+        {
+            report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
+                selected, ChartSide.Right, segment, iterations, residual, hitKind);
+            _ = cache.TryInsert(new CurveSample(t, derivatives[0], derivatives[1],
+                order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
+                ChartSide.Right, segment, residual, SampleSourceKind.CorrectedRoot, selected));
+            return status;
+        }
+
+        // Continuation only recovers numerical/seed failures. Capability refusals
+        // and structural singularities stay as-is — subdivision must not rewrite
+        // "plan cannot run" into Stagnation/BudgetExceeded (§7 preamble, §17).
+        if (status is not (AlgorithmStatus.NotConverged or AlgorithmStatus.NumericalFailure))
+        {
+            report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
+                selected, ChartSide.Right, segment, iterations, residual, hitKind);
+            return status;
+        }
+
+        // Direct solve failed: parameter continuation / local subdivision from a
+        // verified anchor inside the same original segment (§17.3–§17.5). Shared
+        // budget covers predictor, corrector and midpoint probes.
+        var budget = EvaluationBudget.Default;
+        KernelVector3 anchorPosition;
+        double anchorParameter;
+        if (cache.TryFindNearest(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment,
+                out var nearest))
+        {
+            anchorParameter = nearest.Parameter;
+            anchorPosition = nearest.Position;
+        }
+        else
+        {
+            // Chart endpoints are defining D0 anchors (§5.4).
+            var useHi = Math.Abs(view.ChartParameters[segment + 1] - t)
+                < Math.Abs(t - view.ChartParameters[segment]);
+            anchorParameter = useHi ? view.ChartParameters[segment + 1] : view.ChartParameters[segment];
+            anchorPosition = useHi ? view.ChartPositions[segment + 1] : view.ChartPositions[segment];
+        }
+
+        var contStatus = ICurveContinuation.ContinueTo(in view, selected, anchorParameter,
+            in anchorPosition, t, segment, ref budget, derivatives, out var contSteps,
+            out residual, out var detail);
+        if (contStatus != AlgorithmStatus.Success)
+        {
+            contStatus = ICurveContinuation.SubdivideTo(in view, selected, t, segment, ref budget,
+                derivatives, out contSteps, out residual, out detail);
+        }
+
+        iterations = contSteps;
+        report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, contStatus,
+            selected, ChartSide.Right, segment, iterations, residual, CacheHitKind.NeighborSeed,
+            0, detail);
+        if (contStatus != AlgorithmStatus.Success) return contStatus;
+        _ = cache.TryInsert(new CurveSample(t, derivatives[0],
+            order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
             ChartSide.Right, segment, residual, SampleSourceKind.CorrectedRoot, selected));
-        return status;
+        return contStatus;
     }
 
     /// <summary>Sample error bound for exact-hit acceptance (slice default).</summary>
@@ -345,6 +398,16 @@ internal static class ICurveEvaluation
         if (order >= 1) derivatives[1] = hit.First;
         if (order >= 2) derivatives[2] = hit.Second;
     }
+
+    /// <summary>
+    /// Direct plan solve without continuation/subdivision fallback. Used by the
+    /// continuation module so a failed regular-interval request cannot recurse
+    /// into itself through <see cref="EvaluateWithPlan"/> (spec §17.3).
+    /// </summary>
+    internal static AlgorithmStatus SolveDirect(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
+        Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
+        => Solve(in view, in seed, t, segment, order, plan, derivatives, out iterations, out residual);
 
     /// <summary>Finite switch over the plans; no residual callbacks cross this boundary (§19.4).</summary>
     private static AlgorithmStatus Solve(in ICurveView view, in KernelVector3 seed, double t,

@@ -133,6 +133,36 @@ internal ref struct EvaluationSampleStore
     }
 
     /// <summary>
+    /// Nearest verified sample on the same query semantics and original chart
+    /// segment — the continuation anchor when Hermite brackets are absent
+    /// (spec §17.3). On equal distance prefers the sample at or below the
+    /// request so forward tracking from a known root is deterministic.
+    /// </summary>
+    internal readonly bool TryFindNearest(double parameter, ICurveQueryKind kind, ChartSide side,
+        BufferOffset segment, out CurveSample sample)
+    {
+        sample = default;
+        var found = false;
+        var bestDistance = double.PositiveInfinity;
+        for (BufferOffset i = 0; i < count; i++)
+        {
+            ref readonly var candidate = ref slots[i];
+            if (candidate.Kind != kind || candidate.Side != side || candidate.Segment != segment)
+                continue;
+            if (candidate.Source == SampleSourceKind.PredictedOnly) continue;
+            var distance = Math.Abs(candidate.Parameter - parameter);
+            var better = distance < bestDistance
+                || (distance == bestDistance && found && candidate.Parameter <= parameter
+                    && sample.Parameter > parameter);
+            if (!better) continue;
+            bestDistance = distance;
+            sample = candidate;
+            found = true;
+        }
+        return found;
+    }
+
+    /// <summary>
     /// Insert or improve: the anchor keeps precedence over corrected roots at
     /// the same key (§13.4 node rule), corrected roots replace worse-rooted or
     /// predicted entries. Failure (storage full) leaves the store unchanged.
