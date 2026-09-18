@@ -501,6 +501,16 @@ static unsafe int CreateOurUnitSphere()
     return tag;
 }
 
+static unsafe int CreateOurUnitSectionCone()
+{
+    var sf = new M.PK_CONE_sf_s { radius = 1, semi_angle = Math.Atan(0.5) };
+    sf.basis_set.axis.coord[2] = 1;
+    sf.basis_set.ref_direction.coord[0] = 1;
+    int tag = 0;
+    CheckOur(KernelRuntime.ConeCreate(&sf, &tag), "ConeCreate");
+    return tag;
+}
+
 static unsafe int CreateOurCylinder(double radius,
     (double x, double y, double z) axis,
     (double x, double y, double z) location,
