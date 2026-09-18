@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -274,12 +275,12 @@ internal static class TerminatorEvaluation
     /// <summary>
     /// Solve the one-surface system on the interval (§6.3): φ_A(Q + μv) = 0 by
     /// safeguarded Newton from the branch-connected seed μ=0, with an
-    /// expanding sign-change bracket and bisection as the fallback. The
-    /// accepted root is the one connected to the branch witness μ(t_B) = 0 —
-    /// not merely the smallest |μ| among all roots.
+    /// expanding sign-change bracket and bisection as the fallback. Draws from
+    /// the shared <paramref name="budget"/> (§14.7 / T17); exhaustion is
+    /// <see cref="AlgorithmStatus.NotConverged"/> (caller maps BudgetExceeded).
     /// </summary>
     internal static AlgorithmStatus SolveIntervalPoint(in AnalyticSurface selectedSurface,
-        in TerminatorAnchor anchor, double t,
+        in TerminatorAnchor anchor, double t, ref EvaluationBudget budget,
         out double mu, out KernelVector3 point, out double residual, out BufferOffset evaluations)
     {
         mu = 0;
@@ -295,6 +296,7 @@ internal static class TerminatorEvaluation
         var converged = false;
         for (BufferOffset iteration = 0; iteration < MaxNewtonIterations; iteration++)
         {
+            if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
             evaluations++;
             point = Add(q, Scale(anchor.LineDirection, mu));
             if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in point, 1, out var jet)
@@ -315,9 +317,12 @@ internal static class TerminatorEvaluation
             if (!double.IsFinite(next) || Math.Abs(next) > bound) break;
             mu = next;
         }
-        if (!converged && !BracketedSolve(in selectedSurface, in anchor, in q, bound,
-                out mu, out point, out residual, ref evaluations))
-            return AlgorithmStatus.NotConverged;
+        if (!converged)
+        {
+            var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in q, bound,
+                ref budget, out mu, out point, out residual, ref evaluations);
+            if (bracketStatus != AlgorithmStatus.Success) return bracketStatus;
+        }
         return AlgorithmStatus.Success;
     }
 
@@ -326,8 +331,8 @@ internal static class TerminatorEvaluation
     private const int BracketSamples = 24;
 
     /// <summary>Sign-change bracket nearest the branch witness, bisected, then Newton-polished.</summary>
-    private static bool BracketedSolve(in AnalyticSurface surface, in TerminatorAnchor anchor,
-        in KernelVector3 q, double bound, out double mu, out KernelVector3 point,
+    private static AlgorithmStatus BracketedSolve(in AnalyticSurface surface, in TerminatorAnchor anchor,
+        in KernelVector3 q, double bound, ref EvaluationBudget budget, out double mu, out KernelVector3 point,
         out double residual, ref BufferOffset evaluations)
     {
         mu = 0;
@@ -337,8 +342,9 @@ internal static class TerminatorEvaluation
         var bracketed = false;
         for (BufferOffset i = 1; i <= BracketSamples && !bracketed; i++)
         {
+            if (!budget.TryConsume(2)) return AlgorithmStatus.NotConverged;
             var step = bound * i / BracketSamples;
-            evaluations++;
+            evaluations += 2;
             if (TryValue(in surface, in anchor, in q, step, out highValue)
                 && TryValue(in surface, in anchor, in q, -step, out lowValue))
             {
@@ -350,13 +356,15 @@ internal static class TerminatorEvaluation
                 }
             }
         }
-        if (!bracketed) return false;
+        if (!bracketed) return AlgorithmStatus.NotConverged;
 
         for (BufferOffset i = 0; i < MaxBisectionIterations; i++)
         {
+            if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
             var mid = 0.5 * (lowMu + highMu);
             evaluations++;
-            if (!TryValue(in surface, in anchor, in q, mid, out var midValue)) return false;
+            if (!TryValue(in surface, in anchor, in q, mid, out var midValue))
+                return AlgorithmStatus.Unsupported;
             if ((midValue <= 0 && lowValue > 0) || (midValue > 0 && lowValue <= 0))
             {
                 highMu = mid;
@@ -370,11 +378,15 @@ internal static class TerminatorEvaluation
         }
         mu = 0.5 * (lowMu + highMu);
         point = Add(q, Scale(anchor.LineDirection, mu));
+        if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
         evaluations++;
-        if (!TryValue(in surface, in anchor, in q, mu, out var value)) return false;
+        if (!TryValue(in surface, in anchor, in q, mu, out var value))
+            return AlgorithmStatus.Unsupported;
         residual = Math.Abs(value);
         return residual <= ICurveEvaluation.ResidualTolerance * (1.0 + Math.Abs(point.X)
-            + Math.Abs(point.Y) + Math.Abs(point.Z));
+            + Math.Abs(point.Y) + Math.Abs(point.Z))
+            ? AlgorithmStatus.Success
+            : AlgorithmStatus.NotConverged;
     }
 
     private static bool TryValue(in AnalyticSurface surface, in TerminatorAnchor anchor,

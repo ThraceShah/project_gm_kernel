@@ -353,12 +353,16 @@ internal static class ICurveEvaluation
 
         var selectedSurface = anchor.SelectedSurface == 0 ? view.Support0 : view.Support1;
         var otherSurface = anchor.SelectedSurface == 0 ? view.Support1 : view.Support0;
+        var budget = EvaluationBudget.Default;
         var solveStatus = TerminatorEvaluation.SolveIntervalPoint(in selectedSurface, in anchor, t,
-            out _, out var point, out var residual, out var evaluations);
+            ref budget, out _, out var point, out var residual, out var evaluations);
         if (solveStatus != AlgorithmStatus.Success)
         {
+            var detail = solveStatus == AlgorithmStatus.NotConverged && budget.Remaining == 0
+                ? ICurveEvalDetail.BudgetExceeded
+                : ICurveEvalDetail.None;
             report = new ICurveEvalReport(kind, solveStatus, ICurveConstraintPlan.Auto,
-                side, segment, evaluations, residual);
+                side, segment, evaluations, residual, CacheHitKind.None, 0, detail);
             return solveStatus;
         }
 

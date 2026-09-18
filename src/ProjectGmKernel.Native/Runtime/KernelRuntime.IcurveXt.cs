@@ -227,15 +227,29 @@ internal static unsafe partial class KernelRuntime
         uvCount = dataNode.VariableLength;
         if (uvCount < 0 || dataNode.Fields.Length != 1 + uvCount) return false;
         if (uvCount > MaxIcurveImportUvValues || uvValues.Length < uvCount) return false;
+        var emptySlots = 0;
         for (var i = 0; i < uvCount; i++)
         {
             var field = dataNode.Fields[1 + i];
-            // Parasolid may emit null UV slots; DecodeIcurve rejects NaN, so treat
-            // Empty as unsupported for hydrate (caller can retry with UvType.None).
-            if (field.Kind == XtFieldKind.Empty) return false;
+            // Parasolid may emit null UV slots. Strip Empty entries and, when
+            // every slot is empty, fall back to UvType.None so hydrate still
+            // succeeds for Help-limit charts that omit UV payloads.
+            if (field.Kind == XtFieldKind.Empty)
+            {
+                emptySlots++;
+                uvValues[i] = 0;
+                continue;
+            }
             if (field.Kind != XtFieldKind.Real) return false;
             uvValues[i] = field.Real;
         }
+        if (emptySlots == uvCount)
+        {
+            uvType = IntersectionUvType.None;
+            uvCount = 0;
+        }
+        else if (emptySlots > 0)
+            return false; // partial Empty layouts are not a declared Decode contract
         return true;
     }
 

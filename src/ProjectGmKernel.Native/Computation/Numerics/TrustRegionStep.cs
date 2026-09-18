@@ -65,9 +65,19 @@ internal static class TrustRegionStep
 
         Span<double> rhs = stackalloc double[MaxSmallSystem];
         for (BufferOffset i = 0; i < n; i++) rhs[i] = -residual[i];
-        // Newton/Gauss-Newton direction from the same factorization; on rank
-        // deficiency this is the least-squares direction of the reachable model.
-        status = SmallLinearSolve.QrLeastSquares(jacobian, n, n, tauWorkspace, rank, columnPivotWorkspace, rhs, newtonStep);
+        // Full-rank: pivoted-QR basic solution. Rank-deficient: true min-norm via SVD (§14.2).
+        if (rank < n)
+        {
+            Span<double> sigma = stackalloc double[MaxSmallSystem];
+            Span<double> u = stackalloc double[MaxSmallSystem * MaxSmallSystem];
+            Span<double> v = stackalloc double[MaxSmallSystem * MaxSmallSystem];
+            status = SmallLinearSolve.SvdFactorizeSquare(jacobianCopy, n, sigma, u, v,
+                SmallLinearSolve.MachineEpsilon * n, out var svdRank);
+            if (status != AlgorithmStatus.Success) return status;
+            status = SmallLinearSolve.SvdMinNormSolve(sigma, u, v, n, svdRank, rhs, newtonStep);
+        }
+        else
+            status = SmallLinearSolve.QrLeastSquares(jacobian, n, n, tauWorkspace, rank, columnPivotWorkspace, rhs, newtonStep);
         if (status != AlgorithmStatus.Success) return status;
 
         // Cauchy point pC = −(gᵀg / ‖Jg‖²) g against the preserved J.

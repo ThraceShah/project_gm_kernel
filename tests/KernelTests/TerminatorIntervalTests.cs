@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
@@ -380,5 +381,24 @@ public class TerminatorIntervalTests
         Assert.Equal(AlgorithmStatus.Singular,
             TerminatorEvaluation.TryResolveTerminatorParameter(in view, true,
                 TerminatorParameterRule.ExtensionRatio, in endpoint, in branch, out _));
+    }
+
+    [Fact]
+    public void SolveIntervalPoint_ExhaustedBudget_ReportsNotConverged()
+    {
+        var view = CircleViewWithEndTerminator(1.28, LimitTermUse.First);
+        var end = view.EndTerminator;
+        Assert.Equal(AlgorithmStatus.Success, TerminatorEvaluation.TryResolveTerminatorParameter(
+            in view, true, TerminatorParameterRule.ExtensionRatio,
+            in end.Endpoint, in end.BranchPoint, out var tT));
+        Assert.Equal(AlgorithmStatus.Success, TerminatorEvaluation.Prepare(
+            in view, true, in end.Endpoint, in end.BranchPoint, end.TermUse, tT, out var anchor));
+
+        var t = 0.5 * (view.ChartParameters[^1] + tT);
+        var budget = new EvaluationBudget(0); // no base evals allowed
+        Assert.Equal(AlgorithmStatus.NotConverged, TerminatorEvaluation.SolveIntervalPoint(
+            in PlaneZ0, in anchor, t, ref budget, out _, out _, out _, out _));
+        Assert.Equal(0, budget.Remaining);
+        Assert.Equal(0, budget.Used);
     }
 }

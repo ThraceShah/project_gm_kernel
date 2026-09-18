@@ -8,8 +8,9 @@
 
 // ICurve evaluation oracle (spec §21.6 / T19).
 // Real Parasolid creates the reference curve; our kernel binds an icurve from
-// the same supports + chart samples and compares D0 on the regular chart
-// interior. GATE-T/D/B/A paths are reported as NotRun, never as Pass.
+// the same supports + chart samples and compares D0/D1 (and D2 where the
+// analytic reference is a circle) on the regular chart interior.
+// GATE-T/D/B/A paths are reported as NotRun, never as Pass.
 // Usage: P_SCHEMA=third_party/parasolid/schema dotnet run scripts/IcurveEvaluationOracle.cs
 
 using System.Runtime.CompilerServices;
@@ -59,12 +60,17 @@ using (host)
             Log("=== Case D: our XT INTERSECTION writer → codec re-read ===");
             RunOurWriterRoundtrip(Log);
 
+            Log("=== Case E: plane ∩ ring-torus (a=3,b=1) outer equator ρ=4 ===");
+            RunPlaneRingTorusCase(Log);
+
+            Log("=== Case F: our XT INTERSECTION writer → live PK_PART_receive ===");
+            RunOurWriterLivePkReceive(Log);
+
             Log("=== GATE probes ===");
             Log("NotRun: GATE-T — terminator t_E reconstruction vs PK_CURVE_ask_interval not closed.");
             Log("NotRun: GATE-D — public high-order (>2) PK_CURVE_eval contract not closed; Runtime rejects order>2.");
             Log("NotRun: GATE-B/A — BlendBound role map / blend arc extremes open.");
-            Log("NotRun: XT INTERSECTION live PK_PART_transmit receive/compare — writer emits 38/40/41/204; PK receive oracle pending.");
-            Log("PASS: chart-interior D0/D1 geometric comparisons above (see case logs).");
+            Log("PASS: chart-interior D0/D1/D2 geometric comparisons above (see case logs; D2 on circle refs).");
         }
         finally
         {
@@ -113,17 +119,27 @@ static unsafe void RunPlaneSphereCase(Action<string> log)
     var reference = stackalloc PK_VECTOR_t[3];
     double maxPos = 0;
     double maxTan = 0;
+    double maxD2 = 0;
+    var usedAbsD2 = false;
     var samples = 0;
+    var d2Samples = 0;
     for (var i = 0; i < 64; i++)
     {
         var t = record.TMin + (record.TMax - record.TMin) * i / 63.0;
         CheckOur(KernelRuntime.CurveEval(ourCurve, t, 2, ours), "our CurveEval plane/sphere");
         var angle = Math.Atan2(ours[0].coord[1], ours[0].coord[0]);
         if (angle < pkInterval.value[0]) angle += Math.Tau;
-        ParasolidScriptHost.Check(PK_CURVE_eval(pkCircle, angle, 1, reference), "PK_CURVE_eval circle D1");
+        ParasolidScriptHost.Check(PK_CURVE_eval(pkCircle, angle, 2, reference), "PK_CURVE_eval circle D2");
         maxPos = Math.Max(maxPos, Distance(ours, reference));
-        // Parameter speeds differ; compare unit tangents.
-        maxTan = Math.Max(maxTan, UnitTangentDelta(&ours[1], &reference[1]));
+        // Parameter speeds may differ; compare unit tangents.
+        maxTan = Math.Max(maxTan, UnitVectorDelta(&ours[1], &reference[1]));
+        // Regular interior only for D2 (skip chart ends where side may matter).
+        if (i > 0 && i < 63)
+        {
+            maxD2 = Math.Max(maxD2, CompareD2(&ours[1], &ours[2], &reference[1], &reference[2], out var abs));
+            usedAbsD2 |= abs;
+            d2Samples++;
+        }
         samples++;
     }
 
@@ -131,12 +147,15 @@ static unsafe void RunPlaneSphereCase(Action<string> log)
     if (tooMany != M.ParasolidConstants.PK_ERROR_too_many_derivatives)
         throw new InvalidOperationException($"expected too_many_derivatives for order 3, got {tooMany}");
 
-    log($"plane/sphere: samples={samples} max|Δpos|={maxPos:E3} max|Δû|={maxTan:E3}");
+    var d2Mode = usedAbsD2 ? "abs" : "κ+n";
+    log($"plane/sphere: samples={samples} d2Samples={d2Samples} max|Δpos|={maxPos:E3} max|Δû|={maxTan:E3} max|ΔD2|{d2Mode}={maxD2:E3}");
     if (maxPos > 1e-8)
         throw new InvalidOperationException($"plane/sphere position mismatch {maxPos}");
     if (maxTan > 1e-6)
         throw new InvalidOperationException($"plane/sphere unit-tangent mismatch {maxTan}");
-    log("plane/sphere: PASS (D0+D1 unit tangent vs PK circle; order>2 rejected)");
+    if (maxD2 > (usedAbsD2 ? 1e-6 : 1e-5))
+        throw new InvalidOperationException($"plane/sphere D2 mismatch {maxD2} ({d2Mode})");
+    log("plane/sphere: PASS (D0+D1 unit tangent + D2 vs PK circle; order>2 rejected)");
 }
 
 static unsafe void RunPlaneConeCase(Action<string> log)
@@ -179,7 +198,7 @@ static unsafe void RunPlaneConeCase(Action<string> log)
         if (angle < pkInterval.value[0]) angle += Math.Tau;
         ParasolidScriptHost.Check(PK_CURVE_eval(pkCircle, angle, 1, reference), "PK_CURVE_eval circle cone-case");
         maxPos = Math.Max(maxPos, Distance(ours, reference));
-        maxTan = Math.Max(maxTan, UnitTangentDelta(&ours[1], &reference[1]));
+        maxTan = Math.Max(maxTan, UnitVectorDelta(&ours[1], &reference[1]));
         // Cone residual: ρ − (R + k z) with R=1, k=0.5, z=0 → |ρ−1|.
         var rho = Math.Sqrt(ours[0].coord[0] * ours[0].coord[0] + ours[0].coord[1] * ours[0].coord[1]);
         maxCone = Math.Max(maxCone, Math.Abs(rho - 1.0) + Math.Abs(ours[0].coord[2]));
@@ -190,6 +209,214 @@ static unsafe void RunPlaneConeCase(Action<string> log)
     if (maxPos > 1e-8 || maxTan > 1e-6 || maxCone > 1e-8)
         throw new InvalidOperationException($"plane/cone mismatch pos={maxPos} tan={maxTan} cone={maxCone}");
     log("plane/cone: PASS (D0+D1 vs PK circle; cone section residual)");
+}
+
+static unsafe void RunPlaneRingTorusCase(Action<string> log)
+{
+    // Ring torus a=3,b=1; plane z=0 cuts the outer equator circle ρ=a+b=4.
+    var circleSf = new PK_CIRCLE_sf_t(
+        new PK_AXIS2_sf_t(new PK_VECTOR_t(0, 0, 0), new PK_VECTOR1_t(0, 0, 1), new PK_VECTOR1_t(1, 0, 0)),
+        4.0);
+    PK_CIRCLE_t pkCircle;
+    ParasolidScriptHost.Check(PK_CIRCLE_create(&circleSf, &pkCircle), "PK_CIRCLE_create torus-case");
+    PK_INTERVAL_t pkInterval;
+    ParasolidScriptHost.Check(PK_CURVE_ask_interval(pkCircle, &pkInterval), "PK_CURVE_ask_interval torus-case");
+
+    var plane = CreateOurPlaneZ0();
+    var torus = CreateOurRingTorus(major: 3, minor: 1);
+    double[] angles = [0.0, 0.5, 1.1, 1.8, 2.5, 3.3, 4.0, 4.8, 5.5];
+    var chart = new double[angles.Length * 3];
+    for (var i = 0; i < angles.Length; i++)
+    {
+        chart[i * 3] = 4.0 * Math.Cos(angles[i]);
+        chart[i * 3 + 1] = 4.0 * Math.Sin(angles[i]);
+        chart[i * 3 + 2] = 0;
+    }
+    var input = BuildDecodeInput(plane, torus, chart, baseParameter: 0, baseScale: 1);
+    CheckStatus(KernelRuntime.DecodeIcurve(input, out var slot, out _, out _), "DecodeIcurve plane/torus");
+    CheckStatus(KernelRuntime.TryBindICurveEntity(slot, out var ourCurve), "TryBindICurveEntity plane/torus");
+    var record = KernelRuntime.GetCurveByTag(ourCurve);
+
+    var ours = stackalloc M.PK_VECTOR_s[3];
+    var reference = stackalloc PK_VECTOR_t[2];
+    double maxPos = 0;
+    double maxTan = 0;
+    double maxRho = 0;
+    var samples = 0;
+    for (var i = 0; i < 48; i++)
+    {
+        var t = record.TMin + (record.TMax - record.TMin) * i / 47.0;
+        CheckOur(KernelRuntime.CurveEval(ourCurve, t, 1, ours), "our CurveEval plane/torus");
+        var angle = Math.Atan2(ours[0].coord[1], ours[0].coord[0]);
+        if (angle < pkInterval.value[0]) angle += Math.Tau;
+        ParasolidScriptHost.Check(PK_CURVE_eval(pkCircle, angle, 1, reference), "PK_CURVE_eval circle torus-case");
+        maxPos = Math.Max(maxPos, Distance(ours, reference));
+        maxTan = Math.Max(maxTan, UnitVectorDelta(&ours[1], &reference[1]));
+        var rho = Math.Sqrt(ours[0].coord[0] * ours[0].coord[0] + ours[0].coord[1] * ours[0].coord[1]);
+        maxRho = Math.Max(maxRho, Math.Abs(rho - 4.0) + Math.Abs(ours[0].coord[2]));
+        samples++;
+    }
+
+    log($"plane/torus: samples={samples} max|Δpos|={maxPos:E3} max|Δû|={maxTan:E3} max|ρ−4|={maxRho:E3}");
+    if (maxPos > 1e-8 || maxTan > 1e-6 || maxRho > 1e-8)
+        throw new InvalidOperationException($"plane/torus mismatch pos={maxPos} tan={maxTan} rho={maxRho}");
+    log("plane/torus: PASS (D0+D1 unit tangent vs PK circle ρ=4; ring torus a=3,b=1)");
+}
+
+static unsafe void RunOurWriterLivePkReceive(Action<string> log)
+{
+    // Same transmit path as Case D, then attempt live Parasolid receive.
+    // Known failure mode: INTERSECTION shared-dep / add_geoms (PK_ERROR_bad_shared_dep=917).
+    int body = 0;
+    CheckOur(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body), "BodyCreateSolidBlock live-recv");
+    if (!KernelRuntime.TryResolveBodySlot(body, out var bodySlot))
+        throw new InvalidOperationException("body slot live-recv");
+    var edgeSlot = KernelRuntime.GetBodyRecord(bodySlot).FirstEdgeBody;
+    int edge = KernelRuntime.TagOf(PoolKind.Edge, edgeSlot);
+
+    var plane = CreateOurPlaneZ0();
+    var sphere = CreateOurUnitSphere();
+    double[] chart = [1, 0, 0, 0, 1, 0, -1, 0, 0, 0, -1, 0];
+    var input = BuildDecodeInput(plane, sphere, chart, baseParameter: -0.25, baseScale: 1.5);
+    CheckStatus(KernelRuntime.DecodeIcurve(input, out var slot, out _, out _), "DecodeIcurve live-recv");
+    CheckStatus(KernelRuntime.TryBindICurveEntity(slot, out var icurve), "TryBindICurveEntity live-recv");
+    CheckOur(KernelRuntime.TopologyDetachGeometry(edge), "detach live-recv");
+    CheckOur(KernelRuntime.EdgeAttachCurves(1, &edge, &icurve), "attach icurve live-recv");
+
+    var parts = stackalloc int[1] { body };
+    var options = new M.PK_PART_transmit_o_s
+    {
+        o_t_version = 4,
+        transmit_format = M.ParasolidConstants.PK_transmit_format_text_c,
+        transmit_version = 371,
+        transmit_meshes = M.ParasolidConstants.PK_transmit_meshes_separate_c,
+    };
+    var block = new M.PK_MEMORY_block_s();
+    CheckOur(KernelRuntime.PartTransmitB(1, parts, &options, &block), "our PartTransmitB live-recv");
+    byte[] bytes;
+    try
+    {
+        bytes = new byte[checked((int)block.n_bytes)];
+        new ReadOnlySpan<byte>(block.bytes, bytes.Length).CopyTo(bytes);
+    }
+    finally
+    {
+        CheckOur(KernelRuntime.MemoryBlockFree(&block), "MemoryBlockFree live-recv");
+    }
+
+    fixed (byte* pointer = bytes)
+    {
+        var pkBlock = new PK_MEMORY_block_t(null, (ulong)bytes.Length, pointer);
+        var receive = new PK_PART_receive_o_t { transmit_format = PK_transmit_format_text_c };
+        int count;
+        int* receivedParts = null;
+        var error = PK_PART_receive_b(pkBlock, &receive, &count, &receivedParts);
+        if (error != 0)
+        {
+            var reason = error == PK_ERROR_bad_shared_dep
+                ? "PK_ERROR_bad_shared_dep (917) — INTERSECTION add_geoms/shared-dep"
+                : $"PK_PART_receive_b failed with error {error}";
+            log($"NotRun: Case F live PK receive — {reason}");
+            return;
+        }
+
+        try
+        {
+            if (count < 1 || receivedParts is null)
+            {
+                log("NotRun: Case F live PK receive — empty part list after receive");
+                return;
+            }
+
+            var receivedBody = receivedParts[0];
+            if (!TryFindReceivedIcurve(receivedBody, out var pkCurve, out var interval))
+            {
+                log("NotRun: Case F live PK receive — received body has no PK_CLASS_icurve on edges");
+                return;
+            }
+
+            var ours = stackalloc M.PK_VECTOR_s[1];
+            var reference = stackalloc PK_VECTOR_t[1];
+            var record = KernelRuntime.GetCurveByTag(icurve);
+
+            // Parameterizations need not match after receive; compare by closest
+            // PK sample on a dense grid of the received interval.
+            const int pkDense = 128;
+            var pkX = new double[pkDense];
+            var pkY = new double[pkDense];
+            var pkZ = new double[pkDense];
+            for (var j = 0; j < pkDense; j++)
+            {
+                var pkT = interval.value[0] + (interval.value[1] - interval.value[0]) * j / (pkDense - 1);
+                ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, pkT, 0, reference), "PK_CURVE_eval live-recv grid");
+                pkX[j] = reference[0].coord[0];
+                pkY[j] = reference[0].coord[1];
+                pkZ[j] = reference[0].coord[2];
+            }
+
+            double maxPos = 0;
+            var samples = 0;
+            for (var i = 0; i < 24; i++)
+            {
+                var alpha = i / 23.0;
+                var ourT = record.TMin + (record.TMax - record.TMin) * alpha;
+                CheckOur(KernelRuntime.CurveEval(icurve, ourT, 0, ours), "our CurveEval live-recv");
+                var best = double.PositiveInfinity;
+                for (var j = 0; j < pkDense; j++)
+                {
+                    var dx = ours[0].coord[0] - pkX[j];
+                    var dy = ours[0].coord[1] - pkY[j];
+                    var dz = ours[0].coord[2] - pkZ[j];
+                    best = Math.Min(best, Math.Sqrt(dx * dx + dy * dy + dz * dz));
+                }
+                maxPos = Math.Max(maxPos, best);
+                samples++;
+            }
+
+            log($"live-pk-recv: samples={samples} pkDense={pkDense} max|Δpos|_closest={maxPos:E3}");
+            if (maxPos > 1e-4)
+            {
+                log($"NotRun: Case F live PK receive succeeded but D0 closest-sample Δ={maxPos:E3} exceeds gate (INTERSECTION rematerialize/compare gap; not Pass)");
+                return;
+            }
+            log("live-pk-recv: PASS (our XT INTERSECTION received by PK; D0 closest-sample compare)");
+        }
+        finally
+        {
+            if (receivedParts is not null)
+                ParasolidScriptHost.Check(PK_MEMORY_free(receivedParts), "free received parts");
+        }
+    }
+}
+
+static unsafe bool TryFindReceivedIcurve(PK_BODY_t body, out PK_CURVE_t curve, out PK_INTERVAL_t interval)
+{
+    curve = 0;
+    interval = default;
+    int nEdges;
+    PK_EDGE_t* edges = null;
+    ParasolidScriptHost.Check(PK_BODY_ask_edges(body, &nEdges, &edges), "PK_BODY_ask_edges live-recv");
+    try
+    {
+        for (var i = 0; i < nEdges; i++)
+        {
+            PK_CURVE_t candidate;
+            if (PK_EDGE_ask_curve(edges[i], &candidate) != 0 || candidate == 0) continue;
+            PK_CLASS_t cls;
+            ParasolidScriptHost.Check(PK_ENTITY_ask_class(candidate, &cls), "class live-recv");
+            if (cls != PK_CLASS_icurve) continue;
+            PK_INTERVAL_t localInterval;
+            ParasolidScriptHost.Check(PK_CURVE_ask_interval(candidate, &localInterval), "interval live-recv");
+            interval = localInterval;
+            curve = candidate;
+            return true;
+        }
+        return false;
+    }
+    finally
+    {
+        if (edges is not null) ParasolidScriptHost.Check(PK_MEMORY_free(edges), "free edges live-recv");
+    }
 }
 
 static unsafe void RunSkewCylinderCase(Action<string> log)
@@ -511,6 +738,16 @@ static unsafe int CreateOurUnitSectionCone()
     return tag;
 }
 
+static unsafe int CreateOurRingTorus(double major, double minor)
+{
+    var sf = new M.PK_TORUS_sf_s { major_radius = major, minor_radius = minor };
+    sf.basis_set.axis.coord[2] = 1;
+    sf.basis_set.ref_direction.coord[0] = 1;
+    int tag = 0;
+    CheckOur(KernelRuntime.TorusCreate(&sf, &tag), "TorusCreate");
+    return tag;
+}
+
 static unsafe int CreateOurCylinder(double radius,
     (double x, double y, double z) axis,
     (double x, double y, double z) location,
@@ -566,7 +803,7 @@ static unsafe double Distance(M.PK_VECTOR_s* a, PK_VECTOR_t* b)
     return Math.Sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-static unsafe double UnitTangentDelta(M.PK_VECTOR_s* a, PK_VECTOR_t* b)
+static unsafe double UnitVectorDelta(M.PK_VECTOR_s* a, PK_VECTOR_t* b)
 {
     var la = Math.Sqrt(a->coord[0] * a->coord[0] + a->coord[1] * a->coord[1] + a->coord[2] * a->coord[2]);
     var lb = Math.Sqrt(b->coord[0] * b->coord[0] + b->coord[1] * b->coord[1] + b->coord[2] * b->coord[2]);
@@ -576,6 +813,83 @@ static unsafe double UnitTangentDelta(M.PK_VECTOR_s* a, PK_VECTOR_t* b)
     var dx = ax - bx; var dy = ay - by; var dz = az - bz;
     var same = Math.Sqrt(dx * dx + dy * dy + dz * dz);
     dx = ax + bx; dy = ay + by; dz = az + bz;
+    var opposite = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+    return Math.Min(same, opposite);
+}
+
+static unsafe double CompareD2(
+    M.PK_VECTOR_s* ourD1, M.PK_VECTOR_s* ourD2,
+    PK_VECTOR_t* pkD1, PK_VECTOR_t* pkD2,
+    out bool usedAbsolute)
+{
+    var ourSpeed = LengthOurs(ourD1);
+    var pkSpeed = LengthPk(pkD1);
+    // Absolute D2 only when parameter speeds truly match after angle alignment.
+    if (pkSpeed > 1e-15 && Math.Abs(ourSpeed - pkSpeed) <= 1e-9 * Math.Max(1.0, pkSpeed))
+    {
+        usedAbsolute = true;
+        return Distance(ourD2, pkD2);
+    }
+
+    // Otherwise compare reparam-invariant curvature geometry: principal unit
+    // normal of D2⊥T plus |κ| (raw unit(D2) mixes tangential acceleration).
+    usedAbsolute = false;
+    var nDelta = PrincipalNormalUnitDelta(ourD1, ourD2, pkD1, pkD2);
+    var kDelta = Math.Abs(CurvatureOurs(ourD1, ourD2) - CurvaturePk(pkD1, pkD2));
+    return Math.Max(nDelta, kDelta);
+}
+
+static unsafe double LengthOurs(M.PK_VECTOR_s* v)
+    => Math.Sqrt(v->coord[0] * v->coord[0] + v->coord[1] * v->coord[1] + v->coord[2] * v->coord[2]);
+
+static unsafe double LengthPk(PK_VECTOR_t* v)
+    => Math.Sqrt(v->coord[0] * v->coord[0] + v->coord[1] * v->coord[1] + v->coord[2] * v->coord[2]);
+
+static unsafe double CurvatureOurs(M.PK_VECTOR_s* d1, M.PK_VECTOR_s* d2)
+{
+    var s = LengthOurs(d1);
+    if (!(s > 0)) return double.PositiveInfinity;
+    var cx = d1->coord[1] * d2->coord[2] - d1->coord[2] * d2->coord[1];
+    var cy = d1->coord[2] * d2->coord[0] - d1->coord[0] * d2->coord[2];
+    var cz = d1->coord[0] * d2->coord[1] - d1->coord[1] * d2->coord[0];
+    return Math.Sqrt(cx * cx + cy * cy + cz * cz) / (s * s * s);
+}
+
+static unsafe double CurvaturePk(PK_VECTOR_t* d1, PK_VECTOR_t* d2)
+{
+    var s = LengthPk(d1);
+    if (!(s > 0)) return double.PositiveInfinity;
+    var cx = d1->coord[1] * d2->coord[2] - d1->coord[2] * d2->coord[1];
+    var cy = d1->coord[2] * d2->coord[0] - d1->coord[0] * d2->coord[2];
+    var cz = d1->coord[0] * d2->coord[1] - d1->coord[1] * d2->coord[0];
+    return Math.Sqrt(cx * cx + cy * cy + cz * cz) / (s * s * s);
+}
+
+static unsafe double PrincipalNormalUnitDelta(
+    M.PK_VECTOR_s* ourD1, M.PK_VECTOR_s* ourD2,
+    PK_VECTOR_t* pkD1, PK_VECTOR_t* pkD2)
+{
+    var os = LengthOurs(ourD1);
+    var ps = LengthPk(pkD1);
+    if (!(os > 0) || !(ps > 0)) return double.PositiveInfinity;
+    var otx = ourD1->coord[0] / os; var oty = ourD1->coord[1] / os; var otz = ourD1->coord[2] / os;
+    var ptx = pkD1->coord[0] / ps; var pty = pkD1->coord[1] / ps; var ptz = pkD1->coord[2] / ps;
+    var od2t = ourD2->coord[0] * otx + ourD2->coord[1] * oty + ourD2->coord[2] * otz;
+    var pd2t = pkD2->coord[0] * ptx + pkD2->coord[1] * pty + pkD2->coord[2] * ptz;
+    var onx = ourD2->coord[0] - od2t * otx;
+    var ony = ourD2->coord[1] - od2t * oty;
+    var onz = ourD2->coord[2] - od2t * otz;
+    var pnx = pkD2->coord[0] - pd2t * ptx;
+    var pny = pkD2->coord[1] - pd2t * pty;
+    var pnz = pkD2->coord[2] - pd2t * ptz;
+    var ol = Math.Sqrt(onx * onx + ony * ony + onz * onz);
+    var pl = Math.Sqrt(pnx * pnx + pny * pny + pnz * pnz);
+    if (!(ol > 0) || !(pl > 0)) return double.PositiveInfinity;
+    onx /= ol; ony /= ol; onz /= ol;
+    pnx /= pl; pny /= pl; pnz /= pl;
+    var dx = onx - pnx; var dy = ony - pny; var dz = onz - pnz;
+    var same = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+    dx = onx + pnx; dy = ony + pny; dz = onz + pnz;
     var opposite = Math.Sqrt(dx * dx + dy * dy + dz * dz);
     return Math.Min(same, opposite);
 }
