@@ -17,11 +17,12 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | Terminator 1-surface / 2-planes | Explicit GATE-T rule | Production keeps gate open |
 | R-blend parametric + envelope math | Internal | GATE-A/D open |
 | BLEND_BOUND distance composition | Math only | GATE-B open; not production |
-| Interval certification (I3) | Plane/sphere/cylinder | §18.3; Empty/Unique/Undetermined |
+| Interval certification (I3) | Plane/sphere/cylinder/cone | §18.3; Empty/Unique/Undetermined |
 | Runtime `PK_CURVE_eval` for icurve | Analytic supports | Decode → bind → prepare → eval |
 | Real Parasolid oracle (analytic) | Plane∩sphere; skew cylinders | `scripts/IcurveEvaluationOracle.cs` |
 | XT INTERSECTION writer (Help limits, analytic supports) | Node 38/40/41/204 | `XtWriter` + `XtGeometryWriterTests` |
 | XT CHART extract → DecodeIcurve | Node 40 common layout | `TryExtractIcurveChartFromXt` |
+| XT INTERSECTION materialize → `CurveClass.ICurve` | Analytic supports + LIMIT + DATA | `TryMaterializeICurveFromXt` |
 
 ## Explicitly unsupported / gated
 
@@ -33,9 +34,8 @@ Generated: 2026-09-18. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | GATE-D public high-order PK contract | open (Runtime rejects order > 2) |
 | Procedural / BlendBound icurve supports | Unsupported at prepare |
 | B-surface / offset / swept supports for icurve prepare | Unsupported |
-| XT INTERSECTION writer + live `PK_PART_transmit` hydrate | Writer done; live PK receive/compare **NotRun** |
-| Full XT import → `CurveClass.ICurve` entity (supports+LIMIT+DATA) | CHART extract + writer; receive materializer pending |
-| Cone/torus/B-surface interval cert | BoundsUnavailable |
+| XT INTERSECTION writer + live `PK_PART_transmit` hydrate | Writer + local materialize done; live PK receive/compare **NotRun** |
+| Torus / B-surface interval cert | BoundsUnavailable |
 | Pseudo-arclength as public parameter | forbidden by §17.4 |
 | T20 publish matrix / P95 budgets | skeleton only (`scripts/IcurveEvalBenchmark.cs`) |
 

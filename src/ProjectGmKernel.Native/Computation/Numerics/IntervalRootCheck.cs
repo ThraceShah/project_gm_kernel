@@ -45,8 +45,8 @@ internal readonly struct IntervalBox3
 
 /// <summary>
 /// Local Moore–Krawczyk certification for the I3 residual on analytic supports
-/// (spec §18.3–§18.4, task T18). First version covers plane, sphere and cylinder
-/// zero sets. Ordinary Newton samples are never labelled certified — only the
+/// (spec §18.3–§18.4, task T18). Covers plane, sphere, cylinder and cone zero
+/// sets. Ordinary Newton samples are never labelled certified — only the
 /// inclusion and contraction tests below produce Unique / Empty.
 /// </summary>
 internal static class IntervalRootCheck
@@ -130,7 +130,8 @@ internal static class IntervalRootCheck
     }
 
     private static bool IsIntervalCapable(SurfaceClass kind)
-        => kind is SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere;
+        => kind is SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere
+            or SurfaceClass.Cone;
 
     private static AlgorithmStatus PointResidual(in AnalyticSurface s0, in AnalyticSurface s1,
         in KernelVector3 chordUnit, double planeOffset, in KernelVector3 x,
@@ -224,6 +225,33 @@ internal static class IntervalRootCheck
                     var radial = Scale(Sub(r, Scale(surface.Axis, axial)), 2);
                     gLo = Vector(Math.Min(gLo.X, radial.X), Math.Min(gLo.Y, radial.Y), Math.Min(gLo.Z, radial.Z));
                     gHi = Vector(Math.Max(gHi.X, radial.X), Math.Max(gHi.Y, radial.Y), Math.Max(gHi.Z, radial.Z));
+                }
+                gLo = Vector(OutwardDown(gLo.X), OutwardDown(gLo.Y), OutwardDown(gLo.Z));
+                gHi = Vector(OutwardUp(gHi.X), OutwardUp(gHi.Y), OutwardUp(gHi.Z));
+                return AlgorithmStatus.Success;
+            }
+            case SurfaceClass.Cone:
+            {
+                // ∇φ = 2ρ⊥ − 2k(R + k z)A is affine in the box corners, so the
+                // componentwise range is attained at vertices (same enclosure
+                // style as the cylinder). Wrong-nappe rejection stays in the
+                // point residual path, not here.
+                gLo = Vector(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
+                gHi = Vector(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
+                var k = surface.Secondary;
+                for (var ix = 0; ix < 2; ix++)
+                for (var iy = 0; iy < 2; iy++)
+                for (var iz = 0; iz < 2; iz++)
+                {
+                    var p = Vector(ix == 0 ? box.XLo : box.XHi, iy == 0 ? box.YLo : box.YHi,
+                        iz == 0 ? box.ZLo : box.ZHi);
+                    var r = Sub(p, surface.Origin);
+                    var axial = Dot(surface.Axis, r);
+                    var radial = Sub(r, Scale(surface.Axis, axial));
+                    var generator = surface.Radius + k * axial;
+                    var gradient = Sub(Scale(radial, 2), Scale(surface.Axis, 2 * k * generator));
+                    gLo = Vector(Math.Min(gLo.X, gradient.X), Math.Min(gLo.Y, gradient.Y), Math.Min(gLo.Z, gradient.Z));
+                    gHi = Vector(Math.Max(gHi.X, gradient.X), Math.Max(gHi.Y, gradient.Y), Math.Max(gHi.Z, gradient.Z));
                 }
                 gLo = Vector(OutwardDown(gLo.X), OutwardDown(gLo.Y), OutwardDown(gLo.Z));
                 gHi = Vector(OutwardUp(gHi.X), OutwardUp(gHi.Y), OutwardUp(gHi.Z));
