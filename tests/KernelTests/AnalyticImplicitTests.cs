@@ -201,8 +201,11 @@ public class AnalyticImplicitTests
         Assert.Equal(AlgorithmStatus.Success, AnalyticImplicitEvaluation.Evaluate(in spindle, in lemonPoint, 1, out var lemonJet));
         Assert.InRange(Math.Abs(lemonJet.Value), 0, 1e-9);
 
-        // Distance capability is not claimed for tori in this slice.
-        Assert.Equal(AlgorithmStatus.Unsupported, SurfaceDistanceEvaluation.Evaluate(in ring, in onSurface, 1, 1, out _));
+        // Ring torus now has Exact oriented distance; spindle stays Unsupported.
+        Assert.Equal(AlgorithmStatus.Success, SurfaceDistanceEvaluation.Evaluate(in ring, in onSurface, 1, 1, out var ringDist));
+        Assert.Equal(DistanceGrade.Exact, ringDist.Grade);
+        Assert.InRange(Math.Abs(ringDist.Distance), 0, 1e-9);
+        Assert.Equal(AlgorithmStatus.Unsupported, SurfaceDistanceEvaluation.Evaluate(in spindle, in lemonPoint, 1, 1, out _));
     }
 
     [Fact]
