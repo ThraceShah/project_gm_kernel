@@ -76,6 +76,33 @@ public unsafe class IcurveEvaluationTests
     }
 
     [Fact]
+    public void Evaluate_TranslatedUnitCircle_D0UsesLocalAcceptanceAndMinimumBuffer()
+    {
+        const double translation = 1e13;
+        var plane = new AnalyticSurface(SurfaceClass.Plane,
+            Vector(0, 0, translation), Vector(0, 0, 1), Vector(1, 0, 0));
+        var sphere = new AnalyticSurface(SurfaceClass.Sphere,
+            Vector(0, 0, translation), Vector(0, 0, 1), Vector(1, 0, 0), 1);
+        KernelVector3[] positions = [Vector(1, 0, translation), Vector(0, 1, translation)];
+        KernelVector3[] tangents = [Vector(0, 1, 0), Vector(-1, 0, 0)];
+        var parameters = new double[2];
+        var scales = new double[1];
+        var chords = new KernelVector3[1];
+        Assert.Equal(AlgorithmStatus.Success, OriginalChartParameterMap.Build(
+            positions, tangents, 0, 1, parameters, scales, chords, out _, out _));
+        var view = new ICurveView(in plane, 1, in sphere, 1,
+            positions, parameters, scales, chords);
+        var t = 0.5 * (parameters[0] + parameters[1]);
+        Span<KernelVector3> position = stackalloc KernelVector3[1];
+
+        Assert.Equal(AlgorithmStatus.Success,
+            ICurveEvaluation.Evaluate(in view, t, 0, position, out _));
+        Assert.InRange(Math.Abs(Math.Sqrt(position[0].X * position[0].X
+            + position[0].Y * position[0].Y) - 1), 0, 1e-12);
+        Assert.True(Math.Abs(position[0].X - 0.5) > 0.1);
+    }
+
+    [Fact]
     public void Evaluate_ChartPoint_ReturnsOriginalAnchorWithSideDerivatives()
     {
         var view = CircleView();

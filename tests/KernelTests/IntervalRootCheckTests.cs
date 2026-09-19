@@ -26,6 +26,29 @@ public class IntervalRootCheckTests
         new(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 2.0);
 
     [Fact]
+    public void IntervalMultiplication_ContainsExactPositiveProduct()
+    {
+        var product = IntervalRootCheck.MultiplyIntervals(1, 1, 1, 1);
+        Assert.True(product.Lo <= 1);
+        Assert.True(product.Hi >= 1);
+    }
+
+    [Fact]
+    public void TryCertifyP2_PeriodicMultiRootBox_ReportsBoundsUnavailable()
+    {
+        var plane = new AnalyticSurface(SurfaceClass.Plane,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0));
+        var cylinder = new AnalyticSurface(SurfaceClass.Cylinder,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1);
+        var chord = Vector(0, 1, 0);
+        var box = new IntervalRootCheck.IntervalBox2(-2 * Math.PI, 2 * Math.PI, -1, 1);
+
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyP2(
+            in cylinder, in plane, in chord, 0, in box, out var status));
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+    }
+
+    [Fact]
     public void TryCertifyI3_TightBoxAroundCirclePoint_Unique()
     {
         // Root of plane∩cylinder at (1,0,0) with e = (0,1,0), p = y = 0.

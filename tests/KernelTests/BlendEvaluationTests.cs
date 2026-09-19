@@ -54,6 +54,41 @@ public class BlendEvaluationTests
     }
 
     [Fact]
+    public void Evaluate_D2RequiresSixOutputs_AndFailureDoesNotPublish()
+    {
+        var frame = CircleTubeFrame(0.4);
+        Span<KernelVector3> tooSmall = stackalloc KernelVector3[5];
+        Assert.Equal(AlgorithmStatus.OutputTooSmall,
+            BlendEvaluation.Evaluate(in frame, 0.4, 0.2, 2, tooSmall));
+
+        Span<KernelVector3> exact = stackalloc KernelVector3[6];
+        Assert.Equal(AlgorithmStatus.Success,
+            BlendEvaluation.Evaluate(in frame, 0.4, 0.2, 2, exact));
+
+        var failing = new BlendFrameInput(frame.Spine, frame.SpineD1,
+            Vector(double.NaN, 0, 0), frame.X, frame.XD1, frame.XD2,
+            frame.Y, frame.YD1, frame.YD2, frame.Arc, frame.ArcD1, frame.ArcD2, frame.Radius);
+        exact.Fill(Vector(42, 42, 42));
+        Assert.Equal(AlgorithmStatus.NumericalFailure,
+            BlendEvaluation.Evaluate(in failing, 0.4, 0.2, 2, exact));
+        Assert.Equal(42, exact[0].X);
+        Assert.Equal(42, exact[5].Z);
+    }
+
+    [Fact]
+    public void ContactFromWitness_ReturnsPointOnSupport_NotOffsetCenter()
+    {
+        var plane = new AnalyticSurface(SurfaceClass.Plane,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0));
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryContactFromSpineWitness(
+            in plane, 1, 2, 1, 1, out var contact, out var normal));
+        Assert.Equal(1, contact.X, 12);
+        Assert.Equal(2, contact.Y, 12);
+        Assert.Equal(0, contact.Z, 12);
+        Assert.Equal(1, normal.Z, 12);
+    }
+
+    [Fact]
     public void CircleTube_Derivatives_MatchClosedFormsAndDifferences()
     {
         var frame = CircleTubeFrame(0.4);
