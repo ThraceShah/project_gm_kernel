@@ -40,7 +40,7 @@ internal static unsafe partial class KernelRuntime
         if (record.Class == CurveClass.ICurve && order > ICurveEvaluation.MaxDerivativeOrder)
             return ParasolidConstants.PK_ERROR_too_many_derivatives;
         Span<KernelVector3> values = stackalloc KernelVector3[11];
-        var status = EvaluateCurveCore(in record, t, order, values, out KernelVector3 direction);
+        var status = EvaluateCurveCore(in record, t, order, tangent is not null, values, out KernelVector3 direction);
         if (status != AlgorithmStatus.Success) return EvaluationError(status);
         if (tangent is not null && direction.X == 0 && direction.Y == 0 && direction.Z == 0)
             return ParasolidConstants.PK_ERROR_at_singularity;
@@ -54,8 +54,9 @@ internal static unsafe partial class KernelRuntime
     /// Callers must hold the command scratch. Dependent curves (trimmed,
     /// surface parameter) delegate to their supporting geometry.
     /// </summary>
-    private static AlgorithmStatus EvaluateCurveCore(ref readonly CurveRecord record, double t, DerivativeOrder order,
-        Span<KernelVector3> values, out KernelVector3 direction)
+    private static AlgorithmStatus EvaluateCurveCore(ref readonly CurveRecord record, double t,
+        DerivativeOrder order, bool tangentRequired, Span<KernelVector3> values,
+        out KernelVector3 direction)
     {
         direction = default;
         switch (record.Class)
@@ -83,7 +84,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var basisSlot = GetCurveSlotByTag(TrCurveDataPool[record.DataIndex].BasisCurveTag);
                 if (basisSlot < 0 || !Curves.IsAlive(basisSlot)) return AlgorithmStatus.Unsupported;
-                return EvaluateCurveCore(in Curves[basisSlot], t, order, values, out direction);
+                return EvaluateCurveCore(in Curves[basisSlot], t, order, tangentRequired, values, out direction);
             }
             case CurveClass.SPCurve:
             {
@@ -109,7 +110,7 @@ internal static unsafe partial class KernelRuntime
                 return IsFinite(direction) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
             }
             case CurveClass.ICurve:
-                return EvaluateICurve(in record, t, order, values, out direction);
+                return EvaluateICurve(in record, t, order, tangentRequired, values, out direction);
             default:
                 return AlgorithmStatus.Unsupported;
         }
@@ -119,17 +120,23 @@ internal static unsafe partial class KernelRuntime
     /// Prepare the pooled icurve into command scratch and evaluate through the
     /// shared <see cref="ICurveEvaluation"/> entry (spec §19, task T19).
     /// </summary>
-    private static AlgorithmStatus EvaluateICurve(in CurveRecord record, double t, DerivativeOrder order,
-        Span<KernelVector3> values, out KernelVector3 direction)
+    private static AlgorithmStatus EvaluateICurve(in CurveRecord record, double t,
+        DerivativeOrder order, bool tangentRequired, Span<KernelVector3> values,
+        out KernelVector3 direction)
     {
         direction = default;
         var prepareStatus = TryPrepareICurveView(in record, out var view, out _);
         if (prepareStatus != AlgorithmStatus.Success) return prepareStatus;
-        var status = ICurveEvaluation.Evaluate(in view, t, order, values, out _);
+        var evaluationOrder = tangentRequired ? Math.Max(order, 1) : order;
+        Span<KernelVector3> evaluated = stackalloc KernelVector3[ICurveEvaluation.MaxDerivativeOrder + 1];
+        var identity = new GeometryIdentity(record.Header.Tag, record.Header.Generation);
+        var status = EvaluateICurveThroughL3(in identity, in view, t, evaluationOrder,
+            ICurveConstraintPlan.Auto, evaluated, out _);
         if (status != AlgorithmStatus.Success) return status;
-        if (order >= 1)
+        evaluated[..(order + 1)].CopyTo(values);
+        if (tangentRequired)
         {
-            direction = Unit(values[1]);
+            direction = Unit(evaluated[1]);
             if (!IsFinite(direction)) return AlgorithmStatus.NumericalFailure;
         }
         return AlgorithmStatus.Success;
@@ -242,7 +249,7 @@ internal static unsafe partial class KernelRuntime
         ref readonly var curve = ref Curves[slot];
         if (curve.Class is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve))
             return AlgorithmStatus.Unsupported;
-        return EvaluateCurveCore(in curve, u, order, section, out _);
+        return EvaluateCurveCore(in curve, u, order, false, section, out _);
     }
 
     private static bool TryPrepareSurface(in SurfaceRecord record, out AnalyticSurface surface)

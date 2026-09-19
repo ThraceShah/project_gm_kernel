@@ -158,6 +158,11 @@ internal static unsafe class GeometryEvaluationCache
             if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
             if (entry.Parameter != sample.Parameter || entry.Kind != sample.Kind || entry.Side != sample.Side)
                 continue;
+            if (entry.Epoch != epoch)
+            {
+                Overwrite(ref entry, identity, epoch, in sample);
+                return;
+            }
             if (RankOf(sample.Source) <= RankOf(entry.Source) && sample.ErrorEstimate >= entry.ErrorEstimate)
                 return;
             Overwrite(ref entry, identity, epoch, in sample);
@@ -241,7 +246,8 @@ internal static unsafe partial class KernelRuntime
             derivatives, out report);
         if (status == AlgorithmStatus.Success)
             GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
-                derivatives[1], order >= 2 ? derivatives[2] : default, order, report.Kind,
+                order >= 1 ? derivatives[1] : default,
+                order >= 2 ? derivatives[2] : default, order, report.Kind,
                 report.Side, report.Segment, report.Residual, SampleSourceKind.CorrectedRoot, report.Plan));
         return status;
     }

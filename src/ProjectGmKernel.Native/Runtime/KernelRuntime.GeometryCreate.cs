@@ -83,8 +83,8 @@ internal static unsafe partial class KernelRuntime
             Span<KernelVector3> start = stackalloc KernelVector3[1];
             Span<KernelVector3> end = stackalloc KernelVector3[1];
             ref readonly var basis = ref Curves[basisSlot];
-            if (EvaluateCurveCore(in basis, parm1, 0, start, out _) != AlgorithmStatus.Success
-                || EvaluateCurveCore(in basis, parm2, 0, end, out _) != AlgorithmStatus.Success)
+            if (EvaluateCurveCore(in basis, parm1, 0, false, start, out _) != AlgorithmStatus.Success
+                || EvaluateCurveCore(in basis, parm2, 0, false, end, out _) != AlgorithmStatus.Success)
                 return ParasolidConstants.PK_ERROR_eval_failure;
 
             int dataSlot = TryAllocateTrCurveData();
