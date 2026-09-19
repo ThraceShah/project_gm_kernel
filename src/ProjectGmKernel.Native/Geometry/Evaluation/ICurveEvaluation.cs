@@ -34,7 +34,7 @@ internal static class ICurveEvaluation
     /// (GATE-T, §6.5); this production entry never guesses one.
     /// </summary>
     internal static AlgorithmStatus Evaluate(in ICurveView view, double t, DerivativeOrder order,
-        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
         => EvaluateWithPlan(in view, t, order, ICurveConstraintPlan.Auto, derivatives, out report);
 
     /// <summary>
@@ -44,7 +44,7 @@ internal static class ICurveEvaluation
     /// silent fallback — a forced plan that cannot run must say so).
     /// </summary>
     internal static AlgorithmStatus EvaluateWithPlan(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        ICurveConstraintPlan plan, scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
         => EvaluateWithRule(in view, t, order, plan, TerminatorParameterRule.Unresolved, derivatives, out report);
 
     /// <summary>
@@ -54,7 +54,7 @@ internal static class ICurveEvaluation
     /// refuses them with a located gate diagnostic.
     /// </summary>
     internal static AlgorithmStatus EvaluateWithRule(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, TerminatorParameterRule rule, Span<KernelVector3> derivatives,
+        ICurveConstraintPlan plan, TerminatorParameterRule rule, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
     {
         var empty = new EvaluationSampleStore(Span<CurveSample>.Empty);
@@ -70,7 +70,7 @@ internal static class ICurveEvaluation
     /// requests store nothing.
     /// </summary>
     internal static AlgorithmStatus EvaluateWithCache(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, Span<KernelVector3> derivatives,
+        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
         => EvaluateWithCache(in view, t, order, plan, TerminatorParameterRule.Unresolved, ref cache,
             derivatives, out report);
@@ -78,7 +78,7 @@ internal static class ICurveEvaluation
     /// <summary>Cached evaluation with an explicit terminator-parameter rule (§6.5).</summary>
     internal static AlgorithmStatus EvaluateWithCache(in ICurveView view, double t, DerivativeOrder order,
         ICurveConstraintPlan plan, TerminatorParameterRule rule, ref EvaluationSampleStore cache,
-        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
             ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
@@ -95,7 +95,7 @@ internal static class ICurveEvaluation
 
     private static AlgorithmStatus EvaluateWithCacheCore(in ICurveView view, double t, DerivativeOrder order,
         ICurveConstraintPlan plan, TerminatorParameterRule rule, ref EvaluationSampleStore cache,
-        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
             ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
@@ -125,7 +125,7 @@ internal static class ICurveEvaluation
 
     /// <summary>Chart node contract: exact position, one-sided derivatives, no averaging.</summary>
     private static AlgorithmStatus EvaluateChartPoint(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, Span<KernelVector3> derivatives,
+        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
     {
         // The right side is the published derivative side at an interior node.
@@ -173,7 +173,7 @@ internal static class ICurveEvaluation
 
     /// <summary>Regular interval: classify, select a plan, solve on the seed.</summary>
     private static AlgorithmStatus EvaluateRegularInterval(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, Span<KernelVector3> derivatives,
+        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
     {
         var locateStatus = OriginalChartParameterMap.LocateSegment(view.ChartParameters, t, ChartSide.Right, out var segment);
@@ -323,7 +323,7 @@ internal static class ICurveEvaluation
     /// </summary>
     private static AlgorithmStatus EvaluateTerminator(in ICurveView view, double t, DerivativeOrder order,
         TerminatorParameterRule rule, bool isEnd, ref EvaluationSampleStore cache,
-        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         var kind = isEnd ? ICurveQueryKind.EndTerminatorInterval : ICurveQueryKind.StartTerminatorInterval;
         var side = isEnd ? ChartSide.Right : ChartSide.Left;
@@ -436,7 +436,7 @@ internal static class ICurveEvaluation
         return AlgorithmStatus.Success;
     }
 
-    private static void PublishHit(in CurveSample hit, DerivativeOrder order, Span<KernelVector3> derivatives)
+    private static void PublishHit(in CurveSample hit, DerivativeOrder order, scoped Span<KernelVector3> derivatives)
     {
         derivatives[0] = hit.Position;
         if (order >= 1) derivatives[1] = hit.First;
@@ -450,13 +450,13 @@ internal static class ICurveEvaluation
     /// </summary>
     internal static AlgorithmStatus SolveDirect(in ICurveView view, in KernelVector3 seed, double t,
         BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
-        Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
         => Solve(in view, in seed, t, segment, order, plan, derivatives, out iterations, out residual);
 
     /// <summary>Finite switch over the plans; no residual callbacks cross this boundary (§19.4).</summary>
     private static AlgorithmStatus Solve(in ICurveView view, in KernelVector3 seed, double t,
         BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
-        Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
     {
         iterations = 0;
         residual = 0;
@@ -479,7 +479,7 @@ internal static class ICurveEvaluation
     /// Independent publication gate (§18.1). All quantities have length units
     /// and the scale is local geometry, never the world-coordinate norm.
     /// </summary>
-    private static bool IsPublishableRoot(in ICurveView view, double t, BufferOffset segment,
+    internal static bool IsPublishableRoot(in ICurveView view, double t, BufferOffset segment,
         in KernelVector3 point)
     {
         if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support0, in point, out var d0)
@@ -514,7 +514,7 @@ internal static class ICurveEvaluation
     // ── I1: plane support + implicit other (§7.5) ────────────────
 
     private static AlgorithmStatus SolveI1(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
         out BufferOffset iterations, out double residual)
     {
         iterations = 0;
@@ -560,8 +560,7 @@ internal static class ICurveEvaluation
                 return AlgorithmStatus.Unsupported;
             gradient = jet.Gradient;
             residual = Math.Abs(jet.Value);
-            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { point.X, point.Y, point.Z }));
-            if (residual <= ResidualTolerance * lengthScale)
+            if (IsPublishableRoot(in view, t, segment, in point))
             {
                 converged = true;
                 break;
@@ -620,7 +619,7 @@ internal static class ICurveEvaluation
     // ── P2: parametric side + implicit other (§7.2) ──────────────
 
     private static AlgorithmStatus SolveP2(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
         out BufferOffset iterations, out double residual)
     {
         iterations = 0;
@@ -666,8 +665,7 @@ internal static class ICurveEvaluation
             jacobian[2] = Dot(chordUnit, su1); jacobian[3] = Dot(chordUnit, sv1);
 
             residual = SmallLinearSolve.Norm(residualVector);
-            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { jet[0].X, jet[0].Y, jet[0].Z }));
-            if (residual <= ResidualTolerance * lengthScale)
+            if (IsPublishableRoot(in view, t, segment, in jet[0]))
             {
                 converged = true;
                 break;
@@ -742,7 +740,7 @@ internal static class ICurveEvaluation
     // ── I3: implicit/implicit, 3×3 (§7.3) ────────────────────────
 
     private static AlgorithmStatus SolveI3(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
         out BufferOffset iterations, out double residual)
     {
         iterations = 0;
@@ -776,8 +774,7 @@ internal static class ICurveEvaluation
             jacobian[6] = chordUnit.X; jacobian[7] = chordUnit.Y; jacobian[8] = chordUnit.Z;
 
             residual = SmallLinearSolve.Norm(residualVector);
-            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(x));
-            if (residual <= ResidualTolerance * lengthScale)
+            if (IsPublishableRoot(in view, t, segment, in point))
             {
                 converged = true;
                 break;
@@ -847,7 +844,7 @@ internal static class ICurveEvaluation
     // ── I2: implicit/implicit with the plane eliminated, 2×2 (§7.4) ──
 
     private static AlgorithmStatus SolveI2(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
         out BufferOffset iterations, out double residual)
     {
         iterations = 0;
@@ -895,8 +892,7 @@ internal static class ICurveEvaluation
             jacobian[2] = Dot(jet1.Gradient, u); jacobian[3] = Dot(jet1.Gradient, v);
 
             residual = SmallLinearSolve.Norm(residualVector);
-            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { point.X, point.Y, point.Z }));
-            if (residual <= ResidualTolerance * lengthScale)
+            if (IsPublishableRoot(in view, t, segment, in point))
             {
                 converged = true;
                 break;
@@ -973,7 +969,7 @@ internal static class ICurveEvaluation
     // ── P4: parametric/parametric, 4×4 baseline (§7.1) ───────────
 
     private static AlgorithmStatus SolveP4(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, Span<KernelVector3> derivatives,
+        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
         out BufferOffset iterations, out double residual)
     {
         iterations = 0;
@@ -1021,8 +1017,7 @@ internal static class ICurveEvaluation
             jacobian[12] = Dot(chordUnit, su0); jacobian[13] = Dot(chordUnit, sv0); jacobian[14] = 0; jacobian[15] = 0;
 
             residual = SmallLinearSolve.Norm(residualVector);
-            var lengthScale = Math.Max(1.0, SmallLinearSolve.Norm(stackalloc[] { jet0[0].X, jet0[0].Y, jet0[0].Z }));
-            if (residual <= ResidualTolerance * lengthScale)
+            if (IsPublishableRoot(in view, t, segment, in jet0[0]))
             {
                 converged = true;
                 break;

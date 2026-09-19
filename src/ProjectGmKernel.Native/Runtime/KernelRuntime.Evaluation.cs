@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;

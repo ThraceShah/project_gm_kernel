@@ -83,11 +83,13 @@ internal static class ICurveCorrection
             detail = ICurveEvalDetail.BudgetExceeded;
             return AlgorithmStatus.NotConverged;
         }
-        var evalStatus = EvaluateSystem(in view, plan, t, segment, state, residualVector, jacobianMaster);
+        var evalStatus = EvaluateSystem(in view, plan, t, segment, state,
+            residualVector, jacobianMaster, out var acceptedPoint);
         if (evalStatus != AlgorithmStatus.Success) return evalStatus;
         _ = memo.TryInsert(plan, t, segment, 0, residualVector[..n]);
         residual = SmallLinearSolve.Norm(residualVector);
-        if (IsConverged(residual, state)) return Success(state, n, refinedState);
+        if (ICurveEvaluation.IsPublishableRoot(in view, t, segment, in acceptedPoint))
+            return Success(state, n, refinedState);
 
         var freeze = new FrozenResidualScale();
         freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
@@ -158,7 +160,7 @@ internal static class ICurveCorrection
                 return AlgorithmStatus.NotConverged;
             }
             var trialStatus = EvaluateSystem(in view, plan, t, segment, buffer.TrialState,
-                trialResidual, trialJacobian);
+                trialResidual, trialJacobian, out _);
             var psiTrial = double.PositiveInfinity;
             if (trialStatus == AlgorithmStatus.Success)
             {
@@ -184,10 +186,10 @@ internal static class ICurveCorrection
                     return AlgorithmStatus.NotConverged;
                 }
                 evalStatus = EvaluateSystem(in view, plan, t, segment, buffer.AcceptedState,
-                    residualVector, jacobianMaster);
+                    residualVector, jacobianMaster, out acceptedPoint);
                 if (evalStatus != AlgorithmStatus.Success) return evalStatus;
                 residual = SmallLinearSolve.Norm(residualVector);
-                if (IsConverged(residual, buffer.AcceptedState))
+                if (ICurveEvaluation.IsPublishableRoot(in view, t, segment, in acceptedPoint))
                     return Success(buffer.AcceptedState, n, refinedState);
                 freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
                 freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);
@@ -252,9 +254,6 @@ internal static class ICurveCorrection
         state[..n].CopyTo(refinedState);
         return AlgorithmStatus.Success;
     }
-
-    private static bool IsConverged(double residualNorm, ReadOnlySpan<double> state)
-        => residualNorm <= ICurveEvaluation.ResidualTolerance * Math.Max(1.0, SmallLinearSolve.Norm(state));
 
     private const int MaxSmallSystem = TrustRegionStep.MaxSmallSystem;
 
@@ -321,8 +320,9 @@ internal static class ICurveCorrection
     /// </summary>
     private static AlgorithmStatus EvaluateSystem(in ICurveView view, ICurveConstraintPlan plan,
         double t, BufferOffset segment, ReadOnlySpan<double> state,
-        Span<double> residual, Span<double> jacobian)
+        Span<double> residual, Span<double> jacobian, out KernelVector3 point)
     {
+        point = default;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
         switch (plan)
@@ -344,7 +344,7 @@ internal static class ICurveCorrection
 
                 ChordPoint(in view, segment, t, out var q);
                 var alpha = Dot(n, Sub(c, q)) / crossNormSq;
-                var point = Add(Add(q, Scale(nTilde, alpha)), Scale(b, state[0]));
+                point = Add(Add(q, Scale(nTilde, alpha)), Scale(b, state[0]));
                 if (AnalyticImplicitEvaluation.Evaluate(in other, in point, 1, out var jet)
                     != AlgorithmStatus.Success)
                     return AlgorithmStatus.Unsupported;
@@ -355,7 +355,7 @@ internal static class ICurveCorrection
             case ICurveConstraintPlan.I2:
             {
                 InPlaneBasis(in view, segment, t, out var u, out var v, out var q);
-                var point = Add(q, Add(Scale(u, state[0]), Scale(v, state[1])));
+                point = Add(q, Add(Scale(u, state[0]), Scale(v, state[1])));
                 if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0)
                     != AlgorithmStatus.Success
                     || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1)
@@ -371,7 +371,7 @@ internal static class ICurveCorrection
             }
             case ICurveConstraintPlan.I3:
             {
-                var point = Vector(state[0], state[1], state[2]);
+                point = Vector(state[0], state[1], state[2]);
                 if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0)
                     != AlgorithmStatus.Success
                     || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1)
@@ -395,6 +395,7 @@ internal static class ICurveCorrection
                 if (SurfaceEvaluation.Evaluate(in view.Support0, state[0], state[1], in layout, jet)
                     != AlgorithmStatus.Success)
                     return AlgorithmStatus.NotConverged; // trial left the valid parameter domain
+                point = jet[0];
                 if (AnalyticImplicitEvaluation.Evaluate(in view.Support1, in jet[0], 1, out var jet1)
                     != AlgorithmStatus.Success)
                     return AlgorithmStatus.Unsupported;
@@ -421,6 +422,7 @@ internal static class ICurveCorrection
                     || SurfaceEvaluation.Evaluate(in view.Support1, state[2], state[3], in layout, jet1)
                     != AlgorithmStatus.Success)
                     return AlgorithmStatus.NotConverged; // trial left a valid parameter domain
+                point = jet0[0];
                 residual[0] = jet0[0].X - jet1[0].X;
                 residual[1] = jet0[0].Y - jet1[0].Y;
                 residual[2] = jet0[0].Z - jet1[0].Z;
