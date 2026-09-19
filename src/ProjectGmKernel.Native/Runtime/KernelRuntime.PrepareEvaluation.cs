@@ -117,11 +117,20 @@ internal static unsafe partial class KernelRuntime
         var positions = MemoryMarshal.Cast<double, KernelVector3>(positionDoubles);
         var tangents = MemoryMarshal.Cast<double, KernelVector3>(tangentDoubles);
         var chords = MemoryMarshal.Cast<double, KernelVector3>(chordDoubles);
+        var localScale = Math.Max(1.0, Math.Max(
+            Math.Max(analytic0.Radius, analytic0.Secondary),
+            Math.Max(analytic1.Radius, analytic1.Secondary)));
+        var chartTolerance = Math.Max(1e-9 * localScale,
+            double.IsFinite(data.ChordalError) && data.ChordalError >= 0 ? data.ChordalError : 0);
 
         for (BufferOffset i = 0; i < chartCount; i++)
         {
             var o = chartOffset + i * 3;
             positions[i] = Vector(hvecs[o], hvecs[o + 1], hvecs[o + 2]);
+            if (!IsChartPointConsistent(in analytic0, in analytic1, in positions[i], chartTolerance)
+                || !IsChartUvConsistent(in data, i, in analytic0, in analytic1,
+                    in positions[i], chartTolerance))
+                return AlgorithmStatus.InvalidInput;
             if (!TryChartTangent(in analytic0, surf0.Sense, in analytic1, surf1.Sense,
                     in positions[i], out tangents[i]))
                 return AlgorithmStatus.Singular;
@@ -167,6 +176,53 @@ internal static unsafe partial class KernelRuntime
         var block = DereferenceBlock(data.HvecBlock);
         if (block == null || data.HvecCount <= 0) return ReadOnlySpan<double>.Empty;
         return new ReadOnlySpan<double>((double*)block, data.HvecCount * 3);
+    }
+
+    private static bool IsChartPointConsistent(in AnalyticSurface support0,
+        in AnalyticSurface support1, in KernelVector3 point, double tolerance)
+        => AnalyticImplicitEvaluation.GeometricDeviation(in support0, in point, out var d0)
+                == AlgorithmStatus.Success
+            && AnalyticImplicitEvaluation.GeometricDeviation(in support1, in point, out var d1)
+                == AlgorithmStatus.Success
+            && d0 <= tolerance && d1 <= tolerance;
+
+    private static bool IsChartUvConsistent(in ICurveData data, BufferOffset chartIndex,
+        in AnalyticSurface support0, in AnalyticSurface support1, in KernelVector3 point,
+        double tolerance)
+    {
+        var stride = UvStrideOf(data.UvType);
+        if (stride <= 0) return true;
+        var block = DereferenceBlock(data.UvValueBlock);
+        if (block == null || data.UvValueCount < (chartIndex + 1) * stride) return false;
+        var values = new ReadOnlySpan<double>((double*)block, data.UvValueCount);
+        var row = (data.StartLimit.Type == LimitType.Terminator ? 1 : 0) + chartIndex;
+        var offset = row * stride;
+        if (offset + stride > values.Length) return false;
+        return data.UvType switch
+        {
+            IntersectionUvType.First => IsUvPointConsistent(in support0,
+                values[offset], values[offset + 1], in point, tolerance),
+            IntersectionUvType.Second => IsUvPointConsistent(in support1,
+                values[offset], values[offset + 1], in point, tolerance),
+            IntersectionUvType.Both => IsUvPointConsistent(in support0,
+                    values[offset], values[offset + 1], in point, tolerance)
+                && IsUvPointConsistent(in support1,
+                    values[offset + 2], values[offset + 3], in point, tolerance),
+            _ => false,
+        };
+    }
+
+    private static bool IsUvPointConsistent(in AnalyticSurface support, double u, double v,
+        in KernelVector3 point, double tolerance)
+    {
+        // Infinite UV components are the XT null-value representation.
+        if (!double.IsFinite(u) || !double.IsFinite(v)) return true;
+        if (!SurfaceDerivativeLayout.TryCreate(0, 0, out var layout)) return false;
+        Span<KernelVector3> value = stackalloc KernelVector3[1];
+        if (SurfaceEvaluation.Evaluate(in support, u, v, in layout, value) != AlgorithmStatus.Success)
+            return false;
+        var delta = Vector(value[0].X - point.X, value[0].Y - point.Y, value[0].Z - point.Z);
+        return Math.Sqrt(Dot(delta, delta)) <= tolerance;
     }
 
     private static TerminatorLimit ReadTerminator(ReadOnlySpan<double> hvecs, BufferOffset hvecIndex,
