@@ -82,24 +82,34 @@ internal static class BlendEvaluation
         DerivativeOrder order, Span<KernelVector3> output)
     {
         if (order < 0 || order > MaxParameterOrder) return AlgorithmStatus.InvalidInput;
-        if (output.Length < 1 + 2 * order) return AlgorithmStatus.OutputTooSmall;
+        var outputCount = order switch { 0 => 1, 1 => 3, _ => 6 };
+        if (output.Length < outputCount) return AlgorithmStatus.OutputTooSmall;
         if (!double.IsFinite(u) || !double.IsFinite(v)) return AlgorithmStatus.InvalidInput;
         if (!(frame.Radius > 0) || !double.IsFinite(frame.Arc) || !IsFinite(frame.Spine)) return AlgorithmStatus.InvalidInput;
 
+        Span<KernelVector3> result = stackalloc KernelVector3[6];
         var theta = v * frame.Arc;
         var (sin, cos) = Math.SinCos(theta);
         var e = Add(Scale(frame.X, cos), Scale(frame.Y, sin));
-        output[0] = Add(frame.Spine, Scale(e, frame.Radius));
-        if (!IsFinite(output[0])) return AlgorithmStatus.NumericalFailure;
-        if (order == 0) return AlgorithmStatus.Success;
+        result[0] = Add(frame.Spine, Scale(e, frame.Radius));
+        if (!IsFinite(result[0])) return AlgorithmStatus.NumericalFailure;
+        if (order == 0)
+        {
+            result[..outputCount].CopyTo(output);
+            return AlgorithmStatus.Success;
+        }
 
         // B_u = C' + r(E₁ + v·a'·V); B_v = r·a·V (§10.3).
         var e1 = Add(Scale(frame.XD1, cos), Scale(frame.YD1, sin));
         var vVector = Sub(Scale(frame.Y, cos), Scale(frame.X, sin));
-        output[1] = Add(frame.SpineD1, Scale(Add(e1, Scale(vVector, v * frame.ArcD1)), frame.Radius));
-        output[2] = Scale(vVector, frame.Radius * frame.Arc);
-        if (!IsFinite(output[1]) || !IsFinite(output[2])) return AlgorithmStatus.NumericalFailure;
-        if (order == 1) return AlgorithmStatus.Success;
+        result[1] = Add(frame.SpineD1, Scale(Add(e1, Scale(vVector, v * frame.ArcD1)), frame.Radius));
+        result[2] = Scale(vVector, frame.Radius * frame.Arc);
+        if (!IsFinite(result[1]) || !IsFinite(result[2])) return AlgorithmStatus.NumericalFailure;
+        if (order == 1)
+        {
+            result[..outputCount].CopyTo(output);
+            return AlgorithmStatus.Success;
+        }
 
         // B_uu = C'' + r{X''c + Y''s + 2v·a'·V₁ + v·a''·V − (v·a')²·E};
         // B_uv = r{a·V₁ + a'·V − a·v·a'·E}; B_vv = −r·a²·E (§10.3), where
@@ -108,14 +118,15 @@ internal static class BlendEvaluation
         var e2 = Add(Scale(frame.XD2, cos), Scale(frame.YD2, sin));
         var v1 = Sub(Scale(frame.YD1, cos), Scale(frame.XD1, sin));
         var vu = v * frame.ArcD1;
-        output[3] = Add(frame.SpineD2, Scale(
+        result[3] = Add(frame.SpineD2, Scale(
             Add(Add(Add(e2, Scale(v1, 2 * vu)), Scale(vVector, v * frame.ArcD2)), Scale(e, -vu * vu)),
             frame.Radius));
-        output[4] = Scale(Add(Add(Scale(v1, frame.Arc), Scale(vVector, frame.ArcD1)), Scale(e, -frame.Arc * vu)),
+        result[4] = Scale(Add(Add(Scale(v1, frame.Arc), Scale(vVector, frame.ArcD1)), Scale(e, -frame.Arc * vu)),
             frame.Radius);
-        output[5] = Scale(e, -frame.Radius * frame.Arc * frame.Arc);
-        if (!IsFinite(output[3]) || !IsFinite(output[4]) || !IsFinite(output[5]))
+        result[5] = Scale(e, -frame.Radius * frame.Arc * frame.Arc);
+        if (!IsFinite(result[3]) || !IsFinite(result[4]) || !IsFinite(result[5]))
             return AlgorithmStatus.NumericalFailure;
+        result[..outputCount].CopyTo(output);
         return AlgorithmStatus.Success;
     }
 
@@ -191,8 +202,8 @@ internal static class BlendEvaluation
 
     /// <summary>
     /// Contact point from a spine witness and support UV without re-projection
-    /// (§10.2): Q_j = S_j(u_j, v_j), then offset along the support normal by
-    /// ±r_j according to sense. Does not invent UV — callers supply the witness.
+    /// (§10.2): Q_j = S_j(u_j, v_j). The normal is sense-resolved for the
+    /// separate spine-center consistency check; it is not applied to Q_j.
     /// </summary>
     internal static AlgorithmStatus TryContactFromSpineWitness(in AnalyticSurface support,
         double u, double v, double radius, KernelSense sense,
@@ -212,7 +223,7 @@ internal static class BlendEvaluation
         if (!(n2 > 1e-30)) return AlgorithmStatus.Singular;
         unitNormal = Scale(n, 1 / Math.Sqrt(n2));
         if (sense < 0) unitNormal = Scale(unitNormal, -1);
-        contact = Add(jet[0], Scale(unitNormal, radius));
+        contact = jet[0];
         return IsFinite(contact) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
     }
 }
