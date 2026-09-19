@@ -51,6 +51,8 @@ internal static class ICurveContinuation
             return AlgorithmStatus.InvalidInput;
         if (tStart == tTarget)
         {
+            if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in yStart))
+                return AlgorithmStatus.NotConverged;
             derivatives[0] = yStart;
             return AlgorithmStatus.Success;
         }
@@ -69,6 +71,8 @@ internal static class ICurveContinuation
             var remaining = Math.Abs(tTarget - t);
             if (remaining <= 0)
             {
+                if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in position))
+                    return AlgorithmStatus.NotConverged;
                 derivatives[0] = position;
                 return AlgorithmStatus.Success;
             }
@@ -130,6 +134,8 @@ internal static class ICurveContinuation
                             derivatives, out _, out residual);
                         return jetStatus;
                     }
+                    if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in position))
+                        return AlgorithmStatus.NotConverged;
                     return AlgorithmStatus.Success;
                 }
                 continue;
@@ -407,20 +413,21 @@ internal static class ICurveContinuation
     private static bool SameLocalBranch(in ICurveView view, in KernelVector3 start,
         in KernelVector3 candidate, BufferOffset segment, double tStart, double tCandidate)
     {
-        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in candidate, 0, out var j0)
+        if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support0, in candidate, out var d0)
                 != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in candidate, 0, out var j1)
+            || AnalyticImplicitEvaluation.GeometricDeviation(in view.Support1, in candidate, out var d1)
                 != AlgorithmStatus.Success)
             return false;
-        var lengthScale = Math.Max(1.0, Norm(candidate));
-        if (Math.Abs(j0.Value) > 1e-6 * lengthScale || Math.Abs(j1.Value) > 1e-6 * lengthScale)
+        var localScale = ICurveEvaluation.PublicationTolerance(in view)
+            / ICurveEvaluation.ResidualTolerance;
+        if (d0 > 1e-6 * localScale || d1 > 1e-6 * localScale)
             return false;
 
         // Parameter-plane consistency at the candidate.
         var plane = OriginalChartParameterMap.PlaneResidual(
             view.ChartPositions, view.ChartParameters, view.ChartScales,
             view.ChartChordUnits, segment, tCandidate, in candidate);
-        if (Math.Abs(plane) > 1e-6 * lengthScale) return false;
+        if (Math.Abs(plane) > 1e-6 * localScale) return false;
 
         // Reject a jump larger than a generous multiple of the chord advance —
         // that is the typical signature of landing on the opposite sheet.

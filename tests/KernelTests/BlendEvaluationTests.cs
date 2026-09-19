@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -86,6 +87,14 @@ public class BlendEvaluationTests
         Assert.Equal(2, contact.Y, 12);
         Assert.Equal(0, contact.Z, 12);
         Assert.Equal(1, normal.Z, 12);
+
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryContactFromSpineWitness(
+            in plane, 1, 2, 1, ParasolidConstants.PK_TOPOL_sense_negative_c,
+            out var negativeContact, out var negativeNormal));
+        Assert.Equal(contact.X, negativeContact.X, 12);
+        Assert.Equal(contact.Y, negativeContact.Y, 12);
+        Assert.Equal(contact.Z, negativeContact.Z, 12);
+        Assert.Equal(-1, negativeNormal.Z, 12);
     }
 
     [Fact]
