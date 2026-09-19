@@ -89,6 +89,22 @@ public class IcurveContinuationTests
     }
 
     [Fact]
+    public void ContinueTo_IdentityParameter_RejectsUnverifiedAnchorWithoutPublishing()
+    {
+        var view = CircleView();
+        var t = 0.5 * (view.ChartParameters[0] + view.ChartParameters[1]);
+        var offSurface = Vector(2, 0, 0);
+        var budget = EvaluationBudget.Default;
+        Span<KernelVector3> derivatives = stackalloc KernelVector3[1];
+        derivatives[0] = Vector(42, 42, 42);
+
+        Assert.Equal(AlgorithmStatus.NotConverged, ICurveContinuation.ContinueTo(
+            in view, ICurveConstraintPlan.I3, t, in offSurface, t, 0,
+            ref budget, derivatives, out _, out _, out _));
+        Assert.Equal(42, derivatives[0].X);
+    }
+
+    [Fact]
     public void SubdivideTo_FromFarEndpoint_ConvergesInsideSegment()
     {
         var view = CircleView();

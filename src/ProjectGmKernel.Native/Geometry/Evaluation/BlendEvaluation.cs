@@ -222,7 +222,8 @@ internal static class BlendEvaluation
         var n2 = Dot(n, n);
         if (!(n2 > 1e-30)) return AlgorithmStatus.Singular;
         unitNormal = Scale(n, 1 / Math.Sqrt(n2));
-        if (sense < 0) unitNormal = Scale(unitNormal, -1);
+        if (sense == ParasolidConstants.PK_TOPOL_sense_negative_c)
+            unitNormal = Scale(unitNormal, -1);
         contact = jet[0];
         return IsFinite(contact) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
     }
