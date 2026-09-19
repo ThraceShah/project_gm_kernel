@@ -96,6 +96,31 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
             + output[1].coord[1] * output[1].coord[1]
             + output[1].coord[2] * output[1].coord[2]);
         Assert.True(d1 > 1e-6);
+
+        PK_VECTOR_s tangent = default;
+        Assert.Equal(0, KernelRuntime.CurveEvalWithTangent(curveTag, tMid, 0, output, &tangent));
+        var tangentNorm = Math.Sqrt(tangent.coord[0] * tangent.coord[0]
+            + tangent.coord[1] * tangent.coord[1] + tangent.coord[2] * tangent.coord[2]);
+        Assert.Equal(1, tangentNorm, 12);
+
+        var identity = new GeometryIdentity(record.Header.Tag, record.Header.Generation);
+        Assert.True(GeometryEvaluationCache.TryGetExact(in identity, tMid,
+            ICurveQueryKind.RegularChartInterval, ChartSide.Right, 1,
+            ICurveEvaluation.CacheErrorBound, out _));
+    }
+
+    [Fact]
+    public void Prepare_RejectsChartPointsOffSupportingSphere()
+    {
+        var plane = CreatePlaneZ0();
+        var sphere = CreateUnitSphere();
+        double[] chart = [2, 0, 0, 0, 2, 0];
+        var input = MinimalCircleInput(plane, sphere, chart);
+        Assert.Equal(AlgorithmStatus.Success,
+            KernelRuntime.DecodeIcurve(input, out var slot, out _, out _));
+        Assert.Equal(AlgorithmStatus.InvalidInput,
+            KernelRuntime.TryBindICurveEntity(slot, out _));
+        KernelRuntime.FreeICurveData(slot);
     }
 
     [Fact]

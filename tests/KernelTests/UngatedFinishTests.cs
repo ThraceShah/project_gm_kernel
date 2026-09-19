@@ -96,10 +96,9 @@ public class UngatedFinishTests
         var planeOffset = 0.0; // y = 0 section ≈ ( ±1, 0, z) but cylinder UV...
         // Use plane as support0 (parametric) and cylinder as support1 for a clean P2.
         var uv = new IntervalRootCheck.IntervalBox2(-0.01, 0.01, -0.01, 0.01);
-        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyP2(
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyP2(
             in plane, in cyl, in chord, planeOffset: 1.0, in uv, out var status));
-        Assert.True(status is IntervalRootStatus.Unique or IntervalRootStatus.Undetermined
-            or IntervalRootStatus.Empty);
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
 
     [Fact]

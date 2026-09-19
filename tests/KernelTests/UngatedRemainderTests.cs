@@ -154,14 +154,16 @@ public class UngatedRemainderTests
     }
 
     [Fact]
-    public void ContactFromSpineWitness_OffsetsAlongSenseNormal()
+    public void ContactFromSpineWitness_ReturnsSupportPointAndSenseNormal()
     {
         var sphere = new AnalyticSurface(SurfaceClass.Sphere, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1);
         Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryContactFromSpineWitness(
             in sphere, u: 0, v: 0, radius: 0.25, sense: 1, out var contact, out var n));
         Assert.InRange(Math.Abs(Dot(n, n) - 1), 0, 1e-12);
         // Sphere parametric (u,v)=(0,0) → point on equator along +X for this basis.
-        Assert.True(Dot(Sub(contact, Vector(1, 0, 0)), n) > 0);
+        Assert.InRange(Math.Abs(contact.X - 1), 0, 1e-12);
+        Assert.InRange(Math.Abs(contact.Y), 0, 1e-12);
+        Assert.InRange(Math.Abs(contact.Z), 0, 1e-12);
     }
 
     [Fact]

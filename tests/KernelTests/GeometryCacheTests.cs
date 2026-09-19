@@ -138,6 +138,10 @@ public unsafe class GeometryCacheTests : IDisposable
             KernelRuntime.EvaluateICurveThroughL3(in identity, in view, -1.2, 2,
                 ICurveConstraintPlan.Auto, derivatives, out var afterDelete));
         Assert.Equal(CacheHitKind.None, afterDelete.CacheHit);
+        Assert.Equal(AlgorithmStatus.Success,
+            KernelRuntime.EvaluateICurveThroughL3(in identity, in view, -1.2, 2,
+                ICurveConstraintPlan.Auto, derivatives, out var reheated));
+        Assert.Equal(CacheHitKind.Exact, reheated.CacheHit);
 
         // Rollback likewise.
         int mark = 0;

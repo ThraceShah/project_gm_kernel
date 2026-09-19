@@ -78,7 +78,7 @@ public class IcurveCorrectionTests
     }
 
     [Fact]
-    public void SolveStateBuffer_RejectedTrial_LeavesAcceptedStateBitExact()
+    public void SolveStateBuffer_RejectedTrial_RollsBackStateAndKeepsShrunkRadius()
     {
         Span<double> acceptedStorage = stackalloc double[3];
         Span<double> trialStorage = stackalloc double[3];
@@ -87,14 +87,14 @@ public class IcurveCorrectionTests
 
         buffer.BeginTrial();
         buffer.TrialState[1] = -7;
-        buffer.RollbackTrial();
+        buffer.RejectTrial(0.75);
 
         // The accepted buffers never saw the trial: restore is the buffer's
         // identity, not a copy (rollback is exact by construction, §13.3).
         Assert.Equal(1, buffer.AcceptedState[0]);
         Assert.Equal(2, buffer.AcceptedState[1]);
         Assert.Equal(3, buffer.AcceptedState[2]);
-        Assert.Equal(2.5, buffer.AcceptedRadius);
+        Assert.Equal(0.75, buffer.AcceptedRadius);
 
         // A fresh trial restarts from the accepted state again.
         buffer.BeginTrial();
