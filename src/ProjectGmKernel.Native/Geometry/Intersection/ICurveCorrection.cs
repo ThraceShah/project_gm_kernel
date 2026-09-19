@@ -88,7 +88,9 @@ internal static class ICurveCorrection
         if (evalStatus != AlgorithmStatus.Success) return evalStatus;
         _ = memo.TryInsert(plan, t, segment, 0, residualVector[..n]);
         residual = SmallLinearSolve.Norm(residualVector);
-        if (ICurveEvaluation.IsPublishableRoot(in view, t, segment, in acceptedPoint))
+        if ((plan != ICurveConstraintPlan.P4
+                || residual <= ICurveEvaluation.PublicationTolerance(in view))
+            && ICurveEvaluation.IsPublishableRoot(in view, t, segment, in acceptedPoint))
             return Success(state, n, refinedState);
 
         var freeze = new FrozenResidualScale();
@@ -189,7 +191,9 @@ internal static class ICurveCorrection
                     residualVector, jacobianMaster, out acceptedPoint);
                 if (evalStatus != AlgorithmStatus.Success) return evalStatus;
                 residual = SmallLinearSolve.Norm(residualVector);
-                if (ICurveEvaluation.IsPublishableRoot(in view, t, segment, in acceptedPoint))
+                if ((plan != ICurveConstraintPlan.P4
+                        || residual <= ICurveEvaluation.PublicationTolerance(in view))
+                    && ICurveEvaluation.IsPublishableRoot(in view, t, segment, in acceptedPoint))
                     return Success(buffer.AcceptedState, n, refinedState);
                 freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
                 freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);

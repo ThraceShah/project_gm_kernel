@@ -487,14 +487,19 @@ internal static class ICurveEvaluation
             || AnalyticImplicitEvaluation.GeometricDeviation(in view.Support1, in point, out var d1)
                 != AlgorithmStatus.Success)
             return false;
-        var localScale = Math.Max(1.0, Math.Max(
-            Math.Max(view.Support0.Radius, view.Support0.Secondary),
-            Math.Max(view.Support1.Radius, view.Support1.Secondary)));
-        var tolerance = ResidualTolerance * localScale;
+        var tolerance = PublicationTolerance(in view);
         var plane = Math.Abs(OriginalChartParameterMap.PlaneResidual(
             view.ChartPositions, view.ChartParameters, view.ChartScales,
             view.ChartChordUnits, segment, t, in point));
         return d0 <= tolerance && d1 <= tolerance && plane <= tolerance;
+    }
+
+    internal static double PublicationTolerance(in ICurveView view)
+    {
+        var localScale = Math.Max(1.0, Math.Max(
+            Math.Max(view.Support0.Radius, view.Support0.Secondary),
+            Math.Max(view.Support1.Radius, view.Support1.Secondary)));
+        return ResidualTolerance * localScale;
     }
 
     /// <summary>x′ᵀHx′ via the analytic Hessian, contracted without materializing the tensor (§16.2).</summary>
@@ -1017,7 +1022,8 @@ internal static class ICurveEvaluation
             jacobian[12] = Dot(chordUnit, su0); jacobian[13] = Dot(chordUnit, sv0); jacobian[14] = 0; jacobian[15] = 0;
 
             residual = SmallLinearSolve.Norm(residualVector);
-            if (IsPublishableRoot(in view, t, segment, in jet0[0]))
+            if (residual <= PublicationTolerance(in view)
+                && IsPublishableRoot(in view, t, segment, in jet0[0]))
             {
                 converged = true;
                 break;
