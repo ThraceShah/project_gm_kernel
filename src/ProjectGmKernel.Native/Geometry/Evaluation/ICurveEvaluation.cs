@@ -86,6 +86,20 @@ internal static class ICurveEvaluation
         if (derivatives.Length <= order) return AlgorithmStatus.OutputTooSmall;
         if (!double.IsFinite(t)) return AlgorithmStatus.InvalidInput;
 
+        Span<KernelVector3> result = stackalloc KernelVector3[MaxDerivativeOrder + 1];
+        var status = EvaluateWithCacheCore(in view, t, order, plan, rule, ref cache, result, out report);
+        if (status == AlgorithmStatus.Success)
+            result[..(order + 1)].CopyTo(derivatives);
+        return status;
+    }
+
+    private static AlgorithmStatus EvaluateWithCacheCore(in ICurveView view, double t, DerivativeOrder order,
+        ICurveConstraintPlan plan, TerminatorParameterRule rule, ref EvaluationSampleStore cache,
+        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+    {
+        report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
+            ICurveConstraintPlan.Auto, ChartSide.Right, -1, 0, 0);
+
         var parameters = view.ChartParameters;
         if (t < parameters[0] || t > parameters[^1])
         {
@@ -237,7 +251,8 @@ internal static class ICurveEvaluation
         {
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
                 selected, ChartSide.Right, segment, iterations, residual, hitKind, 0, detail);
-            _ = cache.TryInsert(new CurveSample(t, derivatives[0], derivatives[1],
+            _ = cache.TryInsert(new CurveSample(t, derivatives[0],
+                order >= 1 ? derivatives[1] : default,
                 order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
                 ChartSide.Right, segment, residual, SampleSourceKind.CorrectedRoot, selected));
             return status;
@@ -445,7 +460,7 @@ internal static class ICurveEvaluation
     {
         iterations = 0;
         residual = 0;
-        return plan switch
+        var status = plan switch
         {
             ICurveConstraintPlan.I1 => SolveI1(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
             ICurveConstraintPlan.P2 => SolveP2(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
@@ -454,6 +469,32 @@ internal static class ICurveEvaluation
             ICurveConstraintPlan.P4 => SolveP4(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
             _ => AlgorithmStatus.InvalidInput,
         };
+        if (status != AlgorithmStatus.Success) return status;
+        return IsPublishableRoot(in view, t, segment, in derivatives[0])
+            ? AlgorithmStatus.Success
+            : AlgorithmStatus.NotConverged;
+    }
+
+    /// <summary>
+    /// Independent publication gate (§18.1). All quantities have length units
+    /// and the scale is local geometry, never the world-coordinate norm.
+    /// </summary>
+    private static bool IsPublishableRoot(in ICurveView view, double t, BufferOffset segment,
+        in KernelVector3 point)
+    {
+        if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support0, in point, out var d0)
+                != AlgorithmStatus.Success
+            || AnalyticImplicitEvaluation.GeometricDeviation(in view.Support1, in point, out var d1)
+                != AlgorithmStatus.Success)
+            return false;
+        var localScale = Math.Max(1.0, Math.Max(
+            Math.Max(view.Support0.Radius, view.Support0.Secondary),
+            Math.Max(view.Support1.Radius, view.Support1.Secondary)));
+        var tolerance = ResidualTolerance * localScale;
+        var plane = Math.Abs(OriginalChartParameterMap.PlaneResidual(
+            view.ChartPositions, view.ChartParameters, view.ChartScales,
+            view.ChartChordUnits, segment, t, in point));
+        return d0 <= tolerance && d1 <= tolerance && plane <= tolerance;
     }
 
     /// <summary>x′ᵀHx′ via the analytic Hessian, contracted without materializing the tensor (§16.2).</summary>
@@ -778,8 +819,11 @@ internal static class ICurveEvaluation
         if (SmallLinearSolve.LuSolveInPlace(jacobian, 3, pivots, d1) != AlgorithmStatus.Success)
             return AlgorithmStatus.NumericalFailure;
         derivatives[0] = root;
-        derivatives[1] = Vector(d1[0], d1[1], d1[2]);
-        if (!IsFinite(derivatives[1])) return AlgorithmStatus.NumericalFailure;
+        if (order >= 1)
+        {
+            derivatives[1] = Vector(d1[0], d1[1], d1[2]);
+            if (!IsFinite(derivatives[1])) return AlgorithmStatus.NumericalFailure;
+        }
 
         if (order >= 2)
         {

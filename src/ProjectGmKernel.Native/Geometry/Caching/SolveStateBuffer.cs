@@ -68,12 +68,13 @@ internal ref struct SolveStateBuffer
     }
 
     /// <summary>
-    /// Discard the trial. The accepted state and radius are untouched — the
-    /// restore is the buffer's identity, not a copy (rollback is exact by
-    /// construction and costs nothing).
+    /// Reject the trial state while retaining the updated control radius for
+    /// the next step. Geometry state rolls back bit-exactly; trust-region
+    /// control state intentionally does not.
     /// </summary>
-    internal void RollbackTrial()
+    internal void RejectTrial(double newRadius)
     {
-        trialRadius = acceptedRadius;
+        acceptedRadius = newRadius;
+        trialRadius = newRadius;
     }
 }

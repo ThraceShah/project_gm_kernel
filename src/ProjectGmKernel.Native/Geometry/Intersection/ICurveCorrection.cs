@@ -196,15 +196,15 @@ internal static class ICurveCorrection
             else
             {
                 consecutiveRejects++;
-                buffer.RollbackTrial();
-                if (consecutiveRejects >= 4)
+                var shrunk = TrustRegionStep.UpdateRadius(buffer.AcceptedRadius, ratio,
+                    atBoundary, minRadius, double.MaxValue);
+                if (shrunk >= buffer.AcceptedRadius && buffer.AcceptedRadius <= minRadius)
                 {
                     detail = ICurveEvalDetail.Stagnation;
                     return AlgorithmStatus.NotConverged;
                 }
-                var shrunk = TrustRegionStep.UpdateRadius(buffer.AcceptedRadius, ratio,
-                    atBoundary, minRadius, double.MaxValue);
-                if (shrunk >= buffer.AcceptedRadius && buffer.AcceptedRadius <= minRadius)
+                buffer.RejectTrial(shrunk);
+                if (consecutiveRejects >= 4 && shrunk <= minRadius)
                 {
                     detail = ICurveEvalDetail.Stagnation;
                     return AlgorithmStatus.NotConverged;
