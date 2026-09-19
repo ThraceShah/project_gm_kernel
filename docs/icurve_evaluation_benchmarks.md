@@ -24,6 +24,14 @@ Per fixture:
 - cold ChartPoint D0 / RegularChartInterval D0–D2
 - hot sample p50 / p95 (n=400 after warmup)
 
+Plan-cost matrix (direct `ICurveEvaluation.EvaluateWithPlan`, same `t` / D0–D2):
+
+| Plan | Fixture |
+|---|---|
+| I1 / P2 / I3 / I2 / P4 | plane ∩ cylinder chart |
+
+Reports p50 / p95 / p99 (n=300 after warmup) under the same correctness gate as KernelTests plan equivalence.
+
 ## What is not claimed
 
 - Publish speed thresholds (require T19 oracle-closed correctness matrix)
