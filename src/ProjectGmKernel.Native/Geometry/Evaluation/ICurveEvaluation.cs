@@ -208,10 +208,31 @@ internal static class ICurveEvaluation
         }
         var status = Solve(in view, in solveSeed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
+        var detail = ICurveEvalDetail.None;
+        // Diagnosed Auto switches only — forced plans stay on the requested plan (§7 / §14.6).
+        if (plan == ICurveConstraintPlan.Auto
+            && status is AlgorithmStatus.NotConverged or AlgorithmStatus.Singular
+                or AlgorithmStatus.NumericalFailure)
+        {
+            Span<ICurveConstraintPlan> alternates = stackalloc ICurveConstraintPlan[5];
+            var altCount = ICurveConstraintPlanRules.Alternates(in view, selected, alternates);
+            for (BufferOffset ai = 0; ai < altCount; ai++)
+            {
+                var altStatus = Solve(in view, in solveSeed, t, segment, order, alternates[ai],
+                    derivatives, out iterations, out residual);
+                if (altStatus == AlgorithmStatus.Success)
+                {
+                    selected = alternates[ai];
+                    status = altStatus;
+                    detail = ICurveEvalDetail.PlanSwitched;
+                    break;
+                }
+            }
+        }
         if (status == AlgorithmStatus.Success)
         {
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
-                selected, ChartSide.Right, segment, iterations, residual, hitKind);
+                selected, ChartSide.Right, segment, iterations, residual, hitKind, 0, detail);
             _ = cache.TryInsert(new CurveSample(t, derivatives[0], derivatives[1],
                 order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
                 ChartSide.Right, segment, residual, SampleSourceKind.CorrectedRoot, selected));
@@ -224,7 +245,7 @@ internal static class ICurveEvaluation
         if (status is not (AlgorithmStatus.NotConverged or AlgorithmStatus.NumericalFailure))
         {
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
-                selected, ChartSide.Right, segment, iterations, residual, hitKind);
+                selected, ChartSide.Right, segment, iterations, residual, hitKind, 0, detail);
             return status;
         }
 
@@ -251,7 +272,7 @@ internal static class ICurveEvaluation
 
         var contStatus = ICurveContinuation.ContinueTo(in view, selected, anchorParameter,
             in anchorPosition, t, segment, ref budget, derivatives, out var contSteps,
-            out residual, out var detail);
+            out residual, out detail);
         if (contStatus != AlgorithmStatus.Success)
         {
             contStatus = ICurveContinuation.SubdivideTo(in view, selected, t, segment, ref budget,
@@ -509,8 +530,9 @@ internal static class ICurveEvaluation
         {
             Span<double> refined = stackalloc double[1];
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I1, t, segment,
-                in seed, refined, out iterations, out residual);
+                in seed, refined, out var refineIterations, out residual);
             if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+            iterations = MaxFastNewtonIterations + refineIterations;
             mu = refined[0];
         }
 
@@ -615,8 +637,9 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P2, t, segment,
-                in seed, q, out iterations, out residual);
+                in seed, q, out var refineIterations, out residual);
             if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+            iterations = MaxFastNewtonIterations + refineIterations;
         }
 
         // Root jets at second order; one factorization serves D1 and D2 (§16.1).
@@ -727,8 +750,9 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I3, t, segment,
-                in seed, x, out iterations, out residual);
+                in seed, x, out var refineIterations, out residual);
             if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+            iterations = MaxFastNewtonIterations + refineIterations;
         }
 
         var root = Vector(x[0], x[1], x[2]);
@@ -839,8 +863,9 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I2, t, segment,
-                in seed, xi, out iterations, out residual);
+                in seed, xi, out var refineIterations, out residual);
             if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+            iterations = MaxFastNewtonIterations + refineIterations;
         }
         var root = Add(planeBase, Add(Scale(u, xi[0]), Scale(v, xi[1])));
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in root, order >= 2 ? 2 : 1, out var rootJet0) != AlgorithmStatus.Success
@@ -966,8 +991,9 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P4, t, segment,
-                in seed, q, out iterations, out residual);
+                in seed, q, out var refineIterations, out residual);
             if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+            iterations = MaxFastNewtonIterations + refineIterations;
         }
 
         // Root jets at second order; the agreed output side is x0 (§7.1).

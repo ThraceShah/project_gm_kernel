@@ -217,4 +217,27 @@ public class JointSystemTests
         Assert.InRange(Math.Abs(Math.Sqrt(state[3] * state[3] + state[4] * state[4]) - 2), 0, 1e-10);
         Assert.InRange(Math.Abs(state[5]), 0, 1e-10);
     }
+
+    [Fact]
+    public void RecoverAfterLocalSingular_EnvelopeBeforeJoint()
+    {
+        // Manufactured tube root: envelope 4×4 should win before joint.
+        const double spineR = 2.0;
+        const double tubeR = 0.25;
+        const double s = 0.4;
+        const double theta = 0.43;
+        var radial = Vector(Math.Cos(s), Math.Sin(s), 0);
+        var root = Add(Vector(spineR * Math.Cos(s), spineR * Math.Sin(s), 0),
+            Scale(Add(Scale(radial, Math.Cos(theta)), Scale(Vector(0, 0, 1), Math.Sin(theta))), tubeR));
+        var outer = new AnalyticSurface(SurfaceClass.Plane,
+            Vector(0, 0, root.Z), Vector(0, 0, 1), Vector(1, 0, 0));
+        var planeNormal = Vector(-0.4, 0.8, 0.2);
+        Span<double> state4 = new double[4];
+        Span<double> state6 = new double[6];
+        Assert.Equal(AlgorithmStatus.Success, BlendJointLift.TryRecoverAfterLocalSingular(
+            spineR, tubeR, in outer, in SupportA, in SupportD, in root, in planeNormal,
+            in root, s - 0.05, state4, state6, out var usedJoint, out _, out var residual));
+        Assert.False(usedJoint);
+        Assert.InRange(residual, 0, 1e-11);
+    }
 }

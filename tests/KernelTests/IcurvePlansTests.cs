@@ -83,8 +83,8 @@ public class IcurvePlansTests
     {
         // Plane support + implicit other → I1 (analytic preference, §7.6).
         Assert.Equal(ICurveConstraintPlan.I1, ICurveConstraintPlanRules.Select(CircleView()));
-        // Two non-plane analytic supports → P2 (parametric side + implicit other).
-        Assert.Equal(ICurveConstraintPlan.P2, ICurveConstraintPlanRules.Select(CylinderSphereView()));
+        // Two non-plane analytic supports → I2 (cheaper in-plane implicit pair, §7.6).
+        Assert.Equal(ICurveConstraintPlan.I2, ICurveConstraintPlanRules.Select(CylinderSphereView()));
     }
 
     [Theory]
@@ -157,7 +157,7 @@ public class IcurvePlansTests
         var mixed = CylinderSphereView();
         Assert.Equal(AlgorithmStatus.Success,
             ICurveEvaluation.Evaluate(in mixed, 1.2, 2, derivatives, out report));
-        Assert.Equal(ICurveConstraintPlan.P2, report.Plan);
+        Assert.Equal(ICurveConstraintPlan.I2, report.Plan);
     }
 
     [Fact]

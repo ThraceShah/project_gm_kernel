@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
@@ -399,6 +400,91 @@ internal static class TerminatorEvaluation
             return false;
         value = jet.Value;
         return double.IsFinite(value);
+    }
+
+    /// <summary>
+    /// Parametric-support terminator path (§6.3): solve the 2×2
+    /// (φ_planes via recovered (u,v) on the selected surface) when the
+    /// selected support is parametric. Falls back to the 1D line solve when
+    /// witness recovery fails. GATE-T production path stays Unresolved.
+    /// </summary>
+    internal static AlgorithmStatus SolveParametricTwoByTwo(in AnalyticSurface selectedSurface,
+        in TerminatorAnchor anchor, double t, ref EvaluationBudget budget,
+        out double u, out double v, out KernelVector3 point, out double residual,
+        out BufferOffset evaluations)
+    {
+        u = v = 0;
+        point = default;
+        residual = 0;
+        evaluations = 0;
+        if (!double.IsFinite(t)) return AlgorithmStatus.InvalidInput;
+        var q = InterpolatedChordPoint(in anchor, t);
+        // Seed (u,v) from the chord point projected onto the selected surface.
+        if (AnalyticParametricEvaluation.TryRecoverWitness(in selectedSurface, in q, out u, out v)
+            != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+
+        Span<double> state = stackalloc double[2] { u, v };
+        Span<double> f = stackalloc double[2];
+        Span<double> j = stackalloc double[4];
+        Span<double> jCopy = stackalloc double[4];
+        Span<double> step = stackalloc double[2];
+        Span<double> model = stackalloc double[2];
+        Span<int> pivots = stackalloc int[2];
+        Span<KernelVector3> jet = stackalloc KernelVector3[4];
+        if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout))
+            return AlgorithmStatus.InvalidInput;
+
+        for (BufferOffset iter = 0; iter < MaxNewtonIterations; iter++)
+        {
+            if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+            evaluations++;
+            if (SurfaceEvaluation.Evaluate(in selectedSurface, state[0], state[1], in layout, jet)
+                != AlgorithmStatus.Success)
+                return AlgorithmStatus.NotConverged;
+            point = jet[0];
+            // Two planes: (x−Q)·n_term = 0 and (x−Q)·(v×n_term) style —
+            // document construction: support surface + terminator plane +
+            // branch plane. Here: plane residuals against Endpoint chord and
+            // the fixed line-direction plane through Q.
+            var dx = Sub(point, q);
+            f[0] = Dot(dx, anchor.LineDirection); // keep point in the terminator plane family
+            // Second plane: through Q with normal = chord × line (or chordRate).
+            var n2 = Cross(anchor.ChordRate, anchor.LineDirection);
+            var n2sq = Dot(n2, n2);
+            if (!(n2sq > 1e-30))
+            {
+                // Degenerate plane pair — fall back to 1D.
+                return SolveIntervalPoint(in selectedSurface, in anchor, t, ref budget,
+                    out _, out point, out residual, out evaluations);
+            }
+            f[1] = Dot(dx, n2);
+            residual = Math.Max(Math.Abs(f[0]), Math.Abs(f[1]));
+            if (residual <= ICurveEvaluation.ResidualTolerance * (1.0 + Math.Abs(point.X)
+                    + Math.Abs(point.Y) + Math.Abs(point.Z)))
+            {
+                u = state[0];
+                v = state[1];
+                return AlgorithmStatus.Success;
+            }
+
+            var su = jet[layout.GetIndex(1, 0)];
+            var sv = jet[layout.GetIndex(0, 1)];
+            j[0] = Dot(su, anchor.LineDirection);
+            j[1] = Dot(sv, anchor.LineDirection);
+            j[2] = Dot(su, n2);
+            j[3] = Dot(sv, n2);
+            var status = NewtonStep.ComputeStep(j, jCopy, f, 2, pivots, model, step, out var predicted);
+            if (status != AlgorithmStatus.Success || !(predicted > 0))
+                return status == AlgorithmStatus.Success ? AlgorithmStatus.NotConverged : status;
+            state[0] += step[0];
+            state[1] += step[1];
+            if (!double.IsFinite(state[0]) || !double.IsFinite(state[1]))
+                return AlgorithmStatus.NumericalFailure;
+        }
+        u = state[0];
+        v = state[1];
+        return AlgorithmStatus.NotConverged;
     }
 
     /// <summary>

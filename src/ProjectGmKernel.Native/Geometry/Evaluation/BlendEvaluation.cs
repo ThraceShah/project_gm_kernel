@@ -188,4 +188,31 @@ internal static class BlendEvaluation
         y = yCandidate;
         return double.IsFinite(arc) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
     }
+
+    /// <summary>
+    /// Contact point from a spine witness and support UV without re-projection
+    /// (§10.2): Q_j = S_j(u_j, v_j), then offset along the support normal by
+    /// ±r_j according to sense. Does not invent UV — callers supply the witness.
+    /// </summary>
+    internal static AlgorithmStatus TryContactFromSpineWitness(in AnalyticSurface support,
+        double u, double v, double radius, KernelSense sense,
+        out KernelVector3 contact, out KernelVector3 unitNormal)
+    {
+        contact = unitNormal = default;
+        if (!(radius > 0)) return AlgorithmStatus.InvalidInput;
+        if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout))
+            return AlgorithmStatus.InvalidInput;
+        Span<KernelVector3> jet = stackalloc KernelVector3[4];
+        if (SurfaceEvaluation.Evaluate(in support, u, v, in layout, jet) != AlgorithmStatus.Success)
+            return AlgorithmStatus.NotConverged;
+        var su = jet[layout.GetIndex(1, 0)];
+        var sv = jet[layout.GetIndex(0, 1)];
+        var n = Cross(su, sv);
+        var n2 = Dot(n, n);
+        if (!(n2 > 1e-30)) return AlgorithmStatus.Singular;
+        unitNormal = Scale(n, 1 / Math.Sqrt(n2));
+        if (sense < 0) unitNormal = Scale(unitNormal, -1);
+        contact = Add(jet[0], Scale(unitNormal, radius));
+        return IsFinite(contact) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
+    }
 }

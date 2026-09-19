@@ -144,6 +144,48 @@ internal static class BlendBoundComposition
         tzz = SphereContraction(normal, rho, contractionGradient, 2, 2);
     }
 
+    /// <summary>
+    /// Cylinder-distance jets for D₃ contraction tests (math-only, GATE-B open).
+    /// d(x)=ρ−R with ρ=‖(x−c)−((x−c)·a)a‖ on the finite sheet.
+    /// </summary>
+    internal static AlgorithmStatus CylinderDistanceJets(in KernelVector3 center, in KernelVector3 axis,
+        double cylinderRadius, in KernelVector3 point, in KernelVector3 contractionGradient,
+        out double value, out KernelVector3 gradient,
+        out double hxx, out double hxy, out double hxz, out double hyy, out double hyz, out double hzz,
+        out double txx, out double txy, out double txz, out double tyy, out double tyz, out double tzz)
+    {
+        value = 0;
+        gradient = default;
+        hxx = hxy = hxz = hyy = hyz = hzz = 0;
+        txx = txy = txz = tyy = tyz = tzz = 0;
+        var a2 = Dot(axis, axis);
+        if (!(a2 > 0) || !(cylinderRadius > 0)) return AlgorithmStatus.InvalidInput;
+        var unitA = Scale(axis, 1 / Math.Sqrt(a2));
+        var d = Sub(point, center);
+        var axial = Scale(unitA, Dot(d, unitA));
+        var radial = Sub(d, axial);
+        var rho = Math.Sqrt(Dot(radial, radial));
+        if (!(rho > 1e-14)) return AlgorithmStatus.Singular;
+        var normal = Scale(radial, 1 / rho);
+        value = rho - cylinderRadius;
+        gradient = normal;
+        // H = (I − nnᵀ − aaᵀ)/ρ in the plane orthogonal to a (axis direction has zero curvature).
+        hxx = (1 - normal.X * normal.X - unitA.X * unitA.X) / rho;
+        hxy = (-normal.X * normal.Y - unitA.X * unitA.Y) / rho;
+        hxz = (-normal.X * normal.Z - unitA.X * unitA.Z) / rho;
+        hyy = (1 - normal.Y * normal.Y - unitA.Y * unitA.Y) / rho;
+        hyz = (-normal.Y * normal.Z - unitA.Y * unitA.Z) / rho;
+        hzz = (1 - normal.Z * normal.Z - unitA.Z * unitA.Z) / rho;
+        // Reuse sphere-style contraction in the radial plane (axis projection frozen).
+        txx = SphereContraction(normal, rho, contractionGradient, 0, 0);
+        txy = SphereContraction(normal, rho, contractionGradient, 0, 1);
+        txz = SphereContraction(normal, rho, contractionGradient, 0, 2);
+        tyy = SphereContraction(normal, rho, contractionGradient, 1, 1);
+        tyz = SphereContraction(normal, rho, contractionGradient, 1, 2);
+        tzz = SphereContraction(normal, rho, contractionGradient, 2, 2);
+        return AlgorithmStatus.Success;
+    }
+
     private static double SphereContraction(in KernelVector3 n, double rho, in KernelVector3 g,
         int i, int j)
     {
