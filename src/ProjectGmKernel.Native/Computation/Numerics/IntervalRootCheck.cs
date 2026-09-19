@@ -252,14 +252,14 @@ internal static class IntervalRootCheck
                 return AlgorithmStatus.Success;
             case SurfaceClass.Sphere:
             {
-                var a = Vector(OutwardMul(2, box.XLo - surface.Origin.X),
-                    OutwardMul(2, box.YLo - surface.Origin.Y),
-                    OutwardMul(2, box.ZLo - surface.Origin.Z));
-                var b = Vector(OutwardMul(2, box.XHi - surface.Origin.X),
-                    OutwardMul(2, box.YHi - surface.Origin.Y),
-                    OutwardMul(2, box.ZHi - surface.Origin.Z));
-                gLo = Vector(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Min(a.Z, b.Z));
-                gHi = Vector(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z));
+                var (xLo, xHi) = MulScalarInterval(2,
+                    OutwardSubLo(box.XLo, surface.Origin.X), OutwardSubHi(box.XHi, surface.Origin.X));
+                var (yLo, yHi) = MulScalarInterval(2,
+                    OutwardSubLo(box.YLo, surface.Origin.Y), OutwardSubHi(box.YHi, surface.Origin.Y));
+                var (zLo, zHi) = MulScalarInterval(2,
+                    OutwardSubLo(box.ZLo, surface.Origin.Z), OutwardSubHi(box.ZHi, surface.Origin.Z));
+                gLo = Vector(xLo, yLo, zLo);
+                gHi = Vector(xHi, yHi, zHi);
                 return AlgorithmStatus.Success;
             }
             case SurfaceClass.Cylinder:
@@ -389,18 +389,14 @@ internal static class IntervalRootCheck
         if (lo > hi) (lo, hi) = (hi, lo);
         if (lo >= 0)
         {
-            var a = OutwardMul(lo, lo);
-            var b = OutwardMul(hi, hi);
-            return (Math.Min(a, b), Math.Max(a, b));
+            return (MulDown(lo, lo), MulUp(hi, hi));
         }
         if (hi <= 0)
         {
-            var a = OutwardMul(lo, lo);
-            var b = OutwardMul(hi, hi);
-            return (Math.Min(a, b), Math.Max(a, b));
+            return (MulDown(hi, hi), MulUp(lo, lo));
         }
-        var neg = OutwardMul(lo, lo);
-        var pos = OutwardMul(hi, hi);
+        var neg = MulUp(lo, lo);
+        var pos = MulUp(hi, hi);
         return (0, Math.Max(neg, pos));
     }
 
@@ -452,19 +448,21 @@ internal static class IntervalRootCheck
 
     private static (double Lo, double Hi) MulScalarInterval(double a, double bLo, double bHi)
     {
-        var p1 = OutwardMul(a, bLo);
-        var p2 = OutwardMul(a, bHi);
-        return (Math.Min(p1, p2), Math.Max(p1, p2));
+        var lo = Math.Min(MulDown(a, bLo), MulDown(a, bHi));
+        var hi = Math.Max(MulUp(a, bLo), MulUp(a, bHi));
+        return (lo, hi);
     }
 
     private static (double Lo, double Hi) MulInterval(double aLo, double aHi, double bLo, double bHi)
+        => MultiplyIntervals(aLo, aHi, bLo, bHi);
+
+    internal static (double Lo, double Hi) MultiplyIntervals(double aLo, double aHi, double bLo, double bHi)
     {
-        var p1 = OutwardMul(aLo, bLo);
-        var p2 = OutwardMul(aLo, bHi);
-        var p3 = OutwardMul(aHi, bLo);
-        var p4 = OutwardMul(aHi, bHi);
-        return (Math.Min(Math.Min(p1, p2), Math.Min(p3, p4)),
-            Math.Max(Math.Max(p1, p2), Math.Max(p3, p4)));
+        var lo = Math.Min(Math.Min(MulDown(aLo, bLo), MulDown(aLo, bHi)),
+            Math.Min(MulDown(aHi, bLo), MulDown(aHi, bHi)));
+        var hi = Math.Max(Math.Max(MulUp(aLo, bLo), MulUp(aLo, bHi)),
+            Math.Max(MulUp(aHi, bLo), MulUp(aHi, bHi)));
+        return (lo, hi);
     }
 
     private static bool Disjoint(in IntervalBox3 a, in IntervalBox3 b)
@@ -497,12 +495,15 @@ internal static class IntervalRootCheck
     }
     private static double OutwardSubLo(double a, double b) => OutwardAddLo(a, -b);
     private static double OutwardSubHi(double a, double b) => OutwardAddHi(a, -b);
-    private static double OutwardMul(double a, double b)
+    private static double MulDown(double a, double b)
     {
         var p = a * b;
-        if (!double.IsFinite(p) || p == 0) return p;
-        // Conservative: expand away from zero so product ranges stay enclosing.
-        return p >= 0 ? OutwardUp(p) : OutwardDown(p);
+        return double.IsFinite(p) ? OutwardDown(p) : p;
+    }
+    private static double MulUp(double a, double b)
+    {
+        var p = a * b;
+        return double.IsFinite(p) ? OutwardUp(p) : p;
     }
 
     private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)
@@ -538,92 +539,10 @@ internal static class IntervalRootCheck
     {
         status = IntervalRootStatus.BoundsUnavailable;
         if (uvBox.IsEmpty) return AlgorithmStatus.InvalidInput;
-        if (!IsIntervalCapable(in support1)) return AlgorithmStatus.Unsupported;
-        // Parametric S0 must be an analytic class with bounded UV image sampling.
-        if (support0.Kind is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere
-            or SurfaceClass.Cone or SurfaceClass.Torus))
-            return AlgorithmStatus.Unsupported;
-
-        uvBox.Midpoint(out var u0, out var v0);
-        Span<KernelVector3> jet = stackalloc KernelVector3[4];
-        if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout))
-            return AlgorithmStatus.InvalidInput;
-        if (SurfaceEvaluation.Evaluate(in support0, u0, v0, in layout, jet) != AlgorithmStatus.Success)
-            return AlgorithmStatus.NumericalFailure;
-        if (AnalyticImplicitEvaluation.Evaluate(in support1, in jet[0], 1, out var jet1)
-            != AlgorithmStatus.Success)
-            return AlgorithmStatus.Unsupported;
-
-        Span<double> f0 = stackalloc double[2];
-        f0[0] = jet1.Value;
-        f0[1] = Dot(chordUnit, jet[0]) - planeOffset;
-        var su = jet[layout.GetIndex(1, 0)];
-        var sv = jet[layout.GetIndex(0, 1)];
-        Span<double> j = stackalloc double[4];
-        j[0] = Dot(jet1.Gradient, su);
-        j[1] = Dot(jet1.Gradient, sv);
-        j[2] = Dot(chordUnit, su);
-        j[3] = Dot(chordUnit, sv);
-        var det = j[0] * j[3] - j[1] * j[2];
-        if (!(Math.Abs(det) > 1e-18))
-        {
-            status = IntervalRootStatus.Undetermined;
-            return AlgorithmStatus.Success;
-        }
-        // Y = J^{-1}
-        var inv00 = j[3] / det; var inv01 = -j[1] / det;
-        var inv10 = -j[2] / det; var inv11 = j[0] / det;
-        var yf0 = inv00 * f0[0] + inv01 * f0[1];
-        var yf1 = inv10 * f0[0] + inv11 * f0[1];
-        var c0u = u0 - yf0;
-        var c0v = v0 - yf1;
-
-        // Conservative |I − Y J| radius via corner J samples.
-        var maxRad = 0.0;
-        for (var cu = 0; cu < 2; cu++)
-        for (var cv = 0; cv < 2; cv++)
-        {
-            var uu = cu == 0 ? uvBox.ULo : uvBox.UHi;
-            var vv = cv == 0 ? uvBox.VLo : uvBox.VHi;
-            if (SurfaceEvaluation.Evaluate(in support0, uu, vv, in layout, jet)
-                != AlgorithmStatus.Success)
-                continue;
-            if (AnalyticImplicitEvaluation.Evaluate(in support1, in jet[0], 1, out jet1)
-                != AlgorithmStatus.Success)
-                continue;
-            su = jet[layout.GetIndex(1, 0)];
-            sv = jet[layout.GetIndex(0, 1)];
-            var a00 = Dot(jet1.Gradient, su);
-            var a01 = Dot(jet1.Gradient, sv);
-            var a10 = Dot(chordUnit, su);
-            var a11 = Dot(chordUnit, sv);
-            var r00 = 1 - (inv00 * a00 + inv01 * a10);
-            var r01 = -(inv00 * a01 + inv01 * a11);
-            var r10 = -(inv10 * a00 + inv11 * a10);
-            var r11 = 1 - (inv10 * a01 + inv11 * a11);
-            maxRad = Math.Max(maxRad, Math.Abs(r00) + Math.Abs(r01));
-            maxRad = Math.Max(maxRad, Math.Abs(r10) + Math.Abs(r11));
-        }
-
-        var hu = 0.5 * (uvBox.UHi - uvBox.ULo);
-        var hv = 0.5 * (uvBox.VHi - uvBox.VLo);
-        var kULo = c0u - maxRad * hu;
-        var kUHi = c0u + maxRad * hu;
-        var kVLo = c0v - maxRad * hv;
-        var kVHi = c0v + maxRad * hv;
-
-        if (kUHi < uvBox.ULo || kULo > uvBox.UHi || kVHi < uvBox.VLo || kVLo > uvBox.VHi)
-        {
-            status = IntervalRootStatus.Empty;
-            return AlgorithmStatus.Success;
-        }
-        if (kULo > uvBox.ULo && kUHi < uvBox.UHi && kVLo > uvBox.VLo && kVHi < uvBox.VHi
-            && maxRad < 1)
-        {
-            status = IntervalRootStatus.Unique;
-            return AlgorithmStatus.Success;
-        }
-        status = IntervalRootStatus.Undetermined;
-        return AlgorithmStatus.Success;
+        // No conservative interval extension of S(u,v), its derivatives and
+        // φ(S(u,v)) exists yet. Corner samples are not bounds (periodic
+        // cylinders already provide a counterexample), so this path must not
+        // issue Empty/Unique certificates.
+        return AlgorithmStatus.Unsupported;
     }
 }

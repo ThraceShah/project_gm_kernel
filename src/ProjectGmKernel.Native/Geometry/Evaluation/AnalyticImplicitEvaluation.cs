@@ -69,6 +69,45 @@ internal static class AnalyticImplicitEvaluation
         }
     }
 
+    /// <summary>
+    /// Translation-invariant geometric distance to the analytic support.
+    /// Unlike the algebraic implicit value, every result has length units.
+    /// </summary>
+    internal static AlgorithmStatus GeometricDeviation(in AnalyticSurface surface,
+        in KernelVector3 point, out double deviation)
+    {
+        deviation = double.PositiveInfinity;
+        if (!IsFinite(point)) return AlgorithmStatus.InvalidInput;
+        var r = Sub(point, surface.Origin);
+        var axial = Dot(surface.Axis, r);
+        var radial = Sub(r, Scale(surface.Axis, axial));
+        switch (surface.Kind)
+        {
+            case SurfaceClass.Plane:
+                deviation = Math.Abs(axial);
+                break;
+            case SurfaceClass.Sphere:
+                deviation = Math.Abs(Math.Sqrt(Dot(r, r)) - surface.Radius);
+                break;
+            case SurfaceClass.Cylinder:
+                deviation = Math.Abs(Math.Sqrt(Dot(radial, radial)) - surface.Radius);
+                break;
+            case SurfaceClass.Cone:
+                var generator = surface.Radius + surface.Secondary * axial;
+                if (generator < 0) return AlgorithmStatus.Unsupported;
+                deviation = Math.Abs(Math.Sqrt(Dot(radial, radial)) - generator);
+                break;
+            case SurfaceClass.Torus:
+                var profileRadius = Math.Sqrt(
+                    Math.Pow(Math.Sqrt(Dot(radial, radial)) - surface.Radius, 2) + axial * axial);
+                deviation = Math.Abs(profileRadius - surface.Secondary);
+                break;
+            default:
+                return AlgorithmStatus.Unsupported;
+        }
+        return double.IsFinite(deviation) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
+    }
+
     private static ImplicitJet Plane(in AnalyticSurface surface, in KernelVector3 r, DerivativeOrder order)
         => new(Dot(surface.Axis, r), order >= 1 ? surface.Axis : default, 0, 0, 0, 0, 0, 0);
 
