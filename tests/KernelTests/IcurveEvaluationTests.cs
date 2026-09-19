@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
@@ -142,6 +143,32 @@ public unsafe class IcurveEvaluationTests
 
         Assert.Equal(AlgorithmStatus.InvalidInput,
             ICurveEvaluation.Evaluate(in view, double.NaN, 1, derivatives, out _));
+    }
+
+    [Fact]
+    public void Evaluate_DerivativeFailure_DoesNotPublishComputedPosition()
+    {
+        // Deliberately inconsistent chart direction makes the I1 line tangent
+        // to the sphere at the valid D0 root, so D1 is singular after D0 was
+        // computed internally.
+        var plane = new AnalyticSurface(SurfaceClass.Plane,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0));
+        var sphere = new AnalyticSurface(SurfaceClass.Sphere,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1);
+        KernelVector3[] positions = [Vector(1, 0, 0), Vector(2, 0, 0)];
+        double[] parameters = [0, 1];
+        double[] scales = [1];
+        KernelVector3[] chords = [Vector(1, 0, 0)];
+        var view = new ICurveView(in plane, 1, in sphere, 1,
+            positions, parameters, scales, chords);
+        Span<KernelVector3> output = stackalloc KernelVector3[2];
+        output.Fill(Vector(42, 42, 42));
+
+        Assert.Equal(AlgorithmStatus.NumericalFailure,
+            ICurveEvaluation.EvaluateWithPlan(in view, 0, 1,
+                ICurveConstraintPlan.I1, output, out _));
+        Assert.Equal(42, output[0].X);
+        Assert.Equal(42, output[1].Z);
     }
 
     [Fact]
