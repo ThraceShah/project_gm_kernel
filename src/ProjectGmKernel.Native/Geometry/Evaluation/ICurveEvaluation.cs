@@ -204,6 +204,10 @@ internal static class ICurveEvaluation
             {
                 solveSeed = Vector(predicted[0], predicted[1], predicted[2]);
                 hitKind = CacheHitKind.NeighborSeed;
+                // PredictedOnly seed — never an exact hit (§13.4).
+                _ = cache.TryInsert(new CurveSample(t, in solveSeed, default, default, 0,
+                    ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment,
+                    double.PositiveInfinity, SampleSourceKind.PredictedOnly, selected));
             }
         }
         var status = Solve(in view, in solveSeed, t, segment, order, selected, derivatives,

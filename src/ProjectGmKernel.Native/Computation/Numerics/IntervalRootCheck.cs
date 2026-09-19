@@ -507,4 +507,123 @@ internal static class IntervalRootCheck
 
     private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)
         => Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+
+    /// <summary>
+    /// Axis-aligned UV box for P2 residual (φ₁(S₀(u,v)), p(S₀(u,v))) on
+    /// analytic supports (spec §18.3). Corner sampling builds a conservative
+    /// image; Newton-only samples are never labelled Certified.
+    /// </summary>
+    internal readonly struct IntervalBox2
+    {
+        internal readonly double ULo, UHi, VLo, VHi;
+        internal IntervalBox2(double uLo, double uHi, double vLo, double vHi)
+        {
+            ULo = uLo; UHi = uHi; VLo = vLo; VHi = vHi;
+        }
+        internal readonly bool IsEmpty => !(ULo <= UHi && VLo <= VHi);
+        internal readonly void Midpoint(out double u, out double v)
+        {
+            u = 0.5 * (ULo + UHi);
+            v = 0.5 * (VLo + VHi);
+        }
+    }
+
+    /// <summary>
+    /// Certify the P2 system on a UV box. Unsupported analytic pairs return
+    /// BoundsUnavailable. Empty/Unique require a contracting Krawczyk image.
+    /// </summary>
+    internal static AlgorithmStatus TryCertifyP2(in AnalyticSurface support0, in AnalyticSurface support1,
+        in KernelVector3 chordUnit, double planeOffset, in IntervalBox2 uvBox,
+        out IntervalRootStatus status)
+    {
+        status = IntervalRootStatus.BoundsUnavailable;
+        if (uvBox.IsEmpty) return AlgorithmStatus.InvalidInput;
+        if (!IsIntervalCapable(in support1)) return AlgorithmStatus.Unsupported;
+        // Parametric S0 must be an analytic class with bounded UV image sampling.
+        if (support0.Kind is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere
+            or SurfaceClass.Cone or SurfaceClass.Torus))
+            return AlgorithmStatus.Unsupported;
+
+        uvBox.Midpoint(out var u0, out var v0);
+        Span<KernelVector3> jet = stackalloc KernelVector3[4];
+        if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout))
+            return AlgorithmStatus.InvalidInput;
+        if (SurfaceEvaluation.Evaluate(in support0, u0, v0, in layout, jet) != AlgorithmStatus.Success)
+            return AlgorithmStatus.NumericalFailure;
+        if (AnalyticImplicitEvaluation.Evaluate(in support1, in jet[0], 1, out var jet1)
+            != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+
+        Span<double> f0 = stackalloc double[2];
+        f0[0] = jet1.Value;
+        f0[1] = Dot(chordUnit, jet[0]) - planeOffset;
+        var su = jet[layout.GetIndex(1, 0)];
+        var sv = jet[layout.GetIndex(0, 1)];
+        Span<double> j = stackalloc double[4];
+        j[0] = Dot(jet1.Gradient, su);
+        j[1] = Dot(jet1.Gradient, sv);
+        j[2] = Dot(chordUnit, su);
+        j[3] = Dot(chordUnit, sv);
+        var det = j[0] * j[3] - j[1] * j[2];
+        if (!(Math.Abs(det) > 1e-18))
+        {
+            status = IntervalRootStatus.Undetermined;
+            return AlgorithmStatus.Success;
+        }
+        // Y = J^{-1}
+        var inv00 = j[3] / det; var inv01 = -j[1] / det;
+        var inv10 = -j[2] / det; var inv11 = j[0] / det;
+        var yf0 = inv00 * f0[0] + inv01 * f0[1];
+        var yf1 = inv10 * f0[0] + inv11 * f0[1];
+        var c0u = u0 - yf0;
+        var c0v = v0 - yf1;
+
+        // Conservative |I − Y J| radius via corner J samples.
+        var maxRad = 0.0;
+        for (var cu = 0; cu < 2; cu++)
+        for (var cv = 0; cv < 2; cv++)
+        {
+            var uu = cu == 0 ? uvBox.ULo : uvBox.UHi;
+            var vv = cv == 0 ? uvBox.VLo : uvBox.VHi;
+            if (SurfaceEvaluation.Evaluate(in support0, uu, vv, in layout, jet)
+                != AlgorithmStatus.Success)
+                continue;
+            if (AnalyticImplicitEvaluation.Evaluate(in support1, in jet[0], 1, out jet1)
+                != AlgorithmStatus.Success)
+                continue;
+            su = jet[layout.GetIndex(1, 0)];
+            sv = jet[layout.GetIndex(0, 1)];
+            var a00 = Dot(jet1.Gradient, su);
+            var a01 = Dot(jet1.Gradient, sv);
+            var a10 = Dot(chordUnit, su);
+            var a11 = Dot(chordUnit, sv);
+            var r00 = 1 - (inv00 * a00 + inv01 * a10);
+            var r01 = -(inv00 * a01 + inv01 * a11);
+            var r10 = -(inv10 * a00 + inv11 * a10);
+            var r11 = 1 - (inv10 * a01 + inv11 * a11);
+            maxRad = Math.Max(maxRad, Math.Abs(r00) + Math.Abs(r01));
+            maxRad = Math.Max(maxRad, Math.Abs(r10) + Math.Abs(r11));
+        }
+
+        var hu = 0.5 * (uvBox.UHi - uvBox.ULo);
+        var hv = 0.5 * (uvBox.VHi - uvBox.VLo);
+        var kULo = c0u - maxRad * hu;
+        var kUHi = c0u + maxRad * hu;
+        var kVLo = c0v - maxRad * hv;
+        var kVHi = c0v + maxRad * hv;
+
+        if (kUHi < uvBox.ULo || kULo > uvBox.UHi || kVHi < uvBox.VLo || kVLo > uvBox.VHi)
+        {
+            status = IntervalRootStatus.Empty;
+            return AlgorithmStatus.Success;
+        }
+        if (kULo > uvBox.ULo && kUHi < uvBox.UHi && kVLo > uvBox.VLo && kVHi < uvBox.VHi
+            && maxRad < 1)
+        {
+            status = IntervalRootStatus.Unique;
+            return AlgorithmStatus.Success;
+        }
+        status = IntervalRootStatus.Undetermined;
+        return AlgorithmStatus.Success;
+    }
 }

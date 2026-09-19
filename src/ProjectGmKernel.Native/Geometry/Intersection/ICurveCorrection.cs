@@ -48,6 +48,21 @@ internal static class ICurveCorrection
         Span<double> refinedState, out BufferOffset acceptedIterations, out double residual,
         out ICurveEvalDetail detail)
     {
+        var budget = EvaluationBudget.Default;
+        return Refine(in view, plan, t, segment, in seed, refinedState, ref budget,
+            out acceptedIterations, out residual, out detail);
+    }
+
+    /// <summary>
+    /// Refine with shared budget: when predicted descent is dominated by the
+    /// nested accuracy floor η_k, tighten inner and retry before shrinking the
+    /// trust radius (§15.2–15.3).
+    /// </summary>
+    internal static AlgorithmStatus Refine(in ICurveView view, ICurveConstraintPlan plan,
+        double t, BufferOffset segment, in KernelVector3 seed,
+        Span<double> refinedState, ref EvaluationBudget budget,
+        out BufferOffset acceptedIterations, out double residual, out ICurveEvalDetail detail)
+    {
         acceptedIterations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
@@ -63,6 +78,11 @@ internal static class ICurveCorrection
         Span<double> residualVector = stackalloc double[MaxSmallSystem];
         var memo = new ResidualMemo();
         memo.BeginTrial();
+        if (!budget.TryConsume(1))
+        {
+            detail = ICurveEvalDetail.BudgetExceeded;
+            return AlgorithmStatus.NotConverged;
+        }
         var evalStatus = EvaluateSystem(in view, plan, t, segment, state, residualVector, jacobianMaster);
         if (evalStatus != AlgorithmStatus.Success) return evalStatus;
         _ = memo.TryInsert(plan, t, segment, 0, residualVector[..n]);
@@ -91,6 +111,7 @@ internal static class ICurveCorrection
         var psiBase = 0.5 * SmallLinearSolve.Dot(residualVector[..n], residualVector[..n]);
         var trials = 0;
         var consecutiveRejects = 0;
+        var innerTightenUsed = false;
         Span<double> trialResidual = stackalloc double[MaxSmallSystem];
         Span<double> trialJacobian = stackalloc double[MaxSmallSystem * MaxSmallSystem];
         while (acceptedIterations < MaxAcceptedIterations && trials < MaxTrials)
@@ -112,19 +133,36 @@ internal static class ICurveCorrection
                 return AlgorithmStatus.Singular;
             }
 
+            // §15: if predicted descent is below the nested accuracy floor, tighten
+            // η_k once before treating the model as stagnant / shrinking radius.
+            var innerFloor = psiBase * budget.InnerAccuracyFactor * 1e-4;
+            if (!innerTightenUsed && predicted <= innerFloor && psiBase > 0)
+            {
+                budget.TightenInner(0.5);
+                detail = ICurveEvalDetail.InnerAccuracyInsufficient;
+                innerTightenUsed = true;
+                // Re-evaluate the accepted residual at the tighter nested demand
+                // without consuming a reject / radius shrink.
+                continue;
+            }
+
             trials++;
             buffer.BeginTrial();
             memo.BeginTrial();
             var trial = buffer.TrialState;
             for (BufferOffset i = 0; i < n; i++) trial[i] += step[i];
 
+            if (!budget.TryConsume(1))
+            {
+                detail = ICurveEvalDetail.BudgetExceeded;
+                return AlgorithmStatus.NotConverged;
+            }
             var trialStatus = EvaluateSystem(in view, plan, t, segment, buffer.TrialState,
                 trialResidual, trialJacobian);
             var psiTrial = double.PositiveInfinity;
             if (trialStatus == AlgorithmStatus.Success)
             {
                 _ = memo.TryInsert(plan, t, segment, 0, trialResidual[..n]);
-                // Trial uses the frozen accepted scales (§14.1).
                 freeze.Apply(trialResidual[..n], trialJacobian[..(n * n)]);
                 psiTrial = 0.5 * SmallLinearSolve.Dot(trialResidual[..n], trialResidual[..n]);
             }
@@ -134,11 +172,17 @@ internal static class ICurveCorrection
             if (ratio >= TrustRegionStep.MinAcceptRatio)
             {
                 consecutiveRejects = 0;
+                innerTightenUsed = false;
                 var nextRadius = TrustRegionStep.UpdateRadius(buffer.AcceptedRadius, ratio,
                     atBoundary, minRadius, double.MaxValue);
                 buffer.CommitTrial(nextRadius);
                 acceptedIterations++;
 
+                if (!budget.TryConsume(1))
+                {
+                    detail = ICurveEvalDetail.BudgetExceeded;
+                    return AlgorithmStatus.NotConverged;
+                }
                 evalStatus = EvaluateSystem(in view, plan, t, segment, buffer.AcceptedState,
                     residualVector, jacobianMaster);
                 if (evalStatus != AlgorithmStatus.Success) return evalStatus;
