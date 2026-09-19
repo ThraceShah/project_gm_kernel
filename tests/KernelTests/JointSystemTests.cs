@@ -200,4 +200,21 @@ public class JointSystemTests
             fX, fZ, hX, hZ, f, h, 3, 3, 2, workspace, step, out _));
         for (var i = 0; i < 5; i++) Assert.True(double.IsFinite(step[i]));
     }
+
+    [Fact]
+    public void JointLift_FromOffRootSeed_RecoversSixUnknownRoot()
+    {
+        // Opt-in lift entry (T14): same RV-LIFTED-J geometry, seeded from the
+        // query point and circular-spine angle — not wired into Auto.
+        var spineSeed = Math.Atan2(StateC.Y, StateC.X);
+        Span<double> state = new double[6];
+        Assert.Equal(AlgorithmStatus.Success, BlendJointLift.TryLiftFromLocalSingular(
+            in SupportA, in SupportD, in OuterPlane, in PlaneAnchor, in PlaneNormal,
+            RadiusSq, in StateX, spineSeed, spineRadius: 2.0, state,
+            out var iterations, out var residual));
+        Assert.True(iterations >= 1);
+        Assert.InRange(residual, 0, 1e-11);
+        Assert.InRange(Math.Abs(Math.Sqrt(state[3] * state[3] + state[4] * state[4]) - 2), 0, 1e-10);
+        Assert.InRange(Math.Abs(state[5]), 0, 1e-10);
+    }
 }

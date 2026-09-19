@@ -276,7 +276,17 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
 
     var plane = CreateOurPlaneZ0();
     var sphere = CreateOurUnitSphere();
-    double[] chart = [1, 0, 0, 0, 1, 0, -1, 0, 0, 0, -1, 0];
+    // Dense unit-circle chart: coarse 4-node charts left a rematerialize
+    // closest-sample gap (~4e-2) after live PK receive; densify before compare.
+    const int chartCount = 48;
+    var chart = new double[chartCount * 3];
+    for (var i = 0; i < chartCount; i++)
+    {
+        var angle = Math.Tau * i / chartCount;
+        chart[i * 3] = Math.Cos(angle);
+        chart[i * 3 + 1] = Math.Sin(angle);
+        chart[i * 3 + 2] = 0;
+    }
     var input = BuildDecodeInput(plane, sphere, chart, baseParameter: -0.25, baseScale: 1.5);
     CheckStatus(KernelRuntime.DecodeIcurve(input, out var slot, out _, out _), "DecodeIcurve live-recv");
     CheckStatus(KernelRuntime.TryBindICurveEntity(slot, out var icurve), "TryBindICurveEntity live-recv");
@@ -340,8 +350,9 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             var record = KernelRuntime.GetCurveByTag(icurve);
 
             // Parameterizations need not match after receive; compare by closest
-            // PK sample on a dense grid of the received interval.
-            const int pkDense = 128;
+            // PK sample on a dense grid of the received interval, and also by
+            // closest analytic unit-circle sample (triple compare).
+            const int pkDense = 512;
             var pkX = new double[pkDense];
             var pkY = new double[pkDense];
             var pkZ = new double[pkDense];
@@ -355,10 +366,11 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             }
 
             double maxPos = 0;
+            double maxCircle = 0;
             var samples = 0;
-            for (var i = 0; i < 24; i++)
+            for (var i = 0; i < 64; i++)
             {
-                var alpha = i / 23.0;
+                var alpha = i / 63.0;
                 var ourT = record.TMin + (record.TMax - record.TMin) * alpha;
                 CheckOur(KernelRuntime.CurveEval(icurve, ourT, 0, ours), "our CurveEval live-recv");
                 var best = double.PositiveInfinity;
@@ -370,10 +382,14 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                     best = Math.Min(best, Math.Sqrt(dx * dx + dy * dy + dz * dz));
                 }
                 maxPos = Math.Max(maxPos, best);
+                var rho = Math.Sqrt(ours[0].coord[0] * ours[0].coord[0]
+                    + ours[0].coord[1] * ours[0].coord[1]);
+                maxCircle = Math.Max(maxCircle,
+                    Math.Abs(rho - 1.0) + Math.Abs(ours[0].coord[2]));
                 samples++;
             }
 
-            log($"live-pk-recv: samples={samples} pkDense={pkDense} max|Δpos|_closest={maxPos:E3}");
+            log($"live-pk-recv: samples={samples} pkDense={pkDense} chartCount={chartCount} max|Δpos|_closest={maxPos:E3} max|ρ−1|+|z|={maxCircle:E3}");
             if (maxPos > 1e-4)
             {
                 log($"NotRun: Case F live PK receive succeeded but D0 closest-sample Δ={maxPos:E3} exceeds gate (INTERSECTION rematerialize/compare gap; not Pass)");

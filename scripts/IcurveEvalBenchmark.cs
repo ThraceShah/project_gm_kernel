@@ -12,7 +12,10 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 static string GetScriptPath([CallerFilePath] string path = "") => path;
 
@@ -198,6 +201,68 @@ unsafe
         sb.AppendLine();
     }
 
+    void MeasurePlanMatrix(System.Text.StringBuilder sb)
+    {
+        // Same correctness gate as KernelTests plan equivalence: cold+hot cost
+        // under identical query/order for each named plan (§22 / T20).
+        var plane = new AnalyticSurface(SurfaceClass.Plane,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0));
+        var cyl = new AnalyticSurface(SurfaceClass.Cylinder,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0);
+        double[] angles = [0.0, 0.17, 0.62, 1.03];
+        var positions = new KernelVector3[4];
+        var tangents = new KernelVector3[4];
+        for (var i = 0; i < 4; i++)
+        {
+            positions[i] = Vector(Math.Cos(angles[i]), Math.Sin(angles[i]), 0);
+            tangents[i] = Vector(-Math.Sin(angles[i]), Math.Cos(angles[i]), 0);
+        }
+        var parameters = new double[4];
+        var scales = new double[3];
+        var chords = new KernelVector3[3];
+        if (OriginalChartParameterMap.Build(positions, tangents, -2.0, 1.7,
+                parameters, scales, chords, out _, out _) != AlgorithmStatus.Success)
+            throw new InvalidOperationException("plan-matrix chart build failed");
+        var view = new ICurveView(in plane, 1, in cyl, 1, positions, parameters, scales, chords);
+        var tMid = 0.5 * (parameters[0] + parameters[^1]);
+        ICurveConstraintPlan[] plans =
+        [
+            ICurveConstraintPlan.I1,
+            ICurveConstraintPlan.P2,
+            ICurveConstraintPlan.I3,
+            ICurveConstraintPlan.I2,
+            ICurveConstraintPlan.P4,
+        ];
+
+        sb.AppendLine("plan-cost matrix (plane∩cylinder RegularInterval D0–D2, same t)");
+        const int warmup = 40;
+        const int samples = 300;
+        var sw = Stopwatch.StartNew();
+        Span<KernelVector3> derivatives = stackalloc KernelVector3[3];
+        foreach (var plan in plans)
+        {
+            var status = ICurveEvaluation.EvaluateWithPlan(in view, tMid, 2, plan, derivatives, out _);
+            if (status != AlgorithmStatus.Success)
+            {
+                sb.AppendLine($"  {plan}: SKIP status={status}");
+                continue;
+            }
+            for (var i = 0; i < warmup; i++)
+                _ = ICurveEvaluation.EvaluateWithPlan(in view, tMid, 2, plan, derivatives, out _);
+
+            var times = new double[samples];
+            for (var i = 0; i < samples; i++)
+            {
+                sw.Restart();
+                _ = ICurveEvaluation.EvaluateWithPlan(in view, tMid, 2, plan, derivatives, out _);
+                times[i] = sw.Elapsed.TotalNanoseconds;
+            }
+            Array.Sort(times);
+            sb.AppendLine($"  {plan}: p50={Pct(times, 0.50):F1} p95={Pct(times, 0.95):F1} p99={Pct(times, 0.99):F1} ns/eval (n={samples})");
+        }
+        sb.AppendLine();
+    }
+
     KernelRuntime.SessionStop();
     var options = new PK_SESSION_start_o_s { o_t_version = 1 };
     var start = KernelRuntime.SessionStart(&options);
@@ -213,6 +278,7 @@ unsafe
     MeasureFixture(sb, "plane∩sphere", CreatePlaneSphere);
     MeasureFixture(sb, "plane∩cylinder", CreatePlaneCylinder);
     MeasureFixture(sb, "plane∩cone", CreatePlaneCone);
+    MeasurePlanMatrix(sb);
 
     KernelRuntime.SessionStop();
 
