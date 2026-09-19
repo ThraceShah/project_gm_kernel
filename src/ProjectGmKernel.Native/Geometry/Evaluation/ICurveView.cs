@@ -33,6 +33,18 @@ internal enum ICurveEvalDetail : byte
     AmbiguousBranch = 3,
     /// <summary>Corrector stagnated (small step, large residual, or reverse oscillation) (§14.6).</summary>
     Stagnation = 4,
+    /// <summary>Original chart map failed validation (non-finite / non-monotonic).</summary>
+    InvalidChart = 5,
+    /// <summary>Native parameter could not be recovered after an internal reparameterization.</summary>
+    ParameterResolutionLost = 6,
+    /// <summary>Nested / inner solve accuracy insufficient for the outer accept step (§15).</summary>
+    InnerAccuracyInsufficient = 7,
+    /// <summary>Requested blend construction is outside the supported regular-R tube.</summary>
+    UnsupportedBlendConstruction = 8,
+    /// <summary>Parameterization of a support became singular at the query.</summary>
+    ParameterizationSingular = 9,
+    /// <summary>Diagnosed plan switch after Singular/stagnation (§14.6); report.Plan is the final plan.</summary>
+    PlanSwitched = 10,
 }
 
 /// <summary>

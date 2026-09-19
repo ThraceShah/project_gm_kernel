@@ -25,25 +25,63 @@ internal enum ICurveConstraintPlan : byte
 }
 
 /// <summary>
-/// Deterministic plan selection from support capabilities (§7.6). The stated
-/// preference — analytic supports without inner solves prefer I1/I2/P2 over
-/// the general plans — is applied as: a plane support plus an implicit-capable
-/// other selects I1; any parametric support with an implicit-capable other
-/// selects P2; two implicit-only supports select I3 (I2 stays available as the
-/// elimination alternative and cross-check). Plan choice never changes the
-/// parameter plane, the branch or the reported parameter.
+/// Deterministic plan selection from support capabilities (§7.6). Preference
+/// order prefers cheaper analytic plans that still carry the required
+/// residual/Jacobian capabilities — never changes the parameter plane, branch,
+/// or reported parameter.
 /// </summary>
 internal static class ICurveConstraintPlanRules
 {
+    /// <summary>
+    /// Select the Auto plan: plane + implicit → I1; both implicit-capable without
+    /// a plane prefer I2 (chord-plane eliminated) over I3; otherwise P2. P4 stays
+    /// available as an explicit/cross-check plan, not Auto default.
+    /// </summary>
     internal static ICurveConstraintPlan Select(in ICurveView view)
     {
         var plane0 = view.Support0.Kind == SurfaceClass.Plane;
         var plane1 = view.Support1.Kind == SurfaceClass.Plane;
-        // Both analytic supports carry parametric and implicit capabilities in
-        // this slice; B-surface supports arrive with T09+ and would extend the
-        // capability checks here (P4 for parametric pairs without implicit).
-        if ((plane0 || plane1))
+        if (plane0 || plane1)
             return ICurveConstraintPlan.I1;
-        return ICurveConstraintPlan.P2;
+        // Analytic supports in this slice are both parametric and implicit.
+        // Prefer the cheaper in-plane I2 over the 3×3 I3 when both work (§7.6).
+        return ICurveConstraintPlan.I2;
+    }
+
+    /// <summary>
+    /// Ordered alternate plans for diagnosed switches after Singular/stagnation
+    /// (§14.6). Excludes Auto and the currently failing plan.
+    /// </summary>
+    internal static BufferCount Alternates(in ICurveView view, ICurveConstraintPlan failed,
+        Span<ICurveConstraintPlan> destination)
+    {
+        Span<ICurveConstraintPlan> preference = stackalloc ICurveConstraintPlan[5];
+        BufferCount n = 0;
+        var plane0 = view.Support0.Kind == SurfaceClass.Plane;
+        var plane1 = view.Support1.Kind == SurfaceClass.Plane;
+        if (plane0 || plane1)
+        {
+            preference[n++] = ICurveConstraintPlan.I1;
+            preference[n++] = ICurveConstraintPlan.I2;
+            preference[n++] = ICurveConstraintPlan.P2;
+            preference[n++] = ICurveConstraintPlan.I3;
+            preference[n++] = ICurveConstraintPlan.P4;
+        }
+        else
+        {
+            preference[n++] = ICurveConstraintPlan.I2;
+            preference[n++] = ICurveConstraintPlan.P2;
+            preference[n++] = ICurveConstraintPlan.I3;
+            preference[n++] = ICurveConstraintPlan.P4;
+            preference[n++] = ICurveConstraintPlan.I1;
+        }
+
+        BufferCount written = 0;
+        for (BufferOffset i = 0; i < n && written < destination.Length; i++)
+        {
+            if (preference[i] == failed || preference[i] == ICurveConstraintPlan.Auto) continue;
+            destination[written++] = preference[i];
+        }
+        return written;
     }
 }

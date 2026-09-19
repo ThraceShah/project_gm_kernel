@@ -36,9 +36,21 @@ internal static class ICurveCorrection
     internal static AlgorithmStatus Refine(in ICurveView view, ICurveConstraintPlan plan,
         double t, BufferOffset segment, in KernelVector3 seed,
         Span<double> refinedState, out BufferOffset acceptedIterations, out double residual)
+        => Refine(in view, plan, t, segment, in seed, refinedState, out acceptedIterations,
+            out residual, out _);
+
+    /// <summary>
+    /// Refine with locatable detail: Stagnation on reverse-oscillation / radius
+    /// floor; PlanSwitched is reported by the caller after <see cref="RefineWithPlanSwitch"/>.
+    /// </summary>
+    internal static AlgorithmStatus Refine(in ICurveView view, ICurveConstraintPlan plan,
+        double t, BufferOffset segment, in KernelVector3 seed,
+        Span<double> refinedState, out BufferOffset acceptedIterations, out double residual,
+        out ICurveEvalDetail detail)
     {
         acceptedIterations = 0;
         residual = 0;
+        detail = ICurveEvalDetail.None;
         var n = StateDimension(plan);
         if (n <= 0 || refinedState.Length < n) return AlgorithmStatus.InvalidInput;
         if (!double.IsFinite(t)) return AlgorithmStatus.InvalidInput;
@@ -49,10 +61,17 @@ internal static class ICurveCorrection
 
         Span<double> jacobianMaster = stackalloc double[MaxSmallSystem * MaxSmallSystem];
         Span<double> residualVector = stackalloc double[MaxSmallSystem];
+        var memo = new ResidualMemo();
+        memo.BeginTrial();
         var evalStatus = EvaluateSystem(in view, plan, t, segment, state, residualVector, jacobianMaster);
         if (evalStatus != AlgorithmStatus.Success) return evalStatus;
+        _ = memo.TryInsert(plan, t, segment, 0, residualVector[..n]);
         residual = SmallLinearSolve.Norm(residualVector);
         if (IsConverged(residual, state)) return Success(state, n, refinedState);
+
+        var freeze = new FrozenResidualScale();
+        freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
+        freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);
 
         var scale0 = Math.Max(1.0, SmallLinearSolve.Norm(state));
         var buffer = new SolveStateBuffer(
@@ -69,8 +88,9 @@ internal static class ICurveCorrection
         Span<double> newtonStep = stackalloc double[MaxSmallSystem];
         Span<double> step = stackalloc double[MaxSmallSystem];
 
-        var psiBase = 0.5 * residual * residual;
+        var psiBase = 0.5 * SmallLinearSolve.Dot(residualVector[..n], residualVector[..n]);
         var trials = 0;
+        var consecutiveRejects = 0;
         Span<double> trialResidual = stackalloc double[MaxSmallSystem];
         Span<double> trialJacobian = stackalloc double[MaxSmallSystem * MaxSmallSystem];
         while (acceptedIterations < MaxAcceptedIterations && trials < MaxTrials)
@@ -80,48 +100,107 @@ internal static class ICurveCorrection
                 residualVector, n, buffer.AcceptedRadius, pivotWorkspace, tauWorkspace,
                 columnPivotWorkspace, gradient, newtonStep, step, out var predicted);
             if (doglegStatus != AlgorithmStatus.Success)
-                return doglegStatus; // rank-deficient model: diagnosed, never a NaN step (§14.4)
-            if (!(predicted > 0)) return AlgorithmStatus.Singular;
+            {
+                detail = doglegStatus == AlgorithmStatus.Singular
+                    ? ICurveEvalDetail.ParameterizationSingular
+                    : ICurveEvalDetail.None;
+                return doglegStatus;
+            }
+            if (!(predicted > 0))
+            {
+                detail = ICurveEvalDetail.Stagnation;
+                return AlgorithmStatus.Singular;
+            }
 
             trials++;
             buffer.BeginTrial();
+            memo.BeginTrial();
             var trial = buffer.TrialState;
             for (BufferOffset i = 0; i < n; i++) trial[i] += step[i];
 
             var trialStatus = EvaluateSystem(in view, plan, t, segment, buffer.TrialState,
                 trialResidual, trialJacobian);
-            var psiTrial = trialStatus == AlgorithmStatus.Success
-                ? 0.5 * SmallLinearSolve.Dot(trialResidual, trialResidual)
-                : double.PositiveInfinity; // domain exit / invalid trial: always rejected
+            var psiTrial = double.PositiveInfinity;
+            if (trialStatus == AlgorithmStatus.Success)
+            {
+                _ = memo.TryInsert(plan, t, segment, 0, trialResidual[..n]);
+                // Trial uses the frozen accepted scales (§14.1).
+                freeze.Apply(trialResidual[..n], trialJacobian[..(n * n)]);
+                psiTrial = 0.5 * SmallLinearSolve.Dot(trialResidual[..n], trialResidual[..n]);
+            }
             var ratio = TrustRegionStep.ReductionRatio(psiBase, psiTrial, predicted);
-
             var stepNorm = SmallLinearSolve.Norm(step);
             var atBoundary = stepNorm >= buffer.AcceptedRadius * (1 - 1e-12);
             if (ratio >= TrustRegionStep.MinAcceptRatio)
             {
+                consecutiveRejects = 0;
                 var nextRadius = TrustRegionStep.UpdateRadius(buffer.AcceptedRadius, ratio,
                     atBoundary, minRadius, double.MaxValue);
                 buffer.CommitTrial(nextRadius);
                 acceptedIterations++;
 
-                jacobianMaster[..(n * n)].CopyTo(jacobianScratch);
                 evalStatus = EvaluateSystem(in view, plan, t, segment, buffer.AcceptedState,
                     residualVector, jacobianMaster);
                 if (evalStatus != AlgorithmStatus.Success) return evalStatus;
                 residual = SmallLinearSolve.Norm(residualVector);
-                psiBase = 0.5 * residual * residual;
                 if (IsConverged(residual, buffer.AcceptedState))
-                    return Success(buffer.AcceptedState, n, refinedState);            }
+                    return Success(buffer.AcceptedState, n, refinedState);
+                freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
+                freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);
+                psiBase = 0.5 * SmallLinearSolve.Dot(residualVector[..n], residualVector[..n]);
+            }
             else
             {
-                buffer.RollbackTrial(); // accepted state and radius survive bit-exactly (§13.3)
+                consecutiveRejects++;
+                buffer.RollbackTrial();
+                if (consecutiveRejects >= 4)
+                {
+                    detail = ICurveEvalDetail.Stagnation;
+                    return AlgorithmStatus.NotConverged;
+                }
                 var shrunk = TrustRegionStep.UpdateRadius(buffer.AcceptedRadius, ratio,
                     atBoundary, minRadius, double.MaxValue);
                 if (shrunk >= buffer.AcceptedRadius && buffer.AcceptedRadius <= minRadius)
-                    return AlgorithmStatus.NotConverged; // stagnated at the radius floor
+                {
+                    detail = ICurveEvalDetail.Stagnation;
+                    return AlgorithmStatus.NotConverged;
+                }
             }
         }
+        detail = ICurveEvalDetail.Stagnation;
         return AlgorithmStatus.NotConverged;
+    }
+
+    /// <summary>
+    /// Try the primary plan, then §7.6 alternates on Singular/Stagnation (§14.6).
+    /// </summary>
+    internal static AlgorithmStatus RefineWithPlanSwitch(in ICurveView view, ICurveConstraintPlan plan,
+        double t, BufferOffset segment, in KernelVector3 seed,
+        Span<double> refinedState, out ICurveConstraintPlan usedPlan,
+        out BufferOffset acceptedIterations, out double residual, out ICurveEvalDetail detail)
+    {
+        usedPlan = plan;
+        var status = Refine(in view, plan, t, segment, in seed, refinedState,
+            out acceptedIterations, out residual, out detail);
+        if (status == AlgorithmStatus.Success) return status;
+        if (status is not (AlgorithmStatus.Singular or AlgorithmStatus.NotConverged))
+            return status;
+
+        Span<ICurveConstraintPlan> alternates = stackalloc ICurveConstraintPlan[5];
+        var count = ICurveConstraintPlanRules.Alternates(in view, plan, alternates);
+        for (BufferOffset i = 0; i < count; i++)
+        {
+            var alt = alternates[i];
+            var altStatus = Refine(in view, alt, t, segment, in seed, refinedState,
+                out acceptedIterations, out residual, out detail);
+            if (altStatus == AlgorithmStatus.Success)
+            {
+                usedPlan = alt;
+                detail = ICurveEvalDetail.PlanSwitched;
+                return AlgorithmStatus.Success;
+            }
+        }
+        return status;
     }
 
     private static AlgorithmStatus Success(ReadOnlySpan<double> state, int n, Span<double> refinedState)

@@ -19,14 +19,28 @@ internal struct EvaluationBudget
     internal int Used;
     internal int Max;
 
+    internal static EvaluationBudget Default => new(DefaultMaxBaseEvaluations);
+
+    /// <summary>
+    /// Nested accuracy factor η_k ∈ (0,1] (§15). Starts at 1; callers tighten
+    /// toward the outer residual scale when InnerAccuracyInsufficient fires.
+    /// </summary>
+    internal double InnerAccuracyFactor;
+
     internal EvaluationBudget(int maxBaseEvaluations)
     {
         Max = maxBaseEvaluations < 0 ? 0 : maxBaseEvaluations;
         Remaining = Max;
         Used = 0;
+        InnerAccuracyFactor = 1.0;
     }
 
-    internal static EvaluationBudget Default => new(DefaultMaxBaseEvaluations);
+    /// <summary>Tighten nested tolerance (never below 1e-3 of current).</summary>
+    internal void TightenInner(double factor)
+    {
+        if (!(factor > 0) || !(factor < 1)) return;
+        InnerAccuracyFactor = Math.Max(1e-3, InnerAccuracyFactor * factor);
+    }
 
     /// <summary>
     /// Consume <paramref name="count"/> base evaluations. Returns false when
