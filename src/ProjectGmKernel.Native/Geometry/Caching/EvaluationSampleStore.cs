@@ -175,9 +175,9 @@ internal ref struct EvaluationSampleStore
             if (candidate.Parameter != sample.Parameter || candidate.Kind != sample.Kind
                 || candidate.Side != sample.Side)
                 continue;
-            if (!CurveSampleQuality.ShouldReplace(in candidate, in sample))
+            if (!CurveSampleQuality.TryImprove(in candidate, in sample, out var improved))
                 return true; // nothing to improve
-            candidate = sample;
+            candidate = improved;
             return true;
         }
         if (count >= slots.Length) return false;
@@ -189,17 +189,41 @@ internal ref struct EvaluationSampleStore
 
 internal static class CurveSampleQuality
 {
-    internal static bool ShouldReplace(in CurveSample existing, in CurveSample incoming)
+    internal static bool TryImprove(in CurveSample existing, in CurveSample incoming,
+        out CurveSample improved)
     {
+        improved = existing;
         var existingVerified = existing.Source != SampleSourceKind.PredictedOnly;
         var incomingVerified = incoming.Source != SampleSourceKind.PredictedOnly;
-        if (existingVerified != incomingVerified) return incomingVerified;
+        if (existing.Source == SampleSourceKind.ImportedChartAnchor
+            && incomingVerified && incoming.MaxOrder > existing.MaxOrder)
+        {
+            improved = new CurveSample(existing.Parameter, existing.Position,
+                incoming.First, incoming.Second, incoming.MaxOrder, existing.Kind,
+                existing.Side, existing.Segment, incoming.ErrorEstimate,
+                SampleSourceKind.ImportedChartAnchor, incoming.Plan);
+            return true;
+        }
+        if (existingVerified != incomingVerified)
+        {
+            if (incomingVerified) improved = incoming;
+            return incomingVerified;
+        }
         if (existing.MaxOrder != incoming.MaxOrder)
+        {
+            if (incoming.MaxOrder > existing.MaxOrder) improved = incoming;
             return incoming.MaxOrder > existing.MaxOrder;
+        }
         var existingRank = RankOf(existing.Source);
         var incomingRank = RankOf(incoming.Source);
-        if (existingRank != incomingRank) return incomingRank > existingRank;
-        return incoming.ErrorEstimate < existing.ErrorEstimate;
+        if (existingRank != incomingRank)
+        {
+            if (incomingRank > existingRank) improved = incoming;
+            return incomingRank > existingRank;
+        }
+        if (incoming.ErrorEstimate >= existing.ErrorEstimate) return false;
+        improved = incoming;
+        return true;
     }
 
     private static int RankOf(SampleSourceKind source) => source switch

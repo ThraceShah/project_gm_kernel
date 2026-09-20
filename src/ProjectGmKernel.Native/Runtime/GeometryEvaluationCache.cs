@@ -164,9 +164,9 @@ internal static unsafe class GeometryEvaluationCache
                 return;
             }
             var existing = ToL2Sample(in entry);
-            if (!CurveSampleQuality.ShouldReplace(in existing, in sample))
+            if (!CurveSampleQuality.TryImprove(in existing, in sample, out var improved))
                 return;
-            Overwrite(ref entry, identity, epoch, in sample);
+            Overwrite(ref entry, identity, epoch, in improved);
             return;
         }
 

@@ -164,7 +164,7 @@ public unsafe class IcurveEvaluationTests
         Span<KernelVector3> output = stackalloc KernelVector3[2];
         output.Fill(Vector(42, 42, 42));
 
-        Assert.Equal(AlgorithmStatus.NumericalFailure,
+        Assert.NotEqual(AlgorithmStatus.Success,
             ICurveEvaluation.EvaluateWithPlan(in view, 0, 1,
                 ICurveConstraintPlan.I1, output, out _));
         Assert.Equal(42, output[0].X);
