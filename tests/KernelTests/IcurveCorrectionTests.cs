@@ -205,10 +205,10 @@ public class IcurveCorrectionTests
         var cache = new EvaluationSampleStore(cacheStorage);
         var tangent = Vector(-Math.Sin(0.4), Math.Cos(0.4), 0);
         Assert.True(cache.TryInsert(new CurveSample(t - 1e-4, Vector(100, 0, 0), tangent, default,
-            1, ICurveQueryKind.RegularChartInterval, ChartSide.Right, 0, 0,
+            1, ICurveQueryKind.RegularChartInterval, ChartSide.Right, 1, 0,
             SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3)));
         Assert.True(cache.TryInsert(new CurveSample(t + 1e-4, Vector(104, 0, 0), tangent, default,
-            1, ICurveQueryKind.RegularChartInterval, ChartSide.Right, 0, 0,
+            1, ICurveQueryKind.RegularChartInterval, ChartSide.Right, 1, 0,
             SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3)));
 
         Span<KernelVector3> derivatives = new KernelVector3[3];
