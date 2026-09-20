@@ -29,22 +29,16 @@ public class IcurveThirdReviewRegressionTests
             + 0.98 * (view.ChartParameters[4] - view.ChartParameters[3]);
         var target = 0.5 * (view.ChartParameters[1] + view.ChartParameters[2]);
         Span<KernelVector3> cold = new KernelVector3[2];
-        Span<KernelVector3> warm = new KernelVector3[2];
-        var store = new EvaluationSampleStore(new CurveSample[8]);
 
         Assert.Equal(AlgorithmStatus.Success,
             ICurveEvaluation.Evaluate(in view, target, 1, cold, out _));
-        Assert.Equal(AlgorithmStatus.Success, ICurveEvaluation.EvaluateWithCache(
-            in view, ta, 1, ICurveConstraintPlan.Auto, ref store, warm, out _));
-        Assert.Equal(AlgorithmStatus.Success, ICurveEvaluation.EvaluateWithCache(
-            in view, tb, 1, ICurveConstraintPlan.Auto, ref store, warm, out _));
-        Assert.Equal(AlgorithmStatus.Success, ICurveEvaluation.EvaluateWithCache(
-            in view, target, 1, ICurveConstraintPlan.Auto, ref store, warm, out _));
+        Assert.Equal(AlgorithmStatus.Success,
+            EvaluateWarm(in view, ta, tb, target, out var warm));
 
         var expected = Vector(-2 * Math.Sqrt(2), 2 * Math.Sqrt(2), 0);
         Assert.InRange(Distance(cold[0], expected), 0, 1e-11);
-        Assert.InRange(Distance(warm[0], expected), 0, 1e-11);
-        Assert.InRange(Distance(cold[0], warm[0]), 0, 1e-11);
+        Assert.InRange(Distance(warm, expected), 0, 1e-11);
+        Assert.InRange(Distance(cold[0], warm), 0, 1e-11);
     }
 
     [Fact]
@@ -145,6 +139,25 @@ public class IcurveThirdReviewRegressionTests
         return new ICurveView(in support0, ParasolidConstants.PK_TOPOL_sense_positive_c,
             in support1, ParasolidConstants.PK_TOPOL_sense_positive_c,
             chart, parameters, scales, chords);
+    }
+
+    private static AlgorithmStatus EvaluateWarm(scoped in ICurveView view,
+        double ta, double tb, double target, out KernelVector3 point)
+    {
+        point = default;
+        Span<KernelVector3> output = stackalloc KernelVector3[2];
+        Span<CurveSample> storage = stackalloc CurveSample[8];
+        var store = new EvaluationSampleStore(storage);
+        var status = ICurveEvaluation.EvaluateWithCache(
+            in view, ta, 1, ICurveConstraintPlan.Auto, ref store, output, out _);
+        if (status != AlgorithmStatus.Success) return status;
+        status = ICurveEvaluation.EvaluateWithCache(
+            in view, tb, 1, ICurveConstraintPlan.Auto, ref store, output, out _);
+        if (status != AlgorithmStatus.Success) return status;
+        status = ICurveEvaluation.EvaluateWithCache(
+            in view, target, 1, ICurveConstraintPlan.Auto, ref store, output, out _);
+        if (status == AlgorithmStatus.Success) point = output[0];
+        return status;
     }
 
     private static double Distance(in KernelVector3 a, in KernelVector3 b)
