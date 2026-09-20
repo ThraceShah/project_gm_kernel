@@ -114,19 +114,9 @@ internal static class AnalyticImplicitEvaluation
     private static ImplicitJet Sphere(in AnalyticSurface surface, in KernelVector3 r, DerivativeOrder order)
     {
         // φ = r·r − R²: ∇φ = 2r, H = 2I. Exact on both sheets; sense lives
-        // with the caller. Factor the largest coordinate's square against R²
-        // so points close to an axis do not erase the smaller coordinates by
-        // subtracting two rounded numbers near R².
-        var ax = Math.Abs(r.X);
-        var ay = Math.Abs(r.Y);
-        var az = Math.Abs(r.Z);
-        double value;
-        if (ax >= ay && ax >= az)
-            value = (ax - surface.Radius) * (ax + surface.Radius) + r.Y * r.Y + r.Z * r.Z;
-        else if (ay >= az)
-            value = (ay - surface.Radius) * (ay + surface.Radius) + r.X * r.X + r.Z * r.Z;
-        else
-            value = (az - surface.Radius) * (az + surface.Radius) + r.X * r.X + r.Y * r.Y;
+        // with the caller. Compensated products and summation keep cancellation
+        // from erasing the small defining residual.
+        var value = SumSquaresMinus(r.X, r.Y, r.Z, surface.Radius);
         return order switch
         {
             0 => new(value, default, 0, 0, 0, 0, 0, 0),
@@ -140,7 +130,7 @@ internal static class AnalyticImplicitEvaluation
         // φ = ρ² − R² with ρ² = r⊥·r⊥, r⊥ = r − (A·r)A.
         var axial = Dot(surface.Axis, r);
         var radial = Sub(r, Scale(surface.Axis, axial));
-        var value = Dot(radial, radial) - surface.Radius * surface.Radius;
+        var value = SumSquaresMinus(radial.X, radial.Y, radial.Z, surface.Radius);
         if (order == 0) return new(value, default, 0, 0, 0, 0, 0, 0);
         var gradient = Scale(radial, 2);
         if (order == 1) return new(value, gradient, 0, 0, 0, 0, 0, 0);
@@ -241,4 +231,31 @@ internal static class AnalyticImplicitEvaluation
 
     private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)
         => Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+
+    /// <summary>
+    /// Error-free product transforms plus compensated summation retain the
+    /// small residual of x²+y²+z²-r² instead of rounding the large terms first.
+    /// </summary>
+    private static double SumSquaresMinus(double x, double y, double z, double radius)
+    {
+        var hi = 0.0;
+        var lo = 0.0;
+        AddProduct(ref hi, ref lo, x, x);
+        AddProduct(ref hi, ref lo, y, y);
+        AddProduct(ref hi, ref lo, z, z);
+        AddProduct(ref hi, ref lo, radius, -radius);
+        return hi + lo;
+    }
+
+    private static void AddProduct(ref double hi, ref double lo, double a, double b)
+    {
+        var product = a * b;
+        var productError = Math.FusedMultiplyAdd(a, b, -product);
+        var sum = hi + product;
+        var sumError = Math.Abs(hi) >= Math.Abs(product)
+            ? (hi - sum) + product
+            : (product - sum) + hi;
+        hi = sum;
+        lo += productError + sumError;
+    }
 }

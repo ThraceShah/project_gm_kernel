@@ -277,8 +277,24 @@ internal static class ICurveCorrection
         switch (plan)
         {
             case ICurveConstraintPlan.I1:
-                state[0] = 0; // the projected chord point on the plane∩plane line (§7.5)
+            {
+                var planeIsSupport0 = view.Support0.Kind == SurfaceClass.Plane;
+                var planeIsSupport1 = view.Support1.Kind == SurfaceClass.Plane;
+                if (planeIsSupport0 == planeIsSupport1) return AlgorithmStatus.Unsupported;
+                var normal = planeIsSupport0 ? view.Support0.Axis : view.Support1.Axis;
+                var origin = planeIsSupport0 ? view.Support0.Origin : view.Support1.Origin;
+                var chordUnit = view.ChartChordUnits[segment];
+                var cross = Cross(normal, chordUnit);
+                var crossNormSq = Dot(cross, cross);
+                if (!(crossNormSq > 1e-24)) return AlgorithmStatus.Singular;
+                var lineDirection = Scale(cross, 1 / Math.Sqrt(crossNormSq));
+                var normalInPlane = Sub(normal, Scale(chordUnit, Dot(normal, chordUnit)));
+                ChordPoint(in view, segment, t, out var chordPoint);
+                var alpha = Dot(normal, Sub(origin, chordPoint)) / crossNormSq;
+                var lineOrigin = Add(chordPoint, Scale(normalInPlane, alpha));
+                state[0] = Dot(Sub(seed, lineOrigin), lineDirection);
                 return AlgorithmStatus.Success;
+            }
             case ICurveConstraintPlan.I2:
             {
                 InPlaneBasis(in view, segment, t, out var u, out var v, out var q);
