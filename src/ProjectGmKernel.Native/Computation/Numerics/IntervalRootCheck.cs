@@ -44,10 +44,9 @@ internal readonly struct IntervalBox3
 }
 
 /// <summary>
-/// Local Moore–Krawczyk certification for the I3 residual on analytic supports
-/// (spec §18.3–§18.4, task T18). Covers plane, sphere, cylinder, cone and
-/// ring-torus zero sets. Ordinary Newton samples are never labelled certified —
-/// only the inclusion and contraction tests below produce Unique / Empty.
+/// Interval-root infrastructure for analytic supports (spec §18.3–§18.4).
+/// Strict certificates remain disabled until center residuals, inverses and
+/// analytic Jacobian bounds are outward-enclosed end to end.
 /// </summary>
 internal static class IntervalRootCheck
 {
@@ -63,70 +62,11 @@ internal static class IntervalRootCheck
         status = IntervalRootStatus.BoundsUnavailable;
         image = default;
         if (box.IsEmpty) return AlgorithmStatus.InvalidInput;
-        if (!IsIntervalCapable(in support0) || !IsIntervalCapable(in support1))
-            return AlgorithmStatus.Unsupported;
-
-        box.Midpoint(out var x0);
-        Span<double> f0 = stackalloc double[3];
-        Span<double> jacobian = stackalloc double[9];
-        if (PointResidual(in support0, in support1, in chordUnit, planeOffset, in x0, f0, jacobian)
-            != AlgorithmStatus.Success)
-            return AlgorithmStatus.NumericalFailure;
-
-        Span<double> inverse = stackalloc double[9];
-        if (!TryInvert3(jacobian, inverse))
-        {
-            status = IntervalRootStatus.Undetermined;
-            return AlgorithmStatus.Success;
-        }
-
-        Span<double> jLo = stackalloc double[9];
-        Span<double> jHi = stackalloc double[9];
-        if (IntervalJacobian(in support0, in support1, in chordUnit, in box, jLo, jHi)
-            != AlgorithmStatus.Success)
-            return AlgorithmStatus.Unsupported;
-
-        Span<double> yf = stackalloc double[3];
-        MatVec3(inverse, f0, yf);
-        var c0 = Vector(x0.X - yf[0], x0.Y - yf[1], x0.Z - yf[2]);
-
-        Span<double> rLo = stackalloc double[9];
-        Span<double> rHi = stackalloc double[9];
-        for (BufferOffset i = 0; i < 3; i++)
-        for (BufferOffset j = 0; j < 3; j++)
-        {
-            var (pLo, pHi) = MatMulIntervalRowCol(inverse, i, jLo, jHi, j);
-            var identity = i == j ? 1.0 : 0.0;
-            var lo = OutwardSubLo(identity, pHi);
-            var hi = OutwardSubHi(identity, pLo);
-            if (lo > hi) (lo, hi) = (hi, lo);
-            rLo[i * 3 + j] = lo;
-            rHi[i * 3 + j] = hi;
-        }
-
-        var dxLo = Vector(box.XLo - x0.X, box.YLo - x0.Y, box.ZLo - x0.Z);
-        var dxHi = Vector(box.XHi - x0.X, box.YHi - x0.Y, box.ZHi - x0.Z);
-        IntervalMatVec(rLo, rHi, in dxLo, in dxHi, out var rDxLo, out var rDxHi);
-
-        image = Normalize(new IntervalBox3(
-            OutwardAddLo(c0.X, rDxLo.X), OutwardAddHi(c0.X, rDxHi.X),
-            OutwardAddLo(c0.Y, rDxLo.Y), OutwardAddHi(c0.Y, rDxHi.Y),
-            OutwardAddLo(c0.Z, rDxLo.Z), OutwardAddHi(c0.Z, rDxHi.Z)));
-
-        if (Disjoint(in image, in box))
-        {
-            status = IntervalRootStatus.Empty;
-            return AlgorithmStatus.Success;
-        }
-
-        if (StrictlyInside(in image, in box) && image.RadiusNorm() < box.RadiusNorm() * (1 - 1e-12))
-        {
-            status = IntervalRootStatus.Unique;
-            return AlgorithmStatus.Success;
-        }
-
-        status = IntervalRootStatus.Undetermined;
-        return AlgorithmStatus.Success;
+        // The center residual, inverse, center correction and several analytic
+        // gradient bounds are still evaluated in ordinary binary64. Outward
+        // rounding only the later matrix products cannot recover error already
+        // lost there, so Empty/Unique would not be rigorous certificates.
+        return AlgorithmStatus.Unsupported;
     }
 
     /// <summary>

@@ -33,13 +33,15 @@ internal static class ICurveContinuation
     /// </summary>
     internal static AlgorithmStatus ContinueTo(in ICurveView view, ICurveConstraintPlan plan,
         double tStart, in KernelVector3 yStart, double tTarget, BufferOffset segment,
-        ref EvaluationBudget budget, Span<KernelVector3> derivatives,
+        DerivativeOrder order, ref EvaluationBudget budget, Span<KernelVector3> derivatives,
         out BufferOffset steps, out double residual, out ICurveEvalDetail detail)
     {
         steps = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
-        if (derivatives.Length < 1) return AlgorithmStatus.OutputTooSmall;
+        if (order < 0 || order > ICurveEvaluation.MaxDerivativeOrder)
+            return AlgorithmStatus.InvalidInput;
+        if (derivatives.Length <= order) return AlgorithmStatus.OutputTooSmall;
         if (!double.IsFinite(tStart) || !double.IsFinite(tTarget)) return AlgorithmStatus.InvalidInput;
         if (segment < 0 || segment + 1 >= view.ChartParameters.Length) return AlgorithmStatus.InvalidInput;
 
@@ -50,12 +52,8 @@ internal static class ICurveContinuation
         if (tStart < tLo || tStart > tHi || tTarget < tLo || tTarget > tHi)
             return AlgorithmStatus.InvalidInput;
         if (tStart == tTarget)
-        {
-            if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in yStart))
-                return AlgorithmStatus.NotConverged;
-            derivatives[0] = yStart;
-            return AlgorithmStatus.Success;
-        }
+            return CorrectAt(in view, plan, in yStart, tTarget, segment, order,
+                derivatives, out steps, out residual);
 
         var position = yStart;
         var t = tStart;
@@ -70,12 +68,8 @@ internal static class ICurveContinuation
         {
             var remaining = Math.Abs(tTarget - t);
             if (remaining <= 0)
-            {
-                if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in position))
-                    return AlgorithmStatus.NotConverged;
-                derivatives[0] = position;
-                return AlgorithmStatus.Success;
-            }
+                return CorrectAt(in view, plan, in position, tTarget, segment, order,
+                    derivatives, out _, out residual);
 
             // Last step lands exactly on tTarget — never a nearby accepted point.
             var delta = Math.Min(step, remaining) * direction;
@@ -97,7 +91,7 @@ internal static class ICurveContinuation
                 predicted = position;
             }
 
-            var correctStatus = CorrectAt(in view, plan, in predicted, tNext, segment, local,
+            var correctStatus = CorrectAt(in view, plan, in predicted, tNext, segment, 0, local,
                 out var acceptedIterations, out residual);
             // Each Refine/Solve attempt may itself burn many base evals; charge a
             // conservative lower bound so shared budget still shrinks.
@@ -125,18 +119,11 @@ internal static class ICurveContinuation
                 step = Math.Min(step * 1.5, Math.Max(remaining, segmentLength));
                 if (t == tTarget)
                 {
-                    derivatives[0] = position;
-                    if (derivatives.Length > 1 && local.Length > 1)
-                    {
-                        // Re-evaluate requested jets at the exact target via the
-                        // standard plan path so D1/D2 match the defining system.
-                        var jetStatus = CorrectAt(in view, plan, in position, tTarget, segment,
-                            derivatives, out _, out residual);
-                        return jetStatus;
-                    }
-                    if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in position))
-                        return AlgorithmStatus.NotConverged;
-                    return AlgorithmStatus.Success;
+                    // Re-evaluate exactly the requested jet order. Intermediate
+                    // continuation points carry D0 only and cannot upgrade a
+                    // higher-order request merely by reaching the same t.
+                    return CorrectAt(in view, plan, in position, tTarget, segment, order,
+                        derivatives, out _, out residual);
                 }
                 continue;
             }
@@ -161,14 +148,16 @@ internal static class ICurveContinuation
     /// are AmbiguousBranch — denser sampling alone is not uniqueness evidence.
     /// </summary>
     internal static AlgorithmStatus SubdivideTo(in ICurveView view, ICurveConstraintPlan plan,
-        double tTarget, BufferOffset segment, ref EvaluationBudget budget,
+        double tTarget, BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
         Span<KernelVector3> derivatives, out BufferOffset evaluations,
         out double residual, out ICurveEvalDetail detail)
     {
         evaluations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
-        if (derivatives.Length < 1) return AlgorithmStatus.OutputTooSmall;
+        if (order < 0 || order > ICurveEvaluation.MaxDerivativeOrder)
+            return AlgorithmStatus.InvalidInput;
+        if (derivatives.Length <= order) return AlgorithmStatus.OutputTooSmall;
         if (segment < 0 || segment + 1 >= view.ChartParameters.Length) return AlgorithmStatus.InvalidInput;
 
         var tLo = view.ChartParameters[segment];
@@ -182,7 +171,7 @@ internal static class ICurveContinuation
 
         // First try direct continuation from the chart anchor.
         var status = ContinueTo(in view, plan, tAnchor, in yAnchor, tTarget, segment,
-            ref budget, derivatives, out var steps, out residual, out detail);
+            order, ref budget, derivatives, out var steps, out residual, out detail);
         evaluations = steps;
         if (status == AlgorithmStatus.Success) return status;
 
@@ -209,7 +198,7 @@ internal static class ICurveContinuation
                 detail = ICurveEvalDetail.BudgetExceeded;
                 return AlgorithmStatus.NotConverged;
             }
-            var midStatus = CorrectAt(in view, plan, in chord, tMid, segment, midDeriv,
+            var midStatus = CorrectAt(in view, plan, in chord, tMid, segment, 0, midDeriv,
                 out var midIters, out var midResidual);
             evaluations += midIters;
             if (midStatus != AlgorithmStatus.Success) continue;
@@ -224,7 +213,7 @@ internal static class ICurveContinuation
             var otherSeed = Add(chordFromOther, towardOther);
             if (budget.TryConsume(4))
             {
-                var otherStatus = CorrectAt(in view, plan, in otherSeed, tMid, segment, otherDeriv,
+                var otherStatus = CorrectAt(in view, plan, in otherSeed, tMid, segment, 0, otherDeriv,
                     out var otherIters, out var otherResidual);
                 evaluations += otherIters;
                 if (otherStatus == AlgorithmStatus.Success)
@@ -254,7 +243,7 @@ internal static class ICurveContinuation
 
             // Continue from the verified midpoint to the exact target.
             status = ContinueTo(in view, plan, tMid, in midDeriv[0], tTarget, segment,
-                ref budget, derivatives, out var contSteps, out residual, out detail);
+                order, ref budget, derivatives, out var contSteps, out residual, out detail);
             evaluations += contSteps;
             if (status == AlgorithmStatus.Success) return status;
 
@@ -324,12 +313,12 @@ internal static class ICurveContinuation
     }
 
     private static AlgorithmStatus CorrectAt(in ICurveView view, ICurveConstraintPlan plan,
-        in KernelVector3 seed, double t, BufferOffset segment, Span<KernelVector3> derivatives,
+        in KernelVector3 seed, double t, BufferOffset segment, DerivativeOrder order,
+        Span<KernelVector3> derivatives,
         out BufferOffset iterations, out double residual)
     {
         // Direct solve only — never re-enter EvaluateWithPlan, which would recurse
         // through the continuation fallback (§17.3).
-        var order = Math.Min(ICurveEvaluation.MaxDerivativeOrder, Math.Max(0, derivatives.Length - 1));
         var fast = ICurveEvaluation.SolveDirect(in view, in seed, t, segment, order, plan,
             derivatives, out iterations, out residual);
         if (fast == AlgorithmStatus.Success) return fast;

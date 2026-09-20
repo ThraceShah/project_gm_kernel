@@ -163,7 +163,8 @@ internal static unsafe class GeometryEvaluationCache
                 Overwrite(ref entry, identity, epoch, in sample);
                 return;
             }
-            if (RankOf(sample.Source) <= RankOf(entry.Source) && sample.ErrorEstimate >= entry.ErrorEstimate)
+            var existing = ToL2Sample(in entry);
+            if (!CurveSampleQuality.ShouldReplace(in existing, in sample))
                 return;
             Overwrite(ref entry, identity, epoch, in sample);
             return;
@@ -219,12 +220,6 @@ internal static unsafe class GeometryEvaluationCache
         => new(entry.Parameter, entry.Position, entry.First, entry.Second, entry.MaxOrder,
             entry.Kind, entry.Side, entry.Segment, entry.ErrorEstimate, entry.Source, entry.Plan);
 
-    private static int RankOf(SampleSourceKind source) => source switch
-    {
-        SampleSourceKind.ImportedChartAnchor => 2,
-        SampleSourceKind.CorrectedRoot => 1,
-        _ => 0,
-    };
 }
 
 /// <summary>
@@ -239,6 +234,25 @@ internal static unsafe partial class KernelRuntime
         double t, DerivativeOrder order, ICurveConstraintPlan plan,
         Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
+        if (order >= 0 && order <= ICurveEvaluation.MaxDerivativeOrder
+            && derivatives.Length > order && double.IsFinite(t)
+            && t >= view.ChartParameters[0] && t <= view.ChartParameters[^1])
+        {
+            var kind = OriginalChartParameterMap.IsChartNode(view.ChartParameters, t)
+                ? ICurveQueryKind.ChartPoint
+                : ICurveQueryKind.RegularChartInterval;
+            if (GeometryEvaluationCache.TryGetExact(in identity, t, kind, ChartSide.Right,
+                    order, ICurveEvaluation.CacheErrorBound, out var exact))
+            {
+                derivatives[0] = exact.Position;
+                if (order >= 1) derivatives[1] = exact.First;
+                if (order >= 2) derivatives[2] = exact.Second;
+                report = new ICurveEvalReport(kind, AlgorithmStatus.Success, exact.Plan,
+                    ChartSide.Right, exact.Segment, 0, exact.ErrorEstimate, CacheHitKind.Exact);
+                return AlgorithmStatus.Success;
+            }
+        }
+
         Span<CurveSample> operationStorage = stackalloc CurveSample[IcurveL2SampleBudget];
         var operationStore = new EvaluationSampleStore(operationStorage);
         GeometryEvaluationCache.Prefill(in identity, ref operationStore);
