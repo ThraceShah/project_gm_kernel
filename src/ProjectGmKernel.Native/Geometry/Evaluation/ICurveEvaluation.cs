@@ -88,8 +88,16 @@ internal static class ICurveEvaluation
 
         Span<KernelVector3> result = stackalloc KernelVector3[MaxDerivativeOrder + 1];
         var status = EvaluateWithCacheCore(in view, t, order, plan, rule, ref cache, result, out report);
-        if (status == AlgorithmStatus.Success)
-            result[..(order + 1)].CopyTo(derivatives);
+        if (status != AlgorithmStatus.Success) return status;
+        for (DerivativeOrder i = 0; i <= order; i++)
+            if (!IsFinite(result[i]))
+            {
+                report = new ICurveEvalReport(report.Kind, AlgorithmStatus.NumericalFailure,
+                    report.Plan, report.Side, report.Segment, report.NewtonIterations,
+                    report.Residual, report.CacheHit, report.NonDefiningResidual, report.Detail);
+                return AlgorithmStatus.NumericalFailure;
+            }
+        result[..(order + 1)].CopyTo(derivatives);
         return status;
     }
 
@@ -290,11 +298,11 @@ internal static class ICurveEvaluation
         }
 
         var contStatus = ICurveContinuation.ContinueTo(in view, selected, anchorParameter,
-            in anchorPosition, t, segment, ref budget, derivatives, out var contSteps,
+            in anchorPosition, t, segment, order, ref budget, derivatives, out var contSteps,
             out residual, out detail);
         if (contStatus != AlgorithmStatus.Success)
         {
-            contStatus = ICurveContinuation.SubdivideTo(in view, selected, t, segment, ref budget,
+            contStatus = ICurveContinuation.SubdivideTo(in view, selected, t, segment, order, ref budget,
                 derivatives, out contSteps, out residual, out detail);
         }
 
@@ -485,13 +493,65 @@ internal static class ICurveEvaluation
         if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support0, in point, out var d0)
                 != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.GeometricDeviation(in view.Support1, in point, out var d1)
+                != AlgorithmStatus.Success
+            || AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0)
+                != AlgorithmStatus.Success
+            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1)
                 != AlgorithmStatus.Success)
             return false;
         var tolerance = PublicationTolerance(in view);
-        var plane = Math.Abs(OriginalChartParameterMap.PlaneResidual(
+        var planeResidual = OriginalChartParameterMap.PlaneResidual(
             view.ChartPositions, view.ChartParameters, view.ChartScales,
-            view.ChartChordUnits, segment, t, in point));
-        return d0 <= tolerance && d1 <= tolerance && plane <= tolerance;
+            view.ChartChordUnits, segment, t, in point);
+        if (d0 > tolerance || d1 > tolerance || Math.Abs(planeResidual) > tolerance)
+            return false;
+        if (!IsSameAnalyticBranch(in view.Support0, view.ChartPositions, segment, in point, tolerance)
+            || !IsSameAnalyticBranch(in view.Support1, view.ChartPositions, segment, in point, tolerance))
+            return false;
+
+        // Residuals alone do not bound position error near tangency. Estimate
+        // the Newton correction of the complete three-constraint system and
+        // publish only when its forward-error proxy is also locally small.
+        Span<double> jacobian = stackalloc double[9]
+        {
+            jet0.Gradient.X, jet0.Gradient.Y, jet0.Gradient.Z,
+            jet1.Gradient.X, jet1.Gradient.Y, jet1.Gradient.Z,
+            view.ChartChordUnits[segment].X,
+            view.ChartChordUnits[segment].Y,
+            view.ChartChordUnits[segment].Z,
+        };
+        Span<double> correction = stackalloc double[3]
+        {
+            -jet0.Value, -jet1.Value, -planeResidual,
+        };
+        Span<int> pivots = stackalloc int[3];
+        if (SmallLinearSolve.LuFactorize(jacobian, 3, pivots) != AlgorithmStatus.Success
+            || SmallLinearSolve.LuSolveInPlace(jacobian, 3, pivots, correction)
+                != AlgorithmStatus.Success)
+            return false;
+        return SmallLinearSolve.Norm(correction) <= tolerance;
+    }
+
+    private static bool IsSameAnalyticBranch(in AnalyticSurface surface,
+        ReadOnlySpan<KernelVector3> chart, BufferOffset segment,
+        in KernelVector3 candidate, double tolerance)
+    {
+        if (surface.Kind != SurfaceClass.Torus) return true;
+        var lo = TorusProfileCoordinate(in surface, in chart[segment]);
+        var hi = TorusProfileCoordinate(in surface, in chart[segment + 1]);
+        if (Math.Abs(lo) <= tolerance || Math.Abs(hi) <= tolerance || Math.Sign(lo) != Math.Sign(hi))
+            return true;
+        var value = TorusProfileCoordinate(in surface, in candidate);
+        return Math.Abs(value) <= tolerance || Math.Sign(value) == Math.Sign(lo);
+    }
+
+    private static double TorusProfileCoordinate(in AnalyticSurface surface,
+        in KernelVector3 point)
+    {
+        var relative = Sub(point, surface.Origin);
+        var axial = Dot(surface.Axis, relative);
+        var radial = Sub(relative, Scale(surface.Axis, axial));
+        return Math.Sqrt(Dot(radial, radial)) - surface.Radius;
     }
 
     internal static double PublicationTolerance(in ICurveView view)

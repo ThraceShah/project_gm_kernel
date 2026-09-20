@@ -52,7 +52,7 @@ public class IcurveContinuationTests
 
         Assert.Equal(AlgorithmStatus.Success, ICurveContinuation.ContinueTo(
             in view, ICurveConstraintPlan.I3, t0, view.ChartPositions[0], tTarget, 0,
-            ref budget, derivatives, out var steps, out var residual, out var detail));
+            2, ref budget, derivatives, out var steps, out var residual, out var detail));
 
         Assert.True(steps > 0);
         Assert.Equal(ICurveEvalDetail.None, detail);
@@ -81,7 +81,7 @@ public class IcurveContinuationTests
 
         var status = ICurveContinuation.ContinueTo(
             in view, ICurveConstraintPlan.I3, t0, view.ChartPositions[0], tTarget, 0,
-            ref budget, derivatives, out _, out _, out var detail);
+            0, ref budget, derivatives, out _, out _, out var detail);
 
         Assert.Equal(AlgorithmStatus.NotConverged, status);
         Assert.Equal(ICurveEvalDetail.BudgetExceeded, detail);
@@ -100,7 +100,7 @@ public class IcurveContinuationTests
 
         Assert.Equal(AlgorithmStatus.NotConverged, ICurveContinuation.ContinueTo(
             in view, ICurveConstraintPlan.I3, t, in offSurface, t, 0,
-            ref budget, derivatives, out _, out _, out _));
+            0, ref budget, derivatives, out _, out _, out _));
         Assert.Equal(42, derivatives[0].X);
     }
 
@@ -113,7 +113,7 @@ public class IcurveContinuationTests
         Span<KernelVector3> derivatives = stackalloc KernelVector3[3];
 
         Assert.Equal(AlgorithmStatus.Success, ICurveContinuation.SubdivideTo(
-            in view, ICurveConstraintPlan.I3, tTarget, 1, ref budget, derivatives,
+            in view, ICurveConstraintPlan.I3, tTarget, 1, 2, ref budget, derivatives,
             out _, out var residual, out var detail));
 
         Assert.Equal(ICurveEvalDetail.None, detail);

@@ -175,7 +175,7 @@ internal ref struct EvaluationSampleStore
             if (candidate.Parameter != sample.Parameter || candidate.Kind != sample.Kind
                 || candidate.Side != sample.Side)
                 continue;
-            if (RankOf(sample.Source) <= RankOf(candidate.Source) && sample.ErrorEstimate >= candidate.ErrorEstimate)
+            if (!CurveSampleQuality.ShouldReplace(in candidate, in sample))
                 return true; // nothing to improve
             candidate = sample;
             return true;
@@ -183,6 +183,23 @@ internal ref struct EvaluationSampleStore
         if (count >= slots.Length) return false;
         slots[count++] = sample;
         return true;
+    }
+
+}
+
+internal static class CurveSampleQuality
+{
+    internal static bool ShouldReplace(in CurveSample existing, in CurveSample incoming)
+    {
+        var existingVerified = existing.Source != SampleSourceKind.PredictedOnly;
+        var incomingVerified = incoming.Source != SampleSourceKind.PredictedOnly;
+        if (existingVerified != incomingVerified) return incomingVerified;
+        if (existing.MaxOrder != incoming.MaxOrder)
+            return incoming.MaxOrder > existing.MaxOrder;
+        var existingRank = RankOf(existing.Source);
+        var incomingRank = RankOf(incoming.Source);
+        if (existingRank != incomingRank) return incomingRank > existingRank;
+        return incoming.ErrorEstimate < existing.ErrorEstimate;
     }
 
     private static int RankOf(SampleSourceKind source) => source switch

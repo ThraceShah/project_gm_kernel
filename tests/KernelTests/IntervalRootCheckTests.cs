@@ -55,10 +55,10 @@ public class IntervalRootCheckTests
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.Unique, status);
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
 
     [Fact]
@@ -68,10 +68,10 @@ public class IntervalRootCheckTests
         // Far from the unit circle in the z=0 plane.
         var box = new IntervalBox3(3.0, 3.2, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.Empty, status);
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
 
     [Fact]
@@ -81,10 +81,10 @@ public class IntervalRootCheckTests
         // Large enough that contraction/inclusion cannot fire, but not empty.
         var box = new IntervalBox3(-2, 2, -2, 2, -0.5, 0.5);
 
-        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.Undetermined, status);
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
 
     [Fact]
@@ -95,10 +95,10 @@ public class IntervalRootCheckTests
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in Cone, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.Unique, status);
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
 
     [Fact]
@@ -108,10 +108,10 @@ public class IntervalRootCheckTests
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(3.9, 4.1, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in RingTorus, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.Unique, status);
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
 
     [Fact]
@@ -120,10 +120,10 @@ public class IntervalRootCheckTests
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(7.0, 7.2, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in RingTorus, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.Empty, status);
+        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
     }
 
     [Fact]
@@ -144,15 +144,15 @@ public class IntervalRootCheckTests
         var chord = Vector(0, 1, 0);
         var nearRoot = Vector(1, 0, 0);
         var farAway = Vector(3.1, 0, 0);
-        Assert.True(IntervalRootCheck.TryDisambiguateI3Pair(
+        Assert.False(IntervalRootCheck.TryDisambiguateI3Pair(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0,
             in nearRoot, in farAway, cellRadius: 0.08, out var preferNear));
         Assert.True(preferNear);
 
-        Assert.True(IntervalRootCheck.TryDisambiguateI3Pair(
+        Assert.False(IntervalRootCheck.TryDisambiguateI3Pair(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0,
             in farAway, in nearRoot, cellRadius: 0.08, out var preferFarFirst));
-        Assert.False(preferFarFirst);
+        Assert.True(preferFarFirst);
     }
 
     [Fact]

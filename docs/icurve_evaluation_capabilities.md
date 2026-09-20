@@ -30,7 +30,6 @@ Generated: 2026-09-19. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | Plan-state migration elim↔joint | Opt-in | §12.4 |
 | Affine / swept-spun elim / contact UV | Math modules | Not full prepare graph |
 | BLEND_BOUND composition | Sphere + cylinder D3 | GATE-B open |
-| Interval cert I3 + P2 UV | Analytic | §18.3; B-surface deferred |
 | Eval detail codes | §18.5 | Incl. InnerAccuracyInsufficient |
 | Runtime / oracle / XT / T20 bench | Analytic fixtures | Case F / GATEs may NotRun |
 
@@ -47,6 +46,7 @@ Generated: 2026-09-19. Evidence against `docs/icurve_design/icurve_blend_evaluat
 | Full nested UV/spine witness arena on L2 | partial (PredictedOnly XYZ only) |
 | XT INTERSECTION live PK receive/compare | densified; may NotRun on Δ |
 | Spindle/apple torus | Unsupported (`a ≤ b`) |
+| Strict interval certification (I3 / P2 UV) | BoundsUnavailable until every center/Jacobian operation is outward-enclosed |
 | Pseudo-arclength as public parameter | forbidden |
 | T20 publish speed gates | unlocked |
 
