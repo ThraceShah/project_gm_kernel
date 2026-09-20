@@ -156,7 +156,7 @@ internal static class AnalyticImplicitEvaluation
         var generator = surface.Radius + surface.Secondary * axial;
         if (generator < 0 && Math.Abs(rho * rho - generator * generator) <= 1e-9 * Math.Max(1, rho * rho))
             return AlgorithmStatus.Unsupported; // wrong-nappe candidate
-        var value = rho * rho - generator * generator;
+        var value = SumSquaresMinus(radial.X, radial.Y, radial.Z, generator);
         if (order == 0)
         {
             jet = new(value, default, 0, 0, 0, 0, 0, 0);
@@ -192,8 +192,20 @@ internal static class AnalyticImplicitEvaluation
         var axial = Dot(surface.Axis, r);
         var radial = Sub(r, Scale(surface.Axis, axial));
         var rho = Math.Sqrt(Dot(radial, radial));
-        var qSq = Dot(r, r);
-        var value = (qSq + a * a - b * b) * (qSq + a * a - b * b) - 4 * a * a * rho * rho;
+        SumSquares(r.X, r.Y, r.Z, out var qHi, out var qLo);
+        var qSq = qHi + qLo;
+        var commonHi = qHi;
+        var commonLo = qLo;
+        AddProduct(ref commonHi, ref commonLo, a, a);
+        AddProduct(ref commonHi, ref commonLo, b, -b);
+        Multiply(commonHi, commonLo, commonHi, commonLo, out var commonSqHi, out var commonSqLo);
+        SumSquares(radial.X, radial.Y, radial.Z, out var radialHi, out var radialLo);
+        var factorHi = 4 * a * a;
+        var factorLo = Math.FusedMultiplyAdd(4 * a, a, -factorHi);
+        Multiply(factorHi, factorLo, radialHi, radialLo, out var radialTermHi, out var radialTermLo);
+        AddNumber(ref commonSqHi, ref commonSqLo, -radialTermHi);
+        AddNumber(ref commonSqHi, ref commonSqLo, -radialTermLo);
+        var value = commonSqHi + commonSqLo;
 
         // Sheet guard: the actual surface satisfies the profile-circle relation
         // (ρ−a)² + z² = b². Accept near-zero φ only when the point also lies
@@ -211,7 +223,7 @@ internal static class AnalyticImplicitEvaluation
             jet = new(value, default, 0, 0, 0, 0, 0, 0);
             return AlgorithmStatus.Success;
         }
-        var common = qSq + a * a - b * b;
+        var common = commonHi + commonLo;
         var gradient = Sub(Scale(r, 4 * common), Scale(radial, 8 * a * a));
         if (order == 1)
         {
@@ -238,13 +250,39 @@ internal static class AnalyticImplicitEvaluation
     /// </summary>
     private static double SumSquaresMinus(double x, double y, double z, double radius)
     {
-        var hi = 0.0;
-        var lo = 0.0;
+        SumSquares(x, y, z, out var hi, out var lo);
+        AddProduct(ref hi, ref lo, radius, -radius);
+        return hi + lo;
+    }
+
+    private static void SumSquares(double x, double y, double z, out double hi, out double lo)
+    {
+        hi = 0;
+        lo = 0;
         AddProduct(ref hi, ref lo, x, x);
         AddProduct(ref hi, ref lo, y, y);
         AddProduct(ref hi, ref lo, z, z);
-        AddProduct(ref hi, ref lo, radius, -radius);
-        return hi + lo;
+    }
+
+    private static void Multiply(double aHi, double aLo, double bHi, double bLo,
+        out double hi, out double lo)
+    {
+        hi = 0;
+        lo = 0;
+        AddProduct(ref hi, ref lo, aHi, bHi);
+        AddProduct(ref hi, ref lo, aHi, bLo);
+        AddProduct(ref hi, ref lo, aLo, bHi);
+        AddProduct(ref hi, ref lo, aLo, bLo);
+    }
+
+    private static void AddNumber(ref double hi, ref double lo, double value)
+    {
+        var sum = hi + value;
+        var error = Math.Abs(hi) >= Math.Abs(value)
+            ? (hi - sum) + value
+            : (value - sum) + hi;
+        hi = sum;
+        lo += error;
     }
 
     private static void AddProduct(ref double hi, ref double lo, double a, double b)

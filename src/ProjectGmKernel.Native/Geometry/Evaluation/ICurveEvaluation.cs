@@ -208,15 +208,15 @@ internal static class ICurveEvaluation
                 hit.Plan, ChartSide.Right, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact);
             return AlgorithmStatus.Success;
         }
+        if (selected == ICurveConstraintPlan.I1)
+            return EvaluateI1ByContinuation(in view, t, segment, order, ref cache,
+                derivatives, out report);
 
         // Neighbor prediction as the seed when the atlas brackets the request;
         // the predicted seed is corrected below before anything publishes and
         // falls back to the chord point when unavailable (§13.4).
         var hitKind = CacheHitKind.None;
         var solveSeed = seed;
-        if (selected == ICurveConstraintPlan.I1
-            && TryChartAnchorPredictor(in view, t, segment, out var anchorPrediction))
-            solveSeed = anchorPrediction;
         if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right,
                 segment, out var lower, out var upper))
         {
@@ -323,31 +323,31 @@ internal static class ICurveEvaluation
         return contStatus;
     }
 
-    private static bool TryChartAnchorPredictor(in ICurveView view, double t,
-        BufferOffset segment, out KernelVector3 prediction)
+    private static AlgorithmStatus EvaluateI1ByContinuation(in ICurveView view, double t,
+        BufferOffset segment, DerivativeOrder order, scoped ref EvaluationSampleStore cache,
+        scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
-        prediction = default;
         var useUpper = t - view.ChartParameters[segment]
             > view.ChartParameters[segment + 1] - t;
         var index = useUpper ? segment + 1 : segment;
         var anchor = view.ChartPositions[index];
-        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in anchor, 1, out var jet0)
-                != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in anchor, 1, out var jet1)
-                != AlgorithmStatus.Success)
-            return false;
-        var normal0 = view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c
-            ? Scale(jet0.Gradient, -1) : jet0.Gradient;
-        var normal1 = view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c
-            ? Scale(jet1.Gradient, -1) : jet1.Gradient;
-        var tangent = Unit(Cross(normal0, normal1));
-        if (!IsFinite(tangent)
-            || OriginalChartParameterMap.TryParameterDerivative(view.ChartScales[segment],
-                view.ChartChordUnits[segment], tangent, out var derivative)
-                != AlgorithmStatus.Success)
-            return false;
-        prediction = Add(anchor, Scale(derivative, t - view.ChartParameters[index]));
-        return IsFinite(prediction);
+        var budget = EvaluationBudget.Default;
+        var status = ICurveContinuation.ContinueTo(in view, ICurveConstraintPlan.I1,
+            view.ChartParameters[index], in anchor, t, segment, order, ref budget,
+            derivatives, out var steps, out var residual, out var detail);
+        if (status != AlgorithmStatus.Success)
+            status = ICurveContinuation.SubdivideTo(in view, ICurveConstraintPlan.I1,
+                t, segment, order, ref budget, derivatives, out steps, out residual, out detail);
+        report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
+            ICurveConstraintPlan.I1, ChartSide.Right, segment, steps, residual,
+            CacheHitKind.None, 0, detail);
+        if (status != AlgorithmStatus.Success) return status;
+        _ = cache.TryInsert(new CurveSample(t, derivatives[0],
+            order >= 1 ? derivatives[1] : default,
+            order >= 2 ? derivatives[2] : default, order,
+            ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment,
+            residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1));
+        return AlgorithmStatus.Success;
     }
 
     /// <summary>Sample error bound for exact-hit acceptance (slice default).</summary>
