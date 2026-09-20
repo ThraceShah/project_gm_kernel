@@ -505,6 +505,16 @@ internal static class ICurveEvaluation
             view.ChartChordUnits, segment, t, in point);
         if (d0 > tolerance || d1 > tolerance || Math.Abs(planeResidual) > tolerance)
             return false;
+        var gradient0Norm = Math.Sqrt(Dot(jet0.Gradient, jet0.Gradient));
+        var gradient1Norm = Math.Sqrt(Dot(jet1.Gradient, jet1.Gradient));
+        var normalCross = Cross(jet0.Gradient, jet1.Gradient);
+        var sine = Math.Sqrt(Dot(normalCross, normalCross)) / (gradient0Norm * gradient1Norm);
+        if (!(sine > 0) || !double.IsFinite(sine))
+            return false;
+        var localScale = tolerance / ResidualTolerance;
+        var roundoffFloor = 8 * Math.ScaleB(1.0, -52) * localScale / sine;
+        if (roundoffFloor > tolerance)
+            return false;
         if (!IsSameAnalyticBranch(in view.Support0, view.ChartPositions, segment, in point, tolerance)
             || !IsSameAnalyticBranch(in view.Support1, view.ChartPositions, segment, in point, tolerance))
             return false;

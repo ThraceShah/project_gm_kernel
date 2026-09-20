@@ -52,8 +52,12 @@ internal static class ICurveContinuation
         if (tStart < tLo || tStart > tHi || tTarget < tLo || tTarget > tHi)
             return AlgorithmStatus.InvalidInput;
         if (tStart == tTarget)
+        {
+            if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in yStart))
+                return AlgorithmStatus.NotConverged;
             return CorrectAt(in view, plan, in yStart, tTarget, segment, order,
                 derivatives, out steps, out residual);
+        }
 
         var position = yStart;
         var t = tStart;
