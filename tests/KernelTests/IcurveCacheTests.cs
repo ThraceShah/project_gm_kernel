@@ -82,13 +82,13 @@ public class IcurveCacheTests
 
         Assert.Equal(AlgorithmStatus.Success, ICurveEvaluation.EvaluateWithCache(in view, -1.2, 2,
             ICurveConstraintPlan.Auto, ref cache, derivatives, out _));
-        // A different parameter must not hit the stored sample: with a second
-        // verified sample above it, −1.1 brackets into a Hermite seed.
+        // A different parameter must not hit the stored sample. I1 deliberately
+        // tracks from a chart anchor instead of trusting a direct Hermite jump.
         Assert.Equal(AlgorithmStatus.Success, ICurveEvaluation.EvaluateWithCache(in view, -1.0, 2,
             ICurveConstraintPlan.Auto, ref cache, derivatives, out _));
         Assert.Equal(AlgorithmStatus.Success, ICurveEvaluation.EvaluateWithCache(in view, -1.1, 2,
             ICurveConstraintPlan.Auto, ref cache, derivatives, out var second));
-        Assert.Equal(CacheHitKind.NeighborSeed, second.CacheHit);
+        Assert.Equal(CacheHitKind.None, second.CacheHit);
         Assert.Equal(3, cache.Count);
 
         // The near-miss sample's position must not leak into the second query.
@@ -106,9 +106,9 @@ public class IcurveCacheTests
         Assert.Equal(AlgorithmStatus.Success, OriginalChartParameterMap.LocateSegment(
             view.ChartParameters, -1.15, ChartSide.Right, out var segment));
 
-        // Loose legacy samples around the query parameter: they bracket the
-        // request (so the corrector runs from a seed) but are too coarse to
-        // satisfy an exact hit.
+        // Loose legacy samples around the query parameter are too coarse to
+        // satisfy an exact hit. I1 ignores them as branch authority and tracks
+        // from a defining chart anchor.
         var loose = new CurveSample(-1.2, Vector(0.9, 0.4, 0), default, default, 2,
             ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment, 1e-6,
             SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3);
@@ -120,7 +120,7 @@ public class IcurveCacheTests
 
         Assert.Equal(AlgorithmStatus.Success, ICurveEvaluation.EvaluateWithCache(in view, -1.15, 2,
             ICurveConstraintPlan.Auto, ref cache, derivatives, out var report));
-        Assert.Equal(CacheHitKind.NeighborSeed, report.CacheHit);
+        Assert.Equal(CacheHitKind.None, report.CacheHit);
         // The published result satisfies the definition, not the loose sample.
         Assert.InRange(Math.Abs(derivatives[0].X * derivatives[0].X
             + derivatives[0].Y * derivatives[0].Y - 1), 0, 1e-12);
