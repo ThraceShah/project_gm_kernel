@@ -214,6 +214,9 @@ internal static class ICurveEvaluation
         // falls back to the chord point when unavailable (§13.4).
         var hitKind = CacheHitKind.None;
         var solveSeed = seed;
+        if (selected == ICurveConstraintPlan.I1
+            && TryChartAnchorPredictor(in view, t, segment, out var anchorPrediction))
+            solveSeed = anchorPrediction;
         if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right,
                 segment, out var lower, out var upper))
         {
@@ -318,6 +321,33 @@ internal static class ICurveEvaluation
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
             ChartSide.Right, segment, residual, SampleSourceKind.CorrectedRoot, selected));
         return contStatus;
+    }
+
+    private static bool TryChartAnchorPredictor(in ICurveView view, double t,
+        BufferOffset segment, out KernelVector3 prediction)
+    {
+        prediction = default;
+        var useUpper = t - view.ChartParameters[segment]
+            > view.ChartParameters[segment + 1] - t;
+        var index = useUpper ? segment + 1 : segment;
+        var anchor = view.ChartPositions[index];
+        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in anchor, 1, out var jet0)
+                != AlgorithmStatus.Success
+            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in anchor, 1, out var jet1)
+                != AlgorithmStatus.Success)
+            return false;
+        var normal0 = view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? Scale(jet0.Gradient, -1) : jet0.Gradient;
+        var normal1 = view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? Scale(jet1.Gradient, -1) : jet1.Gradient;
+        var tangent = Unit(Cross(normal0, normal1));
+        if (!IsFinite(tangent)
+            || OriginalChartParameterMap.TryParameterDerivative(view.ChartScales[segment],
+                view.ChartChordUnits[segment], tangent, out var derivative)
+                != AlgorithmStatus.Success)
+            return false;
+        prediction = Add(anchor, Scale(derivative, t - view.ChartParameters[index]));
+        return IsFinite(prediction);
     }
 
     /// <summary>Sample error bound for exact-hit acceptance (slice default).</summary>
@@ -644,8 +674,9 @@ internal static class ICurveEvaluation
         var alpha = Dot(n, Sub(c, q)) / crossNormSq;
         var x0 = Add(q, Scale(nTilde, alpha));
 
-        // 1D Newton for φ_other(x0 + μb) = 0 from the projected chord seed μ=0.
-        double mu = 0;
+        // Preserve branch evidence from the caller's predictor by projecting it
+        // onto the current support-plane/parameter-plane line.
+        var mu = Dot(Sub(seed, x0), b);
         var gradient = default(KernelVector3);
         var converged = false;
         for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
