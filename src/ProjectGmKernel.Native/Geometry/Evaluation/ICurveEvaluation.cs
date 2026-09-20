@@ -513,7 +513,7 @@ internal static class ICurveEvaluation
             ? Scale(jet1.Gradient, -1) : jet1.Gradient;
         var tangent = Unit(Cross(oriented0, oriented1));
         if (!IsFinite(tangent)
-            || !(Dot(tangent, view.ChartChordUnits[segment]) > 0))
+            || !HasChartConsistentDirection(in view, segment, in tangent))
             return false;
         if (!IsSameAnalyticBranch(in view.Support0, view.ChartPositions, segment, in point, tolerance)
             || !IsSameAnalyticBranch(in view.Support1, view.ChartPositions, segment, in point, tolerance))
@@ -540,6 +540,27 @@ internal static class ICurveEvaluation
                 != AlgorithmStatus.Success)
             return false;
         return SmallLinearSolve.Norm(correction) <= tolerance;
+    }
+
+    private static bool HasChartConsistentDirection(in ICurveView view, BufferOffset segment,
+        in KernelVector3 candidateTangent)
+    {
+        var anchor = view.ChartPositions[segment];
+        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in anchor, 1, out var anchor0)
+                != AlgorithmStatus.Success
+            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in anchor, 1, out var anchor1)
+                != AlgorithmStatus.Success)
+            return false;
+        var oriented0 = view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? Scale(anchor0.Gradient, -1) : anchor0.Gradient;
+        var oriented1 = view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? Scale(anchor1.Gradient, -1) : anchor1.Gradient;
+        var anchorTangent = Unit(Cross(oriented0, oriented1));
+        if (!IsFinite(anchorTangent)) return false;
+        var chord = view.ChartChordUnits[segment];
+        var anchorProjection = Dot(anchorTangent, chord);
+        var candidateProjection = Dot(candidateTangent, chord);
+        return anchorProjection * candidateProjection > 0;
     }
 
     private static bool IsSameAnalyticBranch(in AnalyticSurface surface,

@@ -103,15 +103,17 @@ public class IcurveCacheTests
         var samples = new CurveSample[8];
         var cache = new EvaluationSampleStore(samples);
         Span<KernelVector3> derivatives = new KernelVector3[3];
+        Assert.Equal(AlgorithmStatus.Success, OriginalChartParameterMap.LocateSegment(
+            view.ChartParameters, -1.15, ChartSide.Right, out var segment));
 
         // Loose legacy samples around the query parameter: they bracket the
         // request (so the corrector runs from a seed) but are too coarse to
         // satisfy an exact hit.
         var loose = new CurveSample(-1.2, Vector(0.9, 0.4, 0), default, default, 2,
-            ICurveQueryKind.RegularChartInterval, ChartSide.Right, -1, 1e-6,
+            ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment, 1e-6,
             SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3);
         var looseUpper = new CurveSample(-1.1, Vector(0.94, 0.34, 0), default, default, 2,
-            ICurveQueryKind.RegularChartInterval, ChartSide.Right, -1, 1e-6,
+            ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment, 1e-6,
             SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3);
         Assert.True(cache.TryInsert(in loose));
         Assert.True(cache.TryInsert(in looseUpper));
@@ -150,7 +152,7 @@ public class IcurveCacheTests
         Assert.True(cache.TryInsert(in lower));
         Assert.True(cache.TryInsert(in upper));
         Assert.True(cache.TryFindBracket(-1.15, ICurveQueryKind.RegularChartInterval,
-            ChartSide.Right, 0, out var foundLower, out var foundUpper));
+            ChartSide.Right, -1, out var foundLower, out var foundUpper));
         Assert.Equal(-1.3, foundLower.Parameter, 12);
         Assert.Equal(-1.1, foundUpper.Parameter, 12);
     }
