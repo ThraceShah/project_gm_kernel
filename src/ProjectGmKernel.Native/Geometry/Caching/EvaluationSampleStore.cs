@@ -108,7 +108,7 @@ internal ref struct EvaluationSampleStore
     /// is not a hit: the result is a seed only (§13.4).
     /// </summary>
     internal readonly bool TryFindBracket(double parameter, ICurveQueryKind kind, ChartSide side,
-        out CurveSample lower, out CurveSample upper)
+        BufferOffset segment, out CurveSample lower, out CurveSample upper)
     {
         lower = upper = default;
         var hasLower = false;
@@ -116,7 +116,8 @@ internal ref struct EvaluationSampleStore
         for (BufferOffset i = 0; i < count; i++)
         {
             ref readonly var candidate = ref slots[i];
-            if (candidate.Kind != kind || candidate.Side != side) continue;
+            if (candidate.Kind != kind || candidate.Side != side || candidate.Segment != segment)
+                continue;
             if (candidate.Source == SampleSourceKind.PredictedOnly) continue;
             if (candidate.Parameter < parameter && (!hasLower || candidate.Parameter > lower.Parameter))
             {

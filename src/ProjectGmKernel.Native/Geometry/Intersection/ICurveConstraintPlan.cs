@@ -41,7 +41,7 @@ internal static class ICurveConstraintPlanRules
     {
         var plane0 = view.Support0.Kind == SurfaceClass.Plane;
         var plane1 = view.Support1.Kind == SurfaceClass.Plane;
-        if (plane0 || plane1)
+        if (plane0 != plane1)
             return ICurveConstraintPlan.I1;
         // Analytic supports in this slice are both parametric and implicit.
         // Prefer the cheaper in-plane I2 over the 3×3 I3 when both work (§7.6).
@@ -59,7 +59,7 @@ internal static class ICurveConstraintPlanRules
         BufferCount n = 0;
         var plane0 = view.Support0.Kind == SurfaceClass.Plane;
         var plane1 = view.Support1.Kind == SurfaceClass.Plane;
-        if (plane0 || plane1)
+        if (plane0 != plane1)
         {
             preference[n++] = ICurveConstraintPlan.I1;
             preference[n++] = ICurveConstraintPlan.I2;

@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
@@ -69,14 +70,14 @@ internal static class ICurveEvaluation
     /// joins the atlas. Predictions never publish uncorrected, and failed
     /// requests store nothing.
     /// </summary>
-    internal static AlgorithmStatus EvaluateWithCache(in ICurveView view, double t, DerivativeOrder order,
+    internal static AlgorithmStatus EvaluateWithCache(scoped in ICurveView view, double t, DerivativeOrder order,
         ICurveConstraintPlan plan, ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
         => EvaluateWithCache(in view, t, order, plan, TerminatorParameterRule.Unresolved, ref cache,
             derivatives, out report);
 
     /// <summary>Cached evaluation with an explicit terminator-parameter rule (§6.5).</summary>
-    internal static AlgorithmStatus EvaluateWithCache(in ICurveView view, double t, DerivativeOrder order,
+    internal static AlgorithmStatus EvaluateWithCache(scoped in ICurveView view, double t, DerivativeOrder order,
         ICurveConstraintPlan plan, TerminatorParameterRule rule, ref EvaluationSampleStore cache,
         scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
@@ -213,7 +214,8 @@ internal static class ICurveEvaluation
         // falls back to the chord point when unavailable (§13.4).
         var hitKind = CacheHitKind.None;
         var solveSeed = seed;
-        if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right, out var lower, out var upper))
+        if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right,
+                segment, out var lower, out var upper))
         {
             Span<double> predicted = stackalloc double[3];
             if (ParameterCorrespondence.TryHermitePredict(lower.Parameter,
@@ -505,15 +507,13 @@ internal static class ICurveEvaluation
             view.ChartChordUnits, segment, t, in point);
         if (d0 > tolerance || d1 > tolerance || Math.Abs(planeResidual) > tolerance)
             return false;
-        var gradient0Norm = Math.Sqrt(Dot(jet0.Gradient, jet0.Gradient));
-        var gradient1Norm = Math.Sqrt(Dot(jet1.Gradient, jet1.Gradient));
-        var normalCross = Cross(jet0.Gradient, jet1.Gradient);
-        var sine = Math.Sqrt(Dot(normalCross, normalCross)) / (gradient0Norm * gradient1Norm);
-        if (!(sine > 0) || !double.IsFinite(sine))
-            return false;
-        var localScale = tolerance / ResidualTolerance;
-        var roundoffFloor = 8 * Math.ScaleB(1.0, -52) * localScale / sine;
-        if (roundoffFloor > tolerance)
+        var oriented0 = view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? Scale(jet0.Gradient, -1) : jet0.Gradient;
+        var oriented1 = view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? Scale(jet1.Gradient, -1) : jet1.Gradient;
+        var tangent = Unit(Cross(oriented0, oriented1));
+        if (!IsFinite(tangent)
+            || !(Dot(tangent, view.ChartChordUnits[segment]) > 0))
             return false;
         if (!IsSameAnalyticBranch(in view.Support0, view.ChartPositions, segment, in point, tolerance)
             || !IsSameAnalyticBranch(in view.Support1, view.ChartPositions, segment, in point, tolerance))
