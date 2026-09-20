@@ -149,7 +149,8 @@ public class IcurveCacheTests
             SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3);
         Assert.True(cache.TryInsert(in lower));
         Assert.True(cache.TryInsert(in upper));
-        Assert.True(cache.TryFindBracket(-1.15, ICurveQueryKind.RegularChartInterval, ChartSide.Right, out var foundLower, out var foundUpper));
+        Assert.True(cache.TryFindBracket(-1.15, ICurveQueryKind.RegularChartInterval,
+            ChartSide.Right, 0, out var foundLower, out var foundUpper));
         Assert.Equal(-1.3, foundLower.Parameter, 12);
         Assert.Equal(-1.1, foundUpper.Parameter, 12);
     }

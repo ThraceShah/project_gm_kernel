@@ -114,8 +114,19 @@ internal static class AnalyticImplicitEvaluation
     private static ImplicitJet Sphere(in AnalyticSurface surface, in KernelVector3 r, DerivativeOrder order)
     {
         // φ = r·r − R²: ∇φ = 2r, H = 2I. Exact on both sheets; sense lives
-        // with the caller.
-        var value = Dot(r, r) - surface.Radius * surface.Radius;
+        // with the caller. Factor the largest coordinate's square against R²
+        // so points close to an axis do not erase the smaller coordinates by
+        // subtracting two rounded numbers near R².
+        var ax = Math.Abs(r.X);
+        var ay = Math.Abs(r.Y);
+        var az = Math.Abs(r.Z);
+        double value;
+        if (ax >= ay && ax >= az)
+            value = (ax - surface.Radius) * (ax + surface.Radius) + r.Y * r.Y + r.Z * r.Z;
+        else if (ay >= az)
+            value = (ay - surface.Radius) * (ay + surface.Radius) + r.X * r.X + r.Z * r.Z;
+        else
+            value = (az - surface.Radius) * (az + surface.Radius) + r.X * r.X + r.Y * r.Y;
         return order switch
         {
             0 => new(value, default, 0, 0, 0, 0, 0, 0),

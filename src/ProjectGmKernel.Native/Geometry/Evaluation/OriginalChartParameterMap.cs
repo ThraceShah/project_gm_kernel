@@ -164,7 +164,12 @@ internal static class OriginalChartParameterMap
         ReadOnlySpan<KernelVector3> chordUnits, BufferOffset segment, double t, in KernelVector3 point)
     {
         var anchored = t - parameters[segment];
-        return Dot(chordUnits[segment], Sub(point, positions[segment])) - anchored / scales[segment];
+        var chord = chordUnits[segment];
+        var anchor = positions[segment];
+        var projection = Math.FusedMultiplyAdd(chord.X, point.X - anchor.X,
+            Math.FusedMultiplyAdd(chord.Y, point.Y - anchor.Y,
+                chord.Z * (point.Z - anchor.Z)));
+        return projection - anchored / scales[segment];
     }
 
     /// <summary>Native-parameter inverse ψᵢ(x) = tᵢ + fᵢ·e·(x − Pᵢ) (§5.3).</summary>
