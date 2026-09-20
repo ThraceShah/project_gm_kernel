@@ -208,7 +208,8 @@ internal static class ICurveEvaluation
                 hit.Plan, ChartSide.Right, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact);
             return AlgorithmStatus.Success;
         }
-        if (selected == ICurveConstraintPlan.I1)
+        if (selected == ICurveConstraintPlan.I1
+            && (view.Support0.Kind == SurfaceClass.Plane) != (view.Support1.Kind == SurfaceClass.Plane))
             return EvaluateI1ByContinuation(in view, t, segment, order, ref cache,
                 derivatives, out report);
 
