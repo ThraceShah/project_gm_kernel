@@ -124,8 +124,8 @@ internal readonly ref struct ICurveView
     internal readonly TerminatorLimit StartTerminator;
     internal readonly TerminatorLimit EndTerminator;
 
-    internal ICurveView(in AnalyticSurface support0, KernelSense sense0,
-        in AnalyticSurface support1, KernelSense sense1,
+    internal ICurveView(scoped in AnalyticSurface support0, KernelSense sense0,
+        scoped in AnalyticSurface support1, KernelSense sense1,
         ReadOnlySpan<KernelVector3> chartPositions, ReadOnlySpan<double> chartParameters,
         ReadOnlySpan<double> chartScales, ReadOnlySpan<KernelVector3> chartChordUnits)
     {
@@ -143,8 +143,8 @@ internal readonly ref struct ICurveView
         EndTerminator = default;
     }
 
-    internal ICurveView(in AnalyticSurface support0, KernelSense sense0,
-        in AnalyticSurface support1, KernelSense sense1,
+    internal ICurveView(scoped in AnalyticSurface support0, KernelSense sense0,
+        scoped in AnalyticSurface support1, KernelSense sense1,
         ReadOnlySpan<KernelVector3> chartPositions, ReadOnlySpan<double> chartParameters,
         ReadOnlySpan<double> chartScales, ReadOnlySpan<KernelVector3> chartChordUnits,
         TerminatorLimit startTerminator, TerminatorLimit endTerminator)
