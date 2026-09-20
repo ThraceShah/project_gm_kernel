@@ -71,14 +71,14 @@ internal static class ICurveEvaluation
     /// requests store nothing.
     /// </summary>
     internal static AlgorithmStatus EvaluateWithCache(scoped in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
+        ICurveConstraintPlan plan, scoped ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
         => EvaluateWithCache(in view, t, order, plan, TerminatorParameterRule.Unresolved, ref cache,
             derivatives, out report);
 
     /// <summary>Cached evaluation with an explicit terminator-parameter rule (§6.5).</summary>
     internal static AlgorithmStatus EvaluateWithCache(scoped in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, TerminatorParameterRule rule, ref EvaluationSampleStore cache,
+        ICurveConstraintPlan plan, TerminatorParameterRule rule, scoped ref EvaluationSampleStore cache,
         scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
@@ -103,7 +103,7 @@ internal static class ICurveEvaluation
     }
 
     private static AlgorithmStatus EvaluateWithCacheCore(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, TerminatorParameterRule rule, ref EvaluationSampleStore cache,
+        ICurveConstraintPlan plan, TerminatorParameterRule rule, scoped ref EvaluationSampleStore cache,
         scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
@@ -134,7 +134,7 @@ internal static class ICurveEvaluation
 
     /// <summary>Chart node contract: exact position, one-sided derivatives, no averaging.</summary>
     private static AlgorithmStatus EvaluateChartPoint(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
+        ICurveConstraintPlan plan, scoped ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
     {
         // The right side is the published derivative side at an interior node.
@@ -182,7 +182,7 @@ internal static class ICurveEvaluation
 
     /// <summary>Regular interval: classify, select a plan, solve on the seed.</summary>
     private static AlgorithmStatus EvaluateRegularInterval(in ICurveView view, double t, DerivativeOrder order,
-        ICurveConstraintPlan plan, ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
+        ICurveConstraintPlan plan, scoped ref EvaluationSampleStore cache, scoped Span<KernelVector3> derivatives,
         out ICurveEvalReport report)
     {
         var locateStatus = OriginalChartParameterMap.LocateSegment(view.ChartParameters, t, ChartSide.Right, out var segment);
@@ -332,7 +332,7 @@ internal static class ICurveEvaluation
     /// — never added as a fourth defining equation.
     /// </summary>
     private static AlgorithmStatus EvaluateTerminator(in ICurveView view, double t, DerivativeOrder order,
-        TerminatorParameterRule rule, bool isEnd, ref EvaluationSampleStore cache,
+        TerminatorParameterRule rule, bool isEnd, scoped ref EvaluationSampleStore cache,
         scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
     {
         var kind = isEnd ? ICurveQueryKind.EndTerminatorInterval : ICurveQueryKind.StartTerminatorInterval;
