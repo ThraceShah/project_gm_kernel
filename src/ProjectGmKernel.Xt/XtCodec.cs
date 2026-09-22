@@ -783,6 +783,28 @@ public static class XtCodec
         return sb.ToString();
     }
 
+    private static void AppendEscapedCharacter(StringBuilder sb, char value)
+    {
+        switch (value)
+        {
+            case '\0':
+                sb.Append('\\').Append('0');
+                break;
+            case '\r':
+                sb.Append('\\').Append('n');
+                break;
+            case '\n':
+                sb.Append('\\').Append('r');
+                break;
+            case '\\':
+                sb.Append('\\').Append('\\');
+                break;
+            default:
+                sb.Append(value);
+                break;
+        }
+    }
+
     private static void WriteField(StringBuilder sb, char type, XtFieldValue value)
     {
         if (value.Kind == XtFieldKind.Empty)
@@ -808,7 +830,7 @@ public static class XtCodec
                 sb.Append(FormatReal(value.Real)).Append(' ');
                 break;
             case 'c':
-                sb.Append(value.Character);
+                AppendEscapedCharacter(sb, value.Character);
                 break;
             case 'l':
                 sb.Append(value.Integer != 0 ? 'T' : 'F');
@@ -1047,8 +1069,9 @@ public static class XtCodec
 
         public XtFieldValue NextCharacterValue()
         {
-            var value = NextChar();
-            return value == '?' ? XtFieldValue.Null() : XtFieldValue.Char(value);
+            if (pending is null)
+                SkipIgnored();
+            return DecodeCharacter(ReadDecodedCharacter());
         }
 
         public void NextCharacterValues(Span<XtFieldValue> values)
@@ -1057,14 +1080,47 @@ public static class XtCodec
                 throw new FormatException("XT raw character array starts inside a pending compact token.");
             if (position < text.Length && IsSeparator(text[position]))
                 position++;
-            if (position + values.Length > text.Length)
-                throw new FormatException("Unexpected end of XT raw character array.");
             for (var index = 0; index < values.Length; index++)
-            {
-                var value = text[position++];
-                values[index] = value == '?' ? XtFieldValue.Null() : XtFieldValue.Char(value);
-            }
+                values[index] = DecodeCharacter(ReadDecodedCharacter());
         }
+
+        // Parasolid text XT 12.1+ escapes null, carriage return, line feed and
+        // backslash inside character fields. The field length counts decoded
+        // characters, and a c field is not followed by a separating space.
+        // \n is carriage return and \r is line feed, matching the XT specification.
+        private char ReadDecodedCharacter()
+        {
+            var value = ReadRawCharacter();
+            if (value != '\\')
+                return value;
+            var code = ReadRawCharacter();
+            return code switch
+            {
+                '0' => '\0',
+                'n' => '\r',
+                'r' => '\n',
+                '\\' => '\\',
+                _ => throw new FormatException($"Invalid XT character escape '\\{code}'."),
+            };
+        }
+
+        private char ReadRawCharacter()
+        {
+            if (pending is not null)
+            {
+                var token = pending;
+                var ch = token[0];
+                pending = token.Length > 1 ? token[1..] : null;
+                return ch;
+            }
+
+            if (position >= text.Length)
+                throw new FormatException("Unexpected end of XT character data.");
+            return text[position++];
+        }
+
+        private static XtFieldValue DecodeCharacter(char value)
+            => value == '?' ? XtFieldValue.Null() : XtFieldValue.Char(value);
 
         public XtFieldValue NextLogicalValue()
         {
