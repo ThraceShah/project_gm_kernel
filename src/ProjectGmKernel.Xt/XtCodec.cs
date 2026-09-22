@@ -716,9 +716,9 @@ public static class XtCodec
         foreach (var field in fields)
         {
             if (field.Transmit)
-            count += field.ElementCount > 1
-                ? field.ElementCount
-                : descriptor.Variable && field.ElementCount == 1 ? variableLength : 1;
+                count += field.ElementCount > 1
+                    ? field.ElementCount
+                    : descriptor.Variable && field.ElementCount == 1 ? variableLength : 1;
         }
 
         return count;
