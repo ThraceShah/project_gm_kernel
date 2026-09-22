@@ -553,6 +553,9 @@ internal static class ICurveEvaluation
         // Residuals alone do not bound position error near tangency. Estimate
         // the Newton correction of the complete three-constraint system and
         // publish only when its forward-error proxy is also locally small.
+        // The implicit values must already carry intermediate construction
+        // error (cone generator low part, compensated squares). A correction
+        // of the rounded residual is not the forward error of the definition.
         Span<double> jacobian = stackalloc double[9]
         {
             jet0.Gradient.X, jet0.Gradient.Y, jet0.Gradient.Z,

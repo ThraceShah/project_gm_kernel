@@ -93,9 +93,16 @@ internal static class AnalyticImplicitEvaluation
                 deviation = Math.Abs(Math.Sqrt(Dot(radial, radial)) - surface.Radius);
                 break;
             case SurfaceClass.Cone:
-                var generator = surface.Radius + surface.Secondary * axial;
-                if (generator < 0) return AlgorithmStatus.Unsupported;
-                deviation = Math.Abs(Math.Sqrt(Dot(radial, radial)) - generator);
+                if (!TryConeFactors(in surface, in r, out var coneValue, out var coneGenerator, out _, out var coneRadial))
+                    return AlgorithmStatus.NumericalFailure;
+                if (coneGenerator < 0) return AlgorithmStatus.Unsupported;
+                // |ρ − g| = |ρ² − g²| / |ρ + g|. The numerator keeps the
+                // generator low part that a rounded g would drop.
+                var coneRho = Math.Sqrt(Dot(coneRadial, coneRadial));
+                var coneSum = Math.Abs(coneRho + coneGenerator);
+                deviation = coneSum > 0
+                    ? Math.Abs(coneValue) / coneSum
+                    : Math.Abs(coneRho - coneGenerator);
                 break;
             case SurfaceClass.Torus:
                 var profileRadius = Math.Sqrt(
@@ -150,13 +157,15 @@ internal static class AnalyticImplicitEvaluation
         // residual on the far nappe is rejected instead of accepted (spec
         // §21.1 "双锥错误半部").
         jet = default;
-        var axial = Dot(surface.Axis, r);
-        var radial = Sub(r, Scale(surface.Axis, axial));
+        // φ = |r|² − (A·r)² − g², g = R + k(A·r). g is kept as a pair through
+        // the square: 1 + 2^-53 is not a binary64 number, and rounding it to
+        // 1 before squaring hides a residual that the parameter plane can
+        // stretch far past the publication tolerance.
+        if (!TryConeFactors(in surface, in r, out var value, out var generator, out _, out var radial))
+            return AlgorithmStatus.NumericalFailure;
         var rho = Math.Sqrt(Dot(radial, radial));
-        var generator = surface.Radius + surface.Secondary * axial;
-        if (generator < 0 && Math.Abs(rho * rho - generator * generator) <= 1e-9 * Math.Max(1, rho * rho))
+        if (generator < 0 && Math.Abs(value) <= 1e-9 * Math.Max(1, rho * rho))
             return AlgorithmStatus.Unsupported; // wrong-nappe candidate
-        var value = SumSquaresMinus(radial.X, radial.Y, radial.Z, generator);
         if (order == 0)
         {
             jet = new(value, default, 0, 0, 0, 0, 0, 0);
@@ -243,6 +252,63 @@ internal static class AnalyticImplicitEvaluation
 
     private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)
         => Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+
+    /// <summary>
+    /// Cone factors with the generator carried as a high/low pair.
+    /// <paramref name="value"/> is |r|² − (A·r)² − g², and <paramref name="generator"/>
+    /// is the rounded g = R + k(A·r) used by the gradient. The low part of g
+    /// is consumed inside <paramref name="value"/> and is not recoverable from
+    /// <paramref name="generator"/> alone.
+    /// </summary>
+    private static bool TryConeFactors(in AnalyticSurface surface, in KernelVector3 r,
+        out double value, out double generator, out double axial, out KernelVector3 radial)
+    {
+        value = 0;
+        generator = 0;
+        axial = 0;
+        radial = default;
+        DotPair(in surface.Axis, in r, out var axialHi, out var axialLo);
+        axial = axialHi + axialLo;
+        if (!double.IsFinite(axial)) return false;
+        radial = Sub(r, Scale(surface.Axis, axial));
+
+        var gHi = surface.Radius;
+        var gLo = 0.0;
+        ScaleAdd(ref gHi, ref gLo, surface.Secondary, axialHi, axialLo);
+        generator = gHi + gLo;
+        if (!double.IsFinite(generator)) return false;
+
+        SumSquares(r.X, r.Y, r.Z, out var hi, out var lo);
+        Multiply(axialHi, axialLo, axialHi, axialLo, out var axialSqHi, out var axialSqLo);
+        AddNumber(ref hi, ref lo, -axialSqHi);
+        AddNumber(ref hi, ref lo, -axialSqLo);
+        Multiply(gHi, gLo, gHi, gLo, out var gSqHi, out var gSqLo);
+        AddNumber(ref hi, ref lo, -gSqHi);
+        AddNumber(ref hi, ref lo, -gSqLo);
+        value = hi + lo;
+        return double.IsFinite(value);
+    }
+
+    private static void DotPair(in KernelVector3 a, in KernelVector3 b, out double hi, out double lo)
+    {
+        hi = 0;
+        lo = 0;
+        AddProduct(ref hi, ref lo, a.X, b.X);
+        AddProduct(ref hi, ref lo, a.Y, b.Y);
+        AddProduct(ref hi, ref lo, a.Z, b.Z);
+    }
+
+    private static void ScaleAdd(ref double hi, ref double lo, double scale, double valueHi, double valueLo)
+    {
+        var product = scale * valueHi;
+        var productError = Math.FusedMultiplyAdd(scale, valueHi, -product);
+        AddNumber(ref hi, ref lo, product);
+        AddNumber(ref hi, ref lo, productError);
+        var lowProduct = scale * valueLo;
+        var lowError = Math.FusedMultiplyAdd(scale, valueLo, -lowProduct);
+        AddNumber(ref hi, ref lo, lowProduct);
+        AddNumber(ref hi, ref lo, lowError);
+    }
 
     /// <summary>
     /// Error-free product transforms plus compensated summation retain the
