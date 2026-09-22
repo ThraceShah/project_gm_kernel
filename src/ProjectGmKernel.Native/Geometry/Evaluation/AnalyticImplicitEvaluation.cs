@@ -93,16 +93,12 @@ internal static class AnalyticImplicitEvaluation
                 deviation = Math.Abs(Math.Sqrt(Dot(radial, radial)) - surface.Radius);
                 break;
             case SurfaceClass.Cone:
-                if (!TryConeFactors(in surface, in r, out var coneValue, out var coneGenerator, out _, out var coneRadial))
+                if (!TryConeFactors(in surface, in r, out _, out var coneGenerator, out _, out var coneRadial))
                     return AlgorithmStatus.NumericalFailure;
                 if (coneGenerator < 0) return AlgorithmStatus.Unsupported;
-                // |ρ − g| = |ρ² − g²| / |ρ + g|. The numerator keeps the
-                // generator low part that a rounded g would drop.
-                var coneRho = Math.Sqrt(Dot(coneRadial, coneRadial));
-                var coneSum = Math.Abs(coneRho + coneGenerator);
-                deviation = coneSum > 0
-                    ? Math.Abs(coneValue) / coneSum
-                    : Math.Abs(coneRho - coneGenerator);
+                // Length |ρ − g| from the radial vector. Dividing the algebraic
+                // residual by |ρ + g| repeats whatever error that residual has.
+                deviation = Math.Abs(Math.Sqrt(Dot(coneRadial, coneRadial)) - coneGenerator);
                 break;
             case SurfaceClass.Torus:
                 var profileRadius = Math.Sqrt(
@@ -157,10 +153,9 @@ internal static class AnalyticImplicitEvaluation
         // residual on the far nappe is rejected instead of accepted (spec
         // §21.1 "双锥错误半部").
         jet = default;
-        // φ = |r|² − (A·r)² − g², g = R + k(A·r). g is kept as a pair through
-        // the square: 1 + 2^-53 is not a binary64 number, and rounding it to
-        // 1 before squaring hides a residual that the parameter plane can
-        // stretch far past the publication tolerance.
+        // φ = ρ² − g² with g = R + k(A·r) kept as a pair through its square.
+        // ρ² is the squared length of the radial vector, not |r|² − (A·r)²:
+        // those two huge squares cancel the radial part when |z| is large.
         if (!TryConeFactors(in surface, in r, out var value, out var generator, out _, out var radial))
             return AlgorithmStatus.NumericalFailure;
         var rho = Math.Sqrt(Dot(radial, radial));
@@ -255,10 +250,10 @@ internal static class AnalyticImplicitEvaluation
 
     /// <summary>
     /// Cone factors with the generator carried as a high/low pair.
-    /// <paramref name="value"/> is |r|² − (A·r)² − g², and <paramref name="generator"/>
-    /// is the rounded g = R + k(A·r) used by the gradient. The low part of g
-    /// is consumed inside <paramref name="value"/> and is not recoverable from
-    /// <paramref name="generator"/> alone.
+    /// <paramref name="value"/> is ρ² − g², where ρ² is summed from the radial
+    /// vector and g² keeps the low part of g = R + k(A·r). The rounded
+    /// <paramref name="generator"/> is the gradient coefficient; it does not
+    /// contain that low part.
     /// </summary>
     private static bool TryConeFactors(in AnalyticSurface surface, in KernelVector3 r,
         out double value, out double generator, out double axial, out KernelVector3 radial)
@@ -278,10 +273,7 @@ internal static class AnalyticImplicitEvaluation
         generator = gHi + gLo;
         if (!double.IsFinite(generator)) return false;
 
-        SumSquares(r.X, r.Y, r.Z, out var hi, out var lo);
-        Multiply(axialHi, axialLo, axialHi, axialLo, out var axialSqHi, out var axialSqLo);
-        AddNumber(ref hi, ref lo, -axialSqHi);
-        AddNumber(ref hi, ref lo, -axialSqLo);
+        SumSquares(radial.X, radial.Y, radial.Z, out var hi, out var lo);
         Multiply(gHi, gLo, gHi, gLo, out var gSqHi, out var gSqLo);
         AddNumber(ref hi, ref lo, -gSqHi);
         AddNumber(ref hi, ref lo, -gSqLo);

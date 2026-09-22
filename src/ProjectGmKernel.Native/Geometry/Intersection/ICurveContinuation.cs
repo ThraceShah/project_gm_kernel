@@ -64,17 +64,18 @@ internal static class ICurveContinuation
         var direction = Math.Sign(tTarget - tStart);
         var segmentLength = tHi - tLo;
         var span = Math.Abs(tTarget - tStart);
-        var minStep = MinimumContinuationStep(tLo, tHi, segmentLength);
+        // Relative tracking floor only. An ULP of the global parameter is not
+        // a larger allowed geometric step: when the safe step is not
+        // representable, the loop reports ParameterResolutionLost.
+        var minStep = MinRelativeStep * segmentLength;
         var step = 0.25 * span;
-        // A flushed step is a parameter-resolution failure. Inflating it to a
-        // fraction of the segment would jump straight to tTarget.
         if (!(step > 0) || !double.IsFinite(step))
         {
-            detail = ICurveEvalDetail.Stagnation;
+            detail = ICurveEvalDetail.ParameterResolutionLost;
             return AlgorithmStatus.NotConverged;
         }
-        // The whole request is shorter than one trackable step. Taking it in
-        // one piece does not skip a step the floor would have allowed.
+        // A request shorter than the relative floor is one step. That does
+        // not cover a step the parameter cannot represent.
         if (step < minStep)
             step = Math.Min(span, minStep);
         Span<KernelVector3> local = stackalloc KernelVector3[3];
@@ -97,9 +98,11 @@ internal static class ICurveContinuation
             else
             {
                 tNext = t + step * direction;
+                // Raising the step to the next representable parameter would
+                // skip the branch check this subdivision exists to perform.
                 if (tNext == t || !double.IsFinite(tNext))
                 {
-                    detail = ICurveEvalDetail.Stagnation;
+                    detail = ICurveEvalDetail.ParameterResolutionLost;
                     return AlgorithmStatus.NotConverged;
                 }
                 if ((tNext - tTarget) * direction >= 0)
@@ -453,24 +456,6 @@ internal static class ICurveContinuation
             / Math.Max(Math.Abs(view.ChartScales[segment]), 1e-300);
         var jump = Norm(Sub(candidate, previous));
         return !(jump > 8.0 * Math.Max(chordAdvance, 1e-6 * localScale));
-    }
-
-    /// <summary>
-    /// Smallest continuation step that still resolves inside this segment.
-    /// The relative floor tracks segment length; the ulp floor tracks the
-    /// parameter magnitude. Neither is an absolute constant.
-    /// </summary>
-    private static double MinimumContinuationStep(double tLo, double tHi, double segmentLength)
-    {
-        var relative = MinRelativeStep * segmentLength;
-        var magnitude = Math.Max(Math.Abs(tLo), Math.Abs(tHi));
-        if (!(magnitude > 0) || !double.IsFinite(magnitude))
-            return relative;
-        var exponent = Math.ILogB(magnitude);
-        if (exponent == int.MinValue)
-            return relative;
-        var resolution = Math.ScaleB(1.0, exponent - 52);
-        return Math.Max(relative, 2 * resolution);
     }
 
     private static void ChordSeed(in ICurveView view, BufferOffset segment, double t, out KernelVector3 q)
