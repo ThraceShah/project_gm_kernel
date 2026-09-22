@@ -22,7 +22,7 @@ internal static class ICurveContinuation
     internal const int MaxAcceptedSteps = 64;
     /// <summary>Local midpoint subdivisions before giving up (§17.5).</summary>
     internal const int MaxSubdivisionDepth = 8;
-    /// <summary>Minimum |Δt| relative to the segment length before stagnation.</summary>
+    /// <summary>Minimum |Δt| as a fraction of the original segment, before stagnation.</summary>
     internal const double MinRelativeStep = 1e-12;
 
     /// <summary>
@@ -63,9 +63,20 @@ internal static class ICurveContinuation
         var t = tStart;
         var direction = Math.Sign(tTarget - tStart);
         var segmentLength = tHi - tLo;
-        var step = 0.25 * Math.Abs(tTarget - tStart);
-        if (!(step > 0)) step = 0.25 * segmentLength;
-        var minStep = MinRelativeStep * Math.Max(segmentLength, 1.0);
+        var span = Math.Abs(tTarget - tStart);
+        var minStep = MinimumContinuationStep(tLo, tHi, segmentLength);
+        var step = 0.25 * span;
+        // A flushed step is a parameter-resolution failure. Inflating it to a
+        // fraction of the segment would jump straight to tTarget.
+        if (!(step > 0) || !double.IsFinite(step))
+        {
+            detail = ICurveEvalDetail.Stagnation;
+            return AlgorithmStatus.NotConverged;
+        }
+        // The whole request is shorter than one trackable step. Taking it in
+        // one piece does not skip a step the floor would have allowed.
+        if (step < minStep)
+            step = Math.Min(span, minStep);
         Span<KernelVector3> local = stackalloc KernelVector3[3];
 
         while (steps < MaxAcceptedSteps)
@@ -75,11 +86,25 @@ internal static class ICurveContinuation
                 return CorrectAt(in view, plan, in position, tTarget, segment, order,
                     derivatives, out _, out residual);
 
-            // Last step lands exactly on tTarget — never a nearby accepted point.
-            var delta = Math.Min(step, remaining) * direction;
-            var tNext = t + delta;
-            if (Math.Abs(tTarget - tNext) <= minStep * 0.5)
+            // Land on tTarget only when this step already covers the remainder.
+            // A fixed absolute proximity test reintroduces one unrestricted jump
+            // whenever the native segment is shorter than that floor.
+            double tNext;
+            if (step >= remaining)
+            {
                 tNext = tTarget;
+            }
+            else
+            {
+                tNext = t + step * direction;
+                if (tNext == t || !double.IsFinite(tNext))
+                {
+                    detail = ICurveEvalDetail.Stagnation;
+                    return AlgorithmStatus.NotConverged;
+                }
+                if ((tNext - tTarget) * direction >= 0)
+                    tNext = tTarget;
+            }
 
             if (!budget.TryConsume(2)) // predictor Jacobian + corrector seed evals (lower bound)
             {
@@ -107,10 +132,9 @@ internal static class ICurveContinuation
 
             if (correctStatus == AlgorithmStatus.Success)
             {
-                // Branch guard: the accepted point must stay on the same local
-                // sheet as the start (dot of displacement with start tangent ≥ 0
-                // is insufficient alone; residual-plane continuity is required).
-                if (!SameLocalBranch(in view, in yStart, in local[0], segment, tStart, tNext))
+                // Branch guard against the last accepted point. A multiple of this
+                // step is only a neighborhood check.
+                if (!SameLocalBranch(in view, in position, in local[0], segment, t, tNext))
                 {
                     detail = ICurveEvalDetail.AmbiguousBranch;
                     return AlgorithmStatus.NotConverged;
@@ -399,12 +423,13 @@ internal static class ICurveContinuation
     }
 
     /// <summary>
-    /// Local branch continuity: the tracked point's support residuals stay small
-    /// and its displacement from the start does not jump across the origin of a
-    /// closed section (simple length guard relative to chord scale).
+    /// Neighborhood of the last accepted state. Residuals stay small and the
+    /// spatial step stays within a multiple of this parameter step. The multiple
+    /// is not a global branch certificate; it only rejects a leap away from the
+    /// point just accepted.
     /// </summary>
-    private static bool SameLocalBranch(in ICurveView view, in KernelVector3 start,
-        in KernelVector3 candidate, BufferOffset segment, double tStart, double tCandidate)
+    private static bool SameLocalBranch(in ICurveView view, in KernelVector3 previous,
+        in KernelVector3 candidate, BufferOffset segment, double tPrevious, double tCandidate)
     {
         if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support0, in candidate, out var d0)
                 != AlgorithmStatus.Success
@@ -422,11 +447,30 @@ internal static class ICurveContinuation
             view.ChartChordUnits, segment, tCandidate, in candidate);
         if (Math.Abs(plane) > 1e-6 * localScale) return false;
 
-        // Reject a jump larger than a generous multiple of the chord advance —
-        // that is the typical signature of landing on the opposite sheet.
-        var chordAdvance = Math.Abs(tCandidate - tStart) / Math.Max(Math.Abs(view.ChartScales[segment]), 1e-300);
-        var jump = Norm(Sub(candidate, start));
-        return !(jump > 8.0 * Math.Max(chordAdvance, 1e-6));
+        // This step only. Comparing back to the original anchor lets the
+        // allowance grow with the whole segment and admit another sheet.
+        var chordAdvance = Math.Abs(tCandidate - tPrevious)
+            / Math.Max(Math.Abs(view.ChartScales[segment]), 1e-300);
+        var jump = Norm(Sub(candidate, previous));
+        return !(jump > 8.0 * Math.Max(chordAdvance, 1e-6 * localScale));
+    }
+
+    /// <summary>
+    /// Smallest continuation step that still resolves inside this segment.
+    /// The relative floor tracks segment length; the ulp floor tracks the
+    /// parameter magnitude. Neither is an absolute constant.
+    /// </summary>
+    private static double MinimumContinuationStep(double tLo, double tHi, double segmentLength)
+    {
+        var relative = MinRelativeStep * segmentLength;
+        var magnitude = Math.Max(Math.Abs(tLo), Math.Abs(tHi));
+        if (!(magnitude > 0) || !double.IsFinite(magnitude))
+            return relative;
+        var exponent = Math.ILogB(magnitude);
+        if (exponent == int.MinValue)
+            return relative;
+        var resolution = Math.ScaleB(1.0, exponent - 52);
+        return Math.Max(relative, 2 * resolution);
     }
 
     private static void ChordSeed(in ICurveView view, BufferOffset segment, double t, out KernelVector3 q)
