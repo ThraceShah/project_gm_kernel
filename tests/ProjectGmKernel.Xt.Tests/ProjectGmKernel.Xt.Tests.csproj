@@ -13,5 +13,6 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <ProjectReference Include="..\..\src\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />
+    <ProjectReference Include="..\..\src\ProjectGmKernel.Xt.JsonTool\ProjectGmKernel.Xt.JsonTool.csproj" />
   </ItemGroup>
 </Project>
