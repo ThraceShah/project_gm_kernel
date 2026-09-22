@@ -1,4 +1,5 @@
 using ProjectGmKernel.Xt;
+using ProjectGmKernel.Xt.JsonTool;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
@@ -84,7 +85,8 @@ catch (Exception exception)
 try
 {
     using var stream = File.Create(outputPath);
-    using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = !compact, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+    using var buffer = new JsonFileBuffer(stream);
+    using var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = !compact, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
     XtGeneratedModelJson.Write(model, writer);
 }
 catch (Exception exception)
