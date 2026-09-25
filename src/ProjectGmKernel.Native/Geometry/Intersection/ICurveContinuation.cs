@@ -130,9 +130,12 @@ internal static class ICurveContinuation
             {
                 // Branch guard against the last accepted point. A multiple of this
                 // step is only a neighborhood check.
-                if (!SameLocalBranch(in view, in position, in local[0], segment, t, tNext))
+                if (!SameLocalBranch(in view, in position, in local[0], segment, t, tNext,
+                        ref budget, out var branchDetail))
                 {
-                    detail = ICurveEvalDetail.AmbiguousBranch;
+                    detail = branchDetail == ICurveEvalDetail.BudgetExceeded
+                        ? branchDetail
+                        : ICurveEvalDetail.AmbiguousBranch;
                     return AlgorithmStatus.NotConverged;
                 }
 
@@ -375,15 +378,19 @@ internal static class ICurveContinuation
             ref budget, out iterations, out residual, out detail);
         if (refineStatus != AlgorithmStatus.Success) return refineStatus;
 
-        if (!TryPositionFromState(in view, plan, t, segment, state, out var position))
-            return AlgorithmStatus.NumericalFailure;
+        if (!TryPositionFromState(in view, plan, t, segment, state, ref budget, out detail, out var position))
+            return detail == ICurveEvalDetail.BudgetExceeded
+                ? AlgorithmStatus.NotConverged
+                : AlgorithmStatus.NumericalFailure;
         return ICurveEvaluation.SolveDirect(in view, in position, t, segment, order, plan,
             ref budget, derivatives, out iterations, out residual, out detail);
     }
 
     private static bool TryPositionFromState(in ICurveView view, ICurveConstraintPlan plan,
-        double t, BufferOffset segment, ReadOnlySpan<double> state, out KernelVector3 position)
+        double t, BufferOffset segment, ReadOnlySpan<double> state, ref EvaluationBudget budget,
+        out ICurveEvalDetail detail, out KernelVector3 position)
     {
+        detail = ICurveEvalDetail.None;
         position = default;
         switch (plan)
         {
@@ -417,17 +424,13 @@ internal static class ICurveContinuation
                 return true;
             }
             case ICurveConstraintPlan.P2:
-            {
-                Span<KernelVector3> jet = stackalloc KernelVector3[1];
-                if (!SurfaceDerivativeLayout.TryCreate(0, 0, out var layout)) return false;
-                if (SurfaceEvaluation.Evaluate(in view.Support0, state[0], state[1], in layout, jet)
-                    != AlgorithmStatus.Success)
-                    return false;
-                position = jet[0];
-                return true;
-            }
             case ICurveConstraintPlan.P4:
             {
+                if (!budget.TryConsume(1))
+                {
+                    detail = ICurveEvalDetail.BudgetExceeded;
+                    return false;
+                }
                 Span<KernelVector3> jet = stackalloc KernelVector3[1];
                 if (!SurfaceDerivativeLayout.TryCreate(0, 0, out var layout)) return false;
                 if (SurfaceEvaluation.Evaluate(in view.Support0, state[0], state[1], in layout, jet)
@@ -448,11 +451,24 @@ internal static class ICurveContinuation
     /// point just accepted.
     /// </summary>
     private static bool SameLocalBranch(in ICurveView view, in KernelVector3 previous,
-        in KernelVector3 candidate, BufferOffset segment, double tPrevious, double tCandidate)
+        in KernelVector3 candidate, BufferOffset segment, double tPrevious, double tCandidate,
+        ref EvaluationBudget budget, out ICurveEvalDetail detail)
     {
+        detail = ICurveEvalDetail.None;
+        if (!budget.TryConsume(1))
+        {
+            detail = ICurveEvalDetail.BudgetExceeded;
+            return false;
+        }
         if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support0, in candidate, out var d0)
-                != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.GeometricDeviation(in view.Support1, in candidate, out var d1)
+                != AlgorithmStatus.Success)
+            return false;
+        if (!budget.TryConsume(1))
+        {
+            detail = ICurveEvalDetail.BudgetExceeded;
+            return false;
+        }
+        if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support1, in candidate, out var d1)
                 != AlgorithmStatus.Success)
             return false;
         var localScale = ICurveEvaluation.PublicationTolerance(in view)

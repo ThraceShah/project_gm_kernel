@@ -259,9 +259,18 @@ internal static class ICurveEvaluation
                     double.PositiveInfinity, SampleSourceKind.PredictedOnly, selected));
             }
         }
-        var status = SolveDirect(in view, in solveSeed, t, segment, order, selected, derivatives,
-            out var iterations, out var residual);
-        var detail = ICurveEvalDetail.None;
+        // One budget owns the preferred plan, every alternate, and any
+        // continuation that follows. A convenience SolveDirect would mint a
+        // fresh 4096 for each of those stages.
+        var budget = EvaluationBudget.Default;
+        var status = SolveDirect(in view, in solveSeed, t, segment, order, selected, ref budget,
+            derivatives, out var iterations, out var residual, out var detail);
+        if (detail == ICurveEvalDetail.BudgetExceeded)
+        {
+            report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
+                selected, ChartSide.Right, segment, iterations, residual, hitKind, 0, detail);
+            return status;
+        }
         // Diagnosed Auto switches only — forced plans stay on the requested plan (§7 / §14.6).
         if (plan == ICurveConstraintPlan.Auto
             && status is AlgorithmStatus.NotConverged or AlgorithmStatus.Singular
@@ -272,12 +281,17 @@ internal static class ICurveEvaluation
             for (BufferOffset ai = 0; ai < altCount; ai++)
             {
                 var altStatus = SolveDirect(in view, in solveSeed, t, segment, order, alternates[ai],
-                    derivatives, out iterations, out residual);
+                    ref budget, derivatives, out iterations, out residual, out detail);
                 if (altStatus == AlgorithmStatus.Success)
                 {
                     selected = alternates[ai];
                     status = altStatus;
                     detail = ICurveEvalDetail.PlanSwitched;
+                    break;
+                }
+                if (detail == ICurveEvalDetail.BudgetExceeded)
+                {
+                    status = altStatus;
                     break;
                 }
             }
@@ -296,7 +310,8 @@ internal static class ICurveEvaluation
         // Continuation only recovers numerical/seed failures. Capability refusals
         // and structural singularities stay as-is — subdivision must not rewrite
         // "plan cannot run" into Stagnation/BudgetExceeded (§7 preamble, §17).
-        if (status is not (AlgorithmStatus.NotConverged or AlgorithmStatus.NumericalFailure))
+        if (detail == ICurveEvalDetail.BudgetExceeded
+            || status is not (AlgorithmStatus.NotConverged or AlgorithmStatus.NumericalFailure))
         {
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
                 selected, ChartSide.Right, segment, iterations, residual, hitKind, 0, detail);
@@ -304,9 +319,8 @@ internal static class ICurveEvaluation
         }
 
         // Direct solve failed: parameter continuation / local subdivision from a
-        // verified anchor inside the same original segment (§17.3–§17.5). Shared
-        // budget covers predictor, corrector and midpoint probes.
-        var budget = EvaluationBudget.Default;
+        // verified anchor inside the same original segment (§17.3–§17.5). The
+        // same request budget covers predictor, corrector and midpoint probes.
         KernelVector3 anchorPosition;
         double anchorParameter;
         if (cache.TryFindNearest(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment,
