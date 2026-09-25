@@ -241,11 +241,23 @@ internal static unsafe partial class KernelRuntime
             var kind = OriginalChartParameterMap.IsChartNode(view.ChartParameters, t)
                 ? ICurveQueryKind.ChartPoint
                 : ICurveQueryKind.RegularChartInterval;
-            var capability = ICurveConstraintPlanRules.ValidateRequest(in view, plan);
-            if (capability != AlgorithmStatus.Success)
+            var legal = ICurveConstraintPlanRules.ValidateEnumerator(plan);
+            if (legal != AlgorithmStatus.Success)
             {
-                report = new ICurveEvalReport(kind, capability, plan, ChartSide.Right, -1, 0, 0);
-                return capability;
+                report = new ICurveEvalReport(kind, legal, plan, ChartSide.Right, -1, 0, 0);
+                return legal;
+            }
+            // Defining D0 publishes the original anchor and does not consult
+            // plan capability. Every other query still does, before a cache hit.
+            var definingPosition = kind == ICurveQueryKind.ChartPoint && order == 0;
+            if (!definingPosition)
+            {
+                var capability = ICurveConstraintPlanRules.ValidateRequest(in view, plan);
+                if (capability != AlgorithmStatus.Success)
+                {
+                    report = new ICurveEvalReport(kind, capability, plan, ChartSide.Right, -1, 0, 0);
+                    return capability;
+                }
             }
             if (GeometryEvaluationCache.TryGetExact(in identity, t, kind, ChartSide.Right,
                     order, ICurveEvaluation.CacheErrorBound, out var exact))
