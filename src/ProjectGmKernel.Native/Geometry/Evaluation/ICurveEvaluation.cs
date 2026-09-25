@@ -493,7 +493,7 @@ internal static class ICurveEvaluation
         if (order >= 1)
         {
             var derivativeStatus = TerminatorEvaluation.IntervalDerivatives(in selectedSurface,
-                in anchor, t, order, out first, out second);
+                in anchor, in point, order, out first, out second);
             if (derivativeStatus != AlgorithmStatus.Success)
             {
                 report = new ICurveEvalReport(kind, derivativeStatus, ICurveConstraintPlan.Auto,
