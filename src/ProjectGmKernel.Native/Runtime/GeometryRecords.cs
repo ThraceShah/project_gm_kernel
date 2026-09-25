@@ -505,6 +505,7 @@ internal struct ICurveData
     // per-node decode diagnostics; zero fields stay zero, never rewritten.
     public int SourceSchema;         // schema id the INTERSECTION node was read from, 0 = unknown
     public int ImportFlags;          // decode diagnostics bit set, definition comes with the XT decode task
+    public KernelSense Sense;        // source curve sense (XT node field 6)
 }
 
 /// <summary>

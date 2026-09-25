@@ -41,7 +41,7 @@ internal static unsafe partial class KernelRuntime
             curve.DataIndex = icurveDataIndex;
             curve.TMin = 0;
             curve.TMax = 1;
-            curve.Sense = ParasolidConstants.PK_TOPOL_sense_positive_c;
+            curve.Sense = ICurveDataPool[icurveDataIndex].Sense;
             curve.OwnerEdge = -1;
             curve.OwnerCount = 0;
             curve.PrevInBody = curve.NextInBody = 0;
@@ -120,16 +120,15 @@ internal static unsafe partial class KernelRuntime
         var localScale = Math.Max(1.0, Math.Max(
             Math.Max(analytic0.Radius, analytic0.Secondary),
             Math.Max(analytic1.Radius, analytic1.Secondary)));
-        var chartTolerance = Math.Max(1e-9 * localScale,
-            double.IsFinite(data.ChordalError) && data.ChordalError >= 0 ? data.ChordalError : 0);
+        var pointOnSurfaceTolerance = 1e-8 * localScale;
 
         for (BufferOffset i = 0; i < chartCount; i++)
         {
             var o = chartOffset + i * 3;
             positions[i] = Vector(hvecs[o], hvecs[o + 1], hvecs[o + 2]);
-            if (!IsChartPointConsistent(in analytic0, in analytic1, in positions[i], chartTolerance)
+            if (!IsChartPointConsistent(in analytic0, in analytic1, in positions[i], pointOnSurfaceTolerance)
                 || !IsChartUvConsistent(in data, i, in analytic0, in analytic1,
-                    in positions[i], chartTolerance))
+                    in positions[i], pointOnSurfaceTolerance))
                 return AlgorithmStatus.InvalidInput;
             if (!TryChartTangent(in analytic0, surf0.Sense, in analytic1, surf1.Sense,
                     in positions[i], out tangents[i]))
@@ -215,8 +214,9 @@ internal static unsafe partial class KernelRuntime
     private static bool IsUvPointConsistent(in AnalyticSurface support, double u, double v,
         in KernelVector3 point, double tolerance)
     {
-        // Infinite UV components are the XT null-value representation.
-        if (!double.IsFinite(u) || !double.IsFinite(v)) return true;
+        // Both components NaN represent an omitted UV pair in Parasolid XT.
+        if (double.IsNaN(u) && double.IsNaN(v)) return true;
+        if (!double.IsFinite(u) || !double.IsFinite(v)) return false;
         if (!SurfaceDerivativeLayout.TryCreate(0, 0, out var layout)) return false;
         Span<KernelVector3> value = stackalloc KernelVector3[1];
         if (SurfaceEvaluation.Evaluate(in support, u, v, in layout, value) != AlgorithmStatus.Success)

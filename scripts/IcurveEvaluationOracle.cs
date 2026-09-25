@@ -278,11 +278,11 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
     var sphere = CreateOurUnitSphere();
     // Dense unit-circle chart: coarse 4-node charts left a rematerialize
     // closest-sample gap (~4e-2) after live PK receive; densify before compare.
-    const int chartCount = 48;
+    const int chartCount = 49;
     var chart = new double[chartCount * 3];
     for (var i = 0; i < chartCount; i++)
     {
-        var angle = Math.Tau * i / chartCount;
+        var angle = Math.Tau * i / (chartCount - 1);
         chart[i * 3] = Math.Cos(angle);
         chart[i * 3 + 1] = Math.Sin(angle);
         chart[i * 3 + 2] = 0;
@@ -345,43 +345,33 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                 return;
             }
 
-            var ours = stackalloc M.PK_VECTOR_s[1];
-            var reference = stackalloc PK_VECTOR_t[1];
+            var ours = stackalloc M.PK_VECTOR_s[3];
+            var reference = stackalloc PK_VECTOR_t[3];
             var record = KernelRuntime.GetCurveByTag(icurve);
 
-            // Parameterizations need not match after receive; compare by closest
-            // PK sample on a dense grid of the received interval, and also by
-            // closest analytic unit-circle sample (triple compare).
-            const int pkDense = 512;
-            var pkX = new double[pkDense];
-            var pkY = new double[pkDense];
-            var pkZ = new double[pkDense];
-            for (var j = 0; j < pkDense; j++)
-            {
-                var pkT = interval.value[0] + (interval.value[1] - interval.value[0]) * j / (pkDense - 1);
-                ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, pkT, 0, reference), "PK_CURVE_eval live-recv grid");
-                pkX[j] = reference[0].coord[0];
-                pkY[j] = reference[0].coord[1];
-                pkZ[j] = reference[0].coord[2];
-            }
-
             double maxPos = 0;
+            double maxTan = 0;
+            double maxD2 = 0;
             double maxCircle = 0;
             var samples = 0;
             for (var i = 0; i < 64; i++)
             {
                 var alpha = i / 63.0;
                 var ourT = record.TMin + (record.TMax - record.TMin) * alpha;
-                CheckOur(KernelRuntime.CurveEval(icurve, ourT, 0, ours), "our CurveEval live-recv");
-                var best = double.PositiveInfinity;
-                for (var j = 0; j < pkDense; j++)
+                CheckOur(KernelRuntime.CurveEval(icurve, ourT, 2, ours), "our CurveEval live-recv");
+                ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, ourT, 2, reference), "PK_CURVE_eval live-recv same-t");
+                var diffD0 = Distance(&ours[0], &reference[0]);
+                var diffD1 = Distance(&ours[1], &reference[1]);
+                maxPos = Math.Max(maxPos, diffD0);
+                maxTan = Math.Max(maxTan, diffD1);
+
+                if (i > 0 && i < 63)
                 {
-                    var dx = ours[0].coord[0] - pkX[j];
-                    var dy = ours[0].coord[1] - pkY[j];
-                    var dz = ours[0].coord[2] - pkZ[j];
-                    best = Math.Min(best, Math.Sqrt(dx * dx + dy * dy + dz * dz));
+                    var nDelta = PrincipalNormalUnitDelta(&ours[1], &ours[2], &reference[1], &reference[2]);
+                    var kDelta = Math.Abs(CurvatureOurs(&ours[1], &ours[2]) - CurvaturePk(&reference[1], &reference[2]));
+                    var geomD2 = Math.Max(nDelta, kDelta);
+                    maxD2 = Math.Max(maxD2, geomD2);
                 }
-                maxPos = Math.Max(maxPos, best);
                 var rho = Math.Sqrt(ours[0].coord[0] * ours[0].coord[0]
                     + ours[0].coord[1] * ours[0].coord[1]);
                 maxCircle = Math.Max(maxCircle,
@@ -389,13 +379,12 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                 samples++;
             }
 
-            log($"live-pk-recv: samples={samples} pkDense={pkDense} chartCount={chartCount} max|Δpos|_closest={maxPos:E3} max|ρ−1|+|z|={maxCircle:E3}");
-            if (maxPos > 1e-4)
+            log($"live-pk-recv: samples={samples} chartCount={chartCount} max|Δpos|={maxPos:E3} max|ΔD1|={maxTan:E3} max|ΔD2|κ+n={maxD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
+            if (maxPos > 1e-8 || maxTan > 1e-6 || maxD2 > 1e-5)
             {
-                log($"NotRun: Case F live PK receive succeeded but D0 closest-sample Δ={maxPos:E3} exceeds gate (INTERSECTION rematerialize/compare gap; not Pass)");
-                return;
+                throw new InvalidOperationException($"Case F mismatch: pos={maxPos} tan={maxTan} D2={maxD2}");
             }
-            log("live-pk-recv: PASS (our XT INTERSECTION received by PK; D0 closest-sample compare)");
+            log("live-pk-recv: PASS (our XT INTERSECTION received by PK; true same-t D0/D1/D2 compare)");
         }
         finally
         {

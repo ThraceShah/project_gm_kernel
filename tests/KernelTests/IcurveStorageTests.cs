@@ -1,3 +1,4 @@
+using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
 
@@ -153,20 +154,53 @@ public unsafe class IcurveStorageTests : IDisposable
             KernelRuntime.Surfaces[KernelRuntime.ResolveTagRecord(plane).Slot].Sense);
     }
 
-    private static int CreatePlane()
+    private static int CreatePlane(double ax = 0, double ay = 0, double az = 1, double rx = 1, double ry = 0, double rz = 0)
     {
         var sf = new PK_PLANE_sf_s();
         sf.basis_set.location.coord[0] = 0;
         sf.basis_set.location.coord[1] = 0;
         sf.basis_set.location.coord[2] = 0;
-        sf.basis_set.axis.coord[0] = 0;
-        sf.basis_set.axis.coord[1] = 0;
-        sf.basis_set.axis.coord[2] = 1;
-        sf.basis_set.ref_direction.coord[0] = 1;
-        sf.basis_set.ref_direction.coord[1] = 0;
-        sf.basis_set.ref_direction.coord[2] = 0;
+        sf.basis_set.axis.coord[0] = ax;
+        sf.basis_set.axis.coord[1] = ay;
+        sf.basis_set.axis.coord[2] = az;
+        sf.basis_set.ref_direction.coord[0] = rx;
+        sf.basis_set.ref_direction.coord[1] = ry;
+        sf.basis_set.ref_direction.coord[2] = rz;
         int tag = 0;
         Assert.Equal(0, KernelRuntime.PlaneCreate(&sf, &tag));
         return tag;
+    }
+
+    [Fact]
+    public unsafe void CurveAndSurface_Sense_PreservedAcrossBindingAndRecords()
+    {
+        var plane = CreatePlane(0, 0, 1, 1, 0, 0);
+        ref var surface = ref KernelRuntime.Surfaces[KernelRuntime.ResolveTagRecord(plane).Slot];
+        surface.Sense = ParasolidConstants.PK_TOPOL_sense_negative_c;
+
+        var otherPlane = CreatePlane(0, 1, 0, 1, 0, 0);
+        double[] chart = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0];
+        var input = new IcurveDecodeInput
+        {
+            Surface0Tag = plane,
+            Surface1Tag = otherPlane,
+            BaseParameter = 0,
+            BaseScale = 1,
+            ChartCount = 2,
+            ChartHvecs = chart,
+            Start = new IcurveLimitInput { Type = LimitType.Help, TermUse = LimitTermUse.Unset, Hvecs = [0.0, 0.0, 0.0] },
+            End = new IcurveLimitInput { Type = LimitType.Help, TermUse = LimitTermUse.Unset, Hvecs = [1.0, 0.0, 0.0] },
+            UvType = IntersectionUvType.None,
+            ChordalError = 1e-4,
+            AngularError = 1e-6,
+            Sense = ParasolidConstants.PK_TOPOL_sense_negative_c,
+        };
+
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var dataSlot, out _, out _));
+        Assert.Equal(ParasolidConstants.PK_TOPOL_sense_negative_c, KernelRuntime.ICurveDataPool[dataSlot].Sense);
+
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(dataSlot, out var curveTag));
+        var curveRecord = KernelRuntime.GetCurveByTag(curveTag);
+        Assert.Equal(ParasolidConstants.PK_TOPOL_sense_negative_c, curveRecord.Sense);
     }
 }

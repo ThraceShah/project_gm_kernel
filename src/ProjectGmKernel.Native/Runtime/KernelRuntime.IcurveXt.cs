@@ -113,6 +113,11 @@ internal static unsafe partial class KernelRuntime
                 return AlgorithmStatus.Unsupported;
         }
 
+        var senseChar = intersection.Fields[6].Kind == XtFieldKind.Character ? intersection.Fields[6].Character : '+';
+        var sense = senseChar == '-'
+            ? ParasolidConstants.PK_TOPOL_sense_negative_c
+            : ParasolidConstants.PK_TOPOL_sense_positive_c;
+
         var input = new IcurveDecodeInput
         {
             Surface0Tag = surf0,
@@ -140,6 +145,7 @@ internal static unsafe partial class KernelRuntime
             Scale = scale,
             ScaleProvided = scaleProvided,
             SourceSchema = document.Schema.SchemaNumber,
+            Sense = sense,
         };
 
         var decode = DecodeIcurve(input, out var dataSlot, out failure, out _);
@@ -227,29 +233,29 @@ internal static unsafe partial class KernelRuntime
         uvCount = dataNode.VariableLength;
         if (uvCount < 0 || dataNode.Fields.Length != 1 + uvCount) return false;
         if (uvCount > MaxIcurveImportUvValues || uvValues.Length < uvCount) return false;
-        var emptySlots = 0;
         for (var i = 0; i < uvCount; i++)
         {
             var field = dataNode.Fields[1 + i];
-            // Parasolid may emit null UV slots. Strip Empty entries and, when
-            // every slot is empty, fall back to UvType.None so hydrate still
-            // succeeds for Help-limit charts that omit UV payloads.
             if (field.Kind == XtFieldKind.Empty)
             {
-                emptySlots++;
-                uvValues[i] = 0;
-                continue;
+                uvValues[i] = double.NaN;
             }
-            if (field.Kind != XtFieldKind.Real) return false;
-            uvValues[i] = field.Real;
+            else if (field.Kind == XtFieldKind.Real)
+            {
+                uvValues[i] = field.Real;
+            }
+            else
+            {
+                return false;
+            }
         }
-        if (emptySlots == uvCount)
+
+        for (var i = 0; i < uvCount; i += 2)
         {
-            uvType = IntersectionUvType.None;
-            uvCount = 0;
+            if (double.IsNaN(uvValues[i]) != double.IsNaN(uvValues[i + 1]))
+                return false;
         }
-        else if (emptySlots > 0)
-            return false; // partial Empty layouts are not a declared Decode contract
+
         return true;
     }
 
@@ -279,7 +285,9 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = PlaneCreate(&sf, &local);
         tag = local;
-        return error == 0 ? AlgorithmStatus.Success : AlgorithmStatus.Unsupported;
+        if (error != 0) return AlgorithmStatus.Unsupported;
+        ApplySurfaceSense(node, tag);
+        return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus MaterializeCylinder(XtNode node, out SurfTag tag)
@@ -292,7 +300,9 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = CylCreate(&sf, &local);
         tag = local;
-        return error == 0 ? AlgorithmStatus.Success : AlgorithmStatus.Unsupported;
+        if (error != 0) return AlgorithmStatus.Unsupported;
+        ApplySurfaceSense(node, tag);
+        return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus MaterializeSphere(XtNode node, out SurfTag tag)
@@ -308,7 +318,9 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = SphereCreate(&sf, &local);
         tag = local;
-        return error == 0 ? AlgorithmStatus.Success : AlgorithmStatus.Unsupported;
+        if (error != 0) return AlgorithmStatus.Unsupported;
+        ApplySurfaceSense(node, tag);
+        return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus MaterializeCone(XtNode node, out SurfTag tag)
@@ -328,7 +340,9 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = ConeCreate(&sf, &local);
         tag = local;
-        return error == 0 ? AlgorithmStatus.Success : AlgorithmStatus.Unsupported;
+        if (error != 0) return AlgorithmStatus.Unsupported;
+        ApplySurfaceSense(node, tag);
+        return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus MaterializeTorus(XtNode node, out SurfTag tag)
@@ -342,7 +356,19 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = TorusCreate(&sf, &local);
         tag = local;
-        return error == 0 ? AlgorithmStatus.Success : AlgorithmStatus.Unsupported;
+        if (error != 0) return AlgorithmStatus.Unsupported;
+        ApplySurfaceSense(node, tag);
+        return AlgorithmStatus.Success;
+    }
+
+    private static void ApplySurfaceSense(XtNode node, SurfTag tag)
+    {
+        if (tag > 0 && node.Fields.Length > 6 && node.Fields[6].Kind == XtFieldKind.Character && node.Fields[6].Character == '-')
+        {
+            var slot = TagRec(tag).Slot;
+            if (slot >= 0 && Surfaces.IsAlive(slot))
+                Surfaces[slot].Sense = ParasolidConstants.PK_TOPOL_sense_negative_c;
+        }
     }
 
     private static void FillAxis2(ref PK_AXIS2_sf_s basis, XtVector location, XtVector axis, XtVector reference)
