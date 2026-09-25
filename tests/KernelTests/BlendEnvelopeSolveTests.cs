@@ -94,4 +94,39 @@ public class BlendEnvelopeSolveTests
         Assert.Equal(AlgorithmStatus.WorkspaceTooSmall, BlendEnvelopeSolve.SolveFourByFour(
             SpineRadius, TubeRadius, in outer, in anchor, in normal, state[..3], out _, out _));
     }
+
+    [Fact]
+    public void FourByFour_ValidatesArcBoundsAndSpineParameters()
+    {
+        const double s = 0.4;
+        const double theta = 0.43;
+        var root = SurfacePoint(s, theta);
+        var outer = new AnalyticSurface(SurfaceClass.Plane,
+            Vector(0, 0, root.Z), Vector(0, 0, 1), Vector(1, 0, 0));
+        var planeNormal = Vector(-0.4, 0.8, 0.2);
+        var planeAnchor = root;
+
+        // 1. Within arc bounds [0.2, 0.8] and spine bounds [0.1, 0.9]: Accepted.
+        Span<double> stateAccepted = [root.X + 0.01, root.Y - 0.008, root.Z + 0.005, s - 0.05];
+        var acceptedBounds = new BlendArcBounds(arc: 1.0, vMin: 0.2, vMax: 0.8, sMin: 0.1, sMax: 0.9);
+        Assert.Equal(AlgorithmStatus.Success, BlendEnvelopeSolve.SolveFourByFour(
+            SpineRadius, TubeRadius, in outer, in planeAnchor, in planeNormal,
+            in acceptedBounds, stateAccepted, out _, out _, out var arcV));
+        Assert.InRange(arcV, 0.4, 0.45);
+
+        // 2. Arc bounds [1.0, 2.0] excluding theta ~ 0.43: Rejected.
+        Span<double> stateExcludedArc = [root.X + 0.01, root.Y - 0.008, root.Z + 0.005, s - 0.05];
+        var excludedArcBounds = new BlendArcBounds(arc: 1.0, vMin: 1.0, vMax: 2.0, sMin: 0.1, sMax: 0.9);
+        Assert.Equal(AlgorithmStatus.NotConverged, BlendEnvelopeSolve.SolveFourByFour(
+            SpineRadius, TubeRadius, in outer, in planeAnchor, in planeNormal,
+            in excludedArcBounds, stateExcludedArc, out _, out _, out _));
+
+        // 3. Spine bounds [0.5, 0.9] excluding s = 0.4: Rejected.
+        Span<double> stateExcludedSpine = [root.X + 0.01, root.Y - 0.008, root.Z + 0.005, s - 0.05];
+        var excludedSpineBounds = new BlendArcBounds(arc: 1.0, vMin: 0.2, vMax: 0.8, sMin: 0.5, sMax: 0.9);
+        Assert.Equal(AlgorithmStatus.NotConverged, BlendEnvelopeSolve.SolveFourByFour(
+            SpineRadius, TubeRadius, in outer, in planeAnchor, in planeNormal,
+            in excludedSpineBounds, stateExcludedSpine, out _, out _, out _));
+    }
 }
+

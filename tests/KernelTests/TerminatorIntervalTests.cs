@@ -475,4 +475,69 @@ public class TerminatorIntervalTests
         Assert.Equal(0, budget.Remaining);
         Assert.Equal(0, budget.Used);
     }
+
+    [Fact]
+    public void SolveParametricTwoByTwo_DrivesPlaneAndChordResidualsToZero()
+    {
+        var view = CircleViewWithEndTerminator(1.28, LimitTermUse.Second);
+        var end = view.EndTerminator;
+        Assert.Equal(AlgorithmStatus.Success, TerminatorEvaluation.TryResolveTerminatorParameter(
+            in view, true, TerminatorParameterRule.ExtensionRatio,
+            in end.Endpoint, in end.BranchPoint, out var tT));
+        Assert.Equal(AlgorithmStatus.Success, TerminatorEvaluation.Prepare(
+            in view, true, in end.Endpoint, in end.BranchPoint, LimitTermUse.Second, tT, out var anchor));
+
+        var t = 0.5 * (view.ChartParameters[^1] + tT);
+        var budget = new EvaluationBudget(20);
+        Assert.Equal(AlgorithmStatus.Success, TerminatorEvaluation.SolveParametricTwoByTwo(
+            in CylinderR1, in anchor, t, ref budget, out var u, out var v, out var point, out var residual, out var evals));
+        Assert.True(evals > 0);
+        Assert.InRange(residual, 0, 1e-11);
+
+        // Point is on the cylinder (x^2 + y^2 = 1, z arbitrary)
+        Assert.InRange(Math.Abs(point.X * point.X + point.Y * point.Y - 1.0), 0, 1e-10);
+        // And satisfies (point - Q) · PlaneNormal == 0 and (point - Q) · ChordUnit == 0
+        var q = TerminatorEvaluation.InterpolatedChordPoint(in anchor, t);
+        var dx = Vector(point.X - q.X, point.Y - q.Y, point.Z - q.Z);
+        Assert.InRange(Math.Abs(Dot(dx, anchor.PlaneNormal)), 0, 1e-11);
+        Assert.InRange(Math.Abs(Dot(dx, anchor.ChordUnit)), 0, 1e-11);
+    }
+
+    [Fact]
+    public void Prepare_SingularEndpoint_FallsBackToBranchTangent()
+    {
+        // Cone apex at endpoint makes selected surface singular at E.
+        var endpoint = CirclePoint(1.28);
+        var branch = CirclePoint(ChartEndAngle);
+        var cone = new AnalyticSurface(SurfaceClass.Cone,
+            endpoint, Vector(0, 0, 1), Vector(1, 0, 0), 0.0, 1.0);
+
+        double[] angles = [0.77, 0.92, ChartEndAngle];
+        var positions = new KernelVector3[3];
+        var tangents = new KernelVector3[3];
+        for (var i = 0; i < 3; i++)
+        {
+            positions[i] = CirclePoint(angles[i]);
+            tangents[i] = Vector(-Math.Sin(angles[i]), Math.Cos(angles[i]), 0);
+        }
+        var parameters = new double[3];
+        var scales = new double[2];
+        var chords = new KernelVector3[2];
+        Assert.Equal(AlgorithmStatus.Success, OriginalChartParameterMap.Build(
+            positions, tangents, 0.0, 1.7, parameters, scales, chords, out _, out _));
+
+        var end = new TerminatorLimit(LimitTermUse.First, endpoint, branch);
+        var absent = default(TerminatorLimit);
+        var view = new ICurveView(in cone, 1, in PlaneZ0, 1,
+            positions, parameters, scales, chords, absent, end);
+
+        // Prepare directly with a known tT. Even though cone is singular at endpoint,
+        // it falls back to the branch tangent T_B = Unit(n0 x n1) at branchPoint.
+        var tT = parameters[^1] + 0.3;
+        Assert.Equal(AlgorithmStatus.Success, TerminatorEvaluation.Prepare(
+            in view, true, in endpoint, in branch, LimitTermUse.First, tT, out var anchor));
+        Assert.True(IsFinite(anchor.PlaneNormal));
+        Assert.True(IsFinite(anchor.LineDirection));
+        Assert.InRange(Math.Abs(Dot(anchor.PlaneNormal, anchor.LineDirection)), 0, 1e-12);
+    }
 }

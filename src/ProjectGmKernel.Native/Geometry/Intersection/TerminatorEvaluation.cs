@@ -234,11 +234,19 @@ internal static class TerminatorEvaluation
 
         // w = selected support normal at E; when it cannot be defined there,
         // the branch-point curve tangent is the document's only fallback (§6.2).
-        var supportNormal = Unit(selectedJet.Gradient);
-        if (!IsFinite(supportNormal))
+        var selectedSingular = selected == 0 ? surface0Singular : surface1Singular;
+        var supportNormal = selectedSingular ? default : Unit(selectedJet.Gradient);
+        if (selectedSingular || !IsFinite(supportNormal))
         {
-            supportNormal = Unit(Cross(jet0.Gradient, jet1.Gradient));
-            if (!IsFinite(supportNormal)) return AlgorithmStatus.Singular;
+            if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in branchPoint, 1, out var branchJet0) != AlgorithmStatus.Success
+                || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in branchPoint, 1, out var branchJet1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.Unsupported;
+            var branchTangent = Unit(Cross(branchJet0.Gradient, branchJet1.Gradient));
+            if (!IsFinite(branchTangent)) return AlgorithmStatus.Singular;
+            var boundaryChord = isEnd ? view.ChartChordUnits[^1] : view.ChartChordUnits[0];
+            if (Dot(branchTangent, boundaryChord) < 0)
+                branchTangent = Scale(branchTangent, -1);
+            supportNormal = branchTangent;
         }
 
         if (BuildPlanes(in endpoint, in branchPoint, in supportNormal,
@@ -320,7 +328,7 @@ internal static class TerminatorEvaluation
         }
         if (!converged)
         {
-            var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in q, bound,
+            var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in q, bound, 0.0,
                 ref budget, out mu, out point, out residual, ref evaluations);
             if (bracketStatus != AlgorithmStatus.Success) return bracketStatus;
         }
@@ -333,28 +341,62 @@ internal static class TerminatorEvaluation
 
     /// <summary>Sign-change bracket nearest the branch witness, bisected, then Newton-polished.</summary>
     private static AlgorithmStatus BracketedSolve(in AnalyticSurface surface, in TerminatorAnchor anchor,
-        in KernelVector3 q, double bound, ref EvaluationBudget budget, out double mu, out KernelVector3 point,
+        in KernelVector3 q, double bound, double witnessMu, ref EvaluationBudget budget, out double mu, out KernelVector3 point,
         out double residual, ref BufferOffset evaluations)
     {
         mu = 0;
         point = default;
         residual = 0;
+        if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+        evaluations++;
+        if (!TryValue(in surface, in anchor, in q, witnessMu, out var witnessValue))
+            return AlgorithmStatus.Unsupported;
+
         double lowValue = 0, highValue = 0, lowMu = 0, highMu = 0;
         var bracketed = false;
+
+        var prevPosMu = witnessMu;
+        var prevPosVal = witnessValue;
+        var prevNegMu = witnessMu;
+        var prevNegVal = witnessValue;
+
         for (BufferOffset i = 1; i <= BracketSamples && !bracketed; i++)
         {
+            var delta = bound * i / BracketSamples;
+            var posMu = witnessMu + delta;
+            var negMu = witnessMu - delta;
+
             if (!budget.TryConsume(2)) return AlgorithmStatus.NotConverged;
-            var step = bound * i / BracketSamples;
             evaluations += 2;
-            if (TryValue(in surface, in anchor, in q, step, out highValue)
-                && TryValue(in surface, in anchor, in q, -step, out lowValue))
+
+            if (TryValue(in surface, in anchor, in q, posMu, out var posVal))
             {
-                if ((highValue <= 0 && 0 <= lowValue) || (lowValue <= 0 && 0 <= highValue))
+                if ((prevPosVal <= 0 && posVal >= 0) || (prevPosVal >= 0 && posVal <= 0))
                 {
-                    lowMu = -step;
-                    highMu = step;
+                    lowMu = prevPosMu;
+                    lowValue = prevPosVal;
+                    highMu = posMu;
+                    highValue = posVal;
                     bracketed = true;
+                    break;
                 }
+                prevPosMu = posMu;
+                prevPosVal = posVal;
+            }
+
+            if (TryValue(in surface, in anchor, in q, negMu, out var negVal))
+            {
+                if ((prevNegVal <= 0 && negVal >= 0) || (prevNegVal >= 0 && negVal <= 0))
+                {
+                    lowMu = negMu;
+                    lowValue = negVal;
+                    highMu = prevNegMu;
+                    highValue = prevNegVal;
+                    bracketed = true;
+                    break;
+                }
+                prevNegMu = negMu;
+                prevNegVal = negVal;
             }
         }
         if (!bracketed) return AlgorithmStatus.NotConverged;
@@ -376,6 +418,7 @@ internal static class TerminatorEvaluation
                 lowMu = mid;
                 lowValue = midValue;
             }
+            if (Math.Abs(highMu - lowMu) < 1e-14 * (1.0 + Math.Abs(mid))) break;
         }
         mu = 0.5 * (lowMu + highMu);
         point = Add(q, Scale(anchor.LineDirection, mu));
@@ -443,22 +486,12 @@ internal static class TerminatorEvaluation
                 != AlgorithmStatus.Success)
                 return AlgorithmStatus.NotConverged;
             point = jet[0];
-            // Two planes: (x−Q)·n_term = 0 and (x−Q)·(v×n_term) style —
-            // document construction: support surface + terminator plane +
-            // branch plane. Here: plane residuals against Endpoint chord and
-            // the fixed line-direction plane through Q.
+            // Two planes (§6.2):
+            // Plane 1: a·(x − E) = 0 (anchor.PlaneNormal, passing through E and Q)
+            // Plane 2: e·(x − Q(t)) = 0 (anchor.ChordUnit, passing through Q(t))
             var dx = Sub(point, q);
-            f[0] = Dot(dx, anchor.LineDirection); // keep point in the terminator plane family
-            // Second plane: through Q with normal = chord × line (or chordRate).
-            var n2 = Cross(anchor.ChordRate, anchor.LineDirection);
-            var n2sq = Dot(n2, n2);
-            if (!(n2sq > 1e-30))
-            {
-                // Degenerate plane pair — fall back to 1D.
-                return SolveIntervalPoint(in selectedSurface, in anchor, t, ref budget,
-                    out _, out point, out residual, out evaluations);
-            }
-            f[1] = Dot(dx, n2);
+            f[0] = Dot(dx, anchor.PlaneNormal);
+            f[1] = Dot(dx, anchor.ChordUnit);
             residual = Math.Max(Math.Abs(f[0]), Math.Abs(f[1]));
             if (residual <= ICurveEvaluation.ResidualTolerance * (1.0 + Math.Abs(point.X)
                     + Math.Abs(point.Y) + Math.Abs(point.Z)))
@@ -470,10 +503,10 @@ internal static class TerminatorEvaluation
 
             var su = jet[layout.GetIndex(1, 0)];
             var sv = jet[layout.GetIndex(0, 1)];
-            j[0] = Dot(su, anchor.LineDirection);
-            j[1] = Dot(sv, anchor.LineDirection);
-            j[2] = Dot(su, n2);
-            j[3] = Dot(sv, n2);
+            j[0] = Dot(su, anchor.PlaneNormal);
+            j[1] = Dot(sv, anchor.PlaneNormal);
+            j[2] = Dot(su, anchor.ChordUnit);
+            j[3] = Dot(sv, anchor.ChordUnit);
             var status = NewtonStep.ComputeStep(j, jCopy, f, 2, pivots, model, step, out var predicted);
             if (status != AlgorithmStatus.Success || !(predicted > 0))
                 return status == AlgorithmStatus.Success ? AlgorithmStatus.NotConverged : status;
