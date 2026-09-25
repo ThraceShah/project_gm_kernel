@@ -438,13 +438,16 @@ internal static class ICurveCorrection
                 Span<KernelVector3> jet1 = stackalloc KernelVector3[4];
                 if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout))
                     return AlgorithmStatus.InvalidInput;
-                if (!TryCharge(ref budget, out detail) || !TryCharge(ref budget, out detail))
+                if (!TryCharge(ref budget, out detail))
                     return AlgorithmStatus.NotConverged;
                 if (SurfaceEvaluation.Evaluate(in view.Support0, state[0], state[1], in layout, jet0)
-                    != AlgorithmStatus.Success
-                    || SurfaceEvaluation.Evaluate(in view.Support1, state[2], state[3], in layout, jet1)
                     != AlgorithmStatus.Success)
                     return AlgorithmStatus.NotConverged; // trial left a valid parameter domain
+                if (!TryCharge(ref budget, out detail))
+                    return AlgorithmStatus.NotConverged;
+                if (SurfaceEvaluation.Evaluate(in view.Support1, state[2], state[3], in layout, jet1)
+                    != AlgorithmStatus.Success)
+                    return AlgorithmStatus.NotConverged;
                 point = jet0[0];
                 residual[0] = jet0[0].X - jet1[0].X;
                 residual[1] = jet0[0].Y - jet1[0].Y;
