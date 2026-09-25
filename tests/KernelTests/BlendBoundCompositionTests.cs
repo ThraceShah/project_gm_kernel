@@ -181,15 +181,22 @@ public class BlendBoundCompositionTests
             out _, out var gradD1, out var hxx1, out var hxy1, out var hxz1, out var hyy1, out var hyz1, out var hzz1,
             out var txx, out var txy, out var txz, out var tyy, out var tyz, out var tzz));
 
+        var mappedPoint = Add(point, Scale(gradD1, r1));
+
         var input = new BlendBoundComposition.CompositionInput(
-            point.Z - r0, gradD0,
+            mappedPoint.Z, gradD0,
             0, 0, 0, 0, 0, 0,
             gradD1, hxx1, hxy1, hxz1, hyy1, hyz1, hzz1,
             txx, txy, txz, txy, tyy, tyz, txz, tyz, tzz);
 
         Assert.Equal(AlgorithmStatus.Success, BlendBoundComposition.Evaluate(
-            in input, r0, r1, out _, out _,
+            in input, r0, r1, out var value, out var gradient,
             out var hxx, out var hxy, out var hxz, out var hyy, out var hyz, out var hzz));
+
+        Assert.Equal(point.Z - r0, value, 14);
+        Assert.Equal(0.0, gradient.X, 14);
+        Assert.Equal(0.0, gradient.Y, 14);
+        Assert.Equal(1.0, gradient.Z, 14);
 
         Assert.Equal(0.0, hxx, 14);
         Assert.Equal(0.0, hxy, 14);
