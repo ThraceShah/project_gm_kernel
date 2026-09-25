@@ -41,6 +41,7 @@ internal struct CachedCurveSample
     internal double ErrorEstimate;
     internal SampleSourceKind Source;
     internal ICurveConstraintPlan Plan;
+    internal SampleWitness Witness;
     internal byte ClockReferenced;
     internal byte Occupied;
 }
@@ -212,13 +213,14 @@ internal static unsafe class GeometryEvaluationCache
         entry.ErrorEstimate = sample.ErrorEstimate;
         entry.Source = sample.Source;
         entry.Plan = sample.Plan;
+        entry.Witness = sample.Witness;
         entry.ClockReferenced = 1;
         entry.Occupied = 1;
     }
 
     private static CurveSample ToL2Sample(in CachedCurveSample entry)
         => new(entry.Parameter, entry.Position, entry.First, entry.Second, entry.MaxOrder,
-            entry.Kind, entry.Side, entry.Segment, entry.ErrorEstimate, entry.Source, entry.Plan);
+            entry.Kind, entry.Side, entry.Segment, entry.ErrorEstimate, entry.Source, entry.Plan, entry.Witness);
 
 }
 

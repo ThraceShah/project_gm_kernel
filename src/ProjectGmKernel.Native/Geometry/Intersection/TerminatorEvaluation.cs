@@ -229,6 +229,8 @@ internal static class TerminatorEvaluation
         var endpointScale = 1.0 + Math.Sqrt(Dot(endpoint, endpoint));
         var surface0Singular = GradientNormSq(jet0.Gradient) <= (1e-12 * endpointScale) * (1e-12 * endpointScale);
         var surface1Singular = GradientNormSq(jet1.Gradient) <= (1e-12 * endpointScale) * (1e-12 * endpointScale);
+        // surface0IsBlendBound is currently false because ICurve prepare only accepts
+        // analytic supports (GATE-B open; future SurfaceSupportRef will supply this).
         var selected = SelectSupportSurface(surface0Singular, surface1Singular, false, termUse);
         var selectedJet = selected == 0 ? jet0 : jet1;
 

@@ -150,4 +150,25 @@ public class IcurveSeedSelectionTests
             ICurveSeedSelection.OrderSeeds(candidates, 1, ordered, out _, out var failure));
         Assert.Equal(SeedOrderFailure.Empty, failure);
     }
+
+    [Fact]
+    public void OrderSeeds_CrossBranchWithSmallerResidual_IsNeverPreferredOverRequestedBranch()
+    {
+        // Candidate 0: on wrong branch (branchId 1), but with tiny errorEstimate = 1e-15
+        // Candidate 1: on requested branch (branchId 0), with larger errorEstimate = 1e-4
+        SeedCandidate[] candidates =
+        [
+            new(0.4, SeedSource.NeighborPrediction, SeedQuality.Predicted, branchId: 1, sourceIndex: 1, errorEstimate: 1e-15, continuityCell: 0),
+            new(0.4, SeedSource.ChartAnchor, SeedQuality.SeedOnly, branchId: 0, sourceIndex: 2, errorEstimate: 1e-4, continuityCell: 0),
+        ];
+        Span<SeedCandidate> ordered = new SeedCandidate[4];
+
+        // Ordering with requestedBranch = 0 MUST filter out the branch 1 candidate despite its smaller residual
+        Assert.Equal(AlgorithmStatus.Success,
+            ICurveSeedSelection.OrderSeeds(candidates, 0, ordered, out var count, out var failure));
+        Assert.Equal(SeedOrderFailure.None, failure);
+        Assert.Equal(1, count);
+        Assert.Equal(0, ordered[0].BranchId);
+        Assert.Equal(SeedSource.ChartAnchor, ordered[0].Source);
+    }
 }
