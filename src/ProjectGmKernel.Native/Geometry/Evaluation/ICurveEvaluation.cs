@@ -1256,11 +1256,14 @@ internal static class ICurveEvaluation
         for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
         {
             iterations = iteration + 1;
-            if (!TryCharge(ref budget, out detail) || !TryCharge(ref budget, out detail))
+            if (!TryCharge(ref budget, out detail))
                 return AlgorithmStatus.NotConverged;
-            if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout1, jet0) != AlgorithmStatus.Success
-                || SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout1, jet1) != AlgorithmStatus.Success)
+            if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout1, jet0) != AlgorithmStatus.Success)
                 return AlgorithmStatus.NotConverged; // trial left a valid parameter domain
+            if (!TryCharge(ref budget, out detail))
+                return AlgorithmStatus.NotConverged;
+            if (SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout1, jet1) != AlgorithmStatus.Success)
+                return AlgorithmStatus.NotConverged;
 
             residualVector[0] = jet0[0].X - jet1[0].X;
             residualVector[1] = jet0[0].Y - jet1[0].Y;
@@ -1308,10 +1311,13 @@ internal static class ICurveEvaluation
             return AlgorithmStatus.InvalidInput;
         Span<KernelVector3> rootJet0 = stackalloc KernelVector3[9];
         Span<KernelVector3> rootJet1 = stackalloc KernelVector3[9];
-        if (!TryCharge(ref budget, out detail) || !TryCharge(ref budget, out detail))
+        if (!TryCharge(ref budget, out detail))
             return AlgorithmStatus.NotConverged;
-        if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout2, rootJet0) != AlgorithmStatus.Success
-            || SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout2, rootJet1) != AlgorithmStatus.Success)
+        if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout2, rootJet0) != AlgorithmStatus.Success)
+            return AlgorithmStatus.NotConverged;
+        if (!TryCharge(ref budget, out detail))
+            return AlgorithmStatus.NotConverged;
+        if (SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout2, rootJet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.NotConverged;
 
         var rootSu0 = rootJet0[layout2.GetIndex(1, 0)];
