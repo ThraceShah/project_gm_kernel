@@ -53,12 +53,7 @@ internal static class ICurveContinuation
             return AlgorithmStatus.InvalidInput;
         if (tStart == tTarget)
         {
-            if (!budget.TryConsume(1))
-            {
-                detail = ICurveEvalDetail.BudgetExceeded;
-                return AlgorithmStatus.NotConverged;
-            }
-            if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in yStart))
+            if (!ICurveEvaluation.IsPublishableRoot(in view, tTarget, segment, in yStart, ref budget, out detail))
                 return AlgorithmStatus.NotConverged;
             return CorrectAt(in view, plan, in yStart, tTarget, segment, order, ref budget,
                 derivatives, out steps, out residual, out detail);
@@ -114,13 +109,9 @@ internal static class ICurveContinuation
                     tNext = tTarget;
             }
 
-            if (!budget.TryConsume(2)) // predictor Jacobian + corrector seed evals (lower bound)
-            {
-                detail = ICurveEvalDetail.BudgetExceeded;
+            var predictStatus = PredictI3(in view, segment, t, in position, tNext, ref budget, out var predicted, out detail);
+            if (detail == ICurveEvalDetail.BudgetExceeded)
                 return AlgorithmStatus.NotConverged;
-            }
-
-            var predictStatus = PredictI3(in view, segment, t, in position, tNext, out var predicted);
             if (predictStatus != AlgorithmStatus.Success)
             {
                 // Without a reliable tangent, fall back to holding the last root
@@ -129,20 +120,12 @@ internal static class ICurveContinuation
             }
 
             var correctStatus = CorrectAt(in view, plan, in predicted, tNext, segment, 0, ref budget, local,
-                out var acceptedIterations, out residual, out var correctDetail);
+                out _, out residual, out var correctDetail);
             if (correctDetail == ICurveEvalDetail.BudgetExceeded)
             {
                 detail = correctDetail;
                 return AlgorithmStatus.NotConverged;
             }
-            // Each Refine/Solve attempt may itself burn many base evals; charge a
-            // conservative lower bound so shared budget still shrinks.
-            if (!budget.TryConsume(Math.Max(1, acceptedIterations)))
-            {
-                detail = ICurveEvalDetail.BudgetExceeded;
-                return AlgorithmStatus.NotConverged;
-            }
-
             if (correctStatus == AlgorithmStatus.Success)
             {
                 // Branch guard against the last accepted point. A multiple of this
@@ -234,11 +217,6 @@ internal static class ICurveContinuation
             if (tMid == tLeft || tMid == tTarget) break;
 
             ChordSeed(in view, segment, tMid, out var chord);
-            if (!budget.TryConsume(4))
-            {
-                detail = ICurveEvalDetail.BudgetExceeded;
-                return AlgorithmStatus.NotConverged;
-            }
             var midStatus = CorrectAt(in view, plan, in chord, tMid, segment, 0, ref budget, midDeriv,
                 out var midIters, out var midResidual, out var midDetail);
             if (midDetail == ICurveEvalDetail.BudgetExceeded)
@@ -257,7 +235,6 @@ internal static class ICurveContinuation
             // attempt is not bit-identical to the first.
             var towardOther = Scale(Sub(yOther, chordFromOther), 0.05);
             var otherSeed = Add(chordFromOther, towardOther);
-            if (budget.TryConsume(4))
             {
                 var otherStatus = CorrectAt(in view, plan, in otherSeed, tMid, segment, 0, ref budget, otherDeriv,
                     out var otherIters, out var otherResidual, out var otherDetail);
@@ -330,16 +307,29 @@ internal static class ICurveContinuation
     /// the corrector absorbs the jump (§17.3).
     /// </summary>
     private static AlgorithmStatus PredictI3(in ICurveView view, BufferOffset segment,
-        double t, in KernelVector3 y, double tNext, out KernelVector3 predicted)
+        double t, in KernelVector3 y, double tNext, ref EvaluationBudget budget,
+        out KernelVector3 predicted, out ICurveEvalDetail detail)
     {
         predicted = y;
+        detail = ICurveEvalDetail.None;
         var scale = view.ChartScales[segment];
         if (!(Math.Abs(scale) > 0)) return AlgorithmStatus.Singular;
         var chordUnit = view.ChartChordUnits[segment];
 
+        if (!budget.TryConsume(1))
+        {
+            detail = ICurveEvalDetail.BudgetExceeded;
+            return AlgorithmStatus.NotConverged;
+        }
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in y, 1, out var jet0)
-                != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in y, 1, out var jet1)
+                != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+        if (!budget.TryConsume(1))
+        {
+            detail = ICurveEvalDetail.BudgetExceeded;
+            return AlgorithmStatus.NotConverged;
+        }
+        if (AnalyticImplicitEvaluation.Evaluate(in view.Support1, in y, 1, out var jet1)
                 != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
 
@@ -375,14 +365,10 @@ internal static class ICurveContinuation
         // through the continuation fallback (§17.3). The shared budget covers this
         // solve and any trust-region fallback; a private default budget must not
         // appear here.
-        if (!budget.TryConsume(1))
-        {
-            detail = ICurveEvalDetail.BudgetExceeded;
-            return AlgorithmStatus.NotConverged;
-        }
         var fast = ICurveEvaluation.SolveDirect(in view, in seed, t, segment, order, plan,
-            derivatives, out iterations, out residual);
+            ref budget, derivatives, out iterations, out residual, out detail);
         if (fast == AlgorithmStatus.Success) return fast;
+        if (detail == ICurveEvalDetail.BudgetExceeded) return fast;
 
         Span<double> state = stackalloc double[4];
         var refineStatus = ICurveCorrection.Refine(in view, plan, t, segment, in seed, state,
@@ -392,7 +378,7 @@ internal static class ICurveContinuation
         if (!TryPositionFromState(in view, plan, t, segment, state, out var position))
             return AlgorithmStatus.NumericalFailure;
         return ICurveEvaluation.SolveDirect(in view, in position, t, segment, order, plan,
-            derivatives, out iterations, out residual);
+            ref budget, derivatives, out iterations, out residual, out detail);
     }
 
     private static bool TryPositionFromState(in ICurveView view, ICurveConstraintPlan plan,

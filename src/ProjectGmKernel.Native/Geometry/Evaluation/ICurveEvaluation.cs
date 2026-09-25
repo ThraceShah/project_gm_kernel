@@ -151,6 +151,14 @@ internal static class ICurveEvaluation
 
         if (order == 0)
         {
+            // The original anchor does not depend on a solver. An illegal plan
+            // enumerator is still rejected, on this entry and on L3.
+            var legal = ICurveConstraintPlanRules.ValidateEnumerator(plan);
+            if (legal != AlgorithmStatus.Success)
+            {
+                report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, legal, plan, ChartSide.Right, segment, 0, 0);
+                return legal;
+            }
             derivatives[0] = view.ChartPositions[anchorIndex];
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
                 plan, ChartSide.Right, segment, 0, 0, CacheHitKind.Exact);
@@ -174,7 +182,7 @@ internal static class ICurveEvaluation
             return AlgorithmStatus.Success;
         }
         var seed = view.ChartPositions[anchorIndex];
-        var solveStatus = Solve(in view, in seed, t, segment, order, selected, derivatives,
+        var solveStatus = SolveDirect(in view, in seed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
         report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, solveStatus,
             selected, ChartSide.Right, segment, iterations, residual);
@@ -251,7 +259,7 @@ internal static class ICurveEvaluation
                     double.PositiveInfinity, SampleSourceKind.PredictedOnly, selected));
             }
         }
-        var status = Solve(in view, in solveSeed, t, segment, order, selected, derivatives,
+        var status = SolveDirect(in view, in solveSeed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
         var detail = ICurveEvalDetail.None;
         // Diagnosed Auto switches only — forced plans stay on the requested plan (§7 / §14.6).
@@ -263,7 +271,7 @@ internal static class ICurveEvaluation
             var altCount = ICurveConstraintPlanRules.Alternates(in view, selected, alternates);
             for (BufferOffset ai = 0; ai < altCount; ai++)
             {
-                var altStatus = Solve(in view, in solveSeed, t, segment, order, alternates[ai],
+                var altStatus = SolveDirect(in view, in solveSeed, t, segment, order, alternates[ai],
                     derivatives, out iterations, out residual);
                 if (altStatus == AlgorithmStatus.Success)
                 {
@@ -505,28 +513,54 @@ internal static class ICurveEvaluation
     internal static AlgorithmStatus SolveDirect(in ICurveView view, in KernelVector3 seed, double t,
         BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
         scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
-        => Solve(in view, in seed, t, segment, order, plan, derivatives, out iterations, out residual);
+    {
+        var budget = EvaluationBudget.Default;
+        return SolveDirect(in view, in seed, t, segment, order, plan, ref budget,
+            derivatives, out iterations, out residual, out _);
+    }
+
+    /// <summary>
+    /// Same solve, drawing every implicit jet and geometric deviation from
+    /// <paramref name="budget"/>. The caller span is written only after the
+    /// final publication gate accepts the staged jet.
+    /// </summary>
+    internal static AlgorithmStatus SolveDirect(in ICurveView view, in KernelVector3 seed, double t,
+        BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
+        ref EvaluationBudget budget, scoped Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual, out ICurveEvalDetail detail)
+    {
+        Span<KernelVector3> staged = stackalloc KernelVector3[3];
+        var status = Solve(in view, in seed, t, segment, order, plan, ref budget, staged,
+            out iterations, out residual, out detail);
+        if (status != AlgorithmStatus.Success) return status;
+        derivatives[0] = staged[0];
+        if (order >= 1) derivatives[1] = staged[1];
+        if (order >= 2) derivatives[2] = staged[2];
+        return AlgorithmStatus.Success;
+    }
 
     /// <summary>Finite switch over the plans; no residual callbacks cross this boundary (§19.4).</summary>
     private static AlgorithmStatus Solve(in ICurveView view, in KernelVector3 seed, double t,
         BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
-        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
+        ref EvaluationBudget budget, scoped Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual, out ICurveEvalDetail detail)
     {
         iterations = 0;
         residual = 0;
+        detail = ICurveEvalDetail.None;
         var status = plan switch
         {
-            ICurveConstraintPlan.I1 => SolveI1(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
-            ICurveConstraintPlan.P2 => SolveP2(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
-            ICurveConstraintPlan.I3 => SolveI3(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
-            ICurveConstraintPlan.I2 => SolveI2(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
-            ICurveConstraintPlan.P4 => SolveP4(in view, in seed, t, segment, order, derivatives, out iterations, out residual),
+            ICurveConstraintPlan.I1 => SolveI1(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
+            ICurveConstraintPlan.P2 => SolveP2(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
+            ICurveConstraintPlan.I3 => SolveI3(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
+            ICurveConstraintPlan.I2 => SolveI2(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
+            ICurveConstraintPlan.P4 => SolveP4(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
             _ => AlgorithmStatus.InvalidInput,
         };
         if (status != AlgorithmStatus.Success) return status;
-        return IsPublishableRoot(in view, t, segment, in derivatives[0])
-            ? AlgorithmStatus.Success
-            : AlgorithmStatus.NotConverged;
+        if (IsPublishableRoot(in view, t, segment, in derivatives[0], ref budget, out detail))
+            return AlgorithmStatus.Success;
+        return AlgorithmStatus.NotConverged;
     }
 
     /// <summary>
@@ -536,14 +570,23 @@ internal static class ICurveEvaluation
     internal static bool IsPublishableRoot(in ICurveView view, double t, BufferOffset segment,
         in KernelVector3 point)
     {
-        if (AnalyticImplicitEvaluation.GeometricDeviation(in view.Support0, in point, out var d0)
-                != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.GeometricDeviation(in view.Support1, in point, out var d1)
-                != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0)
-                != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1)
-                != AlgorithmStatus.Success)
+        var budget = EvaluationBudget.Default;
+        return IsPublishableRoot(in view, t, segment, in point, ref budget, out _);
+    }
+
+    /// <summary>
+    /// Publication gate that charges each support deviation and implicit jet
+    /// against the caller's shared budget. A failed charge is
+    /// <see cref="ICurveEvalDetail.BudgetExceeded"/>, not an ordinary rejection.
+    /// </summary>
+    internal static bool IsPublishableRoot(in ICurveView view, double t, BufferOffset segment,
+        in KernelVector3 point, ref EvaluationBudget budget, out ICurveEvalDetail detail)
+    {
+        detail = ICurveEvalDetail.None;
+        if (!TryGeometricDeviation(in view.Support0, in point, ref budget, out var d0, out detail)
+            || !TryGeometricDeviation(in view.Support1, in point, ref budget, out var d1, out detail)
+            || !TryImplicitJet(in view.Support0, in point, 1, ref budget, out var jet0, out detail)
+            || !TryImplicitJet(in view.Support1, in point, 1, ref budget, out var jet1, out detail))
             return false;
         var tolerance = PublicationTolerance(in view);
         var planeResidual = OriginalChartParameterMap.PlaneResidual(
@@ -557,7 +600,7 @@ internal static class ICurveEvaluation
             ? Scale(jet1.Gradient, -1) : jet1.Gradient;
         var tangent = Unit(Cross(oriented0, oriented1));
         if (!IsFinite(tangent)
-            || !HasChartConsistentDirection(in view, segment, in tangent))
+            || !HasChartConsistentDirection(in view, segment, in tangent, ref budget, out detail))
             return false;
         if (!IsSameAnalyticBranch(in view.Support0, view.ChartPositions, segment, in point, tolerance)
             || !IsSameAnalyticBranch(in view.Support1, view.ChartPositions, segment, in point, tolerance))
@@ -589,14 +632,39 @@ internal static class ICurveEvaluation
         return SmallLinearSolve.Norm(correction) <= tolerance;
     }
 
-    private static bool HasChartConsistentDirection(in ICurveView view, BufferOffset segment,
-        in KernelVector3 candidateTangent)
+    private static bool TryCharge(ref EvaluationBudget budget, out ICurveEvalDetail detail)
     {
+        detail = ICurveEvalDetail.None;
+        if (budget.TryConsume(1)) return true;
+        detail = ICurveEvalDetail.BudgetExceeded;
+        return false;
+    }
+
+    private static bool TryGeometricDeviation(in AnalyticSurface surface, in KernelVector3 point,
+        ref EvaluationBudget budget, out double deviation, out ICurveEvalDetail detail)
+    {
+        deviation = 0;
+        if (!TryCharge(ref budget, out detail)) return false;
+        return AnalyticImplicitEvaluation.GeometricDeviation(in surface, in point, out deviation)
+            == AlgorithmStatus.Success;
+    }
+
+    private static bool TryImplicitJet(in AnalyticSurface surface, in KernelVector3 point,
+        DerivativeOrder order, ref EvaluationBudget budget, out ImplicitJet jet, out ICurveEvalDetail detail)
+    {
+        jet = default;
+        if (!TryCharge(ref budget, out detail)) return false;
+        return AnalyticImplicitEvaluation.Evaluate(in surface, in point, order, out jet)
+            == AlgorithmStatus.Success;
+    }
+
+    private static bool HasChartConsistentDirection(in ICurveView view, BufferOffset segment,
+        in KernelVector3 candidateTangent, ref EvaluationBudget budget, out ICurveEvalDetail detail)
+    {
+        detail = ICurveEvalDetail.None;
         var anchor = view.ChartPositions[segment];
-        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in anchor, 1, out var anchor0)
-                != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in anchor, 1, out var anchor1)
-                != AlgorithmStatus.Success)
+        if (!TryImplicitJet(in view.Support0, in anchor, 1, ref budget, out var anchor0, out detail)
+            || !TryImplicitJet(in view.Support1, in anchor, 1, ref budget, out var anchor1, out detail))
             return false;
         var oriented0 = view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c
             ? Scale(anchor0.Gradient, -1) : anchor0.Gradient;
@@ -642,9 +710,9 @@ internal static class ICurveEvaluation
 
     /// <summary>x′ᵀHx′ via the analytic Hessian, contracted without materializing the tensor (§16.2).</summary>
     private static double SecondDirectional(in AnalyticSurface surface, in KernelVector3 root,
-        in KernelVector3 direction)
+        in KernelVector3 direction, ref EvaluationBudget budget, out ICurveEvalDetail detail)
     {
-        if (AnalyticImplicitEvaluation.Evaluate(in surface, in root, 2, out var jet) != AlgorithmStatus.Success)
+        if (!TryImplicitJet(in surface, in root, 2, ref budget, out var jet, out detail))
             return double.NaN;
         return jet.Hxx * direction.X * direction.X
             + 2 * jet.Hxy * direction.X * direction.Y
@@ -657,11 +725,13 @@ internal static class ICurveEvaluation
     // ── I1: plane support + implicit other (§7.5) ────────────────
 
     private static AlgorithmStatus SolveI1(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
-        out BufferOffset iterations, out double residual)
+        BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
+        out ICurveEvalDetail detail)
     {
         iterations = 0;
         residual = 0;
+        detail = ICurveEvalDetail.None;
         var planeIsSupport0 = view.Support0.Kind == SurfaceClass.Plane;
         var planeIsSupport1 = view.Support1.Kind == SurfaceClass.Plane;
         if (planeIsSupport0 == planeIsSupport1) return AlgorithmStatus.Unsupported; // needs exactly one plane
@@ -700,15 +770,18 @@ internal static class ICurveEvaluation
         {
             iterations = iteration + 1;
             var point = Add(x0, Scale(b, mu));
-            if (AnalyticImplicitEvaluation.Evaluate(in other, in point, 1, out var jet) != AlgorithmStatus.Success)
-                return AlgorithmStatus.Unsupported;
+            if (!TryImplicitJet(in other, in point, 1, ref budget, out var jet, out detail))
+                return detail == ICurveEvalDetail.BudgetExceeded
+                    ? AlgorithmStatus.NotConverged
+                    : AlgorithmStatus.Unsupported;
             gradient = jet.Gradient;
             residual = Math.Abs(jet.Value);
-            if (IsPublishableRoot(in view, t, segment, in point))
+            if (IsPublishableRoot(in view, t, segment, in point, ref budget, out detail))
             {
                 converged = true;
                 break;
             }
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
             var slope = Dot(gradient, b);
             if (!(Math.Abs(slope) > 1e-300)) return AlgorithmStatus.Singular;
             mu -= jet.Value / slope;
@@ -718,8 +791,8 @@ internal static class ICurveEvaluation
         {
             Span<double> refined = stackalloc double[1];
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I1, t, segment,
-                in seed, refined, out var refineIterations, out residual);
-            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+                in seed, refined, ref budget, out var refineIterations, out residual, out detail);
+            if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
             mu = refined[0];
         }
@@ -730,9 +803,10 @@ internal static class ICurveEvaluation
         {
             // The fallback corrector moved μ; the derivative chain needs the
             // gradient at the refined root, not the abandoned fast-loop point.
-            if (AnalyticImplicitEvaluation.Evaluate(in other, in root, 1, out var rootJet)
-                != AlgorithmStatus.Success)
-                return AlgorithmStatus.Unsupported;
+            if (!TryImplicitJet(in other, in root, 1, ref budget, out var rootJet, out detail))
+                return detail == ICurveEvalDetail.BudgetExceeded
+                    ? AlgorithmStatus.NotConverged
+                    : AlgorithmStatus.Unsupported;
             gradient = rootJet.Gradient;
         }
 
@@ -752,7 +826,8 @@ internal static class ICurveEvaluation
         if (order >= 2)
         {
             var xPrime = derivatives[1];
-            var curvature = SecondDirectional(in other, in root, in xPrime);
+            var curvature = SecondDirectional(in other, in root, in xPrime, ref budget, out detail);
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
             var muDoublePrime = -curvature / Dot(gradient, b);
             derivatives[2] = Scale(b, muDoublePrime);
             if (!IsFinite(derivatives[2])) return AlgorithmStatus.NumericalFailure;
@@ -763,11 +838,13 @@ internal static class ICurveEvaluation
     // ── P2: parametric side + implicit other (§7.2) ──────────────
 
     private static AlgorithmStatus SolveP2(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
-        out BufferOffset iterations, out double residual)
+        BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
+        out ICurveEvalDetail detail)
     {
         iterations = 0;
         residual = 0;
+        detail = ICurveEvalDetail.None;
         // The parametric side is support0 in this slice (both analytic
         // supports qualify; a flipped-side variant arrives with non-analytic
         // supports in later tasks).
@@ -793,10 +870,13 @@ internal static class ICurveEvaluation
         for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
         {
             iterations = iteration + 1;
+            if (!TryCharge(ref budget, out detail)) return AlgorithmStatus.NotConverged;
             if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout1, jet) != AlgorithmStatus.Success)
                 return AlgorithmStatus.NotConverged; // trial left the valid parameter domain
-            if (AnalyticImplicitEvaluation.Evaluate(in view.Support1, in jet[0], 1, out var jet1) != AlgorithmStatus.Success)
-                return AlgorithmStatus.Unsupported;
+            if (!TryImplicitJet(in view.Support1, in jet[0], 1, ref budget, out var jet1, out detail))
+                return detail == ICurveEvalDetail.BudgetExceeded
+                    ? AlgorithmStatus.NotConverged
+                    : AlgorithmStatus.Unsupported;
             gradient1 = jet1.Gradient;
 
             residualVector[0] = jet1.Value;
@@ -809,11 +889,12 @@ internal static class ICurveEvaluation
             jacobian[2] = Dot(chordUnit, su1); jacobian[3] = Dot(chordUnit, sv1);
 
             residual = SmallLinearSolve.Norm(residualVector);
-            if (IsPublishableRoot(in view, t, segment, in jet[0]))
+            if (IsPublishableRoot(in view, t, segment, in jet[0], ref budget, out detail))
             {
                 converged = true;
                 break;
             }
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
             var stepStatus = NewtonStep.ComputeStep(jacobian, jacobianCopy, residualVector, 2, pivots, model, step, out var predicted);
             if (stepStatus != AlgorithmStatus.Success || !(predicted > 0))
                 return stepStatus == AlgorithmStatus.Success ? AlgorithmStatus.Singular : stepStatus;
@@ -824,8 +905,8 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P2, t, segment,
-                in seed, q, out var refineIterations, out residual);
-            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+                in seed, q, ref budget, out var refineIterations, out residual, out detail);
+            if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
 
@@ -833,11 +914,13 @@ internal static class ICurveEvaluation
         if (!SurfaceDerivativeLayout.TryCreate(2, 2, out var layout2))
             return AlgorithmStatus.InvalidInput;
         Span<KernelVector3> rootJet = stackalloc KernelVector3[9];
+        if (!TryCharge(ref budget, out detail)) return AlgorithmStatus.NotConverged;
         if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout2, rootJet) != AlgorithmStatus.Success)
             return AlgorithmStatus.NotConverged;
-        if (AnalyticImplicitEvaluation.Evaluate(in view.Support1, in rootJet[0], order >= 2 ? 2 : 1, out var rootJet1)
-            != AlgorithmStatus.Success)
-            return AlgorithmStatus.Unsupported;
+        if (!TryImplicitJet(in view.Support1, in rootJet[0], order >= 2 ? 2 : 1, ref budget, out var rootJet1, out detail))
+            return detail == ICurveEvalDetail.BudgetExceeded
+                ? AlgorithmStatus.NotConverged
+                : AlgorithmStatus.Unsupported;
 
         var rootSu = rootJet[layout2.GetIndex(1, 0)];
         var rootSv = rootJet[layout2.GetIndex(0, 1)];
@@ -870,8 +953,9 @@ internal static class ICurveEvaluation
             var xPrime = Add(Scale(rootSu, d1[0]), Scale(rootSv, d1[1]));
             var second = ParametricSecondChain(in layout2, rootJet, d1[0], d1[1]);
             Span<double> d2 = stackalloc double[2];
-            d2[0] = -(SecondDirectional(in view.Support1, in rootJet[0], in xPrime)
-                + Dot(rootJet1.Gradient, second));
+            var curvature = SecondDirectional(in view.Support1, in rootJet[0], in xPrime, ref budget, out detail);
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
+            d2[0] = -(curvature + Dot(rootJet1.Gradient, second));
             d2[1] = -Dot(chordUnit, second);
             if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d2) != AlgorithmStatus.Success)
                 return AlgorithmStatus.NumericalFailure;
@@ -884,11 +968,13 @@ internal static class ICurveEvaluation
     // ── I3: implicit/implicit, 3×3 (§7.3) ────────────────────────
 
     private static AlgorithmStatus SolveI3(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
-        out BufferOffset iterations, out double residual)
+        BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
+        out ICurveEvalDetail detail)
     {
         iterations = 0;
         residual = 0;
+        detail = ICurveEvalDetail.None;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
 
@@ -905,9 +991,11 @@ internal static class ICurveEvaluation
         {
             iterations = iteration + 1;
             var point = Vector(x[0], x[1], x[2]);
-            if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0) != AlgorithmStatus.Success
-                || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1) != AlgorithmStatus.Success)
-                return AlgorithmStatus.Unsupported;
+            if (!TryImplicitJet(in view.Support0, in point, 1, ref budget, out var jet0, out detail)
+                || !TryImplicitJet(in view.Support1, in point, 1, ref budget, out var jet1, out detail))
+                return detail == ICurveEvalDetail.BudgetExceeded
+                    ? AlgorithmStatus.NotConverged
+                    : AlgorithmStatus.Unsupported;
             residualVector[0] = jet0.Value;
             residualVector[1] = jet1.Value;
             residualVector[2] = OriginalChartParameterMap.PlaneResidual(
@@ -918,11 +1006,12 @@ internal static class ICurveEvaluation
             jacobian[6] = chordUnit.X; jacobian[7] = chordUnit.Y; jacobian[8] = chordUnit.Z;
 
             residual = SmallLinearSolve.Norm(residualVector);
-            if (IsPublishableRoot(in view, t, segment, in point))
+            if (IsPublishableRoot(in view, t, segment, in point, ref budget, out detail))
             {
                 converged = true;
                 break;
             }
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
 
             var status = NewtonStep.ComputeStep(jacobian, jacobianCopy, residualVector, 3, pivots, model, step, out var predicted);
             if (status != AlgorithmStatus.Success || !(predicted > 0))
@@ -936,8 +1025,8 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I3, t, segment,
-                in seed, x, out var refineIterations, out residual);
-            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+                in seed, x, ref budget, out var refineIterations, out residual, out detail);
+            if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
 
@@ -945,9 +1034,11 @@ internal static class ICurveEvaluation
 
         // Rebuild the true root Jacobian once, then serve every derivative
         // right side from this decomposition (§14.2, §16.1).
-        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in root, order >= 2 ? 2 : 1, out var rootJet0) != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in root, order >= 2 ? 2 : 1, out var rootJet1) != AlgorithmStatus.Success)
-            return AlgorithmStatus.Unsupported;
+        if (!TryImplicitJet(in view.Support0, in root, order >= 2 ? 2 : 1, ref budget, out var rootJet0, out detail)
+            || !TryImplicitJet(in view.Support1, in root, order >= 2 ? 2 : 1, ref budget, out var rootJet1, out detail))
+            return detail == ICurveEvalDetail.BudgetExceeded
+                ? AlgorithmStatus.NotConverged
+                : AlgorithmStatus.Unsupported;
         jacobian[0] = rootJet0.Gradient.X; jacobian[1] = rootJet0.Gradient.Y; jacobian[2] = rootJet0.Gradient.Z;
         jacobian[3] = rootJet1.Gradient.X; jacobian[4] = rootJet1.Gradient.Y; jacobian[5] = rootJet1.Gradient.Z;
         jacobian[6] = chordUnit.X; jacobian[7] = chordUnit.Y; jacobian[8] = chordUnit.Z;
@@ -988,11 +1079,13 @@ internal static class ICurveEvaluation
     // ── I2: implicit/implicit with the plane eliminated, 2×2 (§7.4) ──
 
     private static AlgorithmStatus SolveI2(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
-        out BufferOffset iterations, out double residual)
+        BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
+        out ICurveEvalDetail detail)
     {
         iterations = 0;
         residual = 0;
+        detail = ICurveEvalDetail.None;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
 
@@ -1027,20 +1120,23 @@ internal static class ICurveEvaluation
         {
             iterations = iteration + 1;
             var point = Add(planeBase, Add(Scale(u, xi[0]), Scale(v, xi[1])));
-            if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0) != AlgorithmStatus.Success
-                || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in point, 1, out var jet1) != AlgorithmStatus.Success)
-                return AlgorithmStatus.Unsupported;
+            if (!TryImplicitJet(in view.Support0, in point, 1, ref budget, out var jet0, out detail)
+                || !TryImplicitJet(in view.Support1, in point, 1, ref budget, out var jet1, out detail))
+                return detail == ICurveEvalDetail.BudgetExceeded
+                    ? AlgorithmStatus.NotConverged
+                    : AlgorithmStatus.Unsupported;
             residualVector[0] = jet0.Value;
             residualVector[1] = jet1.Value;
             jacobian[0] = Dot(jet0.Gradient, u); jacobian[1] = Dot(jet0.Gradient, v);
             jacobian[2] = Dot(jet1.Gradient, u); jacobian[3] = Dot(jet1.Gradient, v);
 
             residual = SmallLinearSolve.Norm(residualVector);
-            if (IsPublishableRoot(in view, t, segment, in point))
+            if (IsPublishableRoot(in view, t, segment, in point, ref budget, out detail))
             {
                 converged = true;
                 break;
             }
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
             var stepStatus = NewtonStep.ComputeStep(jacobian, jacobianCopy, residualVector, 2, pivots, model, step, out var predicted);
             if (stepStatus != AlgorithmStatus.Success || !(predicted > 0))
                 return stepStatus == AlgorithmStatus.Success ? AlgorithmStatus.Singular : stepStatus;
@@ -1051,14 +1147,16 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I2, t, segment,
-                in seed, xi, out var refineIterations, out residual);
-            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+                in seed, xi, ref budget, out var refineIterations, out residual, out detail);
+            if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
         var root = Add(planeBase, Add(Scale(u, xi[0]), Scale(v, xi[1])));
-        if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in root, order >= 2 ? 2 : 1, out var rootJet0) != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in root, order >= 2 ? 2 : 1, out var rootJet1) != AlgorithmStatus.Success)
-            return AlgorithmStatus.Unsupported;
+        if (!TryImplicitJet(in view.Support0, in root, order >= 2 ? 2 : 1, ref budget, out var rootJet0, out detail)
+            || !TryImplicitJet(in view.Support1, in root, order >= 2 ? 2 : 1, ref budget, out var rootJet1, out detail))
+            return detail == ICurveEvalDetail.BudgetExceeded
+                ? AlgorithmStatus.NotConverged
+                : AlgorithmStatus.Unsupported;
         jacobian[0] = Dot(rootJet0.Gradient, u); jacobian[1] = Dot(rootJet0.Gradient, v);
         jacobian[2] = Dot(rootJet1.Gradient, u); jacobian[3] = Dot(rootJet1.Gradient, v);
         if (SmallLinearSolve.LuFactorize(jacobian, 2, pivots) != AlgorithmStatus.Success)
@@ -1091,8 +1189,10 @@ internal static class ICurveEvaluation
                 return AlgorithmStatus.NumericalFailure;
             var xPrime = Add(qPrime, Add(Scale(u, d1[0]), Scale(v, d1[1])));
             Span<double> d2 = stackalloc double[2];
-            d2[0] = -SecondDirectional(in view.Support0, in root, in xPrime);
-            d2[1] = -SecondDirectional(in view.Support1, in root, in xPrime);
+            d2[0] = -SecondDirectional(in view.Support0, in root, in xPrime, ref budget, out detail);
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
+            d2[1] = -SecondDirectional(in view.Support1, in root, in xPrime, ref budget, out detail);
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
             if (SmallLinearSolve.LuSolveInPlace(jacobian, 2, pivots, d2) != AlgorithmStatus.Success)
                 return AlgorithmStatus.NumericalFailure;
             derivatives[2] = Add(Scale(u, d2[0]), Scale(v, d2[1]));
@@ -1113,11 +1213,13 @@ internal static class ICurveEvaluation
     // ── P4: parametric/parametric, 4×4 baseline (§7.1) ───────────
 
     private static AlgorithmStatus SolveP4(in ICurveView view, in KernelVector3 seed, double t,
-        BufferOffset segment, DerivativeOrder order, scoped Span<KernelVector3> derivatives,
-        out BufferOffset iterations, out double residual)
+        BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
+        out ICurveEvalDetail detail)
     {
         iterations = 0;
         residual = 0;
+        detail = ICurveEvalDetail.None;
         if (AnalyticParametricEvaluation.TryRecoverWitness(in view.Support0, in seed, out var u0, out var v0) != AlgorithmStatus.Success
             || AnalyticParametricEvaluation.TryRecoverWitness(in view.Support1, in seed, out var u1, out var v1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
@@ -1140,6 +1242,8 @@ internal static class ICurveEvaluation
         for (BufferOffset iteration = 0; iteration < MaxFastNewtonIterations; iteration++)
         {
             iterations = iteration + 1;
+            if (!TryCharge(ref budget, out detail) || !TryCharge(ref budget, out detail))
+                return AlgorithmStatus.NotConverged;
             if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout1, jet0) != AlgorithmStatus.Success
                 || SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout1, jet1) != AlgorithmStatus.Success)
                 return AlgorithmStatus.NotConverged; // trial left a valid parameter domain
@@ -1162,11 +1266,12 @@ internal static class ICurveEvaluation
 
             residual = SmallLinearSolve.Norm(residualVector);
             if (residual <= PublicationTolerance(in view)
-                && IsPublishableRoot(in view, t, segment, in jet0[0]))
+                && IsPublishableRoot(in view, t, segment, in jet0[0], ref budget, out detail))
             {
                 converged = true;
                 break;
             }
+            if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
             var stepStatus = NewtonStep.ComputeStep(jacobian, jacobianCopy, residualVector, 4, pivots, model, step, out var predicted);
             if (stepStatus != AlgorithmStatus.Success || !(predicted > 0))
                 return stepStatus == AlgorithmStatus.Success ? AlgorithmStatus.Singular : stepStatus;
@@ -1179,8 +1284,8 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P4, t, segment,
-                in seed, q, out var refineIterations, out residual);
-            if (refine != AlgorithmStatus.Success) return AlgorithmStatus.NotConverged;
+                in seed, q, ref budget, out var refineIterations, out residual, out detail);
+            if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
 
@@ -1189,6 +1294,8 @@ internal static class ICurveEvaluation
             return AlgorithmStatus.InvalidInput;
         Span<KernelVector3> rootJet0 = stackalloc KernelVector3[9];
         Span<KernelVector3> rootJet1 = stackalloc KernelVector3[9];
+        if (!TryCharge(ref budget, out detail) || !TryCharge(ref budget, out detail))
+            return AlgorithmStatus.NotConverged;
         if (SurfaceEvaluation.Evaluate(in view.Support0, q[0], q[1], in layout2, rootJet0) != AlgorithmStatus.Success
             || SurfaceEvaluation.Evaluate(in view.Support1, q[2], q[3], in layout2, rootJet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.NotConverged;
