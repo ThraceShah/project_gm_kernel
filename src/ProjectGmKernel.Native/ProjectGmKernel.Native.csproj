@@ -1,4 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(KernelTestHooks)' == 'true'">
+    <DefineConstants>$(DefineConstants);KERNEL_TEST_HOOKS</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\testhooks\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\testhooks\</IntermediateOutputPath>
+  </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>ProjectGmKernel.Native</AssemblyName>
