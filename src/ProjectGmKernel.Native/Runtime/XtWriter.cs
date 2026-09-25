@@ -720,6 +720,9 @@ internal static unsafe class XtWriter
         };
     }
 
+    private static XtFieldValue SenseField(KernelSense sense)
+        => XtFieldValue.Char(sense == ParasolidConstants.PK_TOPOL_sense_negative_c ? '-' : '+');
+
     private static XtNode PlaneNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
     {
         var data = KernelRuntime.GetPlaneData(surface.DataIndex);
@@ -735,7 +738,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.NormalX, data.NormalY, data.NormalZ),
                 XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
@@ -758,7 +761,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
                 XtFieldValue.RealValue(data.Radius),
@@ -782,7 +785,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
                 XtFieldValue.RealValue(data.Radius),
@@ -808,7 +811,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Vec(data.CenterX, data.CenterY, data.CenterZ),
                 XtFieldValue.RealValue(data.Radius),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
@@ -832,7 +835,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
                 XtFieldValue.RealValue(data.MajorRadius),
@@ -857,7 +860,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextCurve(tag, map)),
                 XtFieldValue.Ptr(PreviousCurve(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(curve.Sense),
                 XtFieldValue.Vec(data.LocationX, data.LocationY, data.LocationZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
             ],
@@ -912,7 +915,7 @@ internal static unsafe class XtWriter
                 floating ? XtFieldValue.Ptr(0) : XtFieldValue.Ptr(NextCurve(tag, map)),
                 floating ? XtFieldValue.Ptr(0) : XtFieldValue.Ptr(PreviousCurve(tag, map)),
                 floating ? XtFieldValue.Ptr(0) : GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'), XtFieldValue.Ptr(nurbs), XtFieldValue.Ptr(curveData),
+                SenseField(curve.Sense), XtFieldValue.Ptr(nurbs), XtFieldValue.Ptr(curveData),
             ],
         };
     }
@@ -932,7 +935,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextCurve(tag, map)),
                 XtFieldValue.Ptr(PreviousCurve(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(curve.Sense),
                 XtFieldValue.Vec(data.CenterX, data.CenterY, data.CenterZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
                 XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
@@ -956,7 +959,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextCurve(tag, map)),
                 XtFieldValue.Ptr(PreviousCurve(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(curve.Sense),
                 XtFieldValue.Vec(data.CenterX, data.CenterY, data.CenterZ),
                 XtFieldValue.Vec(data.AxisX, data.AxisY, data.AxisZ),
                 XtFieldValue.Vec(data.RefDirX, data.RefDirY, data.RefDirZ),
@@ -981,7 +984,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextCurve(tag, map)),
                 XtFieldValue.Ptr(PreviousCurve(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(curve.Sense),
                 XtFieldValue.Ptr(Ptr(map.CurveTags, data.BasisCurveTag)),
                 XtFieldValue.Vec(data.Point1.X, data.Point1.Y, data.Point1.Z),
                 XtFieldValue.Vec(data.Point2.X, data.Point2.Y, data.Point2.Z),
@@ -1006,7 +1009,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextCurve(tag, map)),
                 XtFieldValue.Ptr(PreviousCurve(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(curve.Sense),
                 XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.SurfTag)),
                 XtFieldValue.Ptr(Ptr(map.CurveTags, data.BCurveTag)),
                 XtFieldValue.Ptr(0),
@@ -1141,7 +1144,10 @@ internal static unsafe class XtWriter
                 throw new InvalidOperationException("INTERSECTION_DATA UV block is missing.");
             var values = new ReadOnlySpan<double>((double*)block, uvCount);
             for (BufferOffset i = 0; i < uvCount; i++)
-                fields[1 + i] = XtFieldValue.RealValue(values[i]);
+            {
+                var val = values[i];
+                fields[1 + i] = double.IsFinite(val) ? XtFieldValue.RealValue(val) : XtFieldValue.Null();
+            }
         }
         return new XtNode
         {
@@ -1273,7 +1279,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Ptr(nurbs),
                 XtFieldValue.Ptr(surfaceData),
             ],
@@ -1295,7 +1301,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Ptr(Ptr(map.CurveTags, data.SectionCurveTag)),
                 XtFieldValue.Vec(data.Sweep.X, data.Sweep.Y, data.Sweep.Z),
                 XtFieldValue.Null(),
@@ -1318,7 +1324,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Ptr(Ptr(map.CurveTags, data.ProfileCurveTag)),
                 XtFieldValue.Vec(data.Base.X, data.Base.Y, data.Base.Z),
                 XtFieldValue.Vec(data.Axis.X, data.Axis.Y, data.Axis.Z),
@@ -1355,7 +1361,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag, map)),
                 XtFieldValue.Ptr(PreviousSurface(tag, map)),
                 GeometricOwnerField(tag, map),
-                XtFieldValue.Char('+'),
+                SenseField(surface.Sense),
                 XtFieldValue.Char((char)data.Check),
                 XtFieldValue.Logical(false),
                 XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.BaseSurfTag)),

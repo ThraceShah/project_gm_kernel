@@ -182,6 +182,67 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
             AngularError = 1e-6,
         };
 
+    [Fact]
+    public void PointOnSurfaceTolerance_DecoupledFromChordalError()
+    {
+        var plane = CreatePlaneZ0();
+        var sphere = CreateUnitSphere();
+
+        // Off-surface chart points: radius 1.05 instead of 1.0 (0.05 deviation from unit sphere)
+        double[] offSurfaceChart = [1.05, 0, 0, 0, 1.05, 0];
+
+        // 1. With small ChordalError = 1e-6: rejected
+        var inputSmall = MinimalCircleInput(plane, sphere, offSurfaceChart);
+        inputSmall.ChordalError = 1e-6;
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(inputSmall, out var slotSmall, out _, out _));
+        Assert.Equal(AlgorithmStatus.InvalidInput, KernelRuntime.TryBindICurveEntity(slotSmall, out _));
+        KernelRuntime.FreeICurveData(slotSmall);
+
+        // 2. With large ChordalError = 0.1: must ALSO be rejected (not relaxed by ChordalError)
+        var inputLarge = MinimalCircleInput(plane, sphere, offSurfaceChart);
+        inputLarge.ChordalError = 0.1;
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(inputLarge, out var slotLarge, out _, out _));
+        Assert.Equal(AlgorithmStatus.InvalidInput, KernelRuntime.TryBindICurveEntity(slotLarge, out _));
+        KernelRuntime.FreeICurveData(slotLarge);
+
+        // 3. Valid on-surface chart points with large ChordalError = 0.1: must succeed
+        double[] onSurfaceChart = [1.0, 0, 0, 0, 1.0, 0];
+        var inputValid = MinimalCircleInput(plane, sphere, onSurfaceChart);
+        inputValid.ChordalError = 0.1;
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(inputValid, out var slotValid, out _, out _));
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(slotValid, out var tagValid));
+        Assert.True(tagValid > 0);
+    }
+
+    [Fact]
+    public void UvNullPair_AcceptedWhenCompletePair_RejectedWhenPartial()
+    {
+        var plane = CreatePlaneZ0();
+        var sphere = CreateUnitSphere();
+        double[] chart = [1.0, 0, 0, 0, 1.0, 0];
+
+        // Complete null pairs (NaN, NaN) for 2 chart points with UvType.First (stride 2 -> 4 doubles)
+        double[] uvPairs = [double.NaN, double.NaN, double.NaN, double.NaN];
+        var inputComplete = MinimalCircleInput(plane, sphere, chart);
+        inputComplete.UvType = IntersectionUvType.First;
+        inputComplete.UvValues = uvPairs;
+
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(inputComplete, out var slotComplete, out var failComplete, out _));
+        Assert.Equal(IcurveDecodeFailure.None, failComplete);
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(slotComplete, out var tagComplete));
+        Assert.True(tagComplete > 0);
+
+        // Single null component (NaN, 0.0) -> rejected by decode
+        double[] uvPartial = [double.NaN, 0.0, 0.0, 0.0];
+        var inputPartial = MinimalCircleInput(plane, sphere, chart);
+        inputPartial.UvType = IntersectionUvType.First;
+        inputPartial.UvValues = uvPartial;
+
+        Assert.Equal(AlgorithmStatus.InvalidInput, KernelRuntime.DecodeIcurve(inputPartial, out _, out var failPartial, out var indexPartial));
+        Assert.Equal(IcurveDecodeFailure.NullUvValue, failPartial);
+        Assert.Equal(0, indexPartial);
+    }
+
     private static int CreatePlaneZ0()
     {
         var sf = new PK_PLANE_sf_s();

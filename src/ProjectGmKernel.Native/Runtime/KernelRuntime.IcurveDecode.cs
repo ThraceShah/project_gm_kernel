@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Generated;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -50,6 +51,7 @@ internal ref struct IcurveDecodeInput
     public double ParameterError;
     public KernelLogical ParameterErrorProvided;
     public int SourceSchema;
+    public KernelSense Sense;                      // source curve sense (XT node field 6)
 }
 
 /// <summary>
@@ -115,9 +117,25 @@ internal static unsafe partial class KernelRuntime
         if (expectedUv < 0) { failure = IcurveDecodeFailure.UnknownUvType; return AlgorithmStatus.InvalidInput; }
         if (input.UvValues.Length < expectedUv) { failure = IcurveDecodeFailure.TruncatedUvValues; return AlgorithmStatus.InvalidInput; }
         if (input.UvValues.Length > expectedUv) { failure = IcurveDecodeFailure.OversizedUvValues; return AlgorithmStatus.InvalidInput; }
-        for (BufferOffset i = 0; i < input.UvValues.Length; i++)
-            if (double.IsNaN(input.UvValues[i]))
-            { failure = IcurveDecodeFailure.NullUvValue; failureIndex = i; return AlgorithmStatus.InvalidInput; }
+        for (BufferOffset i = 0; i < input.UvValues.Length; i += 2)
+        {
+            var u = input.UvValues[i];
+            var v = input.UvValues[i + 1];
+            var uNull = double.IsNaN(u);
+            var vNull = double.IsNaN(v);
+            if (uNull != vNull)
+            {
+                failure = IcurveDecodeFailure.NullUvValue;
+                failureIndex = uNull ? i : i + 1;
+                return AlgorithmStatus.InvalidInput;
+            }
+            if (!uNull && (!double.IsFinite(u) || !double.IsFinite(v)))
+            {
+                failure = IcurveDecodeFailure.NullUvValue;
+                failureIndex = !double.IsFinite(u) ? i : i + 1;
+                return AlgorithmStatus.InvalidInput;
+            }
+        }
 
         // Storage: metadata slot, then hull-vector block (start + chart + end),
         // then the UV block. Every allocation undoes the previous one on failure.
@@ -160,6 +178,9 @@ internal static unsafe partial class KernelRuntime
         data.UvValueCount = expectedUv;
         data.UvValueBlock = expectedUv > 0 ? blocks->HandleOf(uvBlock) : -1;
         data.SourceSchema = input.SourceSchema;
+        data.Sense = input.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? ParasolidConstants.PK_TOPOL_sense_negative_c
+            : ParasolidConstants.PK_TOPOL_sense_positive_c;
 
         var stored = new Span<double>(hvecBlock, hvecTotal * 3);
         input.Start.Hvecs.CopyTo(stored[..(startVectors * 3)]);
