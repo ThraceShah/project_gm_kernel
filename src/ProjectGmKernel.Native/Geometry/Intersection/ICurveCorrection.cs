@@ -142,8 +142,15 @@ internal static class ICurveCorrection
                 budget.TightenInner(0.5);
                 detail = ICurveEvalDetail.InnerAccuracyInsufficient;
                 innerTightenUsed = true;
-                // Re-evaluate the accepted residual at the tighter nested demand
-                // without consuming a reject / radius shrink.
+                // Re-evaluate the accepted residual and Jacobian under the tightened demand
+                var reevalStatus = EvaluateSystem(in view, plan, t, segment, buffer.AcceptedState,
+                    residualVector, jacobianMaster, ref budget, out _, out detail);
+                if (reevalStatus == AlgorithmStatus.Success)
+                {
+                    freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
+                    freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);
+                    psiBase = 0.5 * SmallLinearSolve.Dot(residualVector[..n], residualVector[..n]);
+                }
                 continue;
             }
 

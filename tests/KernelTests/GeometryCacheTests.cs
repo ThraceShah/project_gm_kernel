@@ -226,6 +226,42 @@ public unsafe class GeometryCacheTests : IDisposable
         Assert.Equal(before, GeometryEvaluationCache.ModelGeometryEpoch);
     }
 
+    [Fact]
+    public void WitnessPayload_RoundtripsThroughL3ExactAndPrefill()
+    {
+        var identity = Identity(77);
+        var witness = new SampleWitness(0.12, 0.34, 0.56, 0.78, 1.234,
+            SampleWitness.HasUv0 | SampleWitness.HasUv1 | SampleWitness.HasAux);
+        var sample = new CurveSample(0.42, Vector(1, 2, 3), Vector(0, 1, 0), Vector(-1, 0, 0),
+            2, ICurveQueryKind.RegularChartInterval, ChartSide.Right, 0, 1e-12,
+            SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I2, in witness);
+
+        GeometryEvaluationCache.Publish(in identity, in sample);
+
+        // 1. Direct L3 lookup preserves witness bit-exactly
+        Assert.True(GeometryEvaluationCache.TryGetExact(in identity, 0.42,
+            ICurveQueryKind.RegularChartInterval, ChartSide.Right, 0, 1e-11, out var retrieved));
+        Assert.Equal(0.12, retrieved.Witness.U0);
+        Assert.Equal(0.34, retrieved.Witness.V0);
+        Assert.Equal(0.56, retrieved.Witness.U1);
+        Assert.Equal(0.78, retrieved.Witness.V1);
+        Assert.Equal(1.234, retrieved.Witness.AuxParameter);
+        Assert.Equal(SampleWitness.HasUv0 | SampleWitness.HasUv1 | SampleWitness.HasAux, retrieved.Witness.Flags);
+
+        // 2. Prefill into operation L2 store preserves witness
+        Span<CurveSample> l2Storage = stackalloc CurveSample[4];
+        var l2Store = new EvaluationSampleStore(l2Storage);
+        GeometryEvaluationCache.Prefill(in identity, ref l2Store);
+        Assert.True(l2Store.TryFindExact(0.42, ICurveQueryKind.RegularChartInterval,
+            ChartSide.Right, 0, 1e-11, out var l2Retrieved));
+        Assert.Equal(0.12, l2Retrieved.Witness.U0);
+        Assert.Equal(0.34, l2Retrieved.Witness.V0);
+        Assert.Equal(0.56, l2Retrieved.Witness.U1);
+        Assert.Equal(0.78, l2Retrieved.Witness.V1);
+        Assert.Equal(1.234, l2Retrieved.Witness.AuxParameter);
+        Assert.Equal(retrieved.Witness.Flags, l2Retrieved.Witness.Flags);
+    }
+
     private static EntityTag CreatePlane()
     {
         var sf = new PK_PLANE_sf_s();

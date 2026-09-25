@@ -202,6 +202,28 @@ internal static class ICurveContinuation
         evaluations = steps;
         if (status == AlgorithmStatus.Success) return status;
 
+        // Multi-seed candidate recovery (§13.6, task T09): before recursive midpoint
+        // ladder, try ranked same-branch candidates (chord, predictions, opposite anchor)
+        // sharing the request budget in deterministic order.
+        ChordSeed(in view, segment, tTarget, out var chordTarget);
+        Span<SeedCandidate> orderedCandidates = stackalloc SeedCandidate[ICurveMultiSeed.MaxSameBranchSeeds];
+        if (ICurveMultiSeed.BuildOrderedSeeds(in view, tTarget, segment, in chordTarget, default, false,
+                orderedCandidates, out var candidateCount, out _) == AlgorithmStatus.Success)
+        {
+            for (BufferCount c = 0; c < candidateCount; c++)
+            {
+                var candidateSeed = ICurveMultiSeed.ResolveSeedPosition(in orderedCandidates[c],
+                    in chordTarget, default, in view.ChartPositions[segment], in view.ChartPositions[segment + 1]);
+                var candidateStatus = CorrectAt(in view, plan, in candidateSeed, tTarget, segment, order,
+                    ref budget, derivatives, out var seedIters, out residual, out detail);
+                evaluations += seedIters;
+                if (candidateStatus == AlgorithmStatus.Success)
+                    return AlgorithmStatus.Success;
+                if (detail == ICurveEvalDetail.BudgetExceeded)
+                    return AlgorithmStatus.NotConverged;
+            }
+        }
+
         // Midpoint ladder: evaluate midpoints between anchor and target, each
         // corrected from the chord seed; then continue from the closest success.
         var tLeft = tAnchor;

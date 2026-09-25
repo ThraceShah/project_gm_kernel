@@ -26,6 +26,37 @@ internal enum CacheHitKind : byte
     NeighborSeed = 2,
 }
 
+/// <summary>
+/// Auxiliary nested witness state (§13.2, §15, task T09 completion):
+/// support UV coordinates (u0, v0, u1, v1), spine parameter s, and validity flags.
+/// Stored by value in L2/L3 records without referencing caller scratch.
+/// </summary>
+internal readonly struct SampleWitness
+{
+    internal readonly double U0;
+    internal readonly double V0;
+    internal readonly double U1;
+    internal readonly double V1;
+    internal readonly double AuxParameter;
+    internal readonly byte Flags;
+
+    internal const byte HasUv0 = 1;
+    internal const byte HasUv1 = 2;
+    internal const byte HasAux = 4;
+
+    internal SampleWitness(double u0, double v0, double u1, double v1, double aux, byte flags)
+    {
+        U0 = u0;
+        V0 = v0;
+        U1 = u1;
+        V1 = v1;
+        AuxParameter = aux;
+        Flags = flags;
+    }
+
+    internal static SampleWitness None => default;
+}
+
 /// <summary>One reusable evaluation sample with its parameter correspondence (§13.2, slice layout).</summary>
 internal readonly struct CurveSample
 {
@@ -40,10 +71,19 @@ internal readonly struct CurveSample
     internal readonly double ErrorEstimate;       // sample's own residual-scaled bound
     internal readonly SampleSourceKind Source;
     internal readonly ICurveConstraintPlan Plan;
+    internal readonly SampleWitness Witness;
 
     internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
         in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
         BufferOffset segment, double errorEstimate, SampleSourceKind source, ICurveConstraintPlan plan)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, source, plan, SampleWitness.None)
+    {
+    }
+
+    internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
+        in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
+        BufferOffset segment, double errorEstimate, SampleSourceKind source, ICurveConstraintPlan plan,
+        in SampleWitness witness)
     {
         Parameter = parameter;
         Position = position;
@@ -56,6 +96,7 @@ internal readonly struct CurveSample
         ErrorEstimate = errorEstimate;
         Source = source;
         Plan = plan;
+        Witness = witness;
     }
 }
 
@@ -202,7 +243,8 @@ internal static class CurveSampleQuality
             improved = new CurveSample(existing.Parameter, existing.Position,
                 incoming.First, incoming.Second, incoming.MaxOrder, existing.Kind,
                 existing.Side, existing.Segment, incoming.ErrorEstimate,
-                SampleSourceKind.ImportedChartAnchor, incoming.Plan);
+                SampleSourceKind.ImportedChartAnchor, incoming.Plan,
+                incoming.Witness.Flags != 0 ? incoming.Witness : existing.Witness);
             return true;
         }
         if (existingVerified != incomingVerified)
