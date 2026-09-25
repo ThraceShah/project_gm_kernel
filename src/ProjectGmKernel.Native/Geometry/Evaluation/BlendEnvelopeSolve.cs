@@ -183,7 +183,9 @@ internal static class BlendEnvelopeSolve
         var max = 0.0;
         for (BufferOffset i = 0; i < values.Length; i++)
         {
-            var a = Math.Abs(values[i]);
+            var v = values[i];
+            if (!double.IsFinite(v)) return double.PositiveInfinity;
+            var a = Math.Abs(v);
             if (a > max) max = a;
         }
         return max;

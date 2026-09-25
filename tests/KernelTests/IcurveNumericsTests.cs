@@ -174,6 +174,33 @@ public class IcurveNumericsTests
     }
 
     [Fact]
+    public void SvdFactorize_IllConditioned_RecoversSmallSingularValueWithoutGramSquaring()
+    {
+        // A = [[1, 1], [0, 1e-10]]. Forming AᵀA squares the condition number,
+        // rounding 1 + 1e-20 to 1 and obliterating σ_min. One-sided Jacobi
+        // preserves σ_min ≈ 7.07e-11 and identifies rank 2 under tol 1e-12.
+        Span<double> a = [1.0, 1.0, 0.0, 1e-10];
+        Span<double> sigma = new double[2];
+        Span<double> u = new double[4];
+        Span<double> v = new double[4];
+        Assert.Equal(AlgorithmStatus.Success, SmallLinearSolve.SvdFactorizeSquare(
+            a, 2, sigma, u, v, 1e-12, out var rank));
+        Assert.Equal(2, rank);
+        Assert.InRange(sigma[0], Math.Sqrt(2.0) - 1e-8, Math.Sqrt(2.0) + 1e-8);
+        Assert.InRange(sigma[1], 7.0e-11, 7.1e-11);
+
+        // Verify A = U Σ Vᵀ reconstruction
+        for (var r = 0; r < 2; r++)
+        for (var c = 0; c < 2; c++)
+        {
+            var recon = 0.0;
+            for (var k = 0; k < 2; k++)
+                recon += u[r * 2 + k] * sigma[k] * v[c * 2 + k];
+            Assert.InRange(Math.Abs(recon - a[r * 2 + c]), 0, 1e-14);
+        }
+    }
+
+    [Fact]
     public void NewtonStep_QuadraticWithArmijo_ConvergesToRoot()
     {
         // SPD system: F(y) = A (y − y*), root y* = (1, −2, 0.5).

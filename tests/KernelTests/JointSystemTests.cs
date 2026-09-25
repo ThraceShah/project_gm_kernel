@@ -60,8 +60,8 @@ public class JointSystemTests
     public void SixUnknownResidual_MatchesReferenceVectors()
     {
         Span<double> residual = new double[6];
-        JointBlendResidual.AssembleResidual(in SupportA, in SupportD, in OuterPlane,
-            in PlaneAnchor, in PlaneNormal, RadiusSq, in StateX, in StateC, residual);
+        Assert.Equal(AlgorithmStatus.Success, JointBlendResidual.AssembleResidual(in SupportA, in SupportD, in OuterPlane,
+            in PlaneAnchor, in PlaneNormal, RadiusSq, in StateX, in StateC, residual));
         for (var i = 0; i < 6; i++)
             Assert.InRange(Math.Abs(residual[i] - ExpectedResidual[i]), 0, 1e-12);
     }
@@ -96,8 +96,8 @@ public class JointSystemTests
         {
             var x = Vector(state[0], state[1], state[2]);
             var c = Vector(state[3], state[4], state[5]);
-            JointBlendResidual.AssembleResidual(in SupportA, in SupportD, in OuterPlane,
-                in PlaneAnchor, in PlaneNormal, RadiusSq, in x, in c, residual);
+            Assert.Equal(AlgorithmStatus.Success, JointBlendResidual.AssembleResidual(in SupportA, in SupportD, in OuterPlane,
+                in PlaneAnchor, in PlaneNormal, RadiusSq, in x, in c, residual));
             var norm = SmallLinearSolve.Norm(residual);
             if (norm < 1e-12) break;
             Assert.Equal(AlgorithmStatus.Success, JointBlendResidual.AssembleJacobian(
@@ -109,8 +109,8 @@ public class JointSystemTests
         Span<double> finalResidual = new double[6];
         var fx = Vector(state[0], state[1], state[2]);
         var fc = Vector(state[3], state[4], state[5]);
-        JointBlendResidual.AssembleResidual(in SupportA, in SupportD, in OuterPlane,
-            in PlaneAnchor, in PlaneNormal, RadiusSq, in fx, in fc, finalResidual);
+        Assert.Equal(AlgorithmStatus.Success, JointBlendResidual.AssembleResidual(in SupportA, in SupportD, in OuterPlane,
+            in PlaneAnchor, in PlaneNormal, RadiusSq, in fx, in fc, finalResidual));
         Assert.InRange(SmallLinearSolve.Norm(finalResidual), 0, 1e-11);
         // The recovered spine point sits on the support cylinder of radius 2.
         Assert.InRange(Math.Abs(Math.Sqrt(state[3] * state[3] + state[4] * state[4]) - 2), 0, 1e-10);
@@ -239,5 +239,68 @@ public class JointSystemTests
             in root, s - 0.05, state4, state6, out var usedJoint, out _, out var residual));
         Assert.False(usedJoint);
         Assert.InRange(residual, 0, 1e-11);
+    }
+
+    [Fact]
+    public void SchurElimination_LargeInnerBlock_DoesNotOverflowHzCopy()
+    {
+        // nx = 1, nz = 5 (nz² = 25 > 16). hzCopy must hold at least 64 entries.
+        Span<double> fX = [2.0];
+        Span<double> fZ = [0.1, 0.2, 0.3, 0.4, 0.5];
+        Span<double> hX = [0.1, 0.2, 0.3, 0.4, 0.5];
+        Span<double> hZ = new double[25];
+        for (var i = 0; i < 5; i++) hZ[i * 5 + i] = 2.0; // 2·I_5
+        Span<double> f = [1.0];
+        Span<double> h = [0.5, 0.5, 0.5, 0.5, 0.5];
+        Span<double> workspace = new double[64];
+        Span<double> step = new double[6];
+
+        Assert.Equal(AlgorithmStatus.Success, BlockSchurSolve.ComputeStep(
+            fX, fZ, hX, hZ, f, h, 1, 1, 5, workspace, step, out var innerScale));
+        Assert.True(innerScale > 0);
+        for (var i = 0; i < 6; i++) Assert.True(double.IsFinite(step[i]));
+    }
+
+    [Fact]
+    public void SchurElimination_MismatchedOuterDimension_ReturnsInvalidInput()
+    {
+        Span<double> fX = [1.0, 0.0, 0.0, 1.0];
+        Span<double> fZ = [0.1, 0.2];
+        Span<double> hX = [0.1, 0.2];
+        Span<double> hZ = [2.0];
+        Span<double> f = [1.0, 1.0];
+        Span<double> h = [0.5];
+        Span<double> workspace = new double[32];
+        Span<double> step = new double[3];
+
+        // m = 2, nx = 1 -> m != nx must be rejected
+        Assert.Equal(AlgorithmStatus.InvalidInput, BlockSchurSolve.ComputeStep(
+            fX, fZ, hX, hZ, f, h, 2, 1, 1, workspace, step, out _));
+    }
+
+    [Fact]
+    public void SchurElimination_NonFiniteInputs_ReturnsInvalidInput()
+    {
+        Span<double> fX = [double.NaN];
+        Span<double> fZ = [0.1];
+        Span<double> hX = [0.1];
+        Span<double> hZ = [2.0];
+        Span<double> f = [1.0];
+        Span<double> h = [0.5];
+        Span<double> workspace = new double[32];
+        Span<double> step = new double[2];
+
+        Assert.Equal(AlgorithmStatus.InvalidInput, BlockSchurSolve.ComputeStep(
+            fX, fZ, hX, hZ, f, h, 1, 1, 1, workspace, step, out _));
+    }
+
+    [Fact]
+    public void JointResidual_UnsupportedSurface_PropagatesStatus()
+    {
+        var invalidSurface = new AnalyticSurface((SurfaceClass)99, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0));
+        Span<double> residual = new double[6];
+        var status = JointBlendResidual.AssembleResidual(in invalidSurface, in SupportD, in OuterPlane,
+            in PlaneAnchor, in PlaneNormal, RadiusSq, in StateX, in StateC, residual);
+        Assert.Equal(AlgorithmStatus.Unsupported, status);
     }
 }
