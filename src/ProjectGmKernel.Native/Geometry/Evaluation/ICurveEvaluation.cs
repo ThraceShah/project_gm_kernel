@@ -160,6 +160,12 @@ internal static class ICurveEvaluation
         // Derivatives reuse the selected plan's defining system, entered at the
         // node; the published D0 stays the original anchor regardless.
         var selected = plan == ICurveConstraintPlan.Auto ? ICurveConstraintPlanRules.Select(in view) : plan;
+        var capability = ICurveConstraintPlanRules.ValidateRequest(in view, plan);
+        if (capability != AlgorithmStatus.Success)
+        {
+            report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, capability, plan, ChartSide.Right, segment, 0, 0);
+            return capability;
+        }
         if (cache.TryFindExact(t, ICurveQueryKind.ChartPoint, ChartSide.Right, order, CacheErrorBound, out var hit))
         {
             PublishHit(in hit, order, derivatives);
@@ -201,6 +207,13 @@ internal static class ICurveEvaluation
             Scale(view.ChartPositions[segment + 1], lambda));
 
         var selected = plan == ICurveConstraintPlan.Auto ? ICurveConstraintPlanRules.Select(in view) : plan;
+        var capability = ICurveConstraintPlanRules.ValidateRequest(in view, plan);
+        if (capability != AlgorithmStatus.Success)
+        {
+            report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, capability,
+                plan, ChartSide.Right, segment, 0, 0);
+            return capability;
+        }
         if (cache.TryFindExact(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right, order, CacheErrorBound, out var hit))
         {
             PublishHit(in hit, order, derivatives);
