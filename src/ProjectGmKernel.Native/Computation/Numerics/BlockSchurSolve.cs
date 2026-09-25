@@ -28,8 +28,18 @@ internal static class BlockSchurSolve
         var m = outerCount;
         var nx = outerUnknowns;
         var nz = innerUnknowns;
-        if (nx + nz > 8 || nz <= 0 || nx <= 0) return AlgorithmStatus.InvalidInput;
+        if (nx + nz > 8 || nz <= 0 || nx <= 0 || m != nx) return AlgorithmStatus.InvalidInput;
+        if (fX.Length < m * nx || fZ.Length < m * nz || hX.Length < nz * nx || hZ.Length < nz * nz
+            || f.Length < m || h.Length < nz || step.Length < nx + nz)
+            return AlgorithmStatus.InvalidInput;
         if (schurWorkspace.Length < nx * nx + nx + nx * nz + nz) return AlgorithmStatus.WorkspaceTooSmall;
+
+        for (BufferOffset i = 0; i < m * nx; i++) if (!double.IsFinite(fX[i])) return AlgorithmStatus.InvalidInput;
+        for (BufferOffset i = 0; i < m * nz; i++) if (!double.IsFinite(fZ[i])) return AlgorithmStatus.InvalidInput;
+        for (BufferOffset i = 0; i < nz * nx; i++) if (!double.IsFinite(hX[i])) return AlgorithmStatus.InvalidInput;
+        for (BufferOffset i = 0; i < nz * nz; i++) if (!double.IsFinite(hZ[i])) return AlgorithmStatus.InvalidInput;
+        for (BufferOffset i = 0; i < m; i++) if (!double.IsFinite(f[i])) return AlgorithmStatus.InvalidInput;
+        for (BufferOffset i = 0; i < nz; i++) if (!double.IsFinite(h[i])) return AlgorithmStatus.InvalidInput;
 
         // Workspace layout: schur (n_x²), rhs (n_x), w (n_x·n_z), b (n_z).
         var schur = schurWorkspace[..(nx * nx)];
@@ -38,13 +48,10 @@ internal static class BlockSchurSolve
         var b = schurWorkspace.Slice(nx * nx + nx + nx * nz, nz);
 
         // b = H_z⁻¹ H, W = H_z⁻¹ H_x via one LU factorization of H_z.
-        Span<double> hzCopy = stackalloc double[16];
+        Span<double> hzCopy = stackalloc double[64];
         Span<int> pivots = stackalloc int[8];
         for (BufferOffset i = 0; i < nz * nz; i++)
-        {
-            if (!double.IsFinite(hZ[i])) return AlgorithmStatus.InvalidInput;
             hzCopy[i] = hZ[i];
-        }
         var factorStatus = SmallLinearSolve.LuFactorize(hzCopy, nz, pivots);
         if (factorStatus != AlgorithmStatus.Success) return factorStatus; // singular H_z: keep the full system
 
@@ -86,7 +93,13 @@ internal static class BlockSchurSolve
         for (BufferOffset i = 0; i < nx; i++) deltaX[i] = rhs[i];
         schurStatus = SmallLinearSolve.LuSolveInPlace(schurCopy, nx, pivots, deltaX);
         if (schurStatus != AlgorithmStatus.Success) return schurStatus;
-        for (BufferOffset i = 0; i < nx; i++) step[i] = deltaX[i];
+
+        Span<double> tempStep = stackalloc double[8];
+        for (BufferOffset i = 0; i < nx; i++)
+        {
+            if (!double.IsFinite(deltaX[i])) return AlgorithmStatus.NumericalFailure;
+            tempStep[i] = deltaX[i];
+        }
 
         // Δz = −b − W Δx with the *unconverged* b (never dropped, §12.3).
         for (BufferOffset l = 0; l < nz; l++)
@@ -94,8 +107,8 @@ internal static class BlockSchurSolve
             var value = -b[l];
             for (BufferOffset j = 0; j < nx; j++)
                 value -= w[l * nx + j] * deltaX[j];
-            step[nx + l] = value;
             if (!double.IsFinite(value)) return AlgorithmStatus.NumericalFailure;
+            tempStep[nx + l] = value;
         }
 
         // Sensitivity of the outer residual to the inner residual (§15.1):
@@ -108,6 +121,10 @@ internal static class BlockSchurSolve
                 value += fZ[i * nz + l] * b[l];
             innerContribution = Math.Max(innerContribution, Math.Abs(value));
         }
+        if (!double.IsFinite(innerContribution)) return AlgorithmStatus.NumericalFailure;
+
+        for (BufferOffset i = 0; i < nx + nz; i++)
+            step[i] = tempStep[i];
         innerResidualScale = innerContribution;
         return AlgorithmStatus.Success;
     }

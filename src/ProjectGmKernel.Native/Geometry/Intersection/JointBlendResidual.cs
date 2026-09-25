@@ -20,13 +20,18 @@ namespace ProjectGmKernel.Native.Geometry.Intersection;
 internal static class JointBlendResidual
 {
     /// <summary>Assemble the 6 residuals at (x, c). r² is passed directly.</summary>
-    internal static void AssembleResidual(in AnalyticSurface supportA, in AnalyticSurface supportD,
+    internal static AlgorithmStatus AssembleResidual(in AnalyticSurface supportA, in AnalyticSurface supportD,
         in AnalyticSurface outerSurface, in KernelVector3 planeAnchor, in KernelVector3 planeNormal,
         double radiusSq, in KernelVector3 x, in KernelVector3 c, Span<double> residual)
     {
-        AnalyticImplicitEvaluation.Evaluate(in supportA, in c, 1, out var jetA);
-        AnalyticImplicitEvaluation.Evaluate(in supportD, in c, 1, out var jetD);
-        AnalyticImplicitEvaluation.Evaluate(in outerSurface, in x, 1, out var jetS);
+        if (residual.Length < 6) return AlgorithmStatus.WorkspaceTooSmall;
+        var statusA = AnalyticImplicitEvaluation.Evaluate(in supportA, in c, 1, out var jetA);
+        if (statusA != AlgorithmStatus.Success) return statusA;
+        var statusD = AnalyticImplicitEvaluation.Evaluate(in supportD, in c, 1, out var jetD);
+        if (statusD != AlgorithmStatus.Success) return statusD;
+        var statusS = AnalyticImplicitEvaluation.Evaluate(in outerSurface, in x, 1, out var jetS);
+        if (statusS != AlgorithmStatus.Success) return statusS;
+
         var q = Sub(x, c);
         var w = Cross(jetA.Gradient, jetD.Gradient);
 
@@ -36,6 +41,7 @@ internal static class JointBlendResidual
         residual[3] = Dot(q, w);
         residual[4] = jetS.Value;
         residual[5] = Dot(planeNormal, Sub(x, planeAnchor));
+        return AlgorithmStatus.Success;
     }
 
     /// <summary>

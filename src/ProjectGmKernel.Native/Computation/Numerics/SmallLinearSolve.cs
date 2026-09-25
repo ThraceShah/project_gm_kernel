@@ -227,18 +227,13 @@ internal static class SmallLinearSolve
         for (BufferOffset i = 0; i < n * n; i++)
             if (!double.IsFinite(a[i])) return AlgorithmStatus.InvalidInput;
 
-        // Build S = AᵀA into the upper triangle of work, then Jacobi-rotate V.
-        Span<double> s = stackalloc double[36]; // n ≤ 6
         if (n > 6) return AlgorithmStatus.Unsupported;
-        for (BufferOffset i = 0; i < n; i++)
-        for (BufferOffset j = i; j < n; j++)
-        {
-            var sum = 0.0;
-            for (BufferOffset k = 0; k < n; k++)
-                sum += a[k * n + i] * a[k * n + j];
-            s[i * n + j] = sum;
-            s[j * n + i] = sum;
-        }
+
+        // Initialize B (working matrix A V, size n×n) and V (identity, size n×n).
+        Span<double> bWork = stackalloc double[36];
+        for (BufferOffset i = 0; i < n * n; i++)
+            bWork[i] = a[i];
+
         for (BufferOffset i = 0; i < n; i++)
         for (BufferOffset j = 0; j < n; j++)
             v[i * n + j] = i == j ? 1.0 : 0.0;
@@ -246,86 +241,105 @@ internal static class SmallLinearSolve
         const int maxSweeps = 32;
         for (BufferOffset sweep = 0; sweep < maxSweeps; sweep++)
         {
-            var off = 0.0;
+            var rotations = 0;
             for (BufferOffset p = 0; p < n - 1; p++)
             for (BufferOffset q = p + 1; q < n; q++)
             {
-                var app = s[p * n + p];
-                var aqq = s[q * n + q];
-                var apq = s[p * n + q];
-                off += Math.Abs(apq);
-                if (!(Math.Abs(apq) > MachineEpsilon * (Math.Abs(app) + Math.Abs(aqq))))
-                    continue;
-                var tau = (aqq - app) / (2 * apq);
-                var absTau = Math.Abs(tau);
-                var t = (tau >= 0 ? 1.0 : -1.0) / (absTau + Math.Sqrt(1 + tau * tau));
-                if (!double.IsFinite(t)) t = 0;
-                var c = 1 / Math.Sqrt(1 + t * t);
-                var sAng = t * c;
-                // Rotate S.
+                var alpha = 0.0;
+                var beta = 0.0;
+                var gamma = 0.0;
                 for (BufferOffset k = 0; k < n; k++)
                 {
-                    if (k == p || k == q) continue;
-                    var skp = s[k * n + p];
-                    var skq = s[k * n + q];
-                    s[k * n + p] = c * skp - sAng * skq;
-                    s[p * n + k] = s[k * n + p];
-                    s[k * n + q] = sAng * skp + c * skq;
-                    s[q * n + k] = s[k * n + q];
+                    var bp = bWork[k * n + p];
+                    var bq = bWork[k * n + q];
+                    alpha += bp * bp;
+                    beta += bq * bq;
+                    gamma += bp * bq;
                 }
-                s[p * n + p] = app - t * apq;
-                s[q * n + q] = aqq + t * apq;
-                s[p * n + q] = 0;
-                s[q * n + p] = 0;
-                // Accumulate V.
+
+                if (alpha <= 0 || beta <= 0) continue;
+
+                var normProd = Math.Sqrt(alpha) * Math.Sqrt(beta);
+                if (Math.Abs(gamma) <= MachineEpsilon * normProd) continue;
+
+                var tau = (alpha - beta) / (2.0 * gamma);
+                var absTau = Math.Abs(tau);
+                double t;
+                if (absTau > 1e8)
+                {
+                    t = 0.5 / tau;
+                }
+                else
+                {
+                    t = (tau >= 0 ? 1.0 : -1.0) / (absTau + Math.Sqrt(1.0 + tau * tau));
+                }
+                if (!double.IsFinite(t)) t = 0.0;
+
+                var c = 1.0 / Math.Sqrt(1.0 + t * t);
+                var s = t * c;
+
                 for (BufferOffset k = 0; k < n; k++)
                 {
+                    var bkp = bWork[k * n + p];
+                    var bkq = bWork[k * n + q];
+                    bWork[k * n + p] = c * bkp + s * bkq;
+                    bWork[k * n + q] = -s * bkp + c * bkq;
+
                     var vkp = v[k * n + p];
                     var vkq = v[k * n + q];
-                    v[k * n + p] = c * vkp - sAng * vkq;
-                    v[k * n + q] = sAng * vkp + c * vkq;
+                    v[k * n + p] = c * vkp + s * vkq;
+                    v[k * n + q] = -s * vkp + c * vkq;
                 }
+                rotations++;
             }
-            if (!(off > n * n * MachineEpsilon * (1 + Math.Abs(s[0]))))
-                break;
+            if (rotations == 0) break;
         }
 
+        // Column norms are the singular values.
         for (BufferOffset j = 0; j < n; j++)
         {
-            var eig = s[j * n + j];
-            singularValues[j] = eig > 0 ? Math.Sqrt(eig) : 0;
+            var sumSq = 0.0;
+            for (BufferOffset k = 0; k < n; k++)
+            {
+                var bkj = bWork[k * n + j];
+                sumSq += bkj * bkj;
+            }
+            singularValues[j] = Math.Sqrt(sumSq);
         }
-        // Sort σ descending and permute V columns.
+
+        // Sort σ descending and permute B and V columns.
         for (BufferOffset i = 0; i < n; i++)
         for (BufferOffset j = i + 1; j < n; j++)
+        {
             if (singularValues[j] > singularValues[i])
             {
                 (singularValues[i], singularValues[j]) = (singularValues[j], singularValues[i]);
                 for (BufferOffset k = 0; k < n; k++)
+                {
+                    (bWork[k * n + i], bWork[k * n + j]) = (bWork[k * n + j], bWork[k * n + i]);
                     (v[k * n + i], v[k * n + j]) = (v[k * n + j], v[k * n + i]);
+                }
             }
+        }
 
         var sigmaMax = singularValues[0];
         var threshold = rankTolerance * sigmaMax;
         for (BufferOffset j = 0; j < n; j++)
         {
-            if (singularValues[j] > threshold) rank = j + 1;
-            // u_j = A v_j / σ_j
             if (singularValues[j] > threshold)
             {
+                rank = j + 1;
+                var invSigma = 1.0 / singularValues[j];
                 for (BufferOffset i = 0; i < n; i++)
-                {
-                    var sum = 0.0;
-                    for (BufferOffset k = 0; k < n; k++)
-                        sum += a[i * n + k] * v[k * n + j];
-                    u[i * n + j] = sum / singularValues[j];
-                }
+                    u[i * n + j] = bWork[i * n + j] * invSigma;
             }
             else
             {
-                for (BufferOffset i = 0; i < n; i++) u[i * n + j] = 0;
+                for (BufferOffset i = 0; i < n; i++)
+                    u[i * n + j] = 0.0;
             }
         }
+
         return AlgorithmStatus.Success;
     }
 

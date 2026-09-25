@@ -87,8 +87,9 @@ internal static class BlendJointLift
             iterations = iter + 1;
             var x = Vector(state[0], state[1], state[2]);
             var c = Vector(state[3], state[4], state[5]);
-            JointBlendResidual.AssembleResidual(in supportA, in supportD, in outerSurface,
+            var resStatus = JointBlendResidual.AssembleResidual(in supportA, in supportD, in outerSurface,
                 in planeAnchor, in planeNormal, radiusSq, in x, in c, f);
+            if (resStatus != AlgorithmStatus.Success) return resStatus;
             residual = MaxAbs(f);
             if (residual <= BlendEnvelopeSolve.ResidualTolerance)
                 return AlgorithmStatus.Success;
@@ -236,7 +237,9 @@ internal static class BlendJointLift
         var max = 0.0;
         for (BufferOffset i = 0; i < values.Length; i++)
         {
-            var a = Math.Abs(values[i]);
+            var v = values[i];
+            if (!double.IsFinite(v)) return double.PositiveInfinity;
+            var a = Math.Abs(v);
             if (a > max) max = a;
         }
         return max;
