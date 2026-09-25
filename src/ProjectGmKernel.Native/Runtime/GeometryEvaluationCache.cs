@@ -232,7 +232,7 @@ internal static unsafe partial class KernelRuntime
 
     internal static AlgorithmStatus EvaluateICurveThroughL3(in GeometryIdentity identity, in ICurveView view,
         double t, DerivativeOrder order, ICurveConstraintPlan plan,
-        Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        Span<KernelVector3> derivatives, out ICurveEvalReport report, ChartSide side = ChartSide.Right)
     {
         if (order >= 0 && order <= ICurveEvaluation.MaxDerivativeOrder
             && derivatives.Length > order && double.IsFinite(t)
@@ -244,7 +244,7 @@ internal static unsafe partial class KernelRuntime
             var legal = ICurveConstraintPlanRules.ValidateEnumerator(plan);
             if (legal != AlgorithmStatus.Success)
             {
-                report = new ICurveEvalReport(kind, legal, plan, ChartSide.Right, -1, 0, 0);
+                report = new ICurveEvalReport(kind, legal, plan, side, -1, 0, 0);
                 return legal;
             }
             // Defining D0 publishes the original anchor and does not consult
@@ -255,18 +255,18 @@ internal static unsafe partial class KernelRuntime
                 var capability = ICurveConstraintPlanRules.ValidateRequest(in view, plan);
                 if (capability != AlgorithmStatus.Success)
                 {
-                    report = new ICurveEvalReport(kind, capability, plan, ChartSide.Right, -1, 0, 0);
+                    report = new ICurveEvalReport(kind, capability, plan, side, -1, 0, 0);
                     return capability;
                 }
             }
-            if (GeometryEvaluationCache.TryGetExact(in identity, t, kind, ChartSide.Right,
+            if (GeometryEvaluationCache.TryGetExact(in identity, t, kind, side,
                     order, ICurveEvaluation.CacheErrorBound, out var exact))
             {
                 derivatives[0] = exact.Position;
                 if (order >= 1) derivatives[1] = exact.First;
                 if (order >= 2) derivatives[2] = exact.Second;
                 report = new ICurveEvalReport(kind, AlgorithmStatus.Success, exact.Plan,
-                    ChartSide.Right, exact.Segment, 0, exact.ErrorEstimate, CacheHitKind.Exact);
+                    side, exact.Segment, 0, exact.ErrorEstimate, CacheHitKind.Exact);
                 return AlgorithmStatus.Success;
             }
         }
@@ -275,7 +275,7 @@ internal static unsafe partial class KernelRuntime
         var operationStore = new EvaluationSampleStore(operationStorage);
         GeometryEvaluationCache.Prefill(in identity, ref operationStore);
         var status = ICurveEvaluation.EvaluateWithCache(in view, t, order, plan, ref operationStore,
-            derivatives, out report);
+            derivatives, out report, side);
         if (status == AlgorithmStatus.Success)
             GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
                 order >= 1 ? derivatives[1] : default,

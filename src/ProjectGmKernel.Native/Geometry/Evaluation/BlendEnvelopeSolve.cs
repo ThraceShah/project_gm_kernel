@@ -11,6 +11,44 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 /// without wiring into <see cref="ICurveConstraintPlan"/> / Auto — production
 /// plan selection stays analytic-only until GATE-A evidence lands.
 /// </summary>
+/// <summary>
+/// §10.6 arc-range and spine parameter acceptance bounds for blend envelope candidates.
+/// Unbounded bounds accept all convergent roots without arc filtering.
+/// </summary>
+internal readonly struct BlendArcBounds
+{
+    internal readonly double Arc;
+    internal readonly double VMin;
+    internal readonly double VMax;
+    internal readonly double SMin;
+    internal readonly double SMax;
+
+    internal BlendArcBounds(double arc, double vMin, double vMax, double sMin = double.NegativeInfinity, double sMax = double.PositiveInfinity)
+    {
+        Arc = arc;
+        VMin = vMin;
+        VMax = vMax;
+        SMin = sMin;
+        SMax = sMax;
+    }
+
+    internal static BlendArcBounds Unbounded => new(0, double.NegativeInfinity, double.PositiveInfinity);
+
+    internal bool TryValidate(double spineRadius, in KernelVector3 root, double s, out double v)
+    {
+        v = 0;
+        if (s < SMin || s > SMax) return false;
+        if (Arc == 0) return true;
+
+        var (sinS, cosS) = Math.SinCos(s);
+        var spineCenter = Vector(spineRadius * cosS, spineRadius * sinS, 0);
+        var offset = Vector(root.X - spineCenter.X, root.Y - spineCenter.Y, root.Z - spineCenter.Z);
+        var radial = Vector(cosS, sinS, 0);
+        var zAxis = Vector(0, 0, 1);
+        return BlendImplicitEvaluation.TryValidateArc(in offset, in radial, in zAxis, Arc, VMin, VMax, out v);
+    }
+}
+
 internal static class BlendEnvelopeSolve
 {
     internal const int MaxNewtonIterations = 16;
@@ -26,8 +64,24 @@ internal static class BlendEnvelopeSolve
         in KernelVector3 planeAnchor, in KernelVector3 planeNormal,
         Span<double> state, out BufferOffset iterations, out double residual)
     {
+        var unbounded = BlendArcBounds.Unbounded;
+        return SolveFourByFour(spineRadius, tubeRadius, in outerSurface, in planeAnchor, in planeNormal,
+            in unbounded, state, out iterations, out residual, out _);
+    }
+
+    /// <summary>
+    /// Solve 4×4 with §10.6 arc range and spine parameter validation.
+    /// </summary>
+    internal static AlgorithmStatus SolveFourByFour(
+        double spineRadius, double tubeRadius,
+        in AnalyticSurface outerSurface,
+        in KernelVector3 planeAnchor, in KernelVector3 planeNormal,
+        in BlendArcBounds bounds,
+        Span<double> state, out BufferOffset iterations, out double residual, out double arcV)
+    {
         iterations = 0;
         residual = 0;
+        arcV = 0;
         if (state.Length < 4) return AlgorithmStatus.WorkspaceTooSmall;
         if (!(spineRadius > 0) || !(tubeRadius > 0)) return AlgorithmStatus.InvalidInput;
         if (!IsFinite(planeAnchor) || !IsFinite(planeNormal)) return AlgorithmStatus.InvalidInput;
@@ -46,7 +100,14 @@ internal static class BlendEnvelopeSolve
                 in planeAnchor, in planeNormal, state, f, j);
             if (assemble != AlgorithmStatus.Success) return assemble;
             residual = MaxAbs(f);
-            if (residual <= ResidualTolerance) return AlgorithmStatus.Success;
+            if (residual <= ResidualTolerance)
+            {
+                var point = Vector(state[0], state[1], state[2]);
+                var s = state[3];
+                if (!bounds.TryValidate(spineRadius, in point, s, out arcV))
+                    return AlgorithmStatus.NotConverged;
+                return AlgorithmStatus.Success;
+            }
 
             var status = NewtonStep.ComputeStep(j, jCopy, f, 4, pivots, model, step, out var predicted);
             if (status != AlgorithmStatus.Success || !(predicted > 0))
@@ -72,9 +133,26 @@ internal static class BlendEnvelopeSolve
         in KernelVector3 basisU, in KernelVector3 basisV,
         Span<double> state, out BufferOffset iterations, out double residual)
     {
+        var unbounded = BlendArcBounds.Unbounded;
+        return SolveThreeByThree(spineRadius, tubeRadius, in outerSurface, in planeAnchor, in planeNormal,
+            in basisU, in basisV, in unbounded, state, out iterations, out residual, out _);
+    }
+
+    /// <summary>
+    /// Solve 3×3 with §10.6 arc range and spine parameter validation.
+    /// </summary>
+    internal static AlgorithmStatus SolveThreeByThree(
+        double spineRadius, double tubeRadius,
+        in AnalyticSurface outerSurface,
+        in KernelVector3 planeAnchor, in KernelVector3 planeNormal,
+        in KernelVector3 basisU, in KernelVector3 basisV,
+        in BlendArcBounds bounds,
+        Span<double> state, out BufferOffset iterations, out double residual, out double arcV)
+    {
         // state = (ξ1, ξ2, s); p residual is identically zero by construction.
         iterations = 0;
         residual = 0;
+        arcV = 0;
         if (state.Length < 3) return AlgorithmStatus.WorkspaceTooSmall;
         if (!(spineRadius > 0) || !(tubeRadius > 0)) return AlgorithmStatus.InvalidInput;
 
@@ -92,7 +170,14 @@ internal static class BlendEnvelopeSolve
                     in planeAnchor, in basisU, in basisV, state, f, j) != AlgorithmStatus.Success)
                 return AlgorithmStatus.Unsupported;
             residual = MaxAbs(f);
-            if (residual <= ResidualTolerance) return AlgorithmStatus.Success;
+            if (residual <= ResidualTolerance)
+            {
+                var point = Add(planeAnchor, Add(Scale(basisU, state[0]), Scale(basisV, state[1])));
+                var s = state[2];
+                if (!bounds.TryValidate(spineRadius, in point, s, out arcV))
+                    return AlgorithmStatus.NotConverged;
+                return AlgorithmStatus.Success;
+            }
 
             var status = NewtonStep.ComputeStep(j, jCopy, f, 3, pivots, model, step, out var predicted);
             if (status != AlgorithmStatus.Success || !(predicted > 0))

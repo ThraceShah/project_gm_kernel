@@ -23,8 +23,17 @@ internal static unsafe partial class KernelRuntime
     /// is left untouched for the caller to free.
     /// </summary>
     internal static AlgorithmStatus TryBindICurveEntity(DataSlot icurveDataIndex, out CurveTag tag)
+        => TryBindICurveEntity(icurveDataIndex, out tag, out _);
+
+    /// <summary>
+    /// Bind a decoded <see cref="ICurveData"/> slot to a public curve tag and
+    /// propagate any chart build failure diagnostics to the caller.
+    /// </summary>
+    internal static AlgorithmStatus TryBindICurveEntity(DataSlot icurveDataIndex, out CurveTag tag,
+        out ChartBuildFailure chartFailure)
     {
         tag = 0;
+        chartFailure = ChartBuildFailure.None;
         if (!IsSessionStarted) return AlgorithmStatus.InvalidInput;
         if (!ICurveDataPool.IsAlive(icurveDataIndex)) return AlgorithmStatus.InvalidInput;
 
@@ -46,7 +55,7 @@ internal static unsafe partial class KernelRuntime
             curve.OwnerCount = 0;
             curve.PrevInBody = curve.NextInBody = 0;
 
-            var prepareStatus = TryPrepareICurveView(in curve, out var view, out _);
+            var prepareStatus = TryPrepareICurveView(in curve, out var view, out chartFailure);
             if (prepareStatus != AlgorithmStatus.Success)
             {
                 Curves.Free(curveSlot);

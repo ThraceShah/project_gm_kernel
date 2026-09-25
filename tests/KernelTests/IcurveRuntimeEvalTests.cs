@@ -243,6 +243,78 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         Assert.Equal(0, indexPartial);
     }
 
+    [Fact]
+    public void TryBindICurveEntity_PropagatesChartFailureDiagnostic()
+    {
+        var plane = CreatePlaneZ0();
+        var sphere = CreateUnitSphere();
+        double[] onSurfaceChart = [1.0, 0, 0, 0, 1.0, 0];
+        var input = MinimalCircleInput(plane, sphere, onSurfaceChart);
+        input.BaseScale = -1.0;
+
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var slot, out _, out _));
+        Assert.Equal(AlgorithmStatus.InvalidInput,
+            KernelRuntime.TryBindICurveEntity(slot, out var tag, out var chartFailure));
+        Assert.Equal(0, tag);
+        Assert.Equal(ChartBuildFailure.BadBaseScale, chartFailure);
+        KernelRuntime.FreeICurveData(slot);
+    }
+
+    [Fact]
+    public void Evaluate_InteriorKnot_LeftAndRightSidesProduceDistinctSecondDerivatives()
+    {
+        var plane = CreatePlaneZ0();
+        var sphere = CreateUnitSphere();
+        // 3 segments with 4 points: angles 0.0, 0.4, 0.9, 1.4 (different angular spans -> different scales)
+        double[] angles = [0.0, 0.4, 0.9, 1.4];
+        var chart = new double[angles.Length * 3];
+        for (var i = 0; i < angles.Length; i++)
+        {
+            chart[i * 3] = Math.Cos(angles[i]);
+            chart[i * 3 + 1] = Math.Sin(angles[i]);
+            chart[i * 3 + 2] = 0;
+        }
+
+        var input = MinimalCircleInput(plane, sphere, chart);
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var slot, out _, out _));
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(slot, out var curveTag));
+        Assert.True(curveTag > 0);
+
+        var ownsScratch = KernelRuntime.EnsureCommandScratch();
+        try
+        {
+            var record = KernelRuntime.GetCurveByTag(curveTag);
+            Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryPrepareICurveView(in record, out var view, out _));
+
+            // Knot 1 is at index 1
+            var knotT = view.ChartParameters[1];
+            Span<KernelVector3> derivLeft = stackalloc KernelVector3[3];
+            Span<KernelVector3> derivRight = stackalloc KernelVector3[3];
+
+            Assert.Equal(AlgorithmStatus.Success,
+                ICurveEvaluation.Evaluate(in view, knotT, 2, derivLeft, out var repLeft, ChartSide.Left));
+            Assert.Equal(AlgorithmStatus.Success,
+                ICurveEvaluation.Evaluate(in view, knotT, 2, derivRight, out var repRight, ChartSide.Right));
+
+            Assert.Equal(ChartSide.Left, repLeft.Side);
+            Assert.Equal(ChartSide.Right, repRight.Side);
+
+            // Position at knot must be identical (both equal the chart knot point)
+            Assert.Equal(derivLeft[0].X, derivRight[0].X, 12);
+            Assert.Equal(derivLeft[0].Y, derivRight[0].Y, 12);
+            Assert.Equal(derivLeft[0].Z, derivRight[0].Z, 12);
+
+            // First derivative directions align with tangent, but D2 second derivatives reflect
+            // the left vs right polynomial segments (scales differ: 0.4 vs 0.5)
+            var d2Diff = Math.Abs(derivLeft[2].X - derivRight[2].X) + Math.Abs(derivLeft[2].Y - derivRight[2].Y);
+            Assert.True(d2Diff > 1e-4, $"Expected distinct D2 across knot, got diff {d2Diff}");
+        }
+        finally
+        {
+            if (ownsScratch) KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);
+        }
+    }
+
     private static int CreatePlaneZ0()
     {
         var sf = new PK_PLANE_sf_s();

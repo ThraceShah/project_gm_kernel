@@ -123,7 +123,7 @@ internal static unsafe partial class KernelRuntime
     /// </summary>
     private static AlgorithmStatus EvaluateICurve(in CurveRecord record, double t,
         DerivativeOrder order, bool tangentRequired, Span<KernelVector3> values,
-        out KernelVector3 direction)
+        out KernelVector3 direction, ChartSide side = ChartSide.Right)
     {
         direction = default;
         var prepareStatus = TryPrepareICurveView(in record, out var view, out _);
@@ -132,7 +132,7 @@ internal static unsafe partial class KernelRuntime
         Span<KernelVector3> evaluated = stackalloc KernelVector3[ICurveEvaluation.MaxDerivativeOrder + 1];
         var identity = new GeometryIdentity(record.Header.Tag, record.Header.Generation);
         var status = EvaluateICurveThroughL3(in identity, in view, t, evaluationOrder,
-            ICurveConstraintPlan.Auto, evaluated, out _);
+            ICurveConstraintPlan.Auto, evaluated, out _, side);
         if (status != AlgorithmStatus.Success) return status;
         evaluated[..(order + 1)].CopyTo(values);
         if (tangentRequired)
