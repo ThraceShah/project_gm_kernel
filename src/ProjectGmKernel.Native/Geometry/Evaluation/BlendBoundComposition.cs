@@ -176,13 +176,25 @@ internal static class BlendBoundComposition
         hyy = (1 - normal.Y * normal.Y - unitA.Y * unitA.Y) / rho;
         hyz = (-normal.Y * normal.Z - unitA.Y * unitA.Z) / rho;
         hzz = (1 - normal.Z * normal.Z - unitA.Z * unitA.Z) / rho;
-        // Reuse sphere-style contraction in the radial plane (axis projection frozen).
-        txx = SphereContraction(normal, rho, contractionGradient, 0, 0);
-        txy = SphereContraction(normal, rho, contractionGradient, 0, 1);
-        txz = SphereContraction(normal, rho, contractionGradient, 0, 2);
-        tyy = SphereContraction(normal, rho, contractionGradient, 1, 1);
-        tyz = SphereContraction(normal, rho, contractionGradient, 1, 2);
-        tzz = SphereContraction(normal, rho, contractionGradient, 2, 2);
+        // T(g) = [3α nnᵀ − α P − g_⊥ nᵀ − n g_⊥ᵀ] / ρ², where P = I − aaᵀ, g_⊥ = Pg, α = n·g (§11.1).
+        var gDotA = Dot(contractionGradient, unitA);
+        var gPerp = Sub(contractionGradient, Scale(unitA, gDotA));
+        var alpha = Dot(normal, contractionGradient);
+        var invRhoSq = 1.0 / (rho * rho);
+
+        var pXX = 1.0 - unitA.X * unitA.X;
+        var pXY = -unitA.X * unitA.Y;
+        var pXZ = -unitA.X * unitA.Z;
+        var pYY = 1.0 - unitA.Y * unitA.Y;
+        var pYZ = -unitA.Y * unitA.Z;
+        var pZZ = 1.0 - unitA.Z * unitA.Z;
+
+        txx = (3 * alpha * normal.X * normal.X - alpha * pXX - 2 * gPerp.X * normal.X) * invRhoSq;
+        txy = (3 * alpha * normal.X * normal.Y - alpha * pXY - gPerp.X * normal.Y - normal.X * gPerp.Y) * invRhoSq;
+        txz = (3 * alpha * normal.X * normal.Z - alpha * pXZ - gPerp.X * normal.Z - normal.X * gPerp.Z) * invRhoSq;
+        tyy = (3 * alpha * normal.Y * normal.Y - alpha * pYY - 2 * gPerp.Y * normal.Y) * invRhoSq;
+        tyz = (3 * alpha * normal.Y * normal.Z - alpha * pYZ - gPerp.Y * normal.Z - normal.Y * gPerp.Z) * invRhoSq;
+        tzz = (3 * alpha * normal.Z * normal.Z - alpha * pZZ - 2 * gPerp.Z * normal.Z) * invRhoSq;
         return AlgorithmStatus.Success;
     }
 

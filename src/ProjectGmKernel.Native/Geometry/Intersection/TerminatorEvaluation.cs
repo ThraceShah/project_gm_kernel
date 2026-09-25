@@ -494,13 +494,13 @@ internal static class TerminatorEvaluation
     /// document's one-face construction, not a two-face intersection.
     /// </summary>
     internal static AlgorithmStatus IntervalDerivatives(in AnalyticSurface selectedSurface,
-        in TerminatorAnchor anchor, double t, DerivativeOrder order,
+        in TerminatorAnchor anchor, in KernelVector3 point, DerivativeOrder order,
         out KernelVector3 first, out KernelVector3 second)
     {
         first = default;
         second = default;
         if (order < 1) return AlgorithmStatus.InvalidInput;
-        var point = InterpolatedChordPoint(in anchor, t);
+        if (!IsFinite(point)) return AlgorithmStatus.InvalidInput;
         if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in point, 1, out var jet)
             != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;

@@ -238,8 +238,82 @@ public class TerminatorIntervalTests
         Assert.Equal(AlgorithmStatus.Success,
             ICurveEvaluation.EvaluateWithRule(in view, t + wideDelta, 1, ICurveConstraintPlan.Auto,
                 TerminatorParameterRule.ExtensionRatio, plusD1, out _));
-        Assert.Equal((plusD1[1].X - minusD1[1].X) / (2 * wideDelta), center[2].X, 4);
-        Assert.Equal((plusD1[1].Y - minusD1[1].Y) / (2 * wideDelta), center[2].Y, 4);
+        Assert.Equal((plusD1[1].X - minusD1[1].X) / (2 * wideDelta), center[2].X, 6);
+        Assert.Equal((plusD1[1].Y - minusD1[1].Y) / (2 * wideDelta), center[2].Y, 6);
+    }
+
+    [Theory]
+    [InlineData(0.5)]
+    [InlineData(0.25)]
+    public void TerminatorInterval_ManufacturedCylinder_MatchesClosedForm(double lambda)
+    {
+        // Manufactured case: Unit cylinder x² + y² = 1, plane z = 0.
+        // Branch point B = (1, 0, 0) at tB = 0, Terminator endpoint E = (0, 1, 0) at tE = 1.
+        // TerminatorAnchor with lineDirection = (1/√2, 1/√2, 0).
+        var cylinder = new AnalyticSurface(SurfaceClass.Cylinder,
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), 1.0, 0.0);
+        var b = Vector(1, 0, 0);
+        var e = Vector(0, 1, 0);
+        var tB = 0.0;
+        var tE = 1.0;
+        var t = tB + lambda * (tE - tB);
+
+        var lineDir = Vector(1 / Math.Sqrt(2), 1 / Math.Sqrt(2), 0);
+        var chordRate = Vector(-1, 1, 0);
+        var chordDir = Vector(-1 / Math.Sqrt(2), 1 / Math.Sqrt(2), 0);
+        var planeNorm = Vector(0, 0, -1);
+        var anchor = new TerminatorEvaluation.TerminatorAnchor(0, in e, in b, in planeNorm, in chordDir,
+            in lineDir, in chordRate, tE, tB, Math.Sqrt(2));
+
+        var budget = EvaluationBudget.Default;
+        Assert.Equal(AlgorithmStatus.Success,
+            TerminatorEvaluation.SolveIntervalPoint(in cylinder, in anchor, t,
+                ref budget, out _, out var point, out _, out _));
+
+        Assert.Equal(AlgorithmStatus.Success,
+            TerminatorEvaluation.IntervalDerivatives(in cylinder, in anchor, in point, 2,
+                out var d1, out var d2));
+
+        if (Math.Abs(lambda - 0.5) < 1e-12)
+        {
+            // Exact closed form at t = 0.5:
+            // x = (1/√2, 1/√2, 0), D1 = (-1, 1, 0), D2 = (-√2, -√2, 0)
+            Assert.Equal(1 / Math.Sqrt(2), point.X, 12);
+            Assert.Equal(1 / Math.Sqrt(2), point.Y, 12);
+            Assert.Equal(0.0, point.Z, 12);
+
+            Assert.Equal(-1.0, d1.X, 12);
+            Assert.Equal(1.0, d1.Y, 12);
+            Assert.Equal(0.0, d1.Z, 12);
+
+            Assert.Equal(-Math.Sqrt(2), d2.X, 10);
+            Assert.Equal(-Math.Sqrt(2), d2.Y, 10);
+            Assert.Equal(0.0, d2.Z, 10);
+        }
+        else if (Math.Abs(lambda - 0.25) < 1e-12)
+        {
+            // Exact closed form at t = 0.25:
+            // x = ((1+√7)/4, (-1+√7)/4, 0)
+            // D1 = (-1 + 1/√7, 1 + 1/√7, 0)
+            // D2 = (-32/(7√7), -32/(7√7), 0)
+            var expectedX = (1 + Math.Sqrt(7)) / 4;
+            var expectedY = (-1 + Math.Sqrt(7)) / 4;
+            Assert.Equal(expectedX, point.X, 12);
+            Assert.Equal(expectedY, point.Y, 12);
+            Assert.Equal(0.0, point.Z, 12);
+
+            var expectedD1X = -1 + 1 / Math.Sqrt(7);
+            var expectedD1Y = 1 + 1 / Math.Sqrt(7);
+            Assert.Equal(expectedD1X, d1.X, 10);
+            Assert.Equal(expectedD1Y, d1.Y, 10);
+            Assert.Equal(0.0, d1.Z, 10);
+
+            var expectedD2X = -32 / (7 * Math.Sqrt(7));
+            var expectedD2Y = -32 / (7 * Math.Sqrt(7));
+            Assert.Equal(expectedD2X, d2.X, 10);
+            Assert.Equal(expectedD2Y, d2.Y, 10);
+            Assert.Equal(0.0, d2.Z, 10);
+        }
     }
 
     [Fact]
