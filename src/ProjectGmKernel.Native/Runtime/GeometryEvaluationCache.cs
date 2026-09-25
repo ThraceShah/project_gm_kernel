@@ -241,6 +241,12 @@ internal static unsafe partial class KernelRuntime
             var kind = OriginalChartParameterMap.IsChartNode(view.ChartParameters, t)
                 ? ICurveQueryKind.ChartPoint
                 : ICurveQueryKind.RegularChartInterval;
+            var capability = ICurveConstraintPlanRules.ValidateRequest(in view, plan);
+            if (capability != AlgorithmStatus.Success)
+            {
+                report = new ICurveEvalReport(kind, capability, plan, ChartSide.Right, -1, 0, 0);
+                return capability;
+            }
             if (GeometryEvaluationCache.TryGetExact(in identity, t, kind, ChartSide.Right,
                     order, ICurveEvaluation.CacheErrorBound, out var exact))
             {

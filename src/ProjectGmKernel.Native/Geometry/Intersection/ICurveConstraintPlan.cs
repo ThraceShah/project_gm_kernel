@@ -37,6 +37,30 @@ internal static class ICurveConstraintPlanRules
     /// a plane prefer I2 (chord-plane eliminated) over I3; otherwise P2. P4 stays
     /// available as an explicit/cross-check plan, not Auto default.
     /// </summary>
+    /// <summary>
+    /// Explicit plans must be a known enumerator and capable on these supports
+    /// before a cached sample may be published. Auto is legal; the selected
+    /// plan is checked when it is actually forced. I1 needs exactly one plane.
+    /// </summary>
+    internal static AlgorithmStatus ValidateRequest(in ICurveView view, ICurveConstraintPlan plan)
+    {
+        switch (plan)
+        {
+            case ICurveConstraintPlan.Auto:
+            case ICurveConstraintPlan.I2:
+            case ICurveConstraintPlan.I3:
+            case ICurveConstraintPlan.P2:
+            case ICurveConstraintPlan.P4:
+                return AlgorithmStatus.Success;
+            case ICurveConstraintPlan.I1:
+                var plane0 = view.Support0.Kind == SurfaceClass.Plane;
+                var plane1 = view.Support1.Kind == SurfaceClass.Plane;
+                return plane0 != plane1 ? AlgorithmStatus.Success : AlgorithmStatus.Unsupported;
+            default:
+                return AlgorithmStatus.InvalidInput;
+        }
+    }
+
     internal static ICurveConstraintPlan Select(in ICurveView view)
     {
         var plane0 = view.Support0.Kind == SurfaceClass.Plane;
