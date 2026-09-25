@@ -20,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ProjectGmKernel.Native\ProjectGmKernel.Native.csproj" />
+    <ProjectReference Include="..\..\src\ProjectGmKernel.Native\ProjectGmKernel.Native.csproj">
+      <AdditionalProperties>KernelTestHooks=true</AdditionalProperties>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

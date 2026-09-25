@@ -4,30 +4,40 @@ using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
+#if KERNEL_TEST_HOOKS
 /// <summary>
-/// Per-thread entry counts for tests. Disarmed threads do not record calls,
-/// so parallel tests cannot see each other's totals.
+/// Per-thread entry counts for the test build. Disarmed threads do not record
+/// calls, so parallel tests cannot see each other's totals. Two tags that
+/// compare equal are rejected: every call would otherwise land on support 0.
 /// </summary>
 internal static class SurfaceEvaluationCalls
 {
     [ThreadStatic] private static bool armed;
     [ThreadStatic] private static int support0;
     [ThreadStatic] private static int support1;
-    [ThreadStatic] private static int failOn; // 1 = next matching support0, 2 = support1
+    [ThreadStatic] private static int failOn; // 1 = matching support0, 2 = support1
     [ThreadStatic] private static AnalyticSurface tagged0;
     [ThreadStatic] private static AnalyticSurface tagged1;
 
     internal static int Support0 => support0;
     internal static int Support1 => support1;
 
-    internal static void Arm(in AnalyticSurface first, in AnalyticSurface second, int failSupport = 0)
+    /// <summary>False when the two surfaces cannot be told apart by value.</summary>
+    internal static bool Arm(in AnalyticSurface first, in AnalyticSurface second, int failSupport = 0)
     {
+        if (Same(in first, in second))
+        {
+            armed = false;
+            failOn = 0;
+            return false;
+        }
         tagged0 = first;
         tagged1 = second;
         support0 = 0;
         support1 = 0;
         failOn = failSupport;
         armed = true;
+        return true;
     }
 
     internal static void Disarm()
@@ -54,17 +64,25 @@ internal static class SurfaceEvaluationCalls
 
     private static bool Same(in AnalyticSurface a, in AnalyticSurface b)
         => a.Kind == b.Kind
-            && a.Origin.X == b.Origin.X && a.Origin.Y == b.Origin.Y && a.Origin.Z == b.Origin.Z
-            && a.Axis.X == b.Axis.X && a.Axis.Y == b.Axis.Y && a.Axis.Z == b.Axis.Z
+            && SameVector(a.Origin, b.Origin)
+            && SameVector(a.Axis, b.Axis)
+            && SameVector(a.X, b.X)
+            && SameVector(a.Y, b.Y)
             && a.Radius == b.Radius && a.Secondary == b.Secondary;
+
+    private static bool SameVector(in KernelVector3 a, in KernelVector3 b)
+        => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
 }
+#endif
 
 internal static class SurfaceEvaluation
 {
     internal static AlgorithmStatus Evaluate(in AnalyticSurface surface, double u, double v,
         in SurfaceDerivativeLayout layout, Span<KernelVector3> output)
     {
+#if KERNEL_TEST_HOOKS
         if (SurfaceEvaluationCalls.Note(in surface)) return AlgorithmStatus.NotConverged;
+#endif
         if (!double.IsFinite(u) || !double.IsFinite(v)) return AlgorithmStatus.InvalidInput;
         if (output.Length < layout.Count) return AlgorithmStatus.OutputTooSmall;
         if (surface.Kind is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone
