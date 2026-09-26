@@ -448,7 +448,13 @@ internal static class SmallLinearSolve
                     var absVal = Math.Abs(bWork[k * n + j]);
                     if (absVal > cj) cj = absVal;
                 }
-                var invUnitNorm = 1.0 / (colNormB[j] / cj);
+                var sumSq = 0.0;
+                for (BufferOffset k = 0; k < n; k++)
+                {
+                    var scaled = bWork[k * n + j] / cj;
+                    sumSq += scaled * scaled;
+                }
+                var invUnitNorm = 1.0 / Math.Sqrt(sumSq);
                 for (BufferOffset i = 0; i < n; i++)
                     u[i * n + j] = (bWork[i * n + j] / cj) * invUnitNorm;
             }
