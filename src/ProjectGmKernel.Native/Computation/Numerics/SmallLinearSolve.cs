@@ -248,9 +248,24 @@ internal static class SmallLinearSolve
             return AlgorithmStatus.Success;
         }
 
+        var globalScale = 1.0;
         Span<double> bWork = stackalloc double[36];
-        for (BufferOffset i = 0; i < n * n; i++)
-            bWork[i] = a[i] / sMax;
+        if (sMax > 1e300)
+        {
+            globalScale = sMax;
+            for (BufferOffset i = 0; i < n * n; i++)
+            {
+                var scaled = a[i] / globalScale;
+                if (a[i] != 0.0 && scaled == 0.0)
+                    return AlgorithmStatus.NumericalFailure;
+                bWork[i] = scaled;
+            }
+        }
+        else
+        {
+            for (BufferOffset i = 0; i < n * n; i++)
+                bWork[i] = a[i];
+        }
 
         for (BufferOffset i = 0; i < n; i++)
         for (BufferOffset j = 0; j < n; j++)
@@ -398,7 +413,7 @@ internal static class SmallLinearSolve
             var unitNorm = Math.Sqrt(sumSq);
             var norm = cj * unitNorm;
             colNormB[j] = norm;
-            var sigma = unitNorm * (cj * sMax);
+            var sigma = unitNorm * (cj * globalScale);
             if (!double.IsFinite(sigma)) return AlgorithmStatus.NumericalFailure;
             singularValues[j] = sigma;
         }
