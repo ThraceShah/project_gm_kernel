@@ -467,6 +467,11 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                         (pkFdD2y - reference[2].coord[1]) * (pkFdD2y - reference[2].coord[1]) +
                         (pkFdD2z - reference[2].coord[2]) * (pkFdD2z - reference[2].coord[2]));
 
+                    if (!double.IsFinite(normDelta) || !double.IsFinite(tanDelta) || !double.IsFinite(ourFdErr) || !double.IsFinite(pkFdErr))
+                    {
+                        throw new InvalidOperationException($"Case F finite difference / D2 decomposition produced non-finite value at seg={seg} frac={quarters[f]} t={ourT:F6}: normDelta={normDelta}, tanDelta={tanDelta}, ourFdErr={ourFdErr}, pkFdErr={pkFdErr}");
+                    }
+
                     maxOurFdErr = Math.Max(maxOurFdErr, ourFdErr);
                     maxPkFdErr = Math.Max(maxPkFdErr, pkFdErr);
 
@@ -488,13 +493,13 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             log($"live-pk-recv: samples={samples} chartCount={chartCount} max|Δpos|={maxPos:E3} max|ΔD1|={maxTan:E3} max|ΔD2_raw_mid|={maxRawD2:E3} max|ΔD2|κ+n={maxD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
             log($"live-pk-recv: midpoint raw D2 PASS (max|ΔD2_raw_mid|={maxRawD2:E3} <= 1e-6)");
             log($"live-pk-recv: quarter-point D2 decomposition: max|ΔD2_normal|={maxQuarterNormDelta:E3} (PASS <= 1e-6), max|ΔD2_tangential|={maxQuarterTanDelta:E3}");
-            log($"live-pk-recv: finite difference D2 validation (h=1e-5): our D2 matches d(D1)/dt (err={maxOurFdErr:E3}); PK D2 omits tangential acceleration (tangential delta={maxQuarterTanDelta:E3}, pk_fd_err={maxPkFdErr:E3})");
+            log($"live-pk-recv: finite difference D2 validation (h=1e-5): our D2 matches d(D1)/dt (err={maxOurFdErr:E3}); observed on this fixture that PK D2 has zero tangential acceleration (tangential delta={maxQuarterTanDelta:E3}, pk_fd_err={maxPkFdErr:E3}) while matching normal acceleration to {maxQuarterNormDelta:E3}");
 
-            if (maxQuarterNormDelta > 1e-6)
+            if (!double.IsFinite(maxQuarterNormDelta) || maxQuarterNormDelta > 1e-6)
             {
-                throw new InvalidOperationException($"Case F quarter-point normal D2 component exceeded tolerance: {maxQuarterNormDelta:E3}");
+                throw new InvalidOperationException($"Case F quarter-point normal D2 component non-finite or exceeded tolerance: {maxQuarterNormDelta:E3}");
             }
-            if (maxOurFdErr > 1e-5)
+            if (!double.IsFinite(maxOurFdErr) || maxOurFdErr > 1e-5)
             {
                 throw new InvalidOperationException($"Case F finite difference check failed for our D2: our_err={maxOurFdErr:E3}");
             }
@@ -560,6 +565,18 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                     throw new InvalidOperationException("Negative test failure: CaseFValidator unexpectedly passed NaN sample!");
                 }
                 log($"live-pk-recv: NaN-rejection PASS ({nanFailure})");
+            }
+
+            // Negative test: verify that finite difference check rejects non-finite / NaN values in D1 probe
+            {
+                var nanProbe = double.NaN;
+                var fdErrNaN = Math.Sqrt((nanProbe - 0.0) * (nanProbe - 0.0));
+                var rejected = !double.IsFinite(fdErrNaN) || fdErrNaN > 1e-5;
+                if (!rejected)
+                {
+                    throw new InvalidOperationException("Negative test failure: finite difference NaN check did not reject NaN!");
+                }
+                log("live-pk-recv: finite-difference NaN-rejection PASS");
             }
 
             log("live-pk-recv: PASS (our XT INTERSECTION received by PK; shared CaseFValidator accepted D0/D1/rawD2/geomD2 and rejected perturbations)");

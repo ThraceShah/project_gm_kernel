@@ -386,16 +386,19 @@ internal static class TerminatorEvaluation
                         return AlgorithmStatus.Unsupported;
 
                     residual = Math.Abs(curJet.Value);
-                    var curDev = double.PositiveInfinity;
-                    var hasDev = AnalyticImplicitEvaluation.GeometricDeviation(in selectedSurface, in curPoint, out curDev) == AlgorithmStatus.Success;
-                    if ((hasDev && curDev <= 1e-11 * geomScale)
-                        || residual <= ICurveEvaluation.ResidualTolerance * geomScale * geomScale)
+                    var slope = Dot(curJet.Gradient, anchor.LineDirection);
+                    if (Math.Abs(slope) <= 1e-300) break;
+                    var stepMu = Math.Abs(curJet.Value / slope);
+
+                    // Convergence requires small forward spatial correction along line v (spec §18.2).
+                    // When the search line is nearly tangent to the surface (|slope| is small), small residual
+                    // does not guarantee small forward position error unless forward step stepMu is also within tolerance.
+                    if ((residual <= ICurveEvaluation.ResidualTolerance * geomScale && stepMu <= 1e-10 * geomScale)
+                        || stepMu <= 1e-11 * geomScale)
                     {
                         converged = true;
                         break;
                     }
-                    var slope = Dot(curJet.Gradient, anchor.LineDirection);
-                    if (Math.Abs(slope) <= 1e-300) break;
                     var nextMu = curMu - curJet.Value / slope;
                     if (!double.IsFinite(nextMu)
                         || Math.Abs(nextMu - muCurr) > maxMuStep
@@ -441,8 +444,10 @@ internal static class TerminatorEvaluation
                     var slopeConsistent = (currDenom * nextDenom > 0);
 
                     var xMid = Scale(Add(xCurr, curPoint), 0.5);
-                    var midConnected = AnalyticImplicitEvaluation.GeometricDeviation(in selectedSurface, in xMid, out var midDev) == AlgorithmStatus.Success
-                        && midDev <= 0.15 * charScale;
+                    var midStatus = TryBudgetedGeometricDeviation(in selectedSurface, in xMid, ref budget, ref evaluations, out var midDev);
+                    if (midStatus == AlgorithmStatus.NotConverged)
+                        return AlgorithmStatus.NotConverged;
+                    var midConnected = midStatus == AlgorithmStatus.Success && midDev <= 0.15 * charScale;
 
                     if (stepDist <= maxAllowedDist && stepDist <= maxStepDisplacement && normalConsistent && slopeConsistent && midConnected)
                     {
@@ -467,7 +472,7 @@ internal static class TerminatorEvaluation
 
                 // Cut step size if not accepted
                 stepLambda *= 0.5;
-                if (stepLambda < 1e-8)
+                if (stepLambda < remLambda * 1e-8 || stepLambda < 1e-18)
                 {
                     // Cannot connect continuously along this branch
                     return AlgorithmStatus.NotConverged;
@@ -482,15 +487,33 @@ internal static class TerminatorEvaluation
         if (chordPlaneRes > tol || planeRes > tol)
             return AlgorithmStatus.NumericalFailure;
 
-        if (AnalyticImplicitEvaluation.GeometricDeviation(in selectedSurface, in xCurr, out var surfaceDev) != AlgorithmStatus.Success
-            || surfaceDev > tol)
-        {
+        var devStatus = TryBudgetedGeometricDeviation(in selectedSurface, in xCurr, ref budget, ref evaluations, out var surfaceDev);
+        if (devStatus != AlgorithmStatus.Success)
+            return devStatus == AlgorithmStatus.NotConverged ? AlgorithmStatus.NotConverged : AlgorithmStatus.NumericalFailure;
+        if (surfaceDev > tol)
             return AlgorithmStatus.NumericalFailure;
-        }
+
+        // Independent forward position error verification along line direction v (spec §18.2):
+        var finalSlope = Dot(gCurr, anchor.LineDirection);
+        if (Math.Abs(finalSlope) <= 1e-12)
+            return AlgorithmStatus.NumericalFailure;
+        var forwardError = Math.Abs(residual / finalSlope);
+        if (forwardError > tol)
+            return AlgorithmStatus.NumericalFailure;
 
         mu = muCurr;
         point = xCurr;
         return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus TryBudgetedGeometricDeviation(in AnalyticSurface surface,
+        in KernelVector3 point, ref EvaluationBudget budget, ref BufferOffset evaluations,
+        out double deviation)
+    {
+        deviation = double.PositiveInfinity;
+        if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+        evaluations++;
+        return AnalyticImplicitEvaluation.GeometricDeviation(in surface, in point, out deviation);
     }
 
     private const int MaxNewtonIterations = 8;
