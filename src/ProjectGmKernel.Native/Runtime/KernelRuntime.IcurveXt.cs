@@ -233,6 +233,7 @@ internal static unsafe partial class KernelRuntime
         uvCount = dataNode.VariableLength;
         if (uvCount < 0 || dataNode.Fields.Length != 1 + uvCount) return false;
         if (uvCount > MaxIcurveImportUvValues || uvValues.Length < uvCount) return false;
+        if (uvCount % 2 != 0) return false;
         for (var i = 0; i < uvCount; i++)
         {
             var field = dataNode.Fields[1 + i];

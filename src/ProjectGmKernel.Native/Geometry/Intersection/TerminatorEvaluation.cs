@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
@@ -174,7 +175,9 @@ internal static class TerminatorEvaluation
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in branchPoint, 1, out var jet0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in branchPoint, 1, out var jet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
-        var tangent = Unit(Cross(jet0.Gradient, jet1.Gradient));
+        var n0 = Scale(jet0.Gradient, view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+        var n1 = Scale(jet1.Gradient, view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+        var tangent = Unit(Cross(n0, n1));
         if (!IsFinite(tangent)) return AlgorithmStatus.Singular;
 
         var forwardCosine = Dot(tangent, boundaryChord);
@@ -226,9 +229,9 @@ internal static class TerminatorEvaluation
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in endpoint, 1, out var jet0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in endpoint, 1, out var jet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
-        var endpointScale = 1.0 + Math.Sqrt(Dot(endpoint, endpoint));
-        var surface0Singular = GradientNormSq(jet0.Gradient) <= (1e-12 * endpointScale) * (1e-12 * endpointScale);
-        var surface1Singular = GradientNormSq(jet1.Gradient) <= (1e-12 * endpointScale) * (1e-12 * endpointScale);
+        var localScale = ICurveEvaluation.LocalLengthScale(in view);
+        var surface0Singular = GradientNormSq(jet0.Gradient) <= (1e-12 * localScale) * (1e-12 * localScale);
+        var surface1Singular = GradientNormSq(jet1.Gradient) <= (1e-12 * localScale) * (1e-12 * localScale);
         // surface0IsBlendBound is currently false because ICurve prepare only accepts
         // analytic supports (GATE-B open; future SurfaceSupportRef will supply this).
         var selected = SelectSupportSurface(surface0Singular, surface1Singular, false, termUse);
@@ -293,11 +296,18 @@ internal static class TerminatorEvaluation
     internal static AlgorithmStatus SolveIntervalPoint(in AnalyticSurface selectedSurface,
         in TerminatorAnchor anchor, double t, ref EvaluationBudget budget,
         out double mu, out KernelVector3 point, out double residual, out BufferOffset evaluations)
+        => SolveIntervalPoint(in selectedSurface, in anchor, t, ref budget, out mu, out point, out residual, out evaluations, out _);
+
+    internal static AlgorithmStatus SolveIntervalPoint(in AnalyticSurface selectedSurface,
+        in TerminatorAnchor anchor, double t, ref EvaluationBudget budget,
+        out double mu, out KernelVector3 point, out double residual, out BufferOffset evaluations,
+        out double errorEstimate)
     {
         mu = 0;
         point = default;
         residual = 0;
         evaluations = 0;
+        errorEstimate = double.PositiveInfinity;
         if (!double.IsFinite(t)) return AlgorithmStatus.InvalidInput;
 
         // 1. Evaluate branch jet at B with budget accounting
@@ -483,7 +493,7 @@ internal static class TerminatorEvaluation
         var targetQ = InterpolatedChordPoint(in anchor, t);
         var chordPlaneRes = Math.Abs(ChordPlaneResidual(in anchor.ChordUnit, in targetQ, in xCurr));
         var planeRes = Math.Abs(PlaneResidual(in anchor.PlaneNormal, in anchor.Endpoint, in xCurr));
-        var tol = 1e-7 * Math.Max(anchor.ChordLength, 1.0);
+        var tol = 1e-7 * Math.Max(anchor.ChordLength, 1e-6);
         if (chordPlaneRes > tol || planeRes > tol)
             return AlgorithmStatus.NumericalFailure;
 
@@ -503,6 +513,7 @@ internal static class TerminatorEvaluation
 
         mu = muCurr;
         point = xCurr;
+        errorEstimate = Math.Max(forwardError, Math.Max(surfaceDev, Math.Max(chordPlaneRes, planeRes)));
         return AlgorithmStatus.Success;
     }
 

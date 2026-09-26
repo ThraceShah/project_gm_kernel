@@ -34,6 +34,7 @@
     <InternalsVisibleTo Include="TopologyDump" />
     <InternalsVisibleTo Include="XtGeometryWriterOracle" />
     <InternalsVisibleTo Include="ProbeXtGeometryNodes" />
+    <InternalsVisibleTo Include="ConeAxisProbe" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />

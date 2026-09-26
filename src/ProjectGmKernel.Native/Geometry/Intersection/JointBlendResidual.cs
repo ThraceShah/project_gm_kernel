@@ -44,7 +44,7 @@ internal static class JointBlendResidual
         Span<double> denominators)
     {
         if (residual.Length < 6) return AlgorithmStatus.WorkspaceTooSmall;
-        if (denominators != default && denominators.Length < 6) return AlgorithmStatus.WorkspaceTooSmall;
+        if (!denominators.IsEmpty && denominators.Length < 6) return AlgorithmStatus.WorkspaceTooSmall;
         var statusA = AnalyticImplicitEvaluation.Evaluate(in supportA, in c, 1, out var jetA);
         if (statusA != AlgorithmStatus.Success) return statusA;
         var statusD = AnalyticImplicitEvaluation.Evaluate(in supportD, in c, 1, out var jetD);
@@ -62,7 +62,7 @@ internal static class JointBlendResidual
         residual[4] = jetS.Value;
         residual[5] = Dot(planeNormal, Sub(x, planeAnchor));
 
-        if (denominators != default)
+        if (!denominators.IsEmpty)
         {
             var radius = Math.Sqrt(radiusSq);
             var qNorm = Math.Sqrt(Dot(q, q));
