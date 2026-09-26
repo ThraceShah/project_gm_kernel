@@ -23,8 +23,28 @@ internal static class JointBlendResidual
     internal static AlgorithmStatus AssembleResidual(in AnalyticSurface supportA, in AnalyticSurface supportD,
         in AnalyticSurface outerSurface, in KernelVector3 planeAnchor, in KernelVector3 planeNormal,
         double radiusSq, in KernelVector3 x, in KernelVector3 c, Span<double> residual)
+        => AssembleResidual(in supportA, in supportD, in outerSurface, in planeAnchor, in planeNormal,
+            radiusSq, in x, in c, residual, denominators: null);
+
+    /// <summary>
+    /// Assemble the 6 residuals together with positive quality denominators
+    /// that turn each row into a dimensionless error (§12.2 frozen row
+    /// scaling / §14.1): row i is accepted when |F_i|/denom_i ≤ tolerance.
+    ///   denom(A) = ‖∇A(c)‖·L, denom(D) = ‖∇D(c)‖·L,
+    ///   denom(radius) = 2r·L  (|‖q‖²−r²|/(2r) ≈ radial error δ, length),
+    ///   denom(w-row) = ‖q‖·‖w‖ (already an angle-like measure),
+    ///   denom(S) = ‖∇S(x)‖·L, denom(p) = ‖planeNormal‖·L, with L = ‖q‖+r.
+    /// This is what rejects the small-radius false success: with r = 2⁻²⁴ and
+    /// a 100% radial error the raw radius residual 3r² ≈ 1.1e−14 passes an
+    /// absolute 1e−12 test, while |F|/denom ≈ 0.5 does not.
+    /// </summary>
+    internal static AlgorithmStatus AssembleResidual(in AnalyticSurface supportA, in AnalyticSurface supportD,
+        in AnalyticSurface outerSurface, in KernelVector3 planeAnchor, in KernelVector3 planeNormal,
+        double radiusSq, in KernelVector3 x, in KernelVector3 c, Span<double> residual,
+        Span<double> denominators)
     {
         if (residual.Length < 6) return AlgorithmStatus.WorkspaceTooSmall;
+        if (denominators != default && denominators.Length < 6) return AlgorithmStatus.WorkspaceTooSmall;
         var statusA = AnalyticImplicitEvaluation.Evaluate(in supportA, in c, 1, out var jetA);
         if (statusA != AlgorithmStatus.Success) return statusA;
         var statusD = AnalyticImplicitEvaluation.Evaluate(in supportD, in c, 1, out var jetD);
@@ -41,6 +61,29 @@ internal static class JointBlendResidual
         residual[3] = Dot(q, w);
         residual[4] = jetS.Value;
         residual[5] = Dot(planeNormal, Sub(x, planeAnchor));
+
+        if (denominators != default)
+        {
+            var radius = Math.Sqrt(radiusSq);
+            var qNorm = Math.Sqrt(Dot(q, q));
+            var lengthScale = qNorm + radius; // local blend length; > 0 by input contract
+            var gradA = Math.Sqrt(Dot(jetA.Gradient, jetA.Gradient));
+            var gradD = Math.Sqrt(Dot(jetD.Gradient, jetD.Gradient));
+            var gradS = Math.Sqrt(Dot(jetS.Gradient, jetS.Gradient));
+            var wNorm = Math.Sqrt(Dot(w, w));
+            var pNorm = Math.Sqrt(Dot(planeNormal, planeNormal));
+            denominators[0] = gradA * lengthScale;
+            denominators[1] = gradD * lengthScale;
+            denominators[2] = 2 * radius * lengthScale;
+            denominators[3] = qNorm * wNorm;
+            denominators[4] = gradS * lengthScale;
+            denominators[5] = pNorm * lengthScale;
+            for (var i = 0; i < 6; i++)
+            {
+                if (!(denominators[i] > 0) || !double.IsFinite(denominators[i]))
+                    return AlgorithmStatus.Singular; // degenerate row geometry
+            }
+        }
         return AlgorithmStatus.Success;
     }
 

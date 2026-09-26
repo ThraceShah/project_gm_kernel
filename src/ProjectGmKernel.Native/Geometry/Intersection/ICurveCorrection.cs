@@ -94,11 +94,21 @@ internal static class ICurveCorrection
         freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
         freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);
 
-        var scale0 = Math.Max(1.0, SmallLinearSolve.Norm(state));
+        // The trust radius lives in the scaled metric (‖p‖₂ of the DoglegStep
+        // unknowns); the physical extent of axis j is radius·D_u[j] (§14.1).
+        // Initialize from the local length scale mapped through the largest
+        // column scale: the first trial may move the point by roughly the
+        // characteristic size, independent of the world origin and of whether
+        // the unknowns are parameters or coordinates.
+        var localScale = ICurveEvaluation.LocalLengthScale(in view);
+        var maxColumn = freeze.MaxColumnScale;
+        var initialRadius = maxColumn > 0 && double.IsFinite(maxColumn)
+            ? Math.Max(localScale / maxColumn, 1e-12 * Math.Max(1.0, localScale))
+            : Math.Max(1.0, localScale);
         var buffer = new SolveStateBuffer(
             stackalloc double[MaxSmallSystem], stackalloc double[MaxSmallSystem],
-            state, SmallLinearSolve.Norm(state) + 1);
-        var minRadius = 1e-12 * scale0;
+            state, initialRadius);
+        var minRadius = 1e-12 * Math.Max(1.0, initialRadius);
 
         Span<double> jacobianScratch = stackalloc double[MaxSmallSystem * MaxSmallSystem];
         Span<double> jacobianCopy = stackalloc double[MaxSmallSystem * MaxSmallSystem];
@@ -108,6 +118,7 @@ internal static class ICurveCorrection
         Span<double> gradient = stackalloc double[MaxSmallSystem];
         Span<double> newtonStep = stackalloc double[MaxSmallSystem];
         Span<double> step = stackalloc double[MaxSmallSystem];
+        Span<double> physicalStep = stackalloc double[MaxSmallSystem];
 
         var psiBase = 0.5 * SmallLinearSolve.Dot(residualVector[..n], residualVector[..n]);
         var trials = 0;
@@ -147,8 +158,10 @@ internal static class ICurveCorrection
                     residualVector, jacobianMaster, ref budget, out _, out detail);
                 if (reevalStatus == AlgorithmStatus.Success)
                 {
+                    var tightened = freeze;
                     freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
                     freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);
+                    buffer.RescaleAcceptedRadius(freeze.ConservativeRadiusFactor(in tightened));
                     psiBase = 0.5 * SmallLinearSolve.Dot(residualVector[..n], residualVector[..n]);
                 }
                 continue;
@@ -158,7 +171,12 @@ internal static class ICurveCorrection
             buffer.BeginTrial();
             memo.BeginTrial();
             var trial = buffer.TrialState;
-            for (BufferOffset i = 0; i < n; i++) trial[i] += step[i];
+            // §14.1: the DoglegStep solution p lives in the scaled unknowns;
+            // the state update applies the physical increment Δy = D_u·p. The
+            // scaled p keeps feeding stepNorm / boundary / predicted below.
+            if (!freeze.TryMapScaledStep(step, physicalStep, n))
+                return AlgorithmStatus.NumericalFailure;
+            for (BufferOffset i = 0; i < n; i++) trial[i] += physicalStep[i];
 
             var trialStatus = EvaluateSystem(in view, plan, t, segment, buffer.TrialState,
                 trialResidual, trialJacobian, ref budget, out _, out detail);
@@ -192,8 +210,12 @@ internal static class ICurveCorrection
                     && ICurveEvaluation.IsPublishableRoot(in view, t, segment, in acceptedPoint, ref budget, out detail))
                     return Success(buffer.AcceptedState, n, refinedState);
                 if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
+                var accepted = freeze;
                 freeze.Capture(residualVector[..n], jacobianMaster[..(n * n)], n);
                 freeze.Apply(residualVector[..n], jacobianMaster[..(n * n)]);
+                // Rebuilt column metric: convert the committed radius so the
+                // physical trust ellipsoid never grows across the rebuild.
+                buffer.RescaleAcceptedRadius(freeze.ConservativeRadiusFactor(in accepted));
                 psiBase = 0.5 * SmallLinearSolve.Dot(residualVector[..n], residualVector[..n]);
             }
             else

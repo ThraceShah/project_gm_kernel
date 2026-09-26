@@ -96,7 +96,8 @@ internal static class ICurveEvaluation
             {
                 report = new ICurveEvalReport(report.Kind, AlgorithmStatus.NumericalFailure,
                     report.Plan, report.Side, report.Segment, report.NewtonIterations,
-                    report.Residual, report.CacheHit, report.NonDefiningResidual, report.Detail);
+                    report.Residual, report.CacheHit, report.NonDefiningResidual, report.Detail,
+                    report.QualityError);
                 return AlgorithmStatus.NumericalFailure;
             }
         result[..(order + 1)].CopyTo(derivatives);
@@ -163,7 +164,7 @@ internal static class ICurveEvaluation
             }
             derivatives[0] = view.ChartPositions[anchorIndex];
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
-                plan, side, segment, 0, 0, CacheHitKind.Exact);
+                plan, side, segment, 0, 0, CacheHitKind.Exact, qualityError: 0);
             return AlgorithmStatus.Success;
         }
 
@@ -176,23 +177,25 @@ internal static class ICurveEvaluation
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, capability, plan, side, segment, 0, 0);
             return capability;
         }
-        if (cache.TryFindExact(t, ICurveQueryKind.ChartPoint, side, order, CacheErrorBound, out var hit))
+        if (cache.TryFindExact(t, ICurveQueryKind.ChartPoint, side, order, CacheQualityBound(in view), out var hit))
         {
             PublishHit(in hit, order, derivatives);
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
-                hit.Plan, side, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact);
+                hit.Plan, side, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact,
+                qualityError: hit.ErrorEstimate);
             return AlgorithmStatus.Success;
         }
         var seed = view.ChartPositions[anchorIndex];
         var solveStatus = SolveDirect(in view, in seed, t, segment, order, selected, derivatives,
             out var iterations, out var residual);
         report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, solveStatus,
-            selected, side, segment, iterations, residual);
+            selected, side, segment, iterations, residual,
+            qualityError: solveStatus == AlgorithmStatus.Success ? 0 : double.PositiveInfinity);
         if (solveStatus != AlgorithmStatus.Success) return solveStatus;
         derivatives[0] = seed;
         _ = cache.TryInsert(new CurveSample(t, in seed, derivatives[1],
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.ChartPoint,
-            side, segment, residual, SampleSourceKind.CorrectedRoot, selected));
+            side, segment, 0, SampleSourceKind.CorrectedRoot, selected));
         return AlgorithmStatus.Success;
     }
 
@@ -224,11 +227,12 @@ internal static class ICurveEvaluation
                 plan, side, segment, 0, 0);
             return capability;
         }
-        if (cache.TryFindExact(t, ICurveQueryKind.RegularChartInterval, side, order, CacheErrorBound, out var hit))
+        if (cache.TryFindExact(t, ICurveQueryKind.RegularChartInterval, side, order, CacheQualityBound(in view), out var hit))
         {
             PublishHit(in hit, order, derivatives);
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, AlgorithmStatus.Success,
-                hit.Plan, side, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact);
+                hit.Plan, side, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact,
+                qualityError: hit.ErrorEstimate);
             return AlgorithmStatus.Success;
         }
         if (selected == ICurveConstraintPlan.I1
@@ -300,12 +304,18 @@ internal static class ICurveEvaluation
         }
         if (status == AlgorithmStatus.Success)
         {
+            // §13.4/§15.2: the sample's stored quality is the certified
+            // length-unit position bound of the publication gate that just
+            // accepted the root — never the raw equation residual, whose
+            // units change with the surface class and the model scale.
+            var quality = PublicationTolerance(in view);
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
-                selected, side, segment, iterations, residual, hitKind, 0, detail);
+                selected, side, segment, iterations, residual, hitKind, 0, detail,
+                quality);
             _ = cache.TryInsert(new CurveSample(t, derivatives[0],
                 order >= 1 ? derivatives[1] : default,
                 order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
-                side, segment, residual, SampleSourceKind.CorrectedRoot, selected));
+                side, segment, quality, SampleSourceKind.CorrectedRoot, selected));
             return status;
         }
 
@@ -350,14 +360,15 @@ internal static class ICurveEvaluation
         }
 
         iterations = contSteps;
+        var contQuality = contStatus == AlgorithmStatus.Success ? PublicationTolerance(in view) : double.PositiveInfinity;
         report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, contStatus,
             selected, side, segment, iterations, residual, CacheHitKind.NeighborSeed,
-            0, detail);
+            0, detail, contQuality);
         if (contStatus != AlgorithmStatus.Success) return contStatus;
         _ = cache.TryInsert(new CurveSample(t, derivatives[0],
             order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
-            side, segment, residual, SampleSourceKind.CorrectedRoot, selected));
+            side, segment, contQuality, SampleSourceKind.CorrectedRoot, selected));
         return contStatus;
     }
 
@@ -376,20 +387,33 @@ internal static class ICurveEvaluation
         if (status != AlgorithmStatus.Success)
             status = ICurveContinuation.SubdivideTo(in view, ICurveConstraintPlan.I1,
                 t, segment, order, ref budget, derivatives, out steps, out residual, out detail);
+        var contQualityI1 = status == AlgorithmStatus.Success ? PublicationTolerance(in view) : double.PositiveInfinity;
         report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
             ICurveConstraintPlan.I1, side, segment, steps, residual,
-            CacheHitKind.None, 0, detail);
+            CacheHitKind.None, 0, detail, contQualityI1);
         if (status != AlgorithmStatus.Success) return status;
         _ = cache.TryInsert(new CurveSample(t, derivatives[0],
             order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order,
             ICurveQueryKind.RegularChartInterval, side, segment,
-            residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1));
+            contQualityI1, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1));
         return AlgorithmStatus.Success;
     }
 
-    /// <summary>Sample error bound for exact-hit acceptance (slice default).</summary>
-    internal const double CacheErrorBound = 1e-11;
+    /// <summary>
+    /// Exact-hit acceptance bound for sample quality (§13.4/§15.2): a
+    /// length-unit quantity that scales with the local geometry, unlike a raw
+    /// equation residual whose units vary with the surface class (sphere and
+    /// cylinder φ ≈ 2R·δ, torus φ is quartic). Published samples carry a
+    /// certified bound of <see cref="PublicationTolerance"/>, which stays a
+    /// factor <see cref="CacheQualityFactor"/>^{-1} below this bound at every
+    /// scale, so hit decisions are dimensionally consistent across model
+    /// scales instead of coupling to the equation form.
+    /// </summary>
+    internal static double CacheQualityBound(in ICurveView view)
+        => CacheQualityFactor * LocalLengthScale(in view);
+
+    internal const double CacheQualityFactor = 1e-11;
 
     /// <summary>
     /// Terminator queries beyond a chart boundary (§6): classification has
@@ -461,11 +485,11 @@ internal static class ICurveEvaluation
             return prepareStatus;
         }
 
-        if (cache.TryFindExact(t, kind, side, order, CacheErrorBound, out var hit))
+        if (cache.TryFindExact(t, kind, side, order, CacheQualityBound(in view), out var hit))
         {
             PublishHit(in hit, order, derivatives);
             report = new ICurveEvalReport(kind, AlgorithmStatus.Success, hit.Plan, side, segment,
-                0, hit.ErrorEstimate, CacheHitKind.Exact);
+                0, hit.ErrorEstimate, CacheHitKind.Exact, qualityError: hit.ErrorEstimate);
             return AlgorithmStatus.Success;
         }
 
@@ -507,10 +531,15 @@ internal static class ICurveEvaluation
         derivatives[0] = point;
         if (order >= 1) derivatives[1] = first;
         if (order >= 2) derivatives[2] = second;
+        // Terminator quality: the certified bound of the interval gate that
+        // just accepted the point (plane residuals, geometric deviation and
+        // forward error are all ≤ this value in length units, §6.4/§18.2).
+        var terminatorQuality = 1e-7 * Math.Max(anchor.ChordLength, 1.0);
         _ = cache.TryInsert(new CurveSample(t, in point, first, second, order, kind,
-            side, segment, residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
+            side, segment, terminatorQuality, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
         report = new ICurveEvalReport(kind, AlgorithmStatus.Success, ICurveConstraintPlan.Auto,
-            side, segment, evaluations, residual, CacheHitKind.None, nonDefining);
+            side, segment, evaluations, residual, CacheHitKind.None, nonDefining,
+            ICurveEvalDetail.None, terminatorQuality);
         return AlgorithmStatus.Success;
     }
 
@@ -717,11 +746,17 @@ internal static class ICurveEvaluation
     }
 
     internal static double PublicationTolerance(in ICurveView view)
+        => ResidualTolerance * LocalLengthScale(in view);
+
+    /// <summary>
+    /// Local length scale of the supports (§18.1): all quality bounds are
+    /// expressed against this scale, never against world-coordinate norms.
+    /// </summary>
+    internal static double LocalLengthScale(in ICurveView view)
     {
-        var localScale = Math.Max(1.0, Math.Max(
+        return Math.Max(1.0, Math.Max(
             Math.Max(view.Support0.Radius, view.Support0.Secondary),
             Math.Max(view.Support1.Radius, view.Support1.Secondary)));
-        return ResidualTolerance * localScale;
     }
 
     /// <summary>x′ᵀHx′ via the analytic Hessian, contracted without materializing the tensor (§16.2).</summary>

@@ -259,7 +259,7 @@ internal static unsafe partial class KernelRuntime
         return true;
     }
 
-    private static AlgorithmStatus TryMaterializeAnalyticSurfaceFromXt(XtDocument document,
+    internal static AlgorithmStatus TryMaterializeAnalyticSurfaceFromXt(XtDocument document,
         XtNodeIndex nodeIndex, out SurfTag tag)
     {
         tag = 0;

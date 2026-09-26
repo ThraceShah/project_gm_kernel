@@ -16,6 +16,15 @@ internal static class BlendJointLift
     internal const int MaxNewtonIterations = 16;
 
     /// <summary>
+    /// Dimensionless convergence bound (§12.2 frozen row scaling): every row
+    /// is divided by its quality denominator (radial error relative to r and
+    /// the local length scale, support residuals relative to gradient·L), so
+    /// the test cannot be passed by a small radius row whose raw square
+    /// residual 3r² < 1e−12 hides a 100% radial error (consolidated N13).
+    /// </summary>
+    internal const double DimensionlessTolerance = 1e-12;
+
+    /// <summary>
     /// Occurrence identity for nested lift bookkeeping (§12.1): same NodeId at
     /// different parameter positions must not merge.
     /// </summary>
@@ -76,6 +85,7 @@ internal static class BlendJointLift
         state[3] = c0.X; state[4] = c0.Y; state[5] = c0.Z;
 
         Span<double> f = stackalloc double[6];
+        Span<double> denominators = stackalloc double[6];
         Span<double> j = stackalloc double[36];
         Span<double> jCopy = stackalloc double[36];
         Span<double> step = stackalloc double[6];
@@ -88,10 +98,13 @@ internal static class BlendJointLift
             var x = Vector(state[0], state[1], state[2]);
             var c = Vector(state[3], state[4], state[5]);
             var resStatus = JointBlendResidual.AssembleResidual(in supportA, in supportD, in outerSurface,
-                in planeAnchor, in planeNormal, radiusSq, in x, in c, f);
+                in planeAnchor, in planeNormal, radiusSq, in x, in c, f, denominators);
             if (resStatus != AlgorithmStatus.Success) return resStatus;
             residual = MaxAbs(f);
-            if (residual <= BlendEnvelopeSolve.ResidualTolerance)
+            // Dimensionless acceptance (§12.2): raw |F| rows mix length and
+            // length² units and scale with r², so an absolute test passes with
+            // a 100% radial error once r ≲ 6e−8. The divided test does not.
+            if (ScaledMaxAbs(f, denominators) <= DimensionlessTolerance)
                 return AlgorithmStatus.Success;
 
             var jacStatus = JointBlendResidual.AssembleJacobian(in supportA, in supportD,
@@ -345,6 +358,18 @@ internal static class BlendJointLift
             if (!double.IsFinite(v)) return double.PositiveInfinity;
             var a = Math.Abs(v);
             if (a > max) max = a;
+        }
+        return max;
+    }
+
+    private static double ScaledMaxAbs(ReadOnlySpan<double> values, ReadOnlySpan<double> denominators)
+    {
+        var max = 0.0;
+        for (BufferOffset i = 0; i < values.Length; i++)
+        {
+            var v = Math.Abs(values[i]) / denominators[i];
+            if (!double.IsFinite(v)) return double.PositiveInfinity;
+            if (v > max) max = v;
         }
         return max;
     }
