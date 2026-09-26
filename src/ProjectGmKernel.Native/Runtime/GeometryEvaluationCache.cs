@@ -5,7 +5,6 @@ using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 
 namespace ProjectGmKernel.Native.Runtime;
-
 /// <summary>Slot-ABA-safe geometry identity: a tag alone is never a cache key (§13.8).</summary>
 [StructLayout(LayoutKind.Sequential)]
 internal struct GeometryIdentity
@@ -52,6 +51,13 @@ internal struct CachedCurveSample
 /// allocators, hard capacity with CLOCK eviction, and a monotonic model
 /// geometry epoch — creation, deletion, rollback and session reset invalidate
 /// every entry; cache writes never move the epoch.
+/// Synchronization (§13.9, consolidated-review B1): every entry mutation —
+/// lookup-and-copy, CLOCK reference bits, slot claim/overwrite/upgrade and
+/// Attach/Detach/Clear — runs under one short SpinLock. No child evaluator is
+/// ever called under the lock: hits are copied out by value, solves run
+/// lock-free between a miss and the publish. This is required because
+/// PK_CURVE_eval is dispatched as Concurrent/ReadOnly — multiple readers may
+/// execute in parallel — so the "read" path's cache writes must be serialized.
 /// </summary>
 internal static unsafe class GeometryEvaluationCache
 {
@@ -60,14 +66,16 @@ internal static unsafe class GeometryEvaluationCache
 
     private static CachedCurveSample* arena;
     private static MemoryPageIndex clockHand;
+    private static long modelGeometryEpoch;
+    private static System.Threading.SpinLock gate = new();
 
     /// <summary>
     /// Monotonic model geometry epoch (§13.8): bumped by geometry creation,
     /// deletion, rollback and session lifecycle; never by cache writes.
     /// </summary>
-    internal static long ModelGeometryEpoch { get; private set; }
+    internal static long ModelGeometryEpoch => System.Threading.Volatile.Read(ref modelGeometryEpoch);
 
-    internal static void BumpModelGeometryEpoch() => ModelGeometryEpoch++;
+    internal static void BumpModelGeometryEpoch() => System.Threading.Interlocked.Increment(ref modelGeometryEpoch);
 
     // ── Session lifetime ─────────────────────────────────────────
     // The arena lives in one long-lived SessionMemory allocation — outside
@@ -76,15 +84,38 @@ internal static unsafe class GeometryEvaluationCache
 
     internal static void Attach(SessionMemory* memory)
     {
-        Detach(memory);
-        if (memory == null) return;
-        var block = memory->TryAllocate((nuint)(Capacity * sizeof(CachedCurveSample)));
-        if (block == null) return; // cache disabled for this session, evaluation still works
-        arena = (CachedCurveSample*)block;
-        Clear();
+        bool taken = false;
+        gate.Enter(ref taken);
+        try
+        {
+            DetachLocked(memory);
+            if (memory == null) return;
+            var block = memory->TryAllocate((nuint)(Capacity * sizeof(CachedCurveSample)));
+            if (block == null) return; // cache disabled for this session, evaluation still works
+            arena = (CachedCurveSample*)block;
+            ClearLocked();
+        }
+        finally
+        {
+            if (taken) gate.Exit();
+        }
     }
 
     internal static void Detach(SessionMemory* memory)
+    {
+        bool taken = false;
+        gate.Enter(ref taken);
+        try
+        {
+            DetachLocked(memory);
+        }
+        finally
+        {
+            if (taken) gate.Exit();
+        }
+    }
+
+    private static void DetachLocked(SessionMemory* memory)
     {
         if (arena != null && memory != null)
             memory->Free(arena);
@@ -93,6 +124,20 @@ internal static unsafe class GeometryEvaluationCache
     }
 
     internal static void Clear()
+    {
+        bool taken = false;
+        gate.Enter(ref taken);
+        try
+        {
+            ClearLocked();
+        }
+        finally
+        {
+            if (taken) gate.Exit();
+        }
+    }
+
+    private static void ClearLocked()
     {
         if (arena == null) return;
         for (MemoryPageIndex i = 0; i < Capacity; i++)
@@ -105,77 +150,105 @@ internal static unsafe class GeometryEvaluationCache
     /// <summary>
     /// Exact verified hit: identity (tag + generation), bit-identical
     /// parameter, current epoch, query semantics, side, derivative order and
-    /// error bound must all match.
+    /// error bound must all match. The sample is copied out under the gate;
+    /// nothing that runs here re-enters the cache.
     /// </summary>
     internal static bool TryGetExact(in GeometryIdentity identity, double parameter, ICurveQueryKind kind,
         ChartSide side, DerivativeOrder minOrder, double maxError, out CurveSample sample)
     {
         sample = default;
-        var epoch = ModelGeometryEpoch;
-        if (arena == null) return false;
-        for (MemoryPageIndex i = 0; i < Capacity; i++)
+        bool taken = false;
+        gate.Enter(ref taken);
+        try
         {
-            ref var entry = ref arena[i];
-            if (entry.Occupied == 0) continue;
-            if (entry.Epoch != epoch) continue; // stale: dropped lazily, never served
-            if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
-            if (entry.Parameter != parameter) continue;
-            if (entry.Kind != kind || entry.Side != side) continue;
-            if (entry.Source == SampleSourceKind.PredictedOnly) continue;
-            if (entry.MaxOrder < minOrder || entry.ErrorEstimate > maxError) continue;
-            entry.ClockReferenced = 1;
-            sample = ToL2Sample(in entry);
-            return true;
+            var epoch = Volatile.Read(ref modelGeometryEpoch);
+            if (arena == null) return false;
+            for (MemoryPageIndex i = 0; i < Capacity; i++)
+            {
+                ref var entry = ref arena[i];
+                if (entry.Occupied == 0) continue;
+                if (entry.Epoch != epoch) continue; // stale: dropped lazily, never served
+                if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
+                if (entry.Parameter != parameter) continue;
+                if (entry.Kind != kind || entry.Side != side) continue;
+                if (entry.Source == SampleSourceKind.PredictedOnly) continue;
+                if (entry.MaxOrder < minOrder || entry.ErrorEstimate > maxError) continue;
+                entry.ClockReferenced = 1;
+                sample = ToL2Sample(in entry);
+                return true;
+            }
+            return false;
         }
-        return false;
+        finally
+        {
+            if (taken) gate.Exit();
+        }
     }
 
     /// <summary>Copy every live entry of one identity into the operation store (L3 → L2 prefill).</summary>
     internal static void Prefill(in GeometryIdentity identity, ref EvaluationSampleStore store)
     {
-        var epoch = ModelGeometryEpoch;
-        if (arena == null) return;
-        for (MemoryPageIndex i = 0; i < Capacity && store.Count < store.Capacity; i++)
+        bool taken = false;
+        gate.Enter(ref taken);
+        try
         {
-            ref var entry = ref arena[i];
-            if (entry.Occupied == 0 || entry.Epoch != epoch) continue;
-            if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
-            if (entry.Source == SampleSourceKind.PredictedOnly) continue;
-            entry.ClockReferenced = 1;
-            _ = store.TryInsert(ToL2Sample(in entry));
+            var epoch = Volatile.Read(ref modelGeometryEpoch);
+            if (arena == null) return;
+            for (MemoryPageIndex i = 0; i < Capacity && store.Count < store.Capacity; i++)
+            {
+                ref var entry = ref arena[i];
+                if (entry.Occupied == 0 || entry.Epoch != epoch) continue;
+                if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
+                if (entry.Source == SampleSourceKind.PredictedOnly) continue;
+                entry.ClockReferenced = 1;
+                _ = store.TryInsert(ToL2Sample(in entry));
+            }
+        }
+        finally
+        {
+            if (taken) gate.Exit();
         }
     }
 
     /// <summary>Publish one validated operation result into the cross-call cache.</summary>
     internal static void Publish(in GeometryIdentity identity, in CurveSample sample)
     {
-        if (arena == null) return;
-        // Duplicate key: keep the better of the two by the same rule as L2.
-        var epoch = ModelGeometryEpoch;
-        for (MemoryPageIndex i = 0; i < Capacity; i++)
+        bool taken = false;
+        gate.Enter(ref taken);
+        try
         {
-            ref var entry = ref arena[i];
-            if (entry.Occupied == 0) continue;
-            if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
-            if (entry.Parameter != sample.Parameter || entry.Kind != sample.Kind || entry.Side != sample.Side)
-                continue;
-            if (entry.Epoch != epoch)
+            if (arena == null) return;
+            // Duplicate key: keep the better of the two by the same rule as L2.
+            var epoch = Volatile.Read(ref modelGeometryEpoch);
+            for (MemoryPageIndex i = 0; i < Capacity; i++)
             {
-                Overwrite(ref entry, identity, epoch, in sample);
+                ref var entry = ref arena[i];
+                if (entry.Occupied == 0) continue;
+                if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
+                if (entry.Parameter != sample.Parameter || entry.Kind != sample.Kind || entry.Side != sample.Side)
+                    continue;
+                if (entry.Epoch != epoch)
+                {
+                    Overwrite(ref entry, identity, epoch, in sample);
+                    return;
+                }
+                var existing = ToL2Sample(in entry);
+                if (!CurveSampleQuality.TryImprove(in existing, in sample, out var improved))
+                    return;
+                Overwrite(ref entry, identity, epoch, in improved);
                 return;
             }
-            var existing = ToL2Sample(in entry);
-            if (!CurveSampleQuality.TryImprove(in existing, in sample, out var improved))
-                return;
-            Overwrite(ref entry, identity, epoch, in improved);
-            return;
-        }
 
-        var slot = ClaimSlot();
-        Overwrite(ref arena[slot], identity, epoch, in sample);
+            var slot = ClaimSlot();
+            Overwrite(ref arena[slot], identity, epoch, in sample);
+        }
+        finally
+        {
+            if (taken) gate.Exit();
+        }
     }
 
-    // ── CLOCK eviction (§13.9) ───────────────────────────────────
+    // ── CLOCK eviction (§13.9) — caller holds the gate ───────────
 
     private static MemoryPageIndex ClaimSlot()
     {
@@ -262,13 +335,14 @@ internal static unsafe partial class KernelRuntime
                 }
             }
             if (GeometryEvaluationCache.TryGetExact(in identity, t, kind, side,
-                    order, ICurveEvaluation.CacheErrorBound, out var exact))
+                    order, ICurveEvaluation.CacheQualityBound(in view), out var exact))
             {
                 derivatives[0] = exact.Position;
                 if (order >= 1) derivatives[1] = exact.First;
                 if (order >= 2) derivatives[2] = exact.Second;
                 report = new ICurveEvalReport(kind, AlgorithmStatus.Success, exact.Plan,
-                    side, exact.Segment, 0, exact.ErrorEstimate, CacheHitKind.Exact);
+                    side, exact.Segment, 0, exact.ErrorEstimate, CacheHitKind.Exact,
+                    qualityError: exact.ErrorEstimate);
                 return AlgorithmStatus.Success;
             }
         }
@@ -282,7 +356,7 @@ internal static unsafe partial class KernelRuntime
             GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
                 order >= 1 ? derivatives[1] : default,
                 order >= 2 ? derivatives[2] : default, order, report.Kind,
-                report.Side, report.Segment, report.Residual, SampleSourceKind.CorrectedRoot, report.Plan));
+                report.Side, report.Segment, report.QualityError, SampleSourceKind.CorrectedRoot, report.Plan));
         return status;
     }
 }

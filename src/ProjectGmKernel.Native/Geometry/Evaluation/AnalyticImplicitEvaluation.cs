@@ -28,8 +28,14 @@ internal readonly struct ImplicitJet
 /// <summary>
 /// Analytic zero-set jets with sheet guards (spec §8.1, DERIVED formulas).
 /// Cone signs follow the kernel's PK-normalized convention ρ(z) = R + k·z —
-/// the XT/PK axis flip is normalized exactly once at import (spec §8.3);
-/// this module never flips again.
+/// the surface radius grows along +axis, matching PK_CONE_ask of a real
+/// Parasolid v380 cone. XT boundary note (§8.3, consolidated review N5):
+/// a live Parasolid probe (scripts/ConeAxisProbe.cs, evidence in
+/// temp_docs/icurve-evaluation/probe/) shows PK_PART_transmit stores the
+/// PK-interface axis and ref_direction VERBATIM in the CONE node and
+/// PK_PART_receive restores them verbatim — no flip exists at the byte
+/// boundary, so neither the writer nor the reader (nor this module) flips,
+/// and the axis/ref never change convention between XT and kernel.
 /// </summary>
 internal static class AnalyticImplicitEvaluation
 {

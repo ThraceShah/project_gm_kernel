@@ -33,30 +33,108 @@ internal static class SweptSpunImplicit
     }
 
     /// <summary>
-    /// Spun sheet about axis (P,A): the meridional plane through x has
-    /// residual ((x−P)×A)·((C−P)×A) style reduced to the scalar
-    /// ((x−P) − ((x−P)·A)A) · W_perp_sign — here the planar residual
-    /// ((x−P)×A) · ((C−P)×A) = 0 forces x and C to share a meridional plane.
+    /// Spun-sheet elimination constraints (spec §9.4): eliminate the rotation
+    /// angle with TWO scalar equations — axial height agreement and squared
+    /// radial length agreement about the axis (P, Â):
+    ///   h₁(x,u) = Â·(x−P) − Â·(C(u)−P)                (axial height, length)
+    ///   h₂(x,u) = ‖P⊥(x−P)‖² − ‖P⊥(C(u)−P)‖²           (radial length²; P⊥ = I − ÂÂᵀ)
+    /// The rotation angle itself is recovered separately, with its periodic
+    /// lift, by <see cref="TryRecoverSpunAngle"/> — the single scalar
+    /// ((x−P)×Â)·((C−P)×Â) used previously vanishes on ORTHOGONAL radial
+    /// vectors, not on a shared meridian plane, and its gradient was negated;
+    /// both are retired (consolidated review N9).
+    /// Derivatives are analytic in x and u (§16.1: no differencing of nested
+    /// evaluation): ∇ₓh₁ = Â, ∇ₓh₂ = 2·P⊥(x−P), ∂ᵤh₁ = −Â·C′(u),
+    /// ∂ᵤh₂ = −2·(P⊥(C(u)−P))·C′(u).
     /// </summary>
-    internal static AlgorithmStatus SpunMeridianResidual(
-        in KernelVector3 point, in KernelVector3 profilePoint,
+    internal static AlgorithmStatus SpunConstraints(
+        in KernelVector3 point, in KernelVector3 profilePoint, in KernelVector3 profileDerivative,
         in KernelVector3 axisPoint, in KernelVector3 axis,
-        out double residual, out KernelVector3 gradientWrtPoint)
+        out double axialResidual, out double radialResidual,
+        out KernelVector3 axialGradientX, out KernelVector3 radialGradientX,
+        out double axialDerivativeU, out double radialDerivativeU)
     {
-        residual = 0;
-        gradientWrtPoint = default;
-        if (!IsFinite(point) || !IsFinite(profilePoint) || !IsFinite(axisPoint) || !IsFinite(axis))
+        axialResidual = 0;
+        radialResidual = 0;
+        axialGradientX = default;
+        radialGradientX = default;
+        axialDerivativeU = 0;
+        radialDerivativeU = 0;
+        if (!IsFinite(point) || !IsFinite(profilePoint) || !IsFinite(profileDerivative)
+            || !IsFinite(axisPoint) || !IsFinite(axis))
             return AlgorithmStatus.InvalidInput;
         var a2 = Dot(axis, axis);
         if (!(a2 > 1e-30)) return AlgorithmStatus.Singular;
-        var unitA = Scale(axis, 1 / Math.Sqrt(a2));
-        var wx = Cross(Sub(point, axisPoint), unitA);
-        var wc = Cross(Sub(profilePoint, axisPoint), unitA);
-        residual = Dot(wx, wc);
-        // ∂/∂x of ( (x−P)×A ) · wc = wc × A  (since d((x−P)×A)= dx×A).
-        gradientWrtPoint = Cross(wc, unitA);
-        // Actually ∂/∂x [(x−P)×A] = -[A]_× so ∇_x (w·wc) = −A×wc = wc×A. OK.
+        var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
+
+        var rx = Sub(point, axisPoint);
+        var rc = Sub(profilePoint, axisPoint);
+        var zx = Dot(unitAxis, rx);
+        var zc = Dot(unitAxis, rc);
+
+        // Axis points (§9.4 "轴上点…单独处理"): the radial row degenerates
+        // (∇ₓh₂ = 0) — refuse instead of publishing an unconstrained equation.
+        var scaleX = 1.0 + Math.Sqrt(Dot(rx, rx));
+        var scaleC = 1.0 + Math.Sqrt(Dot(rc, rc));
+        var radialX = Sub(rx, Scale(unitAxis, zx));
+        var radialC = Sub(rc, Scale(unitAxis, zc));
+        if (Dot(radialX, radialX) <= 1e-24 * scaleX * scaleX
+            || Dot(radialC, radialC) <= 1e-24 * scaleC * scaleC)
+            return AlgorithmStatus.Singular;
+
+        axialResidual = zx - zc;
+        radialResidual = Dot(radialX, radialX) - Dot(radialC, radialC);
+        axialGradientX = unitAxis;
+        radialGradientX = Scale(radialX, 2);
+        axialDerivativeU = -Dot(unitAxis, profileDerivative);
+        radialDerivativeU = -2 * Dot(radialC, profileDerivative);
+        if (!IsFinite(axialGradientX) || !IsFinite(radialGradientX)
+            || !double.IsFinite(axialResidual) || !double.IsFinite(radialResidual)
+            || !double.IsFinite(axialDerivativeU) || !double.IsFinite(radialDerivativeU))
+            return AlgorithmStatus.NumericalFailure;
         return AlgorithmStatus.Success;
+    }
+
+    /// <summary>
+    /// Recover the spun rotation angle θ of x in the section frame at the
+    /// profile point C(u) and lift it onto the branch of
+    /// <paramref name="previousAngle"/> (periodic lift, §9.4). The frame is
+    /// E₁ = unit(P⊥(C−P)), E₂ = Â×E₁; θ = atan2(P⊥(x−P)·E₂, P⊥(x−P)·E₁).
+    /// Returns false when the point sits on the axis or the frame degenerates.
+    /// </summary>
+    internal static bool TryRecoverSpunAngle(
+        in KernelVector3 point, in KernelVector3 profilePoint,
+        in KernelVector3 axisPoint, in KernelVector3 axis,
+        double previousAngle, out double angle)
+    {
+        angle = 0;
+        if (!IsFinite(point) || !IsFinite(profilePoint) || !IsFinite(axisPoint) || !IsFinite(axis)
+            || !double.IsFinite(previousAngle))
+            return false;
+        var a2 = Dot(axis, axis);
+        if (!(a2 > 1e-30)) return false;
+        var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
+        var rx = Sub(point, axisPoint);
+        var rc = Sub(profilePoint, axisPoint);
+        var radialX = Sub(rx, Scale(unitAxis, Dot(unitAxis, rx)));
+        var radialC = Sub(rc, Scale(unitAxis, Dot(unitAxis, rc)));
+        var normC = Math.Sqrt(Dot(radialC, radialC));
+        var scaleX = 1.0 + Math.Sqrt(Dot(rx, rx));
+        if (normC <= 0) return false;
+        var e1 = Scale(radialC, 1 / normC);
+        var e2 = Cross(unitAxis, e1);
+        var normX = Math.Sqrt(Dot(radialX, radialX));
+        if (normX <= 1e-12 * scaleX) return false; // point on the axis: angle undefined
+        var cosTheta = Dot(radialX, e1) / normX;
+        var sinTheta = Dot(radialX, e2) / normX;
+        var theta = Math.Atan2(sinTheta, cosTheta);
+        if (!double.IsFinite(theta)) return false;
+        // Periodic lift onto the previous branch (witness), mirroring the
+        // spine-angle unwrap discipline: nearest 2π translate of the witness.
+        var twoPi = 2.0 * Math.PI;
+        var k = Math.Round((previousAngle - theta) / twoPi);
+        angle = theta + k * twoPi;
+        return true;
     }
 
     private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)

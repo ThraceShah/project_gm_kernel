@@ -60,15 +60,18 @@ internal readonly struct ICurveEvalReport
     internal readonly ChartSide Side;             // published derivative side at chart nodes
     internal readonly BufferOffset Segment;       // original chart segment, -1 = none
     internal readonly BufferOffset NewtonIterations;
-    internal readonly double Residual;            // final max |F| in scaled units
+    internal readonly double Residual;            // final max |F| in raw equation units (diagnostics only)
     internal readonly CacheHitKind CacheHit;      // how this request was served (§19.2)
     internal readonly double NonDefiningResidual; // |φ| of the unselected terminator support (§6.4 diagnostic)
     internal readonly ICurveEvalDetail Detail;    // locatable sub-reason (§18.5)
+    internal readonly double QualityError;        // certified length-unit position-error bound of the published D0
+                                                  // (§13.4/§15.2 cache quality); +∞ when nothing was published
 
     internal ICurveEvalReport(ICurveQueryKind kind, AlgorithmStatus status,
         ICurveConstraintPlan plan, ChartSide side, BufferOffset segment,
         BufferOffset newtonIterations, double residual, CacheHitKind cacheHit = CacheHitKind.None,
-        double nonDefiningResidual = 0, ICurveEvalDetail detail = ICurveEvalDetail.None)
+        double nonDefiningResidual = 0, ICurveEvalDetail detail = ICurveEvalDetail.None,
+        double qualityError = double.PositiveInfinity)
     {
         Kind = kind;
         Status = status;
@@ -80,6 +83,7 @@ internal readonly struct ICurveEvalReport
         CacheHit = cacheHit;
         NonDefiningResidual = nonDefiningResidual;
         Detail = detail;
+        QualityError = qualityError;
     }
 }
 

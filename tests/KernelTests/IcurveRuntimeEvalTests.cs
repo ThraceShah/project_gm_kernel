@@ -106,7 +106,7 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         var identity = new GeometryIdentity(record.Header.Tag, record.Header.Generation);
         Assert.True(GeometryEvaluationCache.TryGetExact(in identity, tMid,
             ICurveQueryKind.RegularChartInterval, ChartSide.Right, 1,
-            ICurveEvaluation.CacheErrorBound, out _));
+            1e-9, out _));
     }
 
     [Fact]

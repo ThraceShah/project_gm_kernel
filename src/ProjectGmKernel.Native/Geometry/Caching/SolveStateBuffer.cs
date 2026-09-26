@@ -77,4 +77,17 @@ internal ref struct SolveStateBuffer
         acceptedRadius = newRadius;
         trialRadius = newRadius;
     }
+
+    /// <summary>
+    /// Convert the accepted radius into a rebuilt column metric after the
+    /// frozen scales are re-captured (§14.1). The factor comes from
+    /// <see cref="FrozenResidualScale.ConservativeRadiusFactor"/> and is ≤ 1:
+    /// the physical trust ellipsoid never grows on a metric change.
+    /// </summary>
+    internal void RescaleAcceptedRadius(double factor)
+    {
+        if (!(factor > 0) || !double.IsFinite(factor)) return;
+        acceptedRadius *= factor;
+        if (acceptedRadius <= 0 || !double.IsFinite(acceptedRadius)) acceptedRadius = 0;
+    }
 }

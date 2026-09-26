@@ -68,7 +68,10 @@ internal readonly struct CurveSample
     internal readonly ICurveQueryKind Kind;
     internal readonly ChartSide Side;
     internal readonly BufferOffset Segment;
-    internal readonly double ErrorEstimate;       // sample's own residual-scaled bound
+    internal readonly double ErrorEstimate;       // certified length-unit position-quality bound (§13.4);
+                                                  // 0 = defining data (anchors), +∞ = prediction-only seed.
+                                                  // Never the raw equation residual — its units vary with
+                                                  // the surface class and model scale (sphere/cylinder φ ≈ 2R·δ).
     internal readonly SampleSourceKind Source;
     internal readonly ICurveConstraintPlan Plan;
     internal readonly SampleWitness Witness;

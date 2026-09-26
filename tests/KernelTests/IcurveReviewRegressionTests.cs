@@ -149,7 +149,7 @@ public unsafe class IcurveReviewRegressionTests : IDisposable
         }
         Assert.True(GeometryEvaluationCache.TryGetExact(
             in identity, last, ICurveQueryKind.RegularChartInterval,
-            ChartSide.Right, 1, ICurveEvaluation.CacheErrorBound, out _));
+            ChartSide.Right, 1, ICurveEvaluation.CacheQualityBound(in view), out _));
         Assert.Equal(AlgorithmStatus.Success, KernelRuntime.EvaluateICurveThroughL3(
             in identity, in view, last, 1, ICurveConstraintPlan.I1, output, out var report));
         Assert.Equal(CacheHitKind.Exact, report.CacheHit);

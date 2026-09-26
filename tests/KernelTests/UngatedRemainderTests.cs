@@ -47,15 +47,17 @@ public class UngatedRemainderTests
     }
 
     [Fact]
-    public void SpunMeridian_SharedPlane_IsZero()
+    public void SpunConstraints_OnSpunSheet_IsZero()
     {
         var axisP = Vector(0, 0, 0);
         var axis = Vector(0, 0, 1);
         var profile = Vector(2, 0, 1);
-        var point = Vector(0, 2, 1); // same cylindrical radius plane family via 90° spin
-        Assert.Equal(AlgorithmStatus.Success, SweptSpunImplicit.SpunMeridianResidual(
-            in point, in profile, in axisP, in axis, out var residual, out _));
-        Assert.InRange(Math.Abs(residual), 0, 1e-14);
+        var point = Vector(0, 2, 1); // profile rotated by +90° about the axis
+        Assert.Equal(AlgorithmStatus.Success, SweptSpunImplicit.SpunConstraints(
+            in point, in profile, Vector(0, 0, 0), in axisP, in axis,
+            out var axial, out var radial, out _, out _, out _, out _));
+        Assert.InRange(Math.Abs(axial), 0, 1e-14);
+        Assert.InRange(Math.Abs(radial), 0, 1e-14);
     }
 
     [Fact]
