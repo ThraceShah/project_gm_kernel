@@ -118,7 +118,7 @@ internal static class BlendJointLift
     /// </summary>
     internal static AlgorithmStatus TryMigratePlanState(
         ReadOnlySpan<double> from, bool fromIsJoint, double spineRadius,
-        Span<double> to, bool toIsJoint)
+        Span<double> to, bool toIsJoint, double referenceS = double.NaN)
     {
         if (fromIsJoint == toIsJoint)
         {
@@ -128,10 +128,19 @@ internal static class BlendJointLift
         }
         if (fromIsJoint)
         {
-            // (x,c) → (x,s) with s = atan2(c.y, c.x) for circular spine in XY.
+            // (x,c) → (x,s) with s unwrapped from c.y, c.x against referenceS when provided.
             if (from.Length < 6 || to.Length < 4) return AlgorithmStatus.WorkspaceTooSmall;
             to[0] = from[0]; to[1] = from[1]; to[2] = from[2];
-            to[3] = Math.Atan2(from[4], from[3]);
+            var s0 = Math.Atan2(from[4], from[3]);
+            if (double.IsFinite(referenceS))
+            {
+                var k = Math.Round((referenceS - s0) / (2.0 * Math.PI));
+                to[3] = s0 + k * (2.0 * Math.PI);
+            }
+            else
+            {
+                to[3] = s0;
+            }
             return AlgorithmStatus.Success;
         }
         // (x,s) → (x,c)
@@ -251,11 +260,76 @@ internal static class BlendJointLift
         if (jointStatus != AlgorithmStatus.Success) return jointStatus;
 
         var jointRoot = Vector(state6[0], state6[1], state6[2]);
-        var s = Math.Atan2(state6[4], state6[3]);
+        var s0 = Math.Atan2(state6[4], state6[3]);
+        if (!TryUnwrapSpineAngle(s0, in bounds, spineSeed, out var s))
+            return AlgorithmStatus.NotConverged;
         if (!bounds.TryValidate(spineRadius, in jointRoot, s, out _))
             return AlgorithmStatus.NotConverged;
 
         return AlgorithmStatus.Success;
+    }
+
+    /// <summary>
+    /// Unwrap circular angle s0 into [bounds.SMin, bounds.SMax] or against spineSeed witness.
+    /// Returns false if no candidate is within bounds or if candidates are ambiguously equidistant.
+    /// </summary>
+    internal static bool TryUnwrapSpineAngle(double s0, in BlendArcBounds bounds, double spineSeed, out double s)
+    {
+        s = s0;
+        var twoPi = 2.0 * Math.PI;
+        s0 = Math.Atan2(Math.Sin(s0), Math.Cos(s0));
+
+        if (double.IsFinite(bounds.SMin) && double.IsFinite(bounds.SMax))
+        {
+            var kMin = (int)Math.Floor((bounds.SMin - s0 - 1e-12) / twoPi);
+            var kMax = (int)Math.Ceiling((bounds.SMax - s0 + 1e-12) / twoPi);
+            var matchCount = 0;
+            var bestCandidate = s0;
+            var minSeedDist = double.PositiveInfinity;
+            var ambiguity = false;
+
+            for (var k = kMin; k <= kMax; k++)
+            {
+                var candidate = s0 + k * twoPi;
+                if (candidate >= bounds.SMin - 1e-12 && candidate <= bounds.SMax + 1e-12)
+                {
+                    matchCount++;
+                    if (double.IsFinite(spineSeed))
+                    {
+                        var dist = Math.Abs(candidate - spineSeed);
+                        if (Math.Abs(dist - minSeedDist) <= 1e-12)
+                        {
+                            ambiguity = true;
+                        }
+                        else if (dist < minSeedDist)
+                        {
+                            minSeedDist = dist;
+                            bestCandidate = candidate;
+                            ambiguity = false;
+                        }
+                    }
+                    else
+                    {
+                        bestCandidate = candidate;
+                    }
+                }
+            }
+
+            if (matchCount == 0) return false;
+            if (matchCount > 1 && ambiguity) return false;
+            s = bestCandidate;
+            return true;
+        }
+
+        if (double.IsFinite(spineSeed))
+        {
+            var k = Math.Round((spineSeed - s0) / twoPi);
+            s = s0 + k * twoPi;
+            return true;
+        }
+
+        s = s0;
+        return true;
     }
 
     private static double MaxAbs(ReadOnlySpan<double> values)

@@ -248,10 +248,9 @@ internal static class SmallLinearSolve
             return AlgorithmStatus.Success;
         }
 
-        var invSMax = 1.0 / sMax;
         Span<double> bWork = stackalloc double[36];
         for (BufferOffset i = 0; i < n * n; i++)
-            bWork[i] = a[i] * invSMax;
+            bWork[i] = a[i] / sMax;
 
         for (BufferOffset i = 0; i < n; i++)
         for (BufferOffset j = 0; j < n; j++)
@@ -265,33 +264,55 @@ internal static class SmallLinearSolve
             for (BufferOffset p = 0; p < n - 1; p++)
             for (BufferOffset q = p + 1; q < n; q++)
             {
-                var alpha = 0.0;
-                var beta = 0.0;
-                var gamma = 0.0;
+                var cp = 0.0;
+                var cq = 0.0;
                 for (BufferOffset k = 0; k < n; k++)
                 {
-                    var bp = bWork[k * n + p];
-                    var bq = bWork[k * n + q];
-                    alpha += bp * bp;
-                    beta += bq * bq;
-                    gamma += bp * bq;
+                    var ap = Math.Abs(bWork[k * n + p]);
+                    if (ap > cp) cp = ap;
+                    var aq = Math.Abs(bWork[k * n + q]);
+                    if (aq > cq) cq = aq;
                 }
 
-                if (alpha <= 0 || beta <= 0) continue;
+                if (cp <= 0.0 || cq <= 0.0) continue;
 
-                var normProd = Math.Sqrt(alpha) * Math.Sqrt(beta);
-                if (Math.Abs(gamma) <= MachineEpsilon * normProd) continue;
-
-                var tau = (alpha - beta) / (2.0 * gamma);
-                var absTau = Math.Abs(tau);
-                double t;
-                if (absTau > 1e8)
+                var tildeAlpha = 0.0;
+                var tildeBeta = 0.0;
+                var tildeGamma = 0.0;
+                for (BufferOffset k = 0; k < n; k++)
                 {
-                    t = 0.5 / tau;
+                    var bp = bWork[k * n + p] / cp;
+                    var bq = bWork[k * n + q] / cq;
+                    tildeAlpha += bp * bp;
+                    tildeBeta += bq * bq;
+                    tildeGamma += bp * bq;
+                }
+
+                var normProd = Math.Sqrt(tildeAlpha * tildeBeta);
+                if (Math.Abs(tildeGamma) <= MachineEpsilon * normProd) continue;
+
+                var r = cp / cq;
+                double t;
+                if (r > 1e150)
+                {
+                    t = (tildeGamma * (cq / cp)) / tildeAlpha;
+                }
+                else if (r < 1e-150)
+                {
+                    t = -(tildeGamma * (cp / cq)) / tildeBeta;
                 }
                 else
                 {
-                    t = (tau >= 0 ? 1.0 : -1.0) / (absTau + Math.Sqrt(1.0 + tau * tau));
+                    var tau = (r * tildeAlpha - (1.0 / r) * tildeBeta) / (2.0 * tildeGamma);
+                    var absTau = Math.Abs(tau);
+                    if (absTau > 1e8)
+                    {
+                        t = 0.5 / tau;
+                    }
+                    else
+                    {
+                        t = (tau >= 0 ? 1.0 : -1.0) / (absTau + Math.Sqrt(1.0 + tau * tau));
+                    }
                 }
                 if (!double.IsFinite(t)) t = 0.0;
 
@@ -324,17 +345,31 @@ internal static class SmallLinearSolve
             for (BufferOffset p = 0; p < n - 1; p++)
             for (BufferOffset q = p + 1; q < n; q++)
             {
-                var alpha = 0.0;
-                var beta = 0.0;
-                var gamma = 0.0;
+                var cp = 0.0;
+                var cq = 0.0;
                 for (BufferOffset k = 0; k < n; k++)
                 {
-                    alpha += bWork[k * n + p] * bWork[k * n + p];
-                    beta += bWork[k * n + q] * bWork[k * n + q];
-                    gamma += bWork[k * n + p] * bWork[k * n + q];
+                    var ap = Math.Abs(bWork[k * n + p]);
+                    if (ap > cp) cp = ap;
+                    var aq = Math.Abs(bWork[k * n + q]);
+                    if (aq > cq) cq = aq;
                 }
-                if (alpha > 0 && beta > 0 && Math.Abs(gamma) > 1e-10 * Math.Sqrt(alpha * beta))
-                    return AlgorithmStatus.NotConverged;
+                if (cp > 0.0 && cq > 0.0)
+                {
+                    var tildeAlpha = 0.0;
+                    var tildeBeta = 0.0;
+                    var tildeGamma = 0.0;
+                    for (BufferOffset k = 0; k < n; k++)
+                    {
+                        var bp = bWork[k * n + p] / cp;
+                        var bq = bWork[k * n + q] / cq;
+                        tildeAlpha += bp * bp;
+                        tildeBeta += bq * bq;
+                        tildeGamma += bp * bq;
+                    }
+                    if (Math.Abs(tildeGamma) > 1e-10 * Math.Sqrt(tildeAlpha * tildeBeta))
+                        return AlgorithmStatus.NotConverged;
+                }
             }
         }
 
@@ -342,15 +377,28 @@ internal static class SmallLinearSolve
         Span<double> colNormB = stackalloc double[6];
         for (BufferOffset j = 0; j < n; j++)
         {
+            var cj = 0.0;
+            for (BufferOffset k = 0; k < n; k++)
+            {
+                var absVal = Math.Abs(bWork[k * n + j]);
+                if (absVal > cj) cj = absVal;
+            }
+            if (cj == 0.0)
+            {
+                colNormB[j] = 0.0;
+                singularValues[j] = 0.0;
+                continue;
+            }
             var sumSq = 0.0;
             for (BufferOffset k = 0; k < n; k++)
             {
-                var bkj = bWork[k * n + j];
-                sumSq += bkj * bkj;
+                var scaled = bWork[k * n + j] / cj;
+                sumSq += scaled * scaled;
             }
-            var norm = Math.Sqrt(sumSq);
+            var unitNorm = Math.Sqrt(sumSq);
+            var norm = cj * unitNorm;
             colNormB[j] = norm;
-            var sigma = norm * sMax;
+            var sigma = unitNorm * (cj * sMax);
             if (!double.IsFinite(sigma)) return AlgorithmStatus.NumericalFailure;
             singularValues[j] = sigma;
         }
@@ -375,12 +423,19 @@ internal static class SmallLinearSolve
         var threshold = rankTolerance * sigmaMax;
         for (BufferOffset j = 0; j < n; j++)
         {
-            if (singularValues[j] > threshold && colNormB[j] > 0.0)
+            var isSignificant = rankTolerance == 0.0 ? singularValues[j] > 0.0 : singularValues[j] > threshold;
+            if (isSignificant && colNormB[j] > 0.0)
             {
                 rank = j + 1;
-                var invNorm = 1.0 / colNormB[j];
+                var cj = 0.0;
+                for (BufferOffset k = 0; k < n; k++)
+                {
+                    var absVal = Math.Abs(bWork[k * n + j]);
+                    if (absVal > cj) cj = absVal;
+                }
+                var invUnitNorm = 1.0 / (colNormB[j] / cj);
                 for (BufferOffset i = 0; i < n; i++)
-                    u[i * n + j] = bWork[i * n + j] * invNorm;
+                    u[i * n + j] = (bWork[i * n + j] / cj) * invUnitNorm;
             }
             else
             {

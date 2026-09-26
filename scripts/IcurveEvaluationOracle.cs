@@ -355,10 +355,12 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             double maxRawD2 = 0;
             double maxCircle = 0;
             var samples = 0;
-            for (var i = 0; i < 64; i++)
+            var chordLen = 2.0 * Math.Sin(Math.PI / (chartCount - 1));
+            var segDeltaT = chordLen * 1.5;
+            var sampleList = new CaseFEvalSample[chartCount - 1];
+            for (var seg = 0; seg < chartCount - 1; seg++)
             {
-                var alpha = i / 63.0;
-                var ourT = record.TMin + (record.TMax - record.TMin) * alpha;
+                var ourT = -0.25 + (seg + 0.5) * segDeltaT;
                 CheckOur(KernelRuntime.CurveEval(icurve, ourT, 2, ours), "our CurveEval live-recv");
                 ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, ourT, 2, reference), "PK_CURVE_eval live-recv same-t");
                 var diffD0 = Distance(&ours[0], &reference[0]);
@@ -366,52 +368,70 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                 maxPos = Math.Max(maxPos, diffD0);
                 maxTan = Math.Max(maxTan, diffD1);
 
-                if (i > 0 && i < 63)
-                {
-                    var diffRawD2 = Distance(&ours[2], &reference[2]);
-                    maxRawD2 = Math.Max(maxRawD2, diffRawD2);
-                    var nDelta = PrincipalNormalUnitDelta(&ours[1], &ours[2], &reference[1], &reference[2]);
-                    var kDelta = Math.Abs(CurvatureOurs(&ours[1], &ours[2]) - CurvaturePk(&reference[1], &reference[2]));
-                    var geomD2 = Math.Max(nDelta, kDelta);
-                    maxD2 = Math.Max(maxD2, geomD2);
-                }
+                var diffRawD2 = Distance(&ours[2], &reference[2]);
+                maxRawD2 = Math.Max(maxRawD2, diffRawD2);
+
+                var nDelta = PrincipalNormalUnitDelta(&ours[1], &ours[2], &reference[1], &reference[2]);
+                var kDelta = Math.Abs(CurvatureOurs(&ours[1], &ours[2]) - CurvaturePk(&reference[1], &reference[2]));
+                var geomD2 = Math.Max(nDelta, kDelta);
+                maxD2 = Math.Max(maxD2, geomD2);
+
                 var rho = Math.Sqrt(ours[0].coord[0] * ours[0].coord[0]
                     + ours[0].coord[1] * ours[0].coord[1]);
-                maxCircle = Math.Max(maxCircle,
-                    Math.Abs(rho - 1.0) + Math.Abs(ours[0].coord[2]));
+                var circleDelta = Math.Abs(rho - 1.0) + Math.Abs(ours[0].coord[2]);
+                maxCircle = Math.Max(maxCircle, circleDelta);
+
+                sampleList[seg] = new CaseFEvalSample(diffD0, diffD1, diffRawD2, geomD2, circleDelta);
                 samples++;
             }
 
             log($"live-pk-recv: samples={samples} chartCount={chartCount} max|Δpos|={maxPos:E3} max|ΔD1|={maxTan:E3} max|ΔD2_raw|={maxRawD2:E3} max|ΔD2|κ+n={maxD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
-            if (maxPos > 1e-8 || maxTan > 1e-6 || maxD2 > 1e-5)
+
+            // Shared quality validator for Case F (§11 / gpt_review_1):
+            if (!ValidateCaseF(sampleList, 1e-8, 1e-6, 1e-6, 1e-5, 1e-8, out var realFailure))
             {
-                throw new InvalidOperationException($"Case F mismatch: pos={maxPos} tan={maxTan} D2={maxD2}");
+                throw new InvalidOperationException($"Case F validation failed: {realFailure}");
             }
 
-            // Negative test requested by review (§11): verify that raw D2 vector check
-            // correctly detects and rejects a tangential acceleration perturbation (a + c·v),
-            // which curvature and principal normal comparison alone would miss.
+            // Negative test: verify that the EXACT SAME ValidateCaseF validator rejects
+            // a tangential acceleration perturbation (a + c·v), which is invisible to curvature
+            // and principal normal checks.
             {
-                var fakeD2 = stackalloc PK_VECTOR_t[1];
+                var perturbedSamples = (CaseFEvalSample[])sampleList.Clone();
                 var c = 0.1;
+                // Last interior sample reference
+                var lastTan = reference[1];
+                var rawDist = Math.Sqrt(c * c * (lastTan.coord[0] * lastTan.coord[0] + lastTan.coord[1] * lastTan.coord[1] + lastTan.coord[2] * lastTan.coord[2]));
+                var kOrig = CurvaturePk(&reference[1], &reference[2]);
+                var fakeD2 = stackalloc PK_VECTOR_t[1];
                 fakeD2[0].coord[0] = reference[2].coord[0] + c * reference[1].coord[0];
                 fakeD2[0].coord[1] = reference[2].coord[1] + c * reference[1].coord[1];
                 fakeD2[0].coord[2] = reference[2].coord[2] + c * reference[1].coord[2];
-                var rawDist = Math.Sqrt(
-                    (fakeD2[0].coord[0] - reference[2].coord[0]) * (fakeD2[0].coord[0] - reference[2].coord[0])
-                    + (fakeD2[0].coord[1] - reference[2].coord[1]) * (fakeD2[0].coord[1] - reference[2].coord[1])
-                    + (fakeD2[0].coord[2] - reference[2].coord[2]) * (fakeD2[0].coord[2] - reference[2].coord[2]));
-                var kOrig = CurvaturePk(&reference[1], &reference[2]);
                 var kPerturbed = CurvaturePk(&reference[1], fakeD2);
                 var kBlindDelta = Math.Abs(kPerturbed - kOrig);
-                if (!(rawDist > 1e-3))
-                    throw new InvalidOperationException("Negative test failure: raw D2 distance failed to detect tangential perturbation.");
                 if (kBlindDelta > 1e-12)
                     throw new InvalidOperationException("Negative test math error: perturbation was not strictly tangential.");
-                log($"live-pk-recv: negative-test PASS (tangential perturbation c·v with |c·v|={rawDist:E3} caught by raw D2, invisible to curvature Δκ={kBlindDelta:E3})");
+
+                var lastIdx = perturbedSamples.Length - 1;
+                perturbedSamples[lastIdx] = new CaseFEvalSample(
+                    perturbedSamples[lastIdx].DiffD0,
+                    perturbedSamples[lastIdx].DiffD1,
+                    rawDist,
+                    perturbedSamples[lastIdx].GeomD2,
+                    perturbedSamples[lastIdx].CircleDelta);
+
+                if (ValidateCaseF(perturbedSamples, 1e-8, 1e-6, 1e-6, 1e-5, 1e-8, out var negFailure))
+                {
+                    throw new InvalidOperationException("Negative test failure: ValidateCaseF unexpectedly passed tangentially perturbed sample!");
+                }
+                if (!negFailure.Contains("Raw D2"))
+                {
+                    throw new InvalidOperationException($"Negative test failure: rejection was not due to raw D2: {negFailure}");
+                }
+                log($"live-pk-recv: negative-test PASS (shared ValidateCaseF rejected tangential perturbation: {negFailure})");
             }
 
-            log("live-pk-recv: PASS (our XT INTERSECTION received by PK; same-t D0/D1 + geometric D2 curvature/normal compare; raw D2 tangential difference tracked)");
+            log("live-pk-recv: PASS (our XT INTERSECTION received by PK; shared ValidateCaseF accepted D0/D1/rawD2/geomD2 and rejected tangential perturbation)");
         }
         finally
         {
@@ -419,6 +439,42 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                 ParasolidScriptHost.Check(PK_MEMORY_free(receivedParts), "free received parts");
         }
     }
+}
+
+static bool ValidateCaseF(ReadOnlySpan<CaseFEvalSample> samples, double maxPosTol, double maxD1Tol,
+    double maxRawD2Tol, double maxGeomD2Tol, double maxCircleTol, out string failureReason)
+{
+    failureReason = string.Empty;
+    for (var i = 0; i < samples.Length; i++)
+    {
+        ref readonly var s = ref samples[i];
+        if (s.DiffD0 > maxPosTol)
+        {
+            failureReason = $"D0 position tolerance exceeded at sample {i}: diff={s.DiffD0:E3} > tol={maxPosTol:E3}";
+            return false;
+        }
+        if (s.DiffD1 > maxD1Tol)
+        {
+            failureReason = $"D1 tangent tolerance exceeded at sample {i}: diff={s.DiffD1:E3} > tol={maxD1Tol:E3}";
+            return false;
+        }
+        if (s.DiffRawD2 > maxRawD2Tol)
+        {
+            failureReason = $"Raw D2 vector tolerance exceeded at sample {i}: diff={s.DiffRawD2:E3} > tol={maxRawD2Tol:E3}";
+            return false;
+        }
+        if (s.GeomD2 > maxGeomD2Tol)
+        {
+            failureReason = $"Geometric D2 (curvature/normal) tolerance exceeded at sample {i}: diff={s.GeomD2:E3} > tol={maxGeomD2Tol:E3}";
+            return false;
+        }
+        if (s.CircleDelta > maxCircleTol)
+        {
+            failureReason = $"Circle support deviation exceeded at sample {i}: diff={s.CircleDelta:E3} > tol={maxCircleTol:E3}";
+            return false;
+        }
+    }
+    return true;
 }
 
 static unsafe bool TryFindReceivedIcurve(PK_BODY_t body, out PK_CURVE_t curve, out PK_INTERVAL_t interval)
@@ -956,4 +1012,22 @@ static void CheckStatus(AlgorithmStatus status, string name)
 {
     if (status != AlgorithmStatus.Success)
         throw new InvalidOperationException($"{name} failed with status {status}");
+}
+
+readonly struct CaseFEvalSample
+{
+    internal readonly double DiffD0;
+    internal readonly double DiffD1;
+    internal readonly double DiffRawD2;
+    internal readonly double GeomD2;
+    internal readonly double CircleDelta;
+
+    internal CaseFEvalSample(double diffD0, double diffD1, double diffRawD2, double geomD2, double circleDelta)
+    {
+        DiffD0 = diffD0;
+        DiffD1 = diffD1;
+        DiffRawD2 = diffRawD2;
+        GeomD2 = geomD2;
+        CircleDelta = circleDelta;
+    }
 }

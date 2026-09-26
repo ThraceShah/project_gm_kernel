@@ -299,72 +299,146 @@ internal static class TerminatorEvaluation
         residual = 0;
         evaluations = 0;
         if (!double.IsFinite(t)) return AlgorithmStatus.InvalidInput;
-        var q = InterpolatedChordPoint(in anchor, t);
 
-        var bound = 4.0 * anchor.ChordLength; // roots beyond a multiple of the chord are not this branch
+        // 1. Evaluate branch jet at B with budget accounting
+        if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+        evaluations++;
+        if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in anchor.BranchPoint, 1, out var branchJet)
+            != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
 
-        // Predict initial witnessMu from branch witness B (where mu(t_B) = 0)
-        // mu'(t_B) = -(nabla phi(B) . Q') / (nabla phi(B) . lineDirection)
-        var witnessMu = 0.0;
-        if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in anchor.BranchPoint, 1, out var branchJet) == AlgorithmStatus.Success)
+        var denom = Dot(branchJet.Gradient, anchor.LineDirection);
+        if (Math.Abs(denom) <= 1e-12) return AlgorithmStatus.Singular;
+        var muPrime0 = -Dot(branchJet.Gradient, anchor.ChordRate) / denom;
+        if (!double.IsFinite(muPrime0)) return AlgorithmStatus.NumericalFailure;
+
+        var tB = anchor.BranchParameter;
+        var paramDist = Math.Abs(t - tB);
+        if (paramDist < 1e-14)
         {
-            var denom = Dot(branchJet.Gradient, anchor.LineDirection);
-            if (Math.Abs(denom) > 1e-12)
+            mu = 0;
+            point = anchor.BranchPoint;
+            residual = Math.Abs(branchJet.Value);
+            return AlgorithmStatus.Success;
+        }
+
+        var dir = t > tB ? 1.0 : -1.0;
+        var tCurr = tB;
+        var muCurr = 0.0;
+        var xCurr = anchor.BranchPoint;
+        var gCurr = branchJet.Gradient;
+        var muPrimeCurr = muPrime0;
+
+        // Bounded tracking step: displacement per step in 3D should stay within local branch basin
+        var maxChord = Math.Max(anchor.ChordLength, 1.0);
+        var maxDisplacement = 0.3 * maxChord;
+
+        while (Math.Abs(t - tCurr) > 1e-14)
+        {
+            var remParam = Math.Abs(t - tCurr);
+            var stepParam = remParam;
+            if (Math.Abs(muPrimeCurr) > 1e-12)
             {
-                var muPrime = -Dot(branchJet.Gradient, anchor.ChordRate) / denom;
-                if (double.IsFinite(muPrime))
+                var maxDt = maxDisplacement / Math.Abs(muPrimeCurr);
+                if (maxDt < stepParam) stepParam = maxDt;
+            }
+            var tTan = Add(anchor.ChordRate, Scale(anchor.LineDirection, muPrimeCurr));
+            var speed = Math.Sqrt(Dot(tTan, tTan));
+
+            var stepAccepted = false;
+            while (!stepAccepted)
+            {
+                var dt = dir * Math.Min(stepParam, remParam);
+                var tNext = tCurr + dt;
+                var qNext = InterpolatedChordPoint(in anchor, tNext);
+                var muPred = muCurr + muPrimeCurr * dt;
+                var localBound = Math.Max(3.0 * Math.Abs(muPrimeCurr * dt), 0.25 * maxChord);
+
+                var curMu = muPred;
+                var converged = false;
+                var curPoint = default(KernelVector3);
+                var curJet = default(ImplicitJet);
+
+                for (BufferOffset iter = 0; iter < MaxNewtonIterations; iter++)
                 {
-                    var pred = muPrime * (t - anchor.BranchParameter);
-                    if (Math.Abs(pred) <= bound)
-                        witnessMu = pred;
+                    if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+                    evaluations++;
+                    curPoint = Add(qNext, Scale(anchor.LineDirection, curMu));
+                    if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in curPoint, 1, out curJet)
+                        != AlgorithmStatus.Success)
+                        return AlgorithmStatus.Unsupported;
+
+                    residual = Math.Abs(curJet.Value);
+                    if (residual <= ICurveEvaluation.ResidualTolerance * Math.Max(1.0, Math.Abs(curPoint.X)
+                            + Math.Abs(curPoint.Y) + Math.Abs(curPoint.Z)))
+                    {
+                        converged = true;
+                        break;
+                    }
+                    var slope = Dot(curJet.Gradient, anchor.LineDirection);
+                    if (Math.Abs(slope) <= 1e-300) break;
+                    var nextMu = curMu - curJet.Value / slope;
+                    if (!double.IsFinite(nextMu) || Math.Abs(nextMu - muPred) > localBound) break;
+                    curMu = nextMu;
+                }
+
+                if (!converged && stepParam <= 1e-4 * paramDist)
+                {
+                    // Fall back to local bracketed solve around muPred
+                    var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in qNext,
+                        localBound, muPred, ref budget, out curMu, out curPoint, out residual, ref evaluations);
+                    if (bracketStatus == AlgorithmStatus.Success)
+                    {
+                        if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in curPoint, 1, out curJet)
+                            == AlgorithmStatus.Success)
+                            converged = true;
+                    }
+                    else if (bracketStatus != AlgorithmStatus.NotConverged)
+                    {
+                        return bracketStatus;
+                    }
+                }
+
+                // Verify branch continuity for this step
+                if (converged)
+                {
+                    var stepDiff = Sub(curPoint, xCurr);
+                    var stepDist = Math.Sqrt(Dot(stepDiff, stepDiff));
+                    var maxAllowedDist = 3.5 * Math.Max(speed * Math.Abs(dt), 1e-4 * maxChord);
+                    var normalDot = Dot(curJet.Gradient, gCurr);
+
+                    if (stepDist <= maxAllowedDist && normalDot > 0)
+                    {
+                        var nextDenom = Dot(curJet.Gradient, anchor.LineDirection);
+                        if (Math.Abs(nextDenom) > 1e-12)
+                        {
+                            var nextMuPrime = -Dot(curJet.Gradient, anchor.ChordRate) / nextDenom;
+                            if (double.IsFinite(nextMuPrime))
+                            {
+                                tCurr = tNext;
+                                muCurr = curMu;
+                                xCurr = curPoint;
+                                gCurr = curJet.Gradient;
+                                muPrimeCurr = nextMuPrime;
+                                stepAccepted = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Cut step size if not accepted
+                stepParam *= 0.5;
+                if (stepParam < 1e-8 * paramDist)
+                {
+                    // Cannot connect continuously along this branch
+                    return AlgorithmStatus.NotConverged;
                 }
             }
         }
-        mu = witnessMu;
 
-        double value;
-        var gradient = default(KernelVector3);
-        var converged = false;
-        for (BufferOffset iteration = 0; iteration < MaxNewtonIterations; iteration++)
-        {
-            if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
-            evaluations++;
-            point = Add(q, Scale(anchor.LineDirection, mu));
-            if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in point, 1, out var jet)
-                != AlgorithmStatus.Success)
-                return AlgorithmStatus.Unsupported;
-            value = jet.Value;
-            gradient = jet.Gradient;
-            residual = Math.Abs(value);
-            if (residual <= ICurveEvaluation.ResidualTolerance * Math.Max(1.0, Math.Abs(point.X)
-                    + Math.Abs(point.Y) + Math.Abs(point.Z)))
-            {
-                converged = true;
-                break;
-            }
-            var slope = Dot(gradient, anchor.LineDirection);
-            if (!(Math.Abs(slope) > 1e-300)) break; // leave to the bracketed fallback
-            var next = mu - value / slope;
-            if (!double.IsFinite(next) || Math.Abs(next) > bound) break;
-            mu = next;
-        }
-        if (!converged)
-        {
-            var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in q, bound, witnessMu,
-                ref budget, out mu, out point, out residual, ref evaluations);
-            if (bracketStatus != AlgorithmStatus.Success) return bracketStatus;
-        }
-
-        // Branch verification: the accepted root must connect continuously to the branch point B
-        var paramStep = Math.Abs(t - anchor.BranchParameter);
-        var totalStep = Math.Max(Math.Abs(anchor.TerminatorParameter - anchor.BranchParameter), 1e-300);
-        var chordAdvance = (paramStep / totalStep) * anchor.ChordLength;
-        var maxAllowedDist = 4.0 * Math.Max(chordAdvance, 1e-4 * Math.Max(anchor.ChordLength, 1.0));
-        var diff = Sub(point, anchor.BranchPoint);
-        var distToBranch = Math.Sqrt(Dot(diff, diff));
-        if (distToBranch > maxAllowedDist)
-            return AlgorithmStatus.NotConverged;
-
+        mu = muCurr;
+        point = xCurr;
         return AlgorithmStatus.Success;
     }
 
@@ -399,9 +473,8 @@ internal static class TerminatorEvaluation
             var posMu = witnessMu + delta;
             var negMu = witnessMu - delta;
 
-            if (!budget.TryConsume(2)) return AlgorithmStatus.NotConverged;
-            evaluations += 2;
-
+            if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+            evaluations++;
             if (TryValue(in surface, in anchor, in q, posMu, out var posVal))
             {
                 if ((prevPosVal <= 0 && posVal >= 0) || (prevPosVal >= 0 && posVal <= 0))
@@ -417,6 +490,8 @@ internal static class TerminatorEvaluation
                 prevPosVal = posVal;
             }
 
+            if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+            evaluations++;
             if (TryValue(in surface, in anchor, in q, negMu, out var negVal))
             {
                 if ((prevNegVal <= 0 && negVal >= 0) || (prevNegVal >= 0 && negVal <= 0))
@@ -437,8 +512,8 @@ internal static class TerminatorEvaluation
         for (BufferOffset i = 0; i < MaxBisectionIterations; i++)
         {
             if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
-            var mid = 0.5 * (lowMu + highMu);
             evaluations++;
+            var mid = 0.5 * (lowMu + highMu);
             if (!TryValue(in surface, in anchor, in q, mid, out var midValue))
                 return AlgorithmStatus.Unsupported;
             if ((midValue <= 0 && lowValue > 0) || (midValue > 0 && lowValue <= 0))
