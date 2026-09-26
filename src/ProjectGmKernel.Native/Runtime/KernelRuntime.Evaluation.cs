@@ -131,7 +131,12 @@ internal static unsafe partial class KernelRuntime
         direction = default;
         var prepareStatus = TryPrepareICurveView(in record, out var view, out var chartFailure);
         LastChartBuildFailure = chartFailure;
-        if (prepareStatus != AlgorithmStatus.Success) return prepareStatus;
+        if (prepareStatus != AlgorithmStatus.Success)
+        {
+            LastICurveEvalReport = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain,
+                prepareStatus, ICurveConstraintPlan.Auto, side, -1, 0, 0);
+            return prepareStatus;
+        }
         var evaluationOrder = tangentRequired ? Math.Max(order, 1) : order;
         Span<KernelVector3> evaluated = stackalloc KernelVector3[ICurveEvaluation.MaxDerivativeOrder + 1];
         var identity = new GeometryIdentity(record.Header.Tag, record.Header.Generation);

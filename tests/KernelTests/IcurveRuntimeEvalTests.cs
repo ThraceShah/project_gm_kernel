@@ -335,4 +335,57 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         Assert.Equal(0, KernelRuntime.SphereCreate(&sf, &tag));
         return tag;
     }
+
+    [Fact]
+    public void DiagnosticLifecycle_PreparationFailureClearsOldReport()
+    {
+        var plane = CreatePlaneZ0();
+        var sphere = CreateUnitSphere();
+        double[] angles = [0.0, 0.5, 1.0];
+        var chart = new double[angles.Length * 3];
+        for (var i = 0; i < angles.Length; i++)
+        {
+            chart[i * 3] = Math.Cos(angles[i]);
+            chart[i * 3 + 1] = Math.Sin(angles[i]);
+            chart[i * 3 + 2] = 0;
+        }
+
+        var input = new IcurveDecodeInput
+        {
+            Surface0Tag = plane,
+            Surface1Tag = sphere,
+            BaseParameter = 0.0,
+            BaseScale = 1.0,
+            ChartCount = angles.Length,
+            ChartHvecs = chart,
+            Start = new IcurveLimitInput { Type = LimitType.Help, TermUse = LimitTermUse.Unset, Hvecs = [chart[0], chart[1], chart[2]] },
+            End = new IcurveLimitInput { Type = LimitType.Help, TermUse = LimitTermUse.Unset, Hvecs = [chart[^3], chart[^2], chart[^1]] },
+            UvType = IntersectionUvType.None,
+            ChordalError = 1e-4,
+            AngularError = 1e-6,
+        };
+
+        Assert.Equal(AlgorithmStatus.Success,
+            KernelRuntime.DecodeIcurve(input, out var dataSlot, out _, out _));
+        Assert.Equal(AlgorithmStatus.Success,
+            KernelRuntime.TryBindICurveEntity(dataSlot, out var curveTag));
+
+        var record = KernelRuntime.GetCurveByTag(curveTag);
+        PK_VECTOR_s* output = stackalloc PK_VECTOR_s[1];
+
+        // Request A: success
+        var midT = 0.5 * (record.TMin + record.TMax);
+        Assert.Equal(0, KernelRuntime.CurveEval(curveTag, midT, 0, output));
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.LastICurveEvalReport.Status);
+
+        // Delete support surface so Request B fails preparation
+        KernelRuntime.EntityDelete(1, &sphere);
+
+        // Request B: evaluation fails at view preparation
+        var err = KernelRuntime.CurveEval(curveTag, midT, 0, output);
+        Assert.NotEqual(0, err);
+
+        // Assert that LastICurveEvalReport does not retain Request A's success
+        Assert.NotEqual(AlgorithmStatus.Success, KernelRuntime.LastICurveEvalReport.Status);
+    }
 }
