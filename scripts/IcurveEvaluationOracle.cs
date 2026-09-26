@@ -352,6 +352,7 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             double maxPos = 0;
             double maxTan = 0;
             double maxD2 = 0;
+            double maxRawD2 = 0;
             double maxCircle = 0;
             var samples = 0;
             for (var i = 0; i < 64; i++)
@@ -367,6 +368,8 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
 
                 if (i > 0 && i < 63)
                 {
+                    var diffRawD2 = Distance(&ours[2], &reference[2]);
+                    maxRawD2 = Math.Max(maxRawD2, diffRawD2);
                     var nDelta = PrincipalNormalUnitDelta(&ours[1], &ours[2], &reference[1], &reference[2]);
                     var kDelta = Math.Abs(CurvatureOurs(&ours[1], &ours[2]) - CurvaturePk(&reference[1], &reference[2]));
                     var geomD2 = Math.Max(nDelta, kDelta);
@@ -379,12 +382,36 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                 samples++;
             }
 
-            log($"live-pk-recv: samples={samples} chartCount={chartCount} max|Δpos|={maxPos:E3} max|ΔD1|={maxTan:E3} max|ΔD2|κ+n={maxD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
+            log($"live-pk-recv: samples={samples} chartCount={chartCount} max|Δpos|={maxPos:E3} max|ΔD1|={maxTan:E3} max|ΔD2_raw|={maxRawD2:E3} max|ΔD2|κ+n={maxD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
             if (maxPos > 1e-8 || maxTan > 1e-6 || maxD2 > 1e-5)
             {
                 throw new InvalidOperationException($"Case F mismatch: pos={maxPos} tan={maxTan} D2={maxD2}");
             }
-            log("live-pk-recv: PASS (our XT INTERSECTION received by PK; true same-t D0/D1/D2 compare)");
+
+            // Negative test requested by review (§11): verify that raw D2 vector check
+            // correctly detects and rejects a tangential acceleration perturbation (a + c·v),
+            // which curvature and principal normal comparison alone would miss.
+            {
+                var fakeD2 = stackalloc PK_VECTOR_t[1];
+                var c = 0.1;
+                fakeD2[0].coord[0] = reference[2].coord[0] + c * reference[1].coord[0];
+                fakeD2[0].coord[1] = reference[2].coord[1] + c * reference[1].coord[1];
+                fakeD2[0].coord[2] = reference[2].coord[2] + c * reference[1].coord[2];
+                var rawDist = Math.Sqrt(
+                    (fakeD2[0].coord[0] - reference[2].coord[0]) * (fakeD2[0].coord[0] - reference[2].coord[0])
+                    + (fakeD2[0].coord[1] - reference[2].coord[1]) * (fakeD2[0].coord[1] - reference[2].coord[1])
+                    + (fakeD2[0].coord[2] - reference[2].coord[2]) * (fakeD2[0].coord[2] - reference[2].coord[2]));
+                var kOrig = CurvaturePk(&reference[1], &reference[2]);
+                var kPerturbed = CurvaturePk(&reference[1], fakeD2);
+                var kBlindDelta = Math.Abs(kPerturbed - kOrig);
+                if (!(rawDist > 1e-3))
+                    throw new InvalidOperationException("Negative test failure: raw D2 distance failed to detect tangential perturbation.");
+                if (kBlindDelta > 1e-12)
+                    throw new InvalidOperationException("Negative test math error: perturbation was not strictly tangential.");
+                log($"live-pk-recv: negative-test PASS (tangential perturbation c·v with |c·v|={rawDist:E3} caught by raw D2, invisible to curvature Δκ={kBlindDelta:E3})");
+            }
+
+            log("live-pk-recv: PASS (our XT INTERSECTION received by PK; same-t D0/D1 + geometric D2 curvature/normal compare; raw D2 tangential difference tracked)");
         }
         finally
         {

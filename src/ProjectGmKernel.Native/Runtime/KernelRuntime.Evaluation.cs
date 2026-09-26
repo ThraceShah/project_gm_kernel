@@ -117,6 +117,9 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
+    internal static ChartBuildFailure LastChartBuildFailure { get; private set; }
+    internal static ICurveEvalReport LastICurveEvalReport { get; private set; }
+
     /// <summary>
     /// Prepare the pooled icurve into command scratch and evaluate through the
     /// shared <see cref="ICurveEvaluation"/> entry (spec §19, task T19).
@@ -126,13 +129,15 @@ internal static unsafe partial class KernelRuntime
         out KernelVector3 direction, ChartSide side = ChartSide.Right)
     {
         direction = default;
-        var prepareStatus = TryPrepareICurveView(in record, out var view, out _);
+        var prepareStatus = TryPrepareICurveView(in record, out var view, out var chartFailure);
+        LastChartBuildFailure = chartFailure;
         if (prepareStatus != AlgorithmStatus.Success) return prepareStatus;
         var evaluationOrder = tangentRequired ? Math.Max(order, 1) : order;
         Span<KernelVector3> evaluated = stackalloc KernelVector3[ICurveEvaluation.MaxDerivativeOrder + 1];
         var identity = new GeometryIdentity(record.Header.Tag, record.Header.Generation);
         var status = EvaluateICurveThroughL3(in identity, in view, t, evaluationOrder,
-            ICurveConstraintPlan.Auto, evaluated, out _, side);
+            ICurveConstraintPlan.Auto, evaluated, out var report, side);
+        LastICurveEvalReport = report;
         if (status != AlgorithmStatus.Success) return status;
         evaluated[..(order + 1)].CopyTo(values);
         if (tangentRequired)

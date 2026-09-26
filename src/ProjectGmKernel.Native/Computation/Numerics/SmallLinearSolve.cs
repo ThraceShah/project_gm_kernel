@@ -229,16 +229,36 @@ internal static class SmallLinearSolve
 
         if (n > 6) return AlgorithmStatus.Unsupported;
 
-        // Initialize B (working matrix A V, size n×n) and V (identity, size n×n).
+        // Scale matrix by sMax to prevent underflow/overflow in intermediate products
+        var sMax = 0.0;
+        for (BufferOffset i = 0; i < n * n; i++)
+        {
+            var absVal = Math.Abs(a[i]);
+            if (absVal > sMax) sMax = absVal;
+        }
+
+        if (sMax == 0.0)
+        {
+            singularValues.Slice(0, n).Clear();
+            u.Slice(0, n * n).Clear();
+            v.Slice(0, n * n).Clear();
+            for (BufferOffset i = 0; i < n; i++)
+                v[i * n + i] = 1.0;
+            rank = 0;
+            return AlgorithmStatus.Success;
+        }
+
+        var invSMax = 1.0 / sMax;
         Span<double> bWork = stackalloc double[36];
         for (BufferOffset i = 0; i < n * n; i++)
-            bWork[i] = a[i];
+            bWork[i] = a[i] * invSMax;
 
         for (BufferOffset i = 0; i < n; i++)
         for (BufferOffset j = 0; j < n; j++)
             v[i * n + j] = i == j ? 1.0 : 0.0;
 
         const int maxSweeps = 32;
+        var converged = false;
         for (BufferOffset sweep = 0; sweep < maxSweeps; sweep++)
         {
             var rotations = 0;
@@ -292,10 +312,34 @@ internal static class SmallLinearSolve
                 }
                 rotations++;
             }
-            if (rotations == 0) break;
+            if (rotations == 0)
+            {
+                converged = true;
+                break;
+            }
         }
 
-        // Column norms are the singular values.
+        if (!converged)
+        {
+            for (BufferOffset p = 0; p < n - 1; p++)
+            for (BufferOffset q = p + 1; q < n; q++)
+            {
+                var alpha = 0.0;
+                var beta = 0.0;
+                var gamma = 0.0;
+                for (BufferOffset k = 0; k < n; k++)
+                {
+                    alpha += bWork[k * n + p] * bWork[k * n + p];
+                    beta += bWork[k * n + q] * bWork[k * n + q];
+                    gamma += bWork[k * n + p] * bWork[k * n + q];
+                }
+                if (alpha > 0 && beta > 0 && Math.Abs(gamma) > 1e-10 * Math.Sqrt(alpha * beta))
+                    return AlgorithmStatus.NotConverged;
+            }
+        }
+
+        // Column norms of B multiplied back by sMax are the singular values.
+        Span<double> colNormB = stackalloc double[6];
         for (BufferOffset j = 0; j < n; j++)
         {
             var sumSq = 0.0;
@@ -304,16 +348,21 @@ internal static class SmallLinearSolve
                 var bkj = bWork[k * n + j];
                 sumSq += bkj * bkj;
             }
-            singularValues[j] = Math.Sqrt(sumSq);
+            var norm = Math.Sqrt(sumSq);
+            colNormB[j] = norm;
+            var sigma = norm * sMax;
+            if (!double.IsFinite(sigma)) return AlgorithmStatus.NumericalFailure;
+            singularValues[j] = sigma;
         }
 
-        // Sort σ descending and permute B and V columns.
+        // Sort σ descending and permute B, colNormB and V columns.
         for (BufferOffset i = 0; i < n; i++)
         for (BufferOffset j = i + 1; j < n; j++)
         {
             if (singularValues[j] > singularValues[i])
             {
                 (singularValues[i], singularValues[j]) = (singularValues[j], singularValues[i]);
+                (colNormB[i], colNormB[j]) = (colNormB[j], colNormB[i]);
                 for (BufferOffset k = 0; k < n; k++)
                 {
                     (bWork[k * n + i], bWork[k * n + j]) = (bWork[k * n + j], bWork[k * n + i]);
@@ -326,12 +375,12 @@ internal static class SmallLinearSolve
         var threshold = rankTolerance * sigmaMax;
         for (BufferOffset j = 0; j < n; j++)
         {
-            if (singularValues[j] > threshold)
+            if (singularValues[j] > threshold && colNormB[j] > 0.0)
             {
                 rank = j + 1;
-                var invSigma = 1.0 / singularValues[j];
+                var invNorm = 1.0 / colNormB[j];
                 for (BufferOffset i = 0; i < n; i++)
-                    u[i * n + j] = bWork[i * n + j] * invSigma;
+                    u[i * n + j] = bWork[i * n + j] * invNorm;
             }
             else
             {

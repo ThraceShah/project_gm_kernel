@@ -215,6 +215,24 @@ internal static class BlendJointLift
         in KernelVector3 point, double spineSeed,
         Span<double> state4, Span<double> state6,
         out bool usedJoint, out BufferOffset iterations, out double residual)
+        => TryRecoverAfterLocalSingular(spineRadius, tubeRadius, in outerSurface,
+            in supportA, in supportD, in planeAnchor, in planeNormal,
+            BlendArcBounds.Unbounded, in point, spineSeed, state4, state6,
+            out usedJoint, out iterations, out residual);
+
+    /// <summary>
+    /// §10.6 recovery ladder with arc bounds validation: try circular-spine envelope 4×4, then joint lift.
+    /// Validates <paramref name="bounds"/> on converged roots from both paths.
+    /// </summary>
+    internal static AlgorithmStatus TryRecoverAfterLocalSingular(
+        double spineRadius, double tubeRadius,
+        in AnalyticSurface outerSurface,
+        in AnalyticSurface supportA, in AnalyticSurface supportD,
+        in KernelVector3 planeAnchor, in KernelVector3 planeNormal,
+        in BlendArcBounds bounds,
+        in KernelVector3 point, double spineSeed,
+        Span<double> state4, Span<double> state6,
+        out bool usedJoint, out BufferOffset iterations, out double residual)
     {
         usedJoint = false;
         iterations = 0;
@@ -223,13 +241,21 @@ internal static class BlendJointLift
 
         state4[0] = point.X; state4[1] = point.Y; state4[2] = point.Z; state4[3] = spineSeed;
         var env = BlendEnvelopeSolve.SolveFourByFour(spineRadius, tubeRadius, in outerSurface,
-            in planeAnchor, in planeNormal, state4, out iterations, out residual);
+            in planeAnchor, in planeNormal, in bounds, state4, out iterations, out residual, out _);
         if (env == AlgorithmStatus.Success) return AlgorithmStatus.Success;
 
         usedJoint = true;
-        return TryLiftFromLocalSingular(in supportA, in supportD, in outerSurface,
+        var jointStatus = TryLiftFromLocalSingular(in supportA, in supportD, in outerSurface,
             in planeAnchor, in planeNormal, tubeRadius * tubeRadius, in point, spineSeed,
             spineRadius, state6, out iterations, out residual);
+        if (jointStatus != AlgorithmStatus.Success) return jointStatus;
+
+        var jointRoot = Vector(state6[0], state6[1], state6[2]);
+        var s = Math.Atan2(state6[4], state6[3]);
+        if (!bounds.TryValidate(spineRadius, in jointRoot, s, out _))
+            return AlgorithmStatus.NotConverged;
+
+        return AlgorithmStatus.Success;
     }
 
     private static double MaxAbs(ReadOnlySpan<double> values)
