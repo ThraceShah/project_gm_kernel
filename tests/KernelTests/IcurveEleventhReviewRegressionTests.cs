@@ -150,16 +150,32 @@ public class IcurveEleventhReviewRegressionTests
         Assert.Equal(1, ev1);
         Assert.Equal(1, b1.Used);
 
-        // Budget 2: consumes branch jet at B, solves root on z=0 in 1 iteration -> Success with 2 used and 2 evals
+        // Budget 2: consumes branch jet at B (1), Newton probe (2), halts at midpoint deviation check -> NotConverged with 2 used and 2 evals
         var b2 = new EvaluationBudget(2);
         var s2 = TerminatorEvaluation.SolveIntervalPoint(in plane, in anchor, 0.5,
-            ref b2, out var mu2, out var pt2, out _, out var ev2);
-        Assert.Equal(AlgorithmStatus.Success, s2);
+            ref b2, out _, out _, out _, out var ev2);
+        Assert.Equal(AlgorithmStatus.NotConverged, s2);
         Assert.Equal(2, ev2);
         Assert.Equal(2, b2.Used);
-        Assert.Equal(0.5, pt2.X, 10);
-        Assert.Equal(0.0, pt2.Y, 10);
-        Assert.Equal(0.0, pt2.Z, 10);
+
+        // Budget 3: consumes branch jet at B (1), Newton probe (2), midpoint deviation (3), halts at final publication check -> NotConverged with 3 used and 3 evals
+        var b3 = new EvaluationBudget(3);
+        var s3 = TerminatorEvaluation.SolveIntervalPoint(in plane, in anchor, 0.5,
+            ref b3, out _, out _, out _, out var ev3);
+        Assert.Equal(AlgorithmStatus.NotConverged, s3);
+        Assert.Equal(3, ev3);
+        Assert.Equal(3, b3.Used);
+
+        // Budget 4: consumes branch jet at B (1), Newton probe (2), midpoint deviation (3), final publication deviation (4) -> Success with 4 used and 4 evals
+        var b4 = new EvaluationBudget(4);
+        var s4 = TerminatorEvaluation.SolveIntervalPoint(in plane, in anchor, 0.5,
+            ref b4, out var mu4, out var pt4, out _, out var ev4);
+        Assert.Equal(AlgorithmStatus.Success, s4);
+        Assert.Equal(4, ev4);
+        Assert.Equal(4, b4.Used);
+        Assert.Equal(0.5, pt4.X, 10);
+        Assert.Equal(0.0, pt4.Y, 10);
+        Assert.Equal(0.0, pt4.Z, 10);
     }
 
     [Fact]
