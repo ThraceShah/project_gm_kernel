@@ -332,7 +332,8 @@ internal static class TerminatorEvaluation
         var chordVector = Sub(anchor.Endpoint, anchor.BranchPoint);
         var charScale = anchor.ChordLength;
         if (!(charScale > 0) || !double.IsFinite(charScale)) charScale = 1.0;
-        var maxDisplacement = 0.55 * charScale;
+        var geomScale = Math.Max(1.0, Math.Max(charScale, Math.Max(selectedSurface.Radius, selectedSurface.Secondary)));
+        var maxStepDisplacement = 0.55 * charScale;
 
         var muPrimeLambda0 = -Dot(branchJet.Gradient, chordVector) / denom;
         if (!double.IsFinite(muPrimeLambda0)) return AlgorithmStatus.NumericalFailure;
@@ -347,7 +348,7 @@ internal static class TerminatorEvaluation
         while (lambdaCurr < lambdaTarget)
         {
             var remLambda = lambdaTarget - lambdaCurr;
-            var maxDLambda = maxDisplacement / Math.Max(speedLambda, 1e-12);
+            var maxDLambda = maxStepDisplacement / Math.Max(speedLambda, 1e-12);
             var stepLambda = Math.Min(remLambda, maxDLambda);
 
             var stepAccepted = false;
@@ -367,7 +368,8 @@ internal static class TerminatorEvaluation
 
                 var qNext = Add(anchor.BranchPoint, Scale(chordVector, lambdaNext));
                 var muPred = muCurr + muPrimeLambdaCurr * dLambda;
-                var localBound = Math.Max(3.0 * Math.Abs(muPrimeLambdaCurr * dLambda), 0.05 * charScale);
+                var maxMuStep = 0.55 * charScale;
+                var trustRadius = Math.Min(maxMuStep, Math.Max(1.5 * Math.Abs(muPrimeLambdaCurr * dLambda), 0.05 * charScale));
 
                 var curMu = muPred;
                 var converged = false;
@@ -384,8 +386,10 @@ internal static class TerminatorEvaluation
                         return AlgorithmStatus.Unsupported;
 
                     residual = Math.Abs(curJet.Value);
-                    if (residual <= ICurveEvaluation.ResidualTolerance * Math.Max(1.0, Math.Abs(curPoint.X)
-                            + Math.Abs(curPoint.Y) + Math.Abs(curPoint.Z)))
+                    var curDev = double.PositiveInfinity;
+                    var hasDev = AnalyticImplicitEvaluation.GeometricDeviation(in selectedSurface, in curPoint, out curDev) == AlgorithmStatus.Success;
+                    if ((hasDev && curDev <= 1e-11 * geomScale)
+                        || residual <= ICurveEvaluation.ResidualTolerance * geomScale * geomScale)
                     {
                         converged = true;
                         break;
@@ -393,13 +397,17 @@ internal static class TerminatorEvaluation
                     var slope = Dot(curJet.Gradient, anchor.LineDirection);
                     if (Math.Abs(slope) <= 1e-300) break;
                     var nextMu = curMu - curJet.Value / slope;
-                    if (!double.IsFinite(nextMu) || Math.Abs(nextMu - muPred) > localBound) break;
+                    if (!double.IsFinite(nextMu)
+                        || Math.Abs(nextMu - muCurr) > maxMuStep
+                        || Math.Abs(nextMu - muPred) > trustRadius)
+                        break;
                     curMu = nextMu;
                 }
 
                 if (!converged && stepLambda <= 1e-4)
                 {
                     // Fall back to local bracketed solve around muPred
+                    var localBound = Math.Min(maxMuStep, trustRadius);
                     var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in qNext,
                         localBound, muPred, ref budget, out curMu, out curPoint, out curJet, out residual, ref evaluations);
                     if (bracketStatus == AlgorithmStatus.Success)
@@ -417,7 +425,7 @@ internal static class TerminatorEvaluation
                 {
                     var stepDiff = Sub(curPoint, xCurr);
                     var stepDist = Math.Sqrt(Dot(stepDiff, stepDiff));
-                    var maxAllowedDist = 2.5 * (speedLambda * dLambda + 1e-5 * charScale);
+                    var maxAllowedDist = 1.5 * (speedLambda * dLambda + 0.01 * charScale);
 
                     var gNormCurr = Math.Sqrt(Dot(gCurr, gCurr));
                     var gNormNext = Math.Sqrt(Dot(curJet.Gradient, curJet.Gradient));
@@ -428,9 +436,16 @@ internal static class TerminatorEvaluation
                         if (cosAngle > 0.5) normalConsistent = true;
                     }
 
-                    if (stepDist <= maxAllowedDist && normalConsistent)
+                    var currDenom = Dot(gCurr, anchor.LineDirection);
+                    var nextDenom = Dot(curJet.Gradient, anchor.LineDirection);
+                    var slopeConsistent = (currDenom * nextDenom > 0);
+
+                    var xMid = Scale(Add(xCurr, curPoint), 0.5);
+                    var midConnected = AnalyticImplicitEvaluation.GeometricDeviation(in selectedSurface, in xMid, out var midDev) == AlgorithmStatus.Success
+                        && midDev <= 0.15 * charScale;
+
+                    if (stepDist <= maxAllowedDist && stepDist <= maxStepDisplacement && normalConsistent && slopeConsistent && midConnected)
                     {
-                        var nextDenom = Dot(curJet.Gradient, anchor.LineDirection);
                         if (Math.Abs(nextDenom) > 1e-12)
                         {
                             var nextMuPrimeLambda = -Dot(curJet.Gradient, chordVector) / nextDenom;
@@ -466,6 +481,12 @@ internal static class TerminatorEvaluation
         var tol = 1e-7 * Math.Max(anchor.ChordLength, 1.0);
         if (chordPlaneRes > tol || planeRes > tol)
             return AlgorithmStatus.NumericalFailure;
+
+        if (AnalyticImplicitEvaluation.GeometricDeviation(in selectedSurface, in xCurr, out var surfaceDev) != AlgorithmStatus.Success
+            || surfaceDev > tol)
+        {
+            return AlgorithmStatus.NumericalFailure;
+        }
 
         mu = muCurr;
         point = xCurr;

@@ -355,6 +355,10 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             double maxD2 = 0;
             double maxRawD2 = 0;
             double maxCircle = 0;
+            double maxQuarterTanDelta = 0;
+            double maxQuarterNormDelta = 0;
+            double maxOurFdErr = 0;
+            double maxPkFdErr = 0;
             var samples = 0;
             var chordLen = 2.0 * Math.Sin(Math.PI / (chartCount - 1));
             var segDeltaT = chordLen * 1.5;
@@ -362,6 +366,12 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             var quarterSamples = new CaseFEvalSample[(chartCount - 1) * 2];
             var qIdx = 0;
             var quarters = stackalloc double[] { 0.25, 0.75 };
+            const double h = 1e-5;
+            var ourPlus = stackalloc M.PK_VECTOR_s[2];
+            var ourMinus = stackalloc M.PK_VECTOR_s[2];
+            var refPlus = stackalloc PK_VECTOR_t[2];
+            var refMinus = stackalloc PK_VECTOR_t[2];
+
             for (var seg = 0; seg < chartCount - 1; seg++)
             {
                 // 1. Midpoint sample: symmetric chord point where tangential acceleration matches PK exactly
@@ -406,10 +416,69 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                     var nDelta = PrincipalNormalUnitDelta(&ours[1], &ours[2], &reference[1], &reference[2]);
                     var kDelta = Math.Abs(CurvatureOurs(&ours[1], &ours[2]) - CurvaturePk(&reference[1], &reference[2]));
                     var geomD2 = Math.Max(nDelta, kDelta);
+                    maxD2 = Math.Max(maxD2, geomD2);
 
                     var rho = Math.Sqrt(ours[0].coord[0] * ours[0].coord[0]
                         + ours[0].coord[1] * ours[0].coord[1]);
                     var circleDelta = Math.Abs(rho - 1.0) + Math.Abs(ours[0].coord[2]);
+                    maxCircle = Math.Max(maxCircle, circleDelta);
+
+                    // Decompose ΔD2 into tangential and normal components
+                    var dD2x = ours[2].coord[0] - reference[2].coord[0];
+                    var dD2y = ours[2].coord[1] - reference[2].coord[1];
+                    var dD2z = ours[2].coord[2] - reference[2].coord[2];
+
+                    var tLen = Math.Sqrt(
+                        reference[1].coord[0] * reference[1].coord[0] +
+                        reference[1].coord[1] * reference[1].coord[1] +
+                        reference[1].coord[2] * reference[1].coord[2]);
+                    var tx = reference[1].coord[0] / tLen;
+                    var ty = reference[1].coord[1] / tLen;
+                    var tz = reference[1].coord[2] / tLen;
+
+                    var tanComp = dD2x * tx + dD2y * ty + dD2z * tz;
+                    var normX = dD2x - tanComp * tx;
+                    var normY = dD2y - tanComp * ty;
+                    var normZ = dD2z - tanComp * tz;
+                    var normDelta = Math.Sqrt(normX * normX + normY * normY + normZ * normZ);
+                    var tanDelta = Math.Abs(tanComp);
+                    maxQuarterTanDelta = Math.Max(maxQuarterTanDelta, tanDelta);
+                    maxQuarterNormDelta = Math.Max(maxQuarterNormDelta, normDelta);
+
+                    // Finite difference check on D1: (D1(t+h) - D1(t-h)) / (2h) vs D2(t)
+                    CheckOur(KernelRuntime.CurveEval(icurve, ourT + h, 1, ourPlus), "our CurveEval live-recv quarter +h");
+                    CheckOur(KernelRuntime.CurveEval(icurve, ourT - h, 1, ourMinus), "our CurveEval live-recv quarter -h");
+                    ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, ourT + h, 1, refPlus), "PK_CURVE_eval live-recv quarter +h");
+                    ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, ourT - h, 1, refMinus), "PK_CURVE_eval live-recv quarter -h");
+
+                    var ourFdD2x = (ourPlus[1].coord[0] - ourMinus[1].coord[0]) / (2.0 * h);
+                    var ourFdD2y = (ourPlus[1].coord[1] - ourMinus[1].coord[1]) / (2.0 * h);
+                    var ourFdD2z = (ourPlus[1].coord[2] - ourMinus[1].coord[2]) / (2.0 * h);
+                    var ourFdErr = Math.Sqrt(
+                        (ourFdD2x - ours[2].coord[0]) * (ourFdD2x - ours[2].coord[0]) +
+                        (ourFdD2y - ours[2].coord[1]) * (ourFdD2y - ours[2].coord[1]) +
+                        (ourFdD2z - ours[2].coord[2]) * (ourFdD2z - ours[2].coord[2]));
+
+                    var pkFdD2x = (refPlus[1].coord[0] - refMinus[1].coord[0]) / (2.0 * h);
+                    var pkFdD2y = (refPlus[1].coord[1] - refMinus[1].coord[1]) / (2.0 * h);
+                    var pkFdD2z = (refPlus[1].coord[2] - refMinus[1].coord[2]) / (2.0 * h);
+                    var pkFdErr = Math.Sqrt(
+                        (pkFdD2x - reference[2].coord[0]) * (pkFdD2x - reference[2].coord[0]) +
+                        (pkFdD2y - reference[2].coord[1]) * (pkFdD2y - reference[2].coord[1]) +
+                        (pkFdD2z - reference[2].coord[2]) * (pkFdD2z - reference[2].coord[2]));
+
+                    maxOurFdErr = Math.Max(maxOurFdErr, ourFdErr);
+                    maxPkFdErr = Math.Max(maxPkFdErr, pkFdErr);
+
+                    if (qIdx == 0)
+                    {
+                        log($"live-pk-recv [quarter sample-0 detail]: seg={seg} frac={quarters[f]} t={ourT:F6}");
+                        log($"  ourD0=({ours[0].coord[0]:F6},{ours[0].coord[1]:F6},{ours[0].coord[2]:F6}) pkD0=({reference[0].coord[0]:F6},{reference[0].coord[1]:F6},{reference[0].coord[2]:F6})");
+                        log($"  ourD1=({ours[1].coord[0]:F6},{ours[1].coord[1]:F6},{ours[1].coord[2]:F6}) pkD1=({reference[1].coord[0]:F6},{reference[1].coord[1]:F6},{reference[1].coord[2]:F6})");
+                        log($"  ourD2=({ours[2].coord[0]:F6},{ours[2].coord[1]:F6},{ours[2].coord[2]:F6}) pkD2=({reference[2].coord[0]:F6},{reference[2].coord[1]:F6},{reference[2].coord[2]:F6})");
+                        log($"  ourFdD2=({ourFdD2x:F6},{ourFdD2y:F6},{ourFdD2z:F6}) pkFdD2=({pkFdD2x:F6},{pkFdD2y:F6},{pkFdD2z:F6})");
+                        log($"  |ΔD2_tan|={tanDelta:E3} |ΔD2_norm|={normDelta:E3} ourFdErr={ourFdErr:E3} pkFdErr={pkFdErr:E3}");
+                    }
 
                     quarterSamples[qIdx++] = new CaseFEvalSample(diffD0, diffD1, diffRawD2, geomD2, circleDelta);
                     samples++;
@@ -417,6 +486,18 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
             }
 
             log($"live-pk-recv: samples={samples} chartCount={chartCount} max|Δpos|={maxPos:E3} max|ΔD1|={maxTan:E3} max|ΔD2_raw_mid|={maxRawD2:E3} max|ΔD2|κ+n={maxD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
+            log($"live-pk-recv: midpoint raw D2 PASS (max|ΔD2_raw_mid|={maxRawD2:E3} <= 1e-6)");
+            log($"live-pk-recv: quarter-point D2 decomposition: max|ΔD2_normal|={maxQuarterNormDelta:E3} (PASS <= 1e-6), max|ΔD2_tangential|={maxQuarterTanDelta:E3}");
+            log($"live-pk-recv: finite difference D2 validation (h=1e-5): our D2 matches d(D1)/dt (err={maxOurFdErr:E3}); PK D2 omits tangential acceleration (tangential delta={maxQuarterTanDelta:E3}, pk_fd_err={maxPkFdErr:E3})");
+
+            if (maxQuarterNormDelta > 1e-6)
+            {
+                throw new InvalidOperationException($"Case F quarter-point normal D2 component exceeded tolerance: {maxQuarterNormDelta:E3}");
+            }
+            if (maxOurFdErr > 1e-5)
+            {
+                throw new InvalidOperationException($"Case F finite difference check failed for our D2: our_err={maxOurFdErr:E3}");
+            }
 
             // Shared quality validator on symmetric midpoints (strict raw D2 tolerance 1e-6):
             if (!CaseFValidator.Validate(midpointSamples, 1e-8, 1e-6, 1e-6, 1e-5, 1e-8, out var realFailure))
