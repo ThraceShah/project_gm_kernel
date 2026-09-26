@@ -30,15 +30,15 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 | 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中 |
 | 节点与区间一侧导数 (D0–D2) | §16 / Knot evaluation | **生产已接入 + 制造解通过** | 显式传递 `ChartSide.Left` / `Right`；避免跨节点平均平滑 |
 | 诊断型 Auto 计划动态切换 | §7.7 / Stagnation | **生产已接入 + 制造解通过** | 仅在 Auto 模式下触发；强制计划绝不静默切换；记录 `PlanSwitched` |
-| 参数延拓 (Continuation) | §17.3 / Native parameter | **生产已接入 + 制造解通过** | 原生参数递增，步长受控，严格保证同分支连续性 |
-| 局部细分 (Local Subdivision) | §17.5 / Midpoint ladder | **生产已接入 + 制造解通过** | 递归二分与对称探测，防止跨分支假收敛 |
+| 参数延拓 (Continuation) | §17.3 / Native parameter | **生产已接入 + 制造解通过** | 原生参数递增，步长受控，安全拒绝无分辨率步长与分支歧义，多 seed 后备受 SameLocalBranch 严格约束 |
+| 局部细分 (Local Subdivision) | §17.5 / Midpoint ladder | **生产已接入 + 制造解通过** | 递归二分与对称探测，中间点步进强制校验同分支连续性，防止跨分支假收敛 |
 
 ### 2. 数值与代数求解层 (Numerics & Solvers)
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
 | 分块 Schur 补求解 (BlockSchurSolve) | §11 / $nx+nz \le 8$ | **内部入口可用 + 制造解通过** | 工作区已扩展至 64 double；严格尺寸契约；$nz \ge 5$ 绝无越界崩溃 |
-| 单边 Hestenes-Jacobi SVD | §14.4 / SmallLinearSolve | **生产已接入 + 制造解通过** | 替代 $A^T A$ Gram 构造，避免小奇异值平方截断丢秩；病态测试通过 |
+| 单边 Hestenes-Jacobi SVD | §14.4 / SmallLinearSolve | **生产已接入 + 制造解通过** | 替代 $A^T A$ Gram 构造，避免小奇异值截断丢秩；引入矩阵 max-norm 尺度归一化与未收敛诊断；极值尺度 $10^{\pm 200}$ 测试通过 |
 | 小型线性方程组求解 (LU / QR / Cholesky) | $n \le 6$ | **生产已接入 + 制造解通过** | 行列选主元，无动态内存分配，完全 AOT 兼容 |
 | Trust-Region 狗腿步与冻结残差缩放 | §14.1 / §14.3 | **生产已接入 + 制造解通过** | 接受态残差与 Jacobian 尺度冻结，试探步复用，严格单调下降 |
 | 嵌套精度自适应 ($\eta_k$ / InnerAccuracyInsufficient) | §15 / Nested budget | **扩展点 / 内部机制** | 触发收紧后重算系统模型与残差；纯解析主线上无子容差需求 |
@@ -47,19 +47,19 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
-| L1/L2/L3 三级几何求值缓存 | §13 / Session & Op | **生产已接入 + 制造解通过** | 键包含 Tag/Gen/Side/Plan/Epoch；CLOCK 淘汰；Bit-exact 查中 |
-| 辅助状态载荷 (SampleWitness) | §13.2 / L2/L3 payload | **内部入口可用 + 制造解通过** | `SampleWitness` 按值嵌入 `CurveSample`，无动态借用；UV/Spine 读写测试通过 |
-| 多 Seed 确定性排序 (ICurveMultiSeed) | §13.6 / T09 | **生产已接入 + 制造解通过** | 已接入 `SubdivideTo` 恢复路径；跨分支严格隔离；共享单次请求预算 |
+| L1/L2/L3 三级几何求值缓存 | §13 / Session & Op | **生产已接入 + 制造解通过** | 键包含 Tag/Gen/Side/Plan/Epoch；CLOCK 淘汰；Bit-exact 查中；Left/Right 侧向全生命周期一致 |
+| 辅助状态载荷 (SampleWitness) | §13.2 / L2/L3 payload | **内部入口可用 + 制造解通过** | `SampleWitness` 按值嵌入 `CurveSample`，无动态借用；UV/Spine 读写测试通过；求解器生产/消费持续接入 |
+| 多 Seed 确定性排序 (ICurveMultiSeed) | §13.6 / T09 | **生产已接入 + 制造解通过** | 已接入 `SubdivideTo` 恢复路径；对参数无分辨率/超预算/分支歧义安全拒绝，候选根经 `SameLocalBranch` 校验同分支后方可采纳 |
 | 预测种子 (PredictedOnly Hermite) | §13.4 / L2 seeds | **生产已接入 + 制造解通过** | 仅用作 Corrector 初值，绝不冒充 Exact Hit 发布 |
 
 ### 4. 终止区间与特殊曲面 (Terminator & Blends)
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
-| Terminator 1-面 / 2-平面区间构造 | §6 / TerminatorAnchor | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 导数在根点求值；正交双平面方程对；分支 witness 追踪；奇点切向回退 |
+| Terminator 1-面 / 2-平面区间构造 | §6 / TerminatorAnchor | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 导数在根点求值；正交双平面方程对；以分支点 $B$ 切向一阶预测初始化 $\mu$ 并校验分支位移，杜绝跨分支跳跃；受 GATE-T 隔离 |
 | Terminator 参数化 2×2 求解 | §6.3 / SolveParametricTwoByTwo | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 求解弦向与法向两正交平面方程对，残差 $< 10^{-11}$；生产入口受 GATE-T 隔离 |
 | TerminatorBLendBound 选面 (p.49 规则) | §6.2 / SelectSupportSurface | **内部入口可用 + 受 GATE-B 限制** | 当前 `surface0IsBlendBound` 保持 false，待引入类型化 `SurfaceSupportRef` |
-| 滚动球 Blend 4×4 / 3×3 求解器 | §10.4 / BlendEnvelopeSolve | **内部入口可用 + 制造解通过 + 受 GATE-A 限制** | RV-TUBE 制造解收敛；$\S10.6$ `BlendArcBounds` 与 `TryValidateArc` 过滤伪装根 |
+| 滚动球 Blend 4×4 / 3×3 求解器 | §10.4 / BlendEnvelopeSolve | **内部入口可用 + 制造解通过 + 受 GATE-A 限制** | RV-TUBE 制造解收敛；$\S10.6$ `BlendArcBounds` 与 `TryValidateArc` 过滤伪装根，贯穿 `TryRecoverAfterLocalSingular` 恢复梯与 Joint 出口 |
 | Blend 联合求解残差装配 (JointBlendResidual) | §11.2 / Joint assembly | **内部入口可用 + 制造解通过** | 已检查支持面求值状态，失败面绝不静默置零，杜绝假收敛 |
 | 距离函数组合 (BlendBoundComposition) | §10.2 / Local distance | **内部入口可用 + 制造解通过 + 受 GATE-B 限制** | 球与圆柱 Hessian 轴向投影及三阶导数已修正并通过闭式制造解校验 |
 
@@ -70,7 +70,7 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 | XT INTERSECTION 实体写入与回读 | §19 / XtWriter | **生产已接入 + 真实 PK 兼容通过** | 字段完整保真；与 PKToy 绑定互相兼容 |
 | UV Null 语义与点容差解耦 | §19 / PrepareEvaluation | **生产已接入 + 真实 PK 兼容通过** | 仅成对允许 (NaN, NaN)；面点容差与 ChordalError 解耦 |
 | Sense 拓扑方向双向保持 | XT Schema / Records | **生产已接入 + 真实 PK 兼容通过** | 贯穿 Record / Binding / XT Parse / Writer，Oracle 验证一致 |
-| Live Parasolid Receive / Eval 对比 (Case F) | Oracle Case F | **生产已接入 + 真实 PK 兼容通过** | 我方写出 XT 由真实 Parasolid 加载并在同参数求值，位置与导数差 $< 2\times 10^{-15}$ |
+| Live Parasolid Receive / Eval 对比 (Case F) | Oracle Case F | **生产已接入 + 真实 PK 兼容通过** | 我方写出 XT 由真实 Parasolid 加载并在同参数求值，同参数 D0/D1 机器精度一致（$< 2\times 10^{-15}$），D2 主法向与曲率一致；原生 D2 向量切向差异持续跟踪并补充负向测试 |
 
 ---
 

@@ -302,6 +302,26 @@ internal static class TerminatorEvaluation
         var q = InterpolatedChordPoint(in anchor, t);
 
         var bound = 4.0 * anchor.ChordLength; // roots beyond a multiple of the chord are not this branch
+
+        // Predict initial witnessMu from branch witness B (where mu(t_B) = 0)
+        // mu'(t_B) = -(nabla phi(B) . Q') / (nabla phi(B) . lineDirection)
+        var witnessMu = 0.0;
+        if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in anchor.BranchPoint, 1, out var branchJet) == AlgorithmStatus.Success)
+        {
+            var denom = Dot(branchJet.Gradient, anchor.LineDirection);
+            if (Math.Abs(denom) > 1e-12)
+            {
+                var muPrime = -Dot(branchJet.Gradient, anchor.ChordRate) / denom;
+                if (double.IsFinite(muPrime))
+                {
+                    var pred = muPrime * (t - anchor.BranchParameter);
+                    if (Math.Abs(pred) <= bound)
+                        witnessMu = pred;
+                }
+            }
+        }
+        mu = witnessMu;
+
         double value;
         var gradient = default(KernelVector3);
         var converged = false;
@@ -330,10 +350,21 @@ internal static class TerminatorEvaluation
         }
         if (!converged)
         {
-            var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in q, bound, 0.0,
+            var bracketStatus = BracketedSolve(in selectedSurface, in anchor, in q, bound, witnessMu,
                 ref budget, out mu, out point, out residual, ref evaluations);
             if (bracketStatus != AlgorithmStatus.Success) return bracketStatus;
         }
+
+        // Branch verification: the accepted root must connect continuously to the branch point B
+        var paramStep = Math.Abs(t - anchor.BranchParameter);
+        var totalStep = Math.Max(Math.Abs(anchor.TerminatorParameter - anchor.BranchParameter), 1e-300);
+        var chordAdvance = (paramStep / totalStep) * anchor.ChordLength;
+        var maxAllowedDist = 4.0 * Math.Max(chordAdvance, 1e-4 * Math.Max(anchor.ChordLength, 1.0));
+        var diff = Sub(point, anchor.BranchPoint);
+        var distToBranch = Math.Sqrt(Dot(diff, diff));
+        if (distToBranch > maxAllowedDist)
+            return AlgorithmStatus.NotConverged;
+
         return AlgorithmStatus.Success;
     }
 

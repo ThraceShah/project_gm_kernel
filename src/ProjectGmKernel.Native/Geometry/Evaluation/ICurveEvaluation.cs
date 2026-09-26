@@ -234,14 +234,14 @@ internal static class ICurveEvaluation
         if (selected == ICurveConstraintPlan.I1
             && (view.Support0.Kind == SurfaceClass.Plane) != (view.Support1.Kind == SurfaceClass.Plane))
             return EvaluateI1ByContinuation(in view, t, segment, order, ref cache,
-                derivatives, out report);
+                derivatives, out report, side);
 
         // Neighbor prediction as the seed when the atlas brackets the request;
         // the predicted seed is corrected below before anything publishes and
         // falls back to the chord point when unavailable (§13.4).
         var hitKind = CacheHitKind.None;
         var solveSeed = seed;
-        if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, ChartSide.Right,
+        if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, side,
                 segment, out var lower, out var upper))
         {
             Span<double> predicted = stackalloc double[3];
@@ -257,7 +257,7 @@ internal static class ICurveEvaluation
                 hitKind = CacheHitKind.NeighborSeed;
                 // PredictedOnly seed — never an exact hit (§13.4).
                 _ = cache.TryInsert(new CurveSample(t, in solveSeed, default, default, 0,
-                    ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment,
+                    ICurveQueryKind.RegularChartInterval, side, segment,
                     double.PositiveInfinity, SampleSourceKind.PredictedOnly, selected));
             }
         }
@@ -270,7 +270,7 @@ internal static class ICurveEvaluation
         if (detail == ICurveEvalDetail.BudgetExceeded)
         {
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
-                selected, ChartSide.Right, segment, iterations, residual, hitKind, 0, detail);
+                selected, side, segment, iterations, residual, hitKind, 0, detail);
             return status;
         }
         // Diagnosed Auto switches only — forced plans stay on the requested plan (§7 / §14.6).
@@ -363,7 +363,7 @@ internal static class ICurveEvaluation
 
     private static AlgorithmStatus EvaluateI1ByContinuation(in ICurveView view, double t,
         BufferOffset segment, DerivativeOrder order, scoped ref EvaluationSampleStore cache,
-        scoped Span<KernelVector3> derivatives, out ICurveEvalReport report)
+        scoped Span<KernelVector3> derivatives, out ICurveEvalReport report, ChartSide side = ChartSide.Right)
     {
         var useUpper = t - view.ChartParameters[segment]
             > view.ChartParameters[segment + 1] - t;
@@ -377,13 +377,13 @@ internal static class ICurveEvaluation
             status = ICurveContinuation.SubdivideTo(in view, ICurveConstraintPlan.I1,
                 t, segment, order, ref budget, derivatives, out steps, out residual, out detail);
         report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
-            ICurveConstraintPlan.I1, ChartSide.Right, segment, steps, residual,
+            ICurveConstraintPlan.I1, side, segment, steps, residual,
             CacheHitKind.None, 0, detail);
         if (status != AlgorithmStatus.Success) return status;
         _ = cache.TryInsert(new CurveSample(t, derivatives[0],
             order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order,
-            ICurveQueryKind.RegularChartInterval, ChartSide.Right, segment,
+            ICurveQueryKind.RegularChartInterval, side, segment,
             residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1));
         return AlgorithmStatus.Success;
     }

@@ -202,6 +202,13 @@ internal static class ICurveContinuation
         evaluations = steps;
         if (status == AlgorithmStatus.Success) return status;
 
+        if (detail == ICurveEvalDetail.ParameterResolutionLost
+            || detail == ICurveEvalDetail.BudgetExceeded
+            || detail == ICurveEvalDetail.AmbiguousBranch)
+        {
+            return AlgorithmStatus.NotConverged;
+        }
+
         // Multi-seed candidate recovery (§13.6, task T09): before recursive midpoint
         // ladder, try ranked same-branch candidates (chord, predictions, opposite anchor)
         // sharing the request budget in deterministic order.
@@ -218,7 +225,18 @@ internal static class ICurveContinuation
                     ref budget, derivatives, out var seedIters, out residual, out detail);
                 evaluations += seedIters;
                 if (candidateStatus == AlgorithmStatus.Success)
-                    return AlgorithmStatus.Success;
+                {
+                    if (SameLocalBranch(in view, in yAnchor, in derivatives[0], segment, tAnchor, tTarget,
+                            ref budget, out var branchDetail))
+                    {
+                        return AlgorithmStatus.Success;
+                    }
+                    if (branchDetail == ICurveEvalDetail.BudgetExceeded)
+                    {
+                        detail = branchDetail;
+                        return AlgorithmStatus.NotConverged;
+                    }
+                }
                 if (detail == ICurveEvalDetail.BudgetExceeded)
                     return AlgorithmStatus.NotConverged;
             }
@@ -251,6 +269,16 @@ internal static class ICurveContinuation
             }
             evaluations += midIters;
             if (midStatus != AlgorithmStatus.Success) continue;
+            if (!SameLocalBranch(in view, in yLeft, in midDeriv[0], segment, tLeft, tMid,
+                    ref budget, out var midBranchDetail))
+            {
+                if (midBranchDetail == ICurveEvalDetail.BudgetExceeded)
+                {
+                    detail = midBranchDetail;
+                    return AlgorithmStatus.NotConverged;
+                }
+                continue;
+            }
 
             // Ambiguity probe: correct also from the opposite chart end; if both
             // converge to distant roots with comparable residual, refuse (§17.5).
