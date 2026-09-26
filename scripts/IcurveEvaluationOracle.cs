@@ -451,25 +451,27 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                     ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, ourT + h, 1, refPlus), "PK_CURVE_eval live-recv quarter +h");
                     ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, ourT - h, 1, refMinus), "PK_CURVE_eval live-recv quarter -h");
 
-                    var ourFdD2x = (ourPlus[1].coord[0] - ourMinus[1].coord[0]) / (2.0 * h);
-                    var ourFdD2y = (ourPlus[1].coord[1] - ourMinus[1].coord[1]) / (2.0 * h);
-                    var ourFdD2z = (ourPlus[1].coord[2] - ourMinus[1].coord[2]) / (2.0 * h);
-                    var ourFdErr = Math.Sqrt(
-                        (ourFdD2x - ours[2].coord[0]) * (ourFdD2x - ours[2].coord[0]) +
-                        (ourFdD2y - ours[2].coord[1]) * (ourFdD2y - ours[2].coord[1]) +
-                        (ourFdD2z - ours[2].coord[2]) * (ourFdD2z - ours[2].coord[2]));
-
-                    var pkFdD2x = (refPlus[1].coord[0] - refMinus[1].coord[0]) / (2.0 * h);
-                    var pkFdD2y = (refPlus[1].coord[1] - refMinus[1].coord[1]) / (2.0 * h);
-                    var pkFdD2z = (refPlus[1].coord[2] - refMinus[1].coord[2]) / (2.0 * h);
-                    var pkFdErr = Math.Sqrt(
-                        (pkFdD2x - reference[2].coord[0]) * (pkFdD2x - reference[2].coord[0]) +
-                        (pkFdD2y - reference[2].coord[1]) * (pkFdD2y - reference[2].coord[1]) +
-                        (pkFdD2z - reference[2].coord[2]) * (pkFdD2z - reference[2].coord[2]));
-
-                    if (!double.IsFinite(normDelta) || !double.IsFinite(tanDelta) || !double.IsFinite(ourFdErr) || !double.IsFinite(pkFdErr))
+                    if (!CaseFValidator.ValidateFiniteDifferenceD2(
+                        (ourPlus[1].coord[0], ourPlus[1].coord[1], ourPlus[1].coord[2]),
+                        (ourMinus[1].coord[0], ourMinus[1].coord[1], ourMinus[1].coord[2]),
+                        (ours[2].coord[0], ours[2].coord[1], ours[2].coord[2]),
+                        h, 1e-5, out var ourFdD2, out var ourFdErr, out var ourFdFailure))
                     {
-                        throw new InvalidOperationException($"Case F finite difference / D2 decomposition produced non-finite value at seg={seg} frac={quarters[f]} t={ourT:F6}: normDelta={normDelta}, tanDelta={tanDelta}, ourFdErr={ourFdErr}, pkFdErr={pkFdErr}");
+                        throw new InvalidOperationException($"Case F our D2 finite difference verification failed at seg={seg} frac={quarters[f]} t={ourT:F6}: {ourFdFailure}");
+                    }
+
+                    if (!CaseFValidator.TryComputeFiniteDifferenceD2(
+                        (refPlus[1].coord[0], refPlus[1].coord[1], refPlus[1].coord[2]),
+                        (refMinus[1].coord[0], refMinus[1].coord[1], refMinus[1].coord[2]),
+                        (reference[2].coord[0], reference[2].coord[1], reference[2].coord[2]),
+                        h, out var pkFdD2, out var pkFdErr, out var pkFdFailure))
+                    {
+                        throw new InvalidOperationException($"Case F PK D2 finite difference computation non-finite at seg={seg} frac={quarters[f]} t={ourT:F6}: {pkFdFailure}");
+                    }
+
+                    if (!double.IsFinite(normDelta) || !double.IsFinite(tanDelta))
+                    {
+                        throw new InvalidOperationException($"Case F D2 decomposition produced non-finite value at seg={seg} frac={quarters[f]} t={ourT:F6}: normDelta={normDelta}, tanDelta={tanDelta}");
                     }
 
                     maxOurFdErr = Math.Max(maxOurFdErr, ourFdErr);
@@ -481,7 +483,7 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                         log($"  ourD0=({ours[0].coord[0]:F6},{ours[0].coord[1]:F6},{ours[0].coord[2]:F6}) pkD0=({reference[0].coord[0]:F6},{reference[0].coord[1]:F6},{reference[0].coord[2]:F6})");
                         log($"  ourD1=({ours[1].coord[0]:F6},{ours[1].coord[1]:F6},{ours[1].coord[2]:F6}) pkD1=({reference[1].coord[0]:F6},{reference[1].coord[1]:F6},{reference[1].coord[2]:F6})");
                         log($"  ourD2=({ours[2].coord[0]:F6},{ours[2].coord[1]:F6},{ours[2].coord[2]:F6}) pkD2=({reference[2].coord[0]:F6},{reference[2].coord[1]:F6},{reference[2].coord[2]:F6})");
-                        log($"  ourFdD2=({ourFdD2x:F6},{ourFdD2y:F6},{ourFdD2z:F6}) pkFdD2=({pkFdD2x:F6},{pkFdD2y:F6},{pkFdD2z:F6})");
+                        log($"  ourFdD2=({ourFdD2.x:F6},{ourFdD2.y:F6},{ourFdD2.z:F6}) pkFdD2=({pkFdD2.x:F6},{pkFdD2.y:F6},{pkFdD2.z:F6})");
                         log($"  |ΔD2_tan|={tanDelta:E3} |ΔD2_norm|={normDelta:E3} ourFdErr={ourFdErr:E3} pkFdErr={pkFdErr:E3}");
                     }
 
@@ -567,16 +569,41 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
                 log($"live-pk-recv: NaN-rejection PASS ({nanFailure})");
             }
 
-            // Negative test: verify that finite difference check rejects non-finite / NaN values in D1 probe
+            // Negative tests: verify that CaseFValidator.ValidateFiniteDifferenceD2
+            // shares the real verification code and rejects non-finite (NaN, Infinity) and out-of-tolerance probe inputs,
+            // while accepting valid inputs.
             {
-                var nanProbe = double.NaN;
-                var fdErrNaN = Math.Sqrt((nanProbe - 0.0) * (nanProbe - 0.0));
-                var rejected = !double.IsFinite(fdErrNaN) || fdErrNaN > 1e-5;
-                if (!rejected)
+                // Baseline: valid finite-difference probe matching d2 within tolerance
+                var validD1Plus = (0.0, 1.0 + 1e-5, 0.0);
+                var validD1Minus = (0.0, 1.0 - 1e-5, 0.0);
+                var validD2 = (0.0, 1.0, 0.0);
+                if (!CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, validD2, 1e-5, 1e-6, out _, out var validFail))
                 {
-                    throw new InvalidOperationException("Negative test failure: finite difference NaN check did not reject NaN!");
+                    throw new InvalidOperationException($"Negative test failure: valid finite difference probe rejected: {validFail}");
                 }
-                log("live-pk-recv: finite-difference NaN-rejection PASS");
+
+                // Probe 1: only D1(t+h) injected with NaN -> must reject
+                var nanPlus = (double.NaN, 1.0 + 1e-5, 0.0);
+                if (CaseFValidator.ValidateFiniteDifferenceD2(nanPlus, validD1Minus, validD2, 1e-5, 1e-6, out _, out var nanFail))
+                {
+                    throw new InvalidOperationException("Negative test failure: CaseFValidator unexpectedly passed NaN in D1(t+h)!");
+                }
+
+                // Probe 2: only D1(t-h) injected with Infinity -> must reject
+                var infMinus = (0.0, double.PositiveInfinity, 0.0);
+                if (CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, infMinus, validD2, 1e-5, 1e-6, out _, out var infFail))
+                {
+                    throw new InvalidOperationException("Negative test failure: CaseFValidator unexpectedly passed Infinity in D1(t-h)!");
+                }
+
+                // Probe 3: finite but difference exceeds tolerance -> must reject
+                var largeD1Plus = (0.0, 1.0 + 1e-3, 0.0);
+                if (CaseFValidator.ValidateFiniteDifferenceD2(largeD1Plus, validD1Minus, validD2, 1e-5, 1e-6, out _, out var tolFail))
+                {
+                    throw new InvalidOperationException("Negative test failure: CaseFValidator unexpectedly passed out-of-tolerance finite difference probe!");
+                }
+
+                log("live-pk-recv: finite-difference NaN/Inf/tolerance defense PASS (shared CaseFValidator)");
             }
 
             log("live-pk-recv: PASS (our XT INTERSECTION received by PK; shared CaseFValidator accepted D0/D1/rawD2/geomD2 and rejected perturbations)");

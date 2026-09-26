@@ -81,4 +81,103 @@ internal static class CaseFValidator
         }
         return true;
     }
+
+    /// <summary>
+    /// Computes the central finite difference second derivative from D1 probes at t+h and t-h,
+    /// and calculates the Euclidean error norm against the candidate D2 vector.
+    /// Rejects non-finite inputs or non-positive step sizes.
+    /// </summary>
+    internal static bool TryComputeFiniteDifferenceD2(
+        (double x, double y, double z) d1Plus,
+        (double x, double y, double z) d1Minus,
+        (double x, double y, double z) d2,
+        double h,
+        out (double x, double y, double z) fdD2,
+        out double error,
+        out string failureReason)
+    {
+        fdD2 = default;
+        error = double.NaN;
+        failureReason = string.Empty;
+
+        if (!double.IsFinite(h) || h <= 0)
+        {
+            failureReason = "Invalid step size h in finite difference: non-finite or non-positive.";
+            return false;
+        }
+
+        if (!double.IsFinite(d1Plus.x) || !double.IsFinite(d1Plus.y) || !double.IsFinite(d1Plus.z) ||
+            !double.IsFinite(d1Minus.x) || !double.IsFinite(d1Minus.y) || !double.IsFinite(d1Minus.z) ||
+            !double.IsFinite(d2.x) || !double.IsFinite(d2.y) || !double.IsFinite(d2.z))
+        {
+            failureReason = "Non-finite coordinate encountered in finite difference probe vectors.";
+            return false;
+        }
+
+        var fdX = (d1Plus.x - d1Minus.x) / (2.0 * h);
+        var fdY = (d1Plus.y - d1Minus.y) / (2.0 * h);
+        var fdZ = (d1Plus.z - d1Minus.z) / (2.0 * h);
+        fdD2 = (fdX, fdY, fdZ);
+
+        var errX = fdX - d2.x;
+        var errY = fdY - d2.y;
+        var errZ = fdZ - d2.z;
+
+        error = Math.Sqrt(errX * errX + errY * errY + errZ * errZ);
+        if (!double.IsFinite(error))
+        {
+            failureReason = "Finite-difference error norm computed as non-finite.";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Validates that the candidate D2 vector matches central finite difference of D1 within tolerance.
+    /// Rejects non-finite inputs, invalid tolerance, or error exceeding tolerance.
+    /// </summary>
+    internal static bool ValidateFiniteDifferenceD2(
+        (double x, double y, double z) d1Plus,
+        (double x, double y, double z) d1Minus,
+        (double x, double y, double z) d2,
+        double h,
+        double tolerance,
+        out (double x, double y, double z) fdD2,
+        out double error,
+        out string failureReason)
+    {
+        if (!TryComputeFiniteDifferenceD2(d1Plus, d1Minus, d2, h, out fdD2, out error, out failureReason))
+        {
+            return false;
+        }
+
+        if (!double.IsFinite(tolerance) || tolerance < 0)
+        {
+            failureReason = "Invalid tolerance parameter in ValidateFiniteDifferenceD2: non-finite or negative.";
+            return false;
+        }
+
+        if (error > tolerance)
+        {
+            failureReason = $"Finite-difference D2 error exceeded tolerance: error={error:E3} > tol={tolerance:E3}";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Overload of ValidateFiniteDifferenceD2 that does not output the computed fdD2 vector.
+    /// </summary>
+    internal static bool ValidateFiniteDifferenceD2(
+        (double x, double y, double z) d1Plus,
+        (double x, double y, double z) d1Minus,
+        (double x, double y, double z) d2,
+        double h,
+        double tolerance,
+        out double error,
+        out string failureReason)
+        => ValidateFiniteDifferenceD2(d1Plus, d1Minus, d2, h, tolerance, out _, out error, out failureReason);
 }
+
