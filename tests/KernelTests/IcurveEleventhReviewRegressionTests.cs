@@ -46,15 +46,13 @@ public class IcurveEleventhReviewRegressionTests
         var status = TerminatorEvaluation.SolveIntervalPoint(in torus, in anchor, 0.55,
             ref budget, out _, out var point, out var residual, out _);
 
-        if (status == AlgorithmStatus.Success)
-        {
-            Assert.True(point.Y > 0, $"Terminator jumped to wrong negative-Y branch: y={point.Y}");
-            var expectedY = 0.5298838;
-            var expectedZ = 0.2426408;
-            Assert.InRange(point.Y, expectedY - 0.05, expectedY + 0.05);
-            Assert.InRange(point.Z, expectedZ - 0.05, expectedZ + 0.05);
-            Assert.InRange(residual, 0.0, 1e-10);
-        }
+        Assert.Equal(AlgorithmStatus.Success, status);
+        Assert.True(point.Y > 0, $"Terminator jumped to wrong negative-Y branch: y={point.Y}");
+        var expectedY = 0.5298838;
+        var expectedZ = 0.2426408;
+        Assert.InRange(point.Y, expectedY - 0.05, expectedY + 0.05);
+        Assert.InRange(point.Z, expectedZ - 0.05, expectedZ + 0.05);
+        Assert.InRange(residual, 0.0, 1e-10);
     }
 
     [Fact]

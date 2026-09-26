@@ -86,7 +86,9 @@ internal static class BlendJointLift
 
         Span<double> f = stackalloc double[6];
         Span<double> denominators = stackalloc double[6];
+        Span<double> fScaled = stackalloc double[6];
         Span<double> j = stackalloc double[36];
+        Span<double> jScaled = stackalloc double[36];
         Span<double> jCopy = stackalloc double[36];
         Span<double> step = stackalloc double[6];
         Span<double> model = stackalloc double[6];
@@ -111,8 +113,20 @@ internal static class BlendJointLift
                 in outerSurface, in planeNormal, in x, in c, j);
             if (jacStatus != AlgorithmStatus.Success) return jacStatus;
 
+            // §12.2 / §14.1 frozen row scaling: scale each row i by 1/denominators[i]
+            // so the linear system J_s Δy = -f_s is dimensionless and conditioned
+            // across extreme geometric scales. The unknowns Δy (step) maintain their
+            // physical length units without column distortion.
+            for (BufferOffset r = 0; r < 6; r++)
+            {
+                var invD = 1.0 / denominators[r];
+                fScaled[r] = f[r] * invD;
+                for (BufferOffset cIdx = 0; cIdx < 6; cIdx++)
+                    jScaled[r * 6 + cIdx] = j[r * 6 + cIdx] * invD;
+            }
+
             // Prefer Schur when H_z is stable; otherwise full 6×6 (§12.3–12.4).
-            var stepStatus = TrySchurOrFullStep(j, f, step, jCopy, model, pivots, out var predicted);
+            var stepStatus = TrySchurOrFullStep(jScaled, fScaled, step, jCopy, model, pivots, out var predicted);
             if (stepStatus != AlgorithmStatus.Success || !(predicted > 0))
                 return stepStatus == AlgorithmStatus.Success ? AlgorithmStatus.NotConverged : stepStatus;
             for (BufferOffset i = 0; i < 6; i++)

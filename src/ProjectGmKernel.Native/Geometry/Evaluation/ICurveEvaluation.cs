@@ -231,7 +231,7 @@ internal static class ICurveEvaluation
         {
             PublishHit(in hit, order, derivatives);
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, AlgorithmStatus.Success,
-                hit.Plan, side, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact,
+                hit.Plan, side, segment, 0, hit.RawResidual, CacheHitKind.Exact,
                 qualityError: hit.ErrorEstimate);
             return AlgorithmStatus.Success;
         }
@@ -315,7 +315,7 @@ internal static class ICurveEvaluation
             _ = cache.TryInsert(new CurveSample(t, derivatives[0],
                 order >= 1 ? derivatives[1] : default,
                 order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
-                side, segment, quality, SampleSourceKind.CorrectedRoot, selected));
+                side, segment, quality, residual, SampleSourceKind.CorrectedRoot, selected));
             return status;
         }
 
@@ -368,7 +368,7 @@ internal static class ICurveEvaluation
         _ = cache.TryInsert(new CurveSample(t, derivatives[0],
             order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
-            side, segment, contQuality, SampleSourceKind.CorrectedRoot, selected));
+            side, segment, contQuality, residual, SampleSourceKind.CorrectedRoot, selected));
         return contStatus;
     }
 
@@ -396,7 +396,7 @@ internal static class ICurveEvaluation
             order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order,
             ICurveQueryKind.RegularChartInterval, side, segment,
-            contQualityI1, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1));
+            contQualityI1, residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1));
         return AlgorithmStatus.Success;
     }
 
@@ -414,6 +414,14 @@ internal static class ICurveEvaluation
         => CacheQualityFactor * LocalLengthScale(in view);
 
     internal const double CacheQualityFactor = 1e-11;
+
+    /// <summary>
+    /// Exact-hit acceptance bound for terminator sample quality (§6.4/§13.4/§18.2):
+    /// matches the interval solve gate tolerance so valid terminator samples can be
+    /// reused on repeated queries of the same kind.
+    /// </summary>
+    internal static double TerminatorQualityBound(in ICurveView view, in TerminatorEvaluation.TerminatorAnchor anchor)
+        => 1e-7 * Math.Max(anchor.ChordLength, 1e-6);
 
     /// <summary>
     /// Terminator queries beyond a chart boundary (§6): classification has
@@ -485,11 +493,12 @@ internal static class ICurveEvaluation
             return prepareStatus;
         }
 
-        if (cache.TryFindExact(t, kind, side, order, CacheQualityBound(in view), out var hit))
+        var terminatorTol = TerminatorQualityBound(in view, in anchor);
+        if (cache.TryFindExact(t, kind, side, order, terminatorTol, out var hit))
         {
             PublishHit(in hit, order, derivatives);
             report = new ICurveEvalReport(kind, AlgorithmStatus.Success, hit.Plan, side, segment,
-                0, hit.ErrorEstimate, CacheHitKind.Exact, qualityError: hit.ErrorEstimate);
+                0, hit.RawResidual, CacheHitKind.Exact, qualityError: hit.ErrorEstimate);
             return AlgorithmStatus.Success;
         }
 
@@ -497,7 +506,7 @@ internal static class ICurveEvaluation
         var otherSurface = anchor.SelectedSurface == 0 ? view.Support1 : view.Support0;
         var budget = EvaluationBudget.Default;
         var solveStatus = TerminatorEvaluation.SolveIntervalPoint(in selectedSurface, in anchor, t,
-            ref budget, out _, out var point, out var residual, out var evaluations);
+            ref budget, out _, out var point, out var residual, out var evaluations, out var actualError);
         if (solveStatus != AlgorithmStatus.Success)
         {
             var detail = solveStatus == AlgorithmStatus.NotConverged && budget.Remaining == 0
@@ -508,11 +517,15 @@ internal static class ICurveEvaluation
             return solveStatus;
         }
 
-        // Non-defining support deviation: diagnostics, not a constraint (§6.4).
-        var nonDefining = 0.0;
-        if (AnalyticImplicitEvaluation.Evaluate(in otherSurface, in point, 0, out var otherJet)
-            == AlgorithmStatus.Success)
-            nonDefining = Math.Abs(otherJet.Value);
+        // Non-defining support deviation: diagnostics, not a constraint (§6.4/§23.2).
+        var nonDefining = double.PositiveInfinity;
+        if (budget.TryConsume(1))
+        {
+            evaluations++;
+            if (AnalyticImplicitEvaluation.GeometricDeviation(in otherSurface, in point, out var dev)
+                == AlgorithmStatus.Success)
+                nonDefining = dev;
+        }
 
         var first = default(KernelVector3);
         var second = default(KernelVector3);
@@ -531,12 +544,12 @@ internal static class ICurveEvaluation
         derivatives[0] = point;
         if (order >= 1) derivatives[1] = first;
         if (order >= 2) derivatives[2] = second;
-        // Terminator quality: the certified bound of the interval gate that
+        // Terminator quality: the verified forward/geometric error bound of the interval gate that
         // just accepted the point (plane residuals, geometric deviation and
         // forward error are all ≤ this value in length units, §6.4/§18.2).
-        var terminatorQuality = 1e-7 * Math.Max(anchor.ChordLength, 1.0);
+        var terminatorQuality = actualError;
         _ = cache.TryInsert(new CurveSample(t, in point, first, second, order, kind,
-            side, segment, terminatorQuality, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
+            side, segment, terminatorQuality, residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
         report = new ICurveEvalReport(kind, AlgorithmStatus.Success, ICurveConstraintPlan.Auto,
             side, segment, evaluations, residual, CacheHitKind.None, nonDefining,
             ICurveEvalDetail.None, terminatorQuality);

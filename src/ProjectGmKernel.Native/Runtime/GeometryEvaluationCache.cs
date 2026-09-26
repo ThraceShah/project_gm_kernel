@@ -38,6 +38,7 @@ internal struct CachedCurveSample
     internal ChartSide Side;
     internal BufferOffset Segment;
     internal double ErrorEstimate;
+    internal double RawResidual;
     internal SampleSourceKind Source;
     internal ICurveConstraintPlan Plan;
     internal SampleWitness Witness;
@@ -284,6 +285,7 @@ internal static unsafe class GeometryEvaluationCache
         entry.Side = sample.Side;
         entry.Segment = sample.Segment;
         entry.ErrorEstimate = sample.ErrorEstimate;
+        entry.RawResidual = sample.RawResidual;
         entry.Source = sample.Source;
         entry.Plan = sample.Plan;
         entry.Witness = sample.Witness;
@@ -293,7 +295,8 @@ internal static unsafe class GeometryEvaluationCache
 
     private static CurveSample ToL2Sample(in CachedCurveSample entry)
         => new(entry.Parameter, entry.Position, entry.First, entry.Second, entry.MaxOrder,
-            entry.Kind, entry.Side, entry.Segment, entry.ErrorEstimate, entry.Source, entry.Plan, entry.Witness);
+            entry.Kind, entry.Side, entry.Segment, entry.ErrorEstimate, entry.RawResidual,
+            entry.Source, entry.Plan, entry.Witness);
 
 }
 
@@ -341,7 +344,7 @@ internal static unsafe partial class KernelRuntime
                 if (order >= 1) derivatives[1] = exact.First;
                 if (order >= 2) derivatives[2] = exact.Second;
                 report = new ICurveEvalReport(kind, AlgorithmStatus.Success, exact.Plan,
-                    side, exact.Segment, 0, exact.ErrorEstimate, CacheHitKind.Exact,
+                    side, exact.Segment, 0, exact.RawResidual, CacheHitKind.Exact,
                     qualityError: exact.ErrorEstimate);
                 return AlgorithmStatus.Success;
             }
@@ -356,7 +359,7 @@ internal static unsafe partial class KernelRuntime
             GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
                 order >= 1 ? derivatives[1] : default,
                 order >= 2 ? derivatives[2] : default, order, report.Kind,
-                report.Side, report.Segment, report.QualityError, SampleSourceKind.CorrectedRoot, report.Plan));
+                report.Side, report.Segment, report.QualityError, report.Residual, SampleSourceKind.CorrectedRoot, report.Plan));
         return status;
     }
 }

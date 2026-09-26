@@ -74,13 +74,18 @@ internal static class SweptSpunImplicit
 
         // Axis points (§9.4 "轴上点…单独处理"): the radial row degenerates
         // (∇ₓh₂ = 0) — refuse instead of publishing an unconstrained equation.
-        var scaleX = 1.0 + Math.Sqrt(Dot(rx, rx));
-        var scaleC = 1.0 + Math.Sqrt(Dot(rc, rc));
+        // The degeneracy test must be translation-invariant along the axis:
+        // tolerance scales with the local radial profile size (‖radialC‖),
+        // with a tight term bounding projection cancellation error from large axial coordinates.
         var radialX = Sub(rx, Scale(unitAxis, zx));
         var radialC = Sub(rc, Scale(unitAxis, zc));
-        if (Dot(radialX, radialX) <= 1e-24 * scaleX * scaleX
-            || Dot(radialC, radialC) <= 1e-24 * scaleC * scaleC)
-            return AlgorithmStatus.Singular;
+        var radNormC = Math.Sqrt(Dot(radialC, radialC));
+        var tolC = 1e-12 * Math.Max(1.0, radNormC) + 2e-16 * Math.Abs(zc);
+        if (radNormC <= tolC) return AlgorithmStatus.Singular;
+
+        var radNormX = Math.Sqrt(Dot(radialX, radialX));
+        var tolX = 1e-12 * Math.Max(1.0, radNormC) + 2e-16 * Math.Abs(zx);
+        if (radNormX <= tolX) return AlgorithmStatus.Singular;
 
         axialResidual = zx - zc;
         radialResidual = Dot(radialX, radialX) - Dot(radialC, radialC);
@@ -116,17 +121,20 @@ internal static class SweptSpunImplicit
         var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
         var rx = Sub(point, axisPoint);
         var rc = Sub(profilePoint, axisPoint);
-        var radialX = Sub(rx, Scale(unitAxis, Dot(unitAxis, rx)));
-        var radialC = Sub(rc, Scale(unitAxis, Dot(unitAxis, rc)));
-        var normC = Math.Sqrt(Dot(radialC, radialC));
-        var scaleX = 1.0 + Math.Sqrt(Dot(rx, rx));
-        if (normC <= 0) return false;
-        var e1 = Scale(radialC, 1 / normC);
+        var zx = Dot(unitAxis, rx);
+        var zc = Dot(unitAxis, rc);
+        var radialX = Sub(rx, Scale(unitAxis, zx));
+        var radialC = Sub(rc, Scale(unitAxis, zc));
+        var radNormC = Math.Sqrt(Dot(radialC, radialC));
+        var tolC = 1e-12 * Math.Max(1.0, radNormC) + 2e-16 * Math.Abs(zc);
+        if (radNormC <= tolC) return false;
+        var e1 = Scale(radialC, 1 / radNormC);
         var e2 = Cross(unitAxis, e1);
-        var normX = Math.Sqrt(Dot(radialX, radialX));
-        if (normX <= 1e-12 * scaleX) return false; // point on the axis: angle undefined
-        var cosTheta = Dot(radialX, e1) / normX;
-        var sinTheta = Dot(radialX, e2) / normX;
+        var radNormX = Math.Sqrt(Dot(radialX, radialX));
+        var tolX = 1e-12 * Math.Max(1.0, radNormC) + 2e-16 * Math.Abs(zx);
+        if (radNormX <= tolX) return false; // point on the axis: angle undefined
+        var cosTheta = Dot(radialX, e1) / radNormX;
+        var sinTheta = Dot(radialX, e2) / radNormX;
         var theta = Math.Atan2(sinTheta, cosTheta);
         if (!double.IsFinite(theta)) return false;
         // Periodic lift onto the previous branch (witness), mirroring the

@@ -49,7 +49,7 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_TightBoxAroundCirclePoint_Unique()
+    public void TryCertifyI3_TightBoxAroundCirclePoint_Unsupported_WhenNotImplemented()
     {
         // Root of plane∩cylinder at (1,0,0) with e = (0,1,0), p = y = 0.
         var chord = Vector(0, 1, 0);
@@ -62,7 +62,7 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_BoxAwayFromCircle_Empty()
+    public void TryCertifyI3_BoxAwayFromCircle_Unsupported_WhenNotImplemented()
     {
         var chord = Vector(0, 1, 0);
         // Far from the unit circle in the z=0 plane.
@@ -75,7 +75,7 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_LargeBox_UndeterminedNotUnique()
+    public void TryCertifyI3_LargeBox_Unsupported_WhenNotImplemented()
     {
         var chord = Vector(0, 1, 0);
         // Large enough that contraction/inclusion cannot fire, but not empty.
@@ -88,7 +88,7 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_PlaneCone_TightBox_Unique()
+    public void TryCertifyI3_PlaneCone_TightBox_Unsupported_WhenNotImplemented()
     {
         // Cone R=1, k=0.5: at z=0 the section is the unit circle; plane z=0 ∩
         // cone shares the same (1,0,0) root used by the cylinder fixture.
@@ -102,7 +102,7 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_PlaneRingTorus_TightBox_Unique()
+    public void TryCertifyI3_PlaneRingTorus_TightBox_Unsupported_WhenNotImplemented()
     {
         // Outer equator of a=3,b=1 torus in z=0 is ρ=4; root (4,0,0), e=(0,1,0).
         var chord = Vector(0, 1, 0);
@@ -115,7 +115,7 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_PlaneRingTorus_BoxAway_Empty()
+    public void TryCertifyI3_PlaneRingTorus_BoxAway_Unsupported_WhenNotImplemented()
     {
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(7.0, 7.2, -0.05, 0.05, -0.05, 0.05);
@@ -127,7 +127,7 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_SpindleTorus_BoundsUnavailable()
+    public void TryCertifyI3_SpindleTorus_Unsupported_WhenNotImplemented()
     {
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);

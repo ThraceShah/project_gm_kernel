@@ -68,10 +68,9 @@ internal readonly struct CurveSample
     internal readonly ICurveQueryKind Kind;
     internal readonly ChartSide Side;
     internal readonly BufferOffset Segment;
-    internal readonly double ErrorEstimate;       // certified length-unit position-quality bound (§13.4);
+    internal readonly double ErrorEstimate;       // numerically verified length-unit position-quality estimate (§13.4);
                                                   // 0 = defining data (anchors), +∞ = prediction-only seed.
-                                                  // Never the raw equation residual — its units vary with
-                                                  // the surface class and model scale (sphere/cylinder φ ≈ 2R·δ).
+    internal readonly double RawResidual;         // raw equation residual summary (max |F|, diagnostic only)
     internal readonly SampleSourceKind Source;
     internal readonly ICurveConstraintPlan Plan;
     internal readonly SampleWitness Witness;
@@ -79,13 +78,28 @@ internal readonly struct CurveSample
     internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
         in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
         BufferOffset segment, double errorEstimate, SampleSourceKind source, ICurveConstraintPlan plan)
-        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, source, plan, SampleWitness.None)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, 0, source, plan, SampleWitness.None)
     {
     }
 
     internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
         in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
         BufferOffset segment, double errorEstimate, SampleSourceKind source, ICurveConstraintPlan plan,
+        in SampleWitness witness)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, 0, source, plan, in witness)
+    {
+    }
+
+    internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
+        in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
+        BufferOffset segment, double errorEstimate, double rawResidual, SampleSourceKind source, ICurveConstraintPlan plan)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, rawResidual, source, plan, SampleWitness.None)
+    {
+    }
+
+    internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
+        in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
+        BufferOffset segment, double errorEstimate, double rawResidual, SampleSourceKind source, ICurveConstraintPlan plan,
         in SampleWitness witness)
     {
         Parameter = parameter;
@@ -97,6 +111,7 @@ internal readonly struct CurveSample
         Side = side;
         Segment = segment;
         ErrorEstimate = errorEstimate;
+        RawResidual = rawResidual;
         Source = source;
         Plan = plan;
         Witness = witness;
@@ -245,7 +260,7 @@ internal static class CurveSampleQuality
         {
             improved = new CurveSample(existing.Parameter, existing.Position,
                 incoming.First, incoming.Second, incoming.MaxOrder, existing.Kind,
-                existing.Side, existing.Segment, incoming.ErrorEstimate,
+                existing.Side, existing.Segment, incoming.ErrorEstimate, incoming.RawResidual,
                 SampleSourceKind.ImportedChartAnchor, incoming.Plan,
                 incoming.Witness.Flags != 0 ? incoming.Witness : existing.Witness);
             return true;
