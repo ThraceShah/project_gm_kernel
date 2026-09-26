@@ -259,4 +259,53 @@ public class IcurveTwelfthReviewRegressionTests
         Assert.False(CaseFValidator.Validate(excessiveSample, 1e-8, 1e-6, 1e-6, 1e-5, 1e-8, out var excFailure));
         Assert.Contains("tolerance exceeded", excFailure);
     }
+
+    [Fact]
+    public void CaseFValidator_ValidateFiniteDifferenceD2_Coverage()
+    {
+        var validD1Plus = (0.0, 1.0 + 1e-5, 0.0);
+        var validD1Minus = (0.0, 1.0 - 1e-5, 0.0);
+        var validD2 = (0.0, 1.0, 0.0);
+
+        // 1. Valid probe passes
+        Assert.True(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, validD2, 1e-5, 1e-6, out var fdD2, out var err, out var reason));
+        Assert.True(err <= 1e-6);
+        Assert.Empty(reason);
+        Assert.Equal(0.0, fdD2.x, 10);
+        Assert.Equal(1.0, fdD2.y, 10);
+        Assert.Equal(0.0, fdD2.z, 10);
+
+        // 2. Only D1(t+h) injected with NaN -> rejects
+        var nanPlus = (double.NaN, 1.0 + 1e-5, 0.0);
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(nanPlus, validD1Minus, validD2, 1e-5, 1e-6, out _, out var nanReason));
+        Assert.Contains("Non-finite", nanReason);
+
+        // 3. Only D1(t-h) injected with Infinity -> rejects
+        var infMinus = (0.0, double.PositiveInfinity, 0.0);
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, infMinus, validD2, 1e-5, 1e-6, out _, out var infReason));
+        Assert.Contains("Non-finite", infReason);
+
+        // 4. Candidate D2 injected with NaN -> rejects
+        var nanD2 = (0.0, double.NaN, 0.0);
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, nanD2, 1e-5, 1e-6, out _, out var d2Reason));
+        Assert.Contains("Non-finite", d2Reason);
+
+        // 5. Finite but error exceeds tolerance -> rejects
+        var largePlus = (0.0, 1.0 + 1e-3, 0.0);
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(largePlus, validD1Minus, validD2, 1e-5, 1e-6, out var largeErr, out var tolReason));
+        Assert.Contains("tolerance", tolReason);
+        Assert.True(largeErr > 1e-6);
+
+        // 6. Non-positive or non-finite step size h -> rejects
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, validD2, 0.0, 1e-6, out _, out var zeroHReason));
+        Assert.Contains("step size", zeroHReason);
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, validD2, -1e-5, 1e-6, out _, out _));
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, validD2, double.NaN, 1e-6, out _, out _));
+
+        // 7. Negative or non-finite tolerance -> rejects
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, validD2, 1e-5, -1e-6, out _, out var negTolReason));
+        Assert.Contains("tolerance", negTolReason);
+        Assert.False(CaseFValidator.ValidateFiniteDifferenceD2(validD1Plus, validD1Minus, validD2, 1e-5, double.NaN, out _, out _));
+    }
 }
+
