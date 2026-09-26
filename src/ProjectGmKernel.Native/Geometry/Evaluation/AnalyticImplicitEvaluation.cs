@@ -213,14 +213,17 @@ internal static class AnalyticImplicitEvaluation
 
         // Sheet guard: the actual surface satisfies the profile-circle relation
         // (ρ−a)² + z² = b². Accept near-zero φ only when the point also lies
-        // on the selected profile sheet (XT25 apple/lemon/doughnut).
-        var inner = (rho - a) * (rho - a) + axial * axial - b * b;
-        var outer = (rho + a) * (rho + a) + axial * axial - b * b;
-        var scale = Math.Max(1.0, qSq + a * a);
-        var onSelectedSheet = Math.Abs(inner) <= 1e-9 * scale * b;
-        var onMirrorSheet = a <= b && Math.Abs(outer) <= 1e-9 * scale * b;
-        if (Math.Abs(value) <= 1e-9 * scale * scale * b * b && !onSelectedSheet)
-            return onMirrorSheet ? AlgorithmStatus.Unsupported : AlgorithmStatus.InvalidInput;
+        // on the selected profile sheet (XT25 apple/lemon/doughnut, a ≤ b).
+        if (a <= b)
+        {
+            var inner = (rho - a) * (rho - a) + axial * axial - b * b;
+            var outer = (rho + a) * (rho + a) + axial * axial - b * b;
+            var scale = Math.Max(a * a, Math.Max(b * b, qSq));
+            var onSelectedSheet = Math.Abs(inner) <= 1e-9 * scale;
+            var onMirrorSheet = Math.Abs(outer) <= 1e-9 * scale;
+            if (Math.Abs(value) <= 1e-9 * scale * scale && !onSelectedSheet)
+                return onMirrorSheet ? AlgorithmStatus.Unsupported : AlgorithmStatus.InvalidInput;
+        }
 
         if (order == 0)
         {

@@ -316,7 +316,11 @@ internal static class BlendJointLift
             }
 
             if (matchCount == 0) return false;
-            if (matchCount > 1 && ambiguity) return false;
+            if (matchCount > 1)
+            {
+                if (!double.IsFinite(spineSeed) || ambiguity)
+                    return false;
+            }
             s = bestCandidate;
             return true;
         }
