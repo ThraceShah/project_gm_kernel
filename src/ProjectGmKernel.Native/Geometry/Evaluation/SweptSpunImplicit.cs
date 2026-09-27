@@ -67,8 +67,19 @@ internal static class SweptSpunImplicit
         if (!(a2 > 1e-30)) return AlgorithmStatus.Singular;
         var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
 
-        var zcAxis = Dot(unitAxis, Sub(profilePoint, axisPoint));
-        var localAxisPoint = Add(axisPoint, Scale(unitAxis, zcAxis));
+        var d = Sub(profilePoint, axisPoint);
+        var t = Dot(d, axis) / a2;
+        var localAxisPoint = Vector(
+            Math.FusedMultiplyAdd(axis.X, t, axisPoint.X),
+            Math.FusedMultiplyAdd(axis.Y, t, axisPoint.Y),
+            Math.FusedMultiplyAdd(axis.Z, t, axisPoint.Z));
+
+        // Plücker moment consistency: verify that localAxisPoint has not drifted from the axis line.
+        var mOrig = Cross(axisPoint, axis);
+        var mLocal = Cross(localAxisPoint, axis);
+        var mDiff = Sub(mLocal, mOrig);
+        var axisOffsetSq = Dot(mDiff, mDiff) / a2;
+
         var rx = Sub(point, localAxisPoint);
         var rc = Sub(profilePoint, localAxisPoint);
         var zx = Dot(unitAxis, rx);
@@ -82,6 +93,9 @@ internal static class SweptSpunImplicit
         var radialX = Sub(rx, Scale(unitAxis, zx));
         var radialC = Sub(rc, Scale(unitAxis, zc));
         var radNormC = Math.Sqrt(Dot(radialC, radialC));
+        if (axisOffsetSq > 1e-12 * Math.Max(1.0, Dot(radialC, radialC)))
+            return AlgorithmStatus.NumericalFailure;
+
         var tolC = 1e-12 * Math.Max(1.0, radNormC) + 2e-16 * Math.Abs(zc);
         if (radNormC <= tolC) return AlgorithmStatus.Singular;
 
@@ -121,8 +135,18 @@ internal static class SweptSpunImplicit
         var a2 = Dot(axis, axis);
         if (!(a2 > 1e-30)) return false;
         var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
-        var zcAxis = Dot(unitAxis, Sub(profilePoint, axisPoint));
-        var localAxisPoint = Add(axisPoint, Scale(unitAxis, zcAxis));
+        var d = Sub(profilePoint, axisPoint);
+        var t = Dot(d, axis) / a2;
+        var localAxisPoint = Vector(
+            Math.FusedMultiplyAdd(axis.X, t, axisPoint.X),
+            Math.FusedMultiplyAdd(axis.Y, t, axisPoint.Y),
+            Math.FusedMultiplyAdd(axis.Z, t, axisPoint.Z));
+
+        var mOrig = Cross(axisPoint, axis);
+        var mLocal = Cross(localAxisPoint, axis);
+        var mDiff = Sub(mLocal, mOrig);
+        var axisOffsetSq = Dot(mDiff, mDiff) / a2;
+
         var rx = Sub(point, localAxisPoint);
         var rc = Sub(profilePoint, localAxisPoint);
         var zx = Dot(unitAxis, rx);
@@ -130,6 +154,9 @@ internal static class SweptSpunImplicit
         var radialX = Sub(rx, Scale(unitAxis, zx));
         var radialC = Sub(rc, Scale(unitAxis, zc));
         var radNormC = Math.Sqrt(Dot(radialC, radialC));
+        if (axisOffsetSq > 1e-12 * Math.Max(1.0, Dot(radialC, radialC)))
+            return false;
+
         var tolC = 1e-12 * Math.Max(1.0, radNormC) + 2e-16 * Math.Abs(zc);
         if (radNormC <= tolC) return false;
         var e1 = Scale(radialC, 1 / radNormC);
