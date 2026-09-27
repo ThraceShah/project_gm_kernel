@@ -67,16 +67,18 @@ internal static class SweptSpunImplicit
         if (!(a2 > 1e-30)) return AlgorithmStatus.Singular;
         var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
 
-        var rx = Sub(point, axisPoint);
-        var rc = Sub(profilePoint, axisPoint);
+        var zcAxis = Dot(unitAxis, Sub(profilePoint, axisPoint));
+        var localAxisPoint = Add(axisPoint, Scale(unitAxis, zcAxis));
+        var rx = Sub(point, localAxisPoint);
+        var rc = Sub(profilePoint, localAxisPoint);
         var zx = Dot(unitAxis, rx);
         var zc = Dot(unitAxis, rc);
 
         // Axis points (§9.4 "轴上点…单独处理"): the radial row degenerates
         // (∇ₓh₂ = 0) — refuse instead of publishing an unconstrained equation.
-        // The degeneracy test must be translation-invariant along the axis:
-        // tolerance scales with the local radial profile size (‖radialC‖),
-        // with a tight term bounding projection cancellation error from large axial coordinates.
+        // The degeneracy test is translation-invariant along the axis via the local
+        // axis point at C's height: tolerance scales with the local radial profile size (‖radialC‖),
+        // with a tight term bounding local projection cancellation error.
         var radialX = Sub(rx, Scale(unitAxis, zx));
         var radialC = Sub(rc, Scale(unitAxis, zc));
         var radNormC = Math.Sqrt(Dot(radialC, radialC));
@@ -87,7 +89,7 @@ internal static class SweptSpunImplicit
         var tolX = 1e-12 * Math.Max(1.0, radNormC) + 2e-16 * Math.Abs(zx);
         if (radNormX <= tolX) return AlgorithmStatus.Singular;
 
-        axialResidual = zx - zc;
+        axialResidual = Dot(unitAxis, Sub(point, profilePoint));
         radialResidual = Dot(radialX, radialX) - Dot(radialC, radialC);
         axialGradientX = unitAxis;
         radialGradientX = Scale(radialX, 2);
@@ -119,8 +121,10 @@ internal static class SweptSpunImplicit
         var a2 = Dot(axis, axis);
         if (!(a2 > 1e-30)) return false;
         var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
-        var rx = Sub(point, axisPoint);
-        var rc = Sub(profilePoint, axisPoint);
+        var zcAxis = Dot(unitAxis, Sub(profilePoint, axisPoint));
+        var localAxisPoint = Add(axisPoint, Scale(unitAxis, zcAxis));
+        var rx = Sub(point, localAxisPoint);
+        var rc = Sub(profilePoint, localAxisPoint);
         var zx = Dot(unitAxis, rx);
         var zc = Dot(unitAxis, rc);
         var radialX = Sub(rx, Scale(unitAxis, zx));

@@ -181,7 +181,7 @@ internal static class ICurveEvaluation
         {
             PublishHit(in hit, order, derivatives);
             report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, AlgorithmStatus.Success,
-                hit.Plan, side, segment, 0, hit.ErrorEstimate, CacheHitKind.Exact,
+                hit.Plan, side, segment, 0, hit.RawResidual, CacheHitKind.Exact,
                 qualityError: hit.ErrorEstimate);
             return AlgorithmStatus.Success;
         }
@@ -195,7 +195,7 @@ internal static class ICurveEvaluation
         derivatives[0] = seed;
         _ = cache.TryInsert(new CurveSample(t, in seed, derivatives[1],
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.ChartPoint,
-            side, segment, 0, SampleSourceKind.CorrectedRoot, selected));
+            side, segment, 0, residual, SampleSourceKind.CorrectedRoot, selected));
         return AlgorithmStatus.Success;
     }
 
@@ -471,7 +471,7 @@ internal static class ICurveEvaluation
             }
             derivatives[0] = limit.Endpoint;
             _ = cache.TryInsert(new CurveSample(t, in limit.Endpoint, default, default, 0,
-                ICurveQueryKind.ExactTerminator, side, segment, 0, SampleSourceKind.ImportedChartAnchor,
+                ICurveQueryKind.ExactTerminator, side, segment, 0, 0, 0, rule, SampleSourceKind.ImportedChartAnchor,
                 ICurveConstraintPlan.Auto));
             report = new ICurveEvalReport(ICurveQueryKind.ExactTerminator, AlgorithmStatus.Success,
                 ICurveConstraintPlan.Auto, side, segment, 0, 0);
@@ -494,11 +494,11 @@ internal static class ICurveEvaluation
         }
 
         var terminatorTol = TerminatorQualityBound(in view, in anchor);
-        if (cache.TryFindExact(t, kind, side, order, terminatorTol, out var hit))
+        if (cache.TryFindExact(t, kind, side, order, terminatorTol, out var hit, rule))
         {
             PublishHit(in hit, order, derivatives);
             report = new ICurveEvalReport(kind, AlgorithmStatus.Success, hit.Plan, side, segment,
-                0, hit.RawResidual, CacheHitKind.Exact, qualityError: hit.ErrorEstimate);
+                0, hit.RawResidual, CacheHitKind.Exact, nonDefiningResidual: hit.NonDefiningResidual, qualityError: hit.ErrorEstimate);
             return AlgorithmStatus.Success;
         }
 
@@ -549,7 +549,7 @@ internal static class ICurveEvaluation
         // forward error are all ≤ this value in length units, §6.4/§18.2).
         var terminatorQuality = actualError;
         _ = cache.TryInsert(new CurveSample(t, in point, first, second, order, kind,
-            side, segment, terminatorQuality, residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
+            side, segment, terminatorQuality, residual, nonDefining, rule, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
         report = new ICurveEvalReport(kind, AlgorithmStatus.Success, ICurveConstraintPlan.Auto,
             side, segment, evaluations, residual, CacheHitKind.None, nonDefining,
             ICurveEvalDetail.None, terminatorQuality);

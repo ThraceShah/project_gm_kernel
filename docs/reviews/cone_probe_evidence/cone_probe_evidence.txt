@@ -1,5 +1,6 @@
+AssertNear self-test passed (NaN/Inf/negative tolerance correctly rejected).
 === Cone Axis XT/PK Convention Probe & Cross-Verification ===
-Date: 2026-09-26 18:49:51 UTC
+Date: 2026-09-27 03:58:21 UTC
 Target Parasolid Build: v380 (transmit_version=371, schema SCH_37102)
 Placement basis: axis=(0.30151134457776363, -0.502518907629606, 0.810287391340663)
 Placement basis: ref=(-0.9372184261837676, 0, 0.3487429162314578)
@@ -10,19 +11,23 @@ Face 2: radius = 0.5, semi_angle = 0.25
 Face 2: S(0, -1) = (0.46919059587587175, 2.502518907629606, 2.275035380532299)
 Face 2: S(0,  0) = (0.5313907869081163, 2, 3.1743714581157287)
 Face 2: S(0,  1) = (0.5935909779403608, 1.497481092370394, 4.0737075356991586)
+Verified 1 cone face(s) in original PK body.
 Saved minimal XT fixture (1358 bytes) to /home/thrace/code/project_gm_kernel/scripts/../docs/reviews/cone_probe_evidence/probe_cone_v371.x_t
 
 --- 1. XT Schema Node Field Inspection & Bit-Level Assertions ---
-ASSERTION PASSED: All raw XT CONE node fields match PK_CONE_ask verbatim (no sign flip in XT).
+ASSERTION PASSED: All raw XT CONE node fields match PK_CONE_ask within 1e-14 tolerance (no sign flip in XT).
 
 --- 2. Direction B: Real Parasolid Receive Round-Trip Assertions ---
 ASSERTION PASSED: Real PK receive reproduces exact axis, ref, and S(0, 1) coordinates.
+Direction B: Verified 1 received cone face(s).
 
 --- 3. Direction C: Real PK XT -> Our Kernel Materialization ---
 ASSERTION PASSED: Our kernel correctly materializes real PK XT into matching analytic surface.
+Direction C: Verified 1 cone surface materialized from XT.
 
 --- 4. Direction D: Our Kernel XT -> Real PK Receive ---
 Our kernel transmitted cone XT (1454 bytes); passing to real PK_PART_receive_b...
 ASSERTION PASSED: Real Parasolid successfully received our XT cone and matched axis/ref/eval.
+Direction D: Verified 1 received cone face(s).
 
 === ALL ASSERTIONS COMPLETED SUCCESSFULLY ===

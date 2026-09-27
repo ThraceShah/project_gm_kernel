@@ -50,6 +50,9 @@ Console.WriteLine($"\nEvidence written to {evidenceDir}/cone_probe_evidence.txt"
 
 static unsafe void RunProbe(string evidenceDir, Action<string> log)
 {
+    SelfTestAssertNear();
+    log("AssertNear self-test passed (NaN/Inf/negative tolerance correctly rejected).");
+
     log("=== Cone Axis XT/PK Convention Probe & Cross-Verification ===");
     log($"Date: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
     log("Target Parasolid Build: v380 (transmit_version=371, schema SCH_37102)");
@@ -76,6 +79,7 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
     PK_VECTOR_t origEvalM1 = default;
     PK_VECTOR_t origEval0 = default;
     PK_VECTOR_t origEval1 = default;
+    var origConeFaceCount = 0;
 
     try
     {
@@ -86,6 +90,7 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
             PK_CLASS_t cls = 0;
             ParasolidScriptHost.Check(PK_ENTITY_ask_class(surf, &cls), "PK_ENTITY_ask_class");
             if (cls != PK_CLASS_cone) continue;
+            origConeFaceCount++;
 
             var sfVal = default(PK_CONE_sf_t);
             ParasolidScriptHost.Check(PK_CONE_ask(surf, &sfVal), "PK_CONE_ask");
@@ -109,6 +114,9 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
             log($"Face {i}: S(0,  0) = ({origEval0.coord[0]}, {origEval0.coord[1]}, {origEval0.coord[2]})");
             log($"Face {i}: S(0,  1) = ({origEval1.coord[0]}, {origEval1.coord[1]}, {origEval1.coord[2]})");
         }
+        if (origConeFaceCount != 1)
+            throw new InvalidOperationException($"Expected exactly 1 cone face in original body, found {origConeFaceCount}");
+        log($"Verified {origConeFaceCount} cone face(s) in original PK body.");
     }
     finally
     {
@@ -164,10 +172,11 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
     AssertNear(origConeSf.basis_set.ref_direction.coord[1], coneNode.Fields[12].Vector.Y, 1e-14, "XT CONE ref Y");
     AssertNear(origConeSf.basis_set.ref_direction.coord[2], coneNode.Fields[12].Vector.Z, 1e-14, "XT CONE ref Z");
 
-    log("ASSERTION PASSED: All raw XT CONE node fields match PK_CONE_ask verbatim (no sign flip in XT).");
+    log("ASSERTION PASSED: All raw XT CONE node fields match PK_CONE_ask within 1e-14 tolerance (no sign flip in XT).");
 
     // --- 2. Direction B: Real PK Receive Round-Trip Assertions ---
     log("\n--- 2. Direction B: Real Parasolid Receive Round-Trip Assertions ---");
+    var receivedConeFaceCountB = 0;
     fixed (byte* bytes = xtBytes)
     {
         var receiveBlock = new PK_MEMORY_block_t(null, (ulong)xtBytes.Length, bytes);
@@ -191,6 +200,7 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
                         PK_CLASS_t cls = 0;
                         ParasolidScriptHost.Check(PK_ENTITY_ask_class(surf, &cls), "receive PK_ENTITY_ask_class");
                         if (cls != PK_CLASS_cone) continue;
+                        receivedConeFaceCountB++;
 
                         PK_CONE_sf_t sf;
                         ParasolidScriptHost.Check(PK_CONE_ask(surf, &sf), "receive PK_CONE_ask");
@@ -216,6 +226,9 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
                     if (rcFaces != null) PK_MEMORY_free(rcFaces);
                 }
             }
+            if (receivedConeFaceCountB != 1)
+                throw new InvalidOperationException($"Direction B: Expected exactly 1 received cone face, got {receivedConeFaceCountB}");
+            log($"Direction B: Verified {receivedConeFaceCountB} received cone face(s).");
         }
         finally
         {
@@ -252,6 +265,7 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
         AssertNear(origConeSf.semi_angle, askedCone.semi_angle, 1e-14, "Our materialized semi_angle");
 
         log("ASSERTION PASSED: Our kernel correctly materializes real PK XT into matching analytic surface.");
+        log("Direction C: Verified 1 cone surface materialized from XT.");
     }
     finally
     {
@@ -309,6 +323,7 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
     }
 
     log($"Our kernel transmitted cone XT ({ourXtBytes.Length} bytes); passing to real PK_PART_receive_b...");
+    var receivedConeFaceCountD = 0;
     fixed (byte* bytes = ourXtBytes)
     {
         var receiveBlock = new PK_MEMORY_block_t(null, (ulong)ourXtBytes.Length, bytes);
@@ -332,6 +347,7 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
                         PK_CLASS_t cls = 0;
                         ParasolidScriptHost.Check(PK_ENTITY_ask_class(surf, &cls), "receive our XT PK_ENTITY_ask_class");
                         if (cls != PK_CLASS_cone) continue;
+                        receivedConeFaceCountD++;
 
                         PK_CONE_sf_t sf;
                         ParasolidScriptHost.Check(PK_CONE_ask(surf, &sf), "receive our XT PK_CONE_ask");
@@ -357,6 +373,9 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
                     if (rcFaces != null) PK_MEMORY_free(rcFaces);
                 }
             }
+            if (receivedConeFaceCountD != 1)
+                throw new InvalidOperationException($"Direction D: Expected exactly 1 received cone face, got {receivedConeFaceCountD}");
+            log($"Direction D: Verified {receivedConeFaceCountD} received cone face(s).");
         }
         finally
         {
@@ -369,9 +388,36 @@ static unsafe void RunProbe(string evidenceDir, Action<string> log)
 
 static void AssertNear(double expected, double actual, double tol, string context)
 {
+    if (!double.IsFinite(expected) || !double.IsFinite(actual) || !double.IsFinite(tol) || tol < 0)
+        throw new InvalidOperationException($"Assertion argument invalid for {context}: expected={expected}, actual={actual}, tol={tol}");
     var diff = Math.Abs(expected - actual);
-    if (diff > tol)
+    if (!double.IsFinite(diff) || diff > tol)
         throw new InvalidOperationException($"Assertion failed for {context}: expected {expected:R}, got {actual:R}, diff {diff:E} > {tol:E}");
+}
+
+static void SelfTestAssertNear()
+{
+    AssertThrows(() => AssertNear(1.0, double.NaN, 1e-14, "self-test actual NaN"));
+    AssertThrows(() => AssertNear(double.NaN, 1.0, 1e-14, "self-test expected NaN"));
+    AssertThrows(() => AssertNear(1.0, double.PositiveInfinity, 1e-14, "self-test actual Inf"));
+    AssertThrows(() => AssertNear(double.NegativeInfinity, 1.0, 1e-14, "self-test expected -Inf"));
+    AssertThrows(() => AssertNear(1.0, 1.0, double.NaN, "self-test tol NaN"));
+    AssertThrows(() => AssertNear(1.0, 1.0, -1e-14, "self-test negative tol"));
+    AssertThrows(() => AssertNear(1.0, 2.0, 1e-14, "self-test mismatch"));
+    AssertNear(1.0, 1.0 + 1e-15, 1e-14, "self-test match");
+}
+
+static void AssertThrows(Action action)
+{
+    try
+    {
+        action();
+    }
+    catch (InvalidOperationException)
+    {
+        return;
+    }
+    throw new InvalidOperationException("AssertThrows failed: expected InvalidOperationException was not thrown.");
 }
 
 static (double, double, double) Normalize((double, double, double) v)

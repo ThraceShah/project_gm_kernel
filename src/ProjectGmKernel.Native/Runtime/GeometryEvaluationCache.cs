@@ -39,6 +39,8 @@ internal struct CachedCurveSample
     internal BufferOffset Segment;
     internal double ErrorEstimate;
     internal double RawResidual;
+    internal double NonDefiningResidual;
+    internal TerminatorParameterRule TerminatorRule;
     internal SampleSourceKind Source;
     internal ICurveConstraintPlan Plan;
     internal SampleWitness Witness;
@@ -155,7 +157,8 @@ internal static unsafe class GeometryEvaluationCache
     /// nothing that runs here re-enters the cache.
     /// </summary>
     internal static bool TryGetExact(in GeometryIdentity identity, double parameter, ICurveQueryKind kind,
-        ChartSide side, DerivativeOrder minOrder, double maxError, out CurveSample sample)
+        ChartSide side, DerivativeOrder minOrder, double maxError, out CurveSample sample,
+        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved)
     {
         sample = default;
         bool taken = false;
@@ -171,7 +174,7 @@ internal static unsafe class GeometryEvaluationCache
                 if (entry.Epoch != epoch) continue; // stale: dropped lazily, never served
                 if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
                 if (entry.Parameter != parameter) continue;
-                if (entry.Kind != kind || entry.Side != side) continue;
+                if (entry.Kind != kind || entry.Side != side || entry.TerminatorRule != rule) continue;
                 if (entry.Source == SampleSourceKind.PredictedOnly) continue;
                 if (entry.MaxOrder < minOrder || entry.ErrorEstimate > maxError) continue;
                 entry.ClockReferenced = 1;
@@ -226,7 +229,8 @@ internal static unsafe class GeometryEvaluationCache
                 ref var entry = ref arena[i];
                 if (entry.Occupied == 0) continue;
                 if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
-                if (entry.Parameter != sample.Parameter || entry.Kind != sample.Kind || entry.Side != sample.Side)
+                if (entry.Parameter != sample.Parameter || entry.Kind != sample.Kind || entry.Side != sample.Side
+                    || entry.TerminatorRule != sample.TerminatorRule)
                     continue;
                 if (entry.Epoch != epoch)
                 {
@@ -286,6 +290,8 @@ internal static unsafe class GeometryEvaluationCache
         entry.Segment = sample.Segment;
         entry.ErrorEstimate = sample.ErrorEstimate;
         entry.RawResidual = sample.RawResidual;
+        entry.NonDefiningResidual = sample.NonDefiningResidual;
+        entry.TerminatorRule = sample.TerminatorRule;
         entry.Source = sample.Source;
         entry.Plan = sample.Plan;
         entry.Witness = sample.Witness;
@@ -296,6 +302,7 @@ internal static unsafe class GeometryEvaluationCache
     private static CurveSample ToL2Sample(in CachedCurveSample entry)
         => new(entry.Parameter, entry.Position, entry.First, entry.Second, entry.MaxOrder,
             entry.Kind, entry.Side, entry.Segment, entry.ErrorEstimate, entry.RawResidual,
+            entry.NonDefiningResidual, entry.TerminatorRule,
             entry.Source, entry.Plan, entry.Witness);
 
 }
@@ -345,6 +352,7 @@ internal static unsafe partial class KernelRuntime
                 if (order >= 2) derivatives[2] = exact.Second;
                 report = new ICurveEvalReport(kind, AlgorithmStatus.Success, exact.Plan,
                     side, exact.Segment, 0, exact.RawResidual, CacheHitKind.Exact,
+                    nonDefiningResidual: exact.NonDefiningResidual,
                     qualityError: exact.ErrorEstimate);
                 return AlgorithmStatus.Success;
             }
@@ -359,7 +367,9 @@ internal static unsafe partial class KernelRuntime
             GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
                 order >= 1 ? derivatives[1] : default,
                 order >= 2 ? derivatives[2] : default, order, report.Kind,
-                report.Side, report.Segment, report.QualityError, report.Residual, SampleSourceKind.CorrectedRoot, report.Plan));
+                report.Side, report.Segment, report.QualityError, report.Residual,
+                report.NonDefiningResidual, TerminatorParameterRule.Unresolved,
+                SampleSourceKind.CorrectedRoot, report.Plan));
         return status;
     }
 }

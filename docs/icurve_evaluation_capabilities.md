@@ -70,7 +70,7 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 | XT INTERSECTION 实体写入与回读 | §19 / XtWriter | **生产已接入 + 真实 PK 兼容通过** | 写入生产已接入并获真实 PK 接收验证；XT 回读仅在测试层闭环验证；与 PKToy 绑定互相兼容 |
 | UV Null 语义与点容差解耦 | §19 / PrepareEvaluation | **生产已接入 + 真实 PK 兼容通过** | 仅成对允许 (NaN, NaN)；面点容差与 ChordalError 解耦 |
 | Sense 拓扑方向双向保持 | XT Schema / Records | **生产已接入 + 真实 PK 兼容通过** | 贯穿 Record / Binding / XT Parse / Writer，数据结构支持拓扑方向传递 |
-| Cone 轴向 XT/PK 约定 (Cone Axis Parity) | §8.3 / XT25 / SCH_37102 | **生产已接入 + 真实 PK 兼容通过** | 目标 build/schema (v380 / 37102) 上实测 XT 与 PK_CONE_ask 的 axis/ref 逐位一致，当前实现保持既有约定；实测与早期 XT25 文档引文存在冲突，保留为持续跟踪的兼容性专项（见 `docs/reviews/cone_probe_evidence/`） |
+| Cone 轴向 XT/PK 约定 (Cone Axis Parity) | §8.3 / XT25 / SCH_37102 | **生产已接入 + 真实 PK 兼容通过** | 目标 build/schema (v380 / 37102) 上实测 XT 与 PK_CONE_ask 的 axis/ref 轴向不翻转、数值在指定容差 (1e-14) 内保持，当前实现保持既有约定；实测与早期 XT25 文档引文存在冲突，保留为持续跟踪的兼容性专项（见 `docs/reviews/cone_probe_evidence/`） |
 | Live Parasolid Receive / Eval 对比 (Case F) | Oracle Case F | **生产已接入 + 真实 PK 兼容通过** | 我方写出 XT 由真实 Parasolid 加载并在同参数求值，同参数 D0/D1 机器精度一致（$< 2\times 10^{-15}$），D2 主法向与曲率一致；原生 D2 向量切向差异持续跟踪并补充负向测试 |
 
 ---
