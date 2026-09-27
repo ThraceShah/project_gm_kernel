@@ -71,6 +71,8 @@ internal readonly struct CurveSample
     internal readonly double ErrorEstimate;       // numerically verified length-unit position-quality estimate (§13.4);
                                                   // 0 = defining data (anchors), +∞ = prediction-only seed.
     internal readonly double RawResidual;         // raw equation residual summary (max |F|, diagnostic only)
+    internal readonly double NonDefiningResidual; // measured non-defining support deviation (or NaN / +inf if unmeasured)
+    internal readonly TerminatorParameterRule TerminatorRule; // parameterization reconstruction rule for terminator queries
     internal readonly SampleSourceKind Source;
     internal readonly ICurveConstraintPlan Plan;
     internal readonly SampleWitness Witness;
@@ -78,7 +80,7 @@ internal readonly struct CurveSample
     internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
         in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
         BufferOffset segment, double errorEstimate, SampleSourceKind source, ICurveConstraintPlan plan)
-        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, 0, source, plan, SampleWitness.None)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, 0, 0, TerminatorParameterRule.Unresolved, source, plan, SampleWitness.None)
     {
     }
 
@@ -86,20 +88,37 @@ internal readonly struct CurveSample
         in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
         BufferOffset segment, double errorEstimate, SampleSourceKind source, ICurveConstraintPlan plan,
         in SampleWitness witness)
-        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, 0, source, plan, in witness)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, 0, 0, TerminatorParameterRule.Unresolved, source, plan, in witness)
     {
     }
 
     internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
         in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
         BufferOffset segment, double errorEstimate, double rawResidual, SampleSourceKind source, ICurveConstraintPlan plan)
-        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, rawResidual, source, plan, SampleWitness.None)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, rawResidual, 0, TerminatorParameterRule.Unresolved, source, plan, SampleWitness.None)
     {
     }
 
     internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
         in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
         BufferOffset segment, double errorEstimate, double rawResidual, SampleSourceKind source, ICurveConstraintPlan plan,
+        in SampleWitness witness)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, rawResidual, 0, TerminatorParameterRule.Unresolved, source, plan, in witness)
+    {
+    }
+
+    internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
+        in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
+        BufferOffset segment, double errorEstimate, double rawResidual, double nonDefiningResidual,
+        TerminatorParameterRule terminatorRule, SampleSourceKind source, ICurveConstraintPlan plan)
+        : this(parameter, in position, in first, in second, maxOrder, kind, side, segment, errorEstimate, rawResidual, nonDefiningResidual, terminatorRule, source, plan, SampleWitness.None)
+    {
+    }
+
+    internal CurveSample(double parameter, in KernelVector3 position, in KernelVector3 first,
+        in KernelVector3 second, DerivativeOrder maxOrder, ICurveQueryKind kind, ChartSide side,
+        BufferOffset segment, double errorEstimate, double rawResidual, double nonDefiningResidual,
+        TerminatorParameterRule terminatorRule, SampleSourceKind source, ICurveConstraintPlan plan,
         in SampleWitness witness)
     {
         Parameter = parameter;
@@ -112,6 +131,8 @@ internal readonly struct CurveSample
         Segment = segment;
         ErrorEstimate = errorEstimate;
         RawResidual = rawResidual;
+        NonDefiningResidual = nonDefiningResidual;
+        TerminatorRule = terminatorRule;
         Source = source;
         Plan = plan;
         Witness = witness;
@@ -144,14 +165,16 @@ internal ref struct EvaluationSampleStore
     /// never qualify (§13.4).
     /// </summary>
     internal readonly bool TryFindExact(double parameter, ICurveQueryKind kind, ChartSide side,
-        DerivativeOrder minOrder, double maxError, out CurveSample sample)
+        DerivativeOrder minOrder, double maxError, out CurveSample sample,
+        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved)
     {
         sample = default;
         if (!double.IsFinite(parameter) || maxError < 0) return false;
         for (BufferOffset i = 0; i < count; i++)
         {
             ref readonly var candidate = ref slots[i];
-            if (candidate.Parameter != parameter || candidate.Kind != kind || candidate.Side != side)
+            if (candidate.Parameter != parameter || candidate.Kind != kind || candidate.Side != side
+                || candidate.TerminatorRule != rule)
                 continue;
             if (candidate.Source == SampleSourceKind.PredictedOnly) continue;
             if (candidate.MaxOrder < minOrder || candidate.ErrorEstimate > maxError) continue;
@@ -167,7 +190,8 @@ internal ref struct EvaluationSampleStore
     /// is not a hit: the result is a seed only (§13.4).
     /// </summary>
     internal readonly bool TryFindBracket(double parameter, ICurveQueryKind kind, ChartSide side,
-        BufferOffset segment, out CurveSample lower, out CurveSample upper)
+        BufferOffset segment, out CurveSample lower, out CurveSample upper,
+        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved)
     {
         lower = upper = default;
         var hasLower = false;
@@ -175,7 +199,8 @@ internal ref struct EvaluationSampleStore
         for (BufferOffset i = 0; i < count; i++)
         {
             ref readonly var candidate = ref slots[i];
-            if (candidate.Kind != kind || candidate.Side != side || candidate.Segment != segment)
+            if (candidate.Kind != kind || candidate.Side != side || candidate.Segment != segment
+                || candidate.TerminatorRule != rule)
                 continue;
             if (candidate.Source == SampleSourceKind.PredictedOnly) continue;
             if (candidate.Parameter < parameter && (!hasLower || candidate.Parameter > lower.Parameter))
@@ -199,7 +224,8 @@ internal ref struct EvaluationSampleStore
     /// request so forward tracking from a known root is deterministic.
     /// </summary>
     internal readonly bool TryFindNearest(double parameter, ICurveQueryKind kind, ChartSide side,
-        BufferOffset segment, out CurveSample sample)
+        BufferOffset segment, out CurveSample sample,
+        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved)
     {
         sample = default;
         var found = false;
@@ -207,7 +233,8 @@ internal ref struct EvaluationSampleStore
         for (BufferOffset i = 0; i < count; i++)
         {
             ref readonly var candidate = ref slots[i];
-            if (candidate.Kind != kind || candidate.Side != side || candidate.Segment != segment)
+            if (candidate.Kind != kind || candidate.Side != side || candidate.Segment != segment
+                || candidate.TerminatorRule != rule)
                 continue;
             if (candidate.Source == SampleSourceKind.PredictedOnly) continue;
             var distance = Math.Abs(candidate.Parameter - parameter);
@@ -233,7 +260,7 @@ internal ref struct EvaluationSampleStore
         {
             ref var candidate = ref slots[i];
             if (candidate.Parameter != sample.Parameter || candidate.Kind != sample.Kind
-                || candidate.Side != sample.Side)
+                || candidate.Side != sample.Side || candidate.TerminatorRule != sample.TerminatorRule)
                 continue;
             if (!CurveSampleQuality.TryImprove(in candidate, in sample, out var improved))
                 return true; // nothing to improve
@@ -253,6 +280,7 @@ internal static class CurveSampleQuality
         out CurveSample improved)
     {
         improved = existing;
+        if (existing.TerminatorRule != incoming.TerminatorRule) return false;
         var existingVerified = existing.Source != SampleSourceKind.PredictedOnly;
         var incomingVerified = incoming.Source != SampleSourceKind.PredictedOnly;
         if (existing.Source == SampleSourceKind.ImportedChartAnchor
@@ -261,6 +289,7 @@ internal static class CurveSampleQuality
             improved = new CurveSample(existing.Parameter, existing.Position,
                 incoming.First, incoming.Second, incoming.MaxOrder, existing.Kind,
                 existing.Side, existing.Segment, incoming.ErrorEstimate, incoming.RawResidual,
+                incoming.NonDefiningResidual, existing.TerminatorRule,
                 SampleSourceKind.ImportedChartAnchor, incoming.Plan,
                 incoming.Witness.Flags != 0 ? incoming.Witness : existing.Witness);
             return true;
