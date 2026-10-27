@@ -63,4 +63,22 @@ public class ResidualMemoTests
         Assert.True(memo.TryFind(ICurveConstraintPlan.P4, ResidualMemo.Capacity + 2, 0, 0, found));
         Assert.Equal(ResidualMemo.Capacity + 2, found[0], 15);
     }
+
+    [Fact]
+    public void StateAwareKeys_DistinguishDifferentTrialStatesAtSameParameter()
+    {
+        var memo = new ResidualMemo();
+        memo.BeginTrial();
+        ReadOnlySpan<double> stateA = [1.0, 2.0, 3.0];
+        ReadOnlySpan<double> stateB = [1.0, 2.0, 3.5];
+        Assert.True(memo.TryInsert(ICurveConstraintPlan.I3, 0.5, 0, 0, stateA, [0.25, -0.5, 0.75]));
+        Assert.True(memo.TryInsert(ICurveConstraintPlan.I3, 0.5, 0, 0, stateB, [0.125, -0.25, 0.375]));
+
+        Span<double> foundA = stackalloc double[3];
+        Span<double> foundB = stackalloc double[3];
+        Assert.True(memo.TryFind(ICurveConstraintPlan.I3, 0.5, 0, 0, stateA, foundA));
+        Assert.True(memo.TryFind(ICurveConstraintPlan.I3, 0.5, 0, 0, stateB, foundB));
+        Assert.Equal(0.25, foundA[0], 15);
+        Assert.Equal(0.125, foundB[0], 15);
+    }
 }

@@ -220,7 +220,9 @@ internal static class TerminatorEvaluation
         // The limit's branch point and the chart boundary must describe the
         // same imported point; a mismatch is an input problem, never snapped (§5.2).
         var boundary = isEnd ? view.ChartPositions[^1] : view.ChartPositions[0];
-        var branchScale = Math.Max(1.0, Math.Sqrt(Dot(branchPoint, branchPoint)));
+        var localScale = ICurveEvaluation.LocalLengthScale(in view);
+        var toBranchChord = Sub(branchPoint, endpoint);
+        var branchScale = Math.Max(localScale, Math.Sqrt(Dot(toBranchChord, toBranchChord)));
         if (Dot(Sub(branchPoint, boundary), Sub(branchPoint, boundary)) > (1e-9 * branchScale) * (1e-9 * branchScale))
             return AlgorithmStatus.InvalidInput;
 
@@ -229,9 +231,10 @@ internal static class TerminatorEvaluation
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in endpoint, 1, out var jet0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in endpoint, 1, out var jet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
-        var localScale = ICurveEvaluation.LocalLengthScale(in view);
-        var surface0Singular = GradientNormSq(jet0.Gradient) <= (1e-12 * localScale) * (1e-12 * localScale);
-        var surface1Singular = GradientNormSq(jet1.Gradient) <= (1e-12 * localScale) * (1e-12 * localScale);
+        var gradScale0 = SurfaceGradientScale(in view.Support0);
+        var gradScale1 = SurfaceGradientScale(in view.Support1);
+        var surface0Singular = GradientNormSq(jet0.Gradient) <= (1e-12 * gradScale0) * (1e-12 * gradScale0);
+        var surface1Singular = GradientNormSq(jet1.Gradient) <= (1e-12 * gradScale1) * (1e-12 * gradScale1);
         // surface0IsBlendBound is currently false because ICurve prepare only accepts
         // analytic supports (GATE-B open; future SurfaceSupportRef will supply this).
         var selected = SelectSupportSurface(surface0Singular, surface1Singular, false, termUse);
@@ -246,7 +249,11 @@ internal static class TerminatorEvaluation
             if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in branchPoint, 1, out var branchJet0) != AlgorithmStatus.Success
                 || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in branchPoint, 1, out var branchJet1) != AlgorithmStatus.Success)
                 return AlgorithmStatus.Unsupported;
-            var branchTangent = Unit(Cross(branchJet0.Gradient, branchJet1.Gradient));
+            var orientedBranch0 = Scale(branchJet0.Gradient,
+                view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+            var orientedBranch1 = Scale(branchJet1.Gradient,
+                view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+            var branchTangent = Unit(Cross(orientedBranch0, orientedBranch1));
             if (!IsFinite(branchTangent)) return AlgorithmStatus.Singular;
             var boundaryChord = isEnd ? view.ChartChordUnits[^1] : view.ChartChordUnits[0];
             if (Dot(branchTangent, boundaryChord) < 0)
@@ -622,8 +629,11 @@ internal static class TerminatorEvaluation
             != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
         residual = Math.Abs(rootJet.Value);
-        return residual <= ICurveEvaluation.ResidualTolerance * (1.0 + Math.Abs(point.X)
-            + Math.Abs(point.Y) + Math.Abs(point.Z))
+        var geomScale = Math.Max(1.0, Math.Max(anchor.ChordLength, Math.Max(surface.Radius, surface.Secondary)));
+        var slope = Dot(rootJet.Gradient, anchor.LineDirection);
+        if (Math.Abs(slope) > 1e-300 && Math.Abs(rootJet.Value / slope) <= 1e-10 * geomScale)
+            return AlgorithmStatus.Success;
+        return residual <= ICurveEvaluation.ResidualTolerance * SurfaceGradientScale(in surface) * geomScale
             ? AlgorithmStatus.Success
             : AlgorithmStatus.NotConverged;
     }
@@ -672,6 +682,8 @@ internal static class TerminatorEvaluation
         Span<KernelVector3> jet = stackalloc KernelVector3[4];
         if (!SurfaceDerivativeLayout.TryCreate(1, 1, out var layout))
             return AlgorithmStatus.InvalidInput;
+        var geomScale = Math.Max(1.0, Math.Max(anchor.ChordLength,
+            Math.Max(selectedSurface.Radius, selectedSurface.Secondary)));
 
         for (BufferOffset iter = 0; iter < MaxNewtonIterations; iter++)
         {
@@ -688,8 +700,7 @@ internal static class TerminatorEvaluation
             f[0] = Dot(dx, anchor.PlaneNormal);
             f[1] = Dot(dx, anchor.ChordUnit);
             residual = Math.Max(Math.Abs(f[0]), Math.Abs(f[1]));
-            if (residual <= ICurveEvaluation.ResidualTolerance * (1.0 + Math.Abs(point.X)
-                    + Math.Abs(point.Y) + Math.Abs(point.Z)))
+            if (residual <= ICurveEvaluation.ResidualTolerance * geomScale)
             {
                 u = state[0];
                 v = state[1];
@@ -725,10 +736,23 @@ internal static class TerminatorEvaluation
         in TerminatorAnchor anchor, in KernelVector3 point, DerivativeOrder order,
         out KernelVector3 first, out KernelVector3 second)
     {
+        var budget = EvaluationBudget.Default;
+        BufferOffset evaluations = 0;
+        return IntervalDerivatives(in selectedSurface, in anchor, in point, order,
+            ref budget, ref evaluations, out first, out second);
+    }
+
+    internal static AlgorithmStatus IntervalDerivatives(in AnalyticSurface selectedSurface,
+        in TerminatorAnchor anchor, in KernelVector3 point, DerivativeOrder order,
+        ref EvaluationBudget budget, ref BufferOffset evaluations,
+        out KernelVector3 first, out KernelVector3 second)
+    {
         first = default;
         second = default;
         if (order < 1) return AlgorithmStatus.InvalidInput;
         if (!IsFinite(point)) return AlgorithmStatus.InvalidInput;
+        if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+        evaluations++;
         if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in point, 1, out var jet)
             != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
@@ -741,6 +765,8 @@ internal static class TerminatorEvaluation
         if (order == 1) return AlgorithmStatus.Success;
 
         // μ'' = −(x'ᵀHx')/(∇φ·v); x'' = μ''v (§16.3).
+        if (!budget.TryConsume(1)) return AlgorithmStatus.NotConverged;
+        evaluations++;
         if (AnalyticImplicitEvaluation.Evaluate(in selectedSurface, in point, 2, out var jet2)
             != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
@@ -753,6 +779,17 @@ internal static class TerminatorEvaluation
         var muDoublePrime = -curvature / slope;
         second = Scale(anchor.LineDirection, muDoublePrime);
         return IsFinite(second) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
+    }
+
+    private static double SurfaceGradientScale(in AnalyticSurface surface)
+    {
+        var l = Math.Max(1.0, Math.Max(surface.Radius, surface.Secondary));
+        return surface.Kind switch
+        {
+            SurfaceClass.Plane => 1.0,
+            SurfaceClass.Torus => l * l * l,
+            _ => l,
+        };
     }
 
     private static double GradientNormSq(in KernelVector3 gradient)

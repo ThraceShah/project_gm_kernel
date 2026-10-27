@@ -40,8 +40,12 @@ internal struct ResidualMemo
 
     internal bool TryFind(ICurveConstraintPlan plan, double t, BufferOffset segment,
         DerivativeOrder order, Span<double> residualOut)
+        => TryFind(plan, t, segment, order, ReadOnlySpan<double>.Empty, residualOut);
+
+    internal bool TryFind(ICurveConstraintPlan plan, double t, BufferOffset segment,
+        DerivativeOrder order, ReadOnlySpan<double> state, Span<double> residualOut)
     {
-        var key = MakeKey(plan, t, segment, order, _generation);
+        var key = MakeKey(plan, t, segment, order, _generation, state);
         var limit = _count < Capacity ? _count : Capacity;
         for (BufferOffset i = 0; i < limit; i++)
         {
@@ -57,10 +61,14 @@ internal struct ResidualMemo
 
     internal bool TryInsert(ICurveConstraintPlan plan, double t, BufferOffset segment,
         DerivativeOrder order, ReadOnlySpan<double> residual)
+        => TryInsert(plan, t, segment, order, ReadOnlySpan<double>.Empty, residual);
+
+    internal bool TryInsert(ICurveConstraintPlan plan, double t, BufferOffset segment,
+        DerivativeOrder order, ReadOnlySpan<double> state, ReadOnlySpan<double> residual)
     {
         if (residual.Length is < 1 or > ResidualWidth) return false;
         var index = _write;
-        _keys[index] = MakeKey(plan, t, segment, order, _generation);
+        _keys[index] = MakeKey(plan, t, segment, order, _generation, state);
         WriteResidual(index, residual);
         _write = (_write + 1) % Capacity;
         if (_count < Capacity) _count++;
@@ -68,12 +76,25 @@ internal struct ResidualMemo
     }
 
     private static MemoKey MakeKey(ICurveConstraintPlan plan, double t, BufferOffset segment,
-        DerivativeOrder order, int generation)
-        => new((byte)plan, segment, order, generation, BitConverter.DoubleToInt64Bits(t));
+        DerivativeOrder order, int generation, ReadOnlySpan<double> state)
+        => new((byte)plan, segment, order, generation, BitConverter.DoubleToInt64Bits(t), HashState(state));
+
+    private static long HashState(ReadOnlySpan<double> state)
+    {
+        if (state.IsEmpty) return 0;
+        ulong hash = 14695981039346656037UL;
+        for (BufferOffset i = 0; i < state.Length; i++)
+        {
+            hash ^= (ulong)BitConverter.DoubleToInt64Bits(state[i]);
+            hash *= 1099511628211UL;
+        }
+        return (long)hash;
+    }
 
     private static bool KeysEqual(in MemoKey a, in MemoKey b)
         => a.Plan == b.Plan && a.Segment == b.Segment && a.Order == b.Order
-            && a.Generation == b.Generation && a.ParameterBits == b.ParameterBits;
+            && a.Generation == b.Generation && a.ParameterBits == b.ParameterBits
+            && a.StateHash == b.StateHash;
 
     private ReadOnlySpan<double> ResidualsAt(BufferOffset index) => _residuals.Row(index);
 
@@ -91,14 +112,17 @@ internal struct ResidualMemo
         internal readonly DerivativeOrder Order;
         internal readonly int Generation;
         internal readonly long ParameterBits;
+        internal readonly long StateHash;
 
-        internal MemoKey(byte plan, BufferOffset segment, DerivativeOrder order, int generation, long parameterBits)
+        internal MemoKey(byte plan, BufferOffset segment, DerivativeOrder order, int generation,
+            long parameterBits, long stateHash)
         {
             Plan = plan;
             Segment = segment;
             Order = order;
             Generation = generation;
             ParameterBits = parameterBits;
+            StateHash = stateHash;
         }
     }
 

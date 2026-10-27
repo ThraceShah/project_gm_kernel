@@ -262,6 +262,25 @@ public unsafe class GeometryCacheTests : IDisposable
         Assert.Equal(retrieved.Witness.Flags, l2Retrieved.Witness.Flags);
     }
 
+    [Fact]
+    public void EvaluateThroughL3_PopulatesAndPreservesSampleWitnessAcrossPlans()
+    {
+        var view = CircleView();
+        var identity = Identity(88);
+        Span<KernelVector3> derivatives = new KernelVector3[3];
+
+        Assert.Equal(AlgorithmStatus.Success,
+            KernelRuntime.EvaluateICurveThroughL3(in identity, in view, -1.1, 2,
+                ICurveConstraintPlan.P4, derivatives, out _));
+
+        Assert.True(GeometryEvaluationCache.TryGetExact(in identity, -1.1,
+            ICurveQueryKind.RegularChartInterval, ChartSide.Right, 2, 1e-11, out var sample));
+        Assert.Equal(SampleWitness.HasUv0 | SampleWitness.HasUv1,
+            sample.Witness.Flags & (SampleWitness.HasUv0 | SampleWitness.HasUv1));
+        Assert.True(double.IsFinite(sample.Witness.U0) && double.IsFinite(sample.Witness.V0));
+        Assert.True(double.IsFinite(sample.Witness.U1) && double.IsFinite(sample.Witness.V1));
+    }
+
     private static EntityTag CreatePlane()
     {
         var sf = new PK_PLANE_sf_s();

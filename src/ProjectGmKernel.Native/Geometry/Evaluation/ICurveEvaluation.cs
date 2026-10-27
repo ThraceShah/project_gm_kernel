@@ -186,8 +186,8 @@ internal static class ICurveEvaluation
             return AlgorithmStatus.Success;
         }
         var seed = view.ChartPositions[anchorIndex];
-        var solveStatus = SolveDirect(in view, in seed, t, segment, order, selected, derivatives,
-            out var iterations, out var residual);
+        var solveStatus = SolveDirect(in view, in seed, SampleWitness.None, t, segment, order, selected, derivatives,
+            out var iterations, out var residual, out var chartWitness);
         report = new ICurveEvalReport(ICurveQueryKind.ChartPoint, solveStatus,
             selected, side, segment, iterations, residual,
             qualityError: solveStatus == AlgorithmStatus.Success ? 0 : double.PositiveInfinity);
@@ -195,7 +195,7 @@ internal static class ICurveEvaluation
         derivatives[0] = seed;
         _ = cache.TryInsert(new CurveSample(t, in seed, derivatives[1],
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.ChartPoint,
-            side, segment, 0, residual, SampleSourceKind.CorrectedRoot, selected));
+            side, segment, 0, residual, SampleSourceKind.CorrectedRoot, selected, in chartWitness));
         return AlgorithmStatus.Success;
     }
 
@@ -245,9 +245,11 @@ internal static class ICurveEvaluation
         // falls back to the chord point when unavailable (§13.4).
         var hitKind = CacheHitKind.None;
         var solveSeed = seed;
+        var seedWitness = SampleWitness.None;
         if (cache.TryFindBracket(t, ICurveQueryKind.RegularChartInterval, side,
                 segment, out var lower, out var upper))
         {
+            seedWitness = InterpolateBracketWitness(in view, in lower, in upper, t);
             Span<double> predicted = stackalloc double[3];
             if (ParameterCorrespondence.TryHermitePredict(lower.Parameter,
                     stackalloc[] { lower.Position.X, lower.Position.Y, lower.Position.Z },
@@ -262,15 +264,19 @@ internal static class ICurveEvaluation
                 // PredictedOnly seed — never an exact hit (§13.4).
                 _ = cache.TryInsert(new CurveSample(t, in solveSeed, default, default, 0,
                     ICurveQueryKind.RegularChartInterval, side, segment,
-                    double.PositiveInfinity, SampleSourceKind.PredictedOnly, selected));
+                    double.PositiveInfinity, SampleSourceKind.PredictedOnly, selected, in seedWitness));
             }
+        }
+        else if (cache.TryFindNearest(t, ICurveQueryKind.RegularChartInterval, side, segment, out var neighbor))
+        {
+            seedWitness = neighbor.Witness;
         }
         // One budget owns the preferred plan, every alternate, and any
         // continuation that follows. A convenience SolveDirect would mint a
         // fresh 4096 for each of those stages.
         var budget = EvaluationBudget.Default;
-        var status = SolveDirect(in view, in solveSeed, t, segment, order, selected, ref budget,
-            derivatives, out var iterations, out var residual, out var detail);
+        var status = SolveDirect(in view, in solveSeed, in seedWitness, t, segment, order, selected, ref budget,
+            derivatives, out var iterations, out var residual, out var detail, out var witness);
         if (detail == ICurveEvalDetail.BudgetExceeded)
         {
             report = new ICurveEvalReport(ICurveQueryKind.RegularChartInterval, status,
@@ -286,8 +292,8 @@ internal static class ICurveEvaluation
             var altCount = ICurveConstraintPlanRules.Alternates(in view, selected, alternates);
             for (BufferOffset ai = 0; ai < altCount; ai++)
             {
-                var altStatus = SolveDirect(in view, in solveSeed, t, segment, order, alternates[ai],
-                    ref budget, derivatives, out iterations, out residual, out detail);
+                var altStatus = SolveDirect(in view, in solveSeed, in seedWitness, t, segment, order, alternates[ai],
+                    ref budget, derivatives, out iterations, out residual, out detail, out witness);
                 if (altStatus == AlgorithmStatus.Success)
                 {
                     selected = alternates[ai];
@@ -315,7 +321,7 @@ internal static class ICurveEvaluation
             _ = cache.TryInsert(new CurveSample(t, derivatives[0],
                 order >= 1 ? derivatives[1] : default,
                 order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
-                side, segment, quality, residual, SampleSourceKind.CorrectedRoot, selected));
+                side, segment, quality, residual, SampleSourceKind.CorrectedRoot, selected, in witness));
             return status;
         }
 
@@ -365,10 +371,11 @@ internal static class ICurveEvaluation
             selected, side, segment, iterations, residual, CacheHitKind.NeighborSeed,
             0, detail, contQuality);
         if (contStatus != AlgorithmStatus.Success) return contStatus;
+        var contWitness = BuildSampleWitness(in view, in derivatives[0], in seedWitness, SampleWitness.None);
         _ = cache.TryInsert(new CurveSample(t, derivatives[0],
             order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order, ICurveQueryKind.RegularChartInterval,
-            side, segment, contQuality, residual, SampleSourceKind.CorrectedRoot, selected));
+            side, segment, contQuality, residual, SampleSourceKind.CorrectedRoot, selected, in contWitness));
         return contStatus;
     }
 
@@ -392,11 +399,12 @@ internal static class ICurveEvaluation
             ICurveConstraintPlan.I1, side, segment, steps, residual,
             CacheHitKind.None, 0, detail, contQualityI1);
         if (status != AlgorithmStatus.Success) return status;
+        var witnessI1 = BuildSampleWitness(in view, in derivatives[0], SampleWitness.None, SampleWitness.None);
         _ = cache.TryInsert(new CurveSample(t, derivatives[0],
             order >= 1 ? derivatives[1] : default,
             order >= 2 ? derivatives[2] : default, order,
             ICurveQueryKind.RegularChartInterval, side, segment,
-            contQualityI1, residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1));
+            contQualityI1, residual, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I1, in witnessI1));
         return AlgorithmStatus.Success;
     }
 
@@ -506,7 +514,7 @@ internal static class ICurveEvaluation
         var otherSurface = anchor.SelectedSurface == 0 ? view.Support1 : view.Support0;
         var budget = EvaluationBudget.Default;
         var solveStatus = TerminatorEvaluation.SolveIntervalPoint(in selectedSurface, in anchor, t,
-            ref budget, out _, out var point, out var residual, out var evaluations, out var actualError);
+            ref budget, out var termMu, out var point, out var residual, out var evaluations, out var actualError);
         if (solveStatus != AlgorithmStatus.Success)
         {
             var detail = solveStatus == AlgorithmStatus.NotConverged && budget.Remaining == 0
@@ -532,11 +540,14 @@ internal static class ICurveEvaluation
         if (order >= 1)
         {
             var derivativeStatus = TerminatorEvaluation.IntervalDerivatives(in selectedSurface,
-                in anchor, in point, order, out first, out second);
+                in anchor, in point, order, ref budget, ref evaluations, out first, out second);
             if (derivativeStatus != AlgorithmStatus.Success)
             {
+                var derivDetail = derivativeStatus == AlgorithmStatus.NotConverged && budget.Remaining == 0
+                    ? ICurveEvalDetail.BudgetExceeded
+                    : ICurveEvalDetail.None;
                 report = new ICurveEvalReport(kind, derivativeStatus, ICurveConstraintPlan.Auto,
-                    side, segment, evaluations, residual, CacheHitKind.None, nonDefining);
+                    side, segment, evaluations, residual, CacheHitKind.None, nonDefining, derivDetail);
                 return derivativeStatus;
             }
         }
@@ -548,8 +559,11 @@ internal static class ICurveEvaluation
         // just accepted the point (plane residuals, geometric deviation and
         // forward error are all ≤ this value in length units, §6.4/§18.2).
         var terminatorQuality = actualError;
+        var termWitness = BuildSampleWitness(in view, in point, SampleWitness.None,
+            new SampleWitness(0, 0, 0, 0, termMu, SampleWitness.HasAux));
         _ = cache.TryInsert(new CurveSample(t, in point, first, second, order, kind,
-            side, segment, terminatorQuality, residual, nonDefining, rule, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.Auto));
+            side, segment, terminatorQuality, residual, nonDefining, rule, SampleSourceKind.CorrectedRoot,
+            ICurveConstraintPlan.Auto, in termWitness));
         report = new ICurveEvalReport(kind, AlgorithmStatus.Success, ICurveConstraintPlan.Auto,
             side, segment, evaluations, residual, CacheHitKind.None, nonDefining,
             ICurveEvalDetail.None, terminatorQuality);
@@ -573,8 +587,19 @@ internal static class ICurveEvaluation
         scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual)
     {
         var budget = EvaluationBudget.Default;
-        return SolveDirect(in view, in seed, t, segment, order, plan, ref budget,
-            derivatives, out iterations, out residual, out _);
+        return SolveDirect(in view, in seed, SampleWitness.None, t, segment, order, plan, ref budget,
+            derivatives, out iterations, out residual, out _, out _);
+    }
+
+    internal static AlgorithmStatus SolveDirect(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
+        BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
+        scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
+        out SampleWitness witness)
+    {
+        var budget = EvaluationBudget.Default;
+        return SolveDirect(in view, in seed, in seedWitness, t, segment, order, plan, ref budget,
+            derivatives, out iterations, out residual, out _, out witness);
     }
 
     /// <summary>
@@ -586,10 +611,19 @@ internal static class ICurveEvaluation
         BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
         ref EvaluationBudget budget, scoped Span<KernelVector3> derivatives,
         out BufferOffset iterations, out double residual, out ICurveEvalDetail detail)
+        => SolveDirect(in view, in seed, SampleWitness.None, t, segment, order, plan, ref budget,
+            derivatives, out iterations, out residual, out detail, out _);
+
+    internal static AlgorithmStatus SolveDirect(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
+        BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
+        ref EvaluationBudget budget, scoped Span<KernelVector3> derivatives,
+        out BufferOffset iterations, out double residual, out ICurveEvalDetail detail,
+        out SampleWitness witness)
     {
         Span<KernelVector3> staged = stackalloc KernelVector3[3];
-        var status = Solve(in view, in seed, t, segment, order, plan, ref budget, staged,
-            out iterations, out residual, out detail);
+        var status = Solve(in view, in seed, in seedWitness, t, segment, order, plan, ref budget, staged,
+            out iterations, out residual, out detail, out witness);
         if (status != AlgorithmStatus.Success) return status;
         derivatives[0] = staged[0];
         if (order >= 1) derivatives[1] = staged[1];
@@ -598,26 +632,32 @@ internal static class ICurveEvaluation
     }
 
     /// <summary>Finite switch over the plans; no residual callbacks cross this boundary (§19.4).</summary>
-    private static AlgorithmStatus Solve(in ICurveView view, in KernelVector3 seed, double t,
+    private static AlgorithmStatus Solve(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
         BufferOffset segment, DerivativeOrder order, ICurveConstraintPlan plan,
         ref EvaluationBudget budget, scoped Span<KernelVector3> derivatives,
-        out BufferOffset iterations, out double residual, out ICurveEvalDetail detail)
+        out BufferOffset iterations, out double residual, out ICurveEvalDetail detail,
+        out SampleWitness witness)
     {
         iterations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
+        witness = SampleWitness.None;
         var status = plan switch
         {
-            ICurveConstraintPlan.I1 => SolveI1(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
-            ICurveConstraintPlan.P2 => SolveP2(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
-            ICurveConstraintPlan.I3 => SolveI3(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
-            ICurveConstraintPlan.I2 => SolveI2(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
-            ICurveConstraintPlan.P4 => SolveP4(in view, in seed, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail),
+            ICurveConstraintPlan.I1 => SolveI1(in view, in seed, in seedWitness, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail, out witness),
+            ICurveConstraintPlan.P2 => SolveP2(in view, in seed, in seedWitness, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail, out witness),
+            ICurveConstraintPlan.I3 => SolveI3(in view, in seed, in seedWitness, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail, out witness),
+            ICurveConstraintPlan.I2 => SolveI2(in view, in seed, in seedWitness, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail, out witness),
+            ICurveConstraintPlan.P4 => SolveP4(in view, in seed, in seedWitness, t, segment, order, ref budget, derivatives, out iterations, out residual, out detail, out witness),
             _ => AlgorithmStatus.InvalidInput,
         };
         if (status != AlgorithmStatus.Success) return status;
         if (IsPublishableRoot(in view, t, segment, in derivatives[0], ref budget, out detail))
+        {
+            witness = BuildSampleWitness(in view, in derivatives[0], in seedWitness, in witness);
             return AlgorithmStatus.Success;
+        }
         return AlgorithmStatus.NotConverged;
     }
 
@@ -788,14 +828,16 @@ internal static class ICurveEvaluation
 
     // ── I1: plane support + implicit other (§7.5) ────────────────
 
-    private static AlgorithmStatus SolveI1(in ICurveView view, in KernelVector3 seed, double t,
+    private static AlgorithmStatus SolveI1(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
         BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
         scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
-        out ICurveEvalDetail detail)
+        out ICurveEvalDetail detail, out SampleWitness witness)
     {
         iterations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
+        witness = SampleWitness.None;
         var planeIsSupport0 = view.Support0.Kind == SurfaceClass.Plane;
         var planeIsSupport1 = view.Support1.Kind == SurfaceClass.Plane;
         if (planeIsSupport0 == planeIsSupport1) return AlgorithmStatus.Unsupported; // needs exactly one plane
@@ -855,7 +897,7 @@ internal static class ICurveEvaluation
         {
             Span<double> refined = stackalloc double[1];
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I1, t, segment,
-                in seed, refined, ref budget, out var refineIterations, out residual, out detail);
+                in seed, in seedWitness, refined, ref budget, out var refineIterations, out residual, out detail);
             if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
             mu = refined[0];
@@ -863,6 +905,7 @@ internal static class ICurveEvaluation
 
         var root = Add(x0, Scale(b, mu));
         derivatives[0] = root;
+        witness = new SampleWitness(0, 0, 0, 0, mu, SampleWitness.HasAux);
         if (!converged && order >= 1)
         {
             // The fallback corrector moved μ; the derivative chain needs the
@@ -901,19 +944,20 @@ internal static class ICurveEvaluation
 
     // ── P2: parametric side + implicit other (§7.2) ──────────────
 
-    private static AlgorithmStatus SolveP2(in ICurveView view, in KernelVector3 seed, double t,
+    private static AlgorithmStatus SolveP2(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
         BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
         scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
-        out ICurveEvalDetail detail)
+        out ICurveEvalDetail detail, out SampleWitness witness)
     {
         iterations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
+        witness = SampleWitness.None;
         // The parametric side is support0 in this slice (both analytic
         // supports qualify; a flipped-side variant arrives with non-analytic
         // supports in later tasks).
-        if (AnalyticParametricEvaluation.TryRecoverWitness(in view.Support0, in seed, out var u0, out var v0)
-            != AlgorithmStatus.Success)
+        if (!TryResolveSeedUv0(in view.Support0, in seed, in seedWitness, out var u0, out var v0))
             return AlgorithmStatus.Unsupported;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
@@ -969,7 +1013,7 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P2, t, segment,
-                in seed, q, ref budget, out var refineIterations, out residual, out detail);
+                in seed, in seedWitness, q, ref budget, out var refineIterations, out residual, out detail);
             if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
@@ -994,6 +1038,7 @@ internal static class ICurveEvaluation
             return AlgorithmStatus.Singular;
 
         derivatives[0] = rootJet[0];
+        witness = new SampleWitness(q[0], q[1], 0, 0, 0, SampleWitness.HasUv0);
 
         if (order >= 1)
         {
@@ -1031,14 +1076,16 @@ internal static class ICurveEvaluation
 
     // ── I3: implicit/implicit, 3×3 (§7.3) ────────────────────────
 
-    private static AlgorithmStatus SolveI3(in ICurveView view, in KernelVector3 seed, double t,
+    private static AlgorithmStatus SolveI3(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
         BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
         scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
-        out ICurveEvalDetail detail)
+        out ICurveEvalDetail detail, out SampleWitness witness)
     {
         iterations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
+        witness = SampleWitness.None;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
 
@@ -1089,7 +1136,7 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I3, t, segment,
-                in seed, x, ref budget, out var refineIterations, out residual, out detail);
+                in seed, in seedWitness, x, ref budget, out var refineIterations, out residual, out detail);
             if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
@@ -1142,14 +1189,16 @@ internal static class ICurveEvaluation
 
     // ── I2: implicit/implicit with the plane eliminated, 2×2 (§7.4) ──
 
-    private static AlgorithmStatus SolveI2(in ICurveView view, in KernelVector3 seed, double t,
+    private static AlgorithmStatus SolveI2(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
         BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
         scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
-        out ICurveEvalDetail detail)
+        out ICurveEvalDetail detail, out SampleWitness witness)
     {
         iterations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
+        witness = SampleWitness.None;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
 
@@ -1211,7 +1260,7 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.I2, t, segment,
-                in seed, xi, ref budget, out var refineIterations, out residual, out detail);
+                in seed, in seedWitness, xi, ref budget, out var refineIterations, out residual, out detail);
             if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
@@ -1276,16 +1325,18 @@ internal static class ICurveEvaluation
 
     // ── P4: parametric/parametric, 4×4 baseline (§7.1) ───────────
 
-    private static AlgorithmStatus SolveP4(in ICurveView view, in KernelVector3 seed, double t,
+    private static AlgorithmStatus SolveP4(in ICurveView view, in KernelVector3 seed,
+        in SampleWitness seedWitness, double t,
         BufferOffset segment, DerivativeOrder order, ref EvaluationBudget budget,
         scoped Span<KernelVector3> derivatives, out BufferOffset iterations, out double residual,
-        out ICurveEvalDetail detail)
+        out ICurveEvalDetail detail, out SampleWitness witness)
     {
         iterations = 0;
         residual = 0;
         detail = ICurveEvalDetail.None;
-        if (AnalyticParametricEvaluation.TryRecoverWitness(in view.Support0, in seed, out var u0, out var v0) != AlgorithmStatus.Success
-            || AnalyticParametricEvaluation.TryRecoverWitness(in view.Support1, in seed, out var u1, out var v1) != AlgorithmStatus.Success)
+        witness = SampleWitness.None;
+        if (!TryResolveSeedUv0(in view.Support0, in seed, in seedWitness, out var u0, out var v0)
+            || !TryResolveSeedUv1(in view.Support1, in seed, in seedWitness, out var u1, out var v1))
             return AlgorithmStatus.Unsupported;
         var scale = view.ChartScales[segment];
         var chordUnit = view.ChartChordUnits[segment];
@@ -1351,7 +1402,7 @@ internal static class ICurveEvaluation
         if (!converged)
         {
             var refine = ICurveCorrection.Refine(in view, ICurveConstraintPlan.P4, t, segment,
-                in seed, q, ref budget, out var refineIterations, out residual, out detail);
+                in seed, in seedWitness, q, ref budget, out var refineIterations, out residual, out detail);
             if (refine != AlgorithmStatus.Success) return refine;
             iterations = MaxFastNewtonIterations + refineIterations;
         }
@@ -1382,6 +1433,7 @@ internal static class ICurveEvaluation
             return AlgorithmStatus.Singular;
 
         derivatives[0] = rootJet0[0];
+        witness = new SampleWitness(q[0], q[1], q[2], q[3], 0, SampleWitness.HasUv0 | SampleWitness.HasUv1);
 
         if (order >= 1)
         {
@@ -1415,6 +1467,150 @@ internal static class ICurveEvaluation
             if (!IsFinite(derivatives[2])) return AlgorithmStatus.NumericalFailure;
         }
         return AlgorithmStatus.Success;
+    }
+
+    internal static bool TryResolveSeedUv0(in AnalyticSurface surface, in KernelVector3 seed,
+        in SampleWitness seedWitness, out double u0, out double v0)
+    {
+        if (AnalyticParametricEvaluation.TryRecoverWitness(in surface, in seed, out u0, out v0)
+            == AlgorithmStatus.Success)
+        {
+            if ((seedWitness.Flags & SampleWitness.HasUv0) != 0
+                && double.IsFinite(seedWitness.U0) && double.IsFinite(seedWitness.V0))
+                UnwrapPeriodicUv(in surface, seedWitness.U0, seedWitness.V0, ref u0, ref v0);
+            return true;
+        }
+        if ((seedWitness.Flags & SampleWitness.HasUv0) != 0
+            && double.IsFinite(seedWitness.U0) && double.IsFinite(seedWitness.V0))
+        {
+            u0 = seedWitness.U0;
+            v0 = seedWitness.V0;
+            return true;
+        }
+        u0 = v0 = 0;
+        return false;
+    }
+
+    internal static bool TryResolveSeedUv1(in AnalyticSurface surface, in KernelVector3 seed,
+        in SampleWitness seedWitness, out double u1, out double v1)
+    {
+        if (AnalyticParametricEvaluation.TryRecoverWitness(in surface, in seed, out u1, out v1)
+            == AlgorithmStatus.Success)
+        {
+            if ((seedWitness.Flags & SampleWitness.HasUv1) != 0
+                && double.IsFinite(seedWitness.U1) && double.IsFinite(seedWitness.V1))
+                UnwrapPeriodicUv(in surface, seedWitness.U1, seedWitness.V1, ref u1, ref v1);
+            return true;
+        }
+        if ((seedWitness.Flags & SampleWitness.HasUv1) != 0
+            && double.IsFinite(seedWitness.U1) && double.IsFinite(seedWitness.V1))
+        {
+            u1 = seedWitness.U1;
+            v1 = seedWitness.V1;
+            return true;
+        }
+        u1 = v1 = 0;
+        return false;
+    }
+
+    private static void UnwrapPeriodicUv(in AnalyticSurface surface, double refU, double refV,
+        ref double u, ref double v)
+    {
+        const double twoPi = 2.0 * Math.PI;
+        if (surface.Kind is SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Sphere or SurfaceClass.Torus)
+            u += twoPi * Math.Round((refU - u) / twoPi);
+        if (surface.Kind == SurfaceClass.Torus)
+            v += twoPi * Math.Round((refV - v) / twoPi);
+    }
+
+    internal static SampleWitness BuildSampleWitness(in ICurveView view, in KernelVector3 root,
+        in SampleWitness seedWitness, in SampleWitness solveWitness)
+    {
+        var u0 = solveWitness.U0;
+        var v0 = solveWitness.V0;
+        var u1 = solveWitness.U1;
+        var v1 = solveWitness.V1;
+        var aux = solveWitness.AuxParameter;
+        var flags = solveWitness.Flags;
+
+        if ((flags & SampleWitness.HasUv0) == 0
+            && TryResolveSeedUv0(in view.Support0, in root, in seedWitness, out var recU0, out var recV0))
+        {
+            u0 = recU0;
+            v0 = recV0;
+            flags |= SampleWitness.HasUv0;
+        }
+        if ((flags & SampleWitness.HasUv1) == 0
+            && TryResolveSeedUv1(in view.Support1, in root, in seedWitness, out var recU1, out var recV1))
+        {
+            u1 = recU1;
+            v1 = recV1;
+            flags |= SampleWitness.HasUv1;
+        }
+        return new SampleWitness(u0, v0, u1, v1, aux, flags);
+    }
+
+    private static SampleWitness InterpolateBracketWitness(in ICurveView view,
+        in CurveSample lower, in CurveSample upper, double t)
+    {
+        var span = upper.Parameter - lower.Parameter;
+        var alpha = span > 0 ? Math.Clamp((t - lower.Parameter) / span, 0.0, 1.0) : 0.5;
+        double u0 = 0, v0 = 0, u1 = 0, v1 = 0, aux = 0;
+        byte flags = 0;
+
+        if ((lower.Witness.Flags & SampleWitness.HasUv0) != 0
+            && (upper.Witness.Flags & SampleWitness.HasUv0) != 0)
+        {
+            var hiU0 = upper.Witness.U0;
+            var hiV0 = upper.Witness.V0;
+            UnwrapPeriodicUv(in view.Support0, lower.Witness.U0, lower.Witness.V0, ref hiU0, ref hiV0);
+            u0 = lower.Witness.U0 + alpha * (hiU0 - lower.Witness.U0);
+            v0 = lower.Witness.V0 + alpha * (hiV0 - lower.Witness.V0);
+            flags |= SampleWitness.HasUv0;
+        }
+        else if ((lower.Witness.Flags & SampleWitness.HasUv0) != 0)
+        {
+            u0 = lower.Witness.U0;
+            v0 = lower.Witness.V0;
+            flags |= SampleWitness.HasUv0;
+        }
+        else if ((upper.Witness.Flags & SampleWitness.HasUv0) != 0)
+        {
+            u0 = upper.Witness.U0;
+            v0 = upper.Witness.V0;
+            flags |= SampleWitness.HasUv0;
+        }
+
+        if ((lower.Witness.Flags & SampleWitness.HasUv1) != 0
+            && (upper.Witness.Flags & SampleWitness.HasUv1) != 0)
+        {
+            var hiU1 = upper.Witness.U1;
+            var hiV1 = upper.Witness.V1;
+            UnwrapPeriodicUv(in view.Support1, lower.Witness.U1, lower.Witness.V1, ref hiU1, ref hiV1);
+            u1 = lower.Witness.U1 + alpha * (hiU1 - lower.Witness.U1);
+            v1 = lower.Witness.V1 + alpha * (hiV1 - lower.Witness.V1);
+            flags |= SampleWitness.HasUv1;
+        }
+        else if ((lower.Witness.Flags & SampleWitness.HasUv1) != 0)
+        {
+            u1 = lower.Witness.U1;
+            v1 = lower.Witness.V1;
+            flags |= SampleWitness.HasUv1;
+        }
+        else if ((upper.Witness.Flags & SampleWitness.HasUv1) != 0)
+        {
+            u1 = upper.Witness.U1;
+            v1 = upper.Witness.V1;
+            flags |= SampleWitness.HasUv1;
+        }
+
+        if ((lower.Witness.Flags & SampleWitness.HasAux) != 0
+            && (upper.Witness.Flags & SampleWitness.HasAux) != 0)
+        {
+            aux = lower.Witness.AuxParameter + alpha * (upper.Witness.AuxParameter - lower.Witness.AuxParameter);
+            flags |= SampleWitness.HasAux;
+        }
+        return new SampleWitness(u0, v0, u1, v1, aux, flags);
     }
 
     private static KernelVector3 ParametricSecondChain(in SurfaceDerivativeLayout layout,

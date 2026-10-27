@@ -19,7 +19,7 @@ internal static class TrustRegionStep
     internal const double ShrinkRatio = 0.25;
     /// <summary>ρ above this with a boundary step grows the radius.</summary>
     internal const double GrowRatio = 0.75;
-    internal const int MaxSmallSystem = 16;
+    internal const int MaxSmallSystem = 6;
 
     /// <summary>
     /// Compute the dogleg step p for J·p = −r within radius

@@ -53,6 +53,13 @@ internal struct FrozenResidualScale
         }
     }
 
+    internal readonly void ApplyResidual(Span<double> residual)
+    {
+        var n = _dimension;
+        for (BufferOffset i = 0; i < n; i++)
+            residual[i] *= _row[i];
+    }
+
     /// <summary>
     /// Map a scaled-space step p (the coordinates <c>DoglegStep</c> solves in,
     /// with <c>J_s = W_F·J·D_u</c>) to the physical state increment
