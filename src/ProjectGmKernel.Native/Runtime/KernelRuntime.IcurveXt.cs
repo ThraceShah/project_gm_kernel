@@ -79,27 +79,44 @@ internal static unsafe partial class KernelRuntime
             ? (KernelLogical)1 : (KernelLogical)0;
 
         if (TryMaterializeAnalyticSurfaceFromXt(document, surf0Index, out var surf0)
-            != AlgorithmStatus.Success
-            || TryMaterializeAnalyticSurfaceFromXt(document, surf1Index, out var surf1)
             != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
+        if (TryMaterializeAnalyticSurfaceFromXt(document, surf1Index, out var surf1)
+            != AlgorithmStatus.Success)
+        {
+            CleanupMaterializedSurface(surf0);
+            return AlgorithmStatus.Unsupported;
+        }
 
         var chartNode = FindNodeByIndex(document.Nodes, chartIndex);
         var startNode = FindNodeByIndex(document.Nodes, startIndex);
         var endNode = FindNodeByIndex(document.Nodes, endIndex);
         if (chartNode is null || startNode is null || endNode is null)
+        {
+            CleanupMaterializedSurface(surf1);
+            CleanupMaterializedSurface(surf0);
             return AlgorithmStatus.InvalidInput;
+        }
 
         Span<double> chartBuf = stackalloc double[MaxIcurveImportHvecs * 3];
         if (!TryReadChartNode(chartNode, chartBuf, out var chartCount,
-                out var baseParameter, out var baseScale, out var chordal, out var angular))
+                out var baseParameter, out var baseScale, out var chordal, out var angular,
+                out var paramErr0, out var paramErr0Provided, out var paramErr1, out var paramErr1Provided))
+        {
+            CleanupMaterializedSurface(surf1);
+            CleanupMaterializedSurface(surf0);
             return AlgorithmStatus.Unsupported;
+        }
 
         Span<double> startBuf = stackalloc double[6];
         Span<double> endBuf = stackalloc double[6];
         if (!TryReadLimitNode(startNode, startBuf, out var startType, out var startTerm, out var startCount)
             || !TryReadLimitNode(endNode, endBuf, out var endType, out var endTerm, out var endCount))
+        {
+            CleanupMaterializedSurface(surf1);
+            CleanupMaterializedSurface(surf0);
             return AlgorithmStatus.InvalidInput;
+        }
 
         Span<double> uvBuf = stackalloc double[MaxIcurveImportUvValues];
         var uvType = IntersectionUvType.None;
@@ -108,9 +125,17 @@ internal static unsafe partial class KernelRuntime
         {
             var dataNode = FindNodeByIndex(document.Nodes, dataIndex);
             if (dataNode is null || dataNode.Type != (int)XtNodeTypes.IntersectionData)
+            {
+                CleanupMaterializedSurface(surf1);
+                CleanupMaterializedSurface(surf0);
                 return AlgorithmStatus.InvalidInput;
+            }
             if (!TryReadIntersectionDataNode(dataNode, uvBuf, out uvType, out uvCount))
+            {
+                CleanupMaterializedSurface(surf1);
+                CleanupMaterializedSurface(surf0);
                 return AlgorithmStatus.Unsupported;
+            }
         }
 
         var senseChar = intersection.Fields[6].Kind == XtFieldKind.Character ? intersection.Fields[6].Character : '+';
@@ -142,6 +167,10 @@ internal static unsafe partial class KernelRuntime
             UvValues = uvCount > 0 ? uvBuf[..uvCount] : ReadOnlySpan<double>.Empty,
             ChordalError = chordal,
             AngularError = angular,
+            ParameterError = paramErr0,
+            ParameterErrorProvided = paramErr0Provided,
+            ParameterError1 = paramErr1,
+            ParameterError1Provided = paramErr1Provided,
             Scale = scale,
             ScaleProvided = scaleProvided,
             SourceSchema = document.Schema.SchemaNumber,
@@ -149,18 +178,49 @@ internal static unsafe partial class KernelRuntime
         };
 
         var decode = DecodeIcurve(input, out var dataSlot, out failure, out _);
-        if (decode != AlgorithmStatus.Success) return decode;
-        return TryBindICurveEntity(dataSlot, out tag);
+        if (decode != AlgorithmStatus.Success)
+        {
+            CleanupMaterializedSurface(surf1);
+            CleanupMaterializedSurface(surf0);
+            return decode;
+        }
+        var bind = TryBindICurveEntity(dataSlot, out tag);
+        if (bind != AlgorithmStatus.Success)
+        {
+            FreeICurveData(dataSlot);
+            CleanupMaterializedSurface(surf1);
+            CleanupMaterializedSurface(surf0);
+        }
+        return bind;
+    }
+
+    private static void CleanupMaterializedSurface(SurfTag surfTag)
+    {
+        if (surfTag <= 0) return;
+        int local = surfTag;
+        EntityDelete(1, &local);
     }
 
     private static bool TryReadChartNode(XtNode chartNode, Span<double> chartHvecs, out int chartCount,
         out double baseParameter, out double baseScale, out double chordalError, out double angularError)
+        => TryReadChartNode(chartNode, chartHvecs, out chartCount,
+            out baseParameter, out baseScale, out chordalError, out angularError,
+            out _, out _, out _, out _);
+
+    private static bool TryReadChartNode(XtNode chartNode, Span<double> chartHvecs, out int chartCount,
+        out double baseParameter, out double baseScale, out double chordalError, out double angularError,
+        out double parameterError0, out KernelLogical parameterError0Provided,
+        out double parameterError1, out KernelLogical parameterError1Provided)
     {
         chartCount = 0;
         baseParameter = 0;
         baseScale = 1;
         chordalError = 0;
         angularError = 0;
+        parameterError0 = 0;
+        parameterError0Provided = 0;
+        parameterError1 = 0;
+        parameterError1Provided = 0;
         if (chartNode.Type != (int)XtNodeTypes.Chart || chartNode.VariableLength < 2)
             return false;
         var fields = chartNode.Fields;
@@ -172,6 +232,25 @@ internal static unsafe partial class KernelRuntime
             return false;
         if (fields[2].Integer != hvecCount) return false;
         if (fields[3].Kind != XtFieldKind.Real || fields[4].Kind != XtFieldKind.Real)
+            return false;
+        if (!double.IsFinite(fields[0].Real) || !double.IsFinite(fields[1].Real)
+            || !double.IsFinite(fields[3].Real) || !double.IsFinite(fields[4].Real))
+            return false;
+        if (fields[5].Kind == XtFieldKind.Real)
+        {
+            if (!double.IsFinite(fields[5].Real)) return false;
+            parameterError0 = fields[5].Real;
+            parameterError0Provided = 1;
+        }
+        else if (fields[5].Kind != XtFieldKind.Empty)
+            return false;
+        if (fields[6].Kind == XtFieldKind.Real)
+        {
+            if (!double.IsFinite(fields[6].Real)) return false;
+            parameterError1 = fields[6].Real;
+            parameterError1Provided = 1;
+        }
+        else if (fields[6].Kind != XtFieldKind.Empty)
             return false;
         if (hvecCount > MaxIcurveImportHvecs || chartHvecs.Length < hvecCount * 3)
             return false;

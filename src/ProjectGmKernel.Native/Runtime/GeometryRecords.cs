@@ -490,12 +490,14 @@ internal struct ICurveData
     public double Scale;             // optional; presence tracked by ScaleProvided (null never becomes 0)
     public KernelLogical ScaleProvided;
     // CHART error estimates (node 40): chordal/angular are required fields,
-    // parameter_error is optional (ParameterErrorProvided), as is the
-    // extended chart (ExtendedChartCount, -1 = absent).
+    // parameter_error[2] is optional (ParameterErrorProvided / ParameterError1Provided),
+    // as is the extended chart (ExtendedChartCount, -1 = absent).
     public double ChordalError;
     public double AngularError;
     public double ParameterError;
     public KernelLogical ParameterErrorProvided;
+    public double ParameterError1;
+    public KernelLogical ParameterError1Provided;
     public int ExtendedChartCount;
     // INTERSECTION_DATA (sch_37102 node 204), optional
     public IntersectionUvType UvType;

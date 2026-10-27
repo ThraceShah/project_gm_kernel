@@ -354,6 +354,10 @@ public unsafe class XtGeometryWriterTests : IDisposable
             UvType = IntersectionUvType.None,
             ChordalError = 1e-4,
             AngularError = 1e-6,
+            ParameterError = 2e-5,
+            ParameterErrorProvided = 1,
+            ParameterError1 = 3e-5,
+            ParameterError1Provided = 1,
         };
         Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var dataSlot, out var failure, out _));
         Assert.Equal(IcurveDecodeFailure.None, failure);
@@ -381,6 +385,11 @@ public unsafe class XtGeometryWriterTests : IDisposable
         Assert.Equal(IcurveDecodeFailure.None, hydrateFailure);
         var record = KernelRuntime.GetCurveByTag(hydrated);
         Assert.Equal(CurveClass.ICurve, record.Class);
+        ref readonly var hydratedData = ref KernelRuntime.ICurveDataPool[record.DataIndex];
+        Assert.Equal(1, hydratedData.ParameterErrorProvided);
+        Assert.Equal(2e-5, hydratedData.ParameterError, 14);
+        Assert.Equal(1, hydratedData.ParameterError1Provided);
+        Assert.Equal(3e-5, hydratedData.ParameterError1, 14);
         PK_VECTOR_s* evalOut = stackalloc PK_VECTOR_s[1];
         Assert.Equal(0, KernelRuntime.CurveEval(hydrated, record.TMin, 0, evalOut));
         Assert.Equal(1.0, evalOut[0].coord[0], 12);

@@ -235,9 +235,8 @@ internal static class TerminatorEvaluation
         var gradScale1 = SurfaceGradientScale(in view.Support1);
         var surface0Singular = GradientNormSq(jet0.Gradient) <= (1e-12 * gradScale0) * (1e-12 * gradScale0);
         var surface1Singular = GradientNormSq(jet1.Gradient) <= (1e-12 * gradScale1) * (1e-12 * gradScale1);
-        // surface0IsBlendBound is currently false because ICurve prepare only accepts
-        // analytic supports (GATE-B open; future SurfaceSupportRef will supply this).
-        var selected = SelectSupportSurface(surface0Singular, surface1Singular, false, termUse);
+        // Support0IsBlendBound comes from the prepared SurfaceSupportRef on ICurveView (§3.3, §6.2).
+        var selected = SelectSupportSurface(surface0Singular, surface1Singular, view.Support0IsBlendBound, termUse);
         var selectedJet = selected == 0 ? jet0 : jet1;
 
         // w = selected support normal at E; when it cannot be defined there,

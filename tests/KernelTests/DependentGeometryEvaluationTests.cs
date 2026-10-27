@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 
 namespace KernelTests;
@@ -346,6 +347,31 @@ public unsafe class DependentGeometryEvaluationTests : IDisposable
         Assert.Equal(0.15, output[0].coord[2], 13);
         Assert.Equal(0, KernelRuntime.EntityDelete(1, &bsurf));
         Assert.Equal(ParasolidConstants.PK_ERROR_not_a_tag, KernelRuntime.SurfEval(bsurf, Uv(0.5, 0.5), 0, 0, 0, output));
+    }
+
+    [Fact]
+    public void BSurface_EvaluateInDomain_RejectsOutOfDomainNonPeriodicParameters()
+    {
+        var poles = new double[2 * 2 * 3] { 0, 0, 0, 1, 0, 0.2, 0, 1, 0, 1, 1, 0.4 };
+        var bsurfTag = CreateBSurface(1, 1, 2, 2, poles, [0, 1], [2, 2], [0, 1], [2, 2]);
+        var surfRecord = KernelRuntime.GetSurfaceByTag(bsurfTag);
+        ref readonly var data = ref KernelRuntime.BSurfaceDataStore[surfRecord.DataIndex];
+        var view = new BSurfaceView(
+            data.UDegree, data.VDegree, data.NUVertices, data.NVVertices,
+            data.VertexDim, data.IsRational != 0, data.IsUPeriodic != 0, data.IsVPeriodic != 0,
+            surfRecord.UMin, surfRecord.UMax, surfRecord.VMin, surfRecord.VMax,
+            data.PolesSpan(), data.UExpandedKnotsSpan(), data.VExpandedKnotsSpan());
+
+        Assert.True(BSurfaceEvaluation.IsInDomain(in view, 0.5, 0.5));
+        Assert.False(BSurfaceEvaluation.IsInDomain(in view, -0.01, 0.5));
+        Assert.False(BSurfaceEvaluation.IsInDomain(in view, 0.5, 1.01));
+
+        Assert.True(SurfaceDerivativeLayout.TryCreate(1, 1, out var layout));
+        Span<double> workspace = stackalloc double[128];
+        Span<KernelVector3> output = stackalloc KernelVector3[4];
+        Assert.Equal(AlgorithmStatus.Success, BSurfaceEvaluation.EvaluateInDomain(in view, 0.5, 0.5, in layout, workspace, output));
+        Assert.Equal(AlgorithmStatus.InvalidInput, BSurfaceEvaluation.EvaluateInDomain(in view, -0.01, 0.5, in layout, workspace, output));
+        Assert.Equal(AlgorithmStatus.InvalidInput, BSurfaceEvaluation.EvaluateInDomain(in view, 0.5, 1.01, in layout, workspace, output));
     }
 
     // ── Fixtures ─────────────────────────────────────────────────────

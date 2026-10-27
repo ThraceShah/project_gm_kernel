@@ -28,8 +28,24 @@ internal static class BSurfaceEvaluation
             + (long)(du + 1) * (dv + 1) * 4;
     }
 
-    internal static AlgorithmStatus Evaluate(in BSurfaceView surface, double u, double v,
+    internal static bool IsInDomain(in BSurfaceView surface, double u, double v)
+        => double.IsFinite(u) && double.IsFinite(v)
+            && (surface.UPeriodic || (u >= surface.UStart && u <= surface.UEnd))
+            && (surface.VPeriodic || (v >= surface.VStart && v <= surface.VEnd));
+
+    /// <summary>
+    /// Evaluate a B-surface strictly within its parameter domain (spec §8.8):
+    /// periodic directions wrap, while non-periodic parameters outside
+    /// <c>[UStart, UEnd] × [VStart, VEnd]</c> are rejected with
+    /// <see cref="AlgorithmStatus.InvalidInput"/> instead of linearly extrapolated.
+    /// </summary>
+    internal static AlgorithmStatus EvaluateInDomain(in BSurfaceView surface, double u, double v,
         in SurfaceDerivativeLayout layout, Span<double> workspace, Span<KernelVector3> output)
+        => Evaluate(in surface, u, v, in layout, workspace, output, allowLinearExtension: false);
+
+    internal static AlgorithmStatus Evaluate(in BSurfaceView surface, double u, double v,
+        in SurfaceDerivativeLayout layout, Span<double> workspace, Span<KernelVector3> output,
+        bool allowLinearExtension = true)
     {
         if (!double.IsFinite(u) || !double.IsFinite(v)) return AlgorithmStatus.InvalidInput;
         if (output.Length < layout.Count) return AlgorithmStatus.OutputTooSmall;
@@ -39,12 +55,17 @@ internal static class BSurfaceEvaluation
         // position picks up first-derivative·δ in every in-range direction,
         // the first derivative along an out-of-range direction is the clamped
         // value, and higher derivatives along it vanish (oracle-verified).
+        // Solver/intersection callers set allowLinearExtension = false (§8.8).
         u = WrapPeriodic(u, surface.UStart, surface.UEnd, surface.UPeriodic);
         v = WrapPeriodic(v, surface.VStart, surface.VEnd, surface.VPeriodic);
         var uExtrapolation = u - Math.Clamp(u, surface.UStart, surface.UEnd);
         var vExtrapolation = v - Math.Clamp(v, surface.VStart, surface.VEnd);
         if (uExtrapolation != 0 || vExtrapolation != 0)
+        {
+            if (!allowLinearExtension)
+                return AlgorithmStatus.InvalidInput;
             return EvaluateExtended(surface, u, v, uExtrapolation, vExtrapolation, in layout, workspace, output);
+        }
         return EvaluateCore(surface, u, v, in layout, workspace, output);
     }
 

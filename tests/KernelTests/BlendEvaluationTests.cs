@@ -354,7 +354,7 @@ public class BlendEvaluationTests
         }
 
         const double u0 = 0.6;
-        const double h = 1e-6;
+        const double h = 1e-4;
         EvalSection(u0, out var c, out var c1, out var c2, out var c3, out var qStart0, out var qEnd0);
         EvalSection(u0 + h, out _, out _, out _, out _, out var qStartP, out var qEndP);
         EvalSection(u0 - h, out _, out _, out _, out _, out var qStartM, out var qEndM);
