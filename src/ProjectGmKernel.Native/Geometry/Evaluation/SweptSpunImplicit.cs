@@ -68,11 +68,11 @@ internal static class SweptSpunImplicit
         var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
 
         if (!TryPrepareLocalAxis(in axisPoint, in axis, a2, in unitAxis, in profilePoint,
-                out var localAxisPoint, out var axisDriftBoundSq))
+                out var localAxisPoint, out var localAxisCorrection, out var axisDriftBoundSq))
             return AlgorithmStatus.NumericalFailure;
 
-        var rx = Sub(point, localAxisPoint);
-        var rc = Sub(profilePoint, localAxisPoint);
+        var rx = SubtractCompensated(in point, in localAxisPoint, in localAxisCorrection);
+        var rc = SubtractCompensated(in profilePoint, in localAxisPoint, in localAxisCorrection);
         var zx = Dot(unitAxis, rx);
         var zc = Dot(unitAxis, rc);
 
@@ -128,11 +128,11 @@ internal static class SweptSpunImplicit
         var unitAxis = Scale(axis, 1 / Math.Sqrt(a2));
 
         if (!TryPrepareLocalAxis(in axisPoint, in axis, a2, in unitAxis, in profilePoint,
-                out var localAxisPoint, out var axisDriftBoundSq))
+                out var localAxisPoint, out var localAxisCorrection, out var axisDriftBoundSq))
             return false;
 
-        var rx = Sub(point, localAxisPoint);
-        var rc = Sub(profilePoint, localAxisPoint);
+        var rx = SubtractCompensated(in point, in localAxisPoint, in localAxisCorrection);
+        var rc = SubtractCompensated(in profilePoint, in localAxisPoint, in localAxisCorrection);
         var zx = Dot(unitAxis, rx);
         var zc = Dot(unitAxis, rc);
         var radialX = Sub(rx, Scale(unitAxis, zx));
@@ -163,47 +163,99 @@ internal static class SweptSpunImplicit
     private static bool TryPrepareLocalAxis(
         in KernelVector3 axisPoint, in KernelVector3 axis, double a2,
         in KernelVector3 unitAxis, in KernelVector3 profilePoint,
-        out KernelVector3 localAxisPoint, out double axisDriftBoundSq)
+        out KernelVector3 localAxisPoint, out KernelVector3 localAxisCorrection,
+        out double axisDriftBoundSq)
     {
         localAxisPoint = default;
+        localAxisCorrection = default;
         axisDriftBoundSq = double.PositiveInfinity;
 
         var d = Sub(profilePoint, axisPoint);
         var t = Dot(d, axis) / a2;
         if (!double.IsFinite(t)) return false;
 
-        localAxisPoint = Vector(
-            Math.FusedMultiplyAdd(axis.X, t, axisPoint.X),
-            Math.FusedMultiplyAdd(axis.Y, t, axisPoint.Y),
-            Math.FusedMultiplyAdd(axis.Z, t, axisPoint.Z));
+        // Error-free transformation of P_i + A_i * t:
+        //   p_i + pi_i = A_i * t           (TwoProd via FMA)
+        //   s_i + sigma_i = P_i + p_i      (Knuth TwoSum)
+        //   local_i = FMA(A_i, t, P_i)
+        // In exact real arithmetic, P + t * A lies strictly on the axis line for any finite t,
+        // and local_i - (P_i + A_i * t) = (local_i - s_i) - (sigma_i + pi_i).
+        // Subtracting local_i and adding back e_i = (local_i - s_i) - (sigma_i + pi_i)
+        // recovers the exact axis point to double-double precision, with residual error
+        // bounded by ulp(e_i) + ulp(sigma_i + pi_i) (and also bounded by 0.5 * ulp(local_i)).
+        if (!TryFmaWithResidual(axis.X, t, axisPoint.X, out var lx, out var ex, out var errX)
+            || !TryFmaWithResidual(axis.Y, t, axisPoint.Y, out var ly, out var ey, out var errY)
+            || !TryFmaWithResidual(axis.Z, t, axisPoint.Z, out var lz, out var ez, out var errZ))
+            return false;
 
-        if (!IsFinite(localAxisPoint)) return false;
-
-        // FMA computes localAxisPoint = axisPoint + t * axis + e with a single final rounding.
-        // In exact arithmetic, axisPoint + t * axis lies strictly on the axis line for any finite t.
-        // The perpendicular deviation of localAxisPoint from the line {axisPoint + s * axis}
-        // is the transverse component of the FMA rounding error:
-        //   delta_axis = ||(I - unitAxis * unitAxis^T) e|| = ||e x unitAxis|| <= ||bound_e x unitAxis||.
-        // For each component, IEEE 754 round-to-nearest error satisfies |e_i| <= 0.5 * ulp(localAxisPoint_i).
-        // Using BitIncrement provides a conservative, platform-independent bound on ulp.
-        var absX = Math.Abs(localAxisPoint.X);
-        var absY = Math.Abs(localAxisPoint.Y);
-        var absZ = Math.Abs(localAxisPoint.Z);
-
-        var ulpX = Math.BitIncrement(absX) - absX;
-        var ulpY = Math.BitIncrement(absY) - absY;
-        var ulpZ = Math.BitIncrement(absZ) - absZ;
+        localAxisPoint = Vector(lx, ly, lz);
+        localAxisCorrection = Vector(ex, ey, ez);
 
         var uax = Math.Abs(unitAxis.X);
         var uay = Math.Abs(unitAxis.Y);
         var uaz = Math.Abs(unitAxis.Z);
 
-        var bx = ulpY * uaz + ulpZ * uay;
-        var by = ulpZ * uax + ulpX * uaz;
-        var bz = ulpX * uay + ulpY * uax;
+        var bx = errY * uaz + errZ * uay;
+        var by = errZ * uax + errX * uaz;
+        var bz = errX * uay + errY * uax;
 
         axisDriftBoundSq = bx * bx + by * by + bz * bz;
         return double.IsFinite(axisDriftBoundSq);
+    }
+
+    private static bool TryFmaWithResidual(
+        double a, double t, double p,
+        out double fmaResult, out double fmaRoundingError, out double residualBound)
+    {
+        fmaResult = Math.FusedMultiplyAdd(a, t, p);
+        fmaRoundingError = 0;
+        residualBound = double.PositiveInfinity;
+        if (!double.IsFinite(fmaResult)) return false;
+
+        var prod = a * t;
+        if (!double.IsFinite(prod)) return false;
+        var prodLow = Math.FusedMultiplyAdd(a, t, -prod);
+
+        var sum = p + prod;
+        if (!double.IsFinite(sum)) return false;
+        var v = sum - p;
+        var sumLow = (p - (sum - v)) + (prod - v);
+
+        var delta = fmaResult - sum;
+        var tau = sumLow + prodLow;
+        fmaRoundingError = delta - tau;
+        if (!double.IsFinite(fmaRoundingError) || !double.IsFinite(tau)) return false;
+
+        var absFma = Math.Abs(fmaResult);
+        var halfUlpFma = 0.5 * (Math.BitIncrement(absFma) - absFma);
+
+        var absTau = Math.Abs(tau);
+        var ulpTau = Math.BitIncrement(absTau) - absTau;
+        var absErr = Math.Abs(fmaRoundingError);
+        var ulpErr = Math.BitIncrement(absErr) - absErr;
+
+        // After compensating by fmaRoundingError, the remaining error of (fmaResult - fmaRoundingError)
+        // from the exact real (p + a * t) is bounded by 0.5 * (ulp(fmaRoundingError) + ulp(tau)),
+        // and cannot exceed the uncompensated FMA rounding bound halfUlpFma.
+        residualBound = Math.Min(halfUlpFma, 0.5 * (ulpErr + ulpTau));
+        return double.IsFinite(residualBound);
+    }
+
+    private static KernelVector3 SubtractCompensated(
+        in KernelVector3 q, in KernelVector3 localAxis, in KernelVector3 fmaRoundingError)
+    {
+        return Vector(
+            SubtractOneCompensated(q.X, localAxis.X, fmaRoundingError.X),
+            SubtractOneCompensated(q.Y, localAxis.Y, fmaRoundingError.Y),
+            SubtractOneCompensated(q.Z, localAxis.Z, fmaRoundingError.Z));
+    }
+
+    private static double SubtractOneCompensated(double q, double localAxis, double fmaRoundingError)
+    {
+        var diff = q - localAxis;
+        var v = diff - q;
+        var diffLow = (q - (diff - v)) + (-localAxis - v);
+        return diff + (diffLow + fmaRoundingError);
     }
 
     private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)

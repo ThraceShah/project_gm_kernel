@@ -206,6 +206,36 @@ public class BlendBoundCompositionTests
         Assert.Equal(0.0, hzz, 14);
     }
 
+    [Fact]
+    public void Evaluate_RejectsNonFiniteOffDiagonalHessianAndFirstOrderDistanceGrade()
+    {
+        var input = BuildInput(in Point);
+        var badOffDiag = new BlendBoundComposition.CompositionInput(
+            input.D0Value, input.D0Gradient,
+            input.D0Hxx, double.NaN, input.D0Hxz, input.D0Hyy, input.D0Hyz, input.D0Hzz,
+            input.D1Gradient,
+            input.D1Hxx, input.D1Hxy, input.D1Hxz, input.D1Hyy, input.D1Hyz, input.D1Hzz,
+            input.Txx, input.Txy, input.Txz, input.Tyx, input.Tyy, input.Tyz,
+            input.Tzx, input.Tzy, input.Tzz);
+
+        Assert.Equal(AlgorithmStatus.NumericalFailure, BlendBoundComposition.Evaluate(
+            in badOffDiag, R0, R1, out _, out _, out _, out _, out _, out _, out _, out _));
+
+        var exactJet = new OrientedDistanceJet(
+            input.D0Value, in input.D0Gradient,
+            input.D0Hxx, input.D0Hxy, input.D0Hxz, input.D0Hyy, input.D0Hyz, input.D0Hzz,
+            in Point, DistanceGrade.Exact);
+        var firstOrderJet = new OrientedDistanceJet(
+            0.5, in input.D1Gradient,
+            input.D1Hxx, input.D1Hxy, input.D1Hxz, input.D1Hyy, input.D1Hyz, input.D1Hzz,
+            in Point, DistanceGrade.FirstOrderEstimate);
+
+        Assert.Equal(AlgorithmStatus.Unsupported, BlendBoundComposition.Evaluate(
+            in exactJet, in firstOrderJet,
+            input.Txx, input.Txy, input.Txz, input.Tyy, input.Tyz, input.Tzz,
+            R0, R1, out _, out _, out _, out _, out _, out _, out _, out _));
+    }
+
     private static double ComposeValue(in KernelVector3 x)
     {
         BlendBoundComposition.SphereDistanceJets(in Center1, Sphere1Radius, in x, default,

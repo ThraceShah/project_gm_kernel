@@ -61,7 +61,8 @@ internal static class BlendBoundComposition
         value = 0;
         gradient = default;
         hxx = hxy = hxz = hyy = hyz = hzz = 0;
-        if (!IsFinite(input.D1Gradient) || !IsFinite(input.D0Gradient))
+        if (!IsFinite(input.D1Gradient) || !IsFinite(input.D0Gradient)
+            || !double.IsFinite(r0) || !double.IsFinite(r1) || !double.IsFinite(input.D0Value))
             return AlgorithmStatus.InvalidInput;
 
         // A = I + r₁H₁(x) (row-major 3×3).
@@ -104,9 +105,40 @@ internal static class BlendBoundComposition
         hyy = a01 * hA01 + a11 * hA11 + a21 * hA21 + r1 * input.Tyy;
         hyz = a01 * hA02 + a11 * hA12 + a21 * hA22 + r1 * input.Tyz;
         hzz = a02 * hA02 + a12 * hA12 + a22 * hA22 + r1 * input.Tzz;
-        return IsFinite(gradient) && double.IsFinite(hxx) && double.IsFinite(hzz)
+        return double.IsFinite(value) && IsFinite(gradient)
+            && double.IsFinite(hxx) && double.IsFinite(hxy) && double.IsFinite(hxz)
+            && double.IsFinite(hyy) && double.IsFinite(hyz) && double.IsFinite(hzz)
             ? AlgorithmStatus.Success
             : AlgorithmStatus.NumericalFailure;
+    }
+
+    /// <summary>
+    /// Typed distance-composition entry (spec §8.2 / §11.1 / §21.1): requires
+    /// verified <see cref="OrientedDistanceJet"/> inputs with
+    /// <see cref="DistanceGrade.Exact"/> so neither a raw algebraic zero-set
+    /// polynomial (<see cref="ImplicitJet"/>) nor a first-order distance
+    /// estimate can be silently substituted into the BLEND_BOUND formula.
+    /// </summary>
+    internal static AlgorithmStatus Evaluate(
+        in OrientedDistanceJet d0AtY, in OrientedDistanceJet d1AtX,
+        double txx, double txy, double txz, double tyy, double tyz, double tzz,
+        double r0, double r1,
+        out double value, out KernelVector3 gradient, out double hxx, out double hxy,
+        out double hxz, out double hyy, out double hyz, out double hzz)
+    {
+        value = 0;
+        gradient = default;
+        hxx = hxy = hxz = hyy = hyz = hzz = 0;
+        if (d0AtY.Grade != DistanceGrade.Exact || d1AtX.Grade != DistanceGrade.Exact)
+            return AlgorithmStatus.Unsupported;
+        var input = new CompositionInput(
+            d0AtY.Distance, in d0AtY.Gradient,
+            d0AtY.Hxx, d0AtY.Hxy, d0AtY.Hxz, d0AtY.Hyy, d0AtY.Hyz, d0AtY.Hzz,
+            in d1AtX.Gradient,
+            d1AtX.Hxx, d1AtX.Hxy, d1AtX.Hxz, d1AtX.Hyy, d1AtX.Hyz, d1AtX.Hzz,
+            txx, txy, txz, txy, tyy, tyz, txz, tyz, tzz);
+        return Evaluate(in input, r0, r1, out value, out gradient,
+            out hxx, out hxy, out hxz, out hyy, out hyz, out hzz);
     }
 
     /// <summary>
