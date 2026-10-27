@@ -127,6 +127,15 @@ public class BlendEnvelopeSolveTests
         Assert.Equal(AlgorithmStatus.NotConverged, BlendEnvelopeSolve.SolveFourByFour(
             SpineRadius, TubeRadius, in outer, in planeAnchor, in planeNormal,
             in excludedSpineBounds, stateExcludedSpine, out _, out _, out _));
+
+        // 4. Custom SectionYAxis (inverted Z axis -Z) flips the signed section angle θ → -θ.
+        var invertedYBounds = new BlendArcBounds(
+            arc: 1.0, vMin: -0.6, vMax: -0.2, sectionYAxis: Vector(0, 0, -1), sMin: 0.1, sMax: 0.9);
+        Span<double> stateInvertedY = [root.X + 0.01, root.Y - 0.008, root.Z + 0.005, s - 0.05];
+        Assert.Equal(AlgorithmStatus.Success, BlendEnvelopeSolve.SolveFourByFour(
+            SpineRadius, TubeRadius, in outer, in planeAnchor, in planeNormal,
+            in invertedYBounds, stateInvertedY, out _, out _, out var invertedArcV));
+        Assert.Equal(-theta, invertedArcV, 10);
     }
 }
 

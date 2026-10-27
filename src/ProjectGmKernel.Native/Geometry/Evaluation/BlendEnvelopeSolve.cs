@@ -22,6 +22,8 @@ internal readonly struct BlendArcBounds
     internal readonly double VMax;
     internal readonly double SMin;
     internal readonly double SMax;
+    internal readonly KernelVector3 SectionYAxis;
+    internal readonly bool HasCustomSectionYAxis;
 
     internal BlendArcBounds(double arc, double vMin, double vMax, double sMin = double.NegativeInfinity, double sMax = double.PositiveInfinity)
     {
@@ -30,22 +32,52 @@ internal readonly struct BlendArcBounds
         VMax = vMax;
         SMin = sMin;
         SMax = sMax;
+        SectionYAxis = Vector(0, 0, 1);
+        HasCustomSectionYAxis = false;
+    }
+
+    internal BlendArcBounds(
+        double arc,
+        double vMin,
+        double vMax,
+        in KernelVector3 sectionYAxis,
+        double sMin = double.NegativeInfinity,
+        double sMax = double.PositiveInfinity)
+    {
+        Arc = arc;
+        VMin = vMin;
+        VMax = vMax;
+        SMin = sMin;
+        SMax = sMax;
+        SectionYAxis = sectionYAxis;
+        HasCustomSectionYAxis = true;
     }
 
     internal static BlendArcBounds Unbounded => new(0, double.NegativeInfinity, double.PositiveInfinity);
 
     internal bool TryValidate(double spineRadius, in KernelVector3 root, double s, out double v)
     {
+        var (sinS, cosS) = Math.SinCos(s);
+        var spineCenter = Vector(spineRadius * cosS, spineRadius * sinS, 0);
+        var radial = Vector(cosS, sinS, 0);
+        var yAxis = HasCustomSectionYAxis ? SectionYAxis : Vector(0, 0, 1);
+        return TryValidate(in spineCenter, in radial, in yAxis, in root, s, out v);
+    }
+
+    internal bool TryValidate(
+        in KernelVector3 spineCenter,
+        in KernelVector3 sectionXAxis,
+        in KernelVector3 sectionYAxis,
+        in KernelVector3 root,
+        double s,
+        out double v)
+    {
         v = 0;
         if (s < SMin || s > SMax) return false;
         if (Arc == 0) return true;
 
-        var (sinS, cosS) = Math.SinCos(s);
-        var spineCenter = Vector(spineRadius * cosS, spineRadius * sinS, 0);
         var offset = Vector(root.X - spineCenter.X, root.Y - spineCenter.Y, root.Z - spineCenter.Z);
-        var radial = Vector(cosS, sinS, 0);
-        var zAxis = Vector(0, 0, 1);
-        return BlendImplicitEvaluation.TryValidateArc(in offset, in radial, in zAxis, Arc, VMin, VMax, out v);
+        return BlendImplicitEvaluation.TryValidateArc(in offset, in sectionXAxis, in sectionYAxis, Arc, VMin, VMax, out v);
     }
 }
 

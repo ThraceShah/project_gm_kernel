@@ -160,12 +160,14 @@ internal static class BlendEvaluation
     /// Recover the cross-section frame from the spine witness and the two
     /// sense-resolved contact points (§10.2): X = (Q_start − c)/r, Y from the
     /// spine tangent with the directed-arc convention, a via atan2 — never a
-    /// bare acos. Near-coincident and near-antipodal contacts are refused
-    /// (GATE-A owns the extreme-degeneracy contract).
+    /// bare acos. Near-coincident contacts are refused; near-antipodal contacts
+    /// are refused unless a finite <paramref name="previousArc"/> witness is
+    /// supplied to disambiguate the ±π branch (GATE-A owns the unwitnessed
+    /// extreme-degeneracy contract).
     /// </summary>
     internal static AlgorithmStatus TryBuildFrame(in KernelVector3 spinePoint, in KernelVector3 spineTangent,
         in KernelVector3 contactStart, in KernelVector3 contactEnd, double radius, out KernelVector3 x,
-        out KernelVector3 y, out double arc)
+        out KernelVector3 y, out double arc, double previousArc = double.NaN)
     {
         x = y = default;
         arc = 0;
@@ -191,14 +193,107 @@ internal static class BlendEvaluation
         var sinA = Dot(endX, yCandidate);
         arc = Math.Atan2(sinA, cosA);
 
-        // Degenerate arcs are gate territory: near-coincident contacts (a ≈ 0)
-        // and near-antipodal ones (a ≈ ±π, ambiguous Y direction) are refused
-        // here instead of silently picking a branch (§10.2, GATE-A).
-        if (Math.Abs(sinA) < 1e-9)
+        // Degenerate arcs: near-coincident contacts (a ≈ 0) are always refused;
+        // near-antipodal ones (a ≈ ±π, ambiguous Y direction) are refused when
+        // no continuity witness is available (§10.2, GATE-A).
+        if (Math.Abs(sinA) < 1e-9 && (cosA >= 0 || !double.IsFinite(previousArc)))
             return AlgorithmStatus.Singular;
+
+        if (double.IsFinite(previousArc))
+            arc += 2 * Math.PI * Math.Round((previousArc - arc) / (2 * Math.PI));
+
         x = startX;
         y = yCandidate;
         return double.IsFinite(arc) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
+    }
+
+    /// <summary>
+    /// Analytically propagate the spine D0..D3 and contact D0..D2 jets into a
+    /// complete <see cref="BlendFrameInput"/> (X, XD1, XD2, Y, YD1, YD2, Arc,
+    /// ArcD1, ArcD2) by the chain rule (§10.2–§10.3), without finite differencing.
+    /// </summary>
+    internal static AlgorithmStatus TryBuildFrameJet(
+        in KernelVector3 spine, in KernelVector3 spineD1, in KernelVector3 spineD2,
+        in KernelVector3 contactStart, in KernelVector3 contactStartD1, in KernelVector3 contactStartD2,
+        in KernelVector3 contactEnd, in KernelVector3 contactEndD1, in KernelVector3 contactEndD2,
+        double radius, out BlendFrameInput frame, double previousArc = double.NaN)
+        => TryBuildFrameJet(
+            in spine, in spineD1, in spineD2, default,
+            in contactStart, in contactStartD1, in contactStartD2,
+            in contactEnd, in contactEndD1, in contactEndD2,
+            radius, out frame, previousArc);
+
+    /// <summary>
+    /// Analytically propagate the spine D0..D3 (including <paramref name="spineD3"/>
+    /// for <c>Y''</c> when the spine torsion/curvature varies) and contact D0..D2
+    /// jets into a complete <see cref="BlendFrameInput"/> (§10.2–§10.3).
+    /// </summary>
+    internal static AlgorithmStatus TryBuildFrameJet(
+        in KernelVector3 spine, in KernelVector3 spineD1, in KernelVector3 spineD2, in KernelVector3 spineD3,
+        in KernelVector3 contactStart, in KernelVector3 contactStartD1, in KernelVector3 contactStartD2,
+        in KernelVector3 contactEnd, in KernelVector3 contactEndD1, in KernelVector3 contactEndD2,
+        double radius, out BlendFrameInput frame, double previousArc = double.NaN)
+    {
+        frame = default;
+        var status = TryBuildFrame(
+            in spine, in spineD1, in contactStart, in contactEnd, radius,
+            out var x, out var y, out var arc, previousArc);
+        if (status != AlgorithmStatus.Success)
+            return status;
+        if (!IsFinite(spineD2) || !IsFinite(spineD3)
+            || !IsFinite(contactStartD1) || !IsFinite(contactStartD2)
+            || !IsFinite(contactEndD1) || !IsFinite(contactEndD2))
+            return AlgorithmStatus.InvalidInput;
+
+        var invR = 1 / radius;
+        var xD1 = Scale(Sub(contactStartD1, spineD1), invR);
+        var xD2 = Scale(Sub(contactStartD2, spineD2), invR);
+
+        var endX = Scale(Sub(contactEnd, spine), invR);
+        var endXD1 = Scale(Sub(contactEndD1, spineD1), invR);
+        var endXD2 = Scale(Sub(contactEndD2, spineD2), invR);
+
+        // W = C' × X, W' = C'' × X + C' × X', W'' = C''' × X + 2(C'' × X') + C' × X''.
+        var wVec = Cross(spineD1, x);
+        var wNorm = Math.Sqrt(Dot(wVec, wVec));
+        if (!(wNorm > 1e-15) || !double.IsFinite(wNorm))
+            return AlgorithmStatus.Singular;
+        var invW = 1 / wNorm;
+        var wD1 = Add(Cross(spineD2, x), Cross(spineD1, xD1));
+        var wD2 = Add(Add(Cross(spineD3, x), Scale(Cross(spineD2, xD1), 2)), Cross(spineD1, xD2));
+
+        var yDotWD1 = Dot(y, wD1);
+        var yD1 = Scale(Sub(wD1, Scale(y, yDotWD1)), invW);
+        var yDotWD2 = Dot(y, wD2);
+        var yD1DotWD1 = Dot(yD1, wD1);
+        var yD2 = Scale(
+            Sub(Sub(wD2, Scale(y, yDotWD2 + yD1DotWD1)), Scale(yD1, 2 * yDotWD1)),
+            invW);
+
+        // c = X_end · X, s = X_end · Y, and their first/second u-derivatives.
+        var c = Dot(endX, x);
+        var cD1 = Dot(endXD1, x) + Dot(endX, xD1);
+        var cD2 = Dot(endXD2, x) + 2 * Dot(endXD1, xD1) + Dot(endX, xD2);
+
+        var s = Dot(endX, y);
+        var sD1 = Dot(endXD1, y) + Dot(endX, yD1);
+        var sD2 = Dot(endXD2, y) + 2 * Dot(endXD1, yD1) + Dot(endX, yD2);
+
+        var rho2 = c * c + s * s;
+        if (!(rho2 > 1e-18) || !double.IsFinite(rho2))
+            return AlgorithmStatus.Singular;
+        var arcD1 = (c * sD1 - s * cD1) / rho2;
+        var arcD2 = ((c * sD2 - s * cD2) - 2 * (c * cD1 + s * sD1) * arcD1) / rho2;
+        if (!IsFinite(xD1) || !IsFinite(xD2) || !IsFinite(yD1) || !IsFinite(yD2)
+            || !double.IsFinite(arcD1) || !double.IsFinite(arcD2))
+            return AlgorithmStatus.NumericalFailure;
+
+        frame = new BlendFrameInput(
+            in spine, in spineD1, in spineD2,
+            in x, in xD1, in xD2,
+            in y, in yD1, in yD2,
+            arc, arcD1, arcD2, radius);
+        return AlgorithmStatus.Success;
     }
 
     /// <summary>
