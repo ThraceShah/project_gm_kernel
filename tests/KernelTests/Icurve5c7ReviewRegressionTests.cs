@@ -86,4 +86,42 @@ public class Icurve5c7ReviewRegressionTests
             in x, in c, in origin, in a, Math.PI / 2, out var angle));
         Assert.InRange(Math.Abs(angle - Math.PI / 2), 0, 1e-12);
     }
+
+    [Theory]
+    [InlineData(1125899906842624.0, 1.0, true)]   // 2^50, radius 5: 3*S-4 and 4*S+3 are exact in binary64, ulp(local) ~ 1
+    [InlineData(1125899906842624.0, 1.0, false)]
+    [InlineData(4503599627370496.0, 4.0, true)]   // 2^52, radius 20: 3*S-16 and 4*S+12 are exact in binary64, ulp(local) ~ 4
+    [InlineData(4503599627370496.0, 4.0, false)]
+    public void Spun_GlobalTranslationAlongTiltedAxis_DoesNotFalselyReject(
+        double shift, double radialScale, bool axisPointAtOrigin)
+    {
+        // Geometry (point, profile) is located far from the origin along the tilted axis A=(3,4,0)
+        // at (3*shift, 4*shift, 0), where ulp(localAxisPoint) is O(1) while every input coordinate
+        // is 100% exact in IEEE 754 binary64.
+        // Whether axisPoint is right next to the geometry (t = 0) or at the origin (t = shift),
+        // the FMA rounding error is zero and the evaluation must succeed without false rejection.
+        var point = Vector(3 * shift, 4 * shift, 5 * radialScale);
+        var profile = Vector(3 * shift - 4 * radialScale, 4 * shift + 3 * radialScale, 0);
+        var axisPoint = axisPointAtOrigin
+            ? Vector(0, 0, 0)
+            : Vector(3 * shift, 4 * shift, 0);
+
+        var status = SweptSpunImplicit.SpunConstraints(
+            in point, in profile, in Axis, in axisPoint, in Axis,
+            out var axial, out var radial, out var axialGradient,
+            out var radialGradient, out var axialDu, out var radialDu);
+
+        Assert.Equal(AlgorithmStatus.Success, status);
+        Assert.InRange(Math.Abs(axial), 0, 1e-12);
+        Assert.InRange(Math.Abs(radial), 0, 1e-10);
+        Assert.InRange(Math.Abs(axialGradient.X - 0.6), 0, 1e-14);
+        Assert.InRange(Math.Abs(axialGradient.Y - 0.8), 0, 1e-14);
+        Assert.InRange(Math.Abs(radialGradient.Z - 10 * radialScale), 0, 1e-10);
+        Assert.InRange(Math.Abs(axialDu + 5), 0, 1e-12);
+        Assert.InRange(Math.Abs(radialDu), 0, 1e-10);
+
+        Assert.True(SweptSpunImplicit.TryRecoverSpunAngle(
+            in point, in profile, in axisPoint, in Axis, Math.PI / 2, out var angle));
+        Assert.InRange(Math.Abs(angle - Math.PI / 2), 0, 1e-10);
+    }
 }
