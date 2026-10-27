@@ -44,9 +44,9 @@ internal readonly struct IntervalBox3
 }
 
 /// <summary>
-/// Interval-root infrastructure for analytic supports (spec §18.3–§18.4).
-/// Strict certificates remain disabled until center residuals, inverses and
-/// analytic Jacobian bounds are outward-enclosed end to end.
+/// Interval-root infrastructure for analytic supports (spec §18.3–§18.4, task T18).
+/// Center residuals, analytic Jacobian enclosures and Krawczyk image evaluations
+/// are outward-rounded end to end.
 /// </summary>
 internal static class IntervalRootCheck
 {
@@ -62,11 +62,112 @@ internal static class IntervalRootCheck
         status = IntervalRootStatus.BoundsUnavailable;
         image = default;
         if (box.IsEmpty) return AlgorithmStatus.InvalidInput;
-        // The center residual, inverse, center correction and several analytic
-        // gradient bounds are still evaluated in ordinary binary64. Outward
-        // rounding only the later matrix products cannot recover error already
-        // lost there, so Empty/Unique would not be rigorous certificates.
-        return AlgorithmStatus.Unsupported;
+        if (!IsFinite(chordUnit) || !double.IsFinite(planeOffset)) return AlgorithmStatus.InvalidInput;
+        if (!IsIntervalCapable(in support0) || !IsIntervalCapable(in support1))
+            return AlgorithmStatus.Unsupported;
+
+        box.Midpoint(out var rawMid);
+        var mid = Vector(
+            Math.Clamp(rawMid.X, box.XLo, box.XHi),
+            Math.Clamp(rawMid.Y, box.YLo, box.YHi),
+            Math.Clamp(rawMid.Z, box.ZLo, box.ZHi));
+        if (!IsFinite(mid)) return AlgorithmStatus.InvalidInput;
+
+        // 1. Outward-rounded interval residual [F](x0) and point Jacobian J(x0) at midpoint.
+        Span<double> fLo = stackalloc double[3];
+        Span<double> fHi = stackalloc double[3];
+        Span<double> jMid = stackalloc double[9];
+        var centerStatus = IntervalPointResidualAndJacobian(
+            in support0, in support1, in chordUnit, planeOffset, in mid, fLo, fHi, jMid);
+        if (centerStatus != AlgorithmStatus.Success)
+            return centerStatus;
+
+        // 2. Outward-rounded interval Jacobian [J](X) over the entire box (with sheet guards).
+        Span<double> jLo = stackalloc double[9];
+        Span<double> jHi = stackalloc double[9];
+        var jacStatus = IntervalJacobian(in support0, in support1, in chordUnit, in box, jLo, jHi);
+        if (jacStatus != AlgorithmStatus.Success)
+            return jacStatus;
+
+        // 3. Preconditioner Y ≈ J(x0)^(-1). If J(x0) is singular, Krawczyk is undetermined.
+        Span<double> y = stackalloc double[9];
+        if (!TryInvert3(jMid, y))
+        {
+            status = IntervalRootStatus.Undetermined;
+            image = box;
+            return AlgorithmStatus.Success;
+        }
+
+        // 4. Outward-rounded center term c = x0 − Y·[F](x0).
+        var fVecLo = Vector(fLo[0], fLo[1], fLo[2]);
+        var fVecHi = Vector(fHi[0], fHi[1], fHi[2]);
+        IntervalMatVec(y, y, in fVecLo, in fVecHi, out var yfLo, out var yfHi);
+        var cLo = Vector(
+            OutwardSubLo(mid.X, yfHi.X),
+            OutwardSubLo(mid.Y, yfHi.Y),
+            OutwardSubLo(mid.Z, yfHi.Z));
+        var cHi = Vector(
+            OutwardSubHi(mid.X, yfLo.X),
+            OutwardSubHi(mid.Y, yfLo.Y),
+            OutwardSubHi(mid.Z, yfLo.Z));
+
+        // 5. Outward-rounded contraction matrix [M] = I − Y·[J](X) and infinity-norm bound.
+        Span<double> mLo = stackalloc double[9];
+        Span<double> mHi = stackalloc double[9];
+        var maxRowSum = 0.0;
+        for (BufferOffset r = 0; r < 3; r++)
+        {
+            var rowSum = 0.0;
+            for (BufferOffset c = 0; c < 3; c++)
+            {
+                var (prodLo, prodHi) = MatMulIntervalRowCol(y, r, jLo, jHi, c);
+                var ident = r == c ? 1.0 : 0.0;
+                var entryLo = OutwardSubLo(ident, prodHi);
+                var entryHi = OutwardSubHi(ident, prodLo);
+                if (entryLo > entryHi) (entryLo, entryHi) = (entryHi, entryLo);
+                mLo[r * 3 + c] = entryLo;
+                mHi[r * 3 + c] = entryHi;
+                var absEntry = Math.Max(Math.Abs(entryLo), Math.Abs(entryHi));
+                rowSum = OutwardAddHi(rowSum, absEntry);
+            }
+            if (rowSum > maxRowSum) maxRowSum = rowSum;
+        }
+
+        // 6. Outward-rounded centered box D = X − x0 and Krawczyk image K(X) = c + [M]·D.
+        var dLo = Vector(
+            OutwardSubLo(box.XLo, mid.X),
+            OutwardSubLo(box.YLo, mid.Y),
+            OutwardSubLo(box.ZLo, mid.Z));
+        var dHi = Vector(
+            OutwardSubHi(box.XHi, mid.X),
+            OutwardSubHi(box.YHi, mid.Y),
+            OutwardSubHi(box.ZHi, mid.Z));
+        IntervalMatVec(mLo, mHi, in dLo, in dHi, out var mdLo, out var mdHi);
+
+        image = Normalize(new IntervalBox3(
+            OutwardAddLo(cLo.X, mdLo.X), OutwardAddHi(cHi.X, mdHi.X),
+            OutwardAddLo(cLo.Y, mdLo.Y), OutwardAddHi(cHi.Y, mdHi.Y),
+            OutwardAddLo(cLo.Z, mdLo.Z), OutwardAddHi(cHi.Z, mdHi.Z)));
+        if (!double.IsFinite(image.XLo) || !double.IsFinite(image.XHi)
+            || !double.IsFinite(image.YLo) || !double.IsFinite(image.YHi)
+            || !double.IsFinite(image.ZLo) || !double.IsFinite(image.ZHi))
+        {
+            status = IntervalRootStatus.Undetermined;
+            return AlgorithmStatus.Success;
+        }
+
+        if (Disjoint(in image, in box))
+        {
+            status = IntervalRootStatus.Empty;
+            return AlgorithmStatus.Success;
+        }
+        if (StrictlyInside(in image, in box) && maxRowSum < 1.0)
+        {
+            status = IntervalRootStatus.Unique;
+            return AlgorithmStatus.Success;
+        }
+        status = IntervalRootStatus.Undetermined;
+        return AlgorithmStatus.Success;
     }
 
     /// <summary>
@@ -125,20 +226,159 @@ internal static class IntervalRootCheck
             _ => false,
         };
 
-    private static AlgorithmStatus PointResidual(in AnalyticSurface s0, in AnalyticSurface s1,
+    private static AlgorithmStatus IntervalPointResidualAndJacobian(in AnalyticSurface s0, in AnalyticSurface s1,
         in KernelVector3 chordUnit, double planeOffset, in KernelVector3 x,
-        Span<double> f, Span<double> jacobian)
+        Span<double> fLo, Span<double> fHi, Span<double> jacobian)
     {
         if (AnalyticImplicitEvaluation.Evaluate(in s0, in x, 1, out var j0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in s1, in x, 1, out var j1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
-        f[0] = j0.Value;
-        f[1] = j1.Value;
-        f[2] = Dot(chordUnit, x) - planeOffset;
+        if (IntervalSurfaceResidual(in s0, in x, out fLo[0], out fHi[0]) != AlgorithmStatus.Success
+            || IntervalSurfaceResidual(in s1, in x, out fLo[1], out fHi[1]) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+
+        var (exLo, exHi) = MulScalarInterval(chordUnit.X, x.X, x.X);
+        var (eyLo, eyHi) = MulScalarInterval(chordUnit.Y, x.Y, x.Y);
+        var (ezLo, ezHi) = MulScalarInterval(chordUnit.Z, x.Z, x.Z);
+        var dotLo = OutwardAddLo(OutwardAddLo(exLo, eyLo), ezLo);
+        var dotHi = OutwardAddHi(OutwardAddHi(exHi, eyHi), ezHi);
+        fLo[2] = OutwardSubLo(dotLo, planeOffset);
+        fHi[2] = OutwardSubHi(dotHi, planeOffset);
+        if (fLo[2] > fHi[2]) (fLo[2], fHi[2]) = (fHi[2], fLo[2]);
+
         jacobian[0] = j0.Gradient.X; jacobian[1] = j0.Gradient.Y; jacobian[2] = j0.Gradient.Z;
         jacobian[3] = j1.Gradient.X; jacobian[4] = j1.Gradient.Y; jacobian[5] = j1.Gradient.Z;
         jacobian[6] = chordUnit.X; jacobian[7] = chordUnit.Y; jacobian[8] = chordUnit.Z;
         return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus IntervalSurfaceResidual(in AnalyticSurface surface, in KernelVector3 x,
+        out double valLo, out double valHi)
+    {
+        valLo = valHi = 0;
+        var rxLo = OutwardSubLo(x.X, surface.Origin.X); var rxHi = OutwardSubHi(x.X, surface.Origin.X);
+        var ryLo = OutwardSubLo(x.Y, surface.Origin.Y); var ryHi = OutwardSubHi(x.Y, surface.Origin.Y);
+        var rzLo = OutwardSubLo(x.Z, surface.Origin.Z); var rzHi = OutwardSubHi(x.Z, surface.Origin.Z);
+
+        switch (surface.Kind)
+        {
+            case SurfaceClass.Plane:
+            {
+                var (pxLo, pxHi) = MulScalarInterval(surface.Axis.X, rxLo, rxHi);
+                var (pyLo, pyHi) = MulScalarInterval(surface.Axis.Y, ryLo, ryHi);
+                var (pzLo, pzHi) = MulScalarInterval(surface.Axis.Z, rzLo, rzHi);
+                valLo = OutwardAddLo(OutwardAddLo(pxLo, pyLo), pzLo);
+                valHi = OutwardAddHi(OutwardAddHi(pxHi, pyHi), pzHi);
+                if (valLo > valHi) (valLo, valHi) = (valHi, valLo);
+                return AlgorithmStatus.Success;
+            }
+            case SurfaceClass.Sphere:
+            {
+                var (sxLo, sxHi) = SquareInterval(rxLo, rxHi);
+                var (syLo, syHi) = SquareInterval(ryLo, ryHi);
+                var (szLo, szHi) = SquareInterval(rzLo, rzHi);
+                var (r2Lo, r2Hi) = SquareInterval(surface.Radius, surface.Radius);
+                var sumLo = OutwardAddLo(OutwardAddLo(sxLo, syLo), szLo);
+                var sumHi = OutwardAddHi(OutwardAddHi(sxHi, syHi), szHi);
+                valLo = OutwardSubLo(sumLo, r2Hi);
+                valHi = OutwardSubHi(sumHi, r2Lo);
+                if (valLo > valHi) (valLo, valHi) = (valHi, valLo);
+                return AlgorithmStatus.Success;
+            }
+            case SurfaceClass.Cylinder:
+            {
+                IntervalAxialAndRadial(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
+                    out _, out _, out var radXLo, out var radXHi, out var radYLo, out var radYHi, out var radZLo, out var radZHi);
+                var (sxLo, sxHi) = SquareInterval(radXLo, radXHi);
+                var (syLo, syHi) = SquareInterval(radYLo, radYHi);
+                var (szLo, szHi) = SquareInterval(radZLo, radZHi);
+                var (r2Lo, r2Hi) = SquareInterval(surface.Radius, surface.Radius);
+                var sumLo = OutwardAddLo(OutwardAddLo(sxLo, syLo), szLo);
+                var sumHi = OutwardAddHi(OutwardAddHi(sxHi, syHi), szHi);
+                valLo = OutwardSubLo(sumLo, r2Hi);
+                valHi = OutwardSubHi(sumHi, r2Lo);
+                if (valLo > valHi) (valLo, valHi) = (valHi, valLo);
+                return AlgorithmStatus.Success;
+            }
+            case SurfaceClass.Cone:
+            {
+                IntervalAxialAndRadial(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
+                    out var axialLo, out var axialHi,
+                    out var radXLo, out var radXHi, out var radYLo, out var radYHi, out var radZLo, out var radZHi);
+                var (kzLo, kzHi) = MulScalarInterval(surface.Secondary, axialLo, axialHi);
+                var genLo = OutwardAddLo(surface.Radius, kzLo);
+                var genHi = OutwardAddHi(surface.Radius, kzHi);
+                if (genLo > genHi) (genLo, genHi) = (genHi, genLo);
+                if (genLo < 0) return AlgorithmStatus.Unsupported;
+                var (sxLo, sxHi) = SquareInterval(radXLo, radXHi);
+                var (syLo, syHi) = SquareInterval(radYLo, radYHi);
+                var (szLo, szHi) = SquareInterval(radZLo, radZHi);
+                var (g2Lo, g2Hi) = SquareInterval(genLo, genHi);
+                var sumLo = OutwardAddLo(OutwardAddLo(sxLo, syLo), szLo);
+                var sumHi = OutwardAddHi(OutwardAddHi(sxHi, syHi), szHi);
+                valLo = OutwardSubLo(sumLo, g2Hi);
+                valHi = OutwardSubHi(sumHi, g2Lo);
+                if (valLo > valHi) (valLo, valHi) = (valHi, valLo);
+                return AlgorithmStatus.Success;
+            }
+            case SurfaceClass.Torus:
+            {
+                var a = surface.Radius;
+                var b = surface.Secondary;
+                if (!(a > b) || !(b > 0)) return AlgorithmStatus.Unsupported;
+                IntervalAxialAndRadial(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
+                    out _, out _, out var radXLo, out var radXHi, out var radYLo, out var radYHi, out var radZLo, out var radZHi);
+                var (qxLo, qxHi) = SquareInterval(rxLo, rxHi);
+                var (qyLo, qyHi) = SquareInterval(ryLo, ryHi);
+                var (qzLo, qzHi) = SquareInterval(rzLo, rzHi);
+                var qLo = OutwardAddLo(OutwardAddLo(qxLo, qyLo), qzLo);
+                var qHi = OutwardAddHi(OutwardAddHi(qxHi, qyHi), qzHi);
+                var (a2Lo, a2Hi) = SquareInterval(a, a);
+                var (b2Lo, b2Hi) = SquareInterval(b, b);
+                var shiftLo = OutwardSubLo(a2Lo, b2Hi);
+                var shiftHi = OutwardSubHi(a2Hi, b2Lo);
+                var cLo = OutwardAddLo(qLo, shiftLo);
+                var cHi = OutwardAddHi(qHi, shiftHi);
+                var (c2Lo, c2Hi) = SquareInterval(cLo, cHi);
+                var (rx2Lo, rx2Hi) = SquareInterval(radXLo, radXHi);
+                var (ry2Lo, ry2Hi) = SquareInterval(radYLo, radYHi);
+                var (rz2Lo, rz2Hi) = SquareInterval(radZLo, radZHi);
+                var rho2Lo = OutwardAddLo(OutwardAddLo(rx2Lo, ry2Lo), rz2Lo);
+                var rho2Hi = OutwardAddHi(OutwardAddHi(rx2Hi, ry2Hi), rz2Hi);
+                var (fourA2Lo, fourA2Hi) = MulScalarInterval(4.0, a2Lo, a2Hi);
+                var (subLo, subHi) = MulInterval(fourA2Lo, fourA2Hi, rho2Lo, rho2Hi);
+                valLo = OutwardSubLo(c2Lo, subHi);
+                valHi = OutwardSubHi(c2Hi, subLo);
+                if (valLo > valHi) (valLo, valHi) = (valHi, valLo);
+                return AlgorithmStatus.Success;
+            }
+            default:
+                return AlgorithmStatus.Unsupported;
+        }
+    }
+
+    private static void IntervalAxialAndRadial(in AnalyticSurface surface,
+        double rxLo, double rxHi, double ryLo, double ryHi, double rzLo, double rzHi,
+        out double axialLo, out double axialHi,
+        out double radXLo, out double radXHi, out double radYLo, out double radYHi, out double radZLo, out double radZHi)
+    {
+        var ax = surface.Axis.X; var ay = surface.Axis.Y; var az = surface.Axis.Z;
+        var (txLo, txHi) = MulScalarInterval(ax, rxLo, rxHi);
+        var (tyLo, tyHi) = MulScalarInterval(ay, ryLo, ryHi);
+        var (tzLo, tzHi) = MulScalarInterval(az, rzLo, rzHi);
+        axialLo = OutwardAddLo(OutwardAddLo(txLo, tyLo), tzLo);
+        axialHi = OutwardAddHi(OutwardAddHi(txHi, tyHi), tzHi);
+        if (axialLo > axialHi) (axialLo, axialHi) = (axialHi, axialLo);
+
+        var (axAxLo, axAxHi) = MulScalarInterval(ax, axialLo, axialHi);
+        var (ayAxLo, ayAxHi) = MulScalarInterval(ay, axialLo, axialHi);
+        var (azAxLo, azAxHi) = MulScalarInterval(az, axialLo, axialHi);
+        radXLo = OutwardSubLo(rxLo, axAxHi); radXHi = OutwardSubHi(rxHi, axAxLo);
+        radYLo = OutwardSubLo(ryLo, ayAxHi); radYHi = OutwardSubHi(ryHi, ayAxLo);
+        radZLo = OutwardSubLo(rzLo, azAxHi); radZHi = OutwardSubHi(rzHi, azAxLo);
+        if (radXLo > radXHi) (radXLo, radXHi) = (radXHi, radXLo);
+        if (radYLo > radYHi) (radYLo, radYHi) = (radYHi, radYLo);
+        if (radZLo > radZHi) (radZLo, radZHi) = (radZHi, radZLo);
     }
 
     private static bool TryInvert3(ReadOnlySpan<double> a, Span<double> inverse)
@@ -185,6 +425,9 @@ internal static class IntervalRootCheck
         out KernelVector3 gLo, out KernelVector3 gHi)
     {
         gLo = gHi = default;
+        var rxLo = OutwardSubLo(box.XLo, surface.Origin.X); var rxHi = OutwardSubHi(box.XHi, surface.Origin.X);
+        var ryLo = OutwardSubLo(box.YLo, surface.Origin.Y); var ryHi = OutwardSubHi(box.YHi, surface.Origin.Y);
+        var rzLo = OutwardSubLo(box.ZLo, surface.Origin.Z); var rzHi = OutwardSubHi(box.ZHi, surface.Origin.Z);
         switch (surface.Kind)
         {
             case SurfaceClass.Plane:
@@ -192,76 +435,70 @@ internal static class IntervalRootCheck
                 return AlgorithmStatus.Success;
             case SurfaceClass.Sphere:
             {
-                var (xLo, xHi) = MulScalarInterval(2,
-                    OutwardSubLo(box.XLo, surface.Origin.X), OutwardSubHi(box.XHi, surface.Origin.X));
-                var (yLo, yHi) = MulScalarInterval(2,
-                    OutwardSubLo(box.YLo, surface.Origin.Y), OutwardSubHi(box.YHi, surface.Origin.Y));
-                var (zLo, zHi) = MulScalarInterval(2,
-                    OutwardSubLo(box.ZLo, surface.Origin.Z), OutwardSubHi(box.ZHi, surface.Origin.Z));
+                var (xLo, xHi) = MulScalarInterval(2, rxLo, rxHi);
+                var (yLo, yHi) = MulScalarInterval(2, ryLo, ryHi);
+                var (zLo, zHi) = MulScalarInterval(2, rzLo, rzHi);
                 gLo = Vector(xLo, yLo, zLo);
                 gHi = Vector(xHi, yHi, zHi);
                 return AlgorithmStatus.Success;
             }
             case SurfaceClass.Cylinder:
             {
-                gLo = Vector(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
-                gHi = Vector(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
-                for (var ix = 0; ix < 2; ix++)
-                for (var iy = 0; iy < 2; iy++)
-                for (var iz = 0; iz < 2; iz++)
-                {
-                    var p = Vector(ix == 0 ? box.XLo : box.XHi, iy == 0 ? box.YLo : box.YHi,
-                        iz == 0 ? box.ZLo : box.ZHi);
-                    var r = Sub(p, surface.Origin);
-                    var axial = Dot(surface.Axis, r);
-                    var radial = Scale(Sub(r, Scale(surface.Axis, axial)), 2);
-                    gLo = Vector(Math.Min(gLo.X, radial.X), Math.Min(gLo.Y, radial.Y), Math.Min(gLo.Z, radial.Z));
-                    gHi = Vector(Math.Max(gHi.X, radial.X), Math.Max(gHi.Y, radial.Y), Math.Max(gHi.Z, radial.Z));
-                }
-                gLo = Vector(OutwardDown(gLo.X), OutwardDown(gLo.Y), OutwardDown(gLo.Z));
-                gHi = Vector(OutwardUp(gHi.X), OutwardUp(gHi.Y), OutwardUp(gHi.Z));
+                IntervalAxialAndRadial(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
+                    out _, out _, out var radXLo, out var radXHi, out var radYLo, out var radYHi, out var radZLo, out var radZHi);
+                var (xLo, xHi) = MulScalarInterval(2, radXLo, radXHi);
+                var (yLo, yHi) = MulScalarInterval(2, radYLo, radYHi);
+                var (zLo, zHi) = MulScalarInterval(2, radZLo, radZHi);
+                gLo = Vector(xLo, yLo, zLo);
+                gHi = Vector(xHi, yHi, zHi);
                 return AlgorithmStatus.Success;
             }
             case SurfaceClass.Cone:
             {
-                // ∇φ = 2ρ⊥ − 2k(R + k z)A is affine in the box corners, so the
-                // componentwise range is attained at vertices (same enclosure
-                // style as the cylinder). Wrong-nappe rejection stays in the
-                // point residual path, not here.
-                gLo = Vector(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
-                gHi = Vector(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
+                IntervalAxialAndRadial(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
+                    out var axialLo, out var axialHi,
+                    out var radXLo, out var radXHi, out var radYLo, out var radYHi, out var radZLo, out var radZHi);
                 var k = surface.Secondary;
-                for (var ix = 0; ix < 2; ix++)
-                for (var iy = 0; iy < 2; iy++)
-                for (var iz = 0; iz < 2; iz++)
-                {
-                    var p = Vector(ix == 0 ? box.XLo : box.XHi, iy == 0 ? box.YLo : box.YHi,
-                        iz == 0 ? box.ZLo : box.ZHi);
-                    var r = Sub(p, surface.Origin);
-                    var axial = Dot(surface.Axis, r);
-                    var radial = Sub(r, Scale(surface.Axis, axial));
-                    var generator = surface.Radius + k * axial;
-                    var gradient = Sub(Scale(radial, 2), Scale(surface.Axis, 2 * k * generator));
-                    gLo = Vector(Math.Min(gLo.X, gradient.X), Math.Min(gLo.Y, gradient.Y), Math.Min(gLo.Z, gradient.Z));
-                    gHi = Vector(Math.Max(gHi.X, gradient.X), Math.Max(gHi.Y, gradient.Y), Math.Max(gHi.Z, gradient.Z));
-                }
-                gLo = Vector(OutwardDown(gLo.X), OutwardDown(gLo.Y), OutwardDown(gLo.Z));
-                gHi = Vector(OutwardUp(gHi.X), OutwardUp(gHi.Y), OutwardUp(gHi.Z));
+                var (kzLo, kzHi) = MulScalarInterval(k, axialLo, axialHi);
+                var genLo = OutwardAddLo(surface.Radius, kzLo);
+                var genHi = OutwardAddHi(surface.Radius, kzHi);
+                if (genLo > genHi) (genLo, genHi) = (genHi, genLo);
+                // Entire box must lie on the valid half-cone (R + k·z ≥ 0, §8.1 / §18.4).
+                if (genLo < 0) return AlgorithmStatus.Unsupported;
+
+                var (rx2Lo, rx2Hi) = MulScalarInterval(2, radXLo, radXHi);
+                var (ry2Lo, ry2Hi) = MulScalarInterval(2, radYLo, radYHi);
+                var (rz2Lo, rz2Hi) = MulScalarInterval(2, radZLo, radZHi);
+                var (twoKLo, twoKHi) = MulScalarInterval(2 * k, genLo, genHi);
+                var (axLo, axHi) = MulScalarInterval(surface.Axis.X, twoKLo, twoKHi);
+                var (ayLo, ayHi) = MulScalarInterval(surface.Axis.Y, twoKLo, twoKHi);
+                var (azLo, azHi) = MulScalarInterval(surface.Axis.Z, twoKLo, twoKHi);
+
+                gLo = Vector(
+                    Math.Min(OutwardSubLo(rx2Lo, axHi), OutwardSubHi(rx2Hi, axLo)),
+                    Math.Min(OutwardSubLo(ry2Lo, ayHi), OutwardSubHi(ry2Hi, ayLo)),
+                    Math.Min(OutwardSubLo(rz2Lo, azHi), OutwardSubHi(rz2Hi, azLo)));
+                gHi = Vector(
+                    Math.Max(OutwardSubLo(rx2Lo, axHi), OutwardSubHi(rx2Hi, axLo)),
+                    Math.Max(OutwardSubLo(ry2Lo, ayHi), OutwardSubHi(ry2Hi, ayLo)),
+                    Math.Max(OutwardSubLo(rz2Lo, azHi), OutwardSubHi(rz2Hi, azLo)));
                 return AlgorithmStatus.Success;
             }
             case SurfaceClass.Torus:
-                return TorusGradientRange(in surface, in box, out gLo, out gHi);
+                return TorusGradientRange(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi, out gLo, out gHi);
             default:
                 return AlgorithmStatus.Unsupported;
         }
     }
 
     /// <summary>
-    /// Natural interval extension of ∇φ = 4·common·r − 8a²·radial for the
-    /// algebraic torus residual (spec §8.1 / §18.4). Ring only (a &gt; b &gt; 0);
-    /// spindle/apple stay Unsupported. Sheet selection stays in the point path.
+    /// Outward-rounded interval enclosure of ∇φ = 4(q² − a² − b²)·r⊥ + 4(q² + a² − b²)·z·A
+    /// for the algebraic torus residual (spec §8.1 / §18.4). Ring only (a &gt; b &gt; 0);
+    /// spindle/apple stay Unsupported. Combining the r⊥ terms avoids the large
+    /// interval dependency cancellation between 4·common·r and 8a²·r⊥.
     /// </summary>
-    private static AlgorithmStatus TorusGradientRange(in AnalyticSurface surface, in IntervalBox3 box,
+    private static AlgorithmStatus TorusGradientRange(in AnalyticSurface surface,
+        double rxLo, double rxHi, double ryLo, double ryHi, double rzLo, double rzHi,
         out KernelVector3 gLo, out KernelVector3 gHi)
     {
         gLo = gHi = default;
@@ -269,58 +506,50 @@ internal static class IntervalRootCheck
         var b = surface.Secondary;
         if (!(a > b) || !(b > 0)) return AlgorithmStatus.Unsupported;
 
-        var rxLo = box.XLo - surface.Origin.X; var rxHi = box.XHi - surface.Origin.X;
-        var ryLo = box.YLo - surface.Origin.Y; var ryHi = box.YHi - surface.Origin.Y;
-        var rzLo = box.ZLo - surface.Origin.Z; var rzHi = box.ZHi - surface.Origin.Z;
-
         var (qxLo, qxHi) = SquareInterval(rxLo, rxHi);
         var (qyLo, qyHi) = SquareInterval(ryLo, ryHi);
         var (qzLo, qzHi) = SquareInterval(rzLo, rzHi);
         var qLo = OutwardAddLo(OutwardAddLo(qxLo, qyLo), qzLo);
         var qHi = OutwardAddHi(OutwardAddHi(qxHi, qyHi), qzHi);
 
-        var ax = surface.Axis.X; var ay = surface.Axis.Y; var az = surface.Axis.Z;
-        var (txLo, txHi) = MulScalarInterval(ax, rxLo, rxHi);
-        var (tyLo, tyHi) = MulScalarInterval(ay, ryLo, ryHi);
-        var (tzLo, tzHi) = MulScalarInterval(az, rzLo, rzHi);
-        var axialLo = OutwardAddLo(OutwardAddLo(txLo, tyLo), tzLo);
-        var axialHi = OutwardAddHi(OutwardAddHi(txHi, tyHi), tzHi);
+        IntervalAxialAndRadial(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
+            out var axialLo, out var axialHi,
+            out var radXLo, out var radXHi, out var radYLo, out var radYHi, out var radZLo, out var radZHi);
 
-        var (axAxLo, axAxHi) = MulScalarInterval(ax, axialLo, axialHi);
-        var (ayAxLo, ayAxHi) = MulScalarInterval(ay, axialLo, axialHi);
-        var (azAxLo, azAxHi) = MulScalarInterval(az, axialLo, axialHi);
-        var radXLo = OutwardSubLo(rxLo, axAxHi); var radXHi = OutwardSubHi(rxHi, axAxLo);
-        var radYLo = OutwardSubLo(ryLo, ayAxHi); var radYHi = OutwardSubHi(ryHi, ayAxLo);
-        var radZLo = OutwardSubLo(rzLo, azAxHi); var radZHi = OutwardSubHi(rzHi, azAxLo);
-        if (radXLo > radXHi) (radXLo, radXHi) = (radXHi, radXLo);
-        if (radYLo > radYHi) (radYLo, radYHi) = (radYHi, radYLo);
-        if (radZLo > radZHi) (radZLo, radZHi) = (radZHi, radZLo);
+        var (a2Lo, a2Hi) = SquareInterval(a, a);
+        var (b2Lo, b2Hi) = SquareInterval(b, b);
+        var sumAbLo = OutwardAddLo(a2Lo, b2Lo);
+        var sumAbHi = OutwardAddHi(a2Hi, b2Hi);
+        var diffAbLo = OutwardSubLo(a2Lo, b2Hi);
+        var diffAbHi = OutwardSubHi(a2Hi, b2Lo);
 
-        var commonShift = a * a - b * b;
-        var cLo = OutwardAddLo(qLo, commonShift);
-        var cHi = OutwardAddHi(qHi, commonShift);
+        // Radial factor: cRad = 4·(q² − a² − b²)
+        var cRadLo = OutwardSubLo(qLo, sumAbHi);
+        var cRadHi = OutwardSubHi(qHi, sumAbLo);
+        var (cRad4Lo, cRad4Hi) = MulScalarInterval(4, cRadLo, cRadHi);
 
-        // ∇φ = 4·common·r − 8a²·radial
-        var (cxLo, cxHi) = MulInterval(cLo, cHi, rxLo, rxHi);
-        var (cyLo, cyHi) = MulInterval(cLo, cHi, ryLo, ryHi);
-        var (czLo, czHi) = MulInterval(cLo, cHi, rzLo, rzHi);
-        var (rx4Lo, rx4Hi) = MulScalarInterval(4, cxLo, cxHi);
-        var (ry4Lo, ry4Hi) = MulScalarInterval(4, cyLo, cyHi);
-        var (rz4Lo, rz4Hi) = MulScalarInterval(4, czLo, czHi);
+        // Axial factor: cAx = 4·(q² + a² − b²)·z
+        var cAxBaseLo = OutwardAddLo(qLo, diffAbLo);
+        var cAxBaseHi = OutwardAddHi(qHi, diffAbHi);
+        var (cAxProdLo, cAxProdHi) = MulInterval(cAxBaseLo, cAxBaseHi, axialLo, axialHi);
+        var (cAx4Lo, cAx4Hi) = MulScalarInterval(4, cAxProdLo, cAxProdHi);
 
-        var eightA2 = 8 * a * a;
-        var (sxLo, sxHi) = MulScalarInterval(eightA2, radXLo, radXHi);
-        var (syLo, syHi) = MulScalarInterval(eightA2, radYLo, radYHi);
-        var (szLo, szHi) = MulScalarInterval(eightA2, radZLo, radZHi);
+        var (rxTermLo, rxTermHi) = MulInterval(cRad4Lo, cRad4Hi, radXLo, radXHi);
+        var (ryTermLo, ryTermHi) = MulInterval(cRad4Lo, cRad4Hi, radYLo, radYHi);
+        var (rzTermLo, rzTermHi) = MulInterval(cRad4Lo, cRad4Hi, radZLo, radZHi);
+
+        var (axTermLo, axTermHi) = MulScalarInterval(surface.Axis.X, cAx4Lo, cAx4Hi);
+        var (ayTermLo, ayTermHi) = MulScalarInterval(surface.Axis.Y, cAx4Lo, cAx4Hi);
+        var (azTermLo, azTermHi) = MulScalarInterval(surface.Axis.Z, cAx4Lo, cAx4Hi);
 
         gLo = Vector(
-            Math.Min(OutwardSubLo(rx4Lo, sxHi), OutwardSubHi(rx4Hi, sxLo)),
-            Math.Min(OutwardSubLo(ry4Lo, syHi), OutwardSubHi(ry4Hi, syLo)),
-            Math.Min(OutwardSubLo(rz4Lo, szHi), OutwardSubHi(rz4Hi, szLo)));
+            Math.Min(OutwardAddLo(rxTermLo, axTermLo), OutwardAddHi(rxTermHi, axTermHi)),
+            Math.Min(OutwardAddLo(ryTermLo, ayTermLo), OutwardAddHi(ryTermHi, ayTermHi)),
+            Math.Min(OutwardAddLo(rzTermLo, azTermLo), OutwardAddHi(rzTermHi, azTermHi)));
         gHi = Vector(
-            Math.Max(OutwardSubLo(rx4Lo, sxHi), OutwardSubHi(rx4Hi, sxLo)),
-            Math.Max(OutwardSubLo(ry4Lo, syHi), OutwardSubHi(ry4Hi, syLo)),
-            Math.Max(OutwardSubLo(rz4Lo, szHi), OutwardSubHi(rz4Hi, szLo)));
+            Math.Max(OutwardAddLo(rxTermLo, axTermLo), OutwardAddHi(rxTermHi, axTermHi)),
+            Math.Max(OutwardAddLo(ryTermLo, ayTermLo), OutwardAddHi(ryTermHi, ayTermHi)),
+            Math.Max(OutwardAddLo(rzTermLo, azTermLo), OutwardAddHi(rzTermHi, azTermHi)));
         return AlgorithmStatus.Success;
     }
 
