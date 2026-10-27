@@ -3,14 +3,14 @@
   "design_version": "2.0",
   "repository": "ThraceShah/project_gm_kernel",
   "baseline_commit": "5c645cdfc8a0cd8e3f6aac4c25de839653b4daf6",
-  "status": "implementation_not_started",
+  "status": "implemented_with_open_gates",
   "primary_spec": "icurve_blend_evaluation_spec.md",
   "task_count": 21,
   "tasks": [
     {
       "id": "T00",
       "title": "基线与兼容性审计",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [],
       "spec_sections": [
         "1",
@@ -36,7 +36,7 @@
     {
       "id": "T01",
       "title": "持久记录、source sense、构造面引用及池生命周期",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T00"
       ],
@@ -61,7 +61,7 @@
     {
       "id": "T02",
       "title": "INTERSECTION_DATA 解码与锚点数据",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T01"
       ],
@@ -87,7 +87,7 @@
     {
       "id": "T03",
       "title": "解析隐式、局部距离与 sheet guards",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T00"
       ],
@@ -111,7 +111,7 @@
     {
       "id": "T04",
       "title": "原始 chart 参数映射",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T02",
         "T03"
@@ -137,7 +137,7 @@
     {
       "id": "T05",
       "title": "小型线性代数与校正步骤",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T00"
       ],
@@ -162,7 +162,7 @@
     {
       "id": "T06",
       "title": "分支、seed、参数展开与连续性 cell",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T04"
       ],
@@ -188,7 +188,7 @@
     {
       "id": "T07",
       "title": "常规区间五类求解计划",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T03",
         "T04",
@@ -218,7 +218,7 @@
     {
       "id": "T08",
       "title": "D1/D2 与 jet 需求传播",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T07"
       ],
@@ -244,7 +244,7 @@
     {
       "id": "T09",
       "title": "操作内缓存与完整状态预测",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T07",
         "T08"
@@ -271,7 +271,7 @@
     {
       "id": "T10",
       "title": "跨调用缓存、版本与淘汰",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T01",
         "T09"
@@ -299,7 +299,7 @@
     {
       "id": "T11",
       "title": "一般曲面局部距离与 offset",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T03",
         "T05",
@@ -327,7 +327,7 @@
     {
       "id": "T12",
       "title": "常规 R blend 参数求值",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T08",
         "T11"
@@ -359,7 +359,7 @@
     {
       "id": "T13",
       "title": "Blend 包络与局部隐式",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T12"
       ],
@@ -386,7 +386,7 @@
     {
       "id": "T14",
       "title": "联合约束与 Schur 消元",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T09",
         "T13"
@@ -412,7 +412,7 @@
     {
       "id": "T15",
       "title": "BLEND_BOUND 距离组合与接触边界",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T11",
         "T12"
@@ -442,7 +442,7 @@
     {
       "id": "T16",
       "title": "Terminator 专用求值",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T04",
         "T05"
@@ -473,7 +473,7 @@
     {
       "id": "T17",
       "title": "诊断、延拓与局部细分",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T07",
         "T09",
@@ -502,7 +502,7 @@
     {
       "id": "T18",
       "title": "有界子集局部认证",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T03",
         "T17"
@@ -529,7 +529,7 @@
     {
       "id": "T19",
       "title": "Runtime/PK/XT/真实 oracle 集成",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T07",
         "T08",
@@ -570,7 +570,7 @@
     {
       "id": "T20",
       "title": "性能、内存与发布矩阵",
-      "status": "not_started",
+      "status": "completed",
       "depends_on": [
         "T10",
         "T17",

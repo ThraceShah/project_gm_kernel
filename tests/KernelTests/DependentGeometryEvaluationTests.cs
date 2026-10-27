@@ -356,11 +356,7 @@ public unsafe class DependentGeometryEvaluationTests : IDisposable
         var bsurfTag = CreateBSurface(1, 1, 2, 2, poles, [0, 1], [2, 2], [0, 1], [2, 2]);
         var surfRecord = KernelRuntime.GetSurfaceByTag(bsurfTag);
         ref readonly var data = ref KernelRuntime.BSurfaceDataStore[surfRecord.DataIndex];
-        var view = new BSurfaceView(
-            data.UDegree, data.VDegree, data.NUVertices, data.NVVertices,
-            data.VertexDim, data.IsRational != 0, data.IsUPeriodic != 0, data.IsVPeriodic != 0,
-            surfRecord.UMin, surfRecord.UMax, surfRecord.VMin, surfRecord.VMax,
-            data.PolesSpan(), data.UExpandedKnotsSpan(), data.VExpandedKnotsSpan());
+        var view = KernelRuntime.GetBSurfaceView(in data);
 
         Assert.True(BSurfaceEvaluation.IsInDomain(in view, 0.5, 0.5));
         Assert.False(BSurfaceEvaluation.IsInDomain(in view, -0.01, 0.5));

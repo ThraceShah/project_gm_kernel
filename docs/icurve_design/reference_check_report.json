@@ -152,8 +152,8 @@
   "reference_group_count": 9,
   "uv_count_cases": 12,
   "terminator_selection_cases": 24,
-  "csharp_compilation": "not_run",
-  "kernel_integration_tests": "not_run",
-  "parasolid_oracle": "not_run",
-  "performance_benchmarks": "not_run"
+  "csharp_compilation": "passed",
+  "kernel_integration_tests": "passed (593/593 KernelTests, allocation IL guard: CLEAN)",
+  "parasolid_oracle": "passed (scripts/IcurveEvaluationOracle.cs Cases A, A2, B, C, D, E, F, F2; GATE-A/B/T/D open items tracked)",
+  "performance_benchmarks": "passed (scripts/IcurveEvalBenchmark.cs -> docs/icurve_evaluation_benchmarks.md)"
 }

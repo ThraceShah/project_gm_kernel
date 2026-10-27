@@ -25,9 +25,9 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
-| 原始图表递推与弦平面投影 | §5 / Original chart | **生产已接入 + 真实 PK 兼容通过** | 节点位相同比较；归一化余弦递归计算；弦方向保留 |
-| 解析支持面正则区间求解 (I1/I2/Auto) | §7 / Analytic supports | **生产已接入 + 真实 PK 兼容通过** | Auto: 平面走 I1，其他解析面走 I2；Oracle Case F 真同参比较机器精度通过（$< 2\times 10^{-15}$），Case A/A2/E 经由几何反算，Case B/C 验证几何残差 |
-| 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中 |
+| 原始图表递推与弦平面投影 | §5 / Original chart | **生产已接入 + 真实 PK 兼容通过** | 节点位相同比较；归一化余弦递归计算；弦方向保留；保留并回写 `parameter_error[0..1]`；非均匀弦长图表（Case F2，$f_i / f_{i-1} \ne 1$）与真实 PK `PK_CURVE_ask_interval` / `PK_CURVE_eval` 机器精度一致（$|\Delta T_{\max}| = 1.78\times 10^{-15}$） |
+| 解析支持面正则区间求解 (I1/I2/Auto) | §7 / Analytic supports | **生产已接入 + 真实 PK 兼容通过** | Auto: 平面走 I1，其他解析面走 I2；Oracle Case F / F2 真同参比较机器精度通过（D0/D1/曲率 $|\Delta| \le 7.5\times 10^{-14}$），Case A/A2/E 经由几何反算，Case B/C 验证几何残差 |
+| 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中；`BSurfaceEvaluation.EvaluateInDomain` 显式拒绝越界参数避免线性延拓产生伪根 |
 | 节点与区间一侧导数 (D0–D2) | §16 / Knot evaluation | **生产已接入 + 制造解通过** | 显式传递 `ChartSide.Left` / `Right`；避免跨节点平均平滑 |
 | 诊断型 Auto 计划动态切换 | §7.7 / Stagnation | **生产已接入 + 制造解通过** | 仅在 Auto 模式下触发；强制计划绝不静默切换；记录 `PlanSwitched` |
 | 参数延拓 (Continuation) | §17.3 / Native parameter | **生产已接入 + 制造解通过** | 原生参数递增，步长受控，安全拒绝无分辨率步长与分支歧义，多 seed 后备受 SameLocalBranch 严格约束 |
@@ -39,16 +39,17 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 |---|---|---|---|
 | 分块 Schur 补求解 (BlockSchurSolve) | §11 / $nx+nz \le 8$ | **内部入口可用 + 制造解通过** | 工作区已扩展至 64 double；严格尺寸契约；$nz \ge 5$ 绝无越界崩溃 |
 | 单边 Hestenes-Jacobi SVD | §14.4 / SmallLinearSolve | **生产已接入 + 制造解通过** | 替代 $A^T A$ Gram 构造，避免小奇异值截断丢秩；引入矩阵 max-norm 尺度归一化与未收敛诊断；极值尺度 $10^{\pm 200}$ 测试通过 |
-| 小型线性方程组求解 (LU / QR / Cholesky) | $n \le 6$ | **生产已接入 + 制造解通过** | 行列选主元，无动态内存分配，完全 AOT 兼容 |
+| 小型线性方程组求解 (LU / QR / Cholesky) | $n \le 6$ | **生产已接入 + 制造解通过** | 行列选主元，无动态内存分配，完全 AOT 兼容；`TrustRegionStep.MaxSmallSystem = 6` 与 `SmallLinearSolve` 对齐 |
 | Trust-Region 狗腿步与冻结残差缩放 | §14.1 / §14.3 | **生产已接入 + 制造解通过** | 接受态残差与 Jacobian 尺度冻结，试探步复用，严格单调下降 |
+| 局部根区间认证 (IntervalRootCheck / Krawczyk) | §18.3 / §18.4 | **生产已接入 + 制造解通过** | `TryCertifyI3` 实现全链路向外舍入区间算术：覆盖中心残差 $[F](x_0)$、平面/球/柱/锥/环面的精确区间梯度范围 `GradientRange`、圆锥盒 $X$ 全域单叶校验 $R+kz_{\rm lo}\ge 0$ 及环面降相关性展开，明确区分 `CertifiedUniqueRoot` / `CertifiedNoRoot` / `Inconclusive` / `BoundsUnavailable` |
 | 嵌套精度自适应 ($\eta_k$ / InnerAccuracyInsufficient) | §15 / Nested budget | **扩展点 / 内部机制** | 已实现重算与半径收缩分支，但在纯解析主线上解析求值无子容差需求，属于等价操作 |
 
 ### 3. 缓存与多 Seed 架构 (Caching & Multi-Seed)
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
-| L1/L2/L3 三级几何求值缓存 | §13 / Session & Op | **生产已接入 + 制造解通过** | 键包含 Tag/Gen/Side/Plan/Epoch；CLOCK 淘汰；Bit-exact 查中；Left/Right 侧向全生命周期一致 |
-| 辅助状态载荷 (SampleWitness) | §13.2 / L2/L3 payload | **内部入口可用 + 制造解通过** | `SampleWitness` 按值嵌入 `CurveSample`，无动态借用；UV/Spine 读写测试通过；数据载荷就绪，生产求值暂传 None，消费管线待接通 |
+| L0/L1/L2/L3 四级几何求值缓存 | §13 / Session & Op | **生产已接入 + 制造解通过** | L0 `ResidualMemo` 在 `ICurveCorrection.Refine` 内接入完整参数态试探步去重；L2/L3 键包含 Tag/Gen/Side/Plan/Epoch；CLOCK 淘汰；Bit-exact 查中；Left/Right 侧向全生命周期一致 |
+| 辅助状态载荷 (SampleWitness) | §13.2 / L2/L3 payload | **生产已接入 + 制造解通过** | `SampleWitness` 按值嵌入 `CurveSample`，无动态借用；在 `ICurveEvaluation` 与 `GeometryEvaluationCache.EvaluateICurveThroughL3` 中自动恢复双支持面 UV 见证并在 L2/L3 间持久传递，支持下游 `BlendContactFrame.FromWitness` 零投影恢复接触点 |
 | 多 Seed 确定性排序 (ICurveMultiSeed) | §13.6 / T09 | **生产已接入 + 制造解通过** | 已接入 `SubdivideTo` 恢复路径；对参数无分辨率/超预算/分支歧义安全拒绝，候选根经 `SameLocalBranch` 校验同分支后方可采纳 |
 | 预测种子 (PredictedOnly Hermite) | §13.4 / L2 seeds | **生产已接入 + 制造解通过** | 仅用作 Corrector 初值，绝不冒充 Exact Hit 发布 |
 
@@ -56,12 +57,14 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
-| Terminator 1-面 / 2-平面区间构造 | §6 / TerminatorAnchor | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 导数在根点求值；正交双平面方程对；以分支点 $B$ 切向一阶预测初始化 $\mu$ 并校验分支位移，杜绝跨分支跳跃；受 GATE-T 隔离 |
-| Terminator 参数化 2×2 求解 | §6.3 / SolveParametricTwoByTwo | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 求解弦向与法向两正交平面方程对，残差 $< 10^{-11}$；生产入口受 GATE-T 隔离 |
-| TerminatorBLendBound 选面 (p.49 规则) | §6.2 / SelectSupportSurface | **内部入口可用 + 受 GATE-B 限制** | 当前 `surface0IsBlendBound` 保持 false，待引入类型化 `SurfaceSupportRef` |
-| 滚动球 Blend 4×4 / 3×3 求解器 | §10.4 / BlendEnvelopeSolve | **内部入口可用 + 制造解通过 + 受 GATE-A 限制** | RV-TUBE 制造解收敛；$\S10.6$ `BlendArcBounds` 与 `TryValidateArc` 过滤伪装根，贯穿 `TryRecoverAfterLocalSingular` 恢复梯与 Joint 出口；目前仅支持 XY 平面圆 Spine 特例，一般 Spine 受限 |
+| Terminator 1-面 / 2-平面区间构造 | §6 / TerminatorAnchor | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 导数在根点求值；正交双平面方程对；以分支点 $B$ 切向（结合曲面 sense 与曲线 sense 定向）一阶预测初始化 $\mu$ 并按局部弦尺度校验分支位移；受 GATE-T 隔离 |
+| Terminator 参数化 2×2 求解 | §6.3 / SolveParametricTwoByTwo | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 求解弦向与法向两正交平面方程对，残差阈值按局部弦长与曲面尺度自适应缩放；生产入口受 GATE-T 隔离 |
+| Terminator 构造性支持面选面 (p.49 规则) | §6.2 / SelectSupportSurface | **内部入口可用 + 制造解通过 + 受 GATE-B 限制** | 已引入类型化 `SurfaceSupportRef`（区分 `PublicSurface` 与 `BlendBoundConstructive`）并接入 `ICurveView` 与 `TerminatorEvaluation.Prepare`；公开创建入口受 GATE-B 隔离 |
+| 滚动球 Blend 接触标架与解析链式 Jet | §10.2 / §10.3 / BlendContactFrame | **内部入口可用 + 制造解通过 + 受 GATE-A 限制** | 支持 `previousArc` 连续 $2\pi$ 周期展开及 `TryBuildFrameJet` 全解析一阶/二阶链式求导（无有限差分近似） |
+| 滚动球 Blend 4×4 / 3×3 求解器 | §10.4 / BlendEnvelopeSolve | **内部入口可用 + 制造解通过 + 受 GATE-A 限制** | RV-TUBE 制造解收敛；§10.6 `BlendArcBounds` 支持自定义截面参考轴与起止角过滤伪装根，贯穿 `TryRecoverAfterLocalSingular` 恢复梯与 Joint 出口 |
+| 扫掠/旋转面局部轴消元 (SweptSpunImplicit) | §9.4 / Swept & Spun | **内部入口可用 + 制造解通过** | 采用误差无损 FMA 补偿点积（`TryFmaWithResidual`）消除大坐标平移下的灾难性抵消，保持全局刚体平移不变性 |
 | Blend 联合求解残差装配 (JointBlendResidual) | §11.2 / Joint assembly | **内部入口可用 + 制造解通过** | 已检查支持面求值状态，失败面绝不静默置零，杜绝假收敛 |
-| 距离函数组合 (BlendBoundComposition) | §10.2 / Local distance | **内部入口可用 + 制造解通过 + 受 GATE-B 限制** | 球与圆柱 Hessian 轴向投影及三阶导数已修正并通过闭式制造解校验 |
+| 距离函数组合 (BlendBoundComposition) | §10.2 / Local distance | **内部入口可用 + 制造解通过 + 受 GATE-B 限制** | 提供强制校验 `DistanceGrade.Exact` 的类型化 `OrientedDistanceJet` 重载与全输入有限性守卫；球与圆柱 Hessian 轴向投影及三阶导数通过闭式制造解校验 |
 
 ### 5. 数据管线与 Parasolid 兼容性 (Pipeline & Oracle)
 
@@ -71,7 +74,7 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 | UV Null 语义与点容差解耦 | §19 / PrepareEvaluation | **生产已接入 + 真实 PK 兼容通过** | 仅成对允许 (NaN, NaN)；面点容差与 ChordalError 解耦 |
 | Sense 拓扑方向双向保持 | XT Schema / Records | **生产已接入 + 真实 PK 兼容通过** | 贯穿 Record / Binding / XT Parse / Writer，数据结构支持拓扑方向传递 |
 | Cone 轴向 XT/PK 约定 (Cone Axis Parity) | §8.3 / XT25 / SCH_37102 | **生产已接入 + 真实 PK 兼容通过** | 目标 build/schema (v380 / 37102) 上实测 XT 与 PK_CONE_ask 的 axis/ref 轴向不翻转、数值在指定容差 (1e-14) 内保持，当前实现保持既有约定；实测与早期 XT25 文档引文存在冲突，保留为持续跟踪的兼容性专项（见 `docs/reviews/cone_probe_evidence/`） |
-| Live Parasolid Receive / Eval 对比 (Case F) | Oracle Case F | **生产已接入 + 真实 PK 兼容通过** | 我方写出 XT 由真实 Parasolid 加载并在同参数求值，同参数 D0/D1 机器精度一致（$< 2\times 10^{-15}$），D2 主法向与曲率一致；原生 D2 向量切向差异持续跟踪并补充负向测试 |
+| Live Parasolid Receive / Eval 对比 (Case F / F2) | Oracle Case F & F2 | **生产已接入 + 真实 PK 兼容通过** | 我方写出均匀与非均匀弦长（$f_i/f_{i-1}\ne 1$）XT 由真实 Parasolid 加载并在同参数求值，区间上界 `TMax`、同参数 D0/D1 及 D2 主法向与曲率均达机器精度一致（$\le 7.5\times 10^{-14}$）；原生 D2 向量切向差异在 `GATE-D` 中跟踪 |
 
 ---
 
