@@ -279,4 +279,118 @@ public class BlendEvaluationTests
         Assert.False(BlendEvaluation.IsRegularConstruction(0, 0, 0));
         Assert.False(BlendEvaluation.IsRegularConstruction(double.NaN, 0.25, 0.25));
     }
+
+    [Fact]
+    public void TryBuildFrame_WithPreviousArcWitness_UnwrapsAcrossPiBranchCut()
+    {
+        var spine = Vector(0, 0, 0);
+        var tangent = Vector(0, 0, 1);
+        var contactStart = Vector(1, 0, 0);
+        var contactEndNearMinusPi = Vector(Math.Cos(-Math.PI + 0.02), Math.Sin(-Math.PI + 0.02), 0);
+
+        // Without witness, principal atan2 returns ≈ -π + 0.02.
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryBuildFrame(
+            in spine, in tangent, in contactStart, in contactEndNearMinusPi, 1.0,
+            out _, out _, out var principalArc));
+        Assert.InRange(principalArc, -Math.PI, -Math.PI + 0.05);
+
+        // With witness near +π - 0.02, unwraps to ≈ +π + 0.02 (+2π branch).
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryBuildFrame(
+            in spine, in tangent, in contactStart, in contactEndNearMinusPi, 1.0,
+            out _, out _, out var unwrappedArc, previousArc: Math.PI - 0.02));
+        Assert.Equal(principalArc + 2 * Math.PI, unwrappedArc, 12);
+
+        // Exact antipodal contact is accepted when a witness disambiguates the ±π branch.
+        var antipodalEnd = Vector(-1, 0, 0);
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryBuildFrame(
+            in spine, in tangent, in contactStart, in antipodalEnd, 1.0,
+            out _, out _, out var antipodalPlusPi, previousArc: Math.PI - 0.01));
+        Assert.Equal(Math.PI, antipodalPlusPi, 12);
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryBuildFrame(
+            in spine, in tangent, in contactStart, in antipodalEnd, 1.0,
+            out _, out _, out var antipodalMinusPi, previousArc: -Math.PI + 0.01));
+        Assert.Equal(-Math.PI, antipodalMinusPi, 12);
+    }
+
+    [Fact]
+    public void TryBuildFrameJet_PropagatesAnalyticalDerivativesForTwistedVariableArcSection()
+    {
+        // Helical spine C(u) = (2 cos u, 2 sin u, 0.5 u), radius r = 0.25.
+        // Construct start and end contacts in the normal plane of C'(u) with
+        // u-varying roll angle φ(u) = 0.3 u and u-varying arc angle a(u) = 1.1 + 0.2 sin(u)
+        // so X', X'', Y', Y'', a', a'' are all non-zero.
+        const double radius = 0.25;
+        static void EvalSection(
+            double u,
+            out KernelVector3 c, out KernelVector3 c1, out KernelVector3 c2, out KernelVector3 c3,
+            out KernelVector3 qStart, out KernelVector3 qEnd)
+        {
+            var (s, co) = Math.SinCos(u);
+            c = Vector(2 * co, 2 * s, 0.5 * u);
+            c1 = Vector(-2 * s, 2 * co, 0.5);
+            c2 = Vector(-2 * co, -2 * s, 0);
+            c3 = Vector(2 * s, -2 * co, 0);
+
+            // Orthonormal basis (N, B) of the normal plane orthogonal to C'(u):
+            // N(u) = (cos u, sin u, 0) is already orthogonal to C'(u)!
+            // B(u) = unit(C'(u) × N(u)) = (-0.5 sin u, 0.5 cos u, -2) / sqrt(4.25).
+            var n = Vector(co, s, 0);
+            var bScale = 1.0 / Math.Sqrt(4.25);
+            var b = Vector(-0.5 * s * bScale, 0.5 * co * bScale, -2.0 * bScale);
+
+            var phi = 0.3 * u;
+            var arc = 1.1 + 0.2 * Math.Sin(u);
+            var (sinPhi, cosPhi) = Math.SinCos(phi);
+            var (sinEnd, cosEnd) = Math.SinCos(phi + arc);
+
+            var xDir = Add(Scale(n, cosPhi), Scale(b, sinPhi));
+            // Note: Y = unit(C' × X). Since C' × N = sqrt(4.25) B and C' × B = -sqrt(4.25) N,
+            // unit(C' × (N cos φ + B sin φ)) = B cos φ - N sin φ, which is the derivative of xDir w.r.t. φ!
+            // Therefore X cos a + Y sin a = N cos(φ + a) + B sin(φ + a).
+            var endDir = Add(Scale(n, cosEnd), Scale(b, sinEnd));
+
+            qStart = Add(c, Scale(xDir, radius));
+            qEnd = Add(c, Scale(endDir, radius));
+        }
+
+        const double u0 = 0.6;
+        const double h = 1e-6;
+        EvalSection(u0, out var c, out var c1, out var c2, out var c3, out var qStart0, out var qEnd0);
+        EvalSection(u0 + h, out _, out _, out _, out _, out var qStartP, out var qEndP);
+        EvalSection(u0 - h, out _, out _, out _, out _, out var qStartM, out var qEndM);
+        EvalSection(u0 + 2 * h, out _, out _, out _, out _, out var qStartPP, out var qEndPP);
+        EvalSection(u0 - 2 * h, out _, out _, out _, out _, out var qStartMM, out var qEndMM);
+
+        // 4th-order central differences for the input contact curves Q_start(u), Q_end(u)
+        var qStartD1 = Scale(Sub(Scale(Sub(qStartP, qStartM), 8), Sub(qStartPP, qStartMM)), 1.0 / (12 * h));
+        var qEndD1 = Scale(Sub(Scale(Sub(qEndP, qEndM), 8), Sub(qEndPP, qEndMM)), 1.0 / (12 * h));
+        var qStartD2 = Scale(
+            Sub(Add(Scale(Add(qStartP, qStartM), 16), Scale(qStart0, -30)), Add(qStartPP, qStartMM)),
+            1.0 / (12 * h * h));
+        var qEndD2 = Scale(
+            Sub(Add(Scale(Add(qEndP, qEndM), 16), Scale(qEnd0, -30)), Add(qEndPP, qEndMM)),
+            1.0 / (12 * h * h));
+
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryBuildFrameJet(
+            in c, in c1, in c2, in c3,
+            in qStart0, in qStartD1, in qStartD2,
+            in qEnd0, in qEndD1, in qEndD2,
+            radius, out var frame));
+
+        // Verify analytical arc(u), arc'(u), arc''(u) against closed form a(u) = 1.1 + 0.2 sin(u).
+        Assert.Equal(1.1 + 0.2 * Math.Sin(u0), frame.Arc, 10);
+        Assert.InRange(Math.Abs(frame.ArcD1 - 0.2 * Math.Cos(u0)), 0, 1e-8);
+        Assert.InRange(Math.Abs(frame.ArcD2 - (-0.2 * Math.Sin(u0))), 0, 1e-6);
+
+        // Verify Y, YD1, YD2 against central differences of TryBuildFrame at u0 ± h.
+        EvalSection(u0 + h, out var cP, out var c1P, out _, out _, out _, out _);
+        EvalSection(u0 - h, out var cM, out var c1M, out _, out _, out _, out _);
+        BlendEvaluation.TryBuildFrame(in cP, in c1P, in qStartP, in qEndP, radius, out var xP, out var yP, out _);
+        BlendEvaluation.TryBuildFrame(in cM, in c1M, in qStartM, in qEndM, radius, out var xM, out var yM, out _);
+
+        var yD1Fd = Scale(Sub(yP, yM), 1.0 / (2 * h));
+        var yD2Fd = Scale(Add(Sub(yP, Scale(frame.Y, 2)), yM), 1.0 / (h * h));
+        Assert.InRange(Length(Sub(frame.YD1, yD1Fd)), 0, 1e-7);
+        Assert.InRange(Length(Sub(frame.YD2, yD2Fd)), 0, 1e-5);
+    }
 }
