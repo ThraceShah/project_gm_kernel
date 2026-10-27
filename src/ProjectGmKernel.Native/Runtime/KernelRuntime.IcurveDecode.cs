@@ -50,6 +50,8 @@ internal ref struct IcurveDecodeInput
     public double AngularError;
     public double ParameterError;
     public KernelLogical ParameterErrorProvided;
+    public double ParameterError1;
+    public KernelLogical ParameterError1Provided;
     public int SourceSchema;
     public KernelSense Sense;                      // source curve sense (XT node field 6)
 }
@@ -173,6 +175,12 @@ internal static unsafe partial class KernelRuntime
         data.AngularError = input.AngularError;
         data.ParameterError = input.ParameterError;
         data.ParameterErrorProvided = input.ParameterErrorProvided;
+        data.ParameterError1 = input.ParameterError1Provided != 0
+            ? input.ParameterError1
+            : input.ParameterErrorProvided != 0 ? input.ParameterError : 0;
+        data.ParameterError1Provided = input.ParameterError1Provided != 0
+            ? input.ParameterError1Provided
+            : input.ParameterErrorProvided;
         data.ExtendedChartCount = input.ExtendedChartCount;
         data.UvType = input.UvType;
         data.UvValueCount = expectedUv;

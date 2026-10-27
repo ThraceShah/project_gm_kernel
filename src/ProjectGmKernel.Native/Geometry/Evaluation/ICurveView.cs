@@ -108,6 +108,28 @@ internal readonly struct TerminatorLimit
 }
 
 /// <summary>
+/// Typed reference to an intersection curve's support surface (spec §3.3, §4.1):
+/// distinguishes ordinary surface tags from constructive <c>BLEND_BOUND</c>
+/// supports without minting public PK tags for constructive records.
+/// </summary>
+internal readonly struct SurfaceSupportRef
+{
+    internal readonly AnalyticSurface Analytic;
+    internal readonly KernelSense Sense;
+    internal readonly bool IsBlendBound;
+    internal readonly BlendBoundTag BlendBoundSlot;
+
+    internal SurfaceSupportRef(in AnalyticSurface analytic, KernelSense sense,
+        bool isBlendBound = false, BlendBoundTag blendBoundSlot = -1)
+    {
+        Analytic = analytic;
+        Sense = sense;
+        IsBlendBound = isBlendBound;
+        BlendBoundSlot = blendBoundSlot;
+    }
+}
+
+/// <summary>
 /// Prepared read-only view of one icurve for evaluation (spec §4.1, task T07
 /// slice): two analytic supports plus the immutable original chart map. The
 /// view borrows its spans; it owns nothing and outlives no data. Procedural
@@ -119,6 +141,10 @@ internal readonly ref struct ICurveView
     internal readonly KernelSense Sense0;
     internal readonly AnalyticSurface Support1;
     internal readonly KernelSense Sense1;
+    internal readonly bool Support0IsBlendBound;
+    internal readonly bool Support1IsBlendBound;
+    internal readonly BlendBoundTag Support0BlendBoundSlot;
+    internal readonly BlendBoundTag Support1BlendBoundSlot;
     internal readonly ReadOnlySpan<KernelVector3> ChartPositions;
     internal readonly ReadOnlySpan<double> ChartParameters;
     internal readonly ReadOnlySpan<double> ChartScales;
@@ -127,6 +153,9 @@ internal readonly ref struct ICurveView
     internal readonly bool HasEndTerminator;
     internal readonly TerminatorLimit StartTerminator;
     internal readonly TerminatorLimit EndTerminator;
+
+    internal SurfaceSupportRef Support0Ref => new(in Support0, Sense0, Support0IsBlendBound, Support0BlendBoundSlot);
+    internal SurfaceSupportRef Support1Ref => new(in Support1, Sense1, Support1IsBlendBound, Support1BlendBoundSlot);
 
     internal ICurveView(scoped in AnalyticSurface support0, KernelSense sense0,
         scoped in AnalyticSurface support1, KernelSense sense1,
@@ -137,6 +166,10 @@ internal readonly ref struct ICurveView
         Sense0 = sense0;
         Support1 = support1;
         Sense1 = sense1;
+        Support0IsBlendBound = false;
+        Support1IsBlendBound = false;
+        Support0BlendBoundSlot = -1;
+        Support1BlendBoundSlot = -1;
         ChartPositions = chartPositions;
         ChartParameters = chartParameters;
         ChartScales = chartScales;
@@ -157,12 +190,39 @@ internal readonly ref struct ICurveView
         Sense0 = sense0;
         Support1 = support1;
         Sense1 = sense1;
+        Support0IsBlendBound = false;
+        Support1IsBlendBound = false;
+        Support0BlendBoundSlot = -1;
+        Support1BlendBoundSlot = -1;
         ChartPositions = chartPositions;
         ChartParameters = chartParameters;
         ChartScales = chartScales;
         ChartChordUnits = chartChordUnits;
         // A terminator limit is present when its endpoint data is finite;
         // absent ends stay default and never classify as terminator queries.
+        HasStartTerminator = IsPresent(in startTerminator);
+        HasEndTerminator = IsPresent(in endTerminator);
+        StartTerminator = startTerminator;
+        EndTerminator = endTerminator;
+    }
+
+    internal ICurveView(scoped in SurfaceSupportRef support0, scoped in SurfaceSupportRef support1,
+        ReadOnlySpan<KernelVector3> chartPositions, ReadOnlySpan<double> chartParameters,
+        ReadOnlySpan<double> chartScales, ReadOnlySpan<KernelVector3> chartChordUnits,
+        TerminatorLimit startTerminator = default, TerminatorLimit endTerminator = default)
+    {
+        Support0 = support0.Analytic;
+        Sense0 = support0.Sense;
+        Support1 = support1.Analytic;
+        Sense1 = support1.Sense;
+        Support0IsBlendBound = support0.IsBlendBound;
+        Support1IsBlendBound = support1.IsBlendBound;
+        Support0BlendBoundSlot = support0.BlendBoundSlot;
+        Support1BlendBoundSlot = support1.BlendBoundSlot;
+        ChartPositions = chartPositions;
+        ChartParameters = chartParameters;
+        ChartScales = chartScales;
+        ChartChordUnits = chartChordUnits;
         HasStartTerminator = IsPresent(in startTerminator);
         HasEndTerminator = IsPresent(in endTerminator);
         StartTerminator = startTerminator;

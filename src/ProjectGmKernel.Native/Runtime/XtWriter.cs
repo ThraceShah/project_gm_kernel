@@ -1086,16 +1086,14 @@ internal static unsafe class XtWriter
         fields[2] = XtFieldValue.Int(chartCount);
         fields[3] = XtFieldValue.RealValue(data.ChordalError);
         fields[4] = XtFieldValue.RealValue(data.AngularError);
-        if (data.ParameterErrorProvided != 0)
-        {
-            fields[5] = XtFieldValue.RealValue(data.ParameterError);
-            fields[6] = XtFieldValue.RealValue(data.ParameterError);
-        }
-        else
-        {
-            fields[5] = XtFieldValue.Null();
-            fields[6] = XtFieldValue.Null();
-        }
+        fields[5] = data.ParameterErrorProvided != 0
+            ? XtFieldValue.RealValue(data.ParameterError)
+            : XtFieldValue.Null();
+        fields[6] = data.ParameterError1Provided != 0
+            ? XtFieldValue.RealValue(data.ParameterError1)
+            : data.ParameterErrorProvided != 0
+                ? XtFieldValue.RealValue(data.ParameterError)
+                : XtFieldValue.Null();
         for (BufferOffset i = 0; i < chartCount; i++)
         {
             var o = chartOffset + i * 3;
@@ -1146,6 +1144,8 @@ internal static unsafe class XtWriter
             for (BufferOffset i = 0; i < uvCount; i++)
             {
                 var val = values[i];
+                if (double.IsInfinity(val))
+                    throw new InvalidOperationException("INTERSECTION_DATA UV value must be finite or NaN (null sentinel).");
                 fields[1 + i] = double.IsFinite(val) ? XtFieldValue.RealValue(val) : XtFieldValue.Null();
             }
         }

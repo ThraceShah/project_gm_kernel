@@ -1,4 +1,6 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -97,5 +99,27 @@ public class TerminatorSelectionTests
 
         Assert.Equal(AlgorithmStatus.InvalidInput,
             TerminatorEvaluation.BuildPlanes(in endpoint, Vector(1, 0, double.NaN), Vector(0, 0, 1), out _, out _, out _));
+    }
+
+    [Fact]
+    public void Prepare_WhenSupport0RefIsBlendBound_OverridesFirstTermUseAndSelectsSupport1()
+    {
+        var plane0 = new AnalyticSurface(SurfaceClass.Plane, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0));
+        var plane1 = new AnalyticSurface(SurfaceClass.Plane, Vector(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0));
+        var support0 = new SurfaceSupportRef(in plane0, ParasolidConstants.PK_TOPOL_sense_positive_c, isBlendBound: true, blendBoundSlot: 0);
+        var support1 = new SurfaceSupportRef(in plane1, ParasolidConstants.PK_TOPOL_sense_positive_c, isBlendBound: false);
+
+        KernelVector3[] positions = [Vector(0, 0, 0), Vector(1, 0, 0)];
+        double[] parameters = [0.0, 1.0];
+        double[] scales = [1.0];
+        KernelVector3[] chords = [Vector(1, 0, 0)];
+        var startTerm = new TerminatorLimit(LimitTermUse.First, Vector(-0.1, 0, 0), Vector(0, 0, 0));
+        var view = new ICurveView(in support0, in support1, positions, parameters, scales, chords, startTerm, default);
+
+        Assert.Equal(AlgorithmStatus.Success,
+            TerminatorEvaluation.Prepare(
+                in view, isEnd: false, startTerm.Endpoint, startTerm.BranchPoint,
+                LimitTermUse.First, -0.1, out var anchor));
+        Assert.Equal(1, anchor.SelectedSurface);
     }
 }
