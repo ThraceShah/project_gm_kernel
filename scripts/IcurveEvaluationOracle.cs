@@ -67,11 +67,20 @@ using (host)
             Log("=== Case F: our XT INTERSECTION writer → live PK_PART_receive ===");
             RunOurWriterLivePkReceive(Log);
 
+            Log("=== Case F2: non-uniform chord chart (f_i / f_{i-1} != 1) → live PK_PART_receive ===");
+            RunNonUniformChartLivePkReceive(Log);
+
             Log("=== GATE probes ===");
             Log("NotRun: GATE-T — terminator t_E reconstruction vs PK_CURVE_ask_interval not closed.");
             Log("NotRun: GATE-D — public high-order (>2) PK_CURVE_eval contract not closed; Runtime rejects order>2.");
             Log("NotRun: GATE-B/A — BlendBound role map / blend arc extremes open.");
             Log("PASS: chart-interior D0/D1/D2 geometric comparisons above (see case logs; D2 on circle refs).");
+        }
+        catch (Exception ex)
+        {
+            Log($"FAIL: {ex.GetType().Name}: {ex.Message}");
+            WriteReport(repoRoot, report);
+            throw;
         }
         finally
         {
@@ -612,6 +621,109 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
         {
             if (receivedParts is not null)
                 ParasolidScriptHost.Check(PK_MEMORY_free(receivedParts), "free received parts");
+        }
+    }
+}
+
+static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
+{
+    int body = 0;
+    CheckOur(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body), "BodyCreateSolidBlock live-recv-nonuniform");
+    if (!KernelRuntime.TryResolveBodySlot(body, out var bodySlot))
+        throw new InvalidOperationException("body slot live-recv-nonuniform");
+    var edgeSlot = KernelRuntime.GetBodyRecord(bodySlot).FirstEdgeBody;
+    int edge = KernelRuntime.TagOf(PoolKind.Edge, edgeSlot);
+
+    var plane = CreateOurPlaneZ0();
+    var sphere = CreateOurUnitSphere();
+    // Non-uniform angle distribution θ_i = 2π(u_i + 0.06 sin(2π u_i)) so chord lengths
+    // vary smoothly across segments and f_i / f_{i-1} != 1 at interior chart nodes (§5.3).
+    const int chartCount = 49;
+    var chart = new double[chartCount * 3];
+    for (var i = 0; i < chartCount; i++)
+    {
+        var u = (double)i / (chartCount - 1);
+        var angle = Math.Tau * (u + 0.06 * Math.Sin(Math.Tau * u));
+        chart[i * 3] = Math.Cos(angle);
+        chart[i * 3 + 1] = Math.Sin(angle);
+        chart[i * 3 + 2] = 0;
+    }
+    var input = BuildDecodeInput(plane, sphere, chart, baseParameter: -0.25, baseScale: 1.5);
+    CheckStatus(KernelRuntime.DecodeIcurve(input, out var slot, out _, out _), "DecodeIcurve live-recv-nonuniform");
+    CheckStatus(KernelRuntime.TryBindICurveEntity(slot, out var icurve), "TryBindICurveEntity live-recv-nonuniform");
+    CheckOur(KernelRuntime.TopologyDetachGeometry(edge), "detach live-recv-nonuniform");
+    CheckOur(KernelRuntime.EdgeAttachCurves(1, &edge, &icurve), "attach icurve live-recv-nonuniform");
+
+    var parts = stackalloc int[1] { body };
+    var options = new M.PK_PART_transmit_o_s
+    {
+        o_t_version = 4,
+        transmit_format = M.ParasolidConstants.PK_transmit_format_text_c,
+        transmit_version = 371,
+        transmit_meshes = M.ParasolidConstants.PK_transmit_meshes_separate_c,
+    };
+    var block = new M.PK_MEMORY_block_s();
+    CheckOur(KernelRuntime.PartTransmitB(1, parts, &options, &block), "our PartTransmitB live-recv-nonuniform");
+    byte[] bytes;
+    try
+    {
+        bytes = new byte[checked((int)block.n_bytes)];
+        new ReadOnlySpan<byte>(block.bytes, bytes.Length).CopyTo(bytes);
+    }
+    finally
+    {
+        CheckOur(KernelRuntime.MemoryBlockFree(&block), "MemoryBlockFree live-recv-nonuniform");
+    }
+
+    fixed (byte* pointer = bytes)
+    {
+        var pkBlock = new PK_MEMORY_block_t(null, (ulong)bytes.Length, pointer);
+        var receive = new PK_PART_receive_o_t { transmit_format = PK_transmit_format_text_c };
+        int count;
+        int* receivedParts = null;
+        var error = PK_PART_receive_b(pkBlock, &receive, &count, &receivedParts);
+        if (error != 0)
+            throw new InvalidOperationException($"PK_PART_receive_b non-uniform failed with error {error}");
+
+        try
+        {
+            var receivedBody = receivedParts[0];
+            if (!TryFindReceivedIcurve(receivedBody, out var pkCurve, out var pkInterval))
+                throw new InvalidOperationException("Case F2 received body has no PK_CLASS_icurve");
+
+            var record = KernelRuntime.GetCurveByTag(icurve);
+            var intervalDelta = Math.Max(
+                Math.Abs(record.TMin - pkInterval.value[0]),
+                Math.Abs(record.TMax - pkInterval.value[1]));
+
+            var ours = stackalloc M.PK_VECTOR_s[3];
+            var reference = stackalloc PK_VECTOR_t[3];
+            double maxPos = 0;
+            double maxD1 = 0;
+            double maxGeomD2 = 0;
+            var samples = 0;
+            for (var i = 1; i < 96; i++)
+            {
+                var t = record.TMin + (record.TMax - record.TMin) * (i + 0.37) / 96.0;
+                CheckOur(KernelRuntime.CurveEval(icurve, t, 2, ours), "our CurveEval live-recv-nonuniform");
+                ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, t, 2, reference), "PK_CURVE_eval live-recv-nonuniform");
+                maxPos = Math.Max(maxPos, Distance(&ours[0], &reference[0]));
+                maxD1 = Math.Max(maxD1, Distance(&ours[1], &reference[1]));
+                var nDelta = PrincipalNormalUnitDelta(&ours[1], &ours[2], &reference[1], &reference[2]);
+                var kDelta = Math.Abs(CurvatureOurs(&ours[1], &ours[2]) - CurvaturePk(&reference[1], &reference[2]));
+                maxGeomD2 = Math.Max(maxGeomD2, Math.Max(nDelta, kDelta));
+                samples++;
+            }
+
+            log($"live-pk-recv-nonuniform: samples={samples} intervalDelta={intervalDelta:E3} max|Δpos|={maxPos:E3} max|ΔD1|={maxD1:E3} max|ΔD2|κ+n={maxGeomD2:E3}");
+            if (intervalDelta > 1e-12 || maxPos > 1e-8 || maxD1 > 1e-6 || maxGeomD2 > 1e-5)
+                throw new InvalidOperationException($"non-uniform chart mismatch interval={intervalDelta} pos={maxPos} d1={maxD1} d2={maxGeomD2}");
+            log("live-pk-recv-nonuniform: PASS (non-uniform f_i recursion matches PK TMax, D0, D1, and geometric D2)");
+        }
+        finally
+        {
+            if (receivedParts is not null)
+                ParasolidScriptHost.Check(PK_MEMORY_free(receivedParts), "free received parts non-uniform");
         }
     }
 }

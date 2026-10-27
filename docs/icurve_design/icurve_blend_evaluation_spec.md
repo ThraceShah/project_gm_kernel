@@ -427,14 +427,14 @@ $$
 | 平面 | $n\cdot(x-c)$ | 法向方向/sense |
 | 球面 | $r\cdot r-R^2$ | $R>0$；方向另处理 |
 | 圆柱 | $r_\perp\cdot r_\perp-R^2$ | 轴与参数恢复 |
-| 圆锥 | $\rho^2-(R-kz)^2$，XT 轴约定 | 只取有效半锥，$R-kz\ge0$ |
+| 圆锥 | $\rho^2-(R-kz)^2$（XT 文本符号）或 $\rho^2-(R+kz)^2$（内核 PK 轴约定） | 只取有效半锥，$R-kz\ge0$（或 $R+kz\ge0$） |
 | 环面 | $(r\cdot r+a^2-b^2)^2-4a^2\rho^2$ | 恢复 apple/lemon/doughnut 与实际片 |
 
 球面、圆柱的梯度/Hessian 直接写为解析式；环面多项式可能引入原曲面不包含的分支，不能仅依据零残差接受。
 
 平面、球面、圆柱在相应正则邻域可用有向距离：$n\cdot r$、$\|r\|-R$、$\rho-R$，并乘以与所用 surface sense 对齐的符号。球心、圆柱轴等位置没有唯一法向，不提供正常的距离梯度。
 
-圆锥可在脚点属于有效母线的区域使用 $(\rho-R+kz)/\sqrt{1+k^2}$；环面可在已选 sheet 的正则区域研究 $\sqrt{(\rho-a)^2+z^2}-b$。这两种公式都必须附带脚点/片选择与方向检查，不能宣称在整个三维空间都是目标曲面的光滑 signed distance。
+圆锥可在脚点属于有效母线的区域使用 $(\rho-R+kz)/\sqrt{1+k^2}$（内核 PK 约定下为 $(\rho-(R+kz))/\sqrt{1+k^2}$）；环面可在已选 sheet 的正则区域研究 $\sqrt{(\rho-a)^2+z^2}-b$。这两种公式都必须附带脚点/片选择与方向检查，不能宣称在整个三维空间都是目标曲面的光滑 signed distance。
 
 ## 8.2 不从任意隐式式估计“真正距离”
 
@@ -444,7 +444,7 @@ $|\phi|/\|\nabla\phi\|$ 是正则邻域内的一阶误差估计，不是严格�
 
 ## 8.3 XT / PK 坐标和 sense 归一化
 
-2025 版 p.58 明确说明 cone 在 PK 接口的轴与 XT 存储轴反向。因此，准备阶段先明确数据属于 XT 原始约定还是内核已经归一化的 PK 约定；不可在 writer 与 implicit evaluator 各反转一次。[XT25 p.58]
+2025 版 p.58 文字说明 cone 在 PK 接口的轴与 XT 存储轴反向。因此，准备阶段先明确数据属于 XT 原始约定还是内核已经归一化的 PK 约定；不可在 writer 与 implicit evaluator 各反转一次。需要注意：在目标运行时（Parasolid `v38.0` / `SCH_37102`）的真实探针验证中（见 `docs/reviews/cone_probe_evidence/`），`PK_CONE_ask` 返回的 `axis` 与写出到 `.x_t` 的 `CONE` 轴方向完全同向（无翻转，误差 `< 1e-14`），内核采用 $R(z)=R_0+kz$（$k=\tan\alpha$）与该运行时保持逐字节一致。[XT25 p.58；实测证据见 `docs/reviews/cone_probe_evidence/`]
 
 自然法向是参数偏导叉积。使用隐式梯度作为法向时，以已知正则参数 witness 对齐自然法向，再应用 source surface sense。不要仅凭“半径为正”假定梯度方向就是该参数面的自然法向。
 
@@ -1030,7 +1030,7 @@ Jx'=\begin{bmatrix}0\\0\\1/f_i\end{bmatrix},
 Jx''=-\begin{bmatrix}x'^TH_0x'\\x'^TH_1x'\\0\end{bmatrix}.
 $$
 
-同时使用 §5.5 的切向公式对照 D1。对于 I2，$Q'(t)=e_i/f_i$ 进入 $F_t$，不能因为只求二维变量就漏掉基点随参数变化的贡献。P4/P2 的二阶右端由曲面二阶链式项组成，优先实现方向二阶收缩，避免为少量导数构造完整大张量。
+同时使用 §5.5 的切向公式对照 D1。对于 I2，$Q'(t)=e_i/f_i$ 进入 $F_t$，不能因为只求二维变量就漏掉基点随参数变化的贡献。P4/P2 的二阶右端由曲面二阶链式项组成，优先实现方向二阶收缩，避免为少量导数构造完整大张量。注：真实 Parasolid Oracle（Case F / Case F2）对比表明，以上 $Jx''$ 解出的是严格满足微积分恒等式 $x''(t)=\frac{d}{dt}x'(t)$ 的参数二阶导数；而真实 `PK_CURVE_eval` 在弦平面参数化段上返回的 `D2` 保留了完全一致的法向曲率分量 $D_2^\perp$（误差 $\le 10^{-14}$），但省去了弦投影引起的切向参数加速度分量 $D_2^\parallel$，这一差异归入 `GATE-D` 跟踪。
 
 ## 16.3 Terminator 的标量导数
 
@@ -1387,7 +1387,7 @@ $t_i$ 的比例递推依赖前缀 chart 切向，冷启动不能假称已有 O(l
 | GATE-B | p.63 给出距离组合、无参数化、索引文字 | 距离角色与 boundary/support 对应，sense/range 映射 | BLEND_BOUND 与边界专用优化 |
 | GATE-T | p.49 的一面两平面、选面规则 | terminator 参数重建、退化平面、端点导数契约 | terminator interval / 高阶 endpoint |
 | GATE-A | blend u 继承 spine、v 端映射 | 具体 arc 展开/极端退化及公开延拓范围 | blend 参数恢复与 sheet guards |
-| GATE-D | 正则定义方程可求导 | 目标 PK icurve/blend 最大阶数与 knot 侧行为 | 公开高阶 API |
+| GATE-D | 正则定义方程可求导；D0/D1 及法向曲率分量 $D_2^\perp$ 已与真实 PK 对齐 | 目标 PK icurve/blend 最大阶数、knot 侧行为及 `PK_CURVE_eval` 在弦段上省略切向加速度 $D_2^\parallel$ 的公开契约 | 公开高阶 API |
 
 普通 chart 的归一化余弦与弦投影**不再是 gate**。可以直接依据新版实现，不应重新开启“切线或弦任选”的歧义。
 
@@ -1424,7 +1424,7 @@ MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests
 
 新增 oracle/benchmark 脚本为相对于项目规则组织的 C# 单文件脚本；真实内核绑定和 session 初始化复用 PKToy / ParasolidScriptHost，不重复 P/Invoke 定义。构建 native 时使用实际 host RID，不把某台机器的 RID 写死成全平台结论。
 
-建议永久交付路径：`docs/icurve_blend_evaluation_spec.md`、 `docs/icurve_evaluation_capabilities.md`、 `docs/icurve_evaluation_benchmarks.md`。临时实际结果路径：`temp_docs/icurve-evaluation/`。本文交付包中的 JSON 可作为任务工具输入，复制到仓库时按项目文档布局安排。
+建议永久交付路径：`docs/icurve_design/icurve_blend_evaluation_spec.md`、 `docs/icurve_evaluation_capabilities.md`、 `docs/icurve_evaluation_benchmarks.md`。临时实际结果路径：`temp_docs/icurve-evaluation/`。本文交付包中的 JSON 可作为任务工具输入，复制到仓库时按项目文档布局安排。
 
 # 附录 A. 来源与可追溯信息
 
