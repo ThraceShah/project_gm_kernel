@@ -62,6 +62,13 @@ internal static class ICurveCorrection
         double t, BufferOffset segment, in KernelVector3 seed,
         Span<double> refinedState, ref EvaluationBudget budget,
         out BufferOffset acceptedIterations, out double residual, out ICurveEvalDetail detail)
+        => Refine(in view, plan, t, segment, in seed, SampleWitness.None, refinedState, ref budget,
+            out acceptedIterations, out residual, out detail);
+
+    internal static AlgorithmStatus Refine(in ICurveView view, ICurveConstraintPlan plan,
+        double t, BufferOffset segment, in KernelVector3 seed, in SampleWitness seedWitness,
+        Span<double> refinedState, ref EvaluationBudget budget,
+        out BufferOffset acceptedIterations, out double residual, out ICurveEvalDetail detail)
     {
         acceptedIterations = 0;
         residual = 0;
@@ -71,7 +78,7 @@ internal static class ICurveCorrection
         if (!double.IsFinite(t)) return AlgorithmStatus.InvalidInput;
 
         Span<double> state = stackalloc double[MaxSmallSystem];
-        var initStatus = InitState(in view, plan, t, segment, in seed, state);
+        var initStatus = InitState(in view, plan, t, segment, in seed, in seedWitness, state);
         if (initStatus != AlgorithmStatus.Success) return initStatus;
 
         Span<double> jacobianMaster = stackalloc double[MaxSmallSystem * MaxSmallSystem];
@@ -82,7 +89,7 @@ internal static class ICurveCorrection
             residualVector, jacobianMaster, ref budget, out var acceptedPoint, out detail);
         if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
         if (evalStatus != AlgorithmStatus.Success) return evalStatus;
-        _ = memo.TryInsert(plan, t, segment, 0, residualVector[..n]);
+        _ = memo.TryInsert(plan, t, segment, 0, state[..n], residualVector[..n]);
         residual = SmallLinearSolve.Norm(residualVector);
         if ((plan != ICurveConstraintPlan.P4
                 || residual <= ICurveEvaluation.PublicationTolerance(in view))
@@ -179,13 +186,13 @@ internal static class ICurveCorrection
             for (BufferOffset i = 0; i < n; i++) trial[i] += physicalStep[i];
 
             var trialStatus = EvaluateSystem(in view, plan, t, segment, buffer.TrialState,
-                trialResidual, trialJacobian, ref budget, out _, out detail);
+                trialResidual, trialJacobian, ref budget, out var trialPoint, out detail);
             if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
             var psiTrial = double.PositiveInfinity;
             if (trialStatus == AlgorithmStatus.Success)
             {
-                _ = memo.TryInsert(plan, t, segment, 0, trialResidual[..n]);
-                freeze.Apply(trialResidual[..n], trialJacobian[..(n * n)]);
+                _ = memo.TryInsert(plan, t, segment, 0, buffer.TrialState[..n], trialResidual[..n]);
+                freeze.ApplyResidual(trialResidual[..n]);
                 psiTrial = 0.5 * SmallLinearSolve.Dot(trialResidual[..n], trialResidual[..n]);
             }
             var ratio = TrustRegionStep.ReductionRatio(psiBase, psiTrial, predicted);
@@ -200,10 +207,15 @@ internal static class ICurveCorrection
                 buffer.CommitTrial(nextRadius);
                 acceptedIterations++;
 
-                evalStatus = EvaluateSystem(in view, plan, t, segment, buffer.AcceptedState,
-                    residualVector, jacobianMaster, ref budget, out acceptedPoint, out detail);
-                if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
-                if (evalStatus != AlgorithmStatus.Success) return evalStatus;
+                acceptedPoint = trialPoint;
+                trialJacobian[..(n * n)].CopyTo(jacobianMaster[..(n * n)]);
+                if (!memo.TryFind(plan, t, segment, 0, buffer.AcceptedState[..n], residualVector[..n]))
+                {
+                    evalStatus = EvaluateSystem(in view, plan, t, segment, buffer.AcceptedState,
+                        residualVector, jacobianMaster, ref budget, out acceptedPoint, out detail);
+                    if (detail == ICurveEvalDetail.BudgetExceeded) return AlgorithmStatus.NotConverged;
+                    if (evalStatus != AlgorithmStatus.Success) return evalStatus;
+                }
                 residual = SmallLinearSolve.Norm(residualVector);
                 if ((plan != ICurveConstraintPlan.P4
                         || residual <= ICurveEvaluation.PublicationTolerance(in view))
@@ -291,7 +303,7 @@ internal static class ICurveCorrection
 
     /// <summary>Deterministic initial state per plan, from the same seed the fast paths use.</summary>
     private static AlgorithmStatus InitState(in ICurveView view, ICurveConstraintPlan plan,
-        double t, BufferOffset segment, in KernelVector3 seed, Span<double> state)
+        double t, BufferOffset segment, in KernelVector3 seed, in SampleWitness seedWitness, Span<double> state)
     {
         switch (plan)
         {
@@ -328,17 +340,14 @@ internal static class ICurveCorrection
                 state[2] = seed.Z;
                 return AlgorithmStatus.Success;
             case ICurveConstraintPlan.P2:
-                if (AnalyticParametricEvaluation.TryRecoverWitness(in view.Support0, in seed, out var u0, out var v0)
-                    != AlgorithmStatus.Success)
+                if (!ICurveEvaluation.TryResolveSeedUv0(in view.Support0, in seed, in seedWitness, out var u0, out var v0))
                     return AlgorithmStatus.Unsupported;
                 state[0] = u0;
                 state[1] = v0;
                 return AlgorithmStatus.Success;
             case ICurveConstraintPlan.P4:
-                if (AnalyticParametricEvaluation.TryRecoverWitness(in view.Support0, in seed, out var w0, out var w1)
-                        != AlgorithmStatus.Success
-                    || AnalyticParametricEvaluation.TryRecoverWitness(in view.Support1, in seed, out var w2, out var w3)
-                        != AlgorithmStatus.Success)
+                if (!ICurveEvaluation.TryResolveSeedUv0(in view.Support0, in seed, in seedWitness, out var w0, out var w1)
+                    || !ICurveEvaluation.TryResolveSeedUv1(in view.Support1, in seed, in seedWitness, out var w2, out var w3))
                     return AlgorithmStatus.Unsupported;
                 state[0] = w0;
                 state[1] = w1;

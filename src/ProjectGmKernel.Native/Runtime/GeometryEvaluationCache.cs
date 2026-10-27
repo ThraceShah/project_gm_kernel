@@ -364,12 +364,24 @@ internal static unsafe partial class KernelRuntime
         var status = ICurveEvaluation.EvaluateWithCache(in view, t, order, plan, ref operationStore,
             derivatives, out report, side);
         if (status == AlgorithmStatus.Success)
-            GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
-                order >= 1 ? derivatives[1] : default,
-                order >= 2 ? derivatives[2] : default, order, report.Kind,
-                report.Side, report.Segment, report.QualityError, report.Residual,
-                report.NonDefiningResidual, TerminatorParameterRule.Unresolved,
-                SampleSourceKind.CorrectedRoot, report.Plan));
+        {
+            if (operationStore.TryFindExact(t, report.Kind, report.Side, order,
+                    double.PositiveInfinity, out var opSample))
+            {
+                GeometryEvaluationCache.Publish(in identity, in opSample);
+            }
+            else
+            {
+                var witness = ICurveEvaluation.BuildSampleWitness(in view, in derivatives[0],
+                    SampleWitness.None, SampleWitness.None);
+                GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
+                    order >= 1 ? derivatives[1] : default,
+                    order >= 2 ? derivatives[2] : default, order, report.Kind,
+                    report.Side, report.Segment, report.QualityError, report.Residual,
+                    report.NonDefiningResidual, TerminatorParameterRule.Unresolved,
+                    SampleSourceKind.CorrectedRoot, report.Plan, in witness));
+            }
+        }
         return status;
     }
 }
