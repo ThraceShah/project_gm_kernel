@@ -49,85 +49,88 @@ public class IntervalRootCheckTests
     }
 
     [Fact]
-    public void TryCertifyI3_TightBoxAroundCirclePoint_Unsupported_WhenNotImplemented()
+    public void TryCertifyI3_TightBoxAroundCirclePoint_CertifiesUnique()
     {
         // Root of plane∩cylinder at (1,0,0) with e = (0,1,0), p = y = 0.
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0, in box,
-            out var status, out _));
-        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+            out var status, out var image));
+        Assert.Equal(IntervalRootStatus.Unique, status);
+        Assert.True(image.XLo <= 1.0 && image.XHi >= 1.0);
+        Assert.True(image.YLo <= 0.0 && image.YHi >= 0.0);
+        Assert.True(image.ZLo <= 0.0 && image.ZHi >= 0.0);
     }
 
     [Fact]
-    public void TryCertifyI3_BoxAwayFromCircle_Unsupported_WhenNotImplemented()
+    public void TryCertifyI3_BoxAwayFromCircle_CertifiesEmpty()
     {
         var chord = Vector(0, 1, 0);
         // Far from the unit circle in the z=0 plane.
         var box = new IntervalBox3(3.0, 3.2, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+        Assert.Equal(IntervalRootStatus.Empty, status);
     }
 
     [Fact]
-    public void TryCertifyI3_LargeBox_Unsupported_WhenNotImplemented()
+    public void TryCertifyI3_LargeBox_ReportsUndetermined()
     {
         var chord = Vector(0, 1, 0);
         // Large enough that contraction/inclusion cannot fire, but not empty.
         var box = new IntervalBox3(-2, 2, -2, 2, -0.5, 0.5);
 
-        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+        Assert.Equal(IntervalRootStatus.Undetermined, status);
     }
 
     [Fact]
-    public void TryCertifyI3_PlaneCone_TightBox_Unsupported_WhenNotImplemented()
+    public void TryCertifyI3_PlaneCone_TightBox_CertifiesUnique()
     {
         // Cone R=1, k=0.5: at z=0 the section is the unit circle; plane z=0 ∩
         // cone shares the same (1,0,0) root used by the cylinder fixture.
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in Cone, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+        Assert.Equal(IntervalRootStatus.Unique, status);
     }
 
     [Fact]
-    public void TryCertifyI3_PlaneRingTorus_TightBox_Unsupported_WhenNotImplemented()
+    public void TryCertifyI3_PlaneRingTorus_TightBox_CertifiesUnique()
     {
         // Outer equator of a=3,b=1 torus in z=0 is ρ=4; root (4,0,0), e=(0,1,0).
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(3.9, 4.1, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in RingTorus, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+        Assert.Equal(IntervalRootStatus.Unique, status);
     }
 
     [Fact]
-    public void TryCertifyI3_PlaneRingTorus_BoxAway_Unsupported_WhenNotImplemented()
+    public void TryCertifyI3_PlaneRingTorus_BoxAway_CertifiesEmpty()
     {
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(7.0, 7.2, -0.05, 0.05, -0.05, 0.05);
 
-        Assert.Equal(AlgorithmStatus.Unsupported, IntervalRootCheck.TryCertifyI3(
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
             in PlaneZ0, in RingTorus, in chord, planeOffset: 0, in box,
             out var status, out _));
-        Assert.Equal(IntervalRootStatus.BoundsUnavailable, status);
+        Assert.Equal(IntervalRootStatus.Empty, status);
     }
 
     [Fact]
-    public void TryCertifyI3_SpindleTorus_Unsupported_WhenNotImplemented()
+    public void TryCertifyI3_SpindleTorus_ReportsUnsupported()
     {
         var chord = Vector(0, 1, 0);
         var box = new IntervalBox3(0.9, 1.1, -0.05, 0.05, -0.05, 0.05);
@@ -144,15 +147,15 @@ public class IntervalRootCheckTests
         var chord = Vector(0, 1, 0);
         var nearRoot = Vector(1, 0, 0);
         var farAway = Vector(3.1, 0, 0);
-        Assert.False(IntervalRootCheck.TryDisambiguateI3Pair(
+        Assert.True(IntervalRootCheck.TryDisambiguateI3Pair(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0,
             in nearRoot, in farAway, cellRadius: 0.08, out var preferNear));
         Assert.True(preferNear);
 
-        Assert.False(IntervalRootCheck.TryDisambiguateI3Pair(
+        Assert.True(IntervalRootCheck.TryDisambiguateI3Pair(
             in PlaneZ0, in CylinderR1, in chord, planeOffset: 0,
             in farAway, in nearRoot, cellRadius: 0.08, out var preferFarFirst));
-        Assert.True(preferFarFirst);
+        Assert.False(preferFarFirst);
     }
 
     [Fact]
