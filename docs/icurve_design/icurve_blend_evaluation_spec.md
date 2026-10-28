@@ -444,7 +444,7 @@ $|\phi|/\|\nabla\phi\|$ 是正则邻域内的一阶误差估计，不是严格�
 
 ## 8.3 XT / PK 坐标和 sense 归一化
 
-2025 版 p.58 文字说明 cone 在 PK 接口的轴与 XT 存储轴反向。因此，准备阶段先明确数据属于 XT 原始约定还是内核已经归一化的 PK 约定；不可在 writer 与 implicit evaluator 各反转一次。需要注意：在目标运行时（Parasolid `v38.0` / `SCH_37102`）的真实探针验证中（见 `docs/reviews/cone_probe_evidence/`），`PK_CONE_ask` 返回的 `axis` 与写出到 `.x_t` 的 `CONE` 轴方向完全同向（无翻转，误差 `< 1e-14`），内核采用 $R(z)=R_0+kz$（$k=\tan\alpha$）与该运行时保持逐字节一致。[XT25 p.58；实测证据见 `docs/reviews/cone_probe_evidence/`]
+2025 版 p.58 文字说明 cone 在 PK 接口的轴与 XT 存储轴反向。因此，准备阶段先明确数据属于 XT 原始约定还是内核已经归一化的 PK 约定；不可在 writer 与 implicit evaluator 各反转一次。需要注意：在目标运行时（Parasolid `v38.0` / `SCH_37102`）的真实探针验证中（见 `docs/reviews/cone_probe_evidence/`），`PK_CONE_ask` 返回的 `axis` 与写出到 `.x_t` 的 `CONE` 轴方向完全同向（无翻转，误差 `< 1e-14`），内核采用 $R(z)=R_0+kz$（$k=\tan\alpha$）在指定容差（`1e-14`）内与该运行时保持一致。[XT25 p.58；实测证据见 `docs/reviews/cone_probe_evidence/`]
 
 自然法向是参数偏导叉积。使用隐式梯度作为法向时，以已知正则参数 witness 对齐自然法向，再应用 source surface sense。不要仅凭“半径为正”假定梯度方向就是该参数面的自然法向。
 

@@ -184,4 +184,87 @@ public class IntervalRootCheckTests
         Assert.True(Math.Abs(c.Value) < 1e-15);
         // No IntervalRootStatus is produced here — certification requires TryCertifyI3.
     }
+
+    [Fact]
+    public void TryCertifyI3_UnnormalizedCylinderAxisAtLargeZ_CertifiesEmptyOnRootlessBox()
+    {
+        // Regression for review Item 1: support0 is x=0, support1 is cylinder with R=1 and
+        // unnormalized axis (0,0,1.0000000001), chord plane y=0. At x=y=0, the residual is
+        // ((1 - a²)z)² - 1 = 0, whose positive root is z_* ≈ 4999999586.04818 (413.95 away from
+        // 5e9). The box [5e9 - 0.001, 5e9 + 0.001] has no root and must be certified Empty,
+        // while a box around z_* is certified Unique.
+        var planeX0 = new AnalyticSurface(SurfaceClass.Plane, Vector(0, 0, 0), Vector(1, 0, 0), Vector(0, 1, 0));
+        var a = 1.0000000001;
+        var cylinderUnnorm = new AnalyticSurface(SurfaceClass.Cylinder, Vector(0, 0, 0), Vector(0, 0, a), Vector(1, 0, 0), 1.0);
+        var chordY = Vector(0, 1, 0);
+
+        var rootlessBox = new IntervalBox3(-0.001, 0.001, -0.001, 0.001, 5e9 - 0.001, 5e9 + 0.001);
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+            in planeX0, in cylinderUnnorm, in chordY, planeOffset: 0, in rootlessBox,
+            out var rootlessStatus, out _));
+        Assert.Equal(IntervalRootStatus.Empty, rootlessStatus);
+
+        var oneMinusA2 = Math.Abs(Math.FusedMultiplyAdd(-a, a, 1.0));
+        var zStar = 1.0 / oneMinusA2;
+        var rootBox = new IntervalBox3(-1e-12, 1e-12, -1e-12, 1e-12, zStar - 0.001, zStar + 0.001);
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+            in planeX0, in cylinderUnnorm, in chordY, planeOffset: 0, in rootBox,
+            out var rootStatus, out _));
+        Assert.Equal(IntervalRootStatus.Unique, rootStatus);
+    }
+
+    [Fact]
+    public void TryCertifyI3_LargeBaseParameterChordPlane_PreservesOffsetAndSelectsTrueCandidate()
+    {
+        // Regression for review Item 2: L = 2^53, P0 = (0,0,-L), P1 = (0,0,2), t0 = -L, f0 = 1, t = 1.
+        // Plain double (1 - (-2^53)) rounds to 2^53, losing the +1 offset; EFT ChordPlaneOffsetInterval
+        // preserves [1, 1] so z = 1 is certified Unique and z = 0 is certified Empty.
+        var l = 9007199254740992.0; // 2^53
+        var p0 = Vector(0, 0, -l);
+        var p1 = Vector(0, 0, 2);
+        var dir = Vector(0, 0, 1);
+        KernelVector3[] positions = [p0, p1];
+        KernelVector3[] tangents = [dir, dir];
+        double[] parameters = new double[2];
+        double[] scales = new double[1];
+        KernelVector3[] chordUnits = new KernelVector3[1];
+        Assert.Equal(AlgorithmStatus.Success,
+            OriginalChartParameterMap.Build(positions, tangents, -l, 1.0, parameters, scales, chordUnits,
+                out var segmentCount, out var buildFailure));
+        Assert.Equal(1, segmentCount);
+        Assert.Equal(ChartBuildFailure.None, buildFailure);
+
+        var planeX0 = new AnalyticSurface(SurfaceClass.Plane, Vector(0, 0, 0), Vector(1, 0, 0), Vector(0, 1, 0));
+        var planeY0 = new AnalyticSurface(SurfaceClass.Plane, Vector(0, 0, 0), Vector(0, 1, 0), Vector(0, 0, 1));
+        var chordZ = chordUnits[0];
+
+        IntervalRootCheck.ChordPlaneOffsetInterval(in chordZ, in p0, parameters[0], scales[0], t: 1.0,
+            out var offsetLo, out var offsetHi);
+        Assert.True(offsetLo <= 1.0 && offsetHi >= 1.0);
+        Assert.Equal(1.0, IntervalRootCheck.ChordPlaneOffset(in chordZ, in p0, parameters[0], scales[0], t: 1.0), 15);
+
+        var boxAtZero = new IntervalBox3(-0.001, 0.001, -0.001, 0.001, -0.001, 0.001);
+        var boxAtOne = new IntervalBox3(-0.001, 0.001, -0.001, 0.001, 1.0 - 0.001, 1.0 + 0.001);
+
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+            in planeX0, in planeY0, in chordZ, offsetLo, offsetHi, in boxAtZero,
+            out var certZero, out _));
+        Assert.Equal(IntervalRootStatus.Empty, certZero);
+
+        Assert.Equal(AlgorithmStatus.Success, IntervalRootCheck.TryCertifyI3(
+            in planeX0, in planeY0, in chordZ, offsetLo, offsetHi, in boxAtOne,
+            out var certOne, out _));
+        Assert.Equal(IntervalRootStatus.Unique, certOne);
+
+        var candA = Vector(0, 0, 1);
+        var candB = Vector(0, 0, 0);
+        Assert.True(IntervalRootCheck.TryDisambiguateI3Pair(
+            in planeX0, in planeY0, in chordZ, offsetLo, offsetHi,
+            in candA, in candB, cellRadius: 0.001, out var preferA));
+        Assert.True(preferA);
+
+        // Also verify PlaneResidual does not lose the +1 offset at L = 2^53.
+        Assert.Equal(0.0, OriginalChartParameterMap.PlaneResidual(positions, parameters, scales, chordUnits, 0, t: 1.0, in candA), 15);
+        Assert.Equal(-1.0, OriginalChartParameterMap.PlaneResidual(positions, parameters, scales, chordUnits, 0, t: 1.0, in candB), 15);
+    }
 }

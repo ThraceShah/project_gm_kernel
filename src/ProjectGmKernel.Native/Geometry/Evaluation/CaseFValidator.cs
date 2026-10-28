@@ -83,6 +83,35 @@ internal static class CaseFValidator
     }
 
     /// <summary>
+    /// Validates Case F2 non-uniform chart interval upper-bound delta together with all evaluation
+    /// samples. Rejects non-finite (NaN, Infinity), negative, and out-of-tolerance values.
+    /// </summary>
+    internal static bool ValidateNonUniformChart(
+        double intervalDelta,
+        ReadOnlySpan<CaseFEvalSample> samples,
+        double maxIntervalTol,
+        double maxPosTol,
+        double maxD1Tol,
+        double maxRawD2Tol,
+        double maxGeomD2Tol,
+        double maxCircleTol,
+        out string failureReason)
+    {
+        failureReason = string.Empty;
+        if (!double.IsFinite(maxIntervalTol) || maxIntervalTol < 0)
+        {
+            failureReason = "Invalid interval tolerance parameter in CaseFValidator: non-finite or negative.";
+            return false;
+        }
+        if (!double.IsFinite(intervalDelta) || intervalDelta < 0 || intervalDelta > maxIntervalTol)
+        {
+            failureReason = $"Interval bound tolerance exceeded or non-finite in CaseFValidator: delta={intervalDelta:E3} > tol={maxIntervalTol:E3}";
+            return false;
+        }
+        return Validate(samples, maxPosTol, maxD1Tol, maxRawD2Tol, maxGeomD2Tol, maxCircleTol, out failureReason);
+    }
+
+    /// <summary>
     /// Computes the central finite difference second derivative from D1 probes at t+h and t-h,
     /// and calculates the Euclidean error norm against the candidate D2 vector.
     /// Rejects non-finite inputs or non-positive step sizes.

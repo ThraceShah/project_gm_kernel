@@ -346,11 +346,12 @@ internal static class ICurveContinuation
     {
         preferA = true;
         var chordUnit = view.ChartChordUnits[segment];
-        var planeOffset = IntervalRootCheck.ChordPlaneOffset(in chordUnit, view.ChartPositions[segment],
-            view.ChartParameters[segment], view.ChartScales[segment], t);
+        IntervalRootCheck.ChordPlaneOffsetInterval(in chordUnit, view.ChartPositions[segment],
+            view.ChartParameters[segment], view.ChartScales[segment], t,
+            out var planeOffsetLo, out var planeOffsetHi);
         var cellRadius = Math.Max(1e-4, 1e-3 * Math.Max(1.0, Norm(candidateA)));
         return IntervalRootCheck.TryDisambiguateI3Pair(
-            in view.Support0, in view.Support1, in chordUnit, planeOffset,
+            in view.Support0, in view.Support1, in chordUnit, planeOffsetLo, planeOffsetHi,
             in candidateA, in candidateB, cellRadius, out preferA);
     }
 

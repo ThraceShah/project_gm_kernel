@@ -393,4 +393,66 @@ public class BlendEvaluationTests
         Assert.InRange(Length(Sub(frame.YD1, yD1Fd)), 0, 1e-7);
         Assert.InRange(Length(Sub(frame.YD2, yD2Fd)), 0, 1e-5);
     }
+
+    [Fact]
+    public void TryBuildFrameJet_WithoutSpineD3Overload_RecoversExactSecondDerivativeFromContactEndJet()
+    {
+        // Regression for review Item 4: C(u) = (u, 0, u^3 / 6), X = (0, 1, 0), Y = unit(C' × X),
+        // Q_start = C + X, Q_end = C + Y, r = 1. At u = 0: C''' = (0, 0, 1), Y'' = (-1, 0, 0),
+        // Q_end'' = (-1, 0, 0), arc = π/2, and B_uu(0, 1) = (-1, 0, 0).
+        var c = Vector(0, 0, 0);
+        var c1 = Vector(1, 0, 0);
+        var c2 = Vector(0, 0, 0);
+        var c3 = Vector(0, 0, 1);
+        var qStart = Vector(0, 1, 0);
+        var qStartD1 = Vector(1, 0, 0);
+        var qStartD2 = Vector(0, 0, 0);
+        var qEnd = Vector(0, 0, 1);
+        var qEndD1 = Vector(1, 0, 0);
+        var qEndD2 = Vector(-1, 0, 0);
+
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryBuildFrameJet(
+            in c, in c1, in c2, in c3,
+            in qStart, in qStartD1, in qStartD2,
+            in qEnd, in qEndD1, in qEndD2,
+            radius: 1.0, out var frameWithD3));
+
+        Assert.Equal(AlgorithmStatus.Success, BlendEvaluation.TryBuildFrameJet(
+            in c, in c1, in c2,
+            in qStart, in qStartD1, in qStartD2,
+            in qEnd, in qEndD1, in qEndD2,
+            radius: 1.0, out var frameWithoutD3));
+
+        Assert.Equal(-1.0, frameWithD3.YD2.X, 12);
+        Assert.Equal(0.0, frameWithD3.YD2.Y, 12);
+        Assert.Equal(0.0, frameWithD3.YD2.Z, 12);
+        Assert.Equal(frameWithD3.YD2.X, frameWithoutD3.YD2.X, 12);
+        Assert.Equal(frameWithD3.YD2.Y, frameWithoutD3.YD2.Y, 12);
+        Assert.Equal(frameWithD3.YD2.Z, frameWithoutD3.YD2.Z, 12);
+
+        Span<KernelVector3> jetOut = stackalloc KernelVector3[6];
+        Assert.Equal(AlgorithmStatus.Success,
+            BlendEvaluation.Evaluate(in frameWithoutD3, u: 0.0, v: 1.0, order: 2, jetOut));
+        var bUu = jetOut[3];
+        Assert.Equal(-1.0, bUu.X, 12);
+        Assert.Equal(0.0, bUu.Y, 12);
+        Assert.Equal(0.0, bUu.Z, 12);
+    }
+
+    [Fact]
+    public void TryBuildFrame_WhenStartContactParallelToSpineTangent_RejectsEvenWithPreviousArc()
+    {
+        // Regression for review Item 5: spinePoint = (0,0,0), spineTangent = (1,0,0),
+        // contactStart = (1,0,0), contactEnd = (-1,0,0), radius = 1, previousArc = π.
+        // Cross(spineTangent, startX) = 0 so Y is degenerate; previousArc must never bypass
+        // the frame non-degeneracy check.
+        var spinePoint = Vector(0, 0, 0);
+        var spineTangent = Vector(1, 0, 0);
+        var contactStart = Vector(1, 0, 0);
+        var contactEnd = Vector(-1, 0, 0);
+
+        Assert.Equal(AlgorithmStatus.Singular, BlendEvaluation.TryBuildFrame(
+            in spinePoint, in spineTangent, in contactStart, in contactEnd,
+            radius: 1.0, out _, out _, out _, previousArc: Math.PI));
+    }
 }

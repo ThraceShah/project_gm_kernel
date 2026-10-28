@@ -1091,9 +1091,7 @@ internal static unsafe class XtWriter
             : XtFieldValue.Null();
         fields[6] = data.ParameterError1Provided != 0
             ? XtFieldValue.RealValue(data.ParameterError1)
-            : data.ParameterErrorProvided != 0
-                ? XtFieldValue.RealValue(data.ParameterError)
-                : XtFieldValue.Null();
+            : XtFieldValue.Null();
         for (BufferOffset i = 0; i < chartCount; i++)
         {
             var o = chartOffset + i * 3;

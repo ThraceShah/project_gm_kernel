@@ -398,6 +398,99 @@ public unsafe class XtGeometryWriterTests : IDisposable
     }
 
     [Fact]
+    public void ICurveChartParameterError_WhenSecondSlotIsNull_PreservesNullAcrossMaterializeAndRetransmit()
+    {
+        // Regression for review Item 6: when CHART has parameter_error = [2e-5, null],
+        // TryMaterializeICurveFromXt -> DecodeIcurve -> PartTransmitB must preserve the
+        // second slot as Empty (null) rather than copying the first slot.
+        int body;
+        Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body));
+        KernelRuntime.TryResolveBodySlot(body, out var bodySlot);
+        var edgeSlot = KernelRuntime.GetBodyRecord(bodySlot).FirstEdgeBody;
+        int edge = KernelRuntime.TagOf(PoolKind.Edge, edgeSlot);
+
+        var planeSf = new PK_PLANE_sf_s();
+        planeSf.basis_set.axis.coord[2] = 1;
+        planeSf.basis_set.ref_direction.coord[0] = 1;
+        int plane = 0;
+        Assert.Equal(0, KernelRuntime.PlaneCreate(&planeSf, &plane));
+
+        var coneSf = new PK_CONE_sf_s { radius = 1, semi_angle = Math.Atan(0.5) };
+        coneSf.basis_set.axis.coord[2] = 1;
+        coneSf.basis_set.ref_direction.coord[0] = 1;
+        int cone = 0;
+        Assert.Equal(0, KernelRuntime.ConeCreate(&coneSf, &cone));
+
+        double[] chart =
+        [
+            1, 0, 0,
+            0, 1, 0,
+            -1, 0, 0,
+            0, -1, 0,
+        ];
+        var input = new IcurveDecodeInput
+        {
+            Surface0Tag = plane,
+            Surface1Tag = cone,
+            BaseParameter = 0,
+            BaseScale = 1,
+            ChartCount = 4,
+            ChartHvecs = chart,
+            Start = new IcurveLimitInput
+            {
+                Type = LimitType.Help,
+                TermUse = LimitTermUse.Unset,
+                Hvecs = chart.AsSpan(0, 3).ToArray(),
+            },
+            End = new IcurveLimitInput
+            {
+                Type = LimitType.Help,
+                TermUse = LimitTermUse.Unset,
+                Hvecs = chart.AsSpan(9, 3).ToArray(),
+            },
+            UvType = IntersectionUvType.None,
+            ChordalError = 1e-4,
+            AngularError = 1e-6,
+            ParameterError = 2e-5,
+            ParameterErrorProvided = 1,
+            ParameterError1 = 0,
+            ParameterError1Provided = 0,
+        };
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var dataSlot, out var failure, out _));
+        Assert.Equal(IcurveDecodeFailure.None, failure);
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(dataSlot, out var icurve));
+        Assert.Equal(0, KernelRuntime.TopologyDetachGeometry(edge));
+        Assert.Equal(0, KernelRuntime.EdgeAttachCurves(1, &edge, &icurve));
+
+        var doc1 = Decode(Transmit(body));
+        var intersection1 = SingleNode(doc1, XtNodeTypes.Intersection);
+        var chartNode1 = Deref(doc1, intersection1.Fields[9]);
+        Assert.Equal(XtFieldKind.Real, chartNode1.Fields[5].Kind);
+        Assert.Equal(2e-5, chartNode1.Fields[5].Real, 14);
+        Assert.Equal(XtFieldKind.Empty, chartNode1.Fields[6].Kind);
+
+        Assert.Equal(AlgorithmStatus.Success,
+            KernelRuntime.TryMaterializeICurveFromXt(doc1, intersection1.Index, out var hydrated, out var hydrateFailure));
+        Assert.Equal(IcurveDecodeFailure.None, hydrateFailure);
+        var record = KernelRuntime.GetCurveByTag(hydrated);
+        ref readonly var hydratedData = ref KernelRuntime.ICurveDataPool[record.DataIndex];
+        Assert.Equal(1, hydratedData.ParameterErrorProvided);
+        Assert.Equal(2e-5, hydratedData.ParameterError, 14);
+        Assert.Equal(0, hydratedData.ParameterError1Provided);
+        Assert.Equal(0.0, hydratedData.ParameterError1, 14);
+
+        // Attach the hydrated curve and transmit again to verify end-to-end round-trip.
+        Assert.Equal(0, KernelRuntime.TopologyDetachGeometry(edge));
+        Assert.Equal(0, KernelRuntime.EdgeAttachCurves(1, &edge, &hydrated));
+        var doc2 = Decode(Transmit(body));
+        var intersection2 = SingleNode(doc2, XtNodeTypes.Intersection);
+        var chartNode2 = Deref(doc2, intersection2.Fields[9]);
+        Assert.Equal(XtFieldKind.Real, chartNode2.Fields[5].Kind);
+        Assert.Equal(2e-5, chartNode2.Fields[5].Real, 14);
+        Assert.Equal(XtFieldKind.Empty, chartNode2.Fields[6].Kind);
+    }
+
+    [Fact]
     public void ICurvePlaneTorus_TransmitMaterialize_PreservesSupportsAndEval()
     {
         int body;

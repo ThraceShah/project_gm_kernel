@@ -58,11 +58,22 @@ internal static class IntervalRootCheck
     internal static AlgorithmStatus TryCertifyI3(in AnalyticSurface support0, in AnalyticSurface support1,
         in KernelVector3 chordUnit, double planeOffset, in IntervalBox3 box,
         out IntervalRootStatus status, out IntervalBox3 image)
+        => TryCertifyI3(in support0, in support1, in chordUnit, planeOffset, planeOffset, in box, out status, out image);
+
+    /// <summary>
+    /// Certify the I3 system φ₀=φ₁=p=0 on <paramref name="box"/> at fixed t,
+    /// where p(x)=e·x − offset with offset ∈ [<paramref name="planeOffsetLo"/>, <paramref name="planeOffsetHi"/>].
+    /// </summary>
+    internal static AlgorithmStatus TryCertifyI3(in AnalyticSurface support0, in AnalyticSurface support1,
+        in KernelVector3 chordUnit, double planeOffsetLo, double planeOffsetHi, in IntervalBox3 box,
+        out IntervalRootStatus status, out IntervalBox3 image)
     {
         status = IntervalRootStatus.BoundsUnavailable;
         image = default;
         if (box.IsEmpty) return AlgorithmStatus.InvalidInput;
-        if (!IsFinite(chordUnit) || !double.IsFinite(planeOffset)) return AlgorithmStatus.InvalidInput;
+        if (!IsFinite(chordUnit) || !double.IsFinite(planeOffsetLo) || !double.IsFinite(planeOffsetHi))
+            return AlgorithmStatus.InvalidInput;
+        if (planeOffsetLo > planeOffsetHi) (planeOffsetLo, planeOffsetHi) = (planeOffsetHi, planeOffsetLo);
         if (!IsIntervalCapable(in support0) || !IsIntervalCapable(in support1))
             return AlgorithmStatus.Unsupported;
 
@@ -78,7 +89,7 @@ internal static class IntervalRootCheck
         Span<double> fHi = stackalloc double[3];
         Span<double> jMid = stackalloc double[9];
         var centerStatus = IntervalPointResidualAndJacobian(
-            in support0, in support1, in chordUnit, planeOffset, in mid, fLo, fHi, jMid);
+            in support0, in support1, in chordUnit, planeOffsetLo, planeOffsetHi, in mid, fLo, fHi, jMid);
         if (centerStatus != AlgorithmStatus.Success)
             return centerStatus;
 
@@ -166,6 +177,20 @@ internal static class IntervalRootCheck
             status = IntervalRootStatus.Unique;
             return AlgorithmStatus.Success;
         }
+
+        // Every root x* ∈ box must also lie in K(box), hence in narrowed = box ∩ K(box).
+        // If the outward-rounded natural interval extension [F](narrowed) excludes 0 in any
+        // component, then box contains no root.
+        var narrowed = Intersect(in box, in image);
+        if (narrowed.IsEmpty
+            || (TryIntervalBoxResidual(in support0, in support1, in chordUnit, planeOffsetLo, planeOffsetHi,
+                    in narrowed, out var nLo, out var nHi) == AlgorithmStatus.Success
+                && (nLo.X > 0 || nHi.X < 0 || nLo.Y > 0 || nHi.Y < 0 || nLo.Z > 0 || nHi.Z < 0)))
+        {
+            status = IntervalRootStatus.Empty;
+            return AlgorithmStatus.Success;
+        }
+
         status = IntervalRootStatus.Undetermined;
         return AlgorithmStatus.Success;
     }
@@ -179,15 +204,22 @@ internal static class IntervalRootCheck
         in KernelVector3 chordUnit, double planeOffset,
         in KernelVector3 candidateA, in KernelVector3 candidateB, double cellRadius,
         out bool preferA)
+        => TryDisambiguateI3Pair(in support0, in support1, in chordUnit, planeOffset, planeOffset,
+            in candidateA, in candidateB, cellRadius, out preferA);
+
+    internal static bool TryDisambiguateI3Pair(in AnalyticSurface support0, in AnalyticSurface support1,
+        in KernelVector3 chordUnit, double planeOffsetLo, double planeOffsetHi,
+        in KernelVector3 candidateA, in KernelVector3 candidateB, double cellRadius,
+        out bool preferA)
     {
         preferA = true;
         if (!(cellRadius > 0)) return false;
         var boxA = BoxAround(in candidateA, cellRadius);
         var boxB = BoxAround(in candidateB, cellRadius);
-        if (TryCertifyI3(in support0, in support1, in chordUnit, planeOffset, in boxA,
+        if (TryCertifyI3(in support0, in support1, in chordUnit, planeOffsetLo, planeOffsetHi, in boxA,
                 out var statusA, out _) != AlgorithmStatus.Success)
             return false;
-        if (TryCertifyI3(in support0, in support1, in chordUnit, planeOffset, in boxB,
+        if (TryCertifyI3(in support0, in support1, in chordUnit, planeOffsetLo, planeOffsetHi, in boxB,
                 out var statusB, out _) != AlgorithmStatus.Success)
             return false;
         if (statusA == IntervalRootStatus.Unique && statusB == IntervalRootStatus.Empty)
@@ -203,12 +235,66 @@ internal static class IntervalRootCheck
         return false;
     }
 
-    /// <summary>Chord-plane offset for p(x)=e·x − offset matching <see cref="OriginalChartParameterMap.PlaneResidual"/>.</summary>
+    /// <summary>
+    /// Compensated chord-plane offset for p(x)=e·x − offset matching
+    /// <see cref="OriginalChartParameterMap.PlaneResidual"/> without catastrophic
+    /// cancellation when |t₀| and |e·P₀| are large (e.g. 2⁵³).
+    /// </summary>
     internal static double ChordPlaneOffset(in KernelVector3 chordUnit, in KernelVector3 segmentAnchor,
         double segmentParameter, double segmentScale, double t)
     {
-        var anchored = t - segmentParameter;
-        return Dot(chordUnit, segmentAnchor) + anchored / segmentScale;
+        ChordPlaneOffsetInterval(in chordUnit, in segmentAnchor, segmentParameter, segmentScale, t,
+            out var lo, out var hi);
+        return 0.5 * (lo + hi);
+    }
+
+    /// <summary>
+    /// Outward-rounded interval enclosure [offsetLo, offsetHi] of the exact chord-plane
+    /// offset e·P₀ + (t − t₀)/f₀ using error-free transformations (TwoSum + FMA) so
+    /// cancellation between e·P₀ and (t − t₀)/f₀ neither loses low-order bits nor
+    /// underestimates rounding error.
+    /// </summary>
+    internal static void ChordPlaneOffsetInterval(in KernelVector3 chordUnit, in KernelVector3 segmentAnchor,
+        double segmentParameter, double segmentScale, double t, out double offsetLo, out double offsetHi)
+    {
+        if (!IsFinite(chordUnit) || !IsFinite(segmentAnchor)
+            || !double.IsFinite(segmentParameter) || !double.IsFinite(segmentScale)
+            || !(segmentScale > 0) || !double.IsFinite(t))
+        {
+            offsetLo = double.NegativeInfinity;
+            offsetHi = double.PositiveInfinity;
+            return;
+        }
+
+        TwoProd(chordUnit.X, segmentAnchor.X, out var px, out var exLo, out var exHi);
+        TwoProd(chordUnit.Y, segmentAnchor.Y, out var py, out var eyLo, out var eyHi);
+        TwoProd(chordUnit.Z, segmentAnchor.Z, out var pz, out var ezLo, out var ezHi);
+
+        TwoSum(t, -segmentParameter, out var st, out var rt);
+        var q0 = st / segmentScale;
+        var rem = Math.FusedMultiplyAdd(-q0, segmentScale, st);
+        var remLo = rem == 0.0 ? 0.0 : OutwardDown(rem);
+        var remHi = rem == 0.0 ? 0.0 : OutwardUp(rem);
+        var numLo = OutwardAddLo(remLo, rt);
+        var numHi = OutwardAddHi(remHi, rt);
+        var q1Lo = DivDown(numLo, segmentScale);
+        var q1Hi = DivUp(numHi, segmentScale);
+        if (q1Lo > q1Hi) (q1Lo, q1Hi) = (q1Hi, q1Lo);
+
+        TwoSum(px, py, out var s1, out var e1);
+        TwoSum(s1, pz, out var s2, out var e2);
+        TwoSum(s2, q0, out var s3, out var e3);
+
+        var errLo = OutwardAddLo(OutwardAddLo(e1, e2), e3);
+        var errHi = OutwardAddHi(OutwardAddHi(e1, e2), e3);
+        errLo = OutwardAddLo(errLo, OutwardAddLo(exLo, OutwardAddLo(eyLo, ezLo)));
+        errHi = OutwardAddHi(errHi, OutwardAddHi(exHi, OutwardAddHi(eyHi, ezHi)));
+        errLo = OutwardAddLo(errLo, q1Lo);
+        errHi = OutwardAddHi(errHi, q1Hi);
+
+        offsetLo = OutwardAddLo(s3, errLo);
+        offsetHi = OutwardAddHi(s3, errHi);
+        if (offsetLo > offsetHi) (offsetLo, offsetHi) = (offsetHi, offsetLo);
     }
 
     private static IntervalBox3 BoxAround(in KernelVector3 center, double radius)
@@ -227,14 +313,19 @@ internal static class IntervalRootCheck
         };
 
     private static AlgorithmStatus IntervalPointResidualAndJacobian(in AnalyticSurface s0, in AnalyticSurface s1,
-        in KernelVector3 chordUnit, double planeOffset, in KernelVector3 x,
+        in KernelVector3 chordUnit, double planeOffsetLo, double planeOffsetHi, in KernelVector3 x,
         Span<double> fLo, Span<double> fHi, Span<double> jacobian)
     {
-        if (AnalyticImplicitEvaluation.Evaluate(in s0, in x, 1, out var j0) != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in s1, in x, 1, out var j1) != AlgorithmStatus.Success)
+        if (AnalyticImplicitEvaluation.Evaluate(in s0, in x, 1, out _) != AlgorithmStatus.Success
+            || AnalyticImplicitEvaluation.Evaluate(in s1, in x, 1, out _) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
         if (IntervalSurfaceResidual(in s0, in x, out fLo[0], out fHi[0]) != AlgorithmStatus.Success
             || IntervalSurfaceResidual(in s1, in x, out fLo[1], out fHi[1]) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+
+        var pointBox = new IntervalBox3(x.X, x.X, x.Y, x.Y, x.Z, x.Z);
+        if (GradientRange(in s0, in pointBox, out var g0Lo, out var g0Hi) != AlgorithmStatus.Success
+            || GradientRange(in s1, in pointBox, out var g1Lo, out var g1Hi) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
 
         var (exLo, exHi) = MulScalarInterval(chordUnit.X, x.X, x.X);
@@ -242,23 +333,60 @@ internal static class IntervalRootCheck
         var (ezLo, ezHi) = MulScalarInterval(chordUnit.Z, x.Z, x.Z);
         var dotLo = OutwardAddLo(OutwardAddLo(exLo, eyLo), ezLo);
         var dotHi = OutwardAddHi(OutwardAddHi(exHi, eyHi), ezHi);
-        fLo[2] = OutwardSubLo(dotLo, planeOffset);
-        fHi[2] = OutwardSubHi(dotHi, planeOffset);
+        fLo[2] = OutwardSubLo(dotLo, planeOffsetHi);
+        fHi[2] = OutwardSubHi(dotHi, planeOffsetLo);
         if (fLo[2] > fHi[2]) (fLo[2], fHi[2]) = (fHi[2], fLo[2]);
 
-        jacobian[0] = j0.Gradient.X; jacobian[1] = j0.Gradient.Y; jacobian[2] = j0.Gradient.Z;
-        jacobian[3] = j1.Gradient.X; jacobian[4] = j1.Gradient.Y; jacobian[5] = j1.Gradient.Z;
+        jacobian[0] = 0.5 * (g0Lo.X + g0Hi.X);
+        jacobian[1] = 0.5 * (g0Lo.Y + g0Hi.Y);
+        jacobian[2] = 0.5 * (g0Lo.Z + g0Hi.Z);
+        jacobian[3] = 0.5 * (g1Lo.X + g1Hi.X);
+        jacobian[4] = 0.5 * (g1Lo.Y + g1Hi.Y);
+        jacobian[5] = 0.5 * (g1Lo.Z + g1Hi.Z);
         jacobian[6] = chordUnit.X; jacobian[7] = chordUnit.Y; jacobian[8] = chordUnit.Z;
         return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus IntervalSurfaceResidual(in AnalyticSurface surface, in KernelVector3 x,
         out double valLo, out double valHi)
+        => IntervalSurfaceResidual(in surface, new IntervalBox3(x.X, x.X, x.Y, x.Y, x.Z, x.Z), out valLo, out valHi);
+
+    private static AlgorithmStatus TryIntervalBoxResidual(in AnalyticSurface s0, in AnalyticSurface s1,
+        in KernelVector3 chordUnit, double planeOffsetLo, double planeOffsetHi, in IntervalBox3 box,
+        out KernelVector3 fLo, out KernelVector3 fHi)
+    {
+        fLo = fHi = default;
+        if (IntervalSurfaceResidual(in s0, in box, out var f0Lo, out var f0Hi) != AlgorithmStatus.Success
+            || IntervalSurfaceResidual(in s1, in box, out var f1Lo, out var f1Hi) != AlgorithmStatus.Success)
+            return AlgorithmStatus.Unsupported;
+
+        var (exLo, exHi) = MulScalarInterval(chordUnit.X, box.XLo, box.XHi);
+        var (eyLo, eyHi) = MulScalarInterval(chordUnit.Y, box.YLo, box.YHi);
+        var (ezLo, ezHi) = MulScalarInterval(chordUnit.Z, box.ZLo, box.ZHi);
+        var dotLo = OutwardAddLo(OutwardAddLo(exLo, eyLo), ezLo);
+        var dotHi = OutwardAddHi(OutwardAddHi(exHi, eyHi), ezHi);
+        var f2Lo = OutwardSubLo(dotLo, planeOffsetHi);
+        var f2Hi = OutwardSubHi(dotHi, planeOffsetLo);
+        if (f2Lo > f2Hi) (f2Lo, f2Hi) = (f2Hi, f2Lo);
+
+        fLo = Vector(f0Lo, f1Lo, f2Lo);
+        fHi = Vector(f0Hi, f1Hi, f2Hi);
+        return AlgorithmStatus.Success;
+    }
+
+    private static IntervalBox3 Intersect(in IntervalBox3 a, in IntervalBox3 b)
+        => new(
+            Math.Max(a.XLo, b.XLo), Math.Min(a.XHi, b.XHi),
+            Math.Max(a.YLo, b.YLo), Math.Min(a.YHi, b.YHi),
+            Math.Max(a.ZLo, b.ZLo), Math.Min(a.ZHi, b.ZHi));
+
+    private static AlgorithmStatus IntervalSurfaceResidual(in AnalyticSurface surface, in IntervalBox3 box,
+        out double valLo, out double valHi)
     {
         valLo = valHi = 0;
-        var rxLo = OutwardSubLo(x.X, surface.Origin.X); var rxHi = OutwardSubHi(x.X, surface.Origin.X);
-        var ryLo = OutwardSubLo(x.Y, surface.Origin.Y); var ryHi = OutwardSubHi(x.Y, surface.Origin.Y);
-        var rzLo = OutwardSubLo(x.Z, surface.Origin.Z); var rzHi = OutwardSubHi(x.Z, surface.Origin.Z);
+        var rxLo = OutwardSubLo(box.XLo, surface.Origin.X); var rxHi = OutwardSubHi(box.XHi, surface.Origin.X);
+        var ryLo = OutwardSubLo(box.YLo, surface.Origin.Y); var ryHi = OutwardSubHi(box.YHi, surface.Origin.Y);
+        var rzLo = OutwardSubLo(box.ZLo, surface.Origin.Z); var rzHi = OutwardSubHi(box.ZHi, surface.Origin.Z);
 
         switch (surface.Kind)
         {
@@ -370,15 +498,60 @@ internal static class IntervalRootCheck
         axialHi = OutwardAddHi(OutwardAddHi(txHi, tyHi), tzHi);
         if (axialLo > axialHi) (axialLo, axialHi) = (axialHi, axialLo);
 
-        var (axAxLo, axAxHi) = MulScalarInterval(ax, axialLo, axialHi);
-        var (ayAxLo, ayAxHi) = MulScalarInterval(ay, axialLo, axialHi);
-        var (azAxLo, azAxHi) = MulScalarInterval(az, axialLo, axialHi);
-        radXLo = OutwardSubLo(rxLo, axAxHi); radXHi = OutwardSubHi(rxHi, axAxLo);
-        radYLo = OutwardSubLo(ryLo, ayAxHi); radYHi = OutwardSubHi(ryHi, ayAxLo);
-        radZLo = OutwardSubLo(rzLo, azAxHi); radZHi = OutwardSubHi(rzHi, azAxLo);
-        if (radXLo > radXHi) (radXLo, radXHi) = (radXHi, radXLo);
-        if (radYLo > radYHi) (radYLo, radYHi) = (radYHi, radYLo);
-        if (radZLo > radZHi) (radZLo, radZHi) = (radZHi, radZLo);
+        // Factored projection P = I − A·Aᵀ avoids both interval box dependency
+        // (rᵢ − Aᵢ²·rᵢ) and large-coordinate cancellation when |z| is large.
+        IntervalProjectByP(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
+            out radXLo, out radXHi, out radYLo, out radYHi, out radZLo, out radZHi);
+    }
+
+    private static void IntervalProjectByP(in AnalyticSurface surface,
+        double vxLo, double vxHi, double vyLo, double vyHi, double vzLo, double vzHi,
+        out double pxLo, out double pxHi, out double pyLo, out double pyHi, out double pzLo, out double pzHi)
+    {
+        var ax = surface.Axis.X; var ay = surface.Axis.Y; var az = surface.Axis.Z;
+        var (pxxLo, pxxHi) = OneMinusSquareInterval(ax);
+        var (pyyLo, pyyHi) = OneMinusSquareInterval(ay);
+        var (pzzLo, pzzHi) = OneMinusSquareInterval(az);
+        var (pxyLo, pxyHi) = NegProdInterval(ax, ay);
+        var (pxzLo, pxzHi) = NegProdInterval(ax, az);
+        var (pyzLo, pyzHi) = NegProdInterval(ay, az);
+
+        var (xxLo, xxHi) = MulInterval(pxxLo, pxxHi, vxLo, vxHi);
+        var (xyLo, xyHi) = MulInterval(pxyLo, pxyHi, vyLo, vyHi);
+        var (xzLo, xzHi) = MulInterval(pxzLo, pxzHi, vzLo, vzHi);
+        pxLo = OutwardAddLo(OutwardAddLo(xxLo, xyLo), xzLo);
+        pxHi = OutwardAddHi(OutwardAddHi(xxHi, xyHi), xzHi);
+        if (pxLo > pxHi) (pxLo, pxHi) = (pxHi, pxLo);
+
+        var (yxLo, yxHi) = MulInterval(pxyLo, pxyHi, vxLo, vxHi);
+        var (yyLo, yyHi) = MulInterval(pyyLo, pyyHi, vyLo, vyHi);
+        var (yzLo, yzHi) = MulInterval(pyzLo, pyzHi, vzLo, vzHi);
+        pyLo = OutwardAddLo(OutwardAddLo(yxLo, yyLo), yzLo);
+        pyHi = OutwardAddHi(OutwardAddHi(yxHi, yyHi), yzHi);
+        if (pyLo > pyHi) (pyLo, pyHi) = (pyHi, pyLo);
+
+        var (zxLo, zxHi) = MulInterval(pxzLo, pxzHi, vxLo, vxHi);
+        var (zyLo, zyHi) = MulInterval(pyzLo, pyzHi, vyLo, vyHi);
+        var (zzLo, zzHi) = MulInterval(pzzLo, pzzHi, vzLo, vzHi);
+        pzLo = OutwardAddLo(OutwardAddLo(zxLo, zyLo), zzLo);
+        pzHi = OutwardAddHi(OutwardAddHi(zxHi, zyHi), zzHi);
+        if (pzLo > pzHi) (pzLo, pzHi) = (pzHi, pzLo);
+    }
+
+    private static (double Lo, double Hi) OneMinusSquareInterval(double a)
+    {
+        if (a == 0.0) return (1.0, 1.0);
+        if (Math.Abs(a) == 1.0) return (0.0, 0.0);
+        var v = Math.FusedMultiplyAdd(-a, a, 1.0);
+        return double.IsFinite(v) ? (OutwardDown(v), OutwardUp(v)) : (double.NegativeInfinity, double.PositiveInfinity);
+    }
+
+    private static (double Lo, double Hi) NegProdInterval(double a, double b)
+    {
+        if (a == 0.0 || b == 0.0) return (0.0, 0.0);
+        var lo = MulDown(-a, b);
+        var hi = MulUp(-a, b);
+        return lo <= hi ? (lo, hi) : (hi, lo);
     }
 
     private static bool TryInvert3(ReadOnlySpan<double> a, Span<double> inverse)
@@ -444,11 +617,14 @@ internal static class IntervalRootCheck
             }
             case SurfaceClass.Cylinder:
             {
+                // φ(r) = ‖P·r‖² − R² with P = I − A·Aᵀ ⇒ ∇φ(r) = 2·Pᵀ·P·r = 2·P·r⊥.
                 IntervalAxialAndRadial(in surface, rxLo, rxHi, ryLo, ryHi, rzLo, rzHi,
                     out _, out _, out var radXLo, out var radXHi, out var radYLo, out var radYHi, out var radZLo, out var radZHi);
-                var (xLo, xHi) = MulScalarInterval(2, radXLo, radXHi);
-                var (yLo, yHi) = MulScalarInterval(2, radYLo, radYHi);
-                var (zLo, zHi) = MulScalarInterval(2, radZLo, radZHi);
+                IntervalProjectByP(in surface, radXLo, radXHi, radYLo, radYHi, radZLo, radZHi,
+                    out var pxLo, out var pxHi, out var pyLo, out var pyHi, out var pzLo, out var pzHi);
+                var (xLo, xHi) = MulScalarInterval(2, pxLo, pxHi);
+                var (yLo, yHi) = MulScalarInterval(2, pyLo, pyHi);
+                var (zLo, zHi) = MulScalarInterval(2, pzLo, pzHi);
                 gLo = Vector(xLo, yLo, zLo);
                 gHi = Vector(xHi, yHi, zHi);
                 return AlgorithmStatus.Success;
@@ -466,9 +642,12 @@ internal static class IntervalRootCheck
                 // Entire box must lie on the valid half-cone (R + k·z ≥ 0, §8.1 / §18.4).
                 if (genLo < 0) return AlgorithmStatus.Unsupported;
 
-                var (rx2Lo, rx2Hi) = MulScalarInterval(2, radXLo, radXHi);
-                var (ry2Lo, ry2Hi) = MulScalarInterval(2, radYLo, radYHi);
-                var (rz2Lo, rz2Hi) = MulScalarInterval(2, radZLo, radZHi);
+                // φ(r) = ‖P·r‖² − (R + k·A·r)² ⇒ ∇φ(r) = 2·P·r⊥ − 2k(R + k·z)·A.
+                IntervalProjectByP(in surface, radXLo, radXHi, radYLo, radYHi, radZLo, radZHi,
+                    out var pxLo, out var pxHi, out var pyLo, out var pyHi, out var pzLo, out var pzHi);
+                var (rx2Lo, rx2Hi) = MulScalarInterval(2, pxLo, pxHi);
+                var (ry2Lo, ry2Hi) = MulScalarInterval(2, pyLo, pyHi);
+                var (rz2Lo, rz2Hi) = MulScalarInterval(2, pzLo, pzHi);
                 var (twoKLo, twoKHi) = MulScalarInterval(2 * k, genLo, genHi);
                 var (axLo, axHi) = MulScalarInterval(surface.Axis.X, twoKLo, twoKHi);
                 var (ayLo, ayHi) = MulScalarInterval(surface.Axis.Y, twoKLo, twoKHi);
@@ -528,11 +707,17 @@ internal static class IntervalRootCheck
         var cRadHi = OutwardSubHi(qHi, sumAbLo);
         var (cRad4Lo, cRad4Hi) = MulScalarInterval(4, cRadLo, cRadHi);
 
-        // Axial factor: cAx = 4·(q² + a² − b²)·z
+        // Axial factor: cAx = [4·(q² + a² − b²) + 8a²·(1 − ‖A‖²)]·z
+        // (includes 8a²(A·r⊥) = 8a²(1 − ‖A‖²)z when ‖A‖ ≠ 1 so ∇φ matches φ = (q²+a²−b²)² − 4a²‖Pr‖²).
         var cAxBaseLo = OutwardAddLo(qLo, diffAbLo);
         var cAxBaseHi = OutwardAddHi(qHi, diffAbHi);
-        var (cAxProdLo, cAxProdHi) = MulInterval(cAxBaseLo, cAxBaseHi, axialLo, axialHi);
-        var (cAx4Lo, cAx4Hi) = MulScalarInterval(4, cAxProdLo, cAxProdHi);
+        var (cAx4BaseLo, cAx4BaseHi) = MulScalarInterval(4, cAxBaseLo, cAxBaseHi);
+        var (oneMinusA2Lo, oneMinusA2Hi) = OneMinusAxisNormSqInterval(in surface);
+        var (eightA2Lo, eightA2Hi) = MulScalarInterval(8, a2Lo, a2Hi);
+        var (corrLo, corrHi) = MulInterval(eightA2Lo, eightA2Hi, oneMinusA2Lo, oneMinusA2Hi);
+        var totalAxCoeffLo = OutwardAddLo(cAx4BaseLo, corrLo);
+        var totalAxCoeffHi = OutwardAddHi(cAx4BaseHi, corrHi);
+        var (cAx4Lo, cAx4Hi) = MulInterval(totalAxCoeffLo, totalAxCoeffHi, axialLo, axialHi);
 
         var (rxTermLo, rxTermHi) = MulInterval(cRad4Lo, cRad4Hi, radXLo, radXHi);
         var (ryTermLo, ryTermHi) = MulInterval(cRad4Lo, cRad4Hi, radYLo, radYHi);
@@ -673,6 +858,51 @@ internal static class IntervalRootCheck
     {
         var p = a * b;
         return double.IsFinite(p) ? OutwardUp(p) : p;
+    }
+    private static double DivDown(double a, double b)
+    {
+        var q = a / b;
+        return double.IsFinite(q) ? OutwardDown(q) : q;
+    }
+    private static double DivUp(double a, double b)
+    {
+        var q = a / b;
+        return double.IsFinite(q) ? OutwardUp(q) : q;
+    }
+    private static void TwoSum(double a, double b, out double s, out double e)
+    {
+        s = a + b;
+        var v = s - a;
+        e = (a - (s - v)) + (b - v);
+    }
+    private static void TwoProd(double a, double b, out double p, out double eLo, out double eHi)
+    {
+        p = a * b;
+        if (a == 0.0 || b == 0.0)
+        {
+            eLo = eHi = 0.0;
+            return;
+        }
+        var e = Math.FusedMultiplyAdd(a, b, -p);
+        eLo = e == 0.0 ? 0.0 : OutwardDown(e);
+        eHi = e == 0.0 ? 0.0 : OutwardUp(e);
+    }
+    private static (double Lo, double Hi) OneMinusAxisNormSqInterval(in AnalyticSurface surface)
+    {
+        var ax = surface.Axis.X; var ay = surface.Axis.Y; var az = surface.Axis.Z;
+        TwoProd(ax, ax, out var px, out var exLo, out var exHi);
+        TwoProd(ay, ay, out var py, out var eyLo, out var eyHi);
+        TwoProd(az, az, out var pz, out var ezLo, out var ezHi);
+        TwoSum(1.0, -px, out var s1, out var e1);
+        TwoSum(s1, -py, out var s2, out var e2);
+        TwoSum(s2, -pz, out var s3, out var e3);
+        var lowLo = OutwardSubLo(OutwardSubLo(OutwardSubLo(OutwardAddLo(OutwardAddLo(e1, e2), e3), exHi), eyHi), ezHi);
+        var lowHi = OutwardSubHi(OutwardSubHi(OutwardSubHi(OutwardAddHi(OutwardAddHi(e1, e2), e3), exLo), eyLo), ezLo);
+        if (s3 == 0.0 && lowLo == 0.0 && lowHi == 0.0)
+            return (0.0, 0.0);
+        var lo = OutwardAddLo(s3, lowLo);
+        var hi = OutwardAddHi(s3, lowHi);
+        return lo <= hi ? (lo, hi) : (hi, lo);
     }
 
     private static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)
