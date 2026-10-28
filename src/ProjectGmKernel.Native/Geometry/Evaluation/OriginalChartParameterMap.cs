@@ -158,18 +158,42 @@ internal static class OriginalChartParameterMap
         return false;
     }
 
-    /// <summary>Chord-plane residual p(x,t) = e·(x − Pᵢ) − (t − tᵢ)/fᵢ with anchored difference (§5.3).</summary>
+    /// <summary>Chord-plane residual p(x,t) = e·(x − Pᵢ) − (t − tᵢ)/fᵢ with EFT compensation (§5.3).</summary>
     internal static double PlaneResidual(ReadOnlySpan<KernelVector3> positions,
         ReadOnlySpan<double> parameters, ReadOnlySpan<double> scales,
         ReadOnlySpan<KernelVector3> chordUnits, BufferOffset segment, double t, in KernelVector3 point)
     {
-        var anchored = t - parameters[segment];
         var chord = chordUnits[segment];
         var anchor = positions[segment];
-        var projection = Math.FusedMultiplyAdd(chord.X, point.X - anchor.X,
-            Math.FusedMultiplyAdd(chord.Y, point.Y - anchor.Y,
-                chord.Z * (point.Z - anchor.Z)));
-        return projection - anchored / scales[segment];
+        var scale = scales[segment];
+        TwoSum(point.X, -anchor.X, out var dxHi, out var dxLo);
+        TwoSum(point.Y, -anchor.Y, out var dyHi, out var dyLo);
+        TwoSum(point.Z, -anchor.Z, out var dzHi, out var dzLo);
+        TwoProd(chord.X, dxHi, out var px, out var ex);
+        TwoProd(chord.Y, dyHi, out var py, out var ey);
+        TwoProd(chord.Z, dzHi, out var pz, out var ez);
+        TwoSum(t, -parameters[segment], out var dtHi, out var dtLo);
+        var qHi = dtHi / scale;
+        var qLo = (Math.FusedMultiplyAdd(-qHi, scale, dtHi) + dtLo) / scale;
+        TwoSum(px, py, out var s1, out var e1);
+        TwoSum(s1, pz, out var s2, out var e2);
+        TwoSum(s2, -qHi, out var s3, out var e3);
+        var low = (e1 + e2 + e3) + (ex + ey + ez)
+            + (chord.X * dxLo + chord.Y * dyLo + chord.Z * dzLo) - qLo;
+        return s3 + low;
+    }
+
+    private static void TwoSum(double a, double b, out double s, out double e)
+    {
+        s = a + b;
+        var v = s - a;
+        e = (a - (s - v)) + (b - v);
+    }
+
+    private static void TwoProd(double a, double b, out double p, out double e)
+    {
+        p = a * b;
+        e = Math.FusedMultiplyAdd(a, b, -p);
     }
 
     /// <summary>Native-parameter inverse ψᵢ(x) = tᵢ + fᵢ·e·(x − Pᵢ) (§5.3).</summary>

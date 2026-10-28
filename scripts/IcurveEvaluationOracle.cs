@@ -701,23 +701,55 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
             double maxPos = 0;
             double maxD1 = 0;
             double maxGeomD2 = 0;
+            double maxCircle = 0;
             var samples = 0;
+            var sampleList = new CaseFEvalSample[95];
             for (var i = 1; i < 96; i++)
             {
                 var t = record.TMin + (record.TMax - record.TMin) * (i + 0.37) / 96.0;
                 CheckOur(KernelRuntime.CurveEval(icurve, t, 2, ours), "our CurveEval live-recv-nonuniform");
                 ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, t, 2, reference), "PK_CURVE_eval live-recv-nonuniform");
-                maxPos = Math.Max(maxPos, Distance(&ours[0], &reference[0]));
-                maxD1 = Math.Max(maxD1, Distance(&ours[1], &reference[1]));
+                var posDelta = Distance(&ours[0], &reference[0]);
+                var d1Delta = Distance(&ours[1], &reference[1]);
+                var rawD2Delta = Distance(&ours[2], &reference[2]);
                 var nDelta = PrincipalNormalUnitDelta(&ours[1], &ours[2], &reference[1], &reference[2]);
                 var kDelta = Math.Abs(CurvatureOurs(&ours[1], &ours[2]) - CurvaturePk(&reference[1], &reference[2]));
-                maxGeomD2 = Math.Max(maxGeomD2, Math.Max(nDelta, kDelta));
+                var geomD2Delta = Math.Max(nDelta, kDelta);
+                var circleDelta = Math.Abs(Math.Sqrt(ours[0].coord[0] * ours[0].coord[0] + ours[0].coord[1] * ours[0].coord[1]) - 1.0)
+                    + Math.Abs(ours[0].coord[2]);
+
+                maxPos = Math.Max(maxPos, posDelta);
+                maxD1 = Math.Max(maxD1, d1Delta);
+                maxGeomD2 = Math.Max(maxGeomD2, geomD2Delta);
+                maxCircle = Math.Max(maxCircle, circleDelta);
+                sampleList[samples] = new CaseFEvalSample(posDelta, d1Delta, rawD2Delta, geomD2Delta, circleDelta);
                 samples++;
             }
 
-            log($"live-pk-recv-nonuniform: samples={samples} intervalDelta={intervalDelta:E3} max|Δpos|={maxPos:E3} max|ΔD1|={maxD1:E3} max|ΔD2|κ+n={maxGeomD2:E3}");
-            if (intervalDelta > 1e-12 || maxPos > 1e-8 || maxD1 > 1e-6 || maxGeomD2 > 1e-5)
-                throw new InvalidOperationException($"non-uniform chart mismatch interval={intervalDelta} pos={maxPos} d1={maxD1} d2={maxGeomD2}");
+            log($"live-pk-recv-nonuniform: samples={samples} intervalDelta={intervalDelta:E3} max|Δpos|={maxPos:E3} max|ΔD1|={maxD1:E3} max|ΔD2|κ+n={maxGeomD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
+            if (!CaseFValidator.ValidateNonUniformChart(intervalDelta, sampleList, 1e-12, 1e-8, 1e-6, double.MaxValue, 1e-5, 1e-8, out var nonUniformFailure))
+            {
+                throw new InvalidOperationException($"Case F2 non-uniform chart validation failed: {nonUniformFailure}");
+            }
+
+            // Negative tests: verify that CaseFValidator.ValidateNonUniformChart rejects NaN, Infinity,
+            // and out-of-tolerance values in both intervalDelta and evaluation samples.
+            {
+                if (CaseFValidator.ValidateNonUniformChart(double.NaN, sampleList, 1e-12, 1e-8, 1e-6, double.MaxValue, 1e-5, 1e-8, out var nanIntervalFail))
+                    throw new InvalidOperationException("Negative test failure: ValidateNonUniformChart accepted NaN intervalDelta!");
+                if (CaseFValidator.ValidateNonUniformChart(double.PositiveInfinity, sampleList, 1e-12, 1e-8, 1e-6, double.MaxValue, 1e-5, 1e-8, out var infIntervalFail))
+                    throw new InvalidOperationException("Negative test failure: ValidateNonUniformChart accepted Infinity intervalDelta!");
+                if (CaseFValidator.ValidateNonUniformChart(1e-6, sampleList, 1e-12, 1e-8, 1e-6, double.MaxValue, 1e-5, 1e-8, out var tolIntervalFail))
+                    throw new InvalidOperationException("Negative test failure: ValidateNonUniformChart accepted out-of-tolerance intervalDelta!");
+
+                var nanSampleList = (CaseFEvalSample[])sampleList.Clone();
+                nanSampleList[0] = new CaseFEvalSample(double.NaN, 0.0, 0.0, 0.0, 0.0);
+                if (CaseFValidator.ValidateNonUniformChart(intervalDelta, nanSampleList, 1e-12, 1e-8, 1e-6, double.MaxValue, 1e-5, 1e-8, out var nanSampleFail))
+                    throw new InvalidOperationException("Negative test failure: ValidateNonUniformChart accepted NaN sample DiffD0!");
+
+                log($"live-pk-recv-nonuniform: NaN/Inf/tolerance defense PASS ({nanIntervalFail}; {nanSampleFail})");
+            }
+
             log("live-pk-recv-nonuniform: PASS (non-uniform f_i recursion matches PK TMax, D0, D1, and geometric D2)");
         }
         finally

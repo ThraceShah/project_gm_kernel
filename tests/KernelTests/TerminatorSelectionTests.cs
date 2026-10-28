@@ -122,4 +122,58 @@ public class TerminatorSelectionTests
                 LimitTermUse.First, -0.1, out var anchor));
         Assert.Equal(1, anchor.SelectedSurface);
     }
+
+    [Fact]
+    public void EvaluateWithRule_LargeScaleTorusTerminator_DoesNotOverflowSingularityCheckOrSwitchSurface()
+    {
+        // Regression for review Item 3: 4:1 ring torus at R = 1 vs R = 2^190 with TermUse.First.
+        // Previously, squaring jet0.Gradient and 1e-12 * gradScale0 overflowed both sides to +Infinity,
+        // evaluating Infinity <= Infinity as true, marking the regular torus as singular, switching
+        // SelectedSurface from Torus 0 to Plane 1, and returning an unprojected chord midpoint.
+        static void RunAtScale(double r, out int selectedSurface, out KernelVector3 normalizedPoint)
+        {
+            var rOut = 1.25 * r;
+            var torus = new AnalyticSurface(SurfaceClass.Torus, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), r, 0.25 * r);
+            var plane = new AnalyticSurface(SurfaceClass.Plane, Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0));
+            var support0 = new SurfaceSupportRef(in torus, ParasolidConstants.PK_TOPOL_sense_positive_c, isBlendBound: false);
+            var support1 = new SurfaceSupportRef(in plane, ParasolidConstants.PK_TOPOL_sense_negative_c, isBlendBound: false);
+
+            var e = Vector(rOut, 0, 0);
+            var b = Vector(0, rOut, 0);
+            var p1 = Vector(-rOut, 0, 0);
+            KernelVector3[] positions = [b, p1];
+            double[] parameters = [0.0, rOut * Math.Sqrt(2.0)];
+            double[] scales = [1.0];
+            KernelVector3[] chords = [Vector(-1.0 / Math.Sqrt(2.0), -1.0 / Math.Sqrt(2.0), 0)];
+            var startTerm = new TerminatorLimit(LimitTermUse.First, e, b);
+            var view = new ICurveView(in support0, in support1, positions, parameters, scales, chords, startTerm, default);
+
+            Assert.Equal(AlgorithmStatus.Success,
+                TerminatorEvaluation.TryResolveTerminatorParameter(
+                    in view, isEnd: false, TerminatorParameterRule.ExtensionRatio, in e, in b, out var tE));
+            Assert.Equal(AlgorithmStatus.Success,
+                TerminatorEvaluation.Prepare(
+                    in view, isEnd: false, e, b, LimitTermUse.First, tE, out var anchor));
+            selectedSurface = anchor.SelectedSurface;
+
+            var tMid = 0.5 * (tE + parameters[0]);
+            Span<KernelVector3> derivatives = stackalloc KernelVector3[3];
+            Assert.Equal(AlgorithmStatus.Success,
+                ICurveEvaluation.EvaluateWithRule(
+                    in view, tMid, order: 2, ICurveConstraintPlan.Auto,
+                    TerminatorParameterRule.ExtensionRatio, derivatives, out _));
+            normalizedPoint = Scale(derivatives[0], 1.0 / r);
+        }
+
+        RunAtScale(1.0, out var selUnit, out var ptUnit);
+        RunAtScale(Math.ScaleB(1.0, 190), out var selLarge, out var ptLarge);
+
+        Assert.Equal(0, selUnit);
+        Assert.Equal(0, selLarge);
+        Assert.InRange(Math.Abs(ptUnit.X - 1.25 / Math.Sqrt(2.0)), 0, 1e-10);
+        Assert.InRange(Math.Abs(ptUnit.Y - 1.25 / Math.Sqrt(2.0)), 0, 1e-10);
+        Assert.Equal(ptUnit.X, ptLarge.X, 14);
+        Assert.Equal(ptUnit.Y, ptLarge.Y, 14);
+        Assert.Equal(0.0, ptLarge.Z, 14);
+    }
 }

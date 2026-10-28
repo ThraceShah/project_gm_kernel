@@ -27,7 +27,8 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 |---|---|---|---|
 | 原始图表递推与弦平面投影 | §5 / Original chart | **生产已接入 + 真实 PK 兼容通过** | 节点位相同比较；归一化余弦递归计算；弦方向保留；保留并回写 `parameter_error[0..1]`；非均匀弦长图表（Case F2，$f_i / f_{i-1} \ne 1$）与真实 PK `PK_CURVE_ask_interval` / `PK_CURVE_eval` 机器精度一致（$|\Delta T_{\max}| = 1.78\times 10^{-15}$） |
 | 解析支持面正则区间求解 (I1/I2/Auto) | §7 / Analytic supports | **生产已接入 + 真实 PK 兼容通过** | Auto: 平面走 I1，其他解析面走 I2；Oracle Case F / F2 真同参比较机器精度通过（D0/D1/曲率 $|\Delta| \le 7.5\times 10^{-14}$），Case A/A2/E 经由几何反算，Case B/C 验证几何残差 |
-| 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中；`BSurfaceEvaluation.EvaluateInDomain` 显式拒绝越界参数避免线性延拓产生伪根 |
+| 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中 |
+| B-曲面严格参数域守卫求值 (`BSurfaceEvaluation.EvaluateInDomain`) | §7.2 / §15.4 / B-surface domain | **内部入口可用 + 制造解通过** | `BSurfaceEvaluation.EvaluateInDomain` 显式拒绝 knot domain 越界参数，避免 `FindSpan` 钳位导致边界切平面线性延拓伪根；当前生产 `ICurveEvaluation` 仅开放解析支持面，B-曲面交线支持尚未接入生产求值 |
 | 节点与区间一侧导数 (D0–D2) | §16 / Knot evaluation | **生产已接入 + 制造解通过** | 显式传递 `ChartSide.Left` / `Right`；避免跨节点平均平滑 |
 | 诊断型 Auto 计划动态切换 | §7.7 / Stagnation | **生产已接入 + 制造解通过** | 仅在 Auto 模式下触发；强制计划绝不静默切换；记录 `PlanSwitched` |
 | 参数延拓 (Continuation) | §17.3 / Native parameter | **生产已接入 + 制造解通过** | 原生参数递增，步长受控，安全拒绝无分辨率步长与分支歧义，多 seed 后备受 SameLocalBranch 严格约束 |

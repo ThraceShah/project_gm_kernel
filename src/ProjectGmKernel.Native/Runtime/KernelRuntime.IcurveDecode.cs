@@ -175,12 +175,8 @@ internal static unsafe partial class KernelRuntime
         data.AngularError = input.AngularError;
         data.ParameterError = input.ParameterError;
         data.ParameterErrorProvided = input.ParameterErrorProvided;
-        data.ParameterError1 = input.ParameterError1Provided != 0
-            ? input.ParameterError1
-            : input.ParameterErrorProvided != 0 ? input.ParameterError : 0;
-        data.ParameterError1Provided = input.ParameterError1Provided != 0
-            ? input.ParameterError1Provided
-            : input.ParameterErrorProvided;
+        data.ParameterError1 = input.ParameterError1;
+        data.ParameterError1Provided = input.ParameterError1Provided;
         data.ExtendedChartCount = input.ExtendedChartCount;
         data.UvType = input.UvType;
         data.UvValueCount = expectedUv;

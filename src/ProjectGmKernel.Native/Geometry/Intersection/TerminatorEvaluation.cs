@@ -157,7 +157,7 @@ internal static class TerminatorEvaluation
         if (!IsFinite(endpoint) || !IsFinite(branchPoint)) return AlgorithmStatus.InvalidInput;
 
         var toBranch = Sub(branchPoint, endpoint);
-        var chordLength = Math.Sqrt(Dot(toBranch, toBranch));
+        var chordLength = Hypot3(toBranch);
         if (!(chordLength > 0) || !double.IsFinite(chordLength))
             return AlgorithmStatus.InvalidInput; // E == B: no interval exists
 
@@ -175,10 +175,12 @@ internal static class TerminatorEvaluation
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in branchPoint, 1, out var jet0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in branchPoint, 1, out var jet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
-        var n0 = Scale(jet0.Gradient, view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
-        var n1 = Scale(jet1.Gradient, view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+        var n0 = Scale(Unit(jet0.Gradient), view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+        var n1 = Scale(Unit(jet1.Gradient), view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+        if (!IsFinite(n0) || !IsFinite(n1) || !(Dot(n0, n0) > 0.5) || !(Dot(n1, n1) > 0.5))
+            return AlgorithmStatus.Singular;
         var tangent = Unit(Cross(n0, n1));
-        if (!IsFinite(tangent)) return AlgorithmStatus.Singular;
+        if (!IsFinite(tangent) || !(Dot(tangent, tangent) > 0.5)) return AlgorithmStatus.Singular;
 
         var forwardCosine = Dot(tangent, boundaryChord);
         if (!(forwardCosine > OriginalChartParameterMap.MinCosine))
@@ -222,19 +224,26 @@ internal static class TerminatorEvaluation
         var boundary = isEnd ? view.ChartPositions[^1] : view.ChartPositions[0];
         var localScale = ICurveEvaluation.LocalLengthScale(in view);
         var toBranchChord = Sub(branchPoint, endpoint);
-        var branchScale = Math.Max(localScale, Math.Sqrt(Dot(toBranchChord, toBranchChord)));
-        if (Dot(Sub(branchPoint, boundary), Sub(branchPoint, boundary)) > (1e-9 * branchScale) * (1e-9 * branchScale))
+        var branchScale = Math.Max(localScale, Hypot3(toBranchChord));
+        if (!double.IsFinite(branchScale) || Hypot3(Sub(branchPoint, boundary)) > 1e-9 * branchScale)
             return AlgorithmStatus.InvalidInput;
 
         // Support selection at E: a zero gradient is the singularity the p.49
         // rule reacts to (surface0 singular and surface1 not → surface[1]).
+        // Overflow in the gradient or its scale is a numerical failure, never
+        // a confirmed geometric singularity that silently flips the defining surface.
         if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in endpoint, 1, out var jet0) != AlgorithmStatus.Success
             || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in endpoint, 1, out var jet1) != AlgorithmStatus.Success)
             return AlgorithmStatus.Unsupported;
         var gradScale0 = SurfaceGradientScale(in view.Support0);
         var gradScale1 = SurfaceGradientScale(in view.Support1);
-        var surface0Singular = GradientNormSq(jet0.Gradient) <= (1e-12 * gradScale0) * (1e-12 * gradScale0);
-        var surface1Singular = GradientNormSq(jet1.Gradient) <= (1e-12 * gradScale1) * (1e-12 * gradScale1);
+        var gradNorm0 = Hypot3(jet0.Gradient);
+        var gradNorm1 = Hypot3(jet1.Gradient);
+        if (!double.IsFinite(gradScale0) || !double.IsFinite(gradScale1)
+            || !double.IsFinite(gradNorm0) || !double.IsFinite(gradNorm1))
+            return AlgorithmStatus.NumericalFailure;
+        var surface0Singular = gradNorm0 <= 1e-12 * gradScale0;
+        var surface1Singular = gradNorm1 <= 1e-12 * gradScale1;
         // Support0IsBlendBound comes from the prepared SurfaceSupportRef on ICurveView (§3.3, §6.2).
         var selected = SelectSupportSurface(surface0Singular, surface1Singular, view.Support0IsBlendBound, termUse);
         var selectedJet = selected == 0 ? jet0 : jet1;
@@ -248,12 +257,15 @@ internal static class TerminatorEvaluation
             if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in branchPoint, 1, out var branchJet0) != AlgorithmStatus.Success
                 || AnalyticImplicitEvaluation.Evaluate(in view.Support1, in branchPoint, 1, out var branchJet1) != AlgorithmStatus.Success)
                 return AlgorithmStatus.Unsupported;
-            var orientedBranch0 = Scale(branchJet0.Gradient,
+            var orientedBranch0 = Scale(Unit(branchJet0.Gradient),
                 view.Sense0 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
-            var orientedBranch1 = Scale(branchJet1.Gradient,
+            var orientedBranch1 = Scale(Unit(branchJet1.Gradient),
                 view.Sense1 == ParasolidConstants.PK_TOPOL_sense_negative_c ? -1.0 : 1.0);
+            if (!IsFinite(orientedBranch0) || !IsFinite(orientedBranch1)
+                || !(Dot(orientedBranch0, orientedBranch0) > 0.5) || !(Dot(orientedBranch1, orientedBranch1) > 0.5))
+                return AlgorithmStatus.Singular;
             var branchTangent = Unit(Cross(orientedBranch0, orientedBranch1));
-            if (!IsFinite(branchTangent)) return AlgorithmStatus.Singular;
+            if (!IsFinite(branchTangent) || !(Dot(branchTangent, branchTangent) > 0.5)) return AlgorithmStatus.Singular;
             var boundaryChord = isEnd ? view.ChartChordUnits[^1] : view.ChartChordUnits[0];
             if (Dot(branchTangent, boundaryChord) < 0)
                 branchTangent = Scale(branchTangent, -1);
@@ -272,7 +284,7 @@ internal static class TerminatorEvaluation
         if (!double.IsFinite(1.0 / step)) return AlgorithmStatus.NumericalFailure;
 
         var toBranch = Sub(branchPoint, endpoint);
-        var chordLength = Math.Sqrt(Dot(toBranch, toBranch));
+        var chordLength = Hypot3(toBranch);
         // Q'(t) = (E−B)/(t_T−t_B), constant on the interval (Q is affine in t).
         var chordRate = Scale(Sub(endpoint, branchPoint), 1 / step);
 
@@ -359,7 +371,7 @@ internal static class TerminatorEvaluation
         var xCurr = anchor.BranchPoint;
         var gCurr = branchJet.Gradient;
         var muPrimeLambdaCurr = muPrimeLambda0;
-        var speedLambda = Math.Sqrt(charScale * charScale + muPrimeLambdaCurr * muPrimeLambdaCurr);
+        var speedLambda = double.Hypot(charScale, muPrimeLambdaCurr);
 
         while (lambdaCurr < lambdaTarget)
         {
@@ -443,21 +455,18 @@ internal static class TerminatorEvaluation
                 if (converged)
                 {
                     var stepDiff = Sub(curPoint, xCurr);
-                    var stepDist = Math.Sqrt(Dot(stepDiff, stepDiff));
+                    var stepDist = Hypot3(stepDiff);
                     var maxAllowedDist = 1.5 * (speedLambda * dLambda + 0.01 * charScale);
 
-                    var gNormCurr = Math.Sqrt(Dot(gCurr, gCurr));
-                    var gNormNext = Math.Sqrt(Dot(curJet.Gradient, curJet.Gradient));
-                    var normalConsistent = false;
-                    if (gNormCurr > 1e-14 && gNormNext > 1e-14)
-                    {
-                        var cosAngle = Dot(curJet.Gradient, gCurr) / (gNormCurr * gNormNext);
-                        if (cosAngle > 0.5) normalConsistent = true;
-                    }
+                    var uCurr = Unit(gCurr);
+                    var uNext = Unit(curJet.Gradient);
+                    var normalConsistent = IsFinite(uCurr) && IsFinite(uNext)
+                        && Dot(uCurr, uCurr) > 0.5 && Dot(uNext, uNext) > 0.5
+                        && Dot(uNext, uCurr) > 0.5;
 
                     var currDenom = Dot(gCurr, anchor.LineDirection);
                     var nextDenom = Dot(curJet.Gradient, anchor.LineDirection);
-                    var slopeConsistent = (currDenom * nextDenom > 0);
+                    var slopeConsistent = (currDenom > 0 && nextDenom > 0) || (currDenom < 0 && nextDenom < 0);
 
                     var xMid = Scale(Add(xCurr, curPoint), 0.5);
                     var midStatus = TryBudgetedGeometricDeviation(in selectedSurface, in xMid, ref budget, ref evaluations, out var midDev);
@@ -478,7 +487,7 @@ internal static class TerminatorEvaluation
                                 gCurr = curJet.Gradient;
                                 muPrimeLambdaCurr = nextMuPrimeLambda;
                                 var nextTan = Add(chordVector, Scale(anchor.LineDirection, nextMuPrimeLambda));
-                                speedLambda = Math.Sqrt(Dot(nextTan, nextTan));
+                                speedLambda = Hypot3(nextTan);
                                 stepAccepted = true;
                                 break;
                             }
@@ -791,8 +800,19 @@ internal static class TerminatorEvaluation
         };
     }
 
-    private static double GradientNormSq(in KernelVector3 gradient)
-        => gradient.X * gradient.X + gradient.Y * gradient.Y + gradient.Z * gradient.Z;
+    private static double Hypot3(in KernelVector3 v)
+    {
+        var ax = Math.Abs(v.X);
+        var ay = Math.Abs(v.Y);
+        var az = Math.Abs(v.Z);
+        var max = Math.Max(ax, Math.Max(ay, az));
+        if (!(max > 0) || !double.IsFinite(max))
+            return max;
+        var sx = ax / max;
+        var sy = ay / max;
+        var sz = az / max;
+        return max * Math.Sqrt(sx * sx + sy * sy + sz * sz);
+    }
 
     private static KernelVector3 Add(in KernelVector3 a, in KernelVector3 b)
         => Vector(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
