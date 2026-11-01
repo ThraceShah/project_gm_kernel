@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Computation;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -72,7 +73,16 @@ internal static unsafe class XtReader
                 var root = FindPartNode(document, rootIndex)
                     ?? throw new FormatException("XT part container references a missing part.");
                 EntityTag tag = 0;
-                var error = root.Type == (int)XtNodeTypes.Body && document.Schema.SchemaNumber == XtSchemaRegistry.ResolveCurrent().SchemaNumber
+                var canonicalBody = KernelRuntime.HasCanonicalICurveWireBodyLayout(document, root);
+                var wire = canonicalBody
+                    && root.Fields[17].Kind == XtFieldKind.Unsigned && root.Fields[17].Integer == 2;
+                var wireStatus = wire
+                    ? KernelRuntime.TryMaterializeICurveWireBodyFromXt(document, root, out tag)
+                    : AlgorithmStatus.Unsupported;
+                if (wireStatus == AlgorithmStatus.WorkspaceTooSmall) return ParasolidConstants.PK_ERROR_memory_full;
+                if (wireStatus == AlgorithmStatus.InvalidInput) return ParasolidConstants.PK_ERROR_corrupt_file;
+                var error = wireStatus == AlgorithmStatus.Success ? ParasolidConstants.PK_ERROR_no_errors
+                    : !wire && canonicalBody && document.Schema.SchemaNumber == XtSchemaRegistry.ResolveCurrent().SchemaNumber
                     ? MaterializeBody(nodes, root, out tag)
                     : ParasolidConstants.PK_ERROR_bad_file_format;
                 if (error == ParasolidConstants.PK_ERROR_no_errors)

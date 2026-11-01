@@ -49,6 +49,10 @@ internal static class ICurveConstraintPlanRules
     {
         var legal = ValidateEnumerator(plan);
         if (legal != AlgorithmStatus.Success) return legal;
+        if (view.HasBSurface)
+            return plan == ICurveConstraintPlan.Auto || plan == ICurveConstraintPlan.P4
+                || (plan == ICurveConstraintPlan.P2 && view.Surface0.IsBSurface != view.Surface1.IsBSurface)
+                ? AlgorithmStatus.Success : AlgorithmStatus.Unsupported;
         if (plan != ICurveConstraintPlan.I1) return AlgorithmStatus.Success;
         var plane0 = view.Support0.Kind == SurfaceClass.Plane;
         var plane1 = view.Support1.Kind == SurfaceClass.Plane;
@@ -57,6 +61,9 @@ internal static class ICurveConstraintPlanRules
 
     internal static ICurveConstraintPlan Select(in ICurveView view)
     {
+        if (view.HasBSurface)
+            return view.Surface0.IsBSurface && view.Surface1.IsBSurface
+                ? ICurveConstraintPlan.P4 : ICurveConstraintPlan.P2;
         var plane0 = view.Support0.Kind == SurfaceClass.Plane;
         var plane1 = view.Support1.Kind == SurfaceClass.Plane;
         if (plane0 != plane1)
@@ -73,6 +80,16 @@ internal static class ICurveConstraintPlanRules
     internal static BufferCount Alternates(in ICurveView view, ICurveConstraintPlan failed,
         Span<ICurveConstraintPlan> destination)
     {
+        if (view.HasBSurface)
+        {
+            BufferCount count = 0;
+            if (failed != ICurveConstraintPlan.P2 && count < destination.Length
+                && view.Surface0.IsBSurface != view.Surface1.IsBSurface)
+                destination[count++] = ICurveConstraintPlan.P2;
+            if (failed != ICurveConstraintPlan.P4 && count < destination.Length)
+                destination[count++] = ICurveConstraintPlan.P4;
+            return count;
+        }
         Span<ICurveConstraintPlan> preference = stackalloc ICurveConstraintPlan[5];
         BufferCount n = 0;
         var plane0 = view.Support0.Kind == SurfaceClass.Plane;

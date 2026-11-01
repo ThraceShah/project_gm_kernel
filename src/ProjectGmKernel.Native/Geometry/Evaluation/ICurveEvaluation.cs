@@ -111,6 +111,10 @@ internal static class ICurveEvaluation
         report = new ICurveEvalReport(ICurveQueryKind.OutsideSupportedDomain, AlgorithmStatus.NotRun,
             ICurveConstraintPlan.Auto, side, -1, 0, 0);
 
+        if (view.HasBSurface)
+            return ParametricICurveEvaluation.EvaluateWithCache(in view, t, order, plan, rule, side,
+                ref cache, derivatives, out report);
+
         var parameters = view.ChartParameters;
         if (t < parameters[0] || t > parameters[^1])
         {
@@ -807,6 +811,8 @@ internal static class ICurveEvaluation
     /// </summary>
     internal static double LocalLengthScale(in ICurveView view)
     {
+        if (view.HasBSurface)
+            return Math.Max(1.0, Math.Max(view.Surface0.LengthScale, view.Surface1.LengthScale));
         return Math.Max(1.0, Math.Max(
             Math.Max(view.Support0.Radius, view.Support0.Secondary),
             Math.Max(view.Support1.Radius, view.Support1.Secondary)));

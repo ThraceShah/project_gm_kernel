@@ -3014,6 +3014,17 @@ internal static unsafe partial class KernelRuntime
         for (var i = 0; i < body.EdgeCountBody; i++)
         {
             var next = Edges[edgeSlot].NextInBody;
+            // Wire edges own dummy fins that are not reachable from a face
+            // loop. Face-owned fins were already released above.
+            var finSlot = Edges[edgeSlot].FirstFinEdge;
+            for (var j = 0; j < Edges[edgeSlot].FinCount && finSlot >= 0; j++)
+            {
+                if (!Fins.IsAlive(finSlot)) break;
+                var nextFin = Fins[finSlot].NextOfEdge;
+                if (Fins[finSlot].Loop < 0)
+                    DeleteEntitySingle(session, PoolKind.Fin, finSlot, TagOf(PoolKind.Fin, finSlot));
+                finSlot = nextFin;
+            }
             if (Edges[edgeSlot].CurveTag > 0)
                 ReleaseGeometryOwner(session, EntityClass.Curve, Edges[edgeSlot].CurveTag);
             DeleteEntitySingle(session, PoolKind.Edge, edgeSlot, TagOf(PoolKind.Edge, edgeSlot));

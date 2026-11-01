@@ -4,6 +4,22 @@
   "repository": "ThraceShah/project_gm_kernel",
   "baseline_commit": "5c645cdfc8a0cd8e3f6aac4c25de839653b4daf6",
   "status": "implemented_with_open_gates",
+  "delivery_increments": [
+    {
+      "id": "M1-BSURFACE",
+      "date": "2026-11-01",
+      "status": "implemented_live_oracle_pending",
+      "scope": "Finite-UV regular B-surface/analytic P2 and P4, B-surface/B-surface P4, native-parameter D0-D2, L2/L3 witnesses, and executable one-edge open-wire XT receive/transmit.",
+      "related_tasks": ["T07", "T08", "T09", "T17", "T19"],
+      "evidence": "docs/reviews/icurve-evaluation/bsurface-production-stage-2026-11-01.md",
+      "limitations": [
+        "BSurface chart anchors require finite original UV pairs; no global inverse projection is inferred.",
+        "Insufficient knot continuity, singular parameterizations, extended surface domains and BSurface terminators are rejected.",
+        "Public executable XT receive is limited to the validated one-edge open-wire graph; other graphs retain existing opaque handling.",
+        "Live Parasolid validation is not claimed until scripts/ParametricICurveOracle.cs runs with the licensed SDK and required schema."
+      ]
+    }
+  ],
   "primary_spec": "icurve_blend_evaluation_spec.md",
   "task_count": 21,
   "tasks": [

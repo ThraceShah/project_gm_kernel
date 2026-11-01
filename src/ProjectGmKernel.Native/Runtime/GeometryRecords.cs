@@ -478,6 +478,7 @@ internal struct ICurveData
     public RecordHeader Header;      // pool slot header (all pooled records start with one)
     public SurfTag Surface0Tag;      // surface[0], first support surface
     public SurfTag Surface1Tag;      // surface[1], second support surface
+    public KernelLogical OwnsSupportSurfaces; // XT materializer created exclusive support entities
     // CHART summary (sch_37102 node 40): parameterisation of the branch
     public double BaseParameter;
     public double BaseScale;

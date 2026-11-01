@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
@@ -10,8 +11,9 @@ namespace ProjectGmKernel.Native.Runtime;
 /// Prepare evaluation views from pooled geometry (spec §4, §19, task T19).
 /// ICurve preparation rebuilds the immutable original chart map into
 /// command-scratch spans and returns a borrowed <see cref="ICurveView"/> that
-/// must not outlive the scratch checkpoint. Analytic supports only — procedural
-/// supports stay <see cref="AlgorithmStatus.Unsupported"/> until later tasks.
+/// must not outlive the scratch checkpoint. Analytic and B-surface supports
+/// share the prepared support interface. B-surface charts require finite UV
+/// correspondence; their terminators and procedural supports remain unsupported.
 /// </summary>
 internal static unsafe partial class KernelRuntime
 {
@@ -99,9 +101,13 @@ internal static unsafe partial class KernelRuntime
             return AlgorithmStatus.Unsupported;
         ref readonly var surf0 = ref Surfaces[slot0];
         ref readonly var surf1 = ref Surfaces[slot1];
-        if (!TryPrepareSurface(in surf0, out var analytic0)
-            || !TryPrepareSurface(in surf1, out var analytic1))
-            return AlgorithmStatus.Unsupported; // non-analytic / BlendBound supports: later tasks
+        var prepare0 = TryPrepareICurveSupport(in surf0, out var support0);
+        if (prepare0 != AlgorithmStatus.Success) return prepare0;
+        var prepare1 = TryPrepareICurveSupport(in surf1, out var support1);
+        if (prepare1 != AlgorithmStatus.Success) return prepare1;
+        if ((support0.IsBSurface || support1.IsBSurface)
+            && (data.StartLimit.Type == LimitType.Terminator || data.EndLimit.Type == LimitType.Terminator))
+            return AlgorithmStatus.Unsupported;
 
         var chartCount = data.ChartCount;
         if (chartCount < 2) return AlgorithmStatus.InvalidInput;
@@ -116,31 +122,40 @@ internal static unsafe partial class KernelRuntime
         var scaleScratch = scratch.Take(chartCount - 1);
         var chordDoubles = scratch.Take((chartCount - 1) * 3);
         var tangentDoubles = scratch.Take(chartCount * 3);
+        var witnessDoubleCount = ((long)chartCount * sizeof(SampleWitness) + sizeof(double) - 1) / sizeof(double);
+        if (witnessDoubleCount > int.MaxValue) return AlgorithmStatus.WorkspaceTooSmall;
+        var witnessDoubles = scratch.Take((BufferCount)witnessDoubleCount);
         if (positionDoubles.Length < chartCount * 3
             || parameterScratch.Length < chartCount
             || scaleScratch.Length < chartCount - 1
             || chordDoubles.Length < (chartCount - 1) * 3
-            || tangentDoubles.Length < chartCount * 3)
+            || tangentDoubles.Length < chartCount * 3
+            || witnessDoubles.Length < witnessDoubleCount)
             return AlgorithmStatus.WorkspaceTooSmall;
 
         var positions = MemoryMarshal.Cast<double, KernelVector3>(positionDoubles);
         var tangents = MemoryMarshal.Cast<double, KernelVector3>(tangentDoubles);
         var chords = MemoryMarshal.Cast<double, KernelVector3>(chordDoubles);
-        var localScale = Math.Max(1.0, Math.Max(
-            Math.Max(analytic0.Radius, analytic0.Secondary),
-            Math.Max(analytic1.Radius, analytic1.Secondary)));
+        var witnesses = MemoryMarshal.Cast<double, SampleWitness>(witnessDoubles)[..chartCount];
+        var localScale = Math.Max(support0.LengthScale, support1.LengthScale);
         var pointOnSurfaceTolerance = 1e-8 * localScale;
 
         for (BufferOffset i = 0; i < chartCount; i++)
         {
             var o = chartOffset + i * 3;
             positions[i] = Vector(hvecs[o], hvecs[o + 1], hvecs[o + 2]);
-            if (!IsChartPointConsistent(in analytic0, in analytic1, in positions[i], pointOnSurfaceTolerance)
-                || !IsChartUvConsistent(in data, i, in analytic0, in analytic1,
-                    in positions[i], pointOnSurfaceTolerance))
+            if (!TryReadChartUv(in data, i, out var u0, out var v0, out var u1, out var v1))
                 return AlgorithmStatus.InvalidInput;
-            if (!TryChartTangent(in analytic0, surf0.Sense, in analytic1, surf1.Sense,
-                    in positions[i], out tangents[i]))
+            var uv0Status = PrepareChartUv(in support0, in positions[i], pointOnSurfaceTolerance,
+                ref u0, ref v0, out var hasUv0);
+            if (uv0Status != AlgorithmStatus.Success) return uv0Status;
+            var uv1Status = PrepareChartUv(in support1, in positions[i], pointOnSurfaceTolerance,
+                ref u1, ref v1, out var hasUv1);
+            if (uv1Status != AlgorithmStatus.Success) return uv1Status;
+            witnesses[i] = new SampleWitness(u0, v0, u1, v1, 0,
+                (byte)((hasUv0 ? SampleWitness.HasUv0 : 0) | (hasUv1 ? SampleWitness.HasUv1 : 0)));
+            if (!TryChartTangent(in support0, surf0.Sense, u0, v0,
+                    in support1, surf1.Sense, u1, v1, in positions[i], out tangents[i]))
                 return AlgorithmStatus.Singular;
         }
 
@@ -164,18 +179,31 @@ internal static unsafe partial class KernelRuntime
             hasEnd = true;
         }
 
-        if (hasStart || hasEnd)
+        view = new ICurveView(support0, surf0.Sense, support1, surf1.Sense,
+            positions, parameterScratch, scaleScratch, chords, witnesses,
+            hasStart ? startTerminator : default,
+            hasEnd ? endTerminator : default);
+        return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus TryPrepareICurveSupport(in SurfaceRecord surface,
+        out ICurveSupportView support)
+    {
+        support = default;
+        if (TryPrepareSurface(in surface, out var analytic))
         {
-            view = new ICurveView(in analytic0, surf0.Sense, in analytic1, surf1.Sense,
-                positions, parameterScratch, scaleScratch, chords,
-                hasStart ? startTerminator : default,
-                hasEnd ? endTerminator : default);
+            support = new ICurveSupportView(in analytic);
+            return AlgorithmStatus.Success;
         }
-        else
-        {
-            view = new ICurveView(in analytic0, surf0.Sense, in analytic1, surf1.Sense,
-                positions, parameterScratch, scaleScratch, chords);
-        }
+        if (surface.Class != SurfaceClass.BSurface || !BSurfaceDataStore.IsAlive(surface.DataIndex))
+            return AlgorithmStatus.Unsupported;
+        var bspline = GetBSurfaceView(in BSurfaceDataStore[surface.DataIndex]);
+        var workspaceSize = BSurfaceEvaluation.WorkspaceSize(bspline.UDegree, bspline.VDegree, 2, 2);
+        if (workspaceSize <= 0 || workspaceSize > int.MaxValue)
+            return AlgorithmStatus.WorkspaceTooSmall;
+        var workspace = CommandScratch.Current.Take((BufferCount)workspaceSize);
+        if (workspace.Length < workspaceSize) return AlgorithmStatus.WorkspaceTooSmall;
+        support = new ICurveSupportView(bspline, workspace);
         return AlgorithmStatus.Success;
     }
 
@@ -186,18 +214,10 @@ internal static unsafe partial class KernelRuntime
         return new ReadOnlySpan<double>((double*)block, data.HvecCount * 3);
     }
 
-    private static bool IsChartPointConsistent(in AnalyticSurface support0,
-        in AnalyticSurface support1, in KernelVector3 point, double tolerance)
-        => AnalyticImplicitEvaluation.GeometricDeviation(in support0, in point, out var d0)
-                == AlgorithmStatus.Success
-            && AnalyticImplicitEvaluation.GeometricDeviation(in support1, in point, out var d1)
-                == AlgorithmStatus.Success
-            && d0 <= tolerance && d1 <= tolerance;
-
-    private static bool IsChartUvConsistent(in ICurveData data, BufferOffset chartIndex,
-        in AnalyticSurface support0, in AnalyticSurface support1, in KernelVector3 point,
-        double tolerance)
+    private static bool TryReadChartUv(in ICurveData data, BufferOffset chartIndex,
+        out double u0, out double v0, out double u1, out double v1)
     {
+        u0 = v0 = u1 = v1 = double.NaN;
         var stride = UvStrideOf(data.UvType);
         if (stride <= 0) return true;
         var block = DereferenceBlock(data.UvValueBlock);
@@ -206,32 +226,47 @@ internal static unsafe partial class KernelRuntime
         var row = (data.StartLimit.Type == LimitType.Terminator ? 1 : 0) + chartIndex;
         var offset = row * stride;
         if (offset + stride > values.Length) return false;
-        return data.UvType switch
+        switch (data.UvType)
         {
-            IntersectionUvType.First => IsUvPointConsistent(in support0,
-                values[offset], values[offset + 1], in point, tolerance),
-            IntersectionUvType.Second => IsUvPointConsistent(in support1,
-                values[offset], values[offset + 1], in point, tolerance),
-            IntersectionUvType.Both => IsUvPointConsistent(in support0,
-                    values[offset], values[offset + 1], in point, tolerance)
-                && IsUvPointConsistent(in support1,
-                    values[offset + 2], values[offset + 3], in point, tolerance),
-            _ => false,
-        };
+            case IntersectionUvType.First:
+                u0 = values[offset]; v0 = values[offset + 1];
+                return true;
+            case IntersectionUvType.Second:
+                u1 = values[offset]; v1 = values[offset + 1];
+                return true;
+            case IntersectionUvType.Both:
+                u0 = values[offset]; v0 = values[offset + 1];
+                u1 = values[offset + 2]; v1 = values[offset + 3];
+                return true;
+            default:
+                return false;
+        }
     }
 
-    private static bool IsUvPointConsistent(in AnalyticSurface support, double u, double v,
-        in KernelVector3 point, double tolerance)
+    private static AlgorithmStatus PrepareChartUv(in ICurveSupportView support,
+        in KernelVector3 point, double tolerance, ref double u, ref double v, out bool hasUv)
     {
-        // Both components NaN represent an omitted UV pair in Parasolid XT.
-        if (double.IsNaN(u) && double.IsNaN(v)) return true;
-        if (!double.IsFinite(u) || !double.IsFinite(v)) return false;
-        if (!SurfaceDerivativeLayout.TryCreate(0, 0, out var layout)) return false;
+        hasUv = double.IsFinite(u) && double.IsFinite(v);
+        if (!hasUv && !(double.IsNaN(u) && double.IsNaN(v)))
+            return AlgorithmStatus.InvalidInput;
+        if (support.IsBSurface && !hasUv)
+            return AlgorithmStatus.Unsupported;
+        if (!support.IsBSurface
+            && (AnalyticImplicitEvaluation.GeometricDeviation(in support.Analytic, in point, out var deviation)
+                != AlgorithmStatus.Success || deviation > tolerance))
+            return AlgorithmStatus.InvalidInput;
+        if (!hasUv)
+        {
+            hasUv = ICurveSupportEvaluation.TryResolveUv(in support, in point, false, 0, 0, out u, out v);
+            return AlgorithmStatus.Success;
+        }
+        if (!SurfaceDerivativeLayout.TryCreate(0, 0, out var layout))
+            return AlgorithmStatus.InvalidInput;
         Span<KernelVector3> value = stackalloc KernelVector3[1];
-        if (SurfaceEvaluation.Evaluate(in support, u, v, in layout, value) != AlgorithmStatus.Success)
-            return false;
+        if (ICurveSupportEvaluation.Evaluate(in support, u, v, in layout, value) != AlgorithmStatus.Success)
+            return AlgorithmStatus.InvalidInput;
         var delta = Vector(value[0].X - point.X, value[0].Y - point.Y, value[0].Z - point.Z);
-        return Math.Sqrt(Dot(delta, delta)) <= tolerance;
+        return Math.Sqrt(Dot(delta, delta)) <= tolerance ? AlgorithmStatus.Success : AlgorithmStatus.InvalidInput;
     }
 
     private static TerminatorLimit ReadTerminator(ReadOnlySpan<double> hvecs, BufferOffset hvecIndex,
@@ -244,18 +279,19 @@ internal static unsafe partial class KernelRuntime
     }
 
     /// <summary>
-    /// Unit chart tangent T = sense₀·n₀ × sense₁·n₁ (§5.1). Gradients come from
-    /// the analytic zero-set jet; surface sense flips the corresponding normal.
+    /// Unit chart tangent T = sense₀·n₀ × sense₁·n₁ (§5.1). B-surface normals
+    /// come from the validated chart UV; surface sense flips each normal.
     /// </summary>
-    private static bool TryChartTangent(in AnalyticSurface s0, KernelSense sense0,
-        in AnalyticSurface s1, KernelSense sense1, in KernelVector3 point, out KernelVector3 tangent)
+    private static bool TryChartTangent(in ICurveSupportView s0, KernelSense sense0, double u0, double v0,
+        in ICurveSupportView s1, KernelSense sense1, double u1, double v1,
+        in KernelVector3 point, out KernelVector3 tangent)
     {
         tangent = default;
-        if (AnalyticImplicitEvaluation.Evaluate(in s0, in point, 1, out var j0) != AlgorithmStatus.Success
-            || AnalyticImplicitEvaluation.Evaluate(in s1, in point, 1, out var j1) != AlgorithmStatus.Success)
+        if (!ICurveSupportEvaluation.TryNormal(in s0, u0, v0, in point, out var normal0)
+            || !ICurveSupportEvaluation.TryNormal(in s1, u1, v1, in point, out var normal1))
             return false;
-        var n0 = Scale(j0.Gradient, SenseSign(sense0));
-        var n1 = Scale(j1.Gradient, SenseSign(sense1));
+        var n0 = Scale(normal0, SenseSign(sense0));
+        var n1 = Scale(normal1, SenseSign(sense1));
         var cross = EvaluationMath.Cross(n0, n1);
         var normSq = Dot(cross, cross);
         if (!(normSq > 1e-30)) return false;

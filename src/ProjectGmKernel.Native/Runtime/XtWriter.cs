@@ -80,7 +80,14 @@ internal static unsafe class XtWriter
         }
         var edgeSlot = body.FirstEdgeBody;
         for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = KernelRuntime.GetEdgeRecord(edgeSlot).NextInBody)
+        {
             map.EdgeSlots.Add(edgeSlot, AddIndex(nodes, ref graph, ref map));
+            var edge = KernelRuntime.GetEdgeRecord(edgeSlot);
+            var finSlot = edge.FirstFinEdge;
+            for (var j = 0; j < edge.FinCount; j++, finSlot = KernelRuntime.GetFinRecord(finSlot).NextOfEdge)
+                if (!map.FinSlots.ContainsKey(finSlot))
+                    map.FinSlots.Add(finSlot, AddIndex(nodes, ref graph, ref map));
+        }
         var vertexSlot = body.FirstVertexBody;
         for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = KernelRuntime.GetVertexRecord(vertexSlot).NextInBody)
             map.VertexSlots.Add(vertexSlot, AddIndex(nodes, ref graph, ref map));
@@ -119,6 +126,9 @@ internal static unsafe class XtWriter
         edgeSlot = body.FirstEdgeBody;
         for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = KernelRuntime.GetEdgeRecord(edgeSlot).NextInBody)
             SetNode(nodes, map, map.EdgeSlots[edgeSlot], EdgeNode(edgeSlot, map));
+        foreach (var pair in map.FinSlots)
+            if (KernelRuntime.GetFinRecord(pair.Key).Loop < 0)
+                SetNode(nodes, map, pair.Value, HalfedgeNode(pair.Key, map));
         vertexSlot = body.FirstVertexBody;
         for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = KernelRuntime.GetVertexRecord(vertexSlot).NextInBody)
             SetNode(nodes, map, map.VertexSlots[vertexSlot], VertexNode(vertexSlot, map));
@@ -1248,14 +1258,14 @@ internal static unsafe class XtWriter
                 XtFieldValue.Int(data.VDegree),
                 XtFieldValue.Int(data.NUVertices),
                 XtFieldValue.Int(data.NVVertices),
-                XtFieldValue.Unsigned(data.UKnotType - ParasolidConstants.PK_knot_unset_c),
-                XtFieldValue.Unsigned(data.VKnotType - ParasolidConstants.PK_knot_unset_c),
+                XtFieldValue.Unsigned(KernelRuntime.BSurfaceKnotTypeToXt(data.UKnotType)),
+                XtFieldValue.Unsigned(KernelRuntime.BSurfaceKnotTypeToXt(data.VKnotType)),
                 XtFieldValue.Int(data.NUKnots),
                 XtFieldValue.Int(data.NVKnots),
                 XtFieldValue.Logical(data.IsRational != 0),
                 XtFieldValue.Logical(data.IsUClosed != 0),
                 XtFieldValue.Logical(data.IsVClosed != 0),
-                XtFieldValue.Unsigned(data.Form - ParasolidConstants.PK_BSURF_form_unset_c),
+                XtFieldValue.Unsigned(KernelRuntime.BSurfaceFormToXt(data.Form)),
                 XtFieldValue.Int(data.VertexDim),
                 XtFieldValue.Ptr(vertices),
                 XtFieldValue.Ptr(uMults),
@@ -1589,7 +1599,9 @@ internal static unsafe class XtWriter
 
     private static int XtBodyType(KernelBodyType bodyType)
     {
-        return bodyType == ParasolidConstants.PK_BODY_type_solid_c ? 1 : bodyType;
+        // SCH_body_type / generated BODY__body_type: solid=1, wire=2.
+        return bodyType == ParasolidConstants.PK_BODY_type_solid_c ? 1
+            : bodyType == ParasolidConstants.PK_BODY_type_wire_c ? 2 : bodyType;
     }
 
     private struct NodeMap

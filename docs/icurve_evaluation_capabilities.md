@@ -1,6 +1,6 @@
 # ICurve / Blend Evaluation Capabilities
 
-Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluation_spec.md` (v2.0) and review audit.
+Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluation/bsurface-production-stage-2026-11-01.md`. Historical live-PK labels below retain their original evidence; this increment has not run a live PK oracle. Verified against `docs/icurve_design/icurve_blend_evaluation_spec.md` (v2.0) and review audit.
 
 ## 状态分类标准 (Status Schema)
 
@@ -13,7 +13,7 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 3. **内部入口可用 + 制造解通过 + 受 Gate 限制 (Internal Entry + Manufactured Solution Passed + Gated)**:
    核心数学与求解算法已完整实现并通过制造解闭环，但因上层语义规范门禁（GATE-A/B/T/D）尚未关闭，生产公共入口精确拒绝或返回特定诊断，严禁伪造根或粗暴绕过。
 4. **扩展点 / 内部机制 (Extension Point / Incremental Capability)**:
-   数据结构与算法扩展点已预留并具备基础闭环，但在当前纯解析支持面主线上未全量触发，需在对应高阶功能落地时完全激活。
+   数据结构与算法扩展点已预留并具备基础闭环，但在当前已开放的支持面路径中未全量触发，需在对应高阶功能落地时完全激活。
 5. **明确未支持 / 严格禁止 (Explicitly Unsupported / Forbidden)**:
    明确排除的几何类型或规格明令禁止的实现方式（如伪弧长作为公开参数、无分支证据的就近吸附）。
 
@@ -28,7 +28,9 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 | 原始图表递推与弦平面投影 | §5 / Original chart | **生产已接入 + 真实 PK 兼容通过** | 节点位相同比较；归一化余弦递归计算；弦方向保留；保留并回写 `parameter_error[0..1]`；非均匀弦长图表（Case F2，$f_i / f_{i-1} \ne 1$）与真实 PK `PK_CURVE_ask_interval` / `PK_CURVE_eval` 机器精度一致（$|\Delta T_{\max}| = 1.78\times 10^{-15}$） |
 | 解析支持面正则区间求解 (I1/I2/Auto) | §7 / Analytic supports | **生产已接入 + 真实 PK 兼容通过** | Auto: 平面走 I1，其他解析面走 I2；Oracle Case F / F2 真同参比较机器精度通过（D0/D1/曲率 $|\Delta| \le 7.5\times 10^{-14}$），Case A/A2/E 经由几何反算，Case B/C 验证几何残差 |
 | 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中 |
-| B-曲面严格参数域守卫求值 (`BSurfaceEvaluation.EvaluateInDomain`) | §7.2 / §15.4 / B-surface domain | **内部入口可用 + 制造解通过** | `BSurfaceEvaluation.EvaluateInDomain` 显式拒绝 knot domain 越界参数，避免 `FindSpan` 钳位导致边界切平面线性延拓伪根；当前生产 `ICurveEvaluation` 仅开放解析支持面，B-曲面交线支持尚未接入生产求值 |
+| B-surface / 解析面交线，两种支持顺序 | §7 / P2、P4 | **生产已接入 + 制造解通过** | 原始有限 UV 的正则区间，Auto 选 P2；P4 独立位置校验和 D0–D2；保持支持顺序、sense 与原始 chart 参数；真实 PK 验证待运行 |
+| B-surface / B-surface 交线 | §7.1 / P4 | **生产已接入 + 制造解通过** | 双 UV 状态、双原始端点独立追踪、完整 Jacobian 物理修正与 UV 预像一致性验证；不宣称全局唯一根或区间认证 |
+| B-曲面严格参数域与连续度守卫 | §7.2 / §15.4 / B-surface domain | **生产已接入 + 制造解通过** | 求交只用 `EvaluateInDomain`；拒绝非周期越域与不足阶数的 knot jet；周期 UV 使用真实 knot period；缺失 B-surface UV、实际扩展域和 B-surface terminator 明确拒绝 |
 | 节点与区间一侧导数 (D0–D2) | §16 / Knot evaluation | **生产已接入 + 制造解通过** | 显式传递 `ChartSide.Left` / `Right`；避免跨节点平均平滑 |
 | 诊断型 Auto 计划动态切换 | §7.7 / Stagnation | **生产已接入 + 制造解通过** | 仅在 Auto 模式下触发；强制计划绝不静默切换；记录 `PlanSwitched` |
 | 参数延拓 (Continuation) | §17.3 / Native parameter | **生产已接入 + 制造解通过** | 原生参数递增，步长受控，安全拒绝无分辨率步长与分支歧义，多 seed 后备受 SameLocalBranch 严格约束 |
@@ -50,6 +52,7 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
 | L0/L1/L2/L3 四级几何求值缓存 | §13 / Session & Op | **生产已接入 + 制造解通过** | L0 `ResidualMemo` 在 `ICurveCorrection.Refine` 内接入完整参数态试探步去重；L2/L3 键包含 Tag/Gen/Side/Plan/Epoch；CLOCK 淘汰；Bit-exact 查中；Left/Right 侧向全生命周期一致 |
+| B-surface L2/L3 计划与 UV 缓存 | §13 / P2、P4 | **生产已接入 + 制造解通过** | 保存真实双侧 UV，显式 P2/P4 分别查找和保存；失败不写缓存；满操作缓存仍能传出最终已验证样本到 L3 |
 | 辅助状态载荷 (SampleWitness) | §13.2 / L2/L3 payload | **生产已接入 + 制造解通过** | `SampleWitness` 按值嵌入 `CurveSample`，无动态借用；在 `ICurveEvaluation` 与 `GeometryEvaluationCache.EvaluateICurveThroughL3` 中自动恢复双支持面 UV 见证并在 L2/L3 间持久传递，支持下游 `BlendContactFrame.FromWitness` 零投影恢复接触点 |
 | 多 Seed 确定性排序 (ICurveMultiSeed) | §13.6 / T09 | **生产已接入 + 制造解通过** | 已接入 `SubdivideTo` 恢复路径；对参数无分辨率/超预算/分支歧义安全拒绝，候选根经 `SameLocalBranch` 校验同分支后方可采纳 |
 | 预测种子 (PredictedOnly Hermite) | §13.4 / L2 seeds | **生产已接入 + 制造解通过** | 仅用作 Corrector 初值，绝不冒充 Exact Hit 发布 |
@@ -71,7 +74,8 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
-| XT INTERSECTION 实体写入与回读 | §19 / XtWriter | **生产已接入 + 真实 PK 兼容通过** | 写入生产已接入并获真实 PK 接收验证；XT 回读仅在测试层闭环验证；与 PKToy 绑定互相兼容 |
+| XT INTERSECTION 实体写入与回读 | §19 / XtWriter | **生产已接入 + 真实 PK 兼容通过** | 解析支持面的原有写出链路已有真实 PK 接收证据；新增可执行回读范围见下行，其实时 PK 验证待运行 |
+| 开放单边 ICurve wire 的可求值 XT 接收 | §19 / B-surface 与解析支持面 | **生产已接入 + 制造解通过** | 一条 INTERSECTION edge、两个 vertex/point、两个 dummy fin 的受校验子集；public receive 后实际 `CurveEval` D0–D2；writer 重建、sense/null、依赖回收及失败回滚；真实 PK Oracle 待运行 |
 | UV Null 语义与点容差解耦 | §19 / PrepareEvaluation | **生产已接入 + 真实 PK 兼容通过** | 仅成对允许 (NaN, NaN)；面点容差与 ChordalError 解耦 |
 | Sense 拓扑方向双向保持 | XT Schema / Records | **生产已接入 + 真实 PK 兼容通过** | 贯穿 Record / Binding / XT Parse / Writer，数据结构支持拓扑方向传递 |
 | Cone 轴向 XT/PK 约定 (Cone Axis Parity) | §8.3 / XT25 / SCH_37102 | **生产已接入 + 真实 PK 兼容通过** | 目标 build/schema (v380 / 37102) 上实测 XT 与 PK_CONE_ask 的 axis/ref 轴向不翻转、数值在指定容差 (1e-14) 内保持，当前实现保持既有约定；实测与早期 XT25 文档引文存在冲突，保留为持续跟踪的兼容性专项（见 `docs/reviews/cone_probe_evidence/`） |
@@ -85,9 +89,12 @@ Generated: 2026-09-26. Verified against `docs/icurve_design/icurve_blend_evaluat
 |---|---|---|
 | **GATE-T** (Terminator $t_E$ vs PK) | **OPEN** | 生产入口在规则未指定时返回 `CompatibilityGateOpen`，不猜参数 |
 | **GATE-B** (BlendBound 角色映射) | **OPEN** | 距离函数组合未接入公开求值；不支持非解析 BlendBound 支持面 |
-| **GATE-A** (Blend 弧段极值验证) | **OPEN** | Envelope/Joint 求解器保留在内部，生产 Auto 计划仍保持纯解析支持面 |
+| **GATE-A** (Blend 弧段极值验证) | **OPEN** | Envelope/Joint 求解器保留在内部；生产 Auto 开放解析面及本阶段带 UV 的正则 B-surface 支持面，不开放嵌套 blend |
 | **GATE-D** (高阶导数公开契约) | **OPEN** | `KernelRuntime` 公开入口严格限制 `order <= 2`，高阶直接拒绝 |
 | **过程面 / 偏置面 / 扫掠面支持** | **Unsupported** | `PrepareICurveView` 精确返回 `Unsupported` |
+| **B-surface 缺 UV / 不足 knot 连续度 / UV 分辨率丢失** | **Unsupported / NotConverged** | 不猜全局逆投影、导数侧或不可分辨的参数分支；失败不发布结果 |
+| **B-surface terminator / 实际扩展域** | **Unsupported** | 本阶段只开放原始 knot 域内的正则 chart 区间 |
+| **一般 B-rep 的 ICurve XT 物化** | **Unsupported** | 可执行物化限定开放单边 wire；其他合法图继续按既有 opaque 方式保存 |
 | **Spindle / Apple Torus** | **Unsupported** | 当 $a \le b$ 时精确拒绝 |
 | **伪弧长作为公开曲线参数** | **Forbidden** | 严格禁止在公开接口暴露内部伪弧长参数 |
 
@@ -104,6 +111,9 @@ MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests && pkill -f '[t]esthost.
 # 2. 运行真实 Parasolid Oracle 对比脚本（验证 Case A–F 及高精度一致性）
 P_SCHEMA=third_party/parasolid/schema dotnet run scripts/IcurveEvaluationOracle.cs
 
-# 3. 运行求值基准测试
+# 3. 运行新增 B-surface 生产链路的真实 Oracle（需要许可 SDK）
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ParametricICurveOracle.cs
+
+# 4. 运行求值基准测试
 dotnet run scripts/IcurveEvalBenchmark.cs
 ```

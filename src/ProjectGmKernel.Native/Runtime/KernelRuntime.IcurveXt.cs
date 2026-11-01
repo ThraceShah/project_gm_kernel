@@ -6,8 +6,8 @@ namespace ProjectGmKernel.Native.Runtime;
 
 /// <summary>
 /// XT → icurve helpers (spec §21.6 / T19): CHART extract and full INTERSECTION
-/// materialization (analytic supports + LIMIT + INTERSECTION_DATA → DecodeIcurve
-/// → bind). B-surface / offset / swept supports stay Unsupported.
+/// materialization (analytic/B-surface supports + LIMIT + INTERSECTION_DATA →
+/// DecodeIcurve → bind). Procedural supports remain unsupported.
 /// </summary>
 internal static unsafe partial class KernelRuntime
 {
@@ -48,8 +48,8 @@ internal static unsafe partial class KernelRuntime
 
     /// <summary>
     /// Materialize one INTERSECTION node into a bound <see cref="CurveClass.ICurve"/>
-    /// entity. Analytic support surfaces (plane/cylinder/cone/sphere/torus) are
-    /// created from the referenced XT nodes; other support classes return
+    /// entity. Analytic and B-surface supports are created from the referenced
+    /// XT nodes; other support classes return
     /// <see cref="AlgorithmStatus.Unsupported"/>.
     /// </summary>
     internal static AlgorithmStatus TryMaterializeICurveFromXt(XtDocument document,
@@ -78,14 +78,13 @@ internal static unsafe partial class KernelRuntime
         var scaleProvided = hasScale && intersection.Fields[12].Kind == XtFieldKind.Real
             ? (KernelLogical)1 : (KernelLogical)0;
 
-        if (TryMaterializeAnalyticSurfaceFromXt(document, surf0Index, out var surf0)
-            != AlgorithmStatus.Success)
-            return AlgorithmStatus.Unsupported;
-        if (TryMaterializeAnalyticSurfaceFromXt(document, surf1Index, out var surf1)
-            != AlgorithmStatus.Success)
+        var support0Status = TryMaterializeICurveSupportFromXt(document, surf0Index, out var surf0);
+        if (support0Status != AlgorithmStatus.Success) return support0Status;
+        var support1Status = TryMaterializeICurveSupportFromXt(document, surf1Index, out var surf1);
+        if (support1Status != AlgorithmStatus.Success)
         {
             CleanupMaterializedSurface(surf0);
-            return AlgorithmStatus.Unsupported;
+            return support1Status;
         }
 
         var chartNode = FindNodeByIndex(document.Nodes, chartIndex);
@@ -190,6 +189,10 @@ internal static unsafe partial class KernelRuntime
             FreeICurveData(dataSlot);
             CleanupMaterializedSurface(surf1);
             CleanupMaterializedSurface(surf0);
+        }
+        else
+        {
+            ICurveDataPool[dataSlot].OwnsSupportSurfaces = 1;
         }
         return bind;
     }
@@ -365,7 +368,7 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = PlaneCreate(&sf, &local);
         tag = local;
-        if (error != 0) return AlgorithmStatus.Unsupported;
+        if (error != 0) return MaterializedSupportFailure(error);
         ApplySurfaceSense(node, tag);
         return AlgorithmStatus.Success;
     }
@@ -380,7 +383,7 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = CylCreate(&sf, &local);
         tag = local;
-        if (error != 0) return AlgorithmStatus.Unsupported;
+        if (error != 0) return MaterializedSupportFailure(error);
         ApplySurfaceSense(node, tag);
         return AlgorithmStatus.Success;
     }
@@ -398,7 +401,7 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = SphereCreate(&sf, &local);
         tag = local;
-        if (error != 0) return AlgorithmStatus.Unsupported;
+        if (error != 0) return MaterializedSupportFailure(error);
         ApplySurfaceSense(node, tag);
         return AlgorithmStatus.Success;
     }
@@ -420,7 +423,7 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = ConeCreate(&sf, &local);
         tag = local;
-        if (error != 0) return AlgorithmStatus.Unsupported;
+        if (error != 0) return MaterializedSupportFailure(error);
         ApplySurfaceSense(node, tag);
         return AlgorithmStatus.Success;
     }
@@ -436,10 +439,14 @@ internal static unsafe partial class KernelRuntime
         int local = 0;
         var error = TorusCreate(&sf, &local);
         tag = local;
-        if (error != 0) return AlgorithmStatus.Unsupported;
+        if (error != 0) return MaterializedSupportFailure(error);
         ApplySurfaceSense(node, tag);
         return AlgorithmStatus.Success;
     }
+
+    private static AlgorithmStatus MaterializedSupportFailure(int error)
+        => error == ParasolidConstants.PK_ERROR_memory_full || error < 0
+            ? AlgorithmStatus.WorkspaceTooSmall : AlgorithmStatus.Unsupported;
 
     private static void ApplySurfaceSense(XtNode node, SurfTag tag)
     {

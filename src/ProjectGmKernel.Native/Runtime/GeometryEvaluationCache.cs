@@ -158,7 +158,8 @@ internal static unsafe class GeometryEvaluationCache
     /// </summary>
     internal static bool TryGetExact(in GeometryIdentity identity, double parameter, ICurveQueryKind kind,
         ChartSide side, DerivativeOrder minOrder, double maxError, out CurveSample sample,
-        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved)
+        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved,
+        ICurveConstraintPlan plan = ICurveConstraintPlan.Auto)
     {
         sample = default;
         bool taken = false;
@@ -175,6 +176,7 @@ internal static unsafe class GeometryEvaluationCache
                 if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
                 if (entry.Parameter != parameter) continue;
                 if (entry.Kind != kind || entry.Side != side || entry.TerminatorRule != rule) continue;
+                if (plan != ICurveConstraintPlan.Auto && entry.Plan != plan) continue;
                 if (entry.Source == SampleSourceKind.PredictedOnly) continue;
                 if (entry.MaxOrder < minOrder || entry.ErrorEstimate > maxError) continue;
                 entry.ClockReferenced = 1;
@@ -205,7 +207,7 @@ internal static unsafe class GeometryEvaluationCache
                 if (entry.Owner.Tag != identity.Tag || entry.Owner.Generation != identity.Generation) continue;
                 if (entry.Source == SampleSourceKind.PredictedOnly) continue;
                 entry.ClockReferenced = 1;
-                _ = store.TryInsert(ToL2Sample(in entry));
+                _ = store.TryInsert(ToL2Sample(in entry), separatePlans: true);
             }
         }
         finally
@@ -215,7 +217,7 @@ internal static unsafe class GeometryEvaluationCache
     }
 
     /// <summary>Publish one validated operation result into the cross-call cache.</summary>
-    internal static void Publish(in GeometryIdentity identity, in CurveSample sample)
+    internal static void Publish(in GeometryIdentity identity, in CurveSample sample, bool separatePlans = false)
     {
         bool taken = false;
         gate.Enter(ref taken);
@@ -232,6 +234,7 @@ internal static unsafe class GeometryEvaluationCache
                 if (entry.Parameter != sample.Parameter || entry.Kind != sample.Kind || entry.Side != sample.Side
                     || entry.TerminatorRule != sample.TerminatorRule)
                     continue;
+                if (separatePlans && entry.Plan != sample.Plan) continue;
                 if (entry.Epoch != epoch)
                 {
                     Overwrite(ref entry, identity, epoch, in sample);
@@ -345,7 +348,8 @@ internal static unsafe partial class KernelRuntime
                 }
             }
             if (GeometryEvaluationCache.TryGetExact(in identity, t, kind, side,
-                    order, ICurveEvaluation.CacheQualityBound(in view), out var exact))
+                    order, ICurveEvaluation.CacheQualityBound(in view), out var exact,
+                    plan: view.HasBSurface && !definingPosition ? plan : ICurveConstraintPlan.Auto))
             {
                 derivatives[0] = exact.Position;
                 if (order >= 1) derivatives[1] = exact.First;
@@ -366,11 +370,12 @@ internal static unsafe partial class KernelRuntime
         if (status == AlgorithmStatus.Success)
         {
             if (operationStore.TryFindExact(t, report.Kind, report.Side, order,
-                    double.PositiveInfinity, out var opSample))
+                    double.PositiveInfinity, out var opSample,
+                    plan: view.HasBSurface ? report.Plan : ICurveConstraintPlan.Auto))
             {
-                GeometryEvaluationCache.Publish(in identity, in opSample);
+                GeometryEvaluationCache.Publish(in identity, in opSample, separatePlans: view.HasBSurface);
             }
-            else
+            else if (!view.HasBSurface)
             {
                 var witness = ICurveEvaluation.BuildSampleWitness(in view, in derivatives[0],
                     SampleWitness.None, SampleWitness.None);

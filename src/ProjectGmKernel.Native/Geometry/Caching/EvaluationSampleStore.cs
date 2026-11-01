@@ -166,7 +166,8 @@ internal ref struct EvaluationSampleStore
     /// </summary>
     internal readonly bool TryFindExact(double parameter, ICurveQueryKind kind, ChartSide side,
         DerivativeOrder minOrder, double maxError, out CurveSample sample,
-        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved)
+        TerminatorParameterRule rule = TerminatorParameterRule.Unresolved,
+        ICurveConstraintPlan plan = ICurveConstraintPlan.Auto)
     {
         sample = default;
         if (!double.IsFinite(parameter) || maxError < 0) return false;
@@ -177,6 +178,7 @@ internal ref struct EvaluationSampleStore
                 || candidate.TerminatorRule != rule)
                 continue;
             if (candidate.Source == SampleSourceKind.PredictedOnly) continue;
+            if (plan != ICurveConstraintPlan.Auto && candidate.Plan != plan) continue;
             if (candidate.MaxOrder < minOrder || candidate.ErrorEstimate > maxError) continue;
             sample = candidate;
             return true;
@@ -252,9 +254,11 @@ internal ref struct EvaluationSampleStore
     /// <summary>
     /// Insert or improve: the anchor keeps precedence over corrected roots at
     /// the same key (§13.4 node rule), corrected roots replace worse-rooted or
-    /// predicted entries. Failure (storage full) leaves the store unchanged.
+    /// predicted entries. By default a full store is unchanged. A caller that
+    /// has finished validating a new result may evict the oldest local sample
+    /// so its final witness can still be transferred to the cross-call cache.
     /// </summary>
-    internal bool TryInsert(in CurveSample sample)
+    internal bool TryInsert(in CurveSample sample, bool separatePlans = false, bool evictWhenFull = false)
     {
         for (BufferOffset i = 0; i < count; i++)
         {
@@ -262,12 +266,19 @@ internal ref struct EvaluationSampleStore
             if (candidate.Parameter != sample.Parameter || candidate.Kind != sample.Kind
                 || candidate.Side != sample.Side || candidate.TerminatorRule != sample.TerminatorRule)
                 continue;
+            if (separatePlans && candidate.Plan != sample.Plan) continue;
             if (!CurveSampleQuality.TryImprove(in candidate, in sample, out var improved))
                 return true; // nothing to improve
             candidate = improved;
             return true;
         }
-        if (count >= slots.Length) return false;
+        if (count >= slots.Length)
+        {
+            if (!evictWhenFull || count == 0) return false;
+            slots[1..count].CopyTo(slots);
+            slots[count - 1] = sample;
+            return true;
+        }
         slots[count++] = sample;
         return true;
     }
