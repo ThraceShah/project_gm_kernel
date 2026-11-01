@@ -859,11 +859,9 @@ internal static class ICurveEvaluation
         var b = Scale(cross, 1 / Math.Sqrt(crossNormSq));
         var nTilde = Sub(n, Scale(chordUnit, Dot(n, chordUnit)));
 
-        var next = view.ChartParameters[segment + 1] - view.ChartParameters[segment];
-        var lambda = (t - view.ChartParameters[segment]) / next;
-        var q = Add(
-            Scale(view.ChartPositions[segment], 1 - lambda),
-            Scale(view.ChartPositions[segment + 1], lambda));
+        if (!OriginalChartParameterMap.TryPlanePoint(view.ChartPositions, view.ChartParameters,
+                view.ChartScales, view.ChartChordUnits, segment, t, out var q))
+            return AlgorithmStatus.NumericalFailure;
         var alpha = Dot(n, Sub(c, q)) / crossNormSq;
         var x0 = Add(q, Scale(nTilde, alpha));
 
@@ -1210,11 +1208,9 @@ internal static class ICurveEvaluation
         var u = Unit(Sub(axis, Scale(chordUnit, Dot(axis, chordUnit))));
         var v = Cross(chordUnit, u);
         if (!IsFinite(u) || !IsFinite(v)) return AlgorithmStatus.Singular;
-        var next = view.ChartParameters[segment + 1] - view.ChartParameters[segment];
-        var lambda = (t - view.ChartParameters[segment]) / next;
-        var planeBase = Add(
-            Scale(view.ChartPositions[segment], 1 - lambda),
-            Scale(view.ChartPositions[segment + 1], lambda));
+        if (!OriginalChartParameterMap.TryPlanePoint(view.ChartPositions, view.ChartParameters,
+                view.ChartScales, view.ChartChordUnits, segment, t, out var planeBase))
+            return AlgorithmStatus.NumericalFailure;
 
         Span<double> xi = stackalloc double[2]
         {

@@ -68,7 +68,10 @@ using (host)
             RunOurWriterLivePkReceive(Log);
 
             Log("=== Case F2: non-uniform chord chart (f_i / f_{i-1} != 1) → live PK_PART_receive ===");
-            RunNonUniformChartLivePkReceive(Log);
+            RunNonUniformChartLivePkReceive(Log, repoRoot);
+
+            Log("=== Case F3: small normal chart scale (base_scale = 2^-10) → live PK_PART_receive ===");
+            RunNonUniformChartLivePkReceive(Log, repoRoot, smallScale: true);
 
             Log("=== GATE probes ===");
             Log("NotRun: GATE-T — terminator t_E reconstruction vs PK_CURVE_ask_interval not closed.");
@@ -625,8 +628,15 @@ static unsafe void RunOurWriterLivePkReceive(Action<string> log)
     }
 }
 
-static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
+static unsafe void RunNonUniformChartLivePkReceive(Action<string> log, string repoRoot, bool smallScale = false)
 {
+    var caseName = smallScale ? "Case F3" : "Case F2";
+    var logPrefix = smallScale ? "live-pk-recv-small-scale" : "live-pk-recv-nonuniform";
+    // F3 exercises the normalized division path without assuming that the real
+    // kernel supports subnormal chart parameters. Those inputs have separate
+    // managed regressions. Keep F2's original parameterization and metrics.
+    var baseScale = smallScale ? Math.ScaleB(1.0, -10) : 1.5;
+    var metricScale = smallScale ? baseScale : 1.0;
     int body = 0;
     CheckOur(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, null, &body), "BodyCreateSolidBlock live-recv-nonuniform");
     if (!KernelRuntime.TryResolveBodySlot(body, out var bodySlot))
@@ -648,7 +658,7 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
         chart[i * 3 + 1] = Math.Sin(angle);
         chart[i * 3 + 2] = 0;
     }
-    var input = BuildDecodeInput(plane, sphere, chart, baseParameter: -0.25, baseScale: 1.5);
+    var input = BuildDecodeInput(plane, sphere, chart, baseParameter: smallScale ? 0.0 : -0.25, baseScale: baseScale);
     CheckStatus(KernelRuntime.DecodeIcurve(input, out var slot, out _, out _), "DecodeIcurve live-recv-nonuniform");
     CheckStatus(KernelRuntime.TryBindICurveEntity(slot, out var icurve), "TryBindICurveEntity live-recv-nonuniform");
     CheckOur(KernelRuntime.TopologyDetachGeometry(edge), "detach live-recv-nonuniform");
@@ -675,6 +685,11 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
         CheckOur(KernelRuntime.MemoryBlockFree(&block), "MemoryBlockFree live-recv-nonuniform");
     }
 
+    var artifactDirectory = Path.Combine(repoRoot, "temp_docs", "icurve-evaluation");
+    Directory.CreateDirectory(artifactDirectory);
+    File.WriteAllBytes(Path.Combine(artifactDirectory,
+        smallScale ? "f3-small-scale-chart.x_t" : "f2-nonuniform-chart.x_t"), bytes);
+
     fixed (byte* pointer = bytes)
     {
         var pkBlock = new PK_MEMORY_block_t(null, (ulong)bytes.Length, pointer);
@@ -683,18 +698,20 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
         int* receivedParts = null;
         var error = PK_PART_receive_b(pkBlock, &receive, &count, &receivedParts);
         if (error != 0)
-            throw new InvalidOperationException($"PK_PART_receive_b non-uniform failed with error {error}");
+            throw new InvalidOperationException($"{caseName} PK_PART_receive_b failed with error {error}");
 
         try
         {
+            if (count != 1 || receivedParts is null)
+                throw new InvalidOperationException($"{caseName} expected one received body, got {count}");
             var receivedBody = receivedParts[0];
             if (!TryFindReceivedIcurve(receivedBody, out var pkCurve, out var pkInterval))
-                throw new InvalidOperationException("Case F2 received body has no PK_CLASS_icurve");
+                throw new InvalidOperationException($"{caseName} received body has no PK_CLASS_icurve");
 
             var record = KernelRuntime.GetCurveByTag(icurve);
             var intervalDelta = Math.Max(
                 Math.Abs(record.TMin - pkInterval.value[0]),
-                Math.Abs(record.TMax - pkInterval.value[1]));
+                Math.Abs(record.TMax - pkInterval.value[1])) / metricScale;
 
             var ours = stackalloc M.PK_VECTOR_s[3];
             var reference = stackalloc PK_VECTOR_t[3];
@@ -709,6 +726,19 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
                 var t = record.TMin + (record.TMax - record.TMin) * (i + 0.37) / 96.0;
                 CheckOur(KernelRuntime.CurveEval(icurve, t, 2, ours), "our CurveEval live-recv-nonuniform");
                 ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve, t, 2, reference), "PK_CURVE_eval live-recv-nonuniform");
+                if (smallScale)
+                {
+                    // Compare derivatives with respect to tau = t / base_scale:
+                    // dx/dtau = base_scale * dx/dt, and D2 gains base_scale^2.
+                    // These are unit conversions; raw PK D2 semantics remain GATE-D.
+                    for (var component = 0; component < 3; component++)
+                    {
+                        ours[1].coord[component] *= metricScale;
+                        reference[1].coord[component] *= metricScale;
+                        ours[2].coord[component] *= metricScale * metricScale;
+                        reference[2].coord[component] *= metricScale * metricScale;
+                    }
+                }
                 var posDelta = Distance(&ours[0], &reference[0]);
                 var d1Delta = Distance(&ours[1], &reference[1]);
                 var rawD2Delta = Distance(&ours[2], &reference[2]);
@@ -726,10 +756,14 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
                 samples++;
             }
 
-            log($"live-pk-recv-nonuniform: samples={samples} intervalDelta={intervalDelta:E3} max|Δpos|={maxPos:E3} max|ΔD1|={maxD1:E3} max|ΔD2|κ+n={maxGeomD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
+            if (samples != sampleList.Length)
+                throw new InvalidOperationException($"{caseName} expected {sampleList.Length} evaluated samples, got {samples}");
+            if (smallScale)
+                log($"{logPrefix}: base_scale={baseScale:R}; interval error divided by base_scale; D1 multiplied by base_scale and D2 by base_scale^2 before comparison");
+            log($"{logPrefix}: samples={samples} intervalDelta={intervalDelta:E3} max|Δpos|={maxPos:E3} max|ΔD1|={maxD1:E3} max|ΔD2|κ+n={maxGeomD2:E3} max|ρ−1|+|z|={maxCircle:E3}");
             if (!CaseFValidator.ValidateNonUniformChart(intervalDelta, sampleList, 1e-12, 1e-8, 1e-6, double.MaxValue, 1e-5, 1e-8, out var nonUniformFailure))
             {
-                throw new InvalidOperationException($"Case F2 non-uniform chart validation failed: {nonUniformFailure}");
+                throw new InvalidOperationException($"{caseName} non-uniform chart validation failed: {nonUniformFailure}");
             }
 
             // Negative tests: verify that CaseFValidator.ValidateNonUniformChart rejects NaN, Infinity,
@@ -747,10 +781,10 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log)
                 if (CaseFValidator.ValidateNonUniformChart(intervalDelta, nanSampleList, 1e-12, 1e-8, 1e-6, double.MaxValue, 1e-5, 1e-8, out var nanSampleFail))
                     throw new InvalidOperationException("Negative test failure: ValidateNonUniformChart accepted NaN sample DiffD0!");
 
-                log($"live-pk-recv-nonuniform: NaN/Inf/tolerance defense PASS ({nanIntervalFail}; {nanSampleFail})");
+                log($"{logPrefix}: NaN/Inf/tolerance defense PASS ({nanIntervalFail}; {nanSampleFail})");
             }
 
-            log("live-pk-recv-nonuniform: PASS (non-uniform f_i recursion matches PK TMax, D0, D1, and geometric D2)");
+            log($"{logPrefix}: PASS (non-uniform f_i recursion matches PK TMax, D0, D1, and geometric D2)");
         }
         finally
         {
