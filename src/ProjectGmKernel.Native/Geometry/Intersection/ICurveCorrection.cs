@@ -320,7 +320,8 @@ internal static class ICurveCorrection
                 if (!(crossNormSq > 1e-24)) return AlgorithmStatus.Singular;
                 var lineDirection = Scale(cross, 1 / Math.Sqrt(crossNormSq));
                 var normalInPlane = Sub(normal, Scale(chordUnit, Dot(normal, chordUnit)));
-                ChordPoint(in view, segment, t, out var chordPoint);
+                if (!ChordPoint(in view, segment, t, out var chordPoint))
+                    return AlgorithmStatus.NumericalFailure;
                 var alpha = Dot(normal, Sub(origin, chordPoint)) / crossNormSq;
                 var lineOrigin = Add(chordPoint, Scale(normalInPlane, alpha));
                 state[0] = Dot(Sub(seed, lineOrigin), lineDirection);
@@ -328,7 +329,8 @@ internal static class ICurveCorrection
             }
             case ICurveConstraintPlan.I2:
             {
-                InPlaneBasis(in view, segment, t, out var u, out var v, out var q);
+                if (!InPlaneBasis(in view, segment, t, out var u, out var v, out var q))
+                    return AlgorithmStatus.NumericalFailure;
                 var offset = Sub(in seed, in q);
                 state[0] = Dot(offset, u);
                 state[1] = Dot(offset, v);
@@ -392,7 +394,8 @@ internal static class ICurveCorrection
                 var b = Scale(cross, 1 / Math.Sqrt(crossNormSq));
                 var nTilde = Sub(n, Scale(chordUnit, Dot(n, chordUnit)));
 
-                ChordPoint(in view, segment, t, out var q);
+                if (!ChordPoint(in view, segment, t, out var q))
+                    return AlgorithmStatus.NumericalFailure;
                 var alpha = Dot(n, Sub(c, q)) / crossNormSq;
                 point = Add(Add(q, Scale(nTilde, alpha)), Scale(b, state[0]));
                 if (!TryCharge(ref budget, out detail)) return AlgorithmStatus.NotConverged;
@@ -405,7 +408,8 @@ internal static class ICurveCorrection
             }
             case ICurveConstraintPlan.I2:
             {
-                InPlaneBasis(in view, segment, t, out var u, out var v, out var q);
+                if (!InPlaneBasis(in view, segment, t, out var u, out var v, out var q))
+                    return AlgorithmStatus.NumericalFailure;
                 point = Add(q, Add(Scale(u, state[0]), Scale(v, state[1])));
                 if (!TryCharge(ref budget, out detail)) return AlgorithmStatus.NotConverged;
                 if (AnalyticImplicitEvaluation.Evaluate(in view.Support0, in point, 1, out var jet0)
@@ -517,24 +521,19 @@ internal static class ICurveCorrection
         return false;
     }
 
-    private static void ChordPoint(in ICurveView view, BufferOffset segment, double t, out KernelVector3 q)
-    {
-        var next = view.ChartParameters[segment + 1] - view.ChartParameters[segment];
-        var lambda = (t - view.ChartParameters[segment]) / next;
-        q = Add(
-            Scale(view.ChartPositions[segment], 1 - lambda),
-            Scale(view.ChartPositions[segment + 1], lambda));
-    }
+    private static bool ChordPoint(in ICurveView view, BufferOffset segment, double t, out KernelVector3 q)
+        => OriginalChartParameterMap.TryPlanePoint(view.ChartPositions, view.ChartParameters,
+            view.ChartScales, view.ChartChordUnits, segment, t, out q);
 
     /// <summary>Fixed in-plane orthonormal basis through Q(t) (§7.4); identical construction in fast path and here.</summary>
-    private static void InPlaneBasis(in ICurveView view, BufferOffset segment, double t,
+    private static bool InPlaneBasis(in ICurveView view, BufferOffset segment, double t,
         out KernelVector3 u, out KernelVector3 v, out KernelVector3 q)
     {
         var chordUnit = view.ChartChordUnits[segment];
         var axis = LeastParallelAxis(in chordUnit);
         u = Unit(Sub(axis, Scale(chordUnit, Dot(axis, chordUnit))));
         v = Cross(chordUnit, u);
-        ChordPoint(in view, segment, t, out q);
+        return ChordPoint(in view, segment, t, out q) && IsFinite(u) && IsFinite(v);
     }
 
     private static KernelVector3 LeastParallelAxis(in KernelVector3 direction)

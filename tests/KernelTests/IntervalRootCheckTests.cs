@@ -218,7 +218,7 @@ public class IntervalRootCheckTests
     {
         // Regression for review Item 2: L = 2^53, P0 = (0,0,-L), P1 = (0,0,2), t0 = -L, f0 = 1, t = 1.
         // Plain double (1 - (-2^53)) rounds to 2^53, losing the +1 offset; EFT ChordPlaneOffsetInterval
-        // preserves [1, 1] so z = 1 is certified Unique and z = 0 is certified Empty.
+        // encloses the exact offset 1 so z = 1 is certified Unique and z = 0 is certified Empty.
         var l = 9007199254740992.0; // 2^53
         var p0 = Vector(0, 0, -l);
         var p1 = Vector(0, 0, 2);

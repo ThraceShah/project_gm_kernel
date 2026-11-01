@@ -174,6 +174,18 @@ internal static class OriginalChartParameterMap
         TwoProd(chord.Z, dzHi, out var pz, out var ez);
         TwoSum(t, -parameters[segment], out var dtHi, out var dtLo);
         var qHi = dtHi / scale;
+        if (scale > 0 && scale < 1)
+        {
+            // A subnormal divisor can round the FMA division remainder to
+            // zero even when remainder / scale is significant. Scale all
+            // operands upward exactly before forming that remainder. Keeping
+            // the divisor in [0.5, 1) also keeps the scaled numerator finite
+            // whenever qHi is finite, including quotients near MaxValue.
+            var shift = -Math.ILogB(scale) - 1;
+            scale = Math.ScaleB(scale, shift);
+            dtHi = Math.ScaleB(dtHi, shift);
+            dtLo = Math.ScaleB(dtLo, shift);
+        }
         var qLo = (Math.FusedMultiplyAdd(-qHi, scale, dtHi) + dtLo) / scale;
         TwoSum(px, py, out var s1, out var e1);
         TwoSum(s1, pz, out var s2, out var e2);
@@ -181,6 +193,34 @@ internal static class OriginalChartParameterMap
         var low = (e1 + e2 + e3) + (ex + ey + ez)
             + (chord.X * dxLo + chord.Y * dyLo + chord.Z * dzLo) - qLo;
         return s3 + low;
+    }
+
+    /// <summary>
+    /// Construct the base point for an eliminated parameter plane. Interpolation
+    /// only supplies a nearby point; its rounding must not shift the original
+    /// chart equation used by the publication gate.
+    /// </summary>
+    internal static bool TryPlanePoint(ReadOnlySpan<KernelVector3> positions,
+        ReadOnlySpan<double> parameters, ReadOnlySpan<double> scales,
+        ReadOnlySpan<KernelVector3> chordUnits, BufferOffset segment, double t,
+        out KernelVector3 point)
+    {
+        point = default;
+        var lambda = (t - parameters[segment]) / (parameters[segment + 1] - parameters[segment]);
+        var candidate = Add(Scale(positions[segment], 1 - lambda),
+            Scale(positions[segment + 1], lambda));
+        var chord = chordUnits[segment];
+        var normSquared = Dot(chord, chord);
+        if (!IsFinite(candidate) || !(normSquared > 0) || !double.IsFinite(normSquared))
+            return false;
+        var correction = PlaneResidual(positions, parameters, scales, chordUnits, segment, t, in candidate)
+            / normSquared;
+        if (!double.IsFinite(correction)) return false;
+        point = Vector(
+            Math.FusedMultiplyAdd(-correction, chord.X, candidate.X),
+            Math.FusedMultiplyAdd(-correction, chord.Y, candidate.Y),
+            Math.FusedMultiplyAdd(-correction, chord.Z, candidate.Z));
+        return IsFinite(point);
     }
 
     private static void TwoSum(double a, double b, out double s, out double e)
