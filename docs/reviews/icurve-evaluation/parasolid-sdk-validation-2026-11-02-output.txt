@@ -1,0 +1,265 @@
+Full unit suite; exit 0
+=======================
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  ProjectGmKernel.Xt -> src/ProjectGmKernel.Xt/bin/Debug/net10.0/ProjectGmKernel.Xt.dll
+  ProjectGmKernel.Native -> src/ProjectGmKernel.Native/bin/Debug/testhooks/ProjectGmKernel.Native.dll
+  Function catalog: 83 implemented dispatch descriptors verified.
+  allocation IL guard: checked 1293 methods
+  allocation IL guard: CLEAN
+  ProjectGmKernel.Xt -> src/ProjectGmKernel.Xt/bin/Debug/net10.0/ProjectGmKernel.Xt.dll
+  KernelTests -> tests/KernelTests/bin/Debug/net10.0/KernelTests.dll
+Test run for tests/KernelTests/bin/Debug/net10.0/KernelTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: sdk_verification/full-sdk-final.trx
+
+Passed!  - Failed:     0, Passed:   734, Skipped:     0, Total:   734, Duration: 5 s - KernelTests.dll (net10.0)
+
+Existing analytic ICurve Oracle; exit 0; explicit NotRun probes retained
+========================================================================
+=== Case A: plane ∩ sphere (analytic circle as icurve chart) ===
+plane/sphere: samples=64 d2Samples=62 max|Δpos|=8.991E-014 max|Δû|=6.870E-016 max|ΔD2|κ+n=8.993E-014
+plane/sphere: PASS (D0+D1 unit tangent + D2 vs PK circle; order>2 rejected)
+=== Case A2: plane ∩ cone (analytic circle via cone section) ===
+plane/cone: samples=48 max|Δpos|=6.834E-014 max|Δû|=5.551E-016 max cone-res=6.839E-014
+plane/cone: PASS (D0+D1 vs PK circle; cone section residual)
+=== Case B: true PK_CLASS_icurve via skew cylinders (analytic supports) ===
+skew-cyl: PK interval=[0, 7.377692990331995]
+skew-cyl: samples=31 chart-vs-PK=0.000E+000 endGaps=(0.000E+000,0.000E+000) max cyl-residual=1.019E-013
+skew-cyl: PASS (true PK I_CURVE; chart anchors + dual-cylinder residual)
+=== Case C: XT receive → DecodeIcurve hydrate (PK transmit chart) ===
+xt-hydrate: corpusChart=20 fields=(bp=0,bs=1,ch=0.115021,an=0.343062) samples=23 max cyl-residual=6.106E-014
+xt-hydrate: PASS (corpus CHART extract + DecodeIcurve with PK chart samples)
+NotRun: XT full INTERSECTION entity hydrate via live PK_PART_transmit (add_geoms shared-dep).
+=== Case D: our XT INTERSECTION writer → codec re-read ===
+our-writer: INTERSECTION fields=13 chartCount=4 PASS (codec re-read)
+=== Case E: plane ∩ ring-torus (a=3,b=1) outer equator ρ=4 ===
+plane/torus: samples=48 max|Δpos|=2.620E-013 max|Δû|=7.109E-016 max|ρ−4|=2.620E-013
+plane/torus: PASS (D0+D1 unit tangent vs PK circle ρ=4; ring torus a=3,b=1)
+=== Case F: our XT INTERSECTION writer → live PK_PART_receive ===
+live-pk-recv [quarter sample-0 detail]: seg=0 frac=0.25 t=-0.200948
+  ourD0=(0.999464,0.032737,0.000000) pkD0=(0.999464,0.032737,0.000000)
+  ourD1=(-0.021836,0.666666,0.000000) pkD1=(-0.021836,0.666666,0.000000)
+  ourD2=(-0.444205,-0.029115,0.000000) pkD2=(-0.444682,-0.014565,0.000000)
+  ourFdD2=(-0.444205,-0.029115,0.000000) pkFdD2=(-0.444205,-0.029115,0.000000)
+  |ΔD2_tan|=1.456E-002 |ΔD2_norm|=1.181E-016 ourFdErr=1.037E-011 pkFdErr=1.456E-002
+live-pk-recv: samples=144 chartCount=49 max|Δpos|=1.780E-015 max|ΔD1|=2.355E-015 max|ΔD2_raw_mid|=3.386E-015 max|ΔD2|κ+n=1.554E-015 max|ρ−1|+|z|=1.110E-015
+live-pk-recv: midpoint raw D2 PASS (max|ΔD2_raw_mid|=3.386E-015 <= 1e-6)
+live-pk-recv: quarter-point D2 decomposition: max|ΔD2_normal|=2.756E-015 (PASS <= 1e-6), max|ΔD2_tangential|=1.456E-002
+live-pk-recv: finite difference D2 validation (h=1e-5): our D2 matches d(D1)/dt (err=1.855E-011); observed on this fixture that PK D2 has zero tangential acceleration (tangential delta=1.456E-002, pk_fd_err=1.456E-002) while matching normal acceleration to 2.756E-015
+live-pk-recv: negative-test PASS (CaseFValidator rejected tangential perturbation: Raw D2 vector tolerance exceeded or non-finite at sample 47: diff=6.670E-002 > tol=1.000E-006)
+live-pk-recv: NaN-rejection PASS (Raw D2 vector tolerance exceeded or non-finite at sample 0: diff=NaN > tol=1.000E-006)
+live-pk-recv: finite-difference NaN/Inf/tolerance defense PASS (shared CaseFValidator)
+live-pk-recv: PASS (our XT INTERSECTION received by PK; shared CaseFValidator accepted D0/D1/rawD2/geomD2 and rejected perturbations)
+=== Case F2: non-uniform chord chart (f_i / f_{i-1} != 1) → live PK_PART_receive ===
+live-pk-recv-nonuniform: samples=95 intervalDelta=1.776E-015 max|Δpos|=7.459E-014 max|ΔD1|=2.788E-015 max|ΔD2|κ+n=7.461E-014 max|ρ−1|+|z|=7.461E-014
+live-pk-recv-nonuniform: NaN/Inf/tolerance defense PASS (Interval bound tolerance exceeded or non-finite in CaseFValidator: delta=NaN > tol=1.000E-012; D0 position tolerance exceeded or non-finite at sample 0: diff=NaN > tol=1.000E-008)
+live-pk-recv-nonuniform: PASS (non-uniform f_i recursion matches PK TMax, D0, D1, and geometric D2)
+=== Case F3: small normal chart scale (base_scale = 2^-10) → live PK_PART_receive ===
+live-pk-recv-small-scale: base_scale=0.0009765625; interval error divided by base_scale; D1 multiplied by base_scale and D2 by base_scale^2 before comparison
+live-pk-recv-small-scale: samples=95 intervalDelta=4.441E-015 max|Δpos|=7.450E-014 max|ΔD1|=5.461E-015 max|ΔD2|κ+n=7.416E-014 max|ρ−1|+|z|=7.461E-014
+live-pk-recv-small-scale: NaN/Inf/tolerance defense PASS (Interval bound tolerance exceeded or non-finite in CaseFValidator: delta=NaN > tol=1.000E-012; D0 position tolerance exceeded or non-finite at sample 0: diff=NaN > tol=1.000E-008)
+live-pk-recv-small-scale: PASS (non-uniform f_i recursion matches PK TMax, D0, D1, and geometric D2)
+=== GATE probes ===
+NotRun: GATE-T — terminator t_E reconstruction vs PK_CURVE_ask_interval not closed.
+NotRun: GATE-D — public high-order (>2) PK_CURVE_eval contract not closed; Runtime rejects order>2.
+NotRun: GATE-B/A — BlendBound role map / blend arc extremes open.
+PASS: chart-interior D0/D1/D2 geometric comparisons above (see case logs; D2 on circle refs).
+
+Parametric ICurve Oracle; exit 1; full-vector D2 gate retained
+==============================================================
+Producer: real PK_SURF_intersect_surf + PK_CURVE_make_wire_body.
+Managed target: public PK_PART_receive_b -> PK_CURVE_eval D0-D2 -> PK_PART_transmit_b.
+Acceptance: preserved and fresh-runtime exports -> real PK receive, topology/type checks, native-parameter jets and PK_DEBUG_BODY_compare.
+bsurf-cylinder producer: 49 native parameters, cold/reversed warm pass; normalized max error D0=1.5359866377849384E-14, D1=2.9976021664879227E-15, D2=0.08664633337203048.
+bsurf-cylinder producer D2 mismatch decomposition: max normal=2.2378164912792697E-15, max tangential=0.08798941829558458 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: bsurf-cylinder producer t=2.170221861996598 order=2 axis=0: managed=-0.19365591567479, PK=-0.231251832594925, relative error=0.037595916920134975
+bsurf-cylinder preserved: 49 native parameters, cold/reversed warm pass; normalized max error D0=1.6350825499000975E-14, D1=2.4424906541753444E-15, D2=0.08664633337203094.
+bsurf-cylinder preserved D2 mismatch decomposition: max normal=1.982063924071651E-15, max tangential=0.08798941829558575 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: bsurf-cylinder preserved t=2.170221861996598 order=2 axis=0: managed=-0.19365591567479, PK=-0.23125183259492446, relative error=0.03759591692013445
+bsurf-cylinder preserved body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=0, received count=0
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=2, received count=2
+  global entry=21947, master count=0, received count=0
+PASS bsurf-cylinder preserved structure: topology=BodyCounts { Regions = 1, Shells = 1, Faces = 0, Edges = 1, Vertices = 2 }; independent PK body compare completed.
+bsurf-cylinder fresh-runtime: 49 native parameters, cold/reversed warm pass; normalized max error D0=1.6350825499000975E-14, D1=2.4424906541753444E-15, D2=0.08664633337203094.
+bsurf-cylinder fresh-runtime D2 mismatch decomposition: max normal=1.982063924071651E-15, max tangential=0.08798941829558575 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: bsurf-cylinder fresh-runtime t=2.170221861996598 order=2 axis=0: managed=-0.19365591567479, PK=-0.23125183259492446, relative error=0.03759591692013445
+bsurf-cylinder fresh-runtime body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=0, received count=0
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=2, received count=2
+  global entry=21947, master count=0, received count=0
+PASS bsurf-cylinder fresh-runtime structure: topology=BodyCounts { Regions = 1, Shells = 1, Faces = 0, Edges = 1, Vertices = 2 }; independent PK body compare completed.
+cylinder-bsurf producer: 49 native parameters, cold/reversed warm pass; normalized max error D0=4.052314039881821E-15, D1=2.282896094385478E-15, D2=0.08664633337203385.
+cylinder-bsurf producer D2 mismatch decomposition: max normal=2.0377664946893764E-15, max tangential=0.08798941829558245 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: cylinder-bsurf producer t=2.1702218619965996 order=2 axis=0: managed=-0.19365591567479062, PK=-0.2312518325949242, relative error=0.03759591692013359
+cylinder-bsurf preserved: 49 native parameters, cold/reversed warm pass; normalized max error D0=5.245803791353865E-15, D1=2.831068712794149E-15, D2=0.08664633337203412.
+cylinder-bsurf preserved D2 mismatch decomposition: max normal=1.915503165919649E-15, max tangential=0.08798941829558302 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: cylinder-bsurf preserved t=2.1702218619965996 order=2 axis=0: managed=-0.19365591567479062, PK=-0.23125183259492385, relative error=0.03759591692013323
+cylinder-bsurf preserved body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=0, received count=0
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=2, received count=2
+  global entry=21947, master count=0, received count=0
+PASS cylinder-bsurf preserved structure: topology=BodyCounts { Regions = 1, Shells = 1, Faces = 0, Edges = 1, Vertices = 2 }; independent PK body compare completed.
+cylinder-bsurf fresh-runtime: 49 native parameters, cold/reversed warm pass; normalized max error D0=5.245803791353865E-15, D1=2.831068712794149E-15, D2=0.08664633337203412.
+cylinder-bsurf fresh-runtime D2 mismatch decomposition: max normal=1.915503165919649E-15, max tangential=0.08798941829558302 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: cylinder-bsurf fresh-runtime t=2.1702218619965996 order=2 axis=0: managed=-0.19365591567479062, PK=-0.23125183259492385, relative error=0.03759591692013323
+cylinder-bsurf fresh-runtime body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=0, received count=0
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=2, received count=2
+  global entry=21947, master count=0, received count=0
+PASS cylinder-bsurf fresh-runtime structure: topology=BodyCounts { Regions = 1, Shells = 1, Faces = 0, Edges = 1, Vertices = 2 }; independent PK body compare completed.
+bsurf-bsurf producer: 49 native parameters, cold/reversed warm pass; normalized max error D0=3.008704396734174E-14, D1=9.880984919163893E-15, D2=0.21082410405781296.
+bsurf-bsurf producer D2 mismatch decomposition: max normal=4.0189635871576297E-14, max tangential=0.21114664388724486 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: bsurf-bsurf producer t=1.0738143857840317 order=2 axis=0: managed=0.9197808566037515, PK=0.8562131070521753, relative error=0.06356774955157618
+bsurf-bsurf preserved: 49 native parameters, cold/reversed warm pass; normalized max error D0=3.086420008457935E-14, D1=4.107825191113079E-15, D2=0.21082410405781812.
+bsurf-bsurf preserved D2 mismatch decomposition: max normal=4.4276657680059825E-14, max tangential=0.2111466438872506 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: bsurf-bsurf preserved t=1.0738143857840317 order=2 axis=0: managed=0.9197808566037515, PK=0.8562131070521755, relative error=0.06356774955157607
+bsurf-bsurf preserved body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=0, received count=0
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=2, received count=2
+  global entry=21947, master count=0, received count=0
+PASS bsurf-bsurf preserved structure: topology=BodyCounts { Regions = 1, Shells = 1, Faces = 0, Edges = 1, Vertices = 2 }; independent PK body compare completed.
+bsurf-bsurf fresh-runtime: 49 native parameters, cold/reversed warm pass; normalized max error D0=3.086420008457935E-14, D1=4.107825191113079E-15, D2=0.21082410405781812.
+bsurf-bsurf fresh-runtime D2 mismatch decomposition: max normal=4.4276657680059825E-14, max tangential=0.2111466438872506 (diagnostics only; full-vector tolerance remains mandatory).
+FAIL jets: bsurf-bsurf fresh-runtime t=1.0738143857840317 order=2 axis=0: managed=0.9197808566037515, PK=0.8562131070521755, relative error=0.06356774955157607
+bsurf-bsurf fresh-runtime body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=0, received count=0
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=2, received count=2
+  global entry=21947, master count=0, received count=0
+PASS bsurf-bsurf fresh-runtime structure: topology=BodyCounts { Regions = 1, Shells = 1, Faces = 0, Edges = 1, Vertices = 2 }; independent PK body compare completed.
+FAIL: InvalidOperationException: At least one live case failed; see the separate jet and structure results above.
+
+Independent D2 diagnostic; diagnostic execution exit 0 is not a full-D2 pass
+============================================================================
+Direct ICurve materialization: index=4, status=Success, failure=None, tag=3
+Managed native interval=[0,12.510396371595181], class=ICurve
+PK curve=54, class=3004, sense=PK_LOGICAL_t, edge interval=[2.1267673831711806,7.881549714104963]
+PK native interval=[0,12.510396371595181]
+t=2.3633528789984584
+ D0: managed=(0.7495277006437897,-1.8542406062773067,-0.023846383935296686); PK=(0.7495277006437902,-1.8542406062773071,-0.023846383935296755); normalized max error=4.440892098500626E-16
+ D1: managed=(-0.9266397273499325,-0.3745695902756606,0.04932820864298405); PK=(-0.9266397273499329,-0.37456959027566084,0.04932820864298414); normalized max error=4.440892098500626E-16
+ D2: managed=(-0.19303315357792794,0.4607168366505884,-0.003065220599954843); PK=(-0.18734183336005208,0.4630174022525342,-0.0033681890815288633); normalized max error=0.005691320217875856
+ D2 mismatch: tangent=0.006146179123006912; normal norm=3.533100692050938E-16
+ D2 tangent projections: managed=0.0061461791230069205; PK=5.827586677109586E-18; speed=1.0006981734920677; PK versus projected managed norm=3.644945161739697E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=1.020409819449174E-08; PK FD(D0)-D1 norm=1.020410934048812E-08
+ h=0.0005754782330933783: managed FD(D1)=(-0.19303316191576347,0.46071685658774075,-0.003065220421130186); error D2=2.1611143523616763E-08; PK FD(D1)=(-0.19303316191595637,0.46071685658774075,-0.0030652204211663587); error D2=0.006146179390175113; PK FD(D1)-managed D2=2.1611217648653573E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=2.5509954837322684E-09; PK FD(D0)-D1 norm=2.5509133957703406E-09
+ h=0.00028773911654668915: managed FD(D1)=(-0.1930331556619136,0.4607168416350947,-0.0030652205552289306); error D2=5.402804802246706E-09; PK FD(D1)=(-0.19303315566249238,0.46071684163490173,-0.003065220555216873); error D2=0.006146179189837484; PK FD(D1)-managed D2=5.402850170180521E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=1.0184249861511129E-10; PK FD(D0)-D1 norm=1.0225078973585413E-10
+ h=5.754782330933783E-05: managed FD(D1)=(-0.1930331536628578,0.46071683684909037,-0.0030652205983228396); error D2=2.1591384185914664E-10; PK FD(D1)=(-0.19303315365899937,0.460716836850055,-0.003065220598563992); error D2=0.006146179123485068; PK FD(D1)-managed D2=2.1531706681875432E-10
+t=3.0027731379911007
+ D0: managed=(0.12597346678136478,-1.9960287286677731,-0.0007805607678304377); PK=(0.1259734667813639,-1.9960287286677727,-0.0007805607678303961); normalized max error=8.881784197001252E-16
+ D1: managed=(-0.9976420395036965,-0.06296323520703705,0.012313997725069869); PK=(-0.997642039503696,-0.06296323520703649,0.012313997725069782); normalized max error=5.551115123125783E-16
+ D2: managed=(-0.031894235571702276,0.4986081443886743,-0.09556660201905555); PK=(-0.032644667546540454,0.49856078308765855,-0.09555733936044139); normalized max error=0.0007504319748381783
+ D2 mismatch: tangent=-0.0007519820732823582; normal norm=2.8159740100337586E-16
+ D2 tangent projections: managed=-0.0007519820732823659; PK=-7.37257477290143E-18; speed=0.9997027770856715; PK versus projected managed norm=2.9110293291727306E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=2.55368281821769E-09; PK FD(D0)-D1 norm=2.553662909386136E-09
+ h=0.0005754782330933783: managed FD(D1)=(-0.031894236673442176,0.4986081650853158,-0.0955665862253347); error D2=2.6057751606851244E-08; PK FD(D1)=(-0.03189423667334571,0.49860816508512285,-0.09556658622527894); error D2=0.0007519820833217059; PK FD(D1)-managed D2=2.6057628067964575E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=6.384361362934499E-10; PK FD(D0)-D1 norm=6.383773029643238E-10
+ h=0.00028773911654668915: managed FD(D1)=(-0.031894235846965144,0.49860814956315247,-0.0955665980706193); error D2=6.514686704068336E-09; PK FD(D1)=(-0.031894235847158066,0.4986081495630319,-0.09556659807064041); error D2=0.0007519820756785244; PK FD(D1)-managed D2=6.5145862991355785E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=2.5796148917375243E-11; PK FD(D0)-D1 norm=2.6111779401598592E-11
+ h=5.754782330933783E-05: managed FD(D1)=(-0.0318942355830481,0.4986081445961875,-0.09556660186128269); error D2=2.6092670352308086E-10; PK FD(D1)=(-0.03189423558401271,0.4986081445975139,-0.09556660186138818); error D2=0.0007519820722083766; PK FD(D1)-managed D2=2.6196283819391046E-10
+t=3.6421933969837434
+ D0: managed=(-0.5107100839703795,-1.9336947044792172,-0.012040365289702516); PK=(-0.5107100839703796,-1.9336947044792177,-0.012040365289702523); normalized max error=2.2965838858707775E-16
+ D1: managed=(-0.9665856341737662,0.25528591935943434,-0.04239679997356201); PK=(-0.9665856341737661,0.25528591935943423,-0.04239679997356203); normalized max error=1.1102230246251565E-16
+ D2: managed=(0.13680724831853774,0.48073247828856913,-0.050173094892694746); PK=(0.129678442544797,0.482615274464657,-0.05048578167569044); normalized max error=0.007128805773740754
+ D2 mismatch: tangent=-0.007379875759433276; normal norm=4.000161233897766E-16
+ D2 tangent projections: managed=-0.007379875759433354; PK=-6.375108774214766E-17; speed=1.0006278916072104; PK versus projected managed norm=3.898151775035868E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=8.877493238919143E-09; PK FD(D0)-D1 norm=8.877543736384845E-09
+ h=0.0005754782330933783: managed FD(D1)=(0.13680725379192282,0.4807324990072499,-0.050173087099394185); error D2=2.2802570265973528E-08; PK FD(D1)=(0.13680725379201927,0.4807324990071052,-0.0501730870993761); error D2=0.007379876091110123; PK FD(D1)-managed D2=2.2802468105941205E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=2.2192902510015546E-09; PK FD(D0)-D1 norm=2.2191875872422695E-09
+ h=0.00028773911654668915: managed FD(D1)=(0.13680724968635377,0.48073248346812153,-0.05017309294438244); error D2=5.700403894396138E-09; PK FD(D1)=(0.1368072496865467,0.48073248346860387,-0.05017309294424981); error D2=0.0073798758418994045; PK FD(D1)-managed D2=5.7009337842247604E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=8.857200579146542E-11; PK FD(D0)-D1 norm=8.852093216700248E-11
+ h=5.754782330933783E-05: managed FD(D1)=(0.13680724837255626,0.4807324784971052,-0.050173094814650876); error D2=2.2912036313065004E-10; PK FD(D1)=(0.13680724837352085,0.4807324784956583,-0.050173094814771446); error D2=0.007379875763013654; PK FD(D1)-managed D2=2.2799366263425639E-10
+t=4.281613655976386
+ D0: managed=(-1.0947843965736963,-1.6737524085176902,-0.04145287044196487); PK=(-1.0947843965736952,-1.6737524085176894,-0.04145287044196478); normalized max error=1.01410198035319E-15
+ D1: managed=(-0.8366682767551343,0.5472561950252409,-0.03625198146628611); PK=(-0.8366682767551342,0.5472561950252408,-0.03625198146628606); normalized max error=1.1102230246251565E-16
+ D2: managed=(0.28358131311170326,0.41167543542331264,0.06744694609694155); PK=(0.27152921724057016,0.4195585885340001,0.0669247410985104); normalized max error=0.012052095871133095
+ D2 mismatch: tangent=-0.014410753481824289; normal norm=9.862313223269399E-17
+ D2 tangent projections: managed=-0.014410753481824301; PK=-2.0383000842727483E-17; speed=1.000408593766638; PK versus projected managed norm=9.71445146547012E-17
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=7.428627331444974E-09; PK FD(D0)-D1 norm=7.428520388585324E-09
+ h=0.0005754782330933783: managed FD(D1)=(0.2835813254962003,0.4116754526402471,0.06744693456941381); error D2=2.413881716139414E-08; PK FD(D1)=(0.2835813254966826,0.4116754526401506,0.06744693456949821); error D2=0.014410754003836627; PK FD(D1)-managed D2=2.413895548140951E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=1.8570526451879758E-09; PK FD(D0)-D1 norm=1.8572397654126297E-09
+ h=0.00028773911654668915: managed FD(D1)=(0.28358131620740096,0.4116754397273151,0.06744694321502989); error D2=6.0343347566487814E-09; PK FD(D1)=(0.2835813162085585,0.41167543972789383,0.06744694321523488); error D2=0.014410753612636319; PK FD(D1)-managed D2=6.035243555177005E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=7.463031874049106E-11; PK FD(D0)-D1 norm=7.45712223051037E-11
+ h=5.754782330933783E-05: managed FD(D1)=(0.28358131323640506,0.4116754355980166,0.0674469459819989); error D2=2.4348271351621393E-10; PK FD(D1)=(0.2835813132373697,0.4116754355951228,0.06744694598187832); error D2=0.014410753488767108; PK FD(D1)-managed D2=2.419717582372409E-10
+t=4.921033914969028
+ D0: managed=(-1.5672897243529427,-1.242418174342953,-0.04681113216432818); PK=(-1.5672897243529438,-1.2424181743429532,-0.04681113216432823); normalized max error=7.083712777377601E-16
+ D1: managed=(-0.6217009602314278,0.7842653518058633,0.021960825145242266); PK=(-0.6217009602314278,0.7842653518058637,0.02196082514524234); normalized max error=3.3306690738754696E-16
+ D2: managed=(0.4070183760377528,0.29271022842320077,0.08810441600926149); PK=(0.39365059592590307,0.3095734592092377,0.08857661647282064); normalized max error=0.01686323078603691
+ D2 mismatch: tangent=-0.021524150876159883; normal norm=1.2565491568434722E-16
+ D2 tangent projections: managed=-0.021524150876159852; PK=2.6020852139652106E-17; speed=1.0010327186645371; PK versus projected managed norm=1.2412670766236366E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=5.268691020517394E-09; PK FD(D0)-D1 norm=5.2684717326111236E-09
+ h=0.0005754782330933783: managed FD(D1)=(0.4070183930013042,0.29271024121297823,0.0881044020248366); error D2=2.5434319781246546E-08; PK FD(D1)=(0.40701839300188297,0.2927102412130747,0.08810440202489388); error D2=0.021524151698395045; PK FD(D1)-managed D2=2.5434722815547644E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=1.3174088694845575E-09; PK FD(D0)-D1 norm=1.3169272200346876E-09
+ h=0.00028773911654668915: managed FD(D1)=(0.4070183802784002,0.29271023162052,0.08810441251316345); error D2=6.3583521523792654E-09; PK FD(D1)=(0.40701838027878606,0.2927102316207129,0.08810441251312727); error D2=0.02152415108168302; PK FD(D1)-managed D2=6.358726394788894E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=5.298091403031068E-11; PK FD(D0)-D1 norm=6.06210805757578E-11
+ h=5.754782330933783E-05: managed FD(D1)=(0.40701837620736414,0.2927102285509411,0.08810441586953269); error D2=2.5418443593657127E-10; PK FD(D1)=(0.40701837620736414,0.29271022854997647,0.08810441587007528); error D2=0.021524150885228892; PK FD(D1)-managed D2=2.534026033548549E-10
+t=5.560454173961671
+ D0: managed=(-1.879272156344381,-0.6843509058872805,-0.020419825784616694); PK=(-1.879272156344381,-0.6843509058872804,-0.020419825784616683); normalized max error=1.1102230246251565E-16
+ D1: managed=(-0.34243557231188015,0.9403503828978128,0.0486751146906648); PK=(-0.3424355723118803,0.9403503828978131,0.0486751146906648); normalized max error=3.3306690738754696E-16
+ D2: managed=(0.47967942889585335,0.14623019892949474,-0.018412279749940513); PK=(0.4702484943044242,0.17212815951303392,-0.017071730286055152); normalized max error=0.025897960583539187
+ D2 mismatch: tangent=-0.027594274089373816; normal norm=1.4898579055409676E-16
+ D2 tangent projections: managed=-0.02759427408937386; PK=-3.74049749507499E-17; speed=1.0019432272293567; PK versus projected managed norm=1.6943551349561353E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=1.0245194701351574E-08; PK FD(D0)-D1 norm=1.0245458590430684E-08
+ h=0.0005754782330933783: managed FD(D1)=(0.47967944996376444,0.1462302051231284,-0.018412275401936785); error D2=2.2385779229791292E-08; PK FD(D1)=(0.47967944996347506,0.14623020512303195,-0.018412275401900612); error D2=0.027594275265663756; PK FD(D1)-managed D2=2.238548722647939E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=2.5614322576120177E-09; PK FD(D0)-D1 norm=2.5618636849130197E-09
+ h=0.00028773911654668915: managed FD(D1)=(0.47967943416264824,0.14623020047843935,-0.01841227866291223); error D2=5.596426386729225E-09; PK FD(D1)=(0.47967943416264824,0.1462302004778606,-0.018412278662827828); error D2=0.027594274383419153; PK FD(D1)-managed D2=5.596282623773004E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=1.029098048648744E-10; PK FD(D0)-D1 norm=1.0209014886835881E-10
+ h=5.754782330933783E-05: managed FD(D1)=(0.4796794291113765,0.14623019899255557,-0.01841227970643836); error D2=2.2873420481947888E-10; PK FD(D1)=(0.47967942910607114,0.14623019899062636,-0.018412279706257494); error D2=0.027594274101724443; PK FD(D1)-managed D2=2.2324157378864298E-10
+t=6.199874432954314
+ D0: managed=(-1.999212419882915,-0.056122189781739884,-0.00015541827323863595); PK=(-1.9992124198829153,-0.05612218978173977,-0.00015541827323864674); normalized max error=1.1106603916458035E-16
+ D1: managed=(-0.028123295304200206,1.0018219438487577,0.005544286043816981); PK=(-0.028123295304199967,1.001821943848758,0.005544286043816981); normalized max error=2.393918396847994E-16
+ D2: managed=(0.5030153642060613,-0.02131842327728619,-0.0987753064566026); PK=(0.5020059921241414,0.014637928574019536,-0.09857631670500082); normalized max error=0.035956351851305725
+ D2 mismatch: tangent=-0.03597106708697836; normal norm=3.6959466119413677E-16
+ D2 tangent projections: managed=-0.035971067086978364; PK=-1.6263032587282567E-18; speed=1.0022319422286474; PK versus projected managed norm=3.476768433475862E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=3.002346545467627E-09; PK FD(D0)-D1 norm=3.001580960120637E-09
+ h=0.0005754782330933783: managed FD(D1)=(0.5030153856209574,-0.021318424029657383,-0.09877528992229685); error D2=2.7065607381098367E-08; PK FD(D1)=(0.5030153856206349,-0.021318424029657383,-0.09877528992229233); error D2=0.03597106834849233; PK FD(D1)-managed D2=2.706535496098179E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=7.508320454260606E-10; PK FD(D0)-D1 norm=7.507724503241609E-10
+ h=0.00028773911654668915: managed FD(D1)=(0.5030153695604759,-0.02131842346555401,-0.09877530232304403); error D2=6.766942194159617E-09; PK FD(D1)=(0.5030153695593907,-0.021318423465168167,-0.09877530232293702); error D2=0.035971067402134925; PK FD(D1)-managed D2=6.7661382558625436E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=3.32971240279789E-11; PK FD(D0)-D1 norm=2.5679568848636015E-11
+ h=5.754782330933783E-05: managed FD(D1)=(0.5030153644194593,-0.021318423284207508,-0.09877530629151048); error D2=2.698925800710229E-10; PK FD(D1)=(0.5030153644210268,-0.02131842328613673,-0.09877530629143512); error D2=0.035971067100943666; PK FD(D1)-managed D2=2.712356711207982E-10
+t=6.8392946919469555
+ D0: managed=(-1.914726382544199,0.5777740734831083,-0.015109306231515431); PK=(-1.9147263825441856,0.5777740734831023,-0.015109306231514921); normalized max error=6.958005288358445E-15
+ D1: managed=(0.2897447394435826,0.9602055929431426,-0.04564764953437188); PK=(0.28974473944358203,0.9602055929431432,-0.04564764953437082); normalized max error=1.061650767297806E-15
+ D2: managed=(0.4690830558376916,-0.1865453939251539,-0.036595472229369756); PK=(0.48102232948511847,-0.1469789902211457,-0.038476437454827345); normalized max error=0.03956640370400821
+ D2 mismatch: tangent=-0.041371301496038015; normal norm=5.186888915712046E-16
+ D2 tangent projections: managed=-0.041371301496038064; PK=-1.8865117801247777E-17; speed=1.0040072224155239; PK versus projected managed norm=5.414560792754543E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=1.040733824777092E-08; PK FD(D0)-D1 norm=1.0407272701367036E-08
+ h=0.0005754782330933783: managed FD(D1)=(0.46908307698070306,-0.18654540205821604,-0.03659546830620587); error D2=2.2990538226218924E-08; PK FD(D1)=(0.46908307698046187,-0.1865454020581196,-0.03659546830616367); error D2=0.04137130335100892; PK FD(D1)-managed D2=2.2990289494449007E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=2.6020976630525817E-09; PK FD(D0)-D1 norm=2.6020966278309927E-09
+ h=0.00028773911654668915: managed FD(D1)=(0.46908306112243375,-0.1865453959580284,-0.03659547124863726); error D2=5.7465567532537715E-09; PK FD(D1)=(0.46908306112378423,-0.18654539595822134,-0.036595471248709606); error D2=0.04137130195949128; PK FD(D1)-managed D2=5.7478546181028845E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=1.0510362662182916E-10; PK FD(D0)-D1 norm=1.0897331745143443E-10
+ h=5.754782330933783E-05: managed FD(D1)=(0.4690830560476255,-0.18654539400565967,-0.036595472190143925); error D2=2.282369130670331E-10; PK FD(D1)=(0.46908305605051936,-0.18654539400565967,-0.03659547219080709); error D2=0.041371301513365245; PK FD(D1)-managed D2=2.3078975617616207E-10
+t=7.478714950939597
+ D0: managed=(-1.6345723455020558,1.1524639895979085,-0.043810479189918206); PK=(-1.6345723455020522,1.1524639895979045,-0.043810479189917734); normalized max error=3.468050129744228E-15
+ D1: managed=(0.5785300878023117,0.8205456232020482,-0.031373456132258615); PK=(0.5785300878023111,0.8205456232020485,-0.03137345613225846); normalized max error=6.661338147750939E-16
+ D2: managed=(0.3846426027321982,-0.3290914287507854,0.07856634649669214); PK=(0.41329576781025407,-0.28845183248536427,0.07701249677205291); normalized max error=0.04063959626542113
+ D2 mismatch: tangent=-0.049749322634318485; normal norm=6.674335893081556E-16
+ D2 tangent projections: managed=-0.04974932263431846; PK=5.681219383824043E-17; speed=1.004478210813092; PK versus projected managed norm=6.661338147750939E-16
+ h=0.0005754782330933783: managed FD(D0)-D1 norm=7.1303700001951605E-09; PK FD(D0)-D1 norm=7.1302332893654665E-09
+ h=0.0005754782330933783: managed FD(D1)=(0.38464261948590406,-0.32909144340731616,0.07856633202093276); error D2=2.6552743061859045E-08; PK FD(D1)=(0.38464261948580764,-0.32909144340731616,0.07856633202093878); error D2=0.049749324505675846; PK FD(D1)-managed D2=2.655267893949319E-08
+ h=0.00028773911654668915: managed FD(D0)-D1 norm=1.7824563235597772E-09; PK FD(D0)-D1 norm=1.7822261615904996E-09
+ h=0.00028773911654668915: managed FD(D1)=(0.3846426069210995,-0.329091432415596,0.0785663428778729); error D2=6.638793833254852E-09; PK FD(D1)=(0.38464260692090657,-0.3290914324154031,0.07856634287784878); error D2=0.04974932310237943; PK FD(D1)-managed D2=6.638578780332583E-09
+ h=5.754782330933783E-05: managed FD(D0)-D1 norm=7.70836490526138E-11; PK FD(D0)-D1 norm=7.50195897168687E-11
+ h=5.754782330933783E-05: managed FD(D1)=(0.3846426029017665,-0.32909142889921017,0.07856634635177975); error D2=2.6792335255563295E-10; PK FD(D1)=(0.384642602897908,-0.32909142889728094,0.07856634635184004); error D2=0.049749322654023875; PK FD(D1)-managed D2=2.6439142113648875E-10
+MAX NORMALIZED ERRORS: D0=6.958005288358445E-15; D1=1.061650767297806E-15; D2=0.04063959626542113

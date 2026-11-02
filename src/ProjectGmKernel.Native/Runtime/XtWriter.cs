@@ -46,8 +46,28 @@ internal static unsafe class XtWriter
 
     private static bool BuildBody(BodySlot bodySlot, List<XtNode> nodes, ref TransmitGraph graph, out XtNodeIndex bodyIndex)
     {
+        bodyIndex = 0;
         var map = new NodeMap();
         var body = KernelRuntime.GetBodyRecord(bodySlot);
+        if (body.BodyType == ParasolidConstants.PK_BODY_type_wire_c
+            && (body.RegionCount != 0 || body.ShellCount != 0))
+        {
+            // The materialized PK wire subset has one void region and one
+            // faceless shell owning the sole edge. Other shell topologies need
+            // explicit ownership data rather than being flattened on output.
+            if (body.RegionCount != 1 || body.ShellCount != 1 || body.FaceCountBody != 0
+                || body.EdgeCountBody != 1 || body.VertexCountBody != 2
+                || body.FirstRegion < 0 || body.FirstShell < 0)
+                return false;
+            var region = KernelRuntime.GetRegionRecord(body.FirstRegion);
+            var shell = KernelRuntime.GetShellRecord(body.FirstShell);
+            if (region.IsSolid != 0 || region.Body != bodySlot || region.ShellCount != 1
+                || region.FirstShell != body.FirstShell || region.Frame >= 0
+                || shell.Body != bodySlot || shell.Region != body.FirstRegion
+                || shell.FaceUseCount != 0 || shell.AcornVertex >= 0)
+                return false;
+            map.WireShellSlot = body.FirstShell;
+        }
         map.Body = AddIndex(nodes, ref graph, ref map);
         bodyIndex = map.Body;
         map.FirstRegionSlot = body.FirstRegion;
@@ -517,7 +537,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Unsigned(XtBodyType(body.BodyType)),
                 XtFieldValue.Unsigned(1),
-                XtFieldValue.Ptr(FirstSolidShell(map)),
+                XtFieldValue.Ptr(map.WireShellSlot >= 0 ? Ptr(map.ShellSlots, map.WireShellSlot) : FirstSolidShell(map)),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(ChainHead(map.SurfaceChain, map.SurfaceTags)),
                 XtFieldValue.Ptr(ChainHead(map.CurveChain, map.CurveTags)),
@@ -525,7 +545,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(Ptr(map.RegionSlots, body.FirstRegion)),
-                XtFieldValue.Ptr(Ptr(map.EdgeSlots, body.FirstEdgeBody)),
+                XtFieldValue.Ptr(map.WireShellSlot >= 0 ? 0 : Ptr(map.EdgeSlots, body.FirstEdgeBody)),
                 XtFieldValue.Ptr(Ptr(map.VertexSlots, body.FirstVertexBody)),
                 XtFieldValue.Int(0),
                 XtFieldValue.Ptr(0),
@@ -564,6 +584,7 @@ internal static unsafe class XtWriter
     {
         var shell = KernelRuntime.GetShellRecord(slot);
         var region = KernelRuntime.GetRegionRecord(shell.Region);
+        var isWireShell = slot == map.WireShellSlot;
         var firstBack = 0;
         var firstFront = 0;
         var useSlot = shell.FirstFaceUseShell;
@@ -584,10 +605,10 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(map.ShellSlots[slot], map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(region.IsSolid != 0 ? map.Body : 0),
+                XtFieldValue.Ptr(isWireShell || region.IsSolid != 0 ? map.Body : 0),
                 XtFieldValue.Ptr(NextShellInRegion(slot, map)),
                 XtFieldValue.Ptr(firstBack),
-                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(isWireShell ? Ptr(map.EdgeSlots, map.FirstEdgeSlot) : 0),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(Ptr(map.RegionSlots, shell.Region)),
                 XtFieldValue.Ptr(firstFront),
@@ -658,7 +679,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(edge.CurveTag > 0 ? map.CurveTags[edge.CurveTag] : 0),
                 XtFieldValue.Ptr(EdgeOnCurve(slot, next: true, map)),
                 XtFieldValue.Ptr(EdgeOnCurve(slot, next: false, map)),
-                XtFieldValue.Ptr(map.Body),
+                XtFieldValue.Ptr(map.WireShellSlot >= 0 ? Ptr(map.ShellSlots, map.WireShellSlot) : map.Body),
             ],
         };
     }
@@ -1607,6 +1628,7 @@ internal static unsafe class XtWriter
     private struct NodeMap
     {
         public XtNodeIndex Body;
+        public ShellSlot WireShellSlot;
         public RegionSlot FirstRegionSlot;
         public FaceSlot FirstFaceSlot;
         public EdgeSlot FirstEdgeSlot;
@@ -1633,6 +1655,7 @@ internal static unsafe class XtWriter
         public NodeMap()
         {
             Body = 0;
+            WireShellSlot = -1;
             FirstRegionSlot = -1;
             FirstFaceSlot = -1;
             FirstEdgeSlot = -1;

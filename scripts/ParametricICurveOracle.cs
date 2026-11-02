@@ -53,9 +53,25 @@ try
                 Check(KernelRuntime.SessionStart(&start), "managed session start");
                 try
                 {
-                    RunCase("bsurf-cylinder", reversed: false, twoBSurfaces: false, outputDirectory, Log);
-                    RunCase("cylinder-bsurf", reversed: true, twoBSurfaces: false, outputDirectory, Log);
-                    RunCase("bsurf-bsurf", reversed: false, twoBSurfaces: true, outputDirectory, Log);
+                    var allCasesPassed = true;
+                    foreach (var (name, reversed, twoBSurfaces) in new[]
+                    {
+                        ("bsurf-cylinder", false, false),
+                        ("cylinder-bsurf", true, false),
+                        ("bsurf-bsurf", false, true),
+                    })
+                    {
+                        try
+                        {
+                            allCasesPassed &= RunCase(name, reversed, twoBSurfaces, outputDirectory, Log);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"FAIL {name}: {ex.GetType().Name}: {ex.Message}");
+                            allCasesPassed = false;
+                        }
+                    }
+                    Require(allCasesPassed, "At least one live case failed; see the separate jet and structure results above.");
                     Log("PASS: all three live producer/receive/eval/transmit/receive/compare cases completed.");
                 }
                 finally
@@ -79,7 +95,7 @@ finally
 
 static string ScriptPath([CallerFilePath] string path = "") => path;
 
-static unsafe void RunCase(string name, bool reversed, bool twoBSurfaces,
+static unsafe bool RunCase(string name, bool reversed, bool twoBSurfaces,
     string outputDirectory, Action<string> log)
 {
     var reference = CreateReferenceWire(reversed, twoBSurfaces);
@@ -101,7 +117,7 @@ static unsafe void RunCase(string name, bool reversed, bool twoBSurfaces,
     Require(double.IsFinite(curveRecord.TMin) && double.IsFinite(curveRecord.TMax)
         && lower >= curveRecord.TMin && upper <= curveRecord.TMax && upper > lower,
         name + " managed chart does not preserve the complete selected native-parameter interval");
-    CompareJets(managedCurve, reference.Curve, lower, upper, name + " producer", log);
+    var jetsMatch = CompareJets(managedCurve, reference.Curve, lower, upper, name + " producer", log);
 
     Require(KernelRuntime.TryGetReceivedXt(managedBody, out _, out _),
         name + " source association is missing before the preserved export");
@@ -133,10 +149,11 @@ static unsafe void RunCase(string name, bool reversed, bool twoBSurfaces,
         Check(PK_BODY_ask_type(receivedBody, &receivedType), label + " received body type");
         Require(referenceType == PK_BODY_type_wire_c && receivedType == referenceType,
             $"{label} wire body type changed: reference={referenceType} received={receivedType}");
-        CompareJets(managedCurve, receivedCurve, lower, upper, label, log);
+        jetsMatch &= CompareJets(managedCurve, receivedCurve, lower, upper, label, log);
         CompareBodies(reference.Body, receivedBody, label, log);
-        log($"PASS {label}: topology={receivedCounts}; independent PK body compare completed.");
+        log($"PASS {label} structure: topology={receivedCounts}; independent PK body compare completed.");
     }
+    return jetsMatch;
 }
 
 static unsafe (PK_BODY_t Body, PK_CURVE_t Curve, double Lower, double Upper) CreateReferenceWire(
@@ -173,7 +190,8 @@ static unsafe (PK_BODY_t Body, PK_CURVE_t Curve, double Lower, double Upper) Cre
 
     var left = reversed ? second : first;
     var right = reversed ? first : second;
-    var options = new PK_SURF_intersect_surf_o_t { tolerance = 1e-8 };
+    // The SDK reserves the tolerance member for future use.
+    var options = new PK_SURF_intersect_surf_o_t();
     if (!reversed || twoBSurfaces)
     {
         options.have_uvbox_1 = PK_LOGICAL_true;
@@ -346,7 +364,7 @@ static unsafe PK_CURVE_t OracleEdgeCurve(PK_BODY_t body)
     finally { if (edges != null) Check(PK_MEMORY_free(edges), "free PK edges"); }
 }
 
-static unsafe void CompareJets(ManagedCurveTag managedCurve, PK_CURVE_t referenceCurve,
+static unsafe bool CompareJets(ManagedCurveTag managedCurve, PK_CURVE_t referenceCurve,
     double lower, double upper, string label, Action<string> log)
 {
     var actual = stackalloc M.PK_VECTOR_s[3];
@@ -354,6 +372,8 @@ static unsafe void CompareJets(ManagedCurveTag managedCurve, PK_CURVE_t referenc
     var maxima = new double[3];
     const int samples = 49;
     var nonzeroD2 = false;
+    string? firstMismatch = null;
+    double maxTangentialD2 = 0, maxNormalD2 = 0;
     // Second pass reverses query order and therefore exercises warm public
     // evaluation without allowing an earlier result to replace another t.
     for (var pass = 0; pass < 2; pass++)
@@ -372,13 +392,32 @@ static unsafe void CompareJets(ManagedCurveTag managedCurve, PK_CURVE_t referenc
             var error = Math.Abs(a - e) / Math.Max(1, Math.Abs(e));
             maxima[order] = Math.Max(maxima[order], error);
             var tolerance = order == 2 ? 1e-5 : 1e-7;
-            Require(error <= tolerance,
-                $"{label} t={t:R} order={order} axis={axis}: managed={a:R}, PK={e:R}, relative error={error:R}");
+            if (error > tolerance)
+                firstMismatch ??= $"{label} t={t:R} order={order} axis={axis}: managed={a:R}, PK={e:R}, relative error={error:R}";
             if (order == 2 && Math.Abs(e) > 1e-6) nonzeroD2 = true;
         }
+        var tx = expected[1].coord[0]; var ty = expected[1].coord[1]; var tz = expected[1].coord[2];
+        var speed = Math.Sqrt(tx * tx + ty * ty + tz * tz);
+        Require(double.IsFinite(speed) && speed > 0, label + " has no regular reference tangent");
+        tx /= speed; ty /= speed; tz /= speed;
+        var dx = actual[2].coord[0] - expected[2].coord[0];
+        var dy = actual[2].coord[1] - expected[2].coord[1];
+        var dz = actual[2].coord[2] - expected[2].coord[2];
+        var tangential = dx * tx + dy * ty + dz * tz;
+        dx -= tangential * tx; dy -= tangential * ty; dz -= tangential * tz;
+        var normal = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        Require(double.IsFinite(tangential) && double.IsFinite(normal), label + " has a non-finite D2 decomposition");
+        maxTangentialD2 = Math.Max(maxTangentialD2, Math.Abs(tangential));
+        maxNormalD2 = Math.Max(maxNormalD2, normal);
     }
     Require(nonzeroD2, label + " did not exercise any nonzero second derivative");
     log($"{label}: {samples} native parameters, cold/reversed warm pass; normalized max error D0={maxima[0]:R}, D1={maxima[1]:R}, D2={maxima[2]:R}.");
+    log($"{label} D2 mismatch decomposition: max normal={maxNormalD2:R}, max tangential={maxTangentialD2:R} (diagnostics only; full-vector tolerance remains mandatory).");
+    // Collect finite jet mismatches so fresh-runtime export and the remaining
+    // cases still run. The original tolerances remain mandatory: any mismatch
+    // keeps this case, and the complete oracle, failing.
+    if (firstMismatch is not null) log("FAIL jets: " + firstMismatch);
+    return firstMismatch is null;
 }
 
 static unsafe void CompareBodies(PK_BODY_t reference, PK_BODY_t actual, string label, Action<string> log)
@@ -402,11 +441,11 @@ static unsafe void CompareBodies(PK_BODY_t reference, PK_BODY_t actual, string l
     Check(PK_DEBUG_BODY_compare(reference, actual, &options, &result), label + " body compare");
     try
     {
-        log($"{label} body compare: global={result.global_result}, local={result.local_result}, global diffs={result.n_global_diffs}, face pairs={result.n_face_pairs}.");
+        log($"{label} body compare: global={result.global_result}, local={result.local_result}, global entries={result.n_global_diffs}, face pairs={result.n_face_pairs}.");
         for (var i = 0; i < result.n_global_diffs; i++)
         {
             var diff = result.global_diffs[i];
-            log($"  global diff={diff.diff}, master count={diff.n_masters}, received count={diff.n_similars}");
+            log($"  global entry={diff.diff}, master count={diff.n_masters}, received count={diff.n_similars}");
         }
         var localDifferences = 0;
         for (var i = 0; i < result.n_face_pairs; i++)
@@ -416,7 +455,10 @@ static unsafe void CompareBodies(PK_BODY_t reference, PK_BODY_t actual, string l
             localDifferences++;
             log($"  face pair={i}, diff={diff.diff}, master entity={diff.master_entity}, received entity={diff.similar_entity}, master value={diff.master_double:R}, received value={diff.similar_double:R}");
         }
-        Require(result.global_result == PK_DEBUG_global_res_no_diffs_c && result.n_global_diffs == 0
+        // PK includes equal-count records in global_diffs even when its
+        // global and local result flags both report no differences.
+        Require(result.global_result == PK_DEBUG_global_res_no_diffs_c
+            && result.local_result == PK_DEBUG_local_res_no_diffs_c
             && localDifferences == 0, label + " body structure/sense/tolerance comparison failed");
     }
     finally { Check(PK_DEBUG_BODY_compare_r_f(&result), label + " free body compare"); }

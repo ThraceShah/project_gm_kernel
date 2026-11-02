@@ -23,27 +23,32 @@ internal static unsafe partial class KernelRuntime
         var end = start + (data.ChartCount - 1) * 3;
         var p0 = EvaluationMath.Vector(hvecs[start], hvecs[start + 1], hvecs[start + 2]);
         var p1 = EvaluationMath.Vector(hvecs[end], hvecs[end + 1], hvecs[end + 2]);
-        return CreateICurveWireBodyCore(curve, in p0, in p1, 0, 0, 0, out bodyTag);
+        return CreateICurveWireBodyCore(curve, in p0, in p1, 0, 0, 0, false, out bodyTag);
     }
 
     private static int CreateICurveWireBodyCore(CurveTag curve, in KernelVector3 start,
         in KernelVector3 end, double edgeTolerance, double startTolerance, double endTolerance,
-        out EntityTag bodyTag)
+        bool hasWireShell, out EntityTag bodyTag)
     {
         bodyTag = 0;
         var curveSlot = GetCurveSlotByTag(curve);
         if (curveSlot < 0 || Curves[curveSlot].OwnerCount != 0)
             return ParasolidConstants.PK_ERROR_is_attached;
-        int* classes = stackalloc int[5]
+        int* classes = stackalloc int[7]
         {
             ParasolidConstants.PK_CLASS_edge,
             ParasolidConstants.PK_CLASS_vertex, ParasolidConstants.PK_CLASS_vertex,
             ParasolidConstants.PK_CLASS_fin, ParasolidConstants.PK_CLASS_fin,
+            ParasolidConstants.PK_CLASS_region, ParasolidConstants.PK_CLASS_shell,
         };
-        int* parents = stackalloc int[2] { 0, 0 };
-        int* children = stackalloc int[2] { 3, 4 };
+        // The region and shell are present in real PK wire bodies. Keep the
+        // body-level edge chain for queries; the sole faceless wire shell owns
+        // that edge in XT. Direct-body wires retain their existing layout.
+        int* parents = stackalloc int[5] { 0, 0, -1, -1, 5 };
+        int* children = stackalloc int[5] { 3, 4, 5, 6, 6 };
         var result = new PK_BODY_create_topology_2_r_s();
-        var error = BodyCreateTopology2(5, classes, 2, parents, children, null, null, &result);
+        var error = BodyCreateTopology2(hasWireShell ? 7 : 5, classes,
+            hasWireShell ? 5 : 2, parents, children, null, null, &result);
         if (error != 0) return error;
         var complete = false;
         try
@@ -105,8 +110,9 @@ internal static unsafe partial class KernelRuntime
 
     /// <summary>
     /// Materialize the supported public receive graph: an open wire with one
-    /// INTERSECTION edge, two vertices/points and two dummy halfedges. Other
-    /// topology remains on the existing opaque receive path.
+    /// INTERSECTION edge, two vertices/points and two dummy halfedges, either
+    /// directly owned by the body or by its sole faceless void-region shell.
+    /// Other topology remains on the existing opaque receive path.
     /// </summary>
     internal static AlgorithmStatus TryMaterializeICurveWireBodyFromXt(XtDocument document,
         XtNode body, out EntityTag bodyTag)
@@ -121,16 +127,8 @@ internal static unsafe partial class KernelRuntime
             if (body.Fields[index].Kind != XtFieldKind.Pointer) return AlgorithmStatus.InvalidInput;
             if (body.Fields[index].Pointer != 0) return AlgorithmStatus.Unsupported;
         }
-        if (body.Fields[19].Pointer != 0 || body.Fields[26].Pointer != 0)
-            return AlgorithmStatus.Unsupported;
-        var edge = FindNodeByIndex(document.Nodes, body.Fields[27].Pointer);
-        if (edge is null || edge.Type != (int)XtNodeTypes.Edge || edge.Fields.Length < 10)
-            return AlgorithmStatus.InvalidInput;
-        if (edge.Fields[9].Pointer != body.Index
-            || (edge.Fields[4].Pointer != 0 && edge.Fields[4].Pointer != edge.Index))
-            return AlgorithmStatus.InvalidInput;
-        if (edge.Fields[5].Pointer != 0 && edge.Fields[5].Pointer != edge.Index)
-            return AlgorithmStatus.Unsupported;
+        var topologyStatus = TryReadICurveWireEdge(document, body, out var edge, out var hasWireShell);
+        if (topologyStatus != AlgorithmStatus.Success) return topologyStatus;
         var intersection = FindNodeByIndex(document.Nodes, edge.Fields[6].Pointer);
         if (intersection is null || intersection.Type != (int)XtNodeTypes.Intersection)
             return AlgorithmStatus.Unsupported;
@@ -177,7 +175,7 @@ internal static unsafe partial class KernelRuntime
         var status = TryMaterializeICurveFromXt(document, intersection.Index, out var curve, out _);
         if (status != AlgorithmStatus.Success) return status;
         var error = CreateICurveWireBodyCore(curve, in start, in end,
-            edgeTolerance, startTolerance, endTolerance, out bodyTag);
+            edgeTolerance, startTolerance, endTolerance, hasWireShell, out bodyTag);
         if (error != ParasolidConstants.PK_ERROR_no_errors)
         {
             EntityDelete(1, &curve);
@@ -194,6 +192,63 @@ internal static unsafe partial class KernelRuntime
         Fins[reverseSlot].PrevInLoop = WireFinSlot(reverse.Fields[3].Pointer, forward.Index, reverse.Index, forwardSlot, reverseSlot);
         return AlgorithmStatus.Success;
     }
+
+    private static AlgorithmStatus TryReadICurveWireEdge(XtDocument document, XtNode body,
+        out XtNode edge, out bool hasWireShell)
+    {
+        edge = null!;
+        hasWireShell = false;
+        if (body.Fields[19].Kind != XtFieldKind.Pointer || body.Fields[26].Kind != XtFieldKind.Pointer
+            || body.Fields[27].Kind != XtFieldKind.Pointer)
+            return AlgorithmStatus.InvalidInput;
+        var shellIndex = body.Fields[19].Pointer;
+        var regionIndex = body.Fields[26].Pointer;
+        var edgeIndex = body.Fields[27].Pointer;
+        var edgeOwner = body.Index;
+        if (shellIndex != 0 || regionIndex != 0)
+        {
+            if (shellIndex == 0 || regionIndex == 0) return AlgorithmStatus.Unsupported;
+            var shell = FindNodeByIndex(document.Nodes, shellIndex);
+            var region = FindNodeByIndex(document.Nodes, regionIndex);
+            if (shell is null || shell.Type != (int)XtNodeTypes.Shell || shell.Fields.Length != 9
+                || region is null || region.Type != (int)XtNodeTypes.Region || region.Fields.Length != 9)
+                return AlgorithmStatus.InvalidInput;
+            for (BufferOffset i = 2; i < 9; i++)
+            {
+                if (shell.Fields[i].Kind != XtFieldKind.Pointer
+                    || (i != 7 && region.Fields[i].Kind != XtFieldKind.Pointer))
+                    return AlgorithmStatus.InvalidInput;
+            }
+            if (region.Fields[7].Kind != XtFieldKind.Character) return AlgorithmStatus.InvalidInput;
+            if (region.Fields[7].Character != 'V' || edgeIndex != 0
+                || !IsSingletonWireLink(region.Fields[3].Pointer, regionIndex)
+                || !IsSingletonWireLink(region.Fields[4].Pointer, regionIndex)
+                || !IsSingletonWireLink(shell.Fields[3].Pointer, shellIndex)
+                || shell.Fields[4].Pointer != 0 || shell.Fields[6].Pointer != 0 || shell.Fields[8].Pointer != 0
+                || region.Fields[6].Pointer != 0 || region.Fields[8].Pointer != 0)
+                return AlgorithmStatus.Unsupported;
+            if (shell.Fields[2].Pointer != body.Index || shell.Fields[7].Pointer != regionIndex
+                || region.Fields[2].Pointer != body.Index || region.Fields[5].Pointer != shellIndex)
+                return AlgorithmStatus.InvalidInput;
+            edgeIndex = shell.Fields[5].Pointer;
+            if (edgeIndex == 0) return AlgorithmStatus.Unsupported;
+            edgeOwner = shellIndex;
+            hasWireShell = true;
+        }
+        var candidate = FindNodeByIndex(document.Nodes, edgeIndex);
+        if (candidate is null || candidate.Type != (int)XtNodeTypes.Edge || candidate.Fields.Length < 10)
+            return AlgorithmStatus.InvalidInput;
+        if (candidate.Fields[9].Pointer != edgeOwner
+            || !IsSingletonWireLink(candidate.Fields[4].Pointer, candidate.Index))
+            return AlgorithmStatus.InvalidInput;
+        if (!IsSingletonWireLink(candidate.Fields[5].Pointer, candidate.Index))
+            return AlgorithmStatus.Unsupported;
+        edge = candidate;
+        return AlgorithmStatus.Success;
+    }
+
+    private static bool IsSingletonWireLink(XtNodeIndex index, XtNodeIndex owner)
+        => index == 0 || index == owner;
 
     internal static bool HasCanonicalICurveWireBodyLayout(XtDocument document, XtNode body)
         => body.Type == (int)XtNodeTypes.Body && body.Fields.Length == 36

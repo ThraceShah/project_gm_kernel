@@ -2,6 +2,13 @@
 
 Date: 2026-11-01. Baseline: `a5adfc03614e9cf3f0d6b94f4ac65b82bd123f16`.
 
+Follow-up on 2026-11-02: the private SDK is now available. The full suite passes
+734/734 after the real wire topology and allocation-unwind fixes; all six real
+wire structure round trips pass. Complete raw D2 compatibility remains failing
+under GATE-D. See
+`docs/reviews/icurve-evaluation/parasolid-sdk-validation-2026-11-02.md`.
+The dependency-blocked evidence below records the original stage run.
+
 ## Delivered scope
 
 This increment completes the regular parametric-support portion of M1 and its

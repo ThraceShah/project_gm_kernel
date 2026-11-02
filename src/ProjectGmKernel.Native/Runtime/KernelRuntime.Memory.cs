@@ -100,7 +100,9 @@ internal static unsafe partial class KernelRuntime
         var slot = session->FindThread(threadId);
         if (slot < 0) return false;
         CommandScratch.Bind(session, slot);
-        return true;
+        // A failed allocation leaves the arena unbound; no scratch slot was
+        // acquired for the caller to release during failure unwinding.
+        return CommandScratch.IsBound;
     }
 
     internal static void ReleaseCommandScratch(SessionData* session)

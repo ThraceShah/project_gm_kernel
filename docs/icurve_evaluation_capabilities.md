@@ -28,8 +28,8 @@ Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluati
 | 原始图表递推与弦平面投影 | §5 / Original chart | **生产已接入 + 真实 PK 兼容通过** | 节点位相同比较；归一化余弦递归计算；弦方向保留；保留并回写 `parameter_error[0..1]`；非均匀弦长图表（Case F2，$f_i / f_{i-1} \ne 1$）与真实 PK `PK_CURVE_ask_interval` / `PK_CURVE_eval` 机器精度一致（$|\Delta T_{\max}| = 1.78\times 10^{-15}$） |
 | 解析支持面正则区间求解 (I1/I2/Auto) | §7 / Analytic supports | **生产已接入 + 真实 PK 兼容通过** | Auto: 平面走 I1，其他解析面走 I2；Oracle Case F / F2 真同参比较机器精度通过（D0/D1/曲率 $|\Delta| \le 7.5\times 10^{-14}$），Case A/A2/E 经由几何反算，Case B/C 验证几何残差 |
 | 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中 |
-| B-surface / 解析面交线，两种支持顺序 | §7 / P2、P4 | **生产已接入 + 制造解通过** | 原始有限 UV 的正则区间，Auto 选 P2；P4 独立位置校验和 D0–D2；保持支持顺序、sense 与原始 chart 参数；真实 PK 验证待运行 |
-| B-surface / B-surface 交线 | §7.1 / P4 | **生产已接入 + 制造解通过** | 双 UV 状态、双原始端点独立追踪、完整 Jacobian 物理修正与 UV 预像一致性验证；不宣称全局唯一根或区间认证 |
+| B-surface / 解析面交线，两种支持顺序 | §7 / P2、P4 | **生产已接入 + 制造解通过 + 真实 PK D0/D1 通过** | 原始有限 UV 的正则区间，Auto 选 P2；P4 独立位置校验和严格参数 D0–D2；两种 cylinder 支持顺序的实时 Oracle 已运行，完整 D2 向量兼容仍未通过 GATE-D |
+| B-surface / B-surface 交线 | §7.1 / P4 | **生产已接入 + 制造解通过 + 真实 PK D0/D1 通过** | 双 UV 状态、双原始端点独立追踪、完整 Jacobian 物理修正与 UV 预像一致性验证；实时双曲面样例 D0/D1 通过，完整 D2 兼容仍受 GATE-D 限制；不宣称全局唯一根或区间认证 |
 | B-曲面严格参数域与连续度守卫 | §7.2 / §15.4 / B-surface domain | **生产已接入 + 制造解通过** | 求交只用 `EvaluateInDomain`；拒绝非周期越域与不足阶数的 knot jet；周期 UV 使用真实 knot period；缺失 B-surface UV、实际扩展域和 B-surface terminator 明确拒绝 |
 | 节点与区间一侧导数 (D0–D2) | §16 / Knot evaluation | **生产已接入 + 制造解通过** | 显式传递 `ChartSide.Left` / `Right`；避免跨节点平均平滑 |
 | 诊断型 Auto 计划动态切换 | §7.7 / Stagnation | **生产已接入 + 制造解通过** | 仅在 Auto 模式下触发；强制计划绝不静默切换；记录 `PlanSwitched` |
@@ -74,8 +74,8 @@ Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluati
 
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
-| XT INTERSECTION 实体写入与回读 | §19 / XtWriter | **生产已接入 + 真实 PK 兼容通过** | 解析支持面的原有写出链路已有真实 PK 接收证据；新增可执行回读范围见下行，其实时 PK 验证待运行 |
-| 开放单边 ICurve wire 的可求值 XT 接收 | §19 / B-surface 与解析支持面 | **生产已接入 + 制造解通过** | 一条 INTERSECTION edge、两个 vertex/point、两个 dummy fin 的受校验子集；public receive 后实际 `CurveEval` D0–D2；writer 重建、sense/null、依赖回收及失败回滚；真实 PK Oracle 待运行 |
+| XT INTERSECTION 实体写入与回读 | §19 / XtWriter | **生产已接入 + 真实 PK 结构往返通过** | 解析支持面的原有写出链路及新增 B-surface wire 均有真实 PK 接收证据；可执行回读范围见下行；完整 D2 兼容单独受 GATE-D 限制 |
+| 开放单边 ICurve wire 的可求值 XT 接收 | §19 / B-surface 与解析支持面 | **生产已接入 + 制造解通过 + 真实 PK 结构往返通过** | 一条 INTERSECTION edge、两个 vertex/point、两个 dummy fin；支持直接归属 body 或单 void region / 无面 shell 归属；3 组支持面 × 2 种导出的接收、拓扑与 body compare 共 6/6 通过，含删除源 XT 后重建；完整 D2 Oracle 仍以失败退出 |
 | UV Null 语义与点容差解耦 | §19 / PrepareEvaluation | **生产已接入 + 真实 PK 兼容通过** | 仅成对允许 (NaN, NaN)；面点容差与 ChordalError 解耦 |
 | Sense 拓扑方向双向保持 | XT Schema / Records | **生产已接入 + 真实 PK 兼容通过** | 贯穿 Record / Binding / XT Parse / Writer，数据结构支持拓扑方向传递 |
 | Cone 轴向 XT/PK 约定 (Cone Axis Parity) | §8.3 / XT25 / SCH_37102 | **生产已接入 + 真实 PK 兼容通过** | 目标 build/schema (v380 / 37102) 上实测 XT 与 PK_CONE_ask 的 axis/ref 轴向不翻转、数值在指定容差 (1e-14) 内保持，当前实现保持既有约定；实测与早期 XT25 文档引文存在冲突，保留为持续跟踪的兼容性专项（见 `docs/reviews/cone_probe_evidence/`） |
@@ -90,7 +90,7 @@ Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluati
 | **GATE-T** (Terminator $t_E$ vs PK) | **OPEN** | 生产入口在规则未指定时返回 `CompatibilityGateOpen`，不猜参数 |
 | **GATE-B** (BlendBound 角色映射) | **OPEN** | 距离函数组合未接入公开求值；不支持非解析 BlendBound 支持面 |
 | **GATE-A** (Blend 弧段极值验证) | **OPEN** | Envelope/Joint 求解器保留在内部；生产 Auto 开放解析面及本阶段带 UV 的正则 B-surface 支持面，不开放嵌套 blend |
-| **GATE-D** (高阶导数公开契约) | **OPEN** | `KernelRuntime` 公开入口严格限制 `order <= 2`，高阶直接拒绝 |
+| **GATE-D** (二阶兼容与高阶公开契约) | **OPEN** | 当前 D2 为严格参数二阶导数；真实 PK 38.0.150 的弦段样例省略切向加速度，完整 D2 向量 Oracle 尚未通过。公开入口仍限制 `order <= 2`，更高阶直接拒绝 |
 | **过程面 / 偏置面 / 扫掠面支持** | **Unsupported** | `PrepareICurveView` 精确返回 `Unsupported` |
 | **B-surface 缺 UV / 不足 knot 连续度 / UV 分辨率丢失** | **Unsupported / NotConverged** | 不猜全局逆投影、导数侧或不可分辨的参数分支；失败不发布结果 |
 | **B-surface terminator / 实际扩展域** | **Unsupported** | 本阶段只开放原始 knot 域内的正则 chart 区间 |
