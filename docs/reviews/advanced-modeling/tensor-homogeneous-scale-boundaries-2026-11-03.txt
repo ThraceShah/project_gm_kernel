@@ -1,0 +1,112 @@
+EXTREME HOMOGENEOUS SCALE: NATIVE CREATION / WIRE VALIDITY BOUNDARIES
+Recorded: 2026-11-03
+Native reference: Parasolid 38.0.150, real pskernel through PskernelSharp
+Status: The two extreme-scale inputs are NOT positive compatibility fixtures.
+
+Original evidence
+-----------------
+Source: temp_docs/continuation-intersection3.txt. The original oracle attempted
+the unchanged strict positive path with homogeneous scales 1e-200 and 1e200.
+
+At scale 1e-200, native PK_BSURF_create returned error 111, whose installed
+header/binding name is PK_ERROR_weight_le_0. All supplied weights are positive
+and finite (1e-200 through 2.5e-200). No valid native surface was returned, so
+the native intersection and native wire steps cannot be invoked on this input.
+
+At scale 1e200, native creation and PK_SURF_intersect_surf succeeded. Both
+intersections returned three curves and zero isolated points. The original
+positive comparison then created the first native wire and performed the full
+PK_BODY_check. It reported state 13802, PK_BODY_state_corrupt_c, for entity 796
+and second entity 0. Entity numbers are session-local. The test failed instead
+of weakening the full-body validity gate. Later native branches were not
+checked in that original run because the first invalid wire aborted the case.
+
+Unmodified relevant original log lines:
+BOUNDARY tensor-rational-small-homogeneous-scale: native surface creation rejected homogeneous scale 1E-200; PK tensor patch: error 111; not a positive compatibility case.
+tensor-rational-large-homogeneous-scale-branch0 native: BODY_check fault=13802, entities=796/0
+FAIL tensor-rational-large-homogeneous-scale: tensor-rational-large-homogeneous-scale-branch0 native BODY_check faults=1
+
+Exact fixture
+-------------
+The fixture is TensorPatch(0, true, false, homogeneousScale) in
+scripts/IntersectionOperationOracle.cs, intersected with the plane z=0.
+U degree=2, V degree=3, 3 by 4 homogeneous poles; both unique knot vectors
+are [0,1], with U multiplicities [3,3] and V multiplicities [4,4].
+For i=0..2 and j=0..3:
+  w_j = 1 + 0.5*j
+  x_i = i/2
+  y_ij = j/3 + 0.25*i*(i-1)/2
+  z_j = [-0.09375,0.13541666666666666,-0.13541666666666666,0.09375][j]
+  H_ij = scale * (x_i*w_j, y_ij*w_j, z_j, w_j)
+The flattened offset is (i*4+j)*4. B-surface form is arbitrary, both knot
+types are nonuniform, self-intersecting is false, and convexity is unset.
+The supplied homogeneous coordinates remain finite at both extreme scales.
+Scaling every coordinate and weight together preserves the Euclidean surface.
+
+The plane numerator has roots v=1/4, 1/2 and 3/4. On each isocurve:
+  x(u)=u
+  y(u)=(1.5*v+v*v)/(1+1.5*v) + 0.25*u*u
+  z(u)=0
+for 0<=u<=1. These independent formulas check the self result without
+pretending that a rejected native creation supplied a comparison geometry.
+
+Follow-up diagnostic contract
+-----------------------------
+ExtremeTensorScaleBoundary keeps the same API calls and exact original inputs.
+It verifies the self result has all three distinct curves, zero isolated
+points, expected classifications and the manufactured geometry above. It then
+creates all three self wires, transmits each to text XT, receives each in real
+PK, and requires full BODY_check fault count zero and the expected wire topology.
+
+For native scale 1e-200, only the exact error PK_ERROR_weight_le_0 is recognized
+as the recorded creation boundary. Native intersection is not invoked with an
+invalid tag. For native scale 1e200, creation, intersection, all three wire
+creations and all three full body checks run. The original first wire must
+still report exactly one PK_BODY_state_corrupt_c fault; every returned native
+fault must have that precise state, a nonzero primary entity and zero second
+entity. Any different API error, branch count, classification, fault state or
+self wire defect fails the run. No generic exception is accepted as a boundary.
+
+These diagnostics never increase the positive compatibility count. The
+moderate 1e-4 and 1e4 scales are separate positive fixtures using the full
+native comparison path, including complete branch counts, independent wires,
+full BODY_check on both native and received bodies, and strict comparison.
+
+Completed follow-up run
+-----------------------
+Source: temp_docs/continuation-intersection4.txt; exit code 0.
+Command: dotnet run --no-cache scripts/IntersectionOperationOracle.cs -p:BuildProjectReferences=false -p:UseSharedCompilation=false -p:BuildInParallel=false
+All 44 positive compatibility fixtures passed. Both moderate scales completed
+the unchanged strict positive path. The two extreme scales remain excluded
+from that count. All six self-XT wires passed the real-PK full body check.
+The large-scale native input produced exactly one corrupt-body fault on each
+of its three wires. The complete relevant follow-up output follows:
+
+PASS tensor-rational-homogeneous-scale-1e-4: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+PASS tensor-rational-homogeneous-scale-1e4: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+BOUNDARY tensor-rational-extreme-small-scale: homogeneous scale=1E-200, managed create=0, native PK_BSURF_create error=111; excluded from positive compatibility count.
+BOUNDARY tensor-rational-extreme-small-scale: managed PK_SURF_intersect_surf error=0, points=0, curves=3
+BOUNDARY tensor-rational-extreme-small-scale: self-XT branch=0, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-small-scale: self-XT branch=1, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-small-scale: self-XT branch=2, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-small-scale: native error 111 (PK_ERROR_weight_le_0) prevents native intersection/wire construction; self-only geometry and all three received wires were checked.
+BOUNDARY tensor-rational-extreme-large-scale: homogeneous scale=1E+200, managed create=0, native PK_BSURF_create error=0; excluded from positive compatibility count.
+BOUNDARY tensor-rational-extreme-large-scale: managed PK_SURF_intersect_surf error=0, points=0, curves=3
+BOUNDARY tensor-rational-extreme-large-scale: self-XT branch=0, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-large-scale: self-XT branch=1, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-large-scale: self-XT branch=2, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-large-scale: native PK_SURF_intersect_surf error=0, points=0, curves=3
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0, interval=[0,1.0394278805737545], kind=14651
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0 PK_CURVE_make_wire_body error=0, body=1327
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0 complete PK_BODY_check error=0, faults=1
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0 BODY_check fault=13802, entities=1327/0
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1, interval=[0,1.039309899331508], kind=14651
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1 PK_CURVE_make_wire_body error=0, body=1340
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1 complete PK_BODY_check error=0, faults=1
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1 BODY_check fault=13802, entities=1340/0
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2, interval=[0,1.038535561734455], kind=14651
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2 PK_CURVE_make_wire_body error=0, body=1353
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2 complete PK_BODY_check error=0, faults=1
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2 BODY_check fault=13802, entities=1353/0
+BOUNDARY tensor-rational-extreme-large-scale: native first wire retains PK_BODY_state_corrupt_c (13802); all three self-XT wires have zero full-check faults. This remains a native limitation, not a passed compatibility fixture.
+PASS 44 independent intersection contract cases, checked parameters/types/branches and self-XT → real-PK wire-body comparisons.

@@ -233,7 +233,7 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_not_in_PK;
 
         if (!IsValidTag(entityTag))
-            return ParasolidConstants.PK_ERROR_unknown_class;
+            return ParasolidConstants.PK_ERROR_not_a_tag;
 
         *classCode = ToPkClass((EntityClass)TagRec(entityTag).ClassCode);
         if ((EntityClass)TagRec(entityTag).ClassCode == EntityClass.Curve && Curves[TagRec(entityTag).Slot].Class != CurveClass.None)

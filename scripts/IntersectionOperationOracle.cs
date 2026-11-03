@@ -47,6 +47,22 @@ try
             SS("cubic-ruled-two-components",CubicRuled(false,false),Plane(0,0,0,0,0,1));
             SS("rational-cubic-ruled-two-components",CubicRuled(true,false),Plane(0,0,0,0,0,1));
             SS("rational-multiple-spans-four-components",CubicRuled(true,true),Plane(0,0,0,0,0,1));
+            SS("transposed-ruled-two-components",CubicRuled(false,false,true),Plane(0,0,0,0,0,1));
+            SS("transposed-rational-ruled-two-components",CubicRuled(true,false,true),Plane(0,0,0,0,0,1));
+            TransposedRuledBoundary();
+            SS("tensor-polynomial-three-isocurves",TensorPatch(0,false,false),Plane(0,0,0,0,0,1));
+            SS("tensor-rational-three-isocurves",TensorPatch(0,true,false),Plane(0,0,0,0,0,1));
+            SS("tensor-rational-homogeneous-scale-1e-4",TensorPatch(0,true,false,1e-4),Plane(0,0,0,0,0,1));
+            SS("tensor-rational-homogeneous-scale-1e4",TensorPatch(0,true,false,1e4),Plane(0,0,0,0,0,1));
+            SS("tensor-transposed-three-isocurves",TensorPatch(0,false,true),Plane(0,0,0,0,0,1));
+            SS("tensor-rational-transposed-isocurves",TensorPatch(0,true,true),Plane(0,0,0,0,0,1));
+            SS("tensor-quadratic-crossing",TensorPatch(1,false,false),Plane(0,0,0,0,0,1));
+            SS("tensor-tangent-isocurve",TensorPatch(2,false,false),Plane(0,0,0,0,0,1));
+            SS("tensor-disjoint",TensorPatch(3,false,false),Plane(0,0,0,0,0,1));
+            SS("tensor-coincident-area",TensorPatch(4,false,false),Plane(0,0,0,0,0,1));
+            SS("tensor-collapsed-pole",TensorPatch(6,false,false),Plane(0,0,0,1,0,0,0,1,0));
+            ExtremeTensorScaleBoundary("tensor-rational-extreme-small-scale",1e-200,PK_ERROR_weight_le_0);
+            ExtremeTensorScaleBoundary("tensor-rational-extreme-large-scale",1e200,0);
             Require(failures==0,$"{failures} independent intersection cases failed; {cases} passed.");
             Log($"PASS {cases} independent intersection contract cases, checked parameters/types/branches and self-XT → real-PK wire-body comparisons.");
         }
@@ -62,6 +78,120 @@ unsafe void SC(string label,GeometryPair surface,GeometryPair curve,double lo,do
 {try{SCCore(label,surface,curve,lo,hi);}catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}}
 unsafe void SS(string label,GeometryPair a,GeometryPair b)
 {try{SSCore(label,a,b);}catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}}
+unsafe void ExtremeTensorScaleBoundary(string label,double homogeneousScale,int expectedNativeCreateError)
+{
+    var surface=CreateTensorPatch(0,true,false,homogeneousScale,out var nativeCreateError);var plane=Plane(0,0,0,0,0,1);
+    Log($"BOUNDARY {label}: homogeneous scale={homogeneousScale:R}, managed create=0, native PK_BSURF_create error={nativeCreateError}; excluded from positive compatibility count.");
+    Require(nativeCreateError==expectedNativeCreateError,$"{label}: native creation behavior changed, expected {expectedNativeCreateError}, actual {nativeCreateError}");
+    var mo=new M.PK_SURF_intersect_surf_o_s{o_t_version=3,mixed_curve_category=M.ParasolidConstants.PK_mixed_intersection_pline_c,tolerance=1e-5};
+    var po=new PK_SURF_intersect_surf_o_t();int mnp=0,pnp=0,mnc=0,pnc=0;
+    M.PK_VECTOR_s* mp=null;PK_VECTOR_t* pp=null;int* mc=null;int* pc=null;M.PK_INTERVAL_s* mr=null;PK_INTERVAL_t* pr=null;int* mk=null;int* pk=null;
+    try
+    {
+        var managedError=KernelRuntime.SurfIntersectSurf(surface.Managed,plane.Managed,&mo,&mnp,&mp,&mnc,&mc,&mr,&mk);
+        Log($"BOUNDARY {label}: managed PK_SURF_intersect_surf error={managedError}, points={mnp}, curves={mnc}");
+        Check(managedError,label+" managed intersection");Require(mnp==0&&mnc==3,label+" managed complete branch set");
+        var seen=new bool[3];
+        for(var i=0;i<mnc;i++)
+        {
+            Equal(mr[i].value[0],0,label+" managed interval start");Equal(mr[i].value[1],1,label+" managed interval end");
+            Require(mk[i]==M.ParasolidConstants.PK_intersect_curve_simple_c,label+" managed classification");
+            var startPoint=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(mc[i],0,0,&startPoint),label+" managed start");
+            var rootIndex=-1;var baseY=0.0;
+            for(var root=0;root<3;root++)
+            {
+                var v=(root+1)*.25;var y=(1.5*v+v*v)/(1+1.5*v);
+                if(Math.Abs(startPoint.coord[1]-y)<2e-8){rootIndex=root;baseY=y;break;}
+            }
+            Require(rootIndex>=0&&!seen[rootIndex],label+" managed missing/duplicate isocurve");seen[rootIndex]=true;
+            for(var sample=0;sample<=4;sample++)
+            {
+                var u=sample/4.0;var point=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(mc[i],u,0,&point),label+" managed sample");
+                Equal(point.coord[0],u,label+" managed x");Equal(point.coord[1],baseY+.25*u*u,label+" managed y");Equal(point.coord[2],0,label+" managed z");
+            }
+            int body=0;Check(KernelRuntime.CurveMakeWireBody(mc[i],mr[i],&body),label+" managed wire");
+            var bytes=Transmit(body);File.WriteAllBytes(Path.Combine(output,label+"-self-branch"+i+".x_t"),bytes);var received=Receive(bytes);
+            CheckBody(received,label+" self-XT branch "+i);
+            Require(Count(received,0)==0&&Count(received,1)==1&&Count(received,2)==2,label+" self-XT wire topology");
+            Log($"BOUNDARY {label}: self-XT branch={i}, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2");
+        }
+        if(nativeCreateError!=0)
+        {
+            // No valid native surface exists: do not fabricate a surface for
+            // the remaining native calls or treat rejection as parity.
+            Require(nativeCreateError==PK_ERROR_weight_le_0,label+" unexpected native create rejection");
+            Log($"BOUNDARY {label}: native error {PK_ERROR_weight_le_0} (PK_ERROR_weight_le_0) prevents native intersection/wire construction; self-only geometry and all three received wires were checked.");
+            return;
+        }
+        var nativeError=PK_SURF_intersect_surf(surface.Oracle,plane.Oracle,&po,&pnp,&pp,&pnc,&pc,&pr,&pk);
+        Log($"BOUNDARY {label}: native PK_SURF_intersect_surf error={nativeError}, points={pnp}, curves={pnc}");
+        Check(nativeError,label+" native intersection");Require(pnp==0&&pnc==3,label+" native complete branch count");
+        for(var i=0;i<pnc;i++)
+        {
+            Require(pk[i]==PK_intersect_curve_simple_c,label+" native classification");
+            Log($"BOUNDARY {label}: native branch={i}, interval=[{pr[i].value[0]:R},{pr[i].value[1]:R}], kind={pk[i]}");
+            int body=0;var wireError=PK_CURVE_make_wire_body(pc[i],pr[i],&body);
+            Log($"BOUNDARY {label}: native branch={i} PK_CURVE_make_wire_body error={wireError}, body={body}");Check(wireError,label+" native wire");
+            var checkOptions=new PK_BODY_check_o_t{max_faults=100};int count=0;PK_check_fault_t* faults=null;
+            var checkError=PK_BODY_check(body,&checkOptions,&count,&faults);
+            Log($"BOUNDARY {label}: native branch={i} complete PK_BODY_check error={checkError}, faults={count}");
+            try
+            {
+                Check(checkError,label+" native full check");
+                if(i==0)Require(count==1,label+" original first-wire corrupt-body boundary changed");
+                for(var fault=0;fault<count;fault++)
+                {
+                    Log($"BOUNDARY {label}: native branch={i} BODY_check fault={faults[fault].state}, entities={faults[fault].entity_1}/{faults[fault].entity_2}");
+                    Require(faults[fault].state==PK_BODY_state_corrupt_c&&faults[fault].entity_1!=0&&faults[fault].entity_2==0,label+" unexpected native wire fault");
+                }
+            }
+            finally{FreeOracle(faults);}
+        }
+        Log($"BOUNDARY {label}: native first wire retains PK_BODY_state_corrupt_c ({PK_BODY_state_corrupt_c}); all three self-XT wires have zero full-check faults. This remains a native limitation, not a passed compatibility fixture.");
+    }
+    finally{FreeManaged(mp);FreeManaged(mc);FreeManaged(mr);FreeManaged(mk);FreeOracle(pp);FreeOracle(pc);FreeOracle(pr);FreeOracle(pk);}
+}
+unsafe void TransposedRuledBoundary()
+{
+    const string label="transposed-rational-ruled-multiple-span-boundary";
+    try
+    {
+        Log($"BOUNDARY {label}: original strict oracle failed with managed/native curves 4/2; this configuration is explicitly unsupported and is not included in the positive compatibility count.");
+        for(var mode=0;mode<3;mode++)
+        {
+            var a=CubicRuled(true,true,true);var b=Plane(0,0,0,0,0,1);
+            var mo=new M.PK_SURF_intersect_surf_o_s{o_t_version=3,mixed_curve_category=M.ParasolidConstants.PK_mixed_intersection_pline_c,tolerance=1e-5};
+            var po=new PK_SURF_intersect_surf_o_t();
+            if(mode!=0)
+            {
+                po.have_uvbox_1=PK_LOGICAL_true;po.uvbox_1=mode==1?new PK_UVBOX_t(0,0,1,2):new PK_UVBOX_t(0,1,1,2);
+                mo.have_uvbox_1=1;for(var i=0;i<4;i++)mo.uvbox_1.param[i]=po.uvbox_1.param[i];
+            }
+            int mnp=-1,pnp=0,mnc=-1,pnc=0;M.PK_VECTOR_s* mp=null;PK_VECTOR_t* pp=null;int* mc=null;int* pc=null;
+            M.PK_INTERVAL_s* mr=null;PK_INTERVAL_t* pr=null;int* mk=null;int* pk=null;
+            var alive=KernelRuntime.Curves.AliveCount;var blocks=KernelRuntime.ReturnOutstandingBlocks;
+            try
+            {
+                var error=KernelRuntime.SurfIntersectSurf(a.Managed,b.Managed,&mo,&mnp,&mp,&mnc,&mc,&mr,&mk);
+                Require(error==M.ParasolidConstants.PK_ERROR_not_implemented,$"{label}: managed error {error}");
+                Require(mnp==0&&mnc==0&&mp==null&&mc==null&&mr==null&&mk==null,label+": managed partial outputs");
+                Require(alive==KernelRuntime.Curves.AliveCount&&blocks==KernelRuntime.ReturnOutstandingBlocks,label+": managed entity/buffer leak");
+                Check(PK_SURF_intersect_surf(a.Oracle,b.Oracle,&po,&pnp,&pp,&pnc,&pc,&pr,&pk),label+" native diagnostic");
+                Log($"BOUNDARY {label}: hint={mode} (0=default, 1=full domain, 2=second span), managed=not_implemented, native points={pnp}, curves={pnc}");
+                Require(pnp==0&&pnc==2,label+": native behavior changed; revisit the recorded compatibility boundary");
+                for(var i=0;i<pnc;i++)for(var sample=0;sample<=2;sample++)
+                {
+                    var t=pr[i].value[0]+(pr[i].value[1]-pr[i].value[0])*sample/2;
+                    var point=new PK_VECTOR_t();var uv=new PK_UV_t();Check(PK_CURVE_eval(pc[i],t,0,&point),label+" native curve");
+                    Check(PK_SURF_parameterise_vector(a.Oracle,point,&uv),label+" native UV");
+                    Log($"  branch={i} t={t:R}, xyz=({point.coord[0]:R},{point.coord[1]:R},{point.coord[2]:R}), UV=({uv.param[0]:R},{uv.param[1]:R}), kind={pk[i]}");
+                }
+            }
+            finally{FreeManaged(mp);FreeManaged(mc);FreeManaged(mr);FreeManaged(mk);FreeOracle(pp);FreeOracle(pc);FreeOracle(pr);FreeOracle(pk);}
+        }
+    }
+    catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
+}
 unsafe void CCCore(string label,GeometryPair a,double al,double ah,GeometryPair b,double bl,double bh)
 {
     var mo=new M.PK_CURVE_intersect_curve_o_s{o_t_version=1};var po=new PK_CURVE_intersect_curve_o_t();
@@ -144,6 +274,7 @@ unsafe void CompareWire(string label,int managedCurve,M.PK_INTERVAL_s managedRan
     Check(KernelRuntime.CurveMakeWireBody(managedCurve,managedRange,&managedBody),label+" managed wire");
     Check(PK_CURVE_make_wire_body(pkCurve,pkRange,&referenceBody),label+" reference wire");
     var bytes=Transmit(managedBody);File.WriteAllBytes(Path.Combine(output,label+".x_t"),bytes);var received=Receive(bytes);
+    CheckBody(referenceBody,label+" native");CheckBody(received,label+" received");
     for(var kind=0;kind<5;kind++)Require(Count(referenceBody,kind)==Count(received,kind),label+" topology count kind "+kind);
     var options=new PK_DEBUG_BODY_compare_o_t{all_tests=PK_LOGICAL_false,max_diffs=64,num_tests=PK_LOGICAL_true,
         tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,
@@ -156,6 +287,17 @@ unsafe void CompareWire(string label,int managedCurve,M.PK_INTERVAL_s managedRan
         Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&result.local_result==PK_DEBUG_local_res_no_diffs_c,label+" body comparison failed");
     }
     finally{Check(PK_DEBUG_BODY_compare_r_f(&result),label+" free compare");}
+}
+unsafe void CheckBody(int body,string label)
+{
+    var options=new PK_BODY_check_o_t{max_faults=100};int count=0;PK_check_fault_t* faults=null;
+    Check(PK_BODY_check(body,&options,&count,&faults),label+" complete BODY_check");
+    try
+    {
+        for(var i=0;i<count;i++)Log($"{label}: BODY_check fault={faults[i].state}, entities={faults[i].entity_1}/{faults[i].entity_2}");
+        Require(count==0,label+" BODY_check faults="+count);
+    }
+    finally{FreeOracle(faults);}
 }
 static unsafe int Count(int body,int kind)
 {
@@ -213,15 +355,40 @@ static unsafe GeometryPair Bilinear(bool saddle)
         self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c,convexity=M.ParasolidConstants.PK_convexity_unset_c};
     int m=0,p=0;Check(KernelRuntime.BSurfCreate(&sf,&m),"self bilinear");Check(PK_BSURF_create((PK_BSURF_sf_t*)&sf,&p),"PK bilinear");return new(m,p);
 }
-static unsafe GeometryPair CubicRuled(bool rational,bool twoSpans)
+static unsafe GeometryPair CubicRuled(bool rational,bool twoSpans,bool transpose=false)
 {
     var count=twoSpans?7:4;var dim=rational?4:3;double* vertices=stackalloc double[count*2*dim];double* zs=stackalloc double[7]{-.08,.14,-.14,.08,-.14,.14,-.08};
-    for(var u=0;u<count;u++)for(var v=0;v<2;v++){var at=(u*2+v)*dim;var w=rational?u%3+1:1;vertices[at]=u/3.0*w;vertices[at+1]=v*w;vertices[at+2]=zs[u]+v*w;if(rational)vertices[at+3]=w;}
+    for(var u=0;u<count;u++)for(var v=0;v<2;v++){var at=(transpose?v*count+u:u*2+v)*dim;var w=rational?u%3+1:1;vertices[at]=u/3.0*w;vertices[at+1]=v*w;vertices[at+2]=zs[u]+v*w;if(rational)vertices[at+3]=w;}
     double* uk=stackalloc double[3]{0,1,2};double* vk=stackalloc double[2]{0,1};int* um=stackalloc int[3]{4,twoSpans?3:4,4};int* vm=stackalloc int[2]{2,2};
     var sf=new M.PK_BSURF_sf_s{u_degree=3,v_degree=1,n_u_vertices=count,n_v_vertices=2,vertex_dim=dim,is_rational=(byte)(rational?1:0),vertex=vertices,n_u_knots=twoSpans?3:2,n_v_knots=2,u_knot=uk,v_knot=vk,u_knot_mult=um,v_knot_mult=vm,
         form=M.ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,
         self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c,convexity=M.ParasolidConstants.PK_convexity_unset_c};
+    if(transpose){sf.u_degree=1;sf.v_degree=3;sf.n_u_vertices=2;sf.n_v_vertices=count;sf.n_u_knots=2;sf.n_v_knots=twoSpans?3:2;sf.u_knot=vk;sf.v_knot=uk;sf.u_knot_mult=vm;sf.v_knot_mult=um;}
     int m=0,p=0;Check(KernelRuntime.BSurfCreate(&sf,&m),"self cubic ruled");Check(PK_BSURF_create((PK_BSURF_sf_t*)&sf,&p),"PK cubic ruled");return new(m,p);
+}
+static unsafe GeometryPair TensorPatch(int mode,bool rational,bool transpose,double homogeneousScale=1)
+{
+    var pair=CreateTensorPatch(mode,rational,transpose,homogeneousScale,out var nativeError);Check(nativeError,"PK tensor patch");return pair;
+}
+static unsafe GeometryPair CreateTensorPatch(int mode,bool rational,bool transpose,double homogeneousScale,out int nativeError)
+{
+    var pu=2;var pv=mode==0?3:2;var dim=rational?4:3;double* poles=stackalloc double[(pu+1)*(pv+1)*dim];
+    double* zc=stackalloc double[4]{-.09375,.13541666666666666,-.13541666666666666,.09375};
+    for(var u=0;u<=pu;u++)for(var v=0;v<=pv;v++)
+    {
+        var w=rational?1+v*.5:1;var at=(transpose?v*(pu+1)+u:u*(pv+1)+v)*dim;
+        var x=u/(double)pu+(mode==1?.25*v*(v-1)/(pv*(pv-1)):0);var y=v/(double)pv+.25*u*(u-1)/(pu*(pu-1));
+        var z=mode switch{0=>zc[v],1=>(u/(double)pu-.5)*(v/(double)pv-.5),2=>v==1?-.25:.25,3=>.25+v*(v-1)/(double)(pv*(pv-1)),_=>0};
+        if(mode==6){y=u*v/4.0;z=u==2?1:0;}
+        poles[at]=x*w*homogeneousScale;poles[at+1]=y*w*homogeneousScale;poles[at+2]=z*homogeneousScale;if(rational)poles[at+3]=w*homogeneousScale;
+    }
+    double* uk=stackalloc double[2]{0,1};double* vk=stackalloc double[2]{0,1};
+    int* um=stackalloc int[2]{(transpose?pv:pu)+1,(transpose?pv:pu)+1};int* vm=stackalloc int[2]{(transpose?pu:pv)+1,(transpose?pu:pv)+1};
+    var sf=new M.PK_BSURF_sf_s{u_degree=transpose?pv:pu,v_degree=transpose?pu:pv,n_u_vertices=(transpose?pv:pu)+1,n_v_vertices=(transpose?pu:pv)+1,
+        vertex_dim=dim,is_rational=(byte)(rational?1:0),vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=uk,v_knot=vk,u_knot_mult=um,v_knot_mult=vm,
+        form=M.ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,
+        self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c,convexity=M.ParasolidConstants.PK_convexity_unset_c};
+    int m=0,p=0;Check(KernelRuntime.BSurfCreate(&sf,&m),"self tensor patch");nativeError=PK_BSURF_create((PK_BSURF_sf_t*)&sf,&p);return new(m,p);
 }
 static unsafe M.PK_AXIS2_sf_s Axis(double x=0,double y=0,double z=0,double nx=0,double ny=0,double nz=1,double rx=1,double ry=0,double rz=0)
 {var a=new M.PK_AXIS2_sf_s();a.location.coord[0]=x;a.location.coord[1]=y;a.location.coord[2]=z;a.axis.coord[0]=nx;a.axis.coord[1]=ny;a.axis.coord[2]=nz;a.ref_direction.coord[0]=rx;a.ref_direction.coord[1]=ry;a.ref_direction.coord[2]=rz;return a;}

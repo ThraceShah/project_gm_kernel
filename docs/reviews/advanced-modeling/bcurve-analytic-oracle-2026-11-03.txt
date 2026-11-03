@@ -1,0 +1,963 @@
+sphere-polynomial-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-polynomial-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-polynomial-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-polynomial-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-polynomial-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-polynomial-cubic-all-roots-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-polynomial-cubic-all-roots-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-polynomial-cubic-all-roots: roots=6, intersection-partition wires=7, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-rational-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-cubic-all-roots-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-cubic-all-roots-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-rational-cubic-all-roots: roots=6, intersection-partition wires=7, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cylinder-polynomial-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-polynomial-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-polynomial-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-polynomial-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-polynomial-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-polynomial-cubic-all-roots-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-polynomial-cubic-all-roots-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cylinder-polynomial-cubic-all-roots: roots=6, intersection-partition wires=7, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cylinder-rational-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-rational-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-rational-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-rational-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-rational-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cylinder-rational-cubic-all-roots: roots=4, intersection-partition wires=5, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cone-polynomial-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-polynomial-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-polynomial-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-polynomial-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-polynomial-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-polynomial-cubic-all-roots-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-polynomial-cubic-all-roots-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cone-polynomial-cubic-all-roots: roots=6, intersection-partition wires=7, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cone-rational-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-rational-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-rational-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-rational-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-rational-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-rational-cubic-all-roots-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-rational-cubic-all-roots-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cone-rational-cubic-all-roots: roots=6, intersection-partition wires=7, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+torus-polynomial-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment7: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment8: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment9: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment10: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment11: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-polynomial-cubic-all-roots-segment12: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS torus-polynomial-cubic-all-roots: roots=12, intersection-partition wires=13, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+torus-rational-cubic-all-roots-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment7: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-rational-cubic-all-roots-segment8: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS torus-rational-cubic-all-roots: roots=8, intersection-partition wires=9, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-linear-spline-tangent-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-linear-spline-tangent-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-linear-spline-tangent: roots=1, intersection-partition wires=2, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cylinder-linear-spline-tangent-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cylinder-linear-spline-tangent-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cylinder-linear-spline-tangent: roots=1, intersection-partition wires=2, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cone-linear-spline-tangent-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cone-linear-spline-tangent-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cone-linear-spline-tangent: roots=1, intersection-partition wires=2, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+torus-linear-spline-tangent-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-linear-spline-tangent-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS torus-linear-spline-tangent: roots=1, intersection-partition wires=2, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-rational-circle-coincidence-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-rational-circle-coincidence: roots=2, intersection-partition wires=1, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cylinder-rational-circle-coincidence-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cylinder-rational-circle-coincidence: roots=2, intersection-partition wires=1, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-all-knot-spans-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-all-knot-spans-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-all-knot-spans-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-all-knot-spans: roots=2, intersection-partition wires=3, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-clipped-knot-spans-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-clipped-knot-spans-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-clipped-knot-spans: roots=1, intersection-partition wires=2, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-nonuniform-c1-quadratic-spans-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-nonuniform-c1-quadratic-spans-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-nonuniform-c1-quadratic-spans-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-nonuniform-c1-quadratic-spans-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-nonuniform-c1-quadratic-spans-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-nonuniform-c1-quadratic-spans-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-nonuniform-c1-quadratic-spans-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-nonuniform-c1-quadratic-spans: roots=6, intersection-partition wires=7, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-rational-nonuniform-c1-quadratic-spans-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-nonuniform-c1-quadratic-spans-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-nonuniform-c1-quadratic-spans-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-nonuniform-c1-quadratic-spans-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-rational-nonuniform-c1-quadratic-spans-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-rational-nonuniform-c1-quadratic-spans: roots=4, intersection-partition wires=5, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cone-far-nappe-rejected-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cone-far-nappe-rejected: roots=0, intersection-partition wires=1, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+cone-coincident-regular-generator-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS cone-coincident-regular-generator: roots=2, intersection-partition wires=1, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+PASS negative cone apex coincidence: both APIs reject with cant_do_intersect; no self output buffers
+sphere-near-tangent-root-pair-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-near-tangent-root-pair-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-near-tangent-root-pair-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-near-tangent-root-pair: roots=2, intersection-partition wires=3, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-degree-eight-bound-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-degree-eight-bound-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-degree-eight-bound-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-degree-eight-bound: roots=2, intersection-partition wires=3, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+torus-degree-four-bound-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-degree-four-bound-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-degree-four-bound-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-degree-four-bound-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-degree-four-bound-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS torus-degree-four-bound: roots=4, intersection-partition wires=5, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-translated-rational-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-translated-rational-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-translated-rational-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-translated-rational-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-translated-rational-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-translated-rational-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-translated-rational-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-translated-rational: roots=6, intersection-partition wires=7, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+torus-translated-rational-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment5: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment6: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment7: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+torus-translated-rational-segment8: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS torus-translated-rational: roots=8, intersection-partition wires=9, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+sphere-trimmed-parameter-remap: wire construction uses each trim's own basis and mapped parameter interval; intersection parameters above remain native trimmed parameters.
+sphere-trimmed-parameter-remap-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-trimmed-parameter-remap-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-trimmed-parameter-remap-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-trimmed-parameter-remap: roots=2, intersection-partition wires=3, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+near-folded-torus-wire: self-XT bounded wire has no BODY_check faults; native boundary remains separately reported.
+near-folded-torus-wire: independent-PK body fault=13818, entity=2899, other=2898
+PASS expected native wire boundary near-folded-torus-wire: both intersection APIs return all 12 roots; native direct wire has full BODY_check fault 13818; self wire has either no fault or the same diagnosed fault. This is not counted as a valid native-parity modeling wire.
+sphere-c0-knots-and-root-partition-segment0: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-c0-knots-and-root-partition-segment1: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-c0-knots-and-root-partition-segment2: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-c0-knots-and-root-partition-segment3: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+sphere-c0-knots-and-root-partition-segment4: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS sphere-c0-knots-and-root-partition: roots=3, intersection-partition wires=5, complete parameters/UV/types, full BODY_check and strict XT structural comparison
+wire-full-c0-auto-split-legacy: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=3, similars=3
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=4, similars=4
+  diff=21947, masters=0, similars=0
+wire-full-c0-auto-split-modern: both APIs return 3 edges with original-input indices all zero
+wire-full-c0-auto-split-modern: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=3, similars=3
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=4, similars=4
+  diff=21947, masters=0, similars=0
+PASS wire-full-c0-auto-split: legacy and modern API both produce 3 valid edges, matching input-index tracking, full BODY_check and strict XT comparison
+wire-degree1-g1-speed-change-legacy: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+wire-degree1-g1-speed-change-modern: both APIs return 1 edges with original-input indices all zero
+wire-degree1-g1-speed-change-modern: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS wire-degree1-g1-speed-change: legacy and modern API both produce 1 valid edges, matching input-index tracking, full BODY_check and strict XT comparison
+wire-degree2-g1-speed-change-legacy: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+wire-degree2-g1-speed-change-modern: both APIs return 1 edges with original-input indices all zero
+wire-degree2-g1-speed-change-modern: global=21921, local=21931, diff entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+PASS wire-degree2-g1-speed-change: legacy and modern API both produce 1 valid edges, matching input-index tracking, full BODY_check and strict XT comparison
+PASS 31 independent B-curve/analytic cases (including one explicit cone-apex rejection), plus 1 separately diagnosed native wire-fault boundary regression(s). All positive cases include complete point/parameter/UV/classification sets and real-PK full-check/strict-compare partition wires.

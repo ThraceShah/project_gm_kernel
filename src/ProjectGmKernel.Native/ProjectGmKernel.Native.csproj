@@ -49,6 +49,9 @@
     <InternalsVisibleTo Include="IntersectionOperationOracle" />
     <InternalsVisibleTo Include="FreeformModelingOracle" />
     <InternalsVisibleTo Include="LocalOperationOracle" />
+    <InternalsVisibleTo Include="RotationalModelingOracle" />
+    <InternalsVisibleTo Include="BCurveAnalyticIntersectionOracle" />
+    <InternalsVisibleTo Include="LocalTopologyChangeOracle" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />

@@ -1,0 +1,468 @@
+PASS crossing-lines: 1 point(s), complete first/second parameters and classifications
+PASS coincident-opposite-lines: 2 point(s), complete first/second parameters and classifications
+PASS skew-lines: 0 point(s), complete first/second parameters and classifications
+PASS line-circle: 2 point(s), complete first/second parameters and classifications
+PASS line-arc: 1 point(s), complete first/second parameters and classifications
+PASS tangent-line-circle: 1 point(s), complete first/second parameters and classifications
+PASS two-circles: 2 point(s), complete first/second parameters and classifications
+PASS noncoplanar-circles: 2 point(s), complete first/second parameters and classifications
+PASS plane-line: 1 point(s), surface UV and curve parameters/classifications
+PASS plane-line-overlap: 2 point(s), surface UV and curve parameters/classifications
+PASS sphere-line: 2 point(s), surface UV and curve parameters/classifications
+PASS sphere-line-tangent: 1 point(s), surface UV and curve parameters/classifications
+PASS torus-four-roots: 4 point(s), surface UV and curve parameters/classifications
+PASS sphere-ellipse-four-roots: 4 point(s), surface UV and curve parameters/classifications
+PASS conic-chart-pi-tangency: 1 point(s), surface UV and curve parameters/classifications
+PASS nurbs-plane-three-roots: 3 point(s), surface UV and curve parameters/classifications
+PASS rational-nurbs-plane-three-roots: 3 point(s), surface UV and curve parameters/classifications
+PASS line-nurbs-three-roots: 3 point(s), complete first/second parameters and classifications
+plane-plane-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+plane-plane: branch 0 samples max deviation=0
+PASS plane-plane: isolated=0, curves=1, complete branch set and independent self-XT wire comparisons
+plane-sphere-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=0, similars=0
+  diff=21947, masters=0, similars=0
+plane-sphere: branch 0 samples max deviation=9.930136612989092E-16
+PASS plane-sphere: isolated=0, curves=1, complete branch set and independent self-XT wire comparisons
+sphere-sphere-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=0, similars=0
+  diff=21947, masters=0, similars=0
+sphere-sphere: branch 0 samples max deviation=9.155133597044475E-16
+PASS sphere-sphere: isolated=0, curves=1, complete branch set and independent self-XT wire comparisons
+PASS sphere-tangent: isolated=1, curves=0, complete branch set and independent self-XT wire comparisons
+PASS coincident-surfaces: isolated=0, curves=0, complete branch set and independent self-XT wire comparisons
+oblique-plane-cylinder-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=0, similars=0
+  diff=21947, masters=0, similars=0
+oblique-plane-cylinder: branch 0 samples max deviation=1.1801832636420706E-15
+PASS oblique-plane-cylinder: isolated=0, curves=1, complete branch set and independent self-XT wire comparisons
+plane-torus-two-circles-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=0, similars=0
+  diff=21947, masters=0, similars=0
+plane-torus-two-circles: branch 0 samples max deviation=1.9860273225978185E-15
+plane-torus-two-circles-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=0, similars=0
+  diff=21947, masters=0, similars=0
+plane-torus-two-circles: branch 1 samples max deviation=8.005932084973442E-16
+PASS plane-torus-two-circles: isolated=0, curves=2, complete branch set and independent self-XT wire comparisons
+plane-torus-tangent-circle-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=0, similars=0
+  diff=21947, masters=0, similars=0
+plane-torus-tangent-circle: branch 0 samples max deviation=1.4043333874306805E-15
+PASS plane-torus-tangent-circle: isolated=0, curves=1, complete branch set and independent self-XT wire comparisons
+bilinear-nurbs-hyperbola-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+bilinear-nurbs-hyperbola: branch 0 samples max deviation=2.0955000055363631E-16
+PASS bilinear-nurbs-hyperbola: isolated=0, curves=1, complete branch set and independent self-XT wire comparisons
+bilinear-nurbs-crossing-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+bilinear-nurbs-crossing: branch 0 samples max deviation=6.9856255461111E-17
+bilinear-nurbs-crossing-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+bilinear-nurbs-crossing: branch 1 samples max deviation=6.9856255461111E-17
+bilinear-nurbs-crossing-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+bilinear-nurbs-crossing: branch 2 samples max deviation=6.9856255461111E-17
+bilinear-nurbs-crossing-branch3: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+bilinear-nurbs-crossing: branch 3 samples max deviation=6.9856255461111E-17
+PASS bilinear-nurbs-crossing: isolated=0, curves=4, complete branch set and independent self-XT wire comparisons
+cubic-ruled-two-components-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cubic-ruled-two-components: branch 0 samples max deviation=5.4551680203037335E-12
+cubic-ruled-two-components-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+cubic-ruled-two-components: branch 1 samples max deviation=5.454949824103711E-12
+PASS cubic-ruled-two-components: isolated=0, curves=2, complete branch set and independent self-XT wire comparisons
+rational-cubic-ruled-two-components-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+rational-cubic-ruled-two-components: branch 0 samples max deviation=1.1211368498356077E-16
+rational-cubic-ruled-two-components-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+rational-cubic-ruled-two-components: branch 1 samples max deviation=2.1100508578869442E-14
+PASS rational-cubic-ruled-two-components: isolated=0, curves=2, complete branch set and independent self-XT wire comparisons
+rational-multiple-spans-four-components-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+rational-multiple-spans-four-components: branch 0 samples max deviation=1.1211368498356077E-16
+rational-multiple-spans-four-components-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+rational-multiple-spans-four-components: branch 1 samples max deviation=3.5932447994841044E-14
+rational-multiple-spans-four-components-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+rational-multiple-spans-four-components: branch 2 samples max deviation=6.662103686893508E-16
+rational-multiple-spans-four-components-branch3: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+rational-multiple-spans-four-components: branch 3 samples max deviation=2.2350133101968707E-15
+PASS rational-multiple-spans-four-components: isolated=0, curves=4, complete branch set and independent self-XT wire comparisons
+transposed-ruled-two-components-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+transposed-ruled-two-components: branch 0 samples max deviation=5.2848126786884496E-12
+transposed-ruled-two-components-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+transposed-ruled-two-components: branch 1 samples max deviation=5.611012676559183E-12
+PASS transposed-ruled-two-components: isolated=0, curves=2, complete branch set and independent self-XT wire comparisons
+transposed-rational-ruled-two-components-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+transposed-rational-ruled-two-components: branch 0 samples max deviation=1.1173033166369676E-16
+transposed-rational-ruled-two-components-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+transposed-rational-ruled-two-components: branch 1 samples max deviation=2.1210880670975877E-14
+PASS transposed-rational-ruled-two-components: isolated=0, curves=2, complete branch set and independent self-XT wire comparisons
+BOUNDARY transposed-rational-ruled-multiple-span-boundary: original strict oracle failed with managed/native curves 4/2; this configuration is explicitly unsupported and is not included in the positive compatibility count.
+BOUNDARY transposed-rational-ruled-multiple-span-boundary: hint=0 (0=default, 1=full domain, 2=second span), managed=not_implemented, native points=0, curves=2
+  branch=0 t=0, xyz=(0,0.07999999999999996,0), UV=(0.07999999999999997,8.556027672838239E-18), kind=14651
+  branch=0 t=0.36633833325035065, xyz=(0.3545147482795628,-0.0047435210856708356,-9.107298248878237E-18), UV=(-0.004743521085670838,0.2662212866631635), kind=14651
+  branch=0 t=0.7326766665007013, xyz=(0.7210300429184551,0,2.2335495398843017E-17), UV=(3.789346264826969E-17,0.8000000000000002), kind=14651
+  branch=1 t=0, xyz=(1.7210300429184548,0,9.306456416184587E-18), UV=(-1.721644866323962E-12,1.8), kind=14651
+  branch=1 t=0.1451927172443191, xyz=(1.8626365556627555,0.032070430557132136,-3.8518183809150315E-17), UV=(0.03207043055713221,1.9353499153868752), kind=14651
+  branch=1 t=0.2903854344886382, xyz=(2,0.08000000000000002,1.3877787807814457E-17), UV=(0.08000000000000002,2), kind=14651
+BOUNDARY transposed-rational-ruled-multiple-span-boundary: hint=1 (0=default, 1=full domain, 2=second span), managed=not_implemented, native points=0, curves=2
+  branch=0 t=0, xyz=(0,0.07999999999999996,0), UV=(0.07999999999999997,8.556027672838239E-18), kind=14651
+  branch=0 t=0.36633833325035065, xyz=(0.3545147482795628,-0.0047435210856708356,-9.107298248878237E-18), UV=(-0.004743521085670838,0.2662212866631635), kind=14651
+  branch=0 t=0.7326766665007013, xyz=(0.7210300429184551,0,2.2335495398843017E-17), UV=(3.789346264826969E-17,0.8000000000000002), kind=14651
+  branch=1 t=0, xyz=(1.7210300429184548,0,9.306456416184587E-18), UV=(-1.721644866323962E-12,1.8), kind=14651
+  branch=1 t=0.1451927172443191, xyz=(1.8626365556627555,0.032070430557132136,-3.8518183809150315E-17), UV=(0.03207043055713221,1.9353499153868752), kind=14651
+  branch=1 t=0.2903854344886382, xyz=(2,0.08000000000000002,1.3877787807814457E-17), UV=(0.08000000000000002,2), kind=14651
+BOUNDARY transposed-rational-ruled-multiple-span-boundary: hint=2 (0=default, 1=full domain, 2=second span), managed=not_implemented, native points=0, curves=2
+  branch=0 t=0, xyz=(1.7210300429184548,0,9.306456416184587E-18), UV=(-1.721644866323962E-12,1.8), kind=14651
+  branch=0 t=0.1451927172443191, xyz=(1.8626365556627555,0.032070430557132136,-3.8518183809150315E-17), UV=(0.03207043055713221,1.9353499153868752), kind=14651
+  branch=0 t=0.2903854344886382, xyz=(2,0.08000000000000002,1.3877787807814457E-17), UV=(0.08000000000000002,2), kind=14651
+  branch=1 t=0, xyz=(1.2893401015228427,0,-1.045677222194141E-17), UV=(7.025694257389639E-18,1.2000000000000002), kind=14651
+  branch=1 t=0.12010989026701105, xyz=(1.409323241771287,0.005516348400608184,-7.25577443138298E-18), UV=(0.005516348400608182,1.3302872781562143), kind=14651
+  branch=1 t=0.2402197805340221, xyz=(1.5294117647058822,0,-1.9592171022796884E-17), UV=(1.002344118645027E-16,1.5000000000000002), kind=14651
+tensor-polynomial-three-isocurves-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-polynomial-three-isocurves: branch 0 samples max deviation=4.798846154560971E-13
+tensor-polynomial-three-isocurves-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-polynomial-three-isocurves: branch 1 samples max deviation=4.447062681698703E-16
+tensor-polynomial-three-isocurves-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-polynomial-three-isocurves: branch 2 samples max deviation=4.798845343069019E-13
+PASS tensor-polynomial-three-isocurves: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+tensor-rational-three-isocurves-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-three-isocurves: branch 0 samples max deviation=3.3308184096698323E-16
+tensor-rational-three-isocurves-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-three-isocurves: branch 1 samples max deviation=2.482712262350565E-16
+tensor-rational-three-isocurves-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-three-isocurves: branch 2 samples max deviation=2.775605581174517E-16
+PASS tensor-rational-three-isocurves: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+tensor-rational-homogeneous-scale-1e-4-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-homogeneous-scale-1e-4: branch 0 samples max deviation=4.0547361414385064E-16
+tensor-rational-homogeneous-scale-1e-4-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-homogeneous-scale-1e-4: branch 1 samples max deviation=8.886530776577696E-16
+tensor-rational-homogeneous-scale-1e-4-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-homogeneous-scale-1e-4: branch 2 samples max deviation=4.449649003217636E-16
+PASS tensor-rational-homogeneous-scale-1e-4: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+tensor-rational-homogeneous-scale-1e4-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-homogeneous-scale-1e4: branch 0 samples max deviation=2.5483466645023803E-16
+tensor-rational-homogeneous-scale-1e4-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-homogeneous-scale-1e4: branch 1 samples max deviation=2.482803084068905E-16
+tensor-rational-homogeneous-scale-1e4-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-homogeneous-scale-1e4: branch 2 samples max deviation=4.440897133762557E-16
+PASS tensor-rational-homogeneous-scale-1e4: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+tensor-transposed-three-isocurves-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-transposed-three-isocurves: branch 0 samples max deviation=4.798846154560971E-13
+tensor-transposed-three-isocurves-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-transposed-three-isocurves: branch 1 samples max deviation=2.4989804073489783E-16
+tensor-transposed-three-isocurves-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-transposed-three-isocurves: branch 2 samples max deviation=4.798845343069019E-13
+PASS tensor-transposed-three-isocurves: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+tensor-rational-transposed-isocurves-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-transposed-isocurves: branch 0 samples max deviation=3.3309312470885553E-16
+tensor-rational-transposed-isocurves-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-transposed-isocurves: branch 1 samples max deviation=2.226461860021243E-16
+tensor-rational-transposed-isocurves-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-rational-transposed-isocurves: branch 2 samples max deviation=3.140227361189128E-16
+PASS tensor-rational-transposed-isocurves: isolated=0, curves=3, complete branch set and independent self-XT wire comparisons
+tensor-quadratic-crossing-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-quadratic-crossing: branch 0 samples max deviation=1.5874615564629044E-16
+tensor-quadratic-crossing-branch1: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-quadratic-crossing: branch 1 samples max deviation=2.482534153247273E-16
+tensor-quadratic-crossing-branch2: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-quadratic-crossing: branch 2 samples max deviation=1.1102230246251565E-16
+tensor-quadratic-crossing-branch3: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-quadratic-crossing: branch 3 samples max deviation=2.2121037052315357E-15
+PASS tensor-quadratic-crossing: isolated=0, curves=4, complete branch set and independent self-XT wire comparisons
+tensor-tangent-isocurve-branch0: body compare global=21921, local=21931, entries=6
+  diff=21940, masters=1, similars=1
+  diff=21941, masters=0, similars=0
+  diff=21943, masters=1, similars=1
+  diff=21944, masters=0, similars=0
+  diff=21946, masters=2, similars=2
+  diff=21947, masters=0, similars=0
+tensor-tangent-isocurve: branch 0 samples max deviation=1.3848891926138297E-14
+PASS tensor-tangent-isocurve: isolated=0, curves=1, complete branch set and independent self-XT wire comparisons
+PASS tensor-disjoint: isolated=0, curves=0, complete branch set and independent self-XT wire comparisons
+PASS tensor-coincident-area: isolated=0, curves=0, complete branch set and independent self-XT wire comparisons
+PASS tensor-collapsed-pole: isolated=1, curves=0, complete branch set and independent self-XT wire comparisons
+BOUNDARY tensor-rational-extreme-small-scale: homogeneous scale=1E-200, managed create=0, native PK_BSURF_create error=111; excluded from positive compatibility count.
+BOUNDARY tensor-rational-extreme-small-scale: managed PK_SURF_intersect_surf error=0, points=0, curves=3
+BOUNDARY tensor-rational-extreme-small-scale: self-XT branch=0, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-small-scale: self-XT branch=1, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-small-scale: self-XT branch=2, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-small-scale: native error 111 (PK_ERROR_weight_le_0) prevents native intersection/wire construction; self-only geometry and all three received wires were checked.
+BOUNDARY tensor-rational-extreme-large-scale: homogeneous scale=1E+200, managed create=0, native PK_BSURF_create error=0; excluded from positive compatibility count.
+BOUNDARY tensor-rational-extreme-large-scale: managed PK_SURF_intersect_surf error=0, points=0, curves=3
+BOUNDARY tensor-rational-extreme-large-scale: self-XT branch=0, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-large-scale: self-XT branch=1, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-large-scale: self-XT branch=2, real-PK complete BODY_check faults=0, faces=0, edges=1, vertices=2
+BOUNDARY tensor-rational-extreme-large-scale: native PK_SURF_intersect_surf error=0, points=0, curves=3
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0, interval=[0,1.0394278805737545], kind=14651
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0 PK_CURVE_make_wire_body error=0, body=1327
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0 complete PK_BODY_check error=0, faults=1
+BOUNDARY tensor-rational-extreme-large-scale: native branch=0 BODY_check fault=13802, entities=1327/0
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1, interval=[0,1.039309899331508], kind=14651
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1 PK_CURVE_make_wire_body error=0, body=1340
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1 complete PK_BODY_check error=0, faults=1
+BOUNDARY tensor-rational-extreme-large-scale: native branch=1 BODY_check fault=13802, entities=1340/0
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2, interval=[0,1.038535561734455], kind=14651
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2 PK_CURVE_make_wire_body error=0, body=1353
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2 complete PK_BODY_check error=0, faults=1
+BOUNDARY tensor-rational-extreme-large-scale: native branch=2 BODY_check fault=13802, entities=1353/0
+BOUNDARY tensor-rational-extreme-large-scale: native first wire retains PK_BODY_state_corrupt_c (13802); all three self-XT wires have zero full-check faults. This remains a native limitation, not a passed compatibility fixture.
+PASS 44 independent intersection contract cases, checked parameters/types/branches and self-XT → real-PK wire-body comparisons.

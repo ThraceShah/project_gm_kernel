@@ -85,6 +85,9 @@ internal static unsafe partial class KernelRuntime
             else created++;
         }
         if(created==0)return ParasolidConstants.PK_ERROR_bad_parameter;
+        error=TryHollowPlanarTopology(slot,faces,offsets,pierced,tolerance,tracking,results,
+            legacyCount,oldOutput,newOutput,out var planarHandled);
+        if(planarHandled)return error;
         Span<FaceSlot> products=stackalloc FaceSlot[2*count];
         error=BuildLocalOffset(slot,faces,offsets,pierced,true,tolerance,out _,products);if(error!=0)return error;
         if(tracking!=null)
@@ -117,6 +120,9 @@ internal static unsafe partial class KernelRuntime
         if(!any&&!hollow){result=Bodies[source].Header.Tag;return 0;}
         var analytic=BuildAnalyticLocalOffset(source,faces,offsets,pierce,hollow,tolerance,out result,returnedProducts);
         if(analytic!=ParasolidConstants.PK_ERROR_not_implemented)return analytic;
+        // The planar hollow caller has already used the oriented boundary
+        // difference path, which also handles adjacent and disappearing holes.
+        if(hollow)return ParasolidConstants.PK_ERROR_not_implemented;
         Span<LocalPlane> planes=stackalloc LocalPlane[faces.Length];
         var error=ReadLocalPlanes(source,faces,planes);if(error!=0)return error;
         Span<LocalPlane> moved=stackalloc LocalPlane[faces.Length];
@@ -124,48 +130,23 @@ internal static unsafe partial class KernelRuntime
         Span<KernelVector3> vertices=stackalloc KernelVector3[VertexLimit];Span<ulong> mask=stackalloc ulong[VertexLimit];
         Span<int> indices=stackalloc int[IndexLimit];Span<LocalPolygon> polygons=stackalloc LocalPolygon[faces.Length];
         if(!Build(moved,vertices,mask,indices,polygons,out var nVertices,out var nIndices,tolerance))return ParasolidConstants.PK_ERROR_bad_parameter;
-        if(nVertices!=Bodies[source].VertexCountBody)return ParasolidConstants.PK_ERROR_not_implemented;
-        for(var i=0;i<polygons.Length;i++)if(polygons[i].Count==0)return ParasolidConstants.PK_ERROR_not_implemented;
-        Span<KernelVector3> original=stackalloc KernelVector3[VertexLimit];Span<ulong> oldMask=stackalloc ulong[VertexLimit];
-        Span<int> oldIndices=stackalloc int[IndexLimit];Span<LocalPolygon> oldPolygons=stackalloc LocalPolygon[faces.Length];
-        var oldVertexCount=0;
-        if(hollow&&!Build(planes,original,oldMask,oldIndices,oldPolygons,out oldVertexCount,out _,tolerance))return ParasolidConstants.PK_ERROR_not_implemented;
-        // Shared pierced edges make the two annular loops touch. They require
-        // explicit coplanar boolean splitting, so reject before changing input.
-        if(hollow)
-            for(var a=0;a<faces.Length;a++)if(pierce[a]!=0)
-                for(var b=a+1;b<faces.Length;b++)if(pierce[b]!=0)
-                    for(var v=0;v<oldVertexCount;v++)if((oldMask[v]&((1UL<<a)|(1UL<<b)))==((1UL<<a)|(1UL<<b)))return ParasolidConstants.PK_ERROR_not_implemented;
+        var topologyChanged=nVertices!=Bodies[source].VertexCountBody;
+        for(var i=0;i<polygons.Length;i++)topologyChanged|=polygons[i].Count==0;
         Span<KernelVector3> points=stackalloc KernelVector3[LocalPointLimit];Span<ModelingEdge> edges=stackalloc ModelingEdge[LocalEdgeLimit];
         Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[LocalCoedgeLimit];Span<ModelingLoop> loops=stackalloc ModelingLoop[2*LocalFaceLimit];
         Span<ModelingFace> modelFaces=stackalloc ModelingFace[LocalFaceLimit];Span<byte> cavities=stackalloc byte[LocalFaceLimit];
         var brep=new LocalBrep{Points=points,Edges=edges,Coedges=coedges,Loops=loops,Faces=modelFaces,Cavities=cavities};
-        var positive=false;var closed=hollow;
-        for(var i=0;i<offsets.Length;i++){if(offsets[i]>0)positive=true;if(hollow&&pierce[i]!=0)closed=false;}
-        if(hollow)
-        {
-            for(var i=0;i<faces.Length;i++)
-            {
-                error=CloneLocalPlane(faces[i],0,out var surf);if(error!=0)return error;
-                var sense=Faces[faces[i]].Orientation;
-                if(pierce[i]!=0)
-                {
-                    if(!AddLocalPolyFace(ref brep,positive?vertices:original,positive?indices:oldIndices,positive?polygons[i]:oldPolygons[i],surf,sense)
-                        ||!AddLocalPolyHole(ref brep,positive?original:vertices,positive?oldIndices:indices,positive?oldPolygons[i]:polygons[i]))return ParasolidConstants.PK_ERROR_memory_full;
-                }
-                else if(!AddLocalPolyFace(ref brep,original,oldIndices,oldPolygons[i],surf,positive?FlipLocalSense(sense):sense,positive,(byte)(positive&&closed?1:0)))return ParasolidConstants.PK_ERROR_memory_full;
-            }
-        }
         for(var i=0;i<faces.Length;i++)
         {
-            if(hollow&&pierce[i]!=0)continue;
+            if(polygons[i].Count==0)continue;
             error=CloneLocalPlane(faces[i],offsets[i],out var surf);if(error!=0)return error;
-            var reverse=hollow&&!positive;var sense=Faces[faces[i]].Orientation;
-            if(!AddLocalPolyFace(ref brep,vertices,indices,polygons[i],surf,reverse?FlipLocalSense(sense):sense,reverse,(byte)(reverse&&closed?1:0)))return ParasolidConstants.PK_ERROR_memory_full;
+            if(!AddLocalPolyFace(ref brep,vertices,indices,polygons[i],surf,Faces[faces[i]].Orientation))return ParasolidConstants.PK_ERROR_memory_full;
         }
         Span<FaceSlot> products=stackalloc FaceSlot[brep.FaceCount];
         error=brep.Complete(out var product,products);if(error!=0)return error;
-        error=ReplaceLocalBody(source,product,faces,products,!hollow);if(error!=0)return error;
+        Span<FaceSlot> surviving=stackalloc FaceSlot[faces.Length];var survivorCount=0;
+        for(var i=0;i<faces.Length;i++)if(polygons[i].Count!=0)surviving[survivorCount++]=faces[i];
+        error=ReplaceLocalBody(source,product,surviving[..survivorCount],products,!topologyChanged);if(error!=0)return error;
         if(!returnedProducts.IsEmpty)products.CopyTo(returnedProducts);
         result=Bodies[source].Header.Tag;return 0;
     }

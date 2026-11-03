@@ -59,11 +59,6 @@ internal static unsafe partial class KernelRuntime
             Faces[FaceCount]=new(){Surface=surface,Sense=NormalizeLocalSense(sense),FirstLoop=first,LoopCount=LoopCount-first};
             Cavities[FaceCount++]=cavity;return true;
         }
-        internal bool AddHole(scoped ReadOnlySpan<int> points,bool reverse=true)
-        {
-            if(FaceCount==0||!AddLoop(points,reverse))return false;
-            Faces[FaceCount-1].LoopCount++;return true;
-        }
         internal int AddRing(KernelVector3 center,KernelVector3 axis,KernelVector3 reference,double radius)
         {
             if(EdgeCount==Edges.Length)return -1;
@@ -168,17 +163,9 @@ internal static unsafe partial class KernelRuntime
         return brep.AddFace(surface,sense,mapped[..polygon.Count],reverse,cavity);
     }
 
-    private static bool AddLocalPolyHole(ref LocalBrep brep,ReadOnlySpan<KernelVector3> vertices,
-        ReadOnlySpan<int> indices,LocalPolygon polygon)
-    {
-        Span<int> mapped=stackalloc int[VertexLimit];
-        for(var i=0;i<polygon.Count;i++)if((mapped[i]=brep.AddPoint(vertices[indices[polygon.First+i]]))<0)return false;
-        return brep.AddHole(mapped[..polygon.Count]);
-    }
-
     /// <summary>Retain the public identities of surviving faces before replacing the body.</summary>
     private static int ReplaceLocalBody(BodySlot source,EntityTag output,ReadOnlySpan<FaceSlot> oldFaces,Span<FaceSlot> products,
-        bool retainAllEdges=false)
+        bool retainAllEdges=false,ReadOnlySpan<FaceSlot> hollowPieces=default,ReadOnlySpan<FaceSlot> hollowOrigins=default)
     {
         var target=TagRec(output).Slot;
         Span<int> from=stackalloc int[oldFaces.Length];products[..oldFaces.Length].CopyTo(from);
@@ -189,6 +176,10 @@ internal static unsafe partial class KernelRuntime
             // matching would fail precisely when the offset moved that vertex.
             var error=RetainLocalOffsetBoundary(source,target,from,oldFaces);
             if(error!=0)return error;
+        }
+        else if(!hollowPieces.IsEmpty)
+        {
+            var error=RetainLocalHollowBoundary(source,target,from,oldFaces,hollowPieces,hollowOrigins);if(error!=0)return error;
         }
         else
         {
@@ -315,20 +306,29 @@ internal static unsafe partial class KernelRuntime
             {if(found>=0){found=-2;break;}found=j;}
             if(found>=0){vertexFrom[vertexCount]=oldVertices[i];vertexTo[vertexCount++]=newVertices[found];}
         }
-        for(var i=0;i<edgeCount;i++)
+        PreserveLocalBoundaryHandles(source,target,oldEdges,oldVertices,newEdges,newVertices,
+            edgeFrom[..edgeCount],edgeTo[..edgeCount],vertexFrom[..vertexCount],vertexTo[..vertexCount]);
+        return 0;
+    }
+
+    private static void PreserveLocalBoundaryHandles(BodySlot source,BodySlot target,ReadOnlySpan<EdgeSlot> oldEdges,
+        ReadOnlySpan<VertexSlot> oldVertices,ReadOnlySpan<EdgeSlot> newEdges,ReadOnlySpan<VertexSlot> newVertices,
+        ReadOnlySpan<EdgeSlot> edgeFrom,ReadOnlySpan<EdgeSlot> edgeTo,ReadOnlySpan<VertexSlot> vertexFrom,ReadOnlySpan<VertexSlot> vertexTo)
+    {
+        for(var i=0;i<edgeFrom.Length;i++)
         {
             var old=Edges[edgeFrom[i]];var next=Edges[edgeTo[i]];
             Edges[edgeFrom[i]]=next;Edges[edgeFrom[i]].Header=old.Header;
             Edges[edgeTo[i]]=old;Edges[edgeTo[i]].Header=next.Header;
         }
-        for(var i=0;i<vertexCount;i++)
+        for(var i=0;i<vertexFrom.Length;i++)
         {
             var old=Vertices[vertexFrom[i]];var next=Vertices[vertexTo[i]];
             Vertices[vertexFrom[i]]=next;Vertices[vertexFrom[i]].Header=old.Header;
             Vertices[vertexTo[i]]=old;Vertices[vertexTo[i]].Header=next.Header;
         }
-        RemapProfileBaseTopology(source,oldEdges,oldVertices,edgeFrom[..edgeCount],edgeTo[..edgeCount],vertexFrom[..vertexCount],vertexTo[..vertexCount]);
-        RemapProfileBaseTopology(target,newEdges,newVertices,edgeTo[..edgeCount],edgeFrom[..edgeCount],vertexTo[..vertexCount],vertexFrom[..vertexCount]);
-        RebuildBoundaryGeometryLinks(source,resetOwners:true);RebuildBoundaryGeometryLinks(target,resetOwners:true);return 0;
+        RemapProfileBaseTopology(source,oldEdges,oldVertices,edgeFrom,edgeTo,vertexFrom,vertexTo);
+        RemapProfileBaseTopology(target,newEdges,newVertices,edgeTo,edgeFrom,vertexTo,vertexFrom);
+        RebuildBoundaryGeometryLinks(source,resetOwners:true);RebuildBoundaryGeometryLinks(target,resetOwners:true);
     }
 }

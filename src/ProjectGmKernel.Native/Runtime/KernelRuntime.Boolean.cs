@@ -113,6 +113,8 @@ internal static unsafe partial class KernelRuntime
         }
         var analyticError = TryAnalyticBoolean(inputs, options, tracking, result, out var analyticHandled);
         if (analyticHandled) return analyticError;
+        var rotationalError = TryRotationalBoolean(inputs, options, tracking, result, out var rotationalHandled);
+        if (rotationalHandled) return rotationalError;
         var scratch = CommandScratch.Current;
         var memory = scratch.Take(120000);
         if (memory.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;

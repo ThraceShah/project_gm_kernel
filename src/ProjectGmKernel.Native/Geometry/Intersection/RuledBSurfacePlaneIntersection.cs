@@ -20,19 +20,33 @@ internal static unsafe class RuledBSurfacePlaneIntersection
         Span<KernelVector3> isolated,out BufferCount pointCount)
     {
         curveCount=0;pointCount=0;
-        if(surface.UDegree<1||surface.UDegree>8||surface.VDegree!=1||surface.VVertexCount!=2
-            ||surface.UPeriodic||surface.VPeriodic||surface.Dimension!=(surface.Rational?4:3))return AlgorithmStatus.Unsupported;
-        var p=surface.UDegree;
+        var transposed=!(surface.UDegree>=1&&surface.UDegree<=8&&surface.VDegree==1&&surface.VVertexCount==2)
+            &&surface.VDegree>=1&&surface.VDegree<=8&&surface.UDegree==1&&surface.UVertexCount==2;
+        if(!transposed&&(surface.UDegree<1||surface.UDegree>8||surface.VDegree!=1||surface.VVertexCount!=2)
+            ||surface.UPeriodic||surface.VPeriodic||surface.Dimension!=(surface.Rational?4:3))
+            return IsoParametricBSurfacePlaneIntersection.Find(surface,plane,branches,out curveCount,isolated,out pointCount);
+        var p=transposed?surface.VDegree:surface.UDegree;
+        var vertexCount=transposed?surface.VVertexCount:surface.UVertexCount;
+        var knots=transposed?surface.VKnots:surface.UKnots;
+        if(transposed)
+        {
+            // Native PK changes branch discovery/extension after transposing
+            // a multiple-span patch. Until that contract is resolved, reject
+            // before producing any branch; single-span transposes are verified.
+            var spanCount=0;
+            for(var span=p;span<vertexCount;span++)
+                if(knots[span+1]>knots[span]&&++spanCount>1)return AlgorithmStatus.Unsupported;
+        }
         Span<double> left=stackalloc double[36];Span<double> right=stackalloc double[36];
         Span<double> f0=stackalloc double[9];Span<double> f1=stackalloc double[9];Span<double> difference=stackalloc double[9];
         Span<double> breaks=stackalloc double[32];Span<double> roots=stackalloc double[16];
         Span<double> rational=stackalloc double[68];
         Span<byte> touches=stackalloc byte[32];
-        for(var span=p;span<surface.UVertexCount;span++)
+        for(var span=p;span<vertexCount;span++)
         {
-            var u0=surface.UKnots[span];var u1=surface.UKnots[span+1];if(!(u1>u0))continue;
-            var status=LayerPolynomial(surface,span,0,left);if(status!=AlgorithmStatus.Success)return status;
-            status=LayerPolynomial(surface,span,1,right);if(status!=AlgorithmStatus.Success)return status;
+            var u0=knots[span];var u1=knots[span+1];if(!(u1>u0))continue;
+            var status=LayerPolynomial(surface,span,0,transposed,left);if(status!=AlgorithmStatus.Success)return status;
+            status=LayerPolynomial(surface,span,1,transposed,right);if(status!=AlgorithmStatus.Success)return status;
             var same=true;var zero0=true;var zero1=true;
             for(var k=0;k<=p;k++)
             {
@@ -137,20 +151,20 @@ internal static unsafe class RuledBSurfacePlaneIntersection
         return AlgorithmStatus.Success;
     }
 
-    private static AlgorithmStatus LayerPolynomial(in BSurfaceView surface,KnotIndex span,ControlPointIndex layer,Span<double> output)
+    private static AlgorithmStatus LayerPolynomial(in BSurfaceView surface,KnotIndex span,ControlPointIndex layer,bool transposed,Span<double> output)
     {
-        var p=surface.UDegree;var stride=4*(p+1);Span<double> work=stackalloc double[9*9*4];work.Clear();output.Clear();
-        var a=surface.UKnots[span];var b=surface.UKnots[span+1];
+        var p=transposed?surface.VDegree:surface.UDegree;var stride=4*(p+1);Span<double> work=stackalloc double[9*9*4];work.Clear();output.Clear();
+        var knots=transposed?surface.VKnots:surface.UKnots;var a=knots[span];var b=knots[span+1];
         for(var j=0;j<=p;j++)
         {
-            var pole=((span-p+j)*2+layer)*surface.Dimension;
+            var pole=(transposed?layer*surface.VVertexCount+span-p+j:(span-p+j)*2+layer)*surface.Dimension;
             for(var c=0;c<3;c++)work[j*stride+c]=surface.Vertices[pole+c];
             work[j*stride+3]=surface.Rational?surface.Vertices[pole+3]:1;
         }
         for(var r=1;r<=p;r++)for(var j=p;j>=r;j--)
         {
-            var index=span-p+j;var denom=surface.UKnots[index+p-r+1]-surface.UKnots[index];if(!(denom>0))return AlgorithmStatus.NumericalFailure;
-            var alpha=(a-surface.UKnots[index])/denom;var beta=(b-a)/denom;
+            var index=span-p+j;var denom=knots[index+p-r+1]-knots[index];if(!(denom>0))return AlgorithmStatus.NumericalFailure;
+            var alpha=(a-knots[index])/denom;var beta=(b-a)/denom;
             for(var k=r;k>=0;k--)for(var c=0;c<4;c++)
             {
                 var target=j*stride+4*k+c;var left=target-stride;var value=work[left]+alpha*(work[target]-work[left]);
@@ -179,7 +193,7 @@ internal static unsafe class RuledBSurfacePlaneIntersection
         if(count==curves.Length)return false;var line=OperationIntersection.Line(a,Scale(Sub(b,a),1/length));line.Start=0;line.End=length;curves[count++]=line;return true;
     }
 
-    private static AlgorithmStatus CreateRational(ReadOnlySpan<double> polynomial,SplineDegree degree,double a,double b,
+    internal static AlgorithmStatus CreateRational(ReadOnlySpan<double> polynomial,SplineDegree degree,double a,double b,
         double spanStart,double spanEnd,Span<OperationIntersectionBranch> curves,ref BufferCount count)
     {
         if(count==curves.Length)return AlgorithmStatus.OutputTooSmall;

@@ -1,0 +1,157 @@
+Advanced modeling C/D/E continuation acceptance
+Date: 2026-11-03
+Base commit: b2c10f61a8ff2283cab8f97703e98ba75eb4cc0a
+Environment: Linux x64, .NET SDK 10.0.403/runtime 10.0.14, independent Parasolid 38.0.150.
+
+This continuation extends existing public APIs; the implemented function catalog remains 161.
+General NURBS/NURBS Boolean and arbitrary freeform local operations remain unfinished.
+Scope: docs/Modeling_Stages_CDE.md.
+
+FINAL COMPLETE EXECUTION
+DOTNET_GCHeapHardLimit=0x100000000 DOTNET_gcServer=0 DOTNET_PROCESSOR_COUNT=1 \
+GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 \
+dotnet run --no-cache scripts/VerifyAdvancedModeling.cs -p:UseSharedCompilation=false -p:BuildInParallel=false
+Actual process exit: 0.
+
+UNIFIED GATES (13)
+PASS production-build, exit=0, seconds=38.0
+PASS IntersectionOperationOracle, exit=0, seconds=2.8
+PASS BCurveAnalyticIntersectionOracle, exit=0, seconds=2.8
+PASS BooleanOperationOracle, exit=0, seconds=2.8
+PASS PlanarTrackingOracle, exit=0, seconds=2.7
+PASS AnalyticBooleanOracle, exit=0, seconds=2.8
+PASS AnalyticSectionOracle, exit=0, seconds=3.0
+PASS RotationalModelingOracle, exit=0, seconds=9.8
+PASS FreeformModelingOracle, exit=0, seconds=3.3
+PASS LocalOperationOracle, exit=0, seconds=3.0
+PASS LocalTopologyChangeOracle, exit=0, seconds=3.0
+PASS public-modeling-regression, exit=0, seconds=140.9
+PASS native-advanced-modeling, exit=0, seconds=1.4
+
+PUBLIC MODELING REGRESSION SUBGATES (14)
+PASS kernel-tests, exit=0, seconds=47.2
+PASS xt-tests, exit=0, seconds=4.2
+PASS display-build, exit=0, seconds=2.7
+PASS GeometryPublicApiOracle, exit=0, seconds=5.2
+PASS GeometryTransformOracle, exit=0, seconds=2.6
+PASS BrepImportOracle, exit=0, seconds=2.9
+PASS ProfileModelingOracle, exit=0, seconds=2.7
+PASS modeled-body-import, exit=0, seconds=2.7
+PASS reference-model-import, exit=0, seconds=2.5
+PASS IcurveEvaluationOracle, exit=0, seconds=2.5
+PASS DisplayBridgeOracle, exit=0, seconds=2.8
+PASS native-publish, exit=0, seconds=56.2
+PASS native-abi, exit=0, seconds=0.3
+PASS native-display, exit=0, seconds=3.5
+
+COUNTS AND ALLOCATION GUARD
+Kernel tests: Passed 1208, Failed 0, Skipped 0 (baseline 1107; 101 additional tests).
+XT tests: Passed 12, Failed 0, Skipped 0.
+Production allocation IL guard: checked 1828 methods, CLEAN.
+Testhooks allocation IL guard: checked 1835 methods, CLEAN.
+Implemented public dispatch descriptors: 161, unchanged from the base commit.
+
+NATIVE C EXPORT MODELS (12)
+PASS native Boolean
+PASS native cylindrical through hole
+PASS native repeated cylindrical Boolean
+PASS native front
+PASS native back
+PASS native imprint
+PASS native NURBS sweep
+PASS native offset
+PASS native hollow
+PASS native adjacent-opening hollow
+PASS native fillet
+PASS native chamfer
+PASS native C exports: planar and repeated cylindrical Boolean, section, imprint, spline/sweep, offset, closed and adjacent-opening hollow, fillet and chamfer; independent PK receive and full BODY_check.
+
+RELEASE BUILD QUALIFICATION
+The first complete run stopped at C# compilation of the large generated XT schema
+with compiler exit 137. That code alone does not establish the cause.
+A controlled 1 GiB GC-heap retry explicitly raised OutOfMemoryException. A 2 GiB
+retry built the library but reported AD0001 from a trim analyzer; that build was
+not accepted as completed static analysis even though its process exited 0.
+A clean Release XT rebuild with a 4 GiB GC ceiling, workstation GC and one reported
+processor completed with 0 warnings and 0 errors. The release runner now promotes
+AD0001 to an error. The final complete run above passed with no publish warnings
+or errors, retaining AOT, trimming, allocation guards, ABI and all oracle gates.
+Only supported process-resource settings and the analyzer-failure gate changed;
+SDK files and production numerical behavior were not altered to bypass checks.
+
+IMPLEMENTATION
+- Coaxial cylinder/plane B-rep Boolean, repeated and multi-tool editing, disconnected
+  results, material/void classification, and perpendicular-axis plane section.
+  Source identities, tracking, imported model editing, and borrowed tool-surface
+  consumption/preservation follow independently observed native contracts.
+- Querying consumed source/tool entities now returns PK_ERROR_not_a_tag (22),
+  matching the native lifecycle contract rather than the previous unknown_class code.
+  Section signatures compare the actual source and tool query errors, not only liveness.
+- Positive-weight B-curves intersect spheres, cylinders and cones through degree 8,
+  and ring tori through degree 4. Complete bounded polynomial roots span every
+  knot interval. Cone-apex singularity, far-nappe rejection and uncertain numerical
+  ranges are explicit errors.
+- Exact separable tensor Bezier/plane intersections find both factor root sets,
+  split crossings and distinguish collapsed isocurves from isolated points.
+  Single-span ruled parameter transposition is supported.
+- B-spline wire supports are clipped exactly to the requested interval with
+  original parameter values. Non-G1 C0 junctions split into separate edges;
+  geometric G1 joins remain single edges, including parameter speed changes.
+- Convex planar offset/hollow supports adjacent openings, face splits and
+  disappearing support faces. Positive hollow retains source topology on the
+  outer shell and identifies the newly created inner wall correctly.
+
+INDEPENDENT REAL-PK ORACLES
+Intersection operations: 44 positive cases; three separately recorded native boundaries.
+B-curve/analytic intersections and wires: 31 main cases (30 positive and one cone-apex
+rejection contract); one separate near-folded native wire-fault boundary.
+Planar Boolean/imprint/trim/section: 43.
+Planar tracking: 33.
+Sphere Boolean: 30.
+Sphere section: 30.
+Rotational modeling: 96 (57 Boolean, 39 section).
+Freeform modeling: 16 positive cases, four additional lifecycle round trips and two
+multi-loop loft rejection-contract comparisons.
+Existing local operations: 41.
+New local topology changes: 24, with two import-copy-delete-transform lifecycle chains.
+
+New rotational and local-topology comparisons retain raw type/sense/tolerance/missing
+and topology gates, full PK_BODY_check, tracking and semantic identity checks.
+No orientation normalization is used for these new matrices.
+The existing local-operation suite retains the documented 29 raw strict cases and
+12 planar-blend cases checked after identical public-PK orientation normalization
+of independent copies; raw differences and physical directions remain checked.
+See docs/Local_Operations.md and the previous validation record.
+
+REMAINING AND EXPLICIT BOUNDARIES
+- Transposed multi-span ruled/plane intersection: bounded self discovery originally
+  found four curves while native default/full-domain requests found two. Native
+  branch extension and UV-area-of-interest behavior are recorded. This configuration
+  now returns not_implemented before creating results; it is not counted as parity.
+- A common homogeneous scale of 1e-200 is rejected by native surface creation with
+  error 111. A scale of 1e200 creates/intersects natively but each of its three native
+  wires reports full BODY_check fault 13802. At both scales self returns three correct
+  curves and all self-XT wires pass native full checks. These are separate diagnostics,
+  not successful native compatibility fixtures. Scales 1e-4 and 1e4 pass positive parity.
+- The near-folded torus 12-root fixture retains native wire fault 13818 separately.
+  The positive 12-root fixture uses wider transverse separation and all 13 partition
+  wires pass full native checks and strict comparison.
+- Non-coaxial mixed curved Boolean, general NURBS/NURBS branches and arrangements,
+  arbitrary moving-frame sweep/loft and freeform fillet/offset/hollow remain outside
+  the implemented scope. Existing supported fillet/chamfer cases are regressed.
+
+API GENERATION / ABI
+GenerateApiLayer.cs strict validation (without --allow-partial): actual exit 0.
+Typedefs 1620; function-pointer typedefs 79; direct function pointers 27;
+structs 880; functions 1190; constants 4531; blocking items 0; warnings 0.
+Build and executed ABI size checks PASS. Generated source is unchanged by this continuation.
+The libclang runtime was supplied on the loader path; no SDK installation files were changed.
+
+EVIDENCE
+docs/reviews/advanced-modeling/intersection-continuation-oracle-2026-11-03.txt
+docs/reviews/advanced-modeling/bcurve-analytic-oracle-2026-11-03.txt
+docs/reviews/advanced-modeling/rotational-oracle-2026-11-03.txt
+docs/reviews/advanced-modeling/local-topology-oracle-2026-11-03.txt
+docs/reviews/advanced-modeling/transposed-ruled-boundary-2026-11-03.txt
+docs/reviews/advanced-modeling/tensor-homogeneous-scale-boundaries-2026-11-03.txt
+Previous acceptance and unchanged oracle evidence remain in the same directory.

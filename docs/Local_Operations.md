@@ -17,7 +17,9 @@
 
 抽壳的正距离向外增加壁厚；负距离向内产生空腔。显式 pierce faces 以及逐面覆盖值为零的面会形成开口。被穿透的原面成为有内环的环形面，而不是简单删除原面后留下开壳。
 
-`BODY_offset_2` / `FACE_offset_2` 在当前保持拓扑类型的支持范围内返回零个 tracking records。抽壳为每个未穿透原面返回一个 `PK_TOPOL_track_create_c` 记录，关联新生成的偏置面。原 body 与存续 face 的公开句柄保持不变；拓扑未改变的偏置还保留全部 edge/vertex 句柄。
+`BODY_offset_2` / `FACE_offset_2` 在已验证的拓扑保持和凸平面消面路径中返回零个 tracking records。抽壳为新内壁返回 `PK_TOPOL_track_create_c` 记录；pierce 面分裂时，为新分出的面返回 `PK_TOPOL_track_derive_c`，关联原 pierce 面。
+
+抽壳无论使用正厚度还是负厚度，原 body 与存续外壳 face 的公开句柄均保持不变，create tracking 指向内壁。正厚度时原 face 移至外侧偏置位置，新内壁位于偏置前的位置；负厚度时原外壳位置不变，新内壁位于内侧偏置位置。球、环面、圆柱、圆台和平面体遵循同一身份规则。拓扑未改变的偏置还保留全部 edge/vertex 句柄。
 
 `BODY_fix_blends` 的 `unders` 是独立返回数组的数组。调用方释放每个 `unders[i].array`，再释放 `unders`、`blends` 和 `topols`。偏置/抽壳的结构通过 `PK_TOPOL_track_r_f` 和 `PK_TOPOL_local_r_f` 释放。
 
@@ -25,9 +27,9 @@
 
 | 操作 | 可构造的几何 |
 | --- | --- |
-| 平面实体偏置 | 单个凸实体，所有边为直线、所有面为单环平面；允许任意空间方位和斜棱柱。保留各支持面并求三平面精确交点。 |
+| 平面实体偏置 | 单个凸实体，所有边为直线、所有面为单环平面；允许任意空间方位和斜棱柱。由偏置支持半空间重建交域，允许原支持面变为冗余并消失，保留存续面及可对应的边、点句柄。 |
 | 解析实体偏置 | 完整球、无自交环面、两端平面封盖的圆柱与截锥。偏置保留对应解析曲面类型。 |
-| 平面实体抽壳 | 上述凸平面实体；封闭空腔或互不接触的多个穿透面；允许逐面指定不同壁厚。 |
+| 平面实体抽壳 | 上述凸平面实体；封闭空腔、相邻或分离的多个开口；允许逐面指定不同壁厚。开口面可以形成缺口、分裂成多个面或完全消失，结果必须仍是单个实体。 |
 | 解析实体抽壳 | 完整球、无自交环面、圆柱、截锥；圆柱与截锥可穿透一个或两个平面端盖。 |
 | 独立直边圆角/倒角 | 凸平面实体中互不接触的多个选中边。圆角面为圆柱；与斜端面相交的边为精确椭圆。倒角支持不同的两个 face offset ranges。 |
 | 全边圆角/倒角 | 每个顶点恰好有三个支持面的凸平面实体，所有边使用同种、同尺寸定义，内缩后的支持面布局不改变拓扑。圆角包含全部圆柱边面与球面角点；倒角包含边平面与三角角点平面。 |
@@ -37,9 +39,19 @@
 
 偏置和抽壳不会将非凸输入“取凸包”后返回成功。读取支持平面时逐一检验所有原始顶点位于其内部半空间，并检验面环与直边类型。
 
+### 相邻开口与凸平面消面
+
+平面抽壳分别求出原半空间交域和偏置半空间交域，在每个支持平面上组合有向多边形边界。pierce 面的外多边形与反向内多边形进入同一来源组，按精确直线段消去共享边界，并统一拆分 T 接头。内边界接触外边界时形成缺口，不会留下相互接触的两个孔环；剩余部分不连通时拆成多个 face；没有剩余面积的 pierce 面被删除。
+
+结果拓扑由原面来源映射建立。一个原面拆成多片时，保留其中一片的原 face 句柄，其余片进入 derive tracking。同一原边分成多个剩余区间时，其中一个区间保留原 edge 句柄。顶点对应使用完整的原始 incident-face 集合，包含已删除的支持面；不会把丢失一个面的旧顶点误配给仅共享其余两面的新顶点。正厚度与负厚度的原始句柄都对应外壳。
+
+独立 PK 对照覆盖长方体相邻两面开口、共顶点三面开口、三面链式开口引起的面分裂、四面开口和五面开口引起的面消失；同时覆盖任意空间姿态、非均匀壁厚以及原生 XT 导入。若剩余材料分成两个不相连实体，`PK_BODY_hollow_2` 返回 `PK_ERROR_not_unique`，本实现回滚整个命令。
+
+凸平面偏置允许一个支持面在偏置后不再约束交域，例如单面外移消去小倒角面，或整体内缩消去该面。删除的 face 不再占据结果拓扑，存续 face 保留原句柄。此能力以偏置后半空间交域有界、具有正体积且每条边仍可明确确定两个支持面为前提；正好落在退化事件上的零面积面、重合支持面和病态交点仍会显式拒绝。
+
 ## 边界与失败
 
-目前不包含任意 NURBS 实体的拓扑偏置/抽壳、一般变半径圆角、自由曲面滚动球圆角、局部任意交汇边组的过渡面、凹边混合圆角、邻接穿透面产生的平面布尔重整，以及偏置导致支持面消失时的拓扑重构。这些情况返回显式错误，不返回空结果冒充成功。
+目前不包含任意 NURBS 实体的拓扑偏置/抽壳、非凸平面体偏置、一般变半径圆角、自由曲面滚动球圆角、局部任意交汇边组的过渡面、凹边混合圆角，以及一般混合曲面的自交消除和拓扑重构。这些情况返回显式错误，不返回空结果冒充成功。上述相邻开口和消面扩展仅适用于已校验的凸平面输入，不能推广为任意曲面体的拓扑变化已经完成。
 
 `set_blend` 支持常半径或 face-offset chamfer 的基本选项；高级 setback、cliff、显式 cap、limit、callback、输出 sheet 和扩展 tracking 选项在当前范围外。SDK 也建议不要在设置和固定圆角之间修改模型的拓扑或几何。
 
@@ -54,6 +66,8 @@
 ## 验收
 
 `tests/KernelTests/LocalOperationTests.cs` 覆盖偏置方向、逐面偏置、句柄保持、封闭和开口抽壳、tracking、边/角点/端缘曲面类型、返回内存、复制、mark undo、故障注入与拒绝无效输入。
+
+`tests/KernelTests/LocalTopologyChangeTests.cs` 增加相邻开口、分裂面和消面、完整 face/edge/vertex 身份、正厚度原面位置与朝向、四类解析体的内壁 tracking、失败注入与 mark 回滚、零壁厚开口以及断开结果的原子失败。
 
 `scripts/LocalOperationOracle.cs` 中的两条独立生产路径分别调用自研 API 与真实 PK API，并使用相同的输入参数。每例把自研结果写为新的文本 XT，再交给真实 PK receive。验收检查：
 
@@ -70,6 +84,11 @@
 
 原始 SDK 文档、私有库和 oracle 输入 SDK 不随代码提交。运行输出位于 `temp_docs/local-operation-oracle/`。
 
+`scripts/LocalTopologyChangeOracle.cs` 独立验证这次拓扑扩展：22 个正向操作、2 个 `PK_ERROR_not_unique` 负向操作，另有 2 组 self receive → copy → 删除原体 → transform → transmit → PK receive 生命周期。所有正向结果使用原始几何直接通过完整 `PK_BODY_check`、严格 `PK_DEBUG_BODY_compare` 和 15 项质量属性比较，未使用方向规范化放行。
+
+该 oracle 同时比较 tracking 的原面来源与类型、create/derive 分类、新面数量及材料侧方向；并按原始 incident-face 集合核对存续 face/edge/vertex 的身份。原生错误路径有时留下部分修改，因此两个负向场景核对原生错误码，并把自研事务回滚后的 XT 与调用前独立 PK 副本比较，不把原生报错后的中间模型当作成功结果。报告位于 `temp_docs/local-topology-change-oracle/`，归档见 `docs/reviews/advanced-modeling/local-topology-oracle-2026-11-03.txt`。
+
 ```bash
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/LocalOperationOracle.cs -p:UseSharedCompilation=false -p:BuildInParallel=false
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/LocalTopologyChangeOracle.cs -p:UseSharedCompilation=false -p:BuildInParallel=false
 ```

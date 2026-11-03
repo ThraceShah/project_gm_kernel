@@ -13,7 +13,7 @@ internal static unsafe partial class KernelRuntime
     {
         internal CurveTag Curve;
         internal EdgeSlot Edge;
-        internal BufferOffset Start, End, Component;
+        internal BufferOffset Start, End, Component, Source;
         internal double T0, T1;
     }
 
@@ -32,6 +32,8 @@ internal static unsafe partial class KernelRuntime
         PK_CURVE_make_wire_body_o_s* options, EntityTag* body, int* edgeCount,
         EntityTag** newEdges, int** indices)
     {
+        if(body!=null)*body=0;if(edgeCount!=null)*edgeCount=0;
+        if(newEdges!=null)*newEdges=null;if(indices!=null)*indices=null;
         if (Dispatcher.IsExecuting)
             return CurveMakeWireBodyCore(count, curves, bounds, options, body, edgeCount, newEdges, indices);
         var command = new ProfileWireCommand { Count = count, Curves = curves, Bounds = bounds,
@@ -87,13 +89,14 @@ internal static unsafe partial class KernelRuntime
                 && options->sequential != ParasolidConstants.PK_CURVE_sequential_yes_c)
             return ParasolidConstants.PK_ERROR_bad_parameter;
 
-        Span<ProfileSegment> segments = stackalloc ProfileSegment[count];
-        Span<KernelVector3> points = stackalloc KernelVector3[2 * count];
-        Span<int> degrees = stackalloc int[2 * count];
-        Span<double> pointTolerances = stackalloc double[2 * count];
+        Span<ProfileSegment> segments = stackalloc ProfileSegment[ProfileEdgeLimit];
+        Span<KernelVector3> points = stackalloc KernelVector3[2 * ProfileEdgeLimit];
+        Span<int> degrees = stackalloc int[2 * ProfileEdgeLimit];
+        Span<double> pointTolerances = stackalloc double[2 * ProfileEdgeLimit];
+        Span<double> breaks=stackalloc double[ProfileEdgeLimit+1];
         degrees.Clear();
         pointTolerances.Clear();
-        var pointCount = 0;
+        var pointCount = 0;var segmentCount=0;
         Span<KernelVector3> jet = stackalloc KernelVector3[2];
         for (var i = 0; i < count; i++)
         {
@@ -109,25 +112,32 @@ internal static unsafe partial class KernelRuntime
                 || curve.Class is CurveClass.Circle or CurveClass.Ellipse && b - a > Math.Tau + 1e-12
                 || curve.Class == CurveClass.BCurve && (a < curve.TMin || b > curve.TMax))
                 return ParasolidConstants.PK_ERROR_bad_parameter;
-            if (EvaluateCurveCore(in curve, a, 0, false, jet, out _) != AlgorithmStatus.Success)
-                return ParasolidConstants.PK_ERROR_eval_failure;
-            var p0 = jet[0];
-            if (EvaluateCurveCore(in curve, b, 0, false, jet, out _) != AlgorithmStatus.Success)
-                return ParasolidConstants.PK_ERROR_eval_failure;
-            var p1 = jet[0];
-            var v0 = MatchProfilePoint(points, ref pointCount, in p0, options->tolerance);
-            var v1 = MatchProfilePoint(points, ref pointCount, in p1, options->tolerance);
-            pointTolerances[v0]=Math.Max(pointTolerances[v0],ProfileDistance(in points[v0],in p0));
-            pointTolerances[v1]=Math.Max(pointTolerances[v1],ProfileDistance(in points[v1],in p1));
-            if(v0==v1&&curve.Class is CurveClass.Circle or CurveClass.Ellipse&&Math.Abs((b-a)-Math.Tau)>1e-12)
-                return ParasolidConstants.PK_ERROR_bad_parameter;
-            if (++degrees[v0] > 2 || ++degrees[v1] > 2)
-                return ParasolidConstants.PK_ERROR_bad_wire;
-            segments[i] = new ProfileSegment { Curve = curves[i], T0 = a, T1 = b,
-                Start = v0, End = v1, Component = -1, Edge = -1 };
+            var splitError=ProfileCurveBreaks(in curve,a,b,breaks,out var breakCount);
+            if(splitError!=0)return splitError;
+            if(segmentCount>segments.Length-(breakCount-1))return ParasolidConstants.PK_ERROR_not_implemented;
+            for(var part=0;part+1<breakCount;part++)
+            {
+                var first=breaks[part];var last=breaks[part+1];
+                if (EvaluateCurveCore(in curve, first, 0, false, jet, out _) != AlgorithmStatus.Success)
+                    return ParasolidConstants.PK_ERROR_eval_failure;
+                var p0 = jet[0];
+                if (EvaluateCurveCore(in curve, last, 0, false, jet, out _) != AlgorithmStatus.Success)
+                    return ParasolidConstants.PK_ERROR_eval_failure;
+                var p1 = jet[0];
+                var v0 = MatchProfilePoint(points, ref pointCount, in p0, options->tolerance);
+                var v1 = MatchProfilePoint(points, ref pointCount, in p1, options->tolerance);
+                pointTolerances[v0]=Math.Max(pointTolerances[v0],ProfileDistance(in points[v0],in p0));
+                pointTolerances[v1]=Math.Max(pointTolerances[v1],ProfileDistance(in points[v1],in p1));
+                if(v0==v1&&curve.Class is CurveClass.Circle or CurveClass.Ellipse&&Math.Abs((last-first)-Math.Tau)>1e-12)
+                    return ParasolidConstants.PK_ERROR_bad_parameter;
+                if (++degrees[v0] > 2 || ++degrees[v1] > 2)
+                    return ParasolidConstants.PK_ERROR_bad_wire;
+                segments[segmentCount++] = new ProfileSegment { Curve = curves[i], T0 = first, T1 = last,
+                    Start = v0, End = v1, Component = -1, Edge = -1,Source=i };
+            }
         }
         var componentCount = 0;
-        for (var seed = 0; seed < count; seed++)
+        for (var seed = 0; seed < segmentCount; seed++)
         {
             if (segments[seed].Component >= 0) continue;
             segments[seed].Component = componentCount;
@@ -135,9 +145,9 @@ internal static unsafe partial class KernelRuntime
             do
             {
                 changed = false;
-                for (var i = 0; i < count; i++)
+                for (var i = 0; i < segmentCount; i++)
                     if (segments[i].Component < 0)
-                        for (var j = 0; j < count; j++)
+                        for (var j = 0; j < segmentCount; j++)
                             if (segments[j].Component == componentCount && ProfileSegmentsTouch(in segments[i], in segments[j]))
                             { segments[i].Component = componentCount; changed = true; break; }
             } while (changed);
@@ -160,7 +170,7 @@ internal static unsafe partial class KernelRuntime
         }
         Span<int> vertices = stackalloc int[pointCount];
         vertices.Fill(-1);
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < segmentCount; i++)
         {
             ref var segment = ref segments[i];
             var periodicRing = segment.Start == segment.End
@@ -173,7 +183,10 @@ internal static unsafe partial class KernelRuntime
                         return ParasolidConstants.PK_ERROR_memory_full;
                     Vertices[vertices[index]].Tolerance=pointTolerances[index]>1e-14?pointTolerances[index]:0;
                 }
-            var error = TryCloneEntityCore(segment.Curve, out var clone);
+            // PK clips a B-spline support to the actual wire interval. Keeping
+            // unrelated C0 knots outside that interval makes a valid edge fail
+            // native G1 checks after XT import, despite correct end positions.
+            var error = CloneProfileBoundedCurve(segment.Curve,segment.T0,segment.T1,out var clone);
             if (error != 0) return error;
             var edge = AddProfileEdge(bodySlot, clone, periodicRing ? -1 : vertices[segment.Start],
                 periodicRing ? -1 : vertices[segment.End], segment.T0, segment.T1);
@@ -189,19 +202,19 @@ internal static unsafe partial class KernelRuntime
         if (!PublishProfileDummyFins(bodySlot)) return ParasolidConstants.PK_ERROR_memory_full;
         if (options->want_edges != 0)
         {
-            var values = AllocateReturnSlice(count);
+            var values = AllocateReturnSlice(segmentCount);
             if (values == null) return ParasolidConstants.PK_ERROR_memory_full;
-            for (var i = 0; i < count; i++) values[i] = Edges[segments[i].Edge].Header.Tag;
+            for (var i = 0; i < segmentCount; i++) values[i] = Edges[segments[i].Edge].Header.Tag;
             *newEdges = values;
         }
         if (options->want_indices != 0)
         {
-            var values = AllocateReturnSlice(count);
+            var values = AllocateReturnSlice(segmentCount);
             if (values == null) return ParasolidConstants.PK_ERROR_memory_full;
-            for (var i = 0; i < count; i++) values[i] = i;
+            for (var i = 0; i < segmentCount; i++) values[i] = segments[i].Source;
             *indices = values;
         }
-        *edgeCount = count;
+        *edgeCount = segmentCount;
         return 0;
     }
 

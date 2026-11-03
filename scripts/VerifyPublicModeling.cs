@@ -36,7 +36,9 @@ foreach(var oracle in new[]{"GeometryPublicApiOracle","GeometryTransformOracle",
         steps.Add(("reference-model-import",["run","--no-cache","scripts/BrepImportOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","../temp_docs/profile-modeling-oracle","--reference"],false));
     }
 }
-var publish=new List<string>{"publish","src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj","-c","Release","-r",rid,"-m:1","-p:UseSharedCompilation=false"};
+// A crashed analyzer can otherwise leave a successful build with incomplete
+// AOT/trim checks (AD0001). Keep that failure visible in the release gate.
+var publish=new List<string>{"publish","src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj","-c","Release","-r",rid,"-m:1","-p:UseSharedCompilation=false","-p:WarningsAsErrors=AD0001"};
 if(OperatingSystem.IsLinux())publish.Add("-p:CppCompilerAndLinker=gcc");
 if(Environment.GetEnvironmentVariable("GM_IN_PROCESS_LINK_TASKS")=="1")publish.Add("-p:GmInProcessLinkTasks=true");
 steps.Add(("native-publish",publish.ToArray(),false));

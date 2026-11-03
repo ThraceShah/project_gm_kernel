@@ -30,7 +30,7 @@ using(host)
     try { unsafe { Run(library); } }
     finally { NativeLibrary.Free(library); }
 }
-Console.WriteLine("PASS native C exports: Boolean, section, imprint, spline/sweep, offset, hollow, fillet and chamfer; independent PK receive and full BODY_check.");
+Console.WriteLine("PASS native C exports: planar and repeated cylindrical Boolean, section, imprint, spline/sweep, offset, closed and adjacent-opening hollow, fillet and chamfer; independent PK receive and full BODY_check.");
 return 0;
 
 static unsafe void Run(nint library)
@@ -55,7 +55,18 @@ static unsafe void Run(nint library)
         Check(boolean(a,1,&b,&bo,&tr,&br),"native Boolean");Require(br.n_bodies==1,"native Boolean body count");
         CheckBody(library,br.bodies[0],14,"native Boolean");Check(trackFree(&tr),"native track free");Check(booleanFree(&br),"native Boolean free");
 
-        basis.location.coord[0]=0;Check(block(2,2,2,&basis,&a),"native section source");
+        var cylinder=(delegate* unmanaged[Cdecl]<double,double,PK_AXIS2_sf_t*,int*,int>)NativeLibrary.GetExport(library,"PK_BODY_create_solid_cyl");
+        basis.location=new(0,0,0);Check(cylinder(3,6,&basis,&a),"native cylindrical target");
+        basis.location=new(0,0,-1);Check(cylinder(1,8,&basis,&b),"native through hole tool");
+        bo.function=PK_boolean_subtract_c;Check(boolean(a,1,&b,&bo,&tr,&br),"native cylindrical subtraction");
+        Require(br.n_bodies==1,"native tube count");a=br.bodies[0];CheckBody(library,a,4,"native cylindrical through hole");
+        Check(trackFree(&tr),"native cylindrical tracking free");Check(booleanFree(&br),"native cylindrical results free");
+        basis.location=new(0,0,1);Check(cylinder(2,4,&basis,&b),"native repeated Boolean tool");
+        bo.function=PK_boolean_intersect_c;Check(boolean(a,1,&b,&bo,&tr,&br),"native repeated cylindrical intersection");
+        Require(br.n_bodies==1,"native repeated tube count");CheckBody(library,br.bodies[0],4,"native repeated cylindrical Boolean");
+        Check(trackFree(&tr),"native repeated tracking free");Check(booleanFree(&br),"native repeated results free");
+
+        basis.location=new(0,0,0);Check(block(2,2,2,&basis,&a),"native section source");
         var pd=new PK_PLANE_sf_t(new(new(0,0,1),new(0,0,1),new(1,0,0)));int plane=0;Check(planeCreate(&pd,&plane),"native plane");
         var so=new PK_BODY_section_o_t();PK_section_r_t sr=default;Check(section(a,plane,&so,&sr),"native section");
         Require(sr.front_bodies.length==1&&sr.back_bodies.length==1&&sr.front_faces.length==1&&sr.back_faces.length==1,"native section arrays");
@@ -79,6 +90,25 @@ static unsafe void Run(nint library)
         Check(block(2,2,2,&basis,&a),"native offset source");Check(offset(a,.2,1e-7,1),"native offset");CheckBody(library,a,6,"native offset");
         int* originals=null;int* products=null;Check(hollow(a,-.15,1e-7,1,&count,&originals,&products),"native hollow");
         Require(count==6,"native hollow generated faces");Check(free(originals),"native hollow originals free");Check(free(products),"native hollow products free");CheckBody(library,a,12,"native hollow");
+
+        var askFaces=(delegate* unmanaged[Cdecl]<int,int*,int**,int>)NativeLibrary.GetExport(library,"PK_BODY_ask_faces");
+        var askSurface=(delegate* unmanaged[Cdecl]<int,int*,int>)NativeLibrary.GetExport(library,"PK_FACE_ask_surf");
+        var askPlane=(delegate* unmanaged[Cdecl]<int,PK_PLANE_sf_t*,int>)NativeLibrary.GetExport(library,"PK_PLANE_ask");
+        var hollow2=(delegate* unmanaged[Cdecl]<int,double,double,PK_BODY_hollow_o_t*,PK_TOPOL_track_r_t*,PK_TOPOL_local_r_t*,int>)NativeLibrary.GetExport(library,"PK_BODY_hollow_2");
+        var localFree=(delegate* unmanaged[Cdecl]<PK_TOPOL_local_r_t*,int>)NativeLibrary.GetExport(library,"PK_TOPOL_local_r_f");
+        Check(block(2,2,2,&basis,&a),"native adjacent-opening source");int* bodyFaces=null;
+        Check(askFaces(a,&count,&bodyFaces),"native adjacent-opening faces");int* openings=stackalloc int[2];var openingCount=0;
+        for(var i=0;i<count;i++)
+        {
+            int support=0;Check(askSurface(bodyFaces[i],&support),"native pierce support");var supportPlane=new PK_PLANE_sf_t();Check(askPlane(support,&supportPlane),"native pierce plane");
+            if(Math.Abs(supportPlane.basis_set.axis.coord[0])>.5&&supportPlane.basis_set.location.coord[0]>0
+                ||Math.Abs(supportPlane.basis_set.axis.coord[1])>.5&&supportPlane.basis_set.location.coord[1]>0)
+            {Require(openingCount<2,"native opening selection overflow");openings[openingCount++]=bodyFaces[i];}
+        }
+        Check(free(bodyFaces),"native pierce candidates free");Require(openingCount==2,"native adjacent opening count");
+        var ho=new PK_BODY_hollow_o_t{n_pierce_faces=2,pierce_faces=openings};PK_TOPOL_local_r_t lr=default;
+        Check(hollow2(a,-.2,1e-7,&ho,&tr,&lr),"native adjacent openings hollow");Require(lr.status==PK_local_status_ok_c,"native adjacent hollow status");
+        CheckBody(library,a,10,"native adjacent-opening hollow");Check(trackFree(&tr),"native adjacent tracking free");Check(localFree(&lr),"native adjacent result free");
 
         var askEdges=(delegate* unmanaged[Cdecl]<int,int*,int**,int>)NativeLibrary.GetExport(library,"PK_BODY_ask_edges");
         var blend=(delegate* unmanaged[Cdecl]<int,int*,double,PK_EDGE_set_blend_constant_o_t*,int*,int**,int>)NativeLibrary.GetExport(library,"PK_EDGE_set_blend_constant");

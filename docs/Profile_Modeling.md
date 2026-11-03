@@ -22,6 +22,26 @@ For polygon creation, `options.loops` labels every input vertex. Vertices of a l
 
 Wires accept bounded lines, circles, ellipses, and B-curves. Endpoint matching uses the requested tolerance. Branching vertices with degree above two are rejected. A full periodic circle or ellipse does not acquire artificial vertices; its native interval remains recorded on the runtime edge. Multiple wire components require `allow_disjoint`.
 
+For an open clamped B-curve, a bounded wire owns an exactly clipped B-spline
+support with its original parameter interval. Boehm knot insertion removes
+unrelated portions of the original curve, including C0 junctions outside the
+edge. Internal C0 knots are split only when the two geometric tangents are not
+G1; a change in parameter speed alone leaves a single edge. This matches the
+native distinction between a geometric corner and a parameter derivative jump.
+Each returned edge index refers to the original input curve, so one input can
+produce several edge/index entries. The command's 512-edge capacity applies
+after this splitting. Exact clipping currently uses the existing degree-16,
+1024-pole, nonperiodic clamped-spline construction path. Other previously
+accepted layouts retain their original support only when its whole domain has
+no non-G1 knot to leak into the edge; other partial domains fail explicitly.
+Returned supports survive deletion of the input curve.
+
+`ProfileCurveBoundsTests` checks polynomial/rational clipping, original
+parameters, C0 splitting, G1 preservation, input-index mapping and allocation
+rollback. `BCurveAnalyticIntersectionOracle.cs` independently checks the
+bounded and whole C0 wire contracts against real PK, including full body checks
+after self XT import and strict structural comparisons.
+
 Face construction requires a planar boundary. Planarity is checked from analytic data or all positive-weight B-spline poles, rather than just sampled positions. Lines and circular arcs have analytic crossing checks. Accepted spline arcs have monotone Cartesian control projections, with pairwise separating control hulls; a monotone spline plus its closing line is also supported. Ambiguous spline/ellipse hull arrangements return `PK_ERROR_not_implemented`. This is a conservative subset, not a general planar curve arrangement or a general intersection solver.
 
 Outer and hole loops receive opposite traversal directions. A sheet has one void region and one shell, with both face sides belonging to that shell. The public boundary uses one face fin per edge. XT additionally requires the opposite dummy halfedge; the writer emits it and its vertex incidence without inventing an extra public face fin.

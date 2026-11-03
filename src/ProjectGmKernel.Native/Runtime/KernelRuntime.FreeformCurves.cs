@@ -7,13 +7,15 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    /// <summary>Exact bounded curve conversion to an open B-spline on [0,1], optionally reversing traversal.</summary>
-    private static int FreeformBoundedCurve(CurveTag curve, double first, double last, bool reverse, out CurveTag result)
+    /// <summary>Exact bounded curve conversion to an open B-spline. B-spline wire supports can retain their original parameter interval.</summary>
+    private static int FreeformBoundedCurve(CurveTag curve, double first, double last, bool reverse, out CurveTag result,
+        bool preserveParameters = false)
     {
         result = 0;
         var slot = GetCurveSlotByTag(curve); if (slot < 0) return ParasolidConstants.PK_ERROR_bad_class;
         if (!double.IsFinite(first) || !double.IsFinite(last) || !(last > first)) return ParasolidConstants.PK_ERROR_bad_parameter;
         ref readonly var record = ref Curves[slot];
+        if(preserveParameters&&(reverse||record.Class!=CurveClass.BCurve))return ParasolidConstants.PK_ERROR_not_implemented;
         if (record.Class == CurveClass.BCurve)
         {
             ref readonly var data = ref BCurveDataStore[record.DataIndex];
@@ -40,14 +42,14 @@ internal static unsafe partial class KernelRuntime
             var used = endPole - startPole + 1;
             Span<double> knots = stackalloc double[used + data.Degree + 1];
             Span<int> mults = stackalloc int[used + data.Degree + 1];
-            var nk = 1; knots[0] = 0; mults[0] = data.Degree + 1;
+            var nk = 1; knots[0] = preserveParameters?first:0; mults[0] = data.Degree + 1;
             for (var k = 0; k < count + data.Degree + 1; k++)
             {
                 if (!(expanded[k] > first && expanded[k] < last)) continue;
-                var t = (expanded[k] - first) / (last - first);
+                var t = preserveParameters?expanded[k]:(expanded[k] - first) / (last - first);
                 if (knots[nk - 1] == t) mults[nk - 1]++; else { knots[nk] = t; mults[nk++] = 1; }
             }
-            knots[nk] = 1; mults[nk++] = data.Degree + 1;
+            knots[nk] = preserveParameters?last:1; mults[nk++] = data.Degree + 1;
             var bounded = poles.Slice(startPole * data.VertexDim, used * data.VertexDim);
             if (reverse) FreeformReverse(bounded, data.VertexDim, knots[..nk], mults[..nk]);
             CurveTag output = 0; var error = CreateFreeformCurve(data.Degree, bounded, data.VertexDim, data.IsRational != 0,

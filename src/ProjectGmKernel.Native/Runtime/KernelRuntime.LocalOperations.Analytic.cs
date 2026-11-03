@@ -72,6 +72,7 @@ internal static unsafe partial class KernelRuntime
             Span<FaceSlot> products=stackalloc FaceSlot[model.Length];
             error=BuildModelingBrep(default,default,default,default,model,true,out var product,products,cavities);
             if(error!=0)return error;
+            if(hollow&&offsets[0]>0)(products[0],products[1])=(products[1],products[0]);
             error=ReplaceLocalBody(source,product,faces,products,!hollow);if(error!=0)return error;
             if(!returnedProducts.IsEmpty)products.CopyTo(returnedProducts);
             result=Bodies[source].Header.Tag;return 0;
@@ -132,6 +133,12 @@ internal static unsafe partial class KernelRuntime
         brep.NegativeCurveUse(lowerRing);brep.NegativeCurveUse(upperRing);
         Span<FaceSlot> outputFaces=stackalloc FaceSlot[brep.FaceCount];
         var finish=brep.Complete(out var output,outputFaces);if(finish!=0)return finish;
+        if(hollow&&positive)
+        {
+            var next=faces.Length;
+            for(var i=0;i<faces.Length;i++)if(pierce[i]==0)
+            { (outputFaces[i],outputFaces[next])=(outputFaces[next],outputFaces[i]);next++; }
+        }
         finish=ReplaceLocalBody(source,output,faces,outputFaces,!hollow);if(finish!=0)return finish;
         if(!returnedProducts.IsEmpty)outputFaces.CopyTo(returnedProducts);
         result=Bodies[source].Header.Tag;return 0;

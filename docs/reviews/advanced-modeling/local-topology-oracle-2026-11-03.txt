@@ -1,0 +1,259 @@
+hollow-5-in contract=21502:1:1;21502:3:1;21502:4:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+hollow-5-in: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+hollow-5-in: volume=35.93399999999997/35.93399999999997, area=250.18/250.18
+PASS hollow-5-in
+hollow-7-in contract=21502:3:1;21502:4:1;21502:5:1;21504:2:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+hollow-7-in: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+hollow-7-in: volume=23.279999999999987/23.279999999999987, area=169.24/169.23999999999998
+PASS hollow-7-in
+hollow-21-in contract=21502:1:1;21502:3:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+hollow-21-in: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=9/9
+  global diff=21943 count=21/21
+  global diff=21944 count=0/0
+  global diff=21946 count=14/14
+  global diff=21947 count=0/0
+hollow-21-in: volume=29.60699999999998/29.60699999999999, area=208/208
+PASS hollow-21-in
+hollow-23-in contract=21502:3:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,5|3,4|3,5;vertices=0,2,5|0,3,4|0,3,5|1,2,5|1,3,4|1,3,5
+hollow-23-in: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=8/8
+  global diff=21943 count=18/18
+  global diff=21944 count=0/0
+  global diff=21946 count=12/12
+  global diff=21947 count=0/0
+hollow-23-in: volume=16.43999999999998/16.43999999999999, area=120.21999999999998/120.22
+PASS hollow-23-in
+hollow-31-in contract=21502:5:1;kept=0,1,2,3,5;edges=0,2|0,3|0,5|1,2|1,3|1,5|2,5|3,5;vertices=0,2,5|0,3,5|1,2,5|1,3,5
+hollow-31-in: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+hollow-31-in: volume=7.199999999999996/7.199999999999996, area=54/54
+PASS hollow-31-in
+hollow-5-out contract=21502:1:1;21502:3:1;21502:4:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+hollow-5-out: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+hollow-5-out: volume=40.974000000000004/40.97399999999999, area=284.5/284.50000000000006
+PASS hollow-5-out
+hollow-7-out contract=21502:3:1;21502:4:1;21502:5:1;21504:2:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+hollow-7-out: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+hollow-7-out: volume=24.720000000000027/24.720000000000013, area=179.56/179.56000000000003
+PASS hollow-7-out
+hollow-21-out contract=21502:1:1;21502:3:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+hollow-21-out: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=9/9
+  global diff=21943 count=21/21
+  global diff=21944 count=0/0
+  global diff=21946 count=14/14
+  global diff=21947 count=0/0
+hollow-21-out: volume=32.84700000000001/32.847, area=230.14000000000004/230.14000000000004
+PASS hollow-21-out
+hollow-23-out contract=21502:3:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,5|3,4|3,5;vertices=0,2,5|0,3,4|0,3,5|1,2,5|1,3,4|1,3,5
+hollow-23-out: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=8/8
+  global diff=21943 count=18/18
+  global diff=21944 count=0/0
+  global diff=21946 count=12/12
+  global diff=21947 count=0/0
+hollow-23-out: volume=17.16000000000003/17.160000000000032, area=125.38000000000001/125.38000000000002
+PASS hollow-23-out
+hollow-31-out contract=21502:5:1;kept=0,1,2,3,5;edges=0,2|0,3|0,5|1,2|1,3|1,5|2,5|3,5;vertices=0,2,5|0,3,5|1,2,5|1,3,5
+hollow-31-out: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+hollow-31-out: volume=7.200000000000017/7.200000000000017, area=54.000000000000014/54.000000000000014
+PASS hollow-31-out
+oriented-two-open contract=21502:1:1;21502:3:1;21502:4:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+oriented-two-open: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+oriented-two-open: volume=35.93399999999994/35.934, area=250.18/250.1799999999999
+PASS oriented-two-open
+oriented-split-face contract=21502:3:1;21502:4:1;21502:5:1;21504:2:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+oriented-split-face: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+oriented-split-face: volume=24.720000000000034/24.719999999999974, area=179.56/179.55999999999995
+PASS oriented-split-face
+varied-wall-adjacent-open contract=21502:1:1;21502:3:1;21502:4:1;21502:5:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+varied-wall-adjacent-open: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+varied-wall-adjacent-open: volume=40.36289999999997/40.36289999999997, area=250.18/250.18
+PASS varied-wall-adjacent-open
+native-import-split-face contract=21502:3:1;21502:4:1;21502:5:1;21504:2:1;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,3|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5|1,3,4|1,3,5
+native-import-split-face: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+native-import-split-face: volume=23.279999999999987/23.27999999999999, area=169.24/169.24
+native-import-split-face-lifecycle: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=10/10
+  global diff=21943 count=24/24
+  global diff=21944 count=0/0
+  global diff=21946 count=16/16
+  global diff=21947 count=0/0
+native-import-split-face-lifecycle: volume=23.28/23.28000000000001, area=169.24/169.24
+PASS native-import-split-face-lifecycle
+PASS native-import-split-face
+face-offset-eliminates-chamfer contract=;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5
+face-offset-eliminates-chamfer: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+face-offset-eliminates-chamfer: volume=192/192, area=208/208
+PASS face-offset-eliminates-chamfer
+body-offset-eliminates-chamfer contract=;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5
+body-offset-eliminates-chamfer: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+body-offset-eliminates-chamfer: volume=48/48, area=88/88
+PASS body-offset-eliminates-chamfer
+oriented-offset-eliminates-face contract=;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5
+oriented-offset-eliminates-face: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+oriented-offset-eliminates-face: volume=192.00000000000003/191.99999999999991, area=208/207.99999999999991
+PASS oriented-offset-eliminates-face
+native-import-face-elimination contract=;kept=0,1,2,3,4,5;edges=0,2|0,3|0,4|0,5|1,2|1,4|1,5|2,4|2,5|3,4|3,5;vertices=0,2,4|0,2,5|0,3,4|0,3,5|1,2,4|1,2,5
+native-import-face-elimination: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+native-import-face-elimination: volume=48/48, area=88/88
+native-import-face-elimination-lifecycle: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+native-import-face-elimination-lifecycle: volume=48/48, area=88/88
+PASS native-import-face-elimination-lifecycle
+PASS native-import-face-elimination
+separated-walls-in contract=error:13
+separated-walls-in: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+separated-walls-in: volume=192/192, area=208/208
+PASS separated-walls-in
+separated-walls-out contract=error:13
+separated-walls-out: global=21921, local=21931, face pairs=0
+  global diff=21940 count=1/1
+  global diff=21941 count=6/6
+  global diff=21943 count=12/12
+  global diff=21944 count=0/0
+  global diff=21946 count=8/8
+  global diff=21947 count=0/0
+separated-walls-out: volume=192/192, area=208/208
+PASS separated-walls-out
+sphere-outward-hollow-identities contract=21502:4004:1:0
+sphere-outward-hollow-identities: global=21921, local=21931, face pairs=0
+  global diff=21940 count=2/2
+  global diff=21941 count=2/2
+  global diff=21943 count=0/0
+  global diff=21944 count=0/0
+  global diff=21946 count=0/0
+  global diff=21947 count=0/0
+sphere-outward-hollow-identities: volume=37.43521806017593/37.43521806017593, area=249.94511151960393/249.94511151960393
+PASS sphere-outward-hollow-identities
+torus-outward-hollow-identities contract=21502:4005:1:0
+torus-outward-hollow-identities: global=21921, local=21931, face pairs=0
+  global diff=21940 count=2/2
+  global diff=21941 count=2/2
+  global diff=21943 count=0/0
+  global diff=21944 count=0/0
+  global diff=21946 count=0/0
+  global diff=21947 count=0/0
+torus-outward-hollow-identities: volume=68.10027036751661/68.10027036751661, area=454.0018024501105/454.0018024501105
+PASS torus-outward-hollow-identities
+cylinder-outward-hollow-identities contract=21502:4001:1:0;21502:4001:1:0;21502:4002:1:0
+cylinder-outward-hollow-identities: global=21921, local=21931, face pairs=0
+  global diff=21940 count=2/2
+  global diff=21941 count=6/6
+  global diff=21943 count=4/4
+  global diff=21944 count=0/0
+  global diff=21946 count=0/0
+  global diff=21947 count=0/0
+cylinder-outward-hollow-identities: volume=56.152827090263955/56.152827090263926, area=374.91766727940586/374.9176672794059
+PASS cylinder-outward-hollow-identities
+cone-outward-hollow-identities contract=21502:4001:1:0;21502:4001:1:0;21502:4003:1:0
+cone-outward-hollow-identities: global=21921, local=21931, face pairs=0
+  global diff=21940 count=2/2
+  global diff=21941 count=6/6
+  global diff=21943 count=4/4
+  global diff=21944 count=0/0
+  global diff=21946 count=0/0
+  global diff=21947 count=0/0
+cone-outward-hollow-identities: volume=68.26698888923477/68.26698888923484, area=455.69596829148804/455.69596829148816
+PASS cone-outward-hollow-identities
+Local topology change oracle: 24/24 passed, 0 failed; 2 import-copy-delete-transform lifecycles are required by their parent cases.

@@ -320,8 +320,8 @@ internal static unsafe partial class KernelRuntime
         ref readonly var curve=ref Curves[span.Slot];count=0;
         if(curve.Class==CurveClass.Line){GetIntersectionLine(curve,out var p,out var d);return OperationIntersection.AnalyticLine(surface,p,d,span.Lower,span.Upper,found,out count);}
         if(TryGetIntersectionConic(curve,out var conic))return OperationIntersection.AnalyticConic(surface,conic,span.Lower,span.Upper,found,out count);
-        if(curve.Class==CurveClass.BCurve&&surface.Kind==SurfaceClass.Plane)
-            return BCurvePlaneIntersection.Find(GetBCurveView(BCurveDataStore[curve.DataIndex]),surface,span.Lower,span.Upper,found,out count);
+        if(curve.Class==CurveClass.BCurve)
+            return BCurveAnalyticIntersection.Find(GetBCurveView(BCurveDataStore[curve.DataIndex]),surface,span.Lower,span.Upper,found,out count);
         return AlgorithmStatus.Unsupported;
     }
 

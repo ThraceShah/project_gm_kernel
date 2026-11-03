@@ -54,6 +54,8 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_not_in_same_partition;
         var sphereError = TrySectionSphere(body, surface, options, result, out var sphereHandled);
         if (sphereHandled) return sphereError;
+        var rotationalError = TrySectionRotationalBody(body, surface, options, result, out var rotationalHandled);
+        if (rotationalHandled) return rotationalError;
         var scratch = CommandScratch.Current; var workspace = scratch.Take(40000);
         if (workspace.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
         KernelVector3 origin, normal, reference, transverse; double minX, maxX, minY, maxY, minZ, maxZ;

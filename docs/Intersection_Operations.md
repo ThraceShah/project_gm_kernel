@@ -63,11 +63,21 @@ and NURBS result curves do not borrow support-surface lifetimes.
 ### Surface/curve
 
 All five analytic support classes—plane, sphere, cylinder, cone, and ring torus—
-support bounded lines, circles, and ellipses. The far cone sheet is rejected.
+support bounded lines, circles, ellipses, and the explicitly bounded B-curve
+families below. The far cone sheet is rejected.
 Plane/B-curve intersection supports ordinary and rational positive-weight
 B-splines of degree at most 16 across all intersected knot spans. Periodic curves
 are currently accepted only when the requested interval lies within their
 stored fundamental domain.
+
+Sphere, cylinder and cone/B-curve intersection supports positive-weight curves
+through degree 8; ring torus/B-curve supports degree 4. Homogeneous implicit
+substitution visits every intersected knot span and yields a polynomial of
+degree at most 16. Complete bounded root isolation handles multiple crossings,
+tangencies, clipping and coincidence; unresolved arithmetic and singular cone
+apex configurations return explicit failure. See
+[`BCurve_Analytic_Intersections.md`](BCurve_Analytic_Intersections.md) for the
+normalization, residual bounds, native failure cases and independent wire checks.
 
 ### Surface/surface
 
@@ -81,14 +91,55 @@ stored fundamental domain.
 | Coaxial sphere / cylinder | Two circles, tangent circle, disjoint |
 | Plane / cone | Plane perpendicular to the axis: circle, isolated apex, or disjoint |
 | Plane / ring torus | Horizontal planes: complete zero/one/two-circle result; axial planes through the axis: both profile circles |
-| Plane / ruled NURBS surface | Bounded positive-weight tensor-product patch, `v_degree=1`, two v control rows, `u_degree<=8`; exact rational result curves of degree at most `2*u_degree` |
+| Plane / ruled NURBS surface | Bounded positive-weight tensor-product patch: linear V with two control rows and degree 1–8 U across multiple spans, or linear U with two control rows and degree 1–8 V on a single span; exact rational result curves of degree at most 16 |
+| Plane / tensor Bezier surface | Both degrees up to 16, positive weights, a single clamped span in each direction, and an exactly separable homogeneous plane numerator; complete isoparametric curves, including curved crossings and tangencies |
 
-The ruled NURBS surface algorithm traverses every nonempty u knot span. It
-supports nonplanar bilinear patches, polynomial/rational ruled patches, an
+The ruled NURBS surface algorithm traverses every nonempty U knot span when V
+is linear. The transposed ordering, with linear U and nonlinear V, currently
+supports only a single nonempty V span. Both orderings access the stored
+control net directly. The supported configurations include
+nonplanar bilinear patches, polynomial/rational ruled patches, an
 entire coincident boundary, constant-u rulings, and proportional-factor
 degeneracy. In particular, a plane through a bilinear saddle discovers both
 crossing loci and returns four half-branches terminated at the singular point,
 matching the observed native PK branch partition.
+
+Multiple nonlinear V spans are explicitly rejected before producing any result.
+The original transposed two-span rational fixture failed the strict oracle:
+the bounded calculation returned four branches while native PK returned two.
+One native branch extends outside the saved U domain, and a second-span bounded
+branch appears only after changing the UV area of interest. The corresponding
+untransposed fixture returns all four branches in both kernels. These observed
+differences remain an unresolved compatibility boundary, not a passed case.
+The complete native counterexample and fixture definition are retained in
+[`transposed-ruled-boundary-2026-11-03.txt`](reviews/advanced-modeling/transposed-ruled-boundary-2026-11-03.txt).
+
+For a non-ruled tensor patch, a second exact path tests whether the homogeneous
+plane numerator factors as `f(u) g(v)`. The coefficient matrix must pass an
+exact-product rank-one test; a nearly separable matrix is rejected instead of
+being rounded to a different zero set. Every root of both factors is isolated.
+Fixing that parameter in the homogeneous control net gives an exact rational
+isocurve. Roots in the other direction divide it at every crossing. A repeated
+factor root returns a tangent curve, while an entirely coincident patch returns
+the native successful empty result for a coincident area.
+
+A parameter line whose rational control points are all the same is returned
+as an isolated point, not a constant B-curve. Points already covered by a
+crossing-curve endpoint are removed from the isolated set. A common binary
+scale normalizes homogeneous input coordinates before factorization and
+interpolation, so uniformly tiny or large weights cannot change a curve into
+a point through product underflow. Unresolvable weight ratios or nonfinite
+arithmetic return an explicit numerical error. Unit tests compare unchanged
+geometry at common homogeneous scales of `1e-200` and `1e200`; native SDK limits
+at these extreme scales are recorded separately from positive compatibility
+cases in the independent oracle.
+
+This includes patches curved in both parameter directions and either choice of
+the fixed parameter. It is not a general bivariate zero-set solver: nonseparable
+plane numerators, multiple knot spans in this new path, and periodic patches
+remain unsupported. Degree limits and output capacity are checked before
+publishing any curve. Positive output weights and the distances of all its
+control points bound the entire intersection curve's plane residual.
 
 ## Branch discovery and numerical limits
 
@@ -117,6 +168,12 @@ whole root-free interval; this is a sign classification after root isolation,
 not a sampled-curve completeness argument. Rational coefficients are converted
 to homogeneous Bezier control points. Nonpositive result weights or an
 unresolved common polynomial factor cause an explicit failure.
+
+The separable tensor path uses the same complete univariate root isolation for
+both Bernstein factors after conversion to the power basis. Returned geometry
+owns its homogeneous poles; deleting either original support cannot invalidate
+the result. Allocation-failure tests verify that a failed multi-branch call
+leaves no published arrays or partially created curve entities.
 
 These are bounded floating-point algorithms with a model-space residual check,
 not arbitrary-precision algebraic certificates. Limits are 256 point results
@@ -153,7 +210,8 @@ unresolved numerical configurations return `PK_ERROR_cant_do_intersect`.
 coincidence markers and UV sentinels, reverse/trimmed parameters, analytic
 branches and isolated points, rational cubic roots, multiple knot spans,
 bilinear hyperbola/saddle intersection, higher-degree ordinary/rational ruled
-patches, paired UV reconstruction, output
+patches, single-span transposed patches, rejection of transposed multiple-span
+patches with no partial outputs or new entities, paired UV reconstruction, output
 ownership, allocation failure rollback, and explicit unsupported/ambiguous
 results.
 
@@ -162,10 +220,14 @@ constructs both input models, invokes both public APIs, compares result sets,
 parameters and classifications, creates wire bodies from result curves,
 transmits the managed wire to text XT, receives it in real PK, and runs
 `PK_DEBUG_BODY_compare`. Oracle output is written to
-`temp_docs/intersection-operation-oracle/`. The current independent oracle
-passes 31 fixtures, including one-span and multiple-span rational cubic ruled
-patches, line/B-curve intersections, native parameter and classification
-comparison, and strict received-wire topology/sense/tolerance comparison.
+`temp_docs/intersection-operation-oracle/`. Its positive fixtures include
+one-span and original-U multiple-span rational cubic ruled patches,
+single-span transposed patches, line/B-curve intersections, native parameter
+and classification comparison, and strict received-wire topology/sense/tolerance
+comparison. The transposed multiple-span counterexample is replayed separately
+as a `BOUNDARY` diagnostic and does not increase the positive compatibility
+count. Its original four-versus-two branch mismatch remains recorded even
+though the public API now rejects that input.
 
 Run the targeted tests after the normal source/catalog generators and build:
 

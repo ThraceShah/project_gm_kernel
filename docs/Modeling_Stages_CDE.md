@@ -11,13 +11,13 @@
 
 | 阶段 | 本轮接通的能力 | 主要边界 |
 | --- | --- | --- |
-| C：求交 | 公开 curve/curve、surface/curve、surface/surface 入口；解析组合；正权重 B 曲线/平面；正权重 ruled NURBS/平面完整分支；双面 UV 对应和周期展开 | 一般 NURBS/NURBS 和所有解析面组合的完整分支发现仍需实现 |
+| C：求交 | 公开 curve/curve、surface/curve、surface/surface 入口；解析组合；正权重 B 曲线与五类解析面；ruled NURBS/平面（单跨度支持 U/V 交换，多跨度限原 U 非线性方向）；可分离张量积 NURBS/平面的完整等参数分支；双面 UV 对应和周期展开 | 一般 NURBS/NURBS、非可分离一般 NURBS/平面和所有解析面组合的完整分支发现仍需实现 |
 | C：布尔与编辑 | 带内环、内腔、非凸面的平面实体并交差；多工具按工具并集处理；多个结果体；imprint、sheet trim、点分类、平面切割封盖 | 非平面 NURBS 实体布尔、一般混合曲面布尔、退化接触和非流形结果仍不支持 |
-| C：解析曲面扩展 | 两个完整球体的并交差；球体与任意平面切割；球形空腔和球冠分类 | 球面裁剪结果的再次通用布尔、球与柱/锥等混合布尔、切触点拓扑仍不支持 |
+| C：解析曲面扩展 | 两个完整球体的并交差；球体与任意平面切割；共轴圆柱/平面实体的多工具及重复布尔；环形孔、封闭空腔、阶梯轴与多个结果；共轴实体的轴向平面切割，支持孔/内腔和三种 fence；实际 B-rep 分类 | 球面裁剪结果的再次通用布尔、非共轴柱体、球与柱/锥等一般混合布尔、切触点拓扑仍不支持 |
 | D：曲线面构造 | 全局样条插值、受约束端部导数、最小二乘拟合、精确升阶和节点统一、张量积曲面插值、曲线放样、精确有理扫掠/旋转面和等参线 | 通用网格面逼近和所有高级边界/连续性条件仍需扩展 |
 | D：实体构造与缝合 | 保持平行截面框架的有理路径扫掠，包含带孔截面；可认证的平行截面放样；解析/NURBS 片体；完整匹配边的混合面缝合 | 任意移动标架/扭转/导引线、多环封盖放样、任意非凸截面变化、部分边缝合和复杂修复仍不支持 |
 | E：圆角与倒角 | 真实 set/fix 两阶段；凸平面体独立直边；简单凸多面体全边统一圆角/倒角及角点补片；圆柱端缘；指定支撑面的不等距倒角 | 一般曲边、变半径、任意局部角点组合、凹边/混合圆角和自由曲面滚动球仍需扩展 |
-| E：偏置与抽壳 | 凸平面体、球、环面、封盖圆柱和圆台；逐面偏置；封闭或指定开口抽壳 | 任意 NURBS、面消失/拓扑变化、相邻开口重构和自交修复仍不支持 |
+| E：偏置与抽壳 | 凸平面体、球、环面、封盖圆柱和圆台；逐面偏置；封闭或指定开口抽壳；凸平面体相邻开口的面分裂/消失与支持面消失重建 | 任意 NURBS、一般非凸或自由曲面的拓扑变化和自交修复仍不支持 |
 
 范围外请求返回明确错误或文档规定的操作状态；没有用空结果或替代几何冒充成功。
 多环封盖放样的 SDK 状态与输入消费行为有独立负向用例，不能从“带孔扫掠成功”推断“任意带孔放样成功”。
@@ -54,15 +54,28 @@ GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAd
 此开关只让 NativeAOT 发布所需的同一套 SDK `ComputeManagedAssemblies` / `ILLink` 任务在当前 .NET MSBuild 进程执行；默认仍采用 SDK 的任务宿主方式。它不跳过 trim、AOT、分配检查或任何 oracle。直接 publish 时对应 `-p:GmInProcessLinkTasks=true`。
 使用的是 MSBuild 公开的 [UsingTask override 与进程内任务机制](https://learn.microsoft.com/en-us/visualstudio/msbuild/how-to-configure-targets-and-tasks)，不修改 SDK 安装文件。
 
+发布门槛将分析器崩溃诊断 `AD0001` 视为错误，防止静态分析未完成时仍因编译退出码为 0 而被接受。大体量 XT 生成代码的编译需要足够内存。本次 Linux 环境完成干净 Release 静态分析时使用了 4 GiB GC 堆上限、workstation GC 和一个报告处理器；可按本机资源需要在验证命令前设置：
+
+```sh
+DOTNET_GCHeapHardLimit=0x100000000 DOTNET_gcServer=0 DOTNET_PROCESSOR_COUNT=1 \
+GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 \
+dotnet run --no-cache scripts/VerifyAdvancedModeling.cs
+```
+
+这是验证进程的资源配置。验收记录同时保留初始失败、干净重建以及最终完整执行的结果，见 `docs/reviews/advanced-modeling/continuation-validation-2026-11-03.txt`。
+
 | 验证入口 | 主要验证内容 |
 | --- | --- |
 | `scripts/IntersectionOperationOracle.cs` | 完整分支、参数、类型、双面 UV、独立求交曲线/线框比较 |
+| `scripts/BCurveAnalyticIntersectionOracle.cs` | B 样条与球/柱/锥/环面的全跨度根、切触、重合、裁剪和失败边界；交点分段线框的完整体检查 |
 | `scripts/BooleanOperationOracle.cs` | 同参数独立布尔/编辑、结果状态、XT、完整体检查和严格结构比较 |
 | `scripts/PlanarTrackingOracle.cs` | tracking 的原始/结果几何、类别、多重性、已有边、miss 状态及负向曲线导入 |
 | `scripts/AnalyticBooleanOracle.cs` | 两球布尔、源实体身份、导入后的分类、15 项质量属性 |
 | `scripts/AnalyticSectionOracle.cs` | 球冠切割、三个 fence、封盖/圆边方向、质量属性和分类 |
+| `scripts/RotationalModelingOracle.cs` | 共轴解析体的多工具、重复布尔、三种 fence 切割、借用工具面生命周期、原生导入后继续编辑、身份/tracking、质量属性和分类 |
 | `scripts/FreeformModelingOracle.cs` | 插值/构造、扫掠/放样、缝合、容差边及导入复制变换生命周期 |
 | `scripts/LocalOperationOracle.cs` | 圆角/倒角/偏置/抽壳，完整体检查、质量属性、实体方向和结构 |
+| `scripts/LocalTopologyChangeOracle.cs` | 相邻开口、面分裂/消失、正负壁厚、原始拓扑身份、tracking 和操作后生命周期 |
 | `scripts/NativeAdvancedModelingSmoke.cs` | 实际 NativeAOT C 导出调用和结果的真实 PK 接收/完整体检查 |
 | `scripts/VerifyPublicModeling.cs` | 全量 kernel/XT 测试、原有 A/B oracle、显示桥、原生 ABI 与拾取 |
 
@@ -82,8 +95,10 @@ GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAd
 ## 详细文档
 
 - `docs/Intersection_Operations.md`
+- `docs/BCurve_Analytic_Intersections.md`
 - `docs/Boolean_Operations.md`
 - `docs/Analytic_Boolean_Operations.md`
+- `docs/Rotational_Modeling.md`
 - `docs/Planar_Tracking_Validation.md`
 - `docs/Freeform_Modeling.md`
 - `docs/Local_Operations.md`

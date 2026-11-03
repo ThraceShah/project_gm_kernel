@@ -149,12 +149,14 @@ public unsafe class IntersectionOperationTests:IDisposable
     }
 
     [Theory]
-    [InlineData(false,false)]
-    [InlineData(true,false)]
-    [InlineData(true,true)]
-    public void HigherDegreeRuledNurbsPlane_EnumeratesEveryBoundedComponent(bool rational,bool twoSpans)
+    [InlineData(false,false,false)]
+    [InlineData(true,false,false)]
+    [InlineData(true,true,false)]
+    [InlineData(false,false,true)]
+    [InlineData(true,false,true)]
+    public void HigherDegreeRuledNurbsPlane_EnumeratesEveryBoundedComponent(bool rational,bool twoSpans,bool transpose)
     {
-        var surface=CubicRuled(rational,twoSpans);var plane=Plane(0,0,0,0,0,1);
+        var surface=CubicRuled(rational,twoSpans,transpose);var plane=Plane(0,0,0,0,0,1);
         using(var result=SS(surface,plane))
         {
             Assert.Equal(twoSpans?4:2,result.CurveCount);Assert.Equal(0,result.PointCount);
@@ -165,6 +167,24 @@ public unsafe class IntersectionOperationTests:IDisposable
                 for(var sample=0;sample<=10;sample++)CheckPaired(surface,plane,result.Curves[i],starts[i]+(ends[i]-starts[i])*sample/10);
             }
         }
+    }
+
+    [Theory]
+    [InlineData(false,false)]
+    [InlineData(false,true)]
+    [InlineData(true,false)]
+    [InlineData(true,true)]
+    public void TransposedMultipleSpanRuledNurbsPlane_RejectsWithoutPublishingPartialResults(bool rational,bool reverse)
+    {
+        var surface=CubicRuled(rational,true,true);var plane=Plane(0,0,0,0,0,1);
+        var before=KernelRuntime.ReturnOutstandingBlocks;var alive=KernelRuntime.Curves.AliveCount;
+        var options=SurfaceOptions();int np=-1,nc=-1;PK_VECTOR_s* points=(PK_VECTOR_s*)1;int* curves=(int*)1;
+        PK_INTERVAL_s* intervals=(PK_INTERVAL_s*)1;int* kinds=(int*)1;
+        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.SurfIntersectSurf(
+            reverse?plane:surface,reverse?surface:plane,&options,&np,&points,&nc,&curves,&intervals,&kinds));
+        Assert.Equal(0,np);Assert.Equal(0,nc);Assert.True(points==null&&curves==null&&intervals==null&&kinds==null);
+        Assert.Equal(before,KernelRuntime.ReturnOutstandingBlocks);Assert.Equal(alive,KernelRuntime.Curves.AliveCount);
+        Assert.True(KernelRuntime.IsValidTag(surface));Assert.True(KernelRuntime.IsValidTag(plane));
     }
 
     [Fact]
@@ -289,15 +309,16 @@ public unsafe class IntersectionOperationTests:IDisposable
             self_intersecting=ParasolidConstants.PK_self_intersect_false_c,convexity=ParasolidConstants.PK_convexity_unset_c};
         int tag=0;Assert.Equal(0,KernelRuntime.BSurfCreate(&sf,&tag));return tag;
     }
-    private static int CubicRuled(bool rational,bool twoSpans)
+    private static int CubicRuled(bool rational,bool twoSpans,bool transpose=false)
     {
         var count=twoSpans?7:4;var dimension=rational?4:3;double* vertices=stackalloc double[count*2*dimension];double* zs=stackalloc double[7]{-.08,.14,-.14,.08,-.14,.14,-.08};
         for(var u=0;u<count;u++)for(var v=0;v<2;v++)
-        {var at=(u*2+v)*dimension;var weight=rational?u%3+1:1;vertices[at]=u/3.0*weight;vertices[at+1]=v*weight;vertices[at+2]=zs[u]+v*weight;if(rational)vertices[at+3]=weight;}
+        {var at=(transpose?v*count+u:u*2+v)*dimension;var weight=rational?u%3+1:1;vertices[at]=u/3.0*weight;vertices[at+1]=v*weight;vertices[at+2]=zs[u]+v*weight;if(rational)vertices[at+3]=weight;}
         double* uk=stackalloc double[3]{0,1,2};double* vk=stackalloc double[2]{0,1};int* um=stackalloc int[3]{4,twoSpans?3:4,4};int* vm=stackalloc int[2]{2,2};
         var sf=new PK_BSURF_sf_s{u_degree=3,v_degree=1,n_u_vertices=count,n_v_vertices=2,vertex_dim=dimension,is_rational=(byte)(rational?1:0),vertex=vertices,n_u_knots=twoSpans?3:2,n_v_knots=2,u_knot=uk,v_knot=vk,u_knot_mult=um,v_knot_mult=vm,
             form=ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=ParasolidConstants.PK_knot_non_uniform_c,
             self_intersecting=ParasolidConstants.PK_self_intersect_false_c,convexity=ParasolidConstants.PK_convexity_unset_c};
+        if(transpose){sf.u_degree=1;sf.v_degree=3;sf.n_u_vertices=2;sf.n_v_vertices=count;sf.n_u_knots=2;sf.n_v_knots=twoSpans?3:2;sf.u_knot=vk;sf.v_knot=uk;sf.u_knot_mult=vm;sf.v_knot_mult=um;}
         int tag=0;Assert.Equal(0,KernelRuntime.BSurfCreate(&sf,&tag));return tag;
     }
     private static PK_SURF_intersect_surf_o_s SurfaceOptions()=>new(){o_t_version=3,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_pline_c,tolerance=1e-5};
