@@ -211,6 +211,11 @@ internal struct CurveRecord
     public CurveTag PrevInBody;
     public CurveTag NextInBody;
     public int OwnerCount;                      // sharing geometry: edges referencing this curve
+    public BufferCount GeometricOwnerCount;      // dependent curves/surfaces, independent of topology rebuilds
+    public KernelLogical DependenciesAcquired;   // this record owns references to its defining geometry
+    public EntityTag ConstructionBodyTag;        // non-topological part root; zero when not on a construction chain
+    public CurveTag PrevConstruction;
+    public CurveTag NextConstruction;
 }
 
 /// <summary>
@@ -233,6 +238,12 @@ internal struct SurfaceRecord
     public SurfTag PrevInBody;
     public SurfTag NextInBody;
     public int OwnerCount;                      // sharing geometry: faces referencing this surface
+    public BufferCount GeometricOwnerCount;
+    public KernelLogical DependenciesAcquired;
+    public KernelLogical GeometricDeletePending; // an owning reference was released while borrowed references kept this surface alive
+    public EntityTag ConstructionBodyTag;
+    public SurfTag PrevConstruction;
+    public SurfTag NextConstruction;
 }
 
 // ── Analytic Curve Data ───────────────────────────────────────────

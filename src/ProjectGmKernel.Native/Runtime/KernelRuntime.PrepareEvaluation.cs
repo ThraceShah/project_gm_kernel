@@ -21,8 +21,10 @@ internal static unsafe partial class KernelRuntime
     /// Bind a decoded <see cref="ICurveData"/> slot to a public curve tag so
     /// <c>PK_CURVE_eval</c> can reach it. Computes TMin/TMax from the rebuilt
     /// chart parameter range. The data slot is consumed on success (freed on
-    /// curve delete via <see cref="FreeCurveData"/>); on failure the data slot
-    /// is left untouched for the caller to free.
+    /// curve delete via <see cref="FreeCurveData"/>), and the bound curve holds
+    /// liveness references to both support surfaces. Their lifetime ownership
+    /// remains controlled by ICurveData.OwnsSupportSurfaces. On failure the data slot and
+    /// support reference counts are left untouched for the caller to free.
     /// </summary>
     internal static AlgorithmStatus TryBindICurveEntity(DataSlot icurveDataIndex, out CurveTag tag)
         => TryBindICurveEntity(icurveDataIndex, out tag, out _);
@@ -64,6 +66,20 @@ internal static unsafe partial class KernelRuntime
                 return prepareStatus;
             }
 
+            var surface0 = GetSurfaceSlotByTag(ICurveDataPool[icurveDataIndex].Surface0Tag);
+            var surface1 = GetSurfaceSlotByTag(ICurveDataPool[icurveDataIndex].Surface1Tag);
+            var dependencyError = CheckGeometryDependency(PoolKind.Surface, surface0);
+            if (dependencyError == 0) dependencyError = CheckGeometryDependency(PoolKind.Surface, surface1);
+            if (dependencyError == 0 && surface0 == surface1
+                && Surfaces[surface0].GeometricOwnerCount > int.MaxValue - 2)
+                dependencyError = ParasolidConstants.PK_ERROR_memory_full;
+            if (dependencyError != 0)
+            {
+                Curves.Free(curveSlot);
+                return dependencyError == ParasolidConstants.PK_ERROR_memory_full
+                    ? AlgorithmStatus.WorkspaceTooSmall : AlgorithmStatus.InvalidInput;
+            }
+
             curve.TMin = view.ChartParameters[0];
             curve.TMax = view.ChartParameters[^1];
             var allocated = AllocateTag(EntityClass.Curve, PoolKind.Curve, curveSlot, curve.Header.Generation);
@@ -72,6 +88,11 @@ internal static unsafe partial class KernelRuntime
                 Curves.Free(curveSlot);
                 return AlgorithmStatus.WorkspaceTooSmall;
             }
+            // Publication is the last fallible step. The dependency release
+            // path protects shared supports while preserving borrowed lifetime.
+            AcquireGeometryDependency(PoolKind.Surface, surface0);
+            AcquireGeometryDependency(PoolKind.Surface, surface1);
+            curve.DependenciesAcquired = 1;
             tag = allocated;
             return AlgorithmStatus.Success;
         }

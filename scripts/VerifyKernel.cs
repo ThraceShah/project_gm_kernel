@@ -81,6 +81,22 @@ var xtGeometryWriterOracleExit = Run("dotnet", "run scripts/XtGeometryWriterOrac
 if (xtGeometryWriterOracleExit != 0)
     return xtGeometryWriterOracleExit;
 
+foreach (var oracle in new[] { "GeometryPublicApiOracle", "GeometryTransformOracle", "BrepImportOracle", "ProfileModelingOracle", "DisplayBridgeOracle" })
+{
+    var arguments = $"run scripts/{oracle}.cs -p:UseSharedCompilation=false -p:BuildInParallel=false";
+    if (oracle == "DisplayBridgeOracle") arguments += " -- --native";
+    var publicModelingExit = Run("dotnet", arguments, cleanupTesthost: false);
+    if (publicModelingExit != 0) return publicModelingExit;
+    if (oracle == "ProfileModelingOracle")
+    {
+        foreach (var suffix in new[] { "", " --reference" })
+        {
+            var importExit = Run("dotnet", "run scripts/BrepImportOracle.cs -p:UseSharedCompilation=false -p:BuildInParallel=false -- ../temp_docs/profile-modeling-oracle" + suffix, cleanupTesthost: false);
+            if (importExit != 0) return importExit;
+        }
+    }
+}
+
 var allSchemaOracleExit = Run("dotnet", "run scripts/ParasolidAllSchemaOracle.cs -- --check", cleanupTesthost: false);
 if (allSchemaOracleExit != 0)
     return allSchemaOracleExit;
@@ -105,9 +121,9 @@ var goldenFixtureExit = Run("dotnet", "run scripts/CheckParasolidXtGoldenFixture
 if (goldenFixtureExit != 0)
     return goldenFixtureExit;
 
-var manualExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "KernelExports.cs");
+var manualExportsPaths = Directory.GetFiles(Path.Combine(repoRoot, "src", "ProjectGmKernel.Native"), "KernelExports*.cs");
 var generatedExportsPath = Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "Generated", "KernelExports.generated.cs");
-var manualExports = Count(manualExportsPath, @"UnmanagedCallersOnly\(EntryPoint");
+var manualExports = manualExportsPaths.Sum(path => Count(path, @"UnmanagedCallersOnly\(EntryPoint"));
 var generatedExports = Count(generatedExportsPath, @"UnmanagedCallersOnly\(EntryPoint");
 var generatedStubs = Count(generatedExportsPath, @"KernelRuntime\.NotImplemented\(\)");
 

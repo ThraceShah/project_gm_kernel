@@ -61,17 +61,20 @@ internal static unsafe partial class KernelRuntime
                 if (Senses != null && Senses[i] > 1) return ParasolidConstants.PK_ERROR_bad_value;
                 var body = TopologyBody(Pool, topol.Slot);
                 if (body < 0) return ParasolidConstants.PK_ERROR_bad_value;
+                if (Xt.IsOpaque(body)) return ParasolidConstants.PK_ERROR_not_implemented;
                 if (GeometryOwnerCount(geometryPool, geometry.Slot) != 0 && GeometryBody(geometryPool, geometry.Slot) != body)
-                    return ParasolidConstants.PK_ERROR_not_in_same_part;
+                    return ParasolidConstants.PK_ERROR_has_parent;
                 for (var j = 0; j < i; j++)
                 {
                     if (Topology[j] == Topology[i]) return ParasolidConstants.PK_ERROR_bad_value;
                     if (geometryPool == PoolKind.Point && Geometry[j] == Geometry[i])
                         return ParasolidConstants.PK_ERROR_has_parent;
                     if (Geometry[j] == Geometry[i] && TopologyBody(Pool, TagRec(Topology[j]).Slot) != body)
-                        return ParasolidConstants.PK_ERROR_not_in_same_part;
+                        return ParasolidConstants.PK_ERROR_has_parent;
                 }
             }
+            var partError = ValidateGeometryAttachmentParts(Pool, Count, Topology, Geometry);
+            if (partError != 0) return partError;
             // Reserve every before-image before changing any existing record.
             for (var i = 0; i < Count; i++)
             {
@@ -83,13 +86,27 @@ internal static unsafe partial class KernelRuntime
             }
             for (var i = 0; i < Count; i++)
             {
+                if (!TryUnregisterConstructionGeometry(geometryPool, TagRec(Geometry[i]).Slot))
+                    return ParasolidConstants.PK_ERROR_memory_full;
+            }
+            for (var i = 0; i < Count; i++)
+            {
                 var slot = TagRec(Topology[i]).Slot;
                 TopologyGeometry(Pool, slot) = Geometry[i];
                 if (Pool == PoolKind.Face)
                     Faces[slot].Orientation = Senses[i] != 0 ? ParasolidConstants.PK_TOPOL_sense_positive_c : ParasolidConstants.PK_TOPOL_sense_negative_c;
             }
             for (var i = 0; i < Count; i++)
-                RebuildBoundaryGeometryLinks(TopologyBody(Pool, TagRec(Topology[i]).Slot), resetOwners: true);
+            {
+                var body = TopologyBody(Pool, TagRec(Topology[i]).Slot);
+                RebuildBoundaryGeometryLinks(body, resetOwners: true);
+                if (geometryPool is PoolKind.Curve or PoolKind.Surface)
+                {
+                    var error = TryAdoptDependentGeometry(Geometry[i]);
+                    if (error != 0) return error;
+                }
+                SessionMemoryOwner.DropBodyXt(body);
+            }
             session->Partitions[partition].AtPmark = 0;
             return 0;
         }
@@ -111,12 +128,20 @@ internal static unsafe partial class KernelRuntime
             var geometry = TopologyGeometry(pool, topol.Slot);
             if (geometry <= 0) return 0;
             var body = TopologyBody(pool, topol.Slot);
+            if (body < 0) return ParasolidConstants.PK_ERROR_bad_value;
+            if (Xt.IsOpaque(body)) return ParasolidConstants.PK_ERROR_not_implemented;
             if (!SnapshotBoundaryGeometry(body) || (pool == PoolKind.Vertex && !session->TrySnapshot(ref Vertices[topol.Slot])))
                 return ParasolidConstants.PK_ERROR_memory_full;
             var geometryPool = GeometryPool(pool);
             ClearGeometryOwner(geometryPool, TagRec(geometry).Slot);
             TopologyGeometry(pool, topol.Slot) = 0;
             RebuildBoundaryGeometryLinks(body, resetOwners: true);
+            if (geometryPool is PoolKind.Curve or PoolKind.Surface)
+            {
+                var partError = TryAdoptDependentGeometry(geometry);
+                if (partError != 0) return partError;
+            }
+            SessionMemoryOwner.DropBodyXt(body);
             session->Partitions[partition].AtPmark = 0;
             return 0;
         }

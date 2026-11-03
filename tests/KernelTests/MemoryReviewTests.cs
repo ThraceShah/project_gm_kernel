@@ -535,6 +535,10 @@ public unsafe class MemoryReviewTests
                 PK_THREAD_lock_partitions_r_s result;
                 Assert.Equal(0, KernelRuntime.ThreadLockPartitions(1, &partition,
                     ParasolidConstants.PK_THREAD_lock_all_c, ParasolidConstants.PK_THREAD_wait_yes_c, &options, &result));
+                // Session-control setup is exclusive. Both threads must finish
+                // it before either holds the write claim whose overlap this
+                // test measures; otherwise that claim blocks the peer's setup.
+                Assert.True(barrier.SignalAndWait(TimeSpan.FromSeconds(10)));
                 var command = new ConcurrentPointCommand { Barrier = barrier, Fail = fail };
                 var error = KernelRuntime.Dispatch(ApiId.PointCreate, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command);
                 Assert.Equal(fail ? ParasolidConstants.PK_ERROR_bad_parameter : 0, error);

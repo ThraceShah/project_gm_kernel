@@ -120,7 +120,200 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
             KernelRuntime.DecodeIcurve(input, out var slot, out _, out _));
         Assert.Equal(AlgorithmStatus.InvalidInput,
             KernelRuntime.TryBindICurveEntity(slot, out _));
+        Assert.Equal(0, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+        Assert.Equal(0, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
         KernelRuntime.FreeICurveData(slot);
+        Assert.True(KernelRuntime.IsValidTag(plane));
+        Assert.True(KernelRuntime.IsValidTag(sphere));
+    }
+
+    [Fact]
+    public void Bind_AcquiresSupportsBeforePublicEdgeAttachmentAndProtectsTheirLifetime()
+    {
+        var plane = CreatePlaneZ0(); var sphere = CreateUnitSphere();
+        var curve = BindCircle(plane, sphere);
+        Assert.Equal((byte)1, KernelRuntime.GetCurveByTag(curve).DependenciesAcquired);
+        Assert.Equal(1, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+        Assert.Equal(1, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
+        Assert.Equal(ParasolidConstants.PK_ERROR_still_referenced, KernelRuntime.EntityDelete(1, &plane));
+        Assert.Equal(ParasolidConstants.PK_ERROR_still_referenced, KernelRuntime.EntityDelete(1, &sphere));
+        // The wire helper calls the public EdgeAttachCurves entry point after
+        // allocating its topology. Both defining surfaces must be recognized
+        // as dependencies, not unrelated free roots of the attachment graph.
+        Assert.Equal(0, KernelRuntime.CreateICurveWireBody(curve, out var body));
+        int count; int* construction;
+        Assert.Equal(0, KernelRuntime.PartAskGeoms(body, &count, &construction));
+        Assert.Equal(0, count); Assert.True(construction == null);
+        AssertCircleEvaluates(curve);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
+        Assert.True(KernelRuntime.IsValidTag(plane)); Assert.True(KernelRuntime.IsValidTag(sphere));
+        Assert.Equal(0, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+        Assert.Equal(0, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &plane)); Assert.Equal(0, KernelRuntime.EntityDelete(1, &sphere));
+        Assert.Equal(0, KernelRuntime.ICurveDataPool.AliveCount);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public void Bind_SharedSupportsSurviveFirstDeletionAndCopyRemainsIndependent(bool importedOwner, bool deleteOwnerFirst)
+    {
+        var before = KernelRuntime.State.Session->Blocks.Statistics;
+        var plane = CreatePlaneZ0(); var sphere = CreateUnitSphere();
+        var first = BindCircle(plane, sphere);
+        if (importedOwner)
+        {
+            Assert.Equal(0, KernelRuntime.CreateICurveWireBody(first, out var body));
+            Assert.Equal(0, XtWriter.WriteText([body], 0, out var text));
+            var document = XtText.DecodeDocument(text);
+            var node = document.Nodes.Single(n => n.Type == 38); // XT INTERSECTION
+            Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryMaterializeICurveFromXt(document, node.Index, out first, out _));
+            Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
+            Assert.Equal(0, KernelRuntime.EntityDelete(1, &plane)); Assert.Equal(0, KernelRuntime.EntityDelete(1, &sphere));
+            var imported = KernelRuntime.ICurveDataPool[KernelRuntime.GetCurveByTag(first).DataIndex];
+            Assert.Equal((byte)1, imported.OwnsSupportSurfaces);
+            plane = imported.Surface0Tag; sphere = imported.Surface1Tag;
+        }
+        var second = BindCircle(plane, sphere);
+        Assert.Equal(2, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+        Assert.Equal(2, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
+        int copy; Assert.Equal(0, KernelRuntime.EntityCopy(first, &copy));
+        var copiedData = KernelRuntime.ICurveDataPool[KernelRuntime.GetCurveByTag(copy).DataIndex];
+        Assert.Equal((byte)1, copiedData.OwnsSupportSurfaces);
+        Assert.NotEqual(plane, copiedData.Surface0Tag); Assert.NotEqual(sphere, copiedData.Surface1Tag);
+        var firstDeleted = deleteOwnerFirst ? first : second;
+        var survivor = deleteOwnerFirst ? second : first;
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &firstDeleted));
+        Assert.Equal(1, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+        Assert.Equal(1, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
+        Assert.Equal(importedOwner && deleteOwnerFirst ? 1 : 0, KernelRuntime.GetSurfaceByTag(plane).GeometricDeletePending);
+        AssertCircleEvaluates(survivor);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &survivor));
+        if (importedOwner)
+        {
+            Assert.False(KernelRuntime.IsValidTag(plane)); Assert.False(KernelRuntime.IsValidTag(sphere));
+        }
+        else
+        {
+            Assert.True(KernelRuntime.IsValidTag(plane)); Assert.True(KernelRuntime.IsValidTag(sphere));
+            Assert.Equal(0, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+            Assert.Equal(0, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
+            Assert.Equal(0, KernelRuntime.EntityDelete(1, &plane)); Assert.Equal(0, KernelRuntime.EntityDelete(1, &sphere));
+        }
+        AssertCircleEvaluates(copy);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &copy));
+        Assert.False(KernelRuntime.IsValidTag(copiedData.Surface0Tag));
+        Assert.False(KernelRuntime.IsValidTag(copiedData.Surface1Tag));
+        Assert.Equal(0, KernelRuntime.Surfaces.AliveCount); Assert.Equal(0, KernelRuntime.Curves.AliveCount);
+        Assert.Equal(0, KernelRuntime.ICurveDataPool.AliveCount);
+        var after = KernelRuntime.State.Session->Blocks.Statistics;
+        Assert.Equal(before.LiveBlocks, after.LiveBlocks); Assert.Equal(before.LiveBytes, after.LiveBytes);
+    }
+
+    [Fact]
+    public void Bind_BorrowedFaceSupportOutlivesBodyAndRestoresOwnershipOnMarkGoto()
+    {
+        int body; Assert.Equal(0, KernelRuntime.BodyCreateSolidSphere(1, null, &body));
+        int count; int* faces;
+        Assert.Equal(0, KernelRuntime.BodyAskFaces(body, &count, &faces)); Assert.Equal(1, count);
+        int sphere; Assert.Equal(0, KernelRuntime.FaceAskSurf(faces[0], &sphere));
+        var plane = CreatePlaneZ0(); var curve = BindCircle(plane, sphere);
+        int mark; Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
+        Assert.Equal(0, KernelRuntime.GetSurfaceByTag(sphere).OwnerCount);
+        Assert.Equal((byte)1, KernelRuntime.GetSurfaceByTag(sphere).GeometricDeletePending);
+        AssertCircleEvaluates(curve);
+        Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+        Assert.Equal(1, KernelRuntime.GetSurfaceByTag(sphere).OwnerCount);
+        Assert.Equal((byte)0, KernelRuntime.GetSurfaceByTag(sphere).GeometricDeletePending);
+        AssertCircleEvaluates(curve);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
+        Assert.Equal((byte)1, KernelRuntime.GetSurfaceByTag(sphere).GeometricDeletePending);
+        AssertCircleEvaluates(curve);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &curve));
+        Assert.False(KernelRuntime.IsValidTag(sphere));
+        Assert.True(KernelRuntime.IsValidTag(plane));
+        Assert.Equal(0, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+        Assert.Equal((byte)0, KernelRuntime.GetSurfaceByTag(plane).GeometricDeletePending);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &plane));
+        Assert.Equal(0, KernelRuntime.Surfaces.AliveCount); Assert.Equal(0, KernelRuntime.Curves.AliveCount);
+    }
+
+    [Fact]
+    public void CopyAllocationFailure_PreservesBorrowedSourcesAndReleasesPartialOwnedGraph()
+    {
+        var plane = CreatePlaneZ0(); var sphere = CreateUnitSphere(); var curve = BindCircle(plane, sphere);
+        var before = KernelRuntime.State.Session->Blocks.Statistics;
+        var reachedSuccess = false;
+        for (var fault = 0; fault < 64; fault++)
+        {
+            int copy; int error;
+            KernelRuntime.InjectAllocationFailure(fault);
+            try { error = KernelRuntime.EntityCopy(curve, &copy); }
+            finally { KernelRuntime.InjectAllocationFailure(-1); }
+            if (error == 0)
+            {
+                AssertCircleEvaluates(copy);
+                Assert.Equal(0, KernelRuntime.EntityDelete(1, &copy));
+                reachedSuccess = true;
+            }
+            else
+            {
+                Assert.Equal(ParasolidConstants.PK_ERROR_memory_full, error); Assert.Equal(0, copy);
+            }
+            Assert.Equal(1, KernelRuntime.Curves.AliveCount); Assert.Equal(2, KernelRuntime.Surfaces.AliveCount);
+            Assert.Equal(1, KernelRuntime.ICurveDataPool.AliveCount);
+            Assert.Equal(1, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+            Assert.Equal(1, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
+            Assert.Equal((byte)0, KernelRuntime.GetSurfaceByTag(plane).GeometricDeletePending);
+            Assert.Equal((byte)0, KernelRuntime.GetSurfaceByTag(sphere).GeometricDeletePending);
+            var after = KernelRuntime.State.Session->Blocks.Statistics;
+            Assert.Equal(before.LiveBlocks, after.LiveBlocks); Assert.Equal(before.LiveBytes, after.LiveBytes);
+            if (reachedSuccess) break;
+        }
+        Assert.True(reachedSuccess); AssertCircleEvaluates(curve);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &curve));
+        Assert.True(KernelRuntime.IsValidTag(plane)); Assert.True(KernelRuntime.IsValidTag(sphere));
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &plane)); Assert.Equal(0, KernelRuntime.EntityDelete(1, &sphere));
+    }
+
+    [Fact]
+    public void Bind_SupportReferenceOverflowDoesNotConsumePayloadOrAcquireOtherSupport()
+    {
+        var plane = CreatePlaneZ0(); var sphere = CreateUnitSphere();
+        var input = MinimalCircleInput(plane, sphere, [1,0,0, 0,1,0]);
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var data, out _, out _));
+        var planeSlot = KernelRuntime.GetSurfaceSlotByTag(plane);
+        KernelRuntime.Surfaces[planeSlot].GeometricOwnerCount = int.MaxValue;
+        try
+        {
+            Assert.Equal(AlgorithmStatus.WorkspaceTooSmall, KernelRuntime.TryBindICurveEntity(data, out var curve));
+            Assert.Equal(0, curve); Assert.True(KernelRuntime.ICurveDataPool.IsAlive(data));
+            Assert.Equal(int.MaxValue, KernelRuntime.GetSurfaceByTag(plane).GeometricOwnerCount);
+            Assert.Equal(0, KernelRuntime.GetSurfaceByTag(sphere).GeometricOwnerCount);
+            Assert.Equal(0, KernelRuntime.Curves.AliveCount);
+        }
+        finally { KernelRuntime.Surfaces[planeSlot].GeometricOwnerCount = 0; }
+        KernelRuntime.FreeICurveData(data);
+        Assert.True(KernelRuntime.IsValidTag(plane)); Assert.True(KernelRuntime.IsValidTag(sphere));
+    }
+
+    private static int BindCircle(int plane, int sphere)
+    {
+        var input = MinimalCircleInput(plane, sphere, [1,0,0, 0,1,0]);
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var data, out _, out _));
+        Assert.Equal(AlgorithmStatus.Success, KernelRuntime.TryBindICurveEntity(data, out var curve));
+        return curve;
+    }
+
+    private static void AssertCircleEvaluates(int curve)
+    {
+        var record = KernelRuntime.GetCurveByTag(curve);
+        PK_VECTOR_s* values = stackalloc PK_VECTOR_s[3];
+        Assert.Equal(0, KernelRuntime.CurveEval(curve, (record.TMin + record.TMax) / 2, 2, values));
+        Assert.InRange(Math.Abs(values[0].coord[2]), 0, 1e-9);
+        Assert.InRange(Math.Abs(values[0].coord[0] * values[0].coord[0] + values[0].coord[1] * values[0].coord[1] - 1), 0, 1e-9);
     }
 
     [Fact]
@@ -378,14 +571,17 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         Assert.Equal(0, KernelRuntime.CurveEval(curveTag, midT, 0, output));
         Assert.Equal(AlgorithmStatus.Success, KernelRuntime.LastICurveEvalReport.Status);
 
-        // Delete support surface so Request B fails preparation
-        KernelRuntime.EntityDelete(1, &sphere);
-
-        // Request B: evaluation fails at view preparation
-        var err = KernelRuntime.CurveEval(curveTag, midT, 0, output);
-        Assert.NotEqual(0, err);
-
-        // Assert that LastICurveEvalReport does not retain Request A's success
-        Assert.NotEqual(AlgorithmStatus.Success, KernelRuntime.LastICurveEvalReport.Status);
+        // A public delete correctly refuses an acquired support. Inject an
+        // invalid preparation reference directly to exercise the diagnostic
+        // failure path, then restore the owned reference for normal cleanup.
+        Assert.Equal(ParasolidConstants.PK_ERROR_still_referenced, KernelRuntime.EntityDelete(1, &sphere));
+        KernelRuntime.ICurveDataPool[dataSlot].Surface1Tag = 0;
+        try
+        {
+            var err = KernelRuntime.CurveEval(curveTag, midT, 0, output);
+            Assert.NotEqual(0, err);
+            Assert.NotEqual(AlgorithmStatus.Success, KernelRuntime.LastICurveEvalReport.Status);
+        }
+        finally { KernelRuntime.ICurveDataPool[dataSlot].Surface1Tag = sphere; }
     }
 }

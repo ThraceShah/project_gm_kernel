@@ -386,6 +386,7 @@ public unsafe class KernelRegressionTests : IDisposable
     public void BodyAskTopology_DumpsImplementedTopologyGraph()
     {
         int bodyTag = CreateSimpleBody(out _, out _, out _, out _, out _, out _);
+        var topologyOptions = new PK_BODY_ask_topology_o_s { o_t_version = 2, want_fins = 1 };
 
         int nTopols;
         nint topolsRaw;
@@ -397,7 +398,7 @@ public unsafe class KernelRegressionTests : IDisposable
 
         Assert.Equal(0, KernelRuntime.BodyAskTopology(
             bodyTag,
-            null,
+            &topologyOptions,
             &nTopols,
             &topolsRaw,
             &classesRaw,
@@ -439,6 +440,7 @@ public unsafe class KernelRegressionTests : IDisposable
     {
         int bodyTag;
         Assert.Equal(0, KernelRuntime.BodyCreateSolidBlock(1, 2, 3, null, &bodyTag));
+        var topologyOptions = new PK_BODY_ask_topology_o_s { o_t_version = 2, want_fins = 1 };
 
         int nTopols;
         nint topolsRaw;
@@ -450,7 +452,7 @@ public unsafe class KernelRegressionTests : IDisposable
 
         Assert.Equal(0, KernelRuntime.BodyAskTopology(
             bodyTag,
-            null,
+            &topologyOptions,
             &nTopols,
             &topolsRaw,
             &classesRaw,
@@ -460,7 +462,7 @@ public unsafe class KernelRegressionTests : IDisposable
             &sensesRaw));
 
         Assert.Equal(61, nTopols);
-        Assert.Equal(70, nRelations);
+        Assert.Equal(94, nRelations);
 
         var classes = (int*)classesRaw;
         Assert.Equal(1, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_body));
@@ -473,8 +475,8 @@ public unsafe class KernelRegressionTests : IDisposable
         Assert.Equal(8, Enumerable.Range(0, nTopols).Count(i => classes[i] == ParasolidConstants.PK_CLASS_vertex));
 
         var senses = (int*)sensesRaw;
-        Assert.Equal(6, Enumerable.Range(0, nRelations).Count(i => senses[i] == ParasolidConstants.PK_TOPOL_sense_negative_c));
-        Assert.Equal(6, Enumerable.Range(0, nRelations).Count(i => senses[i] == ParasolidConstants.PK_TOPOL_sense_positive_c));
+        Assert.Equal(19, Enumerable.Range(0, nRelations).Count(i => senses[i] == ParasolidConstants.PK_TOPOL_sense_negative_c));
+        Assert.Equal(19, Enumerable.Range(0, nRelations).Count(i => senses[i] == ParasolidConstants.PK_TOPOL_sense_positive_c));
     }
 
     [Fact]
@@ -1232,7 +1234,19 @@ public unsafe class KernelRegressionTests : IDisposable
                 int finCount;
                 int* fins;
                 Assert.Equal(0, KernelRuntime.LoopAskFins(loops[j], &finCount, &fins));
-                Assert.True(finCount > 0);
+                if (finCount == 0)
+                {
+                    var loopSlot = KernelRuntime.ResolveTagRecord(loops[j]).Slot;
+                    var loop = KernelRuntime.GetLoopRecord(loopSlot);
+                    Assert.Equal(1, loop.FinCount);
+                    var fin = KernelRuntime.GetFinRecord(loop.FirstFin);
+                    Assert.Equal(-1, fin.Edge);
+                    Assert.True(fin.Vertex >= 0);
+                    Assert.Equal(loopSlot, fin.Loop);
+                    Assert.Equal(loop.FirstFin, fin.NextInLoop);
+                    Assert.Equal(loop.FirstFin, fin.PrevInLoop);
+                }
+                else Assert.True(finCount > 0);
             }
         }
 

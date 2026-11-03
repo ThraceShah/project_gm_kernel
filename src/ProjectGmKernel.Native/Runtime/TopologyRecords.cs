@@ -136,6 +136,14 @@ internal struct EdgeRecord
 {
     public RecordHeader Header;
     public BodySlot Body;
+    // A wire shell owns its connected edge chain in XT. Zero denotes direct
+    // body ownership (and remains the default for face-bounding edges).
+    public EntityTag WireShellTag;
+    // Explicit API trim bounds are independent of the underlying geometry's
+    // natural domain, including a full periodic edge without vertices.
+    public double ParameterStart;
+    public double ParameterEnd;
+    public byte HasParameterRange;
     public VertexSlot StartVertex; // -1 for ring/vertexless edges
     public VertexSlot EndVertex;   // -1 for ring/vertexless edges
     public FinSlot FirstFinEdge;
@@ -173,6 +181,7 @@ internal struct FinRecord
     public FinSlot Other;          // next fin around edge in XT ring; -1 when unattached
     public EdgeSlot Edge;          // -1 for isolated/dummy fins
     public CurveTag Curve;         // trimmed SP-curve for tolerant edges; -1 otherwise
+    public KernelLogical CurveReferenceAcquired;
     public FinSlot NextAtVertex;   // next fin in chain at vertex
     public FinSlot PrevAtVertex;
     public FinSlot NextOfEdge;     // edge's ordered fin ring (kernel-internal)

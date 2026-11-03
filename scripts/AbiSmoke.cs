@@ -1,6 +1,7 @@
 #!/usr/bin/env dotnet run
 #:property AllowUnsafeBlocks=true
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -14,6 +15,28 @@ static string GetScriptPath([CallerFilePath] string path = "") => path;
 
 var scriptDir = Path.GetDirectoryName(GetScriptPath()) ?? ".";
 var repoRoot = Path.GetFullPath(Path.Combine(scriptDir, ".."));
+var schemaDirectory = Environment.GetEnvironmentVariable("PARASOLID_SCHEMA_DIR");
+if (string.IsNullOrWhiteSpace(schemaDirectory))
+    schemaDirectory = Environment.GetEnvironmentVariable("P_SCHEMA");
+if (string.IsNullOrWhiteSpace(schemaDirectory))
+    schemaDirectory = Path.Combine("..", "third_party", "parasolid", "schema");
+schemaDirectory = Path.GetFullPath(schemaDirectory, scriptDir);
+if (!Directory.Exists(schemaDirectory))
+    throw new DirectoryNotFoundException($"The configured XT schema directory does not exist: {schemaDirectory}");
+// CoreCLR's process environment cache is separate from the NativeAOT runtime's.
+// Give the native library its schema path in the process's initial environment.
+if (Environment.GetEnvironmentVariable("PARASOLID_SCHEMA_DIR") != schemaDirectory
+    || Environment.GetEnvironmentVariable("P_SCHEMA") != schemaDirectory)
+{
+    var start = new ProcessStartInfo("dotnet") { UseShellExecute = false };
+    start.ArgumentList.Add(Environment.GetCommandLineArgs()[0]);
+    foreach (var argument in args) start.ArgumentList.Add(argument);
+    start.Environment["PARASOLID_SCHEMA_DIR"] = schemaDirectory;
+    start.Environment["P_SCHEMA"] = schemaDirectory;
+    using var process = Process.Start(start) ?? throw new InvalidOperationException("Could not start the ABI probe with its schema environment.");
+    process.WaitForExit();
+    return process.ExitCode;
+}
 var rid = RuntimeInformation.ProcessArchitecture switch
 {
     Architecture.Arm64 when OperatingSystem.IsMacOS() => "osx-arm64",
@@ -155,10 +178,19 @@ try
         nint children;
         nint senses;
         Check(bodyAskTopology(body, null, &topolCount, &topols, &classes, &relationCount, &parents, &children, &senses), "PK_BODY_ask_topology");
-        Require(topolCount == 61, "solid block topology count");
+        Require(topolCount == 37, "solid block topology count without fins");
         Require(relationCount == 70, "solid block relation count");
-        Require(CountSense((int*)senses, relationCount, PK_TOPOL_sense_negative_c) == 6, "solid block negative face uses");
-        Require(CountSense((int*)senses, relationCount, PK_TOPOL_sense_positive_c) == 6, "solid block positive face uses");
+        Require(CountSense((int*)senses, relationCount, PK_TOPOL_sense_negative_c) == 19, "solid block negative region/face/edge uses");
+        Require(CountSense((int*)senses, relationCount, PK_TOPOL_sense_positive_c) == 19, "solid block positive region/face/edge uses");
+        Check(memoryFree((void*)topols), "free topology");Check(memoryFree((void*)classes), "free classes");
+        Check(memoryFree((void*)parents), "free parents");Check(memoryFree((void*)children), "free children");Check(memoryFree((void*)senses), "free senses");
+        var topologyOptions = new PK_BODY_ask_topology_o_s { o_t_version = 2, want_fins = 1 };
+        Check(bodyAskTopology(body, &topologyOptions, &topolCount, &topols, &classes, &relationCount, &parents, &children, &senses), "PK_BODY_ask_topology with fins");
+        Require(topolCount == 61 && relationCount == 94, "solid block topology and fin incidence");
+        Require(CountSense((int*)senses, relationCount, PK_TOPOL_sense_negative_c) == 19, "solid block negative region/face/fin uses");
+        Require(CountSense((int*)senses, relationCount, PK_TOPOL_sense_positive_c) == 19, "solid block positive region/face/fin uses");
+        Check(memoryFree((void*)topols), "free fin topology");Check(memoryFree((void*)classes), "free fin classes");
+        Check(memoryFree((void*)parents), "free fin parents");Check(memoryFree((void*)children), "free fin children");Check(memoryFree((void*)senses), "free fin senses");
 
         int cylBody;
         Check(bodyCreateSolidCyl(2, 5, null, &cylBody), "PK_BODY_create_solid_cyl");

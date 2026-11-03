@@ -36,6 +36,12 @@
     <InternalsVisibleTo Include="XtGeometryWriterOracle" />
     <InternalsVisibleTo Include="ProbeXtGeometryNodes" />
     <InternalsVisibleTo Include="ConeAxisProbe" />
+    <InternalsVisibleTo Include="GeometryPublicApiOracle" />
+    <InternalsVisibleTo Include="ProfileModelingOracle" />
+    <InternalsVisibleTo Include="BrepImportOracle" />
+    <InternalsVisibleTo Include="GeometryTransformOracle" />
+    <InternalsVisibleTo Include="ProjectGmKernel.DisplayBridge" />
+    <InternalsVisibleTo Include="DisplayBridgeOracle" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />

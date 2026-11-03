@@ -8830,8 +8830,8 @@ namespace ProjectGmKernel.Native.Generated;
     [StructLayout(LayoutKind.Sequential)]
     internal struct max_align_t
     {
-        public long __clang_max_align_nonce1;
-        public double __clang_max_align_nonce2;
+        public long __max_align_ll;
+        public double __max_align_ld;
     }
 
     [StructLayout(LayoutKind.Sequential)]

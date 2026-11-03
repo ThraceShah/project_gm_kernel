@@ -11,8 +11,8 @@ namespace ProjectGmKernel.Native.Runtime;
 /// offset/swept/spun surfaces. These exist so evaluation (PK_CURVE_eval /
 /// PK_SURF_eval) can reach every class the XT schema models. Geometry-to-
 /// geometry references (basis, support, section) are validated at creation
-/// and resolved lazily at evaluation; ownership wiring for geometric owners
-/// is not part of this scope.
+/// and resolved lazily at evaluation. Successful dependent constructors
+/// acquire their defining geometry; deleting the last owner releases it.
 /// </summary>
 internal static unsafe partial class KernelRuntime
 {
@@ -23,6 +23,8 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_bad_field_number;
         if (!IsSessionStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;
+        var axisError = CheckAxis2(&sf->basis_set);
+        if (axisError != 0) return axisError;
         if (!double.IsFinite(sf->R1) || !double.IsFinite(sf->R2) || sf->R2 <= 0 || sf->R1 < sf->R2)
             return sf->R1 <= 0 || sf->R2 <= 0 ? ParasolidConstants.PK_ERROR_distance_le_0 : ParasolidConstants.PK_ERROR_bad_parameter;
 
@@ -72,16 +74,19 @@ internal static unsafe partial class KernelRuntime
         var basisSlot = GetCurveSlotByTag(sf->basis_curve);
         if (basisSlot < 0)
             return ParasolidConstants.PK_ERROR_unknown_class;
+        var dependencyError = CheckGeometryDependency(PoolKind.Curve, basisSlot);
+        if (dependencyError != 0) return dependencyError;
         var parm1 = sf->t_int.value[0];
         var parm2 = sf->t_int.value[1];
-        if (!double.IsFinite(parm1) || !double.IsFinite(parm2) || parm1 == parm2)
+        if (!double.IsFinite(parm1) || !double.IsFinite(parm2) || parm1 == parm2 || !double.IsFinite(parm2 - parm1))
             return ParasolidConstants.PK_ERROR_bad_parameter;
 
         var ownsScratch = EnsureCommandScratch();
         try
         {
-            Span<KernelVector3> start = stackalloc KernelVector3[1];
-            Span<KernelVector3> end = stackalloc KernelVector3[1];
+            // The core also computes a tangent for B- and SP-curves at D0.
+            Span<KernelVector3> start = stackalloc KernelVector3[2];
+            Span<KernelVector3> end = stackalloc KernelVector3[2];
             ref readonly var basis = ref Curves[basisSlot];
             if (EvaluateCurveCore(in basis, parm1, 0, false, start, out _) != AlgorithmStatus.Success
                 || EvaluateCurveCore(in basis, parm2, 0, false, end, out _) != AlgorithmStatus.Success)
@@ -105,10 +110,10 @@ internal static unsafe partial class KernelRuntime
             AssignPartition(ref curve.Header, CurrentPartition);
             curve.Class = CurveClass.TRCurve;
             curve.DataIndex = dataSlot;
-            curve.TMin = Math.Min(parm1, parm2);
-            curve.TMax = Math.Max(parm1, parm2);
-            // A negatively sensed trimmed curve runs from point_1 to point_2 in
-            // decreasing basis parameter; evaluation keeps the basis parameter.
+            curve.TMin = 0;
+            curve.TMax = Math.Abs(parm2 - parm1);
+            // TR parameters start at zero; the standard form still retains the
+            // original basis interval. Descending XT trims reverse the mapping.
             curve.Sense = parm2 > parm1 ? ParasolidConstants.PK_TOPOL_sense_positive_c : ParasolidConstants.PK_TOPOL_sense_negative_c;
             curve.OwnerEdge = -1;
             curve.OwnerCount = 0;
@@ -120,6 +125,10 @@ internal static unsafe partial class KernelRuntime
                 Curves.Free(slot);
                 return ParasolidConstants.PK_ERROR_memory_full;
             }
+            AcquireGeometryDependency(PoolKind.Curve, basisSlot);
+            curve.DependenciesAcquired = 1;
+            var partError = TryAdoptDependentGeometry(tag);
+            if (partError != 0) return partError;
             *trCurveTag = tag;
             return ParasolidConstants.PK_ERROR_no_errors;
         }
@@ -137,10 +146,14 @@ internal static unsafe partial class KernelRuntime
         var curveSlot = GetCurveSlotByTag(sf->curve);
         if (surfaceSlot < 0 || curveSlot < 0)
             return ParasolidConstants.PK_ERROR_unknown_class;
-        ref readonly var basis = ref BCurveDataStore[Curves[curveSlot].DataIndex];
-        if (Curves[curveSlot].Class != CurveClass.BCurve
-            || basis.VertexDim != (basis.IsRational != 0 ? 3 : 2))
+        if (Curves[curveSlot].Class != CurveClass.BCurve)
             return ParasolidConstants.PK_ERROR_bad_dimension;
+        ref readonly var basis = ref BCurveDataStore[Curves[curveSlot].DataIndex];
+        if (basis.VertexDim != (basis.IsRational != 0 ? 3 : 2))
+            return ParasolidConstants.PK_ERROR_bad_dimension;
+        var dependencyError = CheckGeometryDependency(PoolKind.Surface, surfaceSlot);
+        if (dependencyError == 0) dependencyError = CheckGeometryDependency(PoolKind.Curve, curveSlot);
+        if (dependencyError != 0) return dependencyError;
 
         int dataSlot = TryAllocateSpCurveData();
         if (dataSlot < 0) return ParasolidConstants.PK_ERROR_memory_full;
@@ -171,6 +184,11 @@ internal static unsafe partial class KernelRuntime
             Curves.Free(slot);
             return ParasolidConstants.PK_ERROR_memory_full;
         }
+        AcquireGeometryDependency(PoolKind.Surface, surfaceSlot);
+        AcquireGeometryDependency(PoolKind.Curve, curveSlot);
+        curve.DependenciesAcquired = 1;
+        var partError = TryAdoptDependentGeometry(tag);
+        if (partError != 0) return partError;
         *spCurveTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -185,6 +203,8 @@ internal static unsafe partial class KernelRuntime
         var baseSlot = GetSurfaceSlotByTag(sf->underlying_surface);
         if (baseSlot < 0)
             return ParasolidConstants.PK_ERROR_unknown_class;
+        var dependencyError = CheckGeometryDependency(PoolKind.Surface, baseSlot);
+        if (dependencyError != 0) return dependencyError;
         ref readonly var baseSurface = ref Surfaces[baseSlot];
         if (baseSurface.Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone
             or SurfaceClass.Sphere or SurfaceClass.Torus or SurfaceClass.BSurface
@@ -222,6 +242,10 @@ internal static unsafe partial class KernelRuntime
             Surfaces.Free(slot);
             return ParasolidConstants.PK_ERROR_memory_full;
         }
+        AcquireGeometryDependency(PoolKind.Surface, baseSlot);
+        surface.DependenciesAcquired = 1;
+        var partError = TryAdoptDependentGeometry(tag);
+        if (partError != 0) return partError;
         *offsetTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -239,6 +263,13 @@ internal static unsafe partial class KernelRuntime
         // XT 5.2.2.10: the section must be analytic or a B-curve.
         if (Curves[sectionSlot].Class is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve))
             return ParasolidConstants.PK_ERROR_not_implemented;
+        if (Curves[sectionSlot].Class == CurveClass.BCurve)
+        {
+            ref readonly var section = ref BCurveDataStore[Curves[sectionSlot].DataIndex];
+            if (section.VertexDim != (section.IsRational != 0 ? 4 : 3)) return ParasolidConstants.PK_ERROR_bad_dimension;
+        }
+        var dependencyError = CheckGeometryDependency(PoolKind.Curve, sectionSlot);
+        if (dependencyError != 0) return dependencyError;
         var dx = sf->direction.coord[0];
         var dy = sf->direction.coord[1];
         var dz = sf->direction.coord[2];
@@ -272,6 +303,10 @@ internal static unsafe partial class KernelRuntime
             Surfaces.Free(slot);
             return ParasolidConstants.PK_ERROR_memory_full;
         }
+        AcquireGeometryDependency(PoolKind.Curve, sectionSlot);
+        surface.DependenciesAcquired = 1;
+        var partError = TryAdoptDependentGeometry(tag);
+        if (partError != 0) return partError;
         *sweptTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -289,6 +324,16 @@ internal static unsafe partial class KernelRuntime
         // XT 5.2.2.11: the profile must be analytic or a B-curve.
         if (Curves[profileSlot].Class is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve))
             return ParasolidConstants.PK_ERROR_not_implemented;
+        if (Curves[profileSlot].Class == CurveClass.BCurve)
+        {
+            ref readonly var profile = ref BCurveDataStore[Curves[profileSlot].DataIndex];
+            if (profile.VertexDim != (profile.IsRational != 0 ? 4 : 3)) return ParasolidConstants.PK_ERROR_bad_dimension;
+        }
+        var dependencyError = CheckGeometryDependency(PoolKind.Curve, profileSlot);
+        if (dependencyError != 0) return dependencyError;
+        if (!double.IsFinite(sf->axis.location.coord[0]) || !double.IsFinite(sf->axis.location.coord[1])
+            || !double.IsFinite(sf->axis.location.coord[2]))
+            return ParasolidConstants.PK_ERROR_bad_parameter;
         var ax = sf->axis.axis.coord[0];
         var ay = sf->axis.axis.coord[1];
         var az = sf->axis.axis.coord[2];
@@ -325,6 +370,10 @@ internal static unsafe partial class KernelRuntime
             Surfaces.Free(slot);
             return ParasolidConstants.PK_ERROR_memory_full;
         }
+        AcquireGeometryDependency(PoolKind.Curve, profileSlot);
+        surface.DependenciesAcquired = 1;
+        var partError = TryAdoptDependentGeometry(tag);
+        if (partError != 0) return partError;
         *spunTag = tag;
         return ParasolidConstants.PK_ERROR_no_errors;
     }
@@ -342,6 +391,10 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_bad_dimension;
         if (sf->vertex is null || sf->u_knot is null || sf->v_knot is null || sf->u_knot_mult is null || sf->v_knot_mult is null)
             return ParasolidConstants.PK_ERROR_bad_parameter;
+        if (sf->is_rational > 1 || sf->is_u_periodic > 1 || sf->is_v_periodic > 1 || sf->is_u_closed > 1 || sf->is_v_closed > 1)
+            return ParasolidConstants.PK_ERROR_bad_parameter;
+        var poleCount = (long)sf->n_u_vertices * sf->n_v_vertices;
+        if (poleCount > int.MaxValue / sf->vertex_dim) return ParasolidConstants.PK_ERROR_bad_parameter;
         var workspaceSize = BSurfaceEvaluation.WorkspaceSize(sf->u_degree, sf->v_degree, 10, 10);
         if (workspaceSize == 0 || workspaceSize > MaxEvalWorkspace)
             return ParasolidConstants.PK_ERROR_not_implemented;
@@ -352,7 +405,9 @@ internal static unsafe partial class KernelRuntime
             || ExpandKnots(sf->v_knot, sf->v_knot_mult, sf->n_v_knots, sf->v_degree, vExpandedCount, null) != 0)
             return ParasolidConstants.PK_ERROR_bad_knots;
 
-        var scalarCount = (long)sf->n_u_vertices * sf->n_v_vertices * sf->vertex_dim;
+        if (uExpandedCount > int.MaxValue || vExpandedCount > int.MaxValue)
+            return ParasolidConstants.PK_ERROR_bad_parameter;
+        var scalarCount = poleCount * sf->vertex_dim;
         for (BufferOffset i = 0; i < scalarCount; i++)
         {
             if (!double.IsFinite(sf->vertex[i]))
@@ -361,11 +416,9 @@ internal static unsafe partial class KernelRuntime
                 return ParasolidConstants.PK_ERROR_weight_le_0;
         }
 
-        // Periodic directions repeat their first poles at the far end (pole wrap).
-        if (sf->is_u_periodic != 0 && !PolesWrapPeriodically(sf->vertex, sf->n_u_vertices, sf->n_v_vertices, sf->vertex_dim, sf->u_degree, alongU: true))
-            return ParasolidConstants.PK_ERROR_periodic_open;
-        if (sf->is_v_periodic != 0 && !PolesWrapPeriodically(sf->vertex, sf->n_u_vertices, sf->n_v_vertices, sf->vertex_dim, sf->v_degree, alongU: false))
-            return ParasolidConstants.PK_ERROR_periodic_open;
+        var periodicError = sf->is_u_periodic != 0 ? CheckPeriodicSurfaceDirection(sf, alongU: true) : 0;
+        if (periodicError == 0 && sf->is_v_periodic != 0) periodicError = CheckPeriodicSurfaceDirection(sf, alongU: false);
+        if (periodicError != 0) return periodicError;
 
         var session = State.Session;
         int dataIndex;
@@ -540,6 +593,133 @@ internal static unsafe partial class KernelRuntime
         }
         return true;
     }
+
+    private static int CheckPeriodicSurfaceDirection(PK_BSURF_sf_s* sf, bool alongU)
+    {
+        var degree = alongU ? sf->u_degree : sf->v_degree;
+        if (PolesWrapPeriodically(sf->vertex, sf->n_u_vertices, sf->n_v_vertices, sf->vertex_dim, degree, alongU)) return 0;
+        var knots = alongU ? sf->u_knot : sf->v_knot;
+        var mults = alongU ? sf->u_knot_mult : sf->v_knot_mult;
+        var count = alongU ? sf->n_u_knots : sf->n_v_knots;
+        if (mults[0] != degree + 1 || mults[count - 1] != degree + 1)
+            return ParasolidConstants.PK_ERROR_periodic_open;
+        // PK also accepts clamped periodic surfaces, including its native
+        // rational surface-of-revolution representation. Certify the entire
+        // seam from its homogeneous control rows, rather than sampled points.
+        return ClampedPeriodicSeam(sf, alongU, knots[1] - knots[0], knots[count - 1] - knots[count - 2])
+            ? 0 : ParasolidConstants.PK_ERROR_periodic_not_smooth;
+    }
+
+    private static bool ClampedPeriodicSeam(PK_BSURF_sf_s* sf, bool alongU, double firstSpan, double lastSpan)
+    {
+        if (!double.IsFinite(firstSpan) || !double.IsFinite(lastSpan) || firstSpan <= 0 || lastSpan <= 0) return false;
+        var spanScale = Math.Max(firstSpan, lastSpan);
+        var a = firstSpan / spanScale;
+        var b = lastSpan / spanScale;
+        if (a == 0 || b == 0) return false;
+        var length = alongU ? sf->n_u_vertices : sf->n_v_vertices;
+        var width = alongU ? sf->n_v_vertices : sf->n_u_vertices;
+        var dimension = sf->vertex_dim;
+        var vertex = sf->vertex;
+        var rational = sf->is_rational != 0;
+        var firstWeight = rational ? vertex[3] : 1;
+        Span<double> origin = stackalloc double[3];
+        for (var k = 0; k < 3; k++)
+        {
+            origin[k] = vertex[k] / firstWeight;
+            if (!double.IsFinite(origin[k])) return false;
+        }
+        // A common affine translation preserves both homogeneous identities.
+        // Center before choosing the arithmetic scale: world position must
+        // not turn a local tangent discontinuity into permitted roundoff.
+        var valueScale = 0.0;
+        for (var j = 0; j < width; j++)
+        {
+            var p0 = PeriodicPoleOffset(0, j, sf->n_v_vertices, dimension, alongU);
+            var p1 = PeriodicPoleOffset(1, j, sf->n_v_vertices, dimension, alongU);
+            var pe = PeriodicPoleOffset(length - 1, j, sf->n_v_vertices, dimension, alongU);
+            var pm = PeriodicPoleOffset(length - 2, j, sf->n_v_vertices, dimension, alongU);
+            for (var k = 0; k < dimension; k++)
+            {
+                var shift = k < 3 ? origin[k] : 0;
+                valueScale = Math.Max(valueScale, Math.Max(
+                    Math.Max(Math.Abs(PeriodicSeamCoordinate(vertex, p0, k, shift, rational)),
+                        Math.Abs(PeriodicSeamCoordinate(vertex, p1, k, shift, rational))),
+                    Math.Max(Math.Abs(PeriodicSeamCoordinate(vertex, pe, k, shift, rational)),
+                        Math.Abs(PeriodicSeamCoordinate(vertex, pm, k, shift, rational)))));
+            }
+        }
+        if (!(valueScale > 0) || !double.IsFinite(valueScale)) return false;
+        var endScale = 1.0;
+        var lambda = 0.0;
+        if (rational)
+        {
+            var end = PeriodicPoleOffset(length - 1, 0, sf->n_v_vertices, dimension, alongU);
+            var next = PeriodicPoleOffset(1, 0, sf->n_v_vertices, dimension, alongU);
+            var previous = PeriodicPoleOffset(length - 2, 0, sf->n_v_vertices, dimension, alongU);
+            var w0 = vertex[3] / valueScale;
+            endScale = (vertex[end + 3] / valueScale) / w0;
+            if (!(w0 > 0) || !(endScale > 0) || !double.IsFinite(endScale)) return false;
+            lambda = (a * ((vertex[end + 3] / valueScale) / endScale - (vertex[previous + 3] / valueScale) / endScale)
+                - b * (vertex[next + 3] / valueScale - w0)) / w0;
+            if (!double.IsFinite(lambda)) return false;
+        }
+        const double roundoff = 256 * 2.2204460492503131e-16;
+        for (var j = 0; j < width; j++)
+        {
+            var p0 = PeriodicPoleOffset(0, j, sf->n_v_vertices, dimension, alongU);
+            var p1 = PeriodicPoleOffset(1, j, sf->n_v_vertices, dimension, alongU);
+            var pe = PeriodicPoleOffset(length - 1, j, sf->n_v_vertices, dimension, alongU);
+            var pm = PeriodicPoleOffset(length - 2, j, sf->n_v_vertices, dimension, alongU);
+            for (var k = 0; k < dimension; k++)
+            {
+                var shift = k < 3 ? origin[k] : 0;
+                var h0 = PeriodicSeamCoordinate(vertex, p0, k, shift, rational) / valueScale;
+                var h1 = PeriodicSeamCoordinate(vertex, p1, k, shift, rational) / valueScale;
+                var he = (PeriodicSeamCoordinate(vertex, pe, k, shift, rational) / valueScale) / endScale;
+                var hm = (PeriodicSeamCoordinate(vertex, pm, k, shift, rational) / valueScale) / endScale;
+                var e0 = PeriodicSeamInputError(vertex, p0, k, shift, rational, valueScale);
+                var e1 = PeriodicSeamInputError(vertex, p1, k, shift, rational, valueScale);
+                var ee = PeriodicSeamInputError(vertex, pe, k, shift, rational, valueScale) / endScale;
+                var em = PeriodicSeamInputError(vertex, pm, k, shift, rational, valueScale) / endScale;
+                var positionError = roundoff * (Math.Abs(he) + Math.Abs(h0)) + ee + e0;
+                if (!double.IsFinite(he) || !double.IsFinite(hm) || !double.IsFinite(positionError)
+                    || Math.Abs(he - h0) > positionError) return false;
+                var difference = a * (he - hm) - b * (h1 - h0);
+                var expected = lambda * h0;
+                var errorScale = a * (Math.Abs(he) + Math.Abs(hm)) + b * (Math.Abs(h1) + Math.Abs(h0)) + Math.Abs(expected);
+                var derivativeError = roundoff * errorScale + a * (ee + em) + b * (e1 + e0) + Math.Abs(lambda) * e0;
+                if (!double.IsFinite(difference) || !double.IsFinite(expected) || !double.IsFinite(derivativeError)
+                    || Math.Abs(difference - expected) > derivativeError) return false;
+            }
+        }
+        // H_end = c H_start and D_end/c - D_start = lambda H_start
+        // hold coefficient by coefficient with one c and one lambda. They
+        // therefore hold for every point of the other B-spline parameter;
+        // the lambda term cancels in the rational quotient derivative.
+        return true;
+    }
+
+    private static double PeriodicSeamCoordinate(double* vertex, BufferOffset pole, BufferOffset component,
+        double origin, bool rational)
+        => component == 3 ? vertex[pole + 3]
+            : Math.FusedMultiplyAdd(-origin, rational ? vertex[pole + 3] : 1, vertex[pole + component]);
+
+    private static double PeriodicSeamInputError(double* vertex, BufferOffset pole, BufferOffset component,
+        double origin, bool rational, double scale)
+    {
+        if (component == 3) return 0;
+        // The incoming homogeneous coordinates can already contain rounding
+        // from X' = X + translation * w. Carry a small input-ULP allowance
+        // separately; it must not inherit the 256-epsilon local algebra bound.
+        const double inputRoundoff = 2 * 2.2204460492503131e-16;
+        var weight = rational ? vertex[pole + 3] : 1;
+        return inputRoundoff * (Math.Abs(vertex[pole + component] / scale) + Math.Abs(origin * (weight / scale)));
+    }
+
+    private static BufferOffset PeriodicPoleOffset(BufferCount along, BufferCount across, BufferCount vCount,
+        BufferCount dimension, bool alongU)
+        => (alongU ? along * vCount + across : across * vCount + along) * dimension;
 
 // ── Analytic geometry create/ask (PK_LINE/CIRCLE/PLANE/CONE/SPHERE/TORUS) ──
 // Validation contracts probed against real Parasolid V38: non-unit axis or

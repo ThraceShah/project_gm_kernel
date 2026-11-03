@@ -38,6 +38,7 @@ global using SurfTag = int;
 global using GeomTag = int;
 global using BlendBoundTag = int;
 global using TransfTag = int;
+global using BodyTag = int;
 global using EntityTag = int;
 
 // Kernel-internal enum aliases — mirror PK_*_t values but decouple from ABI surface.
@@ -60,6 +61,7 @@ global using XtFieldElementCount = int;
 global using XtNodeClass = int;
 global using XtNodeIndex = int;
 global using XtNodePosition = int;
+global using XtPersistentIdentifier = int;
 
 // Computation buffer positions and derivative orders (not entity handles).
 global using BufferOffset = int;

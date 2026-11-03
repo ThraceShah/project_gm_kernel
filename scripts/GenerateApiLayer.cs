@@ -636,6 +636,22 @@ unsafe
         parseArgs.Add(sysroot);
     }
 
+    // A NuGet libclang installation can lack Clang's resource headers. Linux
+    // still has the toolchain's standard C headers; locate them through GCC
+    // instead of silently parsing missing size_t declarations as int.
+    if (OperatingSystem.IsLinux())
+    {
+        using var compiler = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("gcc", "-print-file-name=include")
+        { RedirectStandardOutput = true, UseShellExecute = false });
+        if (compiler != null)
+        {
+            var include = compiler.StandardOutput.ReadToEnd().Trim();
+            compiler.WaitForExit();
+            if (compiler.ExitCode == 0 && File.Exists(Path.Combine(include, "stddef.h")))
+            { parseArgs.Add("-isystem"); parseArgs.Add(include); }
+        }
+    }
+
     var argHandles = parseArgs.Select(Marshal.StringToHGlobalAnsi).ToArray();
     var headerPtr = Marshal.StringToHGlobalAnsi(mainHeader);
 
@@ -647,6 +663,26 @@ unsafe
     if (tu == null)
     {
         Console.WriteLine("FAILED to parse translation unit");
+        return 1;
+    }
+    var parseFailed = false;
+    for (uint diagnosticIndex = 0; diagnosticIndex < clang.getNumDiagnostics(tu); diagnosticIndex++)
+    {
+        var diagnostic = clang.getDiagnostic(tu, diagnosticIndex);
+        if ((int)clang.getDiagnosticSeverity(diagnostic) >= 3)
+        {
+            var message = clang.formatDiagnostic(diagnostic, 0);
+            Console.Error.WriteLine(message.ToString());
+            clang.disposeString(message);
+            parseFailed = true;
+        }
+        clang.disposeDiagnostic(diagnostic);
+    }
+    if (parseFailed)
+    {
+        Console.Error.WriteLine("Header parsing failed; no ABI outputs were generated.");
+        clang.disposeTranslationUnit(tu);
+        clang.disposeIndex((void*)idx);
         return 1;
     }
 
@@ -1540,7 +1576,8 @@ bool CanGenerateExportStub((string Name, string RetType, List<(string Name, stri
 void GenerateExportsFile(string outputPath)
 {
     var implemented = new HashSet<string>(
-        Regex.Matches(File.ReadAllText(Path.Combine(repoRoot, "src", "ProjectGmKernel.Native", "KernelExports.cs")),
+        Regex.Matches(string.Join("\n", Directory.GetFiles(Path.Combine(repoRoot, "src", "ProjectGmKernel.Native"), "KernelExports*.cs")
+            .Order(StringComparer.Ordinal).Select(File.ReadAllText)),
             @"EntryPoint\s*=\s*""(PK_[A-Za-z0-9_]+)""")
         .Select(m => m.Groups[1].Value));
 

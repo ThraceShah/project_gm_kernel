@@ -26,9 +26,11 @@ internal static unsafe partial class KernelRuntime
     {
         var slot = GetSurfaceSlotByTag(tag);
         // A caller may subsequently attach an imported support to a face;
-        // the topology then owns its lifetime. Ordinary decoded supports are
-        // borrowed and never reach this path.
-        if (slot >= 0 && Surfaces.IsAlive(slot) && Surfaces[slot].OwnerCount == 0)
+        // the topology then owns its lifetime. Bound curves release their
+        // acquired references before freeing this payload; this legacy import
+        // fallback only reclaims a support still alive without either owner.
+        // An unbound ordinary decoded payload never owns its input supports.
+        if (slot >= 0 && Surfaces.IsAlive(slot) && Surfaces[slot].OwnerCount == 0 && Surfaces[slot].GeometricOwnerCount == 0)
         {
             // This callback runs when the curve payload is physically freed,
             // including undo replay and deferred-delete commit. Do not append

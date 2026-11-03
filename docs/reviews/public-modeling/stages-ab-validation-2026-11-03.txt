@@ -1,0 +1,80 @@
+Public modeling stages A/B — final acceptance record
+Date: 2026-11-03
+Environment: Linux x64; .NET SDK 10.0.403; real Parasolid 38.0.150.
+Command: MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyPublicModeling.cs
+Final process exit code: 0
+
+Exact per-step summary from temp_docs/public-modeling-verification/summary.txt:
+
+PASS kernel-tests, exit=0, seconds=9.5
+PASS xt-tests, exit=0, seconds=4.0
+PASS display-build, exit=0, seconds=3.2
+PASS GeometryPublicApiOracle, exit=0, seconds=5.3
+PASS GeometryTransformOracle, exit=0, seconds=2.6
+PASS BrepImportOracle, exit=0, seconds=2.6
+PASS ProfileModelingOracle, exit=0, seconds=2.5
+PASS modeled-body-import, exit=0, seconds=2.7
+PASS reference-model-import, exit=0, seconds=2.8
+PASS IcurveEvaluationOracle, exit=0, seconds=2.4
+PASS DisplayBridgeOracle, exit=0, seconds=2.5
+PASS native-publish, exit=0, seconds=2.4
+PASS native-abi, exit=0, seconds=1.2
+PASS native-display, exit=0, seconds=2.8
+
+Counts and gates:
+
+- Kernel tests: 910 passed, 0 failed, 0 skipped.
+- XT library tests: 12 passed, 0 failed, 0 skipped.
+- Public geometry: create/ask/native domains/D0-D2/complete NURBS arrays,
+  14 periodic positive/negative controls, 4 ownership controls,
+  construction geometry lifecycle, and 7 XT writer fixture categories passed.
+- Transform oracle: 83 passed, 0 failed; source preservation, shared clone
+  identity, construction geometry and independent real-PK comparisons passed.
+- Modeling oracle: all 33 cases passed fresh XT receive, topology counts,
+  default real-PK BODY_check with zero faults and strict structure checks.
+  Extrusion tracking also matched the independent PK producer.
+- Import oracle: 13 independent PK models + 33 self-modeled outputs +
+  33 PK-modeled reference outputs passed. Fresh export, deep copy, source
+  deletion, original-parameter evaluation and pool/payload baselines passed.
+- Managed display: 8 flows passed identifiers, viewer-cell mapping, face/edge
+  picking, deleted-source rejection, disposal and session-generation checks.
+- Native release: 124 implemented dispatch descriptors verified;
+  allocation IL guard checked 1510 production methods — CLEAN.
+- Native ABI: ABI smoke passed.
+- Native display: block 26 bindings / 12 triangles; copied/transformed holed
+  extrusion 50 bindings / 32 triangles; holed full revolution 32 bindings /
+  556 triangles. Both solids passed real PK BODY_check and original-entity
+  picking. Export, matching buffer free and stale-identity checks passed.
+
+Scope and interpretation:
+
+The geometry and topology of self-modeled bodies are built by this kernel.
+Real Parasolid provides independent reference results and display discretization.
+The accepted modeling subset and explicit rejections are documented in
+docs/Public_Modeling_Stages_AB.md and docs/Profile_Modeling.md.
+
+The IcurveEvaluationOracle cases A/A2/B/C/D/E/F/F2/F3 passed. Its explicitly
+unimplemented live full-INTERSECTION, terminator, high-order and blend gates
+remain NotRun. The separate pre-existing raw parametric ICurve D2 convention
+difference remains unpassed; this run does not claim otherwise. See
+docs/reviews/icurve-evaluation/parasolid-sdk-validation-2026-11-02.md.
+
+The older writer fixtures retain their documented local face-deviation
+diagnostics where PK recomputes supporting edge curves. This is not a claim
+that all internal parameterizations or all full-local comparisons are equal.
+The new profile modeling and import gates retain their required structural
+comparisons and complete real-PK BODY_check gates.
+
+NuGet vulnerability-feed requests produced NU1900 network warnings in some
+cached restores. These warnings did not replace or skip any acceptance step.
+The final native publish and all child commands returned 0. Timings include
+incremental builds and are verification timings, not performance benchmarks.
+
+Raw per-step logs: temp_docs/public-modeling-verification/
+Modeling results: temp_docs/profile-modeling-oracle/
+Import results: temp_docs/brep-import-oracle/
+Display results: temp_docs/display-bridge-oracle/
+
+The private SDK, credentials, build outputs and transient logs are not part
+of this source change. Broader VerifyKernel gates and unsupported APIs are
+not declared passed by this A/B acceptance run.

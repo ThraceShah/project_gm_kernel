@@ -50,7 +50,7 @@ public unsafe class DependentGeometryEvaluationTests : IDisposable
     }
 
     [Fact]
-    public void TrimmedCurve_DelegatesToBasisParameter_AndStoresInterval()
+    public void TrimmedCurve_RebasesNativeParameter_AndRetainsSignedBasisInterval()
     {
         var basis = CreateEllipse(3, 3);   // a circle as an ellipse with equal radii
         int trimmed;
@@ -61,26 +61,31 @@ public unsafe class DependentGeometryEvaluationTests : IDisposable
         Assert.Equal(0, KernelRuntime.TrCurveCreate(&sf, &trimmed));
         var record = KernelRuntime.GetCurveByTag(trimmed);
         Assert.Equal(CurveClass.TRCurve, record.Class);
-        Assert.Equal(1.0, record.TMin, 14);
-        Assert.Equal(4.0, record.TMax, 14);
+        Assert.Equal(0.0, record.TMin, 14);
+        Assert.Equal(3.0, record.TMax, 14);
         var output = stackalloc PK_VECTOR_s[3];
         var basisOutput = stackalloc PK_VECTOR_s[3];
         Assert.Equal(0, KernelRuntime.CurveEval(trimmed, 2.5, 2, output));
-        Assert.Equal(0, KernelRuntime.CurveEval(basis, 2.5, 2, basisOutput));
+        Assert.Equal(0, KernelRuntime.CurveEval(basis, 3.5, 2, basisOutput));
         for (var i = 0; i <= 2; i++)
         for (var axis = 0; axis < 3; axis++)
             Assert.Equal(basisOutput[i].coord[axis], output[i].coord[axis], 13);
         // Outside the trimmed interval the basis curve extension is still used.
         Assert.Equal(0, KernelRuntime.CurveEval(trimmed, 7.0, 0, output));
-        Assert.Equal(0, KernelRuntime.CurveEval(basis, 7.0, 0, basisOutput));
+        Assert.Equal(0, KernelRuntime.CurveEval(basis, 8.0, 0, basisOutput));
         Assert.Equal(basisOutput[0].coord[0], output[0].coord[0], 13);
-        // Reversed interval: negative sense, unchanged parameterisation.
+        // Descending XT trims reverse the parameter direction and every odd derivative.
         var reversed = new PK_INTERVAL_s();
         reversed.value[0] = 4.0;
         reversed.value[1] = 1.0;
         sf = new PK_TRCURVE_sf_s { basis_curve = basis, t_int = reversed };
         Assert.Equal(0, KernelRuntime.TrCurveCreate(&sf, &trimmed));
         Assert.Equal(ParasolidConstants.PK_TOPOL_sense_negative_c, KernelRuntime.GetCurveByTag(trimmed).Sense);
+        Assert.Equal(0, KernelRuntime.CurveEval(trimmed, .5, 2, output));
+        Assert.Equal(0, KernelRuntime.CurveEval(basis, 3.5, 2, basisOutput));
+        for (var i = 0; i <= 2; i++)
+        for (var axis = 0; axis < 3; axis++)
+            Assert.Equal((i == 1 ? -1 : 1) * basisOutput[i].coord[axis], output[i].coord[axis], 13);
     }
 
     [Fact]

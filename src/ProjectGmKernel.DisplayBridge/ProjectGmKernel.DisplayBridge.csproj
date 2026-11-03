@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../ProjectGmKernel.Native/ProjectGmKernel.Native.csproj" />
+    <ProjectReference Include="../../third_party/PKToy/PskernelSharp/PskernelSharp.csproj" />
+    <ProjectReference Include="../../third_party/PKToy/Viewer.IContract/Viewer.IContract.csproj" />
+    <Compile Include="../../third_party/PKToy/PskernelSharp/Using.cs" Link="PskernelSharpUsings.cs" />
+  </ItemGroup>
+</Project>

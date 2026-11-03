@@ -2,12 +2,15 @@ using ProjectGmKernel.Native.Generated;
 
 namespace ProjectGmKernel.Native.Runtime;
 
-internal static unsafe class XtWriter
+internal static unsafe partial class XtWriter
 {
     private const double DefaultResolutionSize = 1000.0;
     private const double DefaultLinearResolution = 1e-8;
 
     public static int WriteText(IReadOnlyList<EntityTag> parts, int transmitVersion, out string text)
+        => WriteText(parts, transmitVersion, out text, null);
+
+    private static int WriteText(IReadOnlyList<EntityTag> parts, int transmitVersion, out string text, List<DisplayBinding>? bindings)
     {
         text = "";
         var nodes = new List<XtNode>(128);
@@ -24,7 +27,7 @@ internal static unsafe class XtWriter
             if (!KernelRuntime.TryResolveBodySlot(parts[i], out var bodySlot))
                 return ParasolidConstants.PK_ERROR_unsuitable_entity;
 
-            if (!BuildBody(bodySlot, nodes, ref graph, out var bodyIndex))
+            if (!BuildBody(bodySlot, nodes, ref graph, out var bodyIndex, bindings))
                 return ParasolidConstants.PK_ERROR_bad_field_conversion;
             if (parts.Count > 1)
                 bodyIndexes[i] = bodyIndex;
@@ -44,29 +47,33 @@ internal static unsafe class XtWriter
         return ParasolidConstants.PK_ERROR_no_errors;
     }
 
-    private static bool BuildBody(BodySlot bodySlot, List<XtNode> nodes, ref TransmitGraph graph, out XtNodeIndex bodyIndex)
+    private static bool BuildBody(BodySlot bodySlot, List<XtNode> nodes, ref TransmitGraph graph, out XtNodeIndex bodyIndex, List<DisplayBinding>? bindings)
     {
         bodyIndex = 0;
         var map = new NodeMap();
         var body = KernelRuntime.GetBodyRecord(bodySlot);
+        map.BodyType = body.BodyType;
         if (body.BodyType == ParasolidConstants.PK_BODY_type_wire_c
             && (body.RegionCount != 0 || body.ShellCount != 0))
         {
-            // The materialized PK wire subset has one void region and one
-            // faceless shell owning the sole edge. Other shell topologies need
-            // explicit ownership data rather than being flattened on output.
-            if (body.RegionCount != 1 || body.ShellCount != 1 || body.FaceCountBody != 0
-                || body.EdgeCountBody != 1 || body.VertexCountBody != 2
+            if (body.RegionCount != 1 || body.ShellCount < 1 || body.FaceCountBody != 0
+                || body.EdgeCountBody < 1
                 || body.FirstRegion < 0 || body.FirstShell < 0)
                 return false;
             var region = KernelRuntime.GetRegionRecord(body.FirstRegion);
-            var shell = KernelRuntime.GetShellRecord(body.FirstShell);
-            if (region.IsSolid != 0 || region.Body != bodySlot || region.ShellCount != 1
-                || region.FirstShell != body.FirstShell || region.Frame >= 0
-                || shell.Body != bodySlot || shell.Region != body.FirstRegion
-                || shell.FaceUseCount != 0 || shell.AcornVertex >= 0)
+            if (region.IsSolid != 0 || region.Body != bodySlot || region.ShellCount != body.ShellCount
+                || region.FirstShell != body.FirstShell || region.Frame >= 0)
                 return false;
-            map.WireShellSlot = body.FirstShell;
+            var wireShell=body.FirstShell;
+            for(var i=0;i<body.ShellCount;i++)
+            {
+                var shell=KernelRuntime.GetShellRecord(wireShell);
+                if(shell.Body!=bodySlot||shell.Region!=body.FirstRegion||shell.FaceUseCount!=0||shell.AcornVertex>=0)return false;
+                wireShell=shell.NextInBody;
+            }
+            // Older one-edge imports predate the explicit owner tag. Preserve
+            // that representation while all new wires identify every component.
+            map.WireShellSlot = body.ShellCount==1?body.FirstShell:-1;
         }
         map.Body = AddIndex(nodes, ref graph, ref map);
         bodyIndex = map.Body;
@@ -107,6 +114,8 @@ internal static unsafe class XtWriter
             for (var j = 0; j < edge.FinCount; j++, finSlot = KernelRuntime.GetFinRecord(finSlot).NextOfEdge)
                 if (!map.FinSlots.ContainsKey(finSlot))
                     map.FinSlots.Add(finSlot, AddIndex(nodes, ref graph, ref map));
+            if(edge.FinCount==1&&KernelRuntime.GetFinRecord(edge.FirstFinEdge).Loop>=0)
+                map.SheetDummyFins.Add(edgeSlot,AddIndex(nodes,ref graph,ref map));
         }
         var vertexSlot = body.FirstVertexBody;
         for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = KernelRuntime.GetVertexRecord(vertexSlot).NextInBody)
@@ -116,6 +125,7 @@ internal static unsafe class XtWriter
         CollectDependentGeometry(ref map, nodes, ref graph);
         BuildGeometryChains(bodySlot, ref map);
         AssignPersistentNodeIds(ref map);
+        if (bindings != null) AddDisplayBindings(body, map, bindings);
 
         var highest = map.PersistentNodeIdCount;
         SetNode(nodes, map, map.Body, BodyNode(map.Body, highest, body, map));
@@ -149,6 +159,8 @@ internal static unsafe class XtWriter
         foreach (var pair in map.FinSlots)
             if (KernelRuntime.GetFinRecord(pair.Key).Loop < 0)
                 SetNode(nodes, map, pair.Value, HalfedgeNode(pair.Key, map));
+        foreach(var pair in map.SheetDummyFins)
+            SetNode(nodes,map,pair.Value,SheetDummyHalfedgeNode(pair.Key,pair.Value,map));
         vertexSlot = body.FirstVertexBody;
         for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = KernelRuntime.GetVertexRecord(vertexSlot).NextInBody)
             SetNode(nodes, map, map.VertexSlots[vertexSlot], VertexNode(vertexSlot, map));
@@ -216,6 +228,24 @@ internal static unsafe class XtWriter
             var pointTag = KernelRuntime.GetVertexRecord(vertexSlot).PointTag;
             if (pointTag > 0 && !map.PointTags.ContainsKey(pointTag))
                 map.PointTags.Add(pointTag, AddIndex(nodes, ref graph, ref map));
+        }
+        var constructionSurface=body.FirstConstructionSurface;
+        for(var i=0;i<body.ConstructionSurfaceCount;i++)
+        {
+            var tag=KernelRuntime.Surfaces[constructionSurface].Header.Tag;
+            if(!map.SurfaceTags.ContainsKey(tag))map.SurfaceTags.Add(tag,AddIndex(nodes,ref graph,ref map));
+            map.ConstructionGeometry.Add(tag);map.ConstructionSurfaceChain.Add(tag);
+            var next=KernelRuntime.GetConstructionNext(tag);
+            constructionSurface=next==0?-1:KernelRuntime.GetSurfaceSlotByTag(next);
+        }
+        var constructionCurve=body.FirstConstructionCurve;
+        for(var i=0;i<body.ConstructionCurveCount;i++)
+        {
+            var tag=KernelRuntime.Curves[constructionCurve].Header.Tag;
+            if(!map.CurveTags.ContainsKey(tag))map.CurveTags.Add(tag,AddIndex(nodes,ref graph,ref map));
+            map.ConstructionGeometry.Add(tag);map.ConstructionCurveChain.Add(tag);
+            var next=KernelRuntime.GetConstructionNext(tag);
+            constructionCurve=next==0?-1:KernelRuntime.GetCurveSlotByTag(next);
         }
     }
 
@@ -354,8 +384,13 @@ internal static unsafe class XtWriter
 
     private static bool AddCurveTag(CurveTag tag, int dependentTag, bool isCurve, ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
     {
-        if (tag <= 0 || map.CurveTags.ContainsKey(tag))
+        if (tag <= 0)
             return false;
+        if(map.CurveTags.TryGetValue(tag,out var existing))
+        {
+            RecordGeometricOwner(existing,dependentTag,isCurve,tag,SharedIsCurve:true,ref map,nodes,ref graph);
+            return false;
+        }
         var nodeIndex = AddIndex(nodes, ref graph, ref map);
         map.CurveTags.Add(tag, nodeIndex);
         RecordGeometricOwner(nodeIndex, dependentTag, isCurve, tag, SharedIsCurve: true, ref map, nodes, ref graph);
@@ -377,8 +412,13 @@ internal static unsafe class XtWriter
 
     private static bool AddSurfaceTag(SurfTag tag, int dependentTag, bool isCurve, ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
     {
-        if (tag <= 0 || map.SurfaceTags.ContainsKey(tag))
+        if (tag <= 0)
             return false;
+        if(map.SurfaceTags.TryGetValue(tag,out var existing))
+        {
+            RecordGeometricOwner(existing,dependentTag,isCurve,tag,SharedIsCurve:false,ref map,nodes,ref graph);
+            return false;
+        }
         var nodeIndex = AddIndex(nodes, ref graph, ref map);
         map.SurfaceTags.Add(tag, nodeIndex);
         RecordGeometricOwner(nodeIndex, dependentTag, isCurve, tag, SharedIsCurve: false, ref map, nodes, ref graph);
@@ -386,15 +426,18 @@ internal static unsafe class XtWriter
     }
 
     /// <summary>
-    /// Ownerless dependency geometry carries a GEOMETRIC_OWNER node (XT node
-    /// 141, {owner: dependent, shared_geometry: the dependency}) and points at
-    /// it from its own geometric_owner field, matching Parasolid's transmit.
+    /// Dependency geometry carries GEOMETRIC_OWNER nodes (XT node 141), even
+    /// when it is also owned by topology. Its geometric_owner field heads the
+    /// circular list of dependent owners, matching Parasolid's transmit.
     /// </summary>
     private static void RecordGeometricOwner(XtNodeIndex sharedNode, int dependentTag, bool isCurve, int sharedTag, bool SharedIsCurve,
         ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
     {
+        foreach(var pending in map.PendingGeometricOwners)
+            if(pending.SharedTag==sharedTag&&pending.DependentTag==dependentTag&&pending.DependentIsCurve==isCurve)
+                return;
         var ownerNode = AddIndex(nodes, ref graph, ref map);
-        map.GeometricOwnerNodes.Add(sharedTag, ownerNode);
+        map.GeometricOwnerNodes.TryAdd(sharedTag, ownerNode);
         map.PendingGeometricOwners.Add((ownerNode, dependentTag, isCurve, sharedTag, SharedIsCurve));
     }
 
@@ -404,6 +447,18 @@ internal static unsafe class XtWriter
         {
             var dependent = isCurve ? map.CurveTags[dependentTag] : map.SurfaceTags[dependentTag];
             var shared = sharedIsCurve ? map.CurveTags[sharedTag] : map.SurfaceTags[sharedTag];
+            XtNodeIndex first=0,last=0,previous=0,next=0;
+            var found=false;
+            foreach(var candidate in map.PendingGeometricOwners)
+            {
+                if(candidate.SharedTag!=sharedTag)continue;
+                if(first==0)first=candidate.Node;
+                if(candidate.Node==node){previous=last;found=true;}
+                else if(found&&next==0)next=candidate.Node;
+                last=candidate.Node;
+            }
+            if(previous==0)previous=last;
+            if(next==0)next=first;
             SetNode(nodes, map, node, new XtNode
             {
                 Type = (int)XtNodeTypes.GeometricOwner,
@@ -411,8 +466,8 @@ internal static unsafe class XtWriter
                 Fields =
                 [
                     XtFieldValue.Ptr(dependent),
-                    XtFieldValue.Ptr(node),
-                    XtFieldValue.Ptr(node),
+                    XtFieldValue.Ptr(next),
+                    XtFieldValue.Ptr(previous),
                     XtFieldValue.Ptr(shared),
                 ],
             });
@@ -438,7 +493,7 @@ internal static unsafe class XtWriter
     private static List<int> BuildChain(Dictionary<int, XtNodeIndex> tags, int firstTag, Func<int, int> nextTagOf, NodeMap map)
     {
         var chain = new List<int>(tags.Count);
-        if (firstTag > 0 && tags.ContainsKey(firstTag))
+        if (firstTag > 0 && tags.ContainsKey(firstTag)&&!map.ConstructionGeometry.Contains(firstTag))
         {
             var current = firstTag;
             var guard = 0;
@@ -449,11 +504,11 @@ internal static unsafe class XtWriter
                 if (guard++ > tags.Count)
                     break;
             }
-            while (current > 0 && current != firstTag && tags.ContainsKey(current));
+            while (current > 0 && current != firstTag && tags.ContainsKey(current)&&!map.ConstructionGeometry.Contains(current));
         }
         foreach (var tag in tags.Keys)
         {
-            if (!chain.Contains(tag) && !map.FloatingCurves.Contains(tag))
+            if (!chain.Contains(tag) && !map.FloatingCurves.Contains(tag)&&!map.ConstructionGeometry.Contains(tag))
                 chain.Add(tag);
         }
         return chain;
@@ -465,7 +520,7 @@ internal static unsafe class XtWriter
         if (firstEdge > 0)
             return firstEdge;
         foreach (var pair in map.CurveTags)
-            return pair.Key;
+            if(!map.ConstructionGeometry.Contains(pair.Key)&&!map.FloatingCurves.Contains(pair.Key))return pair.Key;
         return 0;
     }
 
@@ -475,7 +530,7 @@ internal static unsafe class XtWriter
         if (firstFace > 0)
             return firstFace;
         foreach (var pair in map.SurfaceTags)
-            return pair.Key;
+            if(!map.ConstructionGeometry.Contains(pair.Key))return pair.Key;
         return 0;
     }
 
@@ -522,8 +577,8 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(ChainHead(map.ConstructionSurfaceChain,map.SurfaceTags)),
+                XtFieldValue.Ptr(ChainHead(map.ConstructionCurveChain,map.CurveTags)),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
@@ -537,7 +592,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Unsigned(XtBodyType(body.BodyType)),
                 XtFieldValue.Unsigned(1),
-                XtFieldValue.Ptr(map.WireShellSlot >= 0 ? Ptr(map.ShellSlots, map.WireShellSlot) : FirstSolidShell(map)),
+                XtFieldValue.Ptr(FirstSolidShell(map)),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(ChainHead(map.SurfaceChain, map.SurfaceTags)),
                 XtFieldValue.Ptr(ChainHead(map.CurveChain, map.CurveTags)),
@@ -545,7 +600,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(Ptr(map.RegionSlots, body.FirstRegion)),
-                XtFieldValue.Ptr(map.WireShellSlot >= 0 ? 0 : Ptr(map.EdgeSlots, body.FirstEdgeBody)),
+                XtFieldValue.Ptr(FirstOwnedEdge(0,map)),
                 XtFieldValue.Ptr(Ptr(map.VertexSlots, body.FirstVertexBody)),
                 XtFieldValue.Int(0),
                 XtFieldValue.Ptr(0),
@@ -584,7 +639,8 @@ internal static unsafe class XtWriter
     {
         var shell = KernelRuntime.GetShellRecord(slot);
         var region = KernelRuntime.GetRegionRecord(shell.Region);
-        var isWireShell = slot == map.WireShellSlot;
+        var isWireShell = map.BodyType == ParasolidConstants.PK_BODY_type_wire_c;
+        var firstWireEdge=FirstOwnedEdge(map.ShellSlots[slot],map);
         var firstBack = 0;
         var firstFront = 0;
         var useSlot = shell.FirstFaceUseShell;
@@ -605,11 +661,12 @@ internal static unsafe class XtWriter
             [
                 XtFieldValue.Int(NodeId(map.ShellSlots[slot], map)),
                 XtFieldValue.Ptr(0),
-                XtFieldValue.Ptr(isWireShell || region.IsSolid != 0 ? map.Body : 0),
+                XtFieldValue.Ptr(isWireShell || firstWireEdge!=0 || shell.AcornVertex>=0
+                    || map.BodyType == ParasolidConstants.PK_BODY_type_sheet_c || region.IsSolid != 0 ? map.Body : 0),
                 XtFieldValue.Ptr(NextShellInRegion(slot, map)),
                 XtFieldValue.Ptr(firstBack),
-                XtFieldValue.Ptr(isWireShell ? Ptr(map.EdgeSlots, map.FirstEdgeSlot) : 0),
-                XtFieldValue.Ptr(0),
+                XtFieldValue.Ptr(firstWireEdge),
+                XtFieldValue.Ptr(Ptr(map.VertexSlots,shell.AcornVertex)),
                 XtFieldValue.Ptr(Ptr(map.RegionSlots, shell.Region)),
                 XtFieldValue.Ptr(firstFront),
             ],
@@ -673,13 +730,14 @@ internal static unsafe class XtWriter
                 XtFieldValue.Int(NodeId(map.EdgeSlots[slot], map)),
                 XtFieldValue.Ptr(0),
                 edge.Tolerance != 0 ? XtFieldValue.RealValue(edge.Tolerance) : XtFieldValue.Null(),
-                XtFieldValue.Ptr(Ptr(map.FinSlots, PrimaryFin(edge))),
+                XtFieldValue.Ptr(map.SheetDummyFins.TryGetValue(slot,out var dummy)&&KernelRuntime.GetFinRecord(edge.FirstFinEdge).Sense=='-'
+                    ?dummy:Ptr(map.FinSlots, PrimaryFin(edge))),
                 XtFieldValue.Ptr(PreviousEdge(slot, map)),
                 XtFieldValue.Ptr(NextEdge(slot, map)),
                 XtFieldValue.Ptr(edge.CurveTag > 0 ? map.CurveTags[edge.CurveTag] : 0),
                 XtFieldValue.Ptr(EdgeOnCurve(slot, next: true, map)),
                 XtFieldValue.Ptr(EdgeOnCurve(slot, next: false, map)),
-                XtFieldValue.Ptr(map.WireShellSlot >= 0 ? Ptr(map.ShellSlots, map.WireShellSlot) : map.Body),
+                XtFieldValue.Ptr(WireEdgeOwner(edge,map) is var owner && owner!=0 ? owner : map.Body),
             ],
         };
     }
@@ -721,13 +779,40 @@ internal static unsafe class XtWriter
                 XtFieldValue.Ptr(Ptr(map.FinSlots, fin.NextInLoop)),
                 XtFieldValue.Ptr(Ptr(map.FinSlots, fin.PrevInLoop)),
                 XtFieldValue.Ptr(Ptr(map.VertexSlots, fin.Vertex)),
-                XtFieldValue.Ptr(Ptr(map.FinSlots, fin.Other)),
+                XtFieldValue.Ptr(map.SheetDummyFins.TryGetValue(fin.Edge,out var dummy)?dummy:Ptr(map.FinSlots, fin.Other)),
                 XtFieldValue.Ptr(Ptr(map.EdgeSlots, fin.Edge)),
                 XtFieldValue.Ptr(Ptr(map.CurveTags, fin.Curve)),
                 XtFieldValue.Ptr(NextAtVertex(slot, fin, map)),
                 XtFieldValue.Char(FinSense(slot, fin)),
             ],
         };
+    }
+
+    private static XtNode SheetDummyHalfedgeNode(EdgeSlot edgeSlot,XtNodeIndex index,NodeMap map)
+    {
+        var edge=KernelRuntime.GetEdgeRecord(edgeSlot);var real=KernelRuntime.GetFinRecord(edge.FirstFinEdge);
+        var vertex=real.Sense=='+'?edge.StartVertex:edge.EndVertex;
+        return new XtNode{Type=(int)XtNodeTypes.Halfedge,Index=index,Fields=
+        [
+            XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),
+            XtFieldValue.Ptr(Ptr(map.VertexSlots,vertex)),XtFieldValue.Ptr(Ptr(map.FinSlots,edge.FirstFinEdge)),
+            XtFieldValue.Ptr(map.EdgeSlots[edgeSlot]),XtFieldValue.Ptr(0),
+            XtFieldValue.Ptr(NextSheetDummyAtVertex(vertex,index,map)),XtFieldValue.Char(real.Sense=='+'?'-':'+'),
+        ]};
+    }
+
+    private static XtNodeIndex NextSheetDummyAtVertex(VertexSlot vertex,XtNodeIndex after,NodeMap map)
+    {
+        if(vertex<0)return 0;
+        var found=after==0;
+        foreach(var pair in map.SheetDummyFins)
+        {
+            var edge=KernelRuntime.GetEdgeRecord(pair.Key);var real=KernelRuntime.GetFinRecord(edge.FirstFinEdge);
+            var end=real.Sense=='+'?edge.StartVertex:edge.EndVertex;
+            if(found&&end==vertex)return pair.Value;
+            if(pair.Value==after)found=true;
+        }
+        return 0;
     }
 
     private static XtNode VertexNode(VertexSlot slot, NodeMap map)
@@ -929,9 +1014,9 @@ internal static unsafe class XtWriter
             Type=(int)XtNodeTypes.NurbsCurve, Index=nurbs, Fields=
             [
                 XtFieldValue.Int(data.Degree), XtFieldValue.Int(data.NVertices), XtFieldValue.Int(data.VertexDim),
-                XtFieldValue.Int(data.NKnots), XtFieldValue.Unsigned(data.KnotType - ParasolidConstants.PK_knot_unset_c),
+                XtFieldValue.Int(data.NKnots), XtFieldValue.Unsigned(KernelRuntime.BSurfaceKnotTypeToXt(data.KnotType)),
                 XtFieldValue.Logical(data.IsPeriodic != 0), XtFieldValue.Logical(data.IsClosed != 0),
-                XtFieldValue.Logical(data.IsRational != 0), XtFieldValue.Unsigned(data.Form - ParasolidConstants.PK_BCURVE_form_unset_c),
+                XtFieldValue.Logical(data.IsRational != 0), XtFieldValue.Unsigned(data.Form - ParasolidConstants.PK_BCURVE_form_unset_c + 1),
                 XtFieldValue.Ptr(vertices), XtFieldValue.Ptr(mults), XtFieldValue.Ptr(knots),
             ],
         });
@@ -1378,6 +1463,10 @@ internal static unsafe class XtWriter
     private static XtNode OffsetSurfaceNode(XtNodeIndex index, SurfTag tag, SurfaceRecord surface, NodeMap map)
     {
         ref readonly var data = ref KernelRuntime.OffsetDataPool[surface.DataIndex];
+        // Public OFFSET distance follows the support's parameter normal;
+        // XT stores distance along its sensed normal instead.
+        var distance = KernelRuntime.GetSurfaceByTag(data.BaseSurfTag).Sense == ParasolidConstants.PK_TOPOL_sense_negative_c
+            ? -data.Offset : data.Offset;
         return new XtNode
         {
             Type = (int)XtNodeTypes.OffsetSurf,
@@ -1394,7 +1483,7 @@ internal static unsafe class XtWriter
                 XtFieldValue.Char((char)data.Check),
                 XtFieldValue.Logical(false),
                 XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.BaseSurfTag)),
-                XtFieldValue.RealValue(data.Offset),
+                XtFieldValue.RealValue(distance),
                 XtFieldValue.Null(),
             ],
         };
@@ -1445,7 +1534,8 @@ internal static unsafe class XtWriter
         {
             var shell = KernelRuntime.GetShellRecord(pair.Key);
             var region = KernelRuntime.GetRegionRecord(shell.Region);
-            if (region.IsSolid != 0)
+            if (region.IsSolid != 0 || FirstOwnedEdge(pair.Value,map)!=0 || shell.AcornVertex>=0
+                || map.BodyType is ParasolidConstants.PK_BODY_type_wire_c or ParasolidConstants.PK_BODY_type_sheet_c)
                 return pair.Value;
         }
 
@@ -1479,13 +1569,39 @@ internal static unsafe class XtWriter
 
     private static XtNodeIndex NextEdge(EdgeSlot slot, NodeMap map)
     {
-        var next = KernelRuntime.GetEdgeRecord(slot).NextInBody;
-        return next != map.FirstEdgeSlot ? Ptr(map.EdgeSlots, next) : 0;
+        var owner=WireEdgeOwner(KernelRuntime.GetEdgeRecord(slot),map);var found=false;
+        foreach(var pair in map.EdgeSlots)
+        {
+            if(found&&WireEdgeOwner(KernelRuntime.GetEdgeRecord(pair.Key),map)==owner)return pair.Value;
+            if(pair.Key==slot)found=true;
+        }
+        return 0;
     }
 
     private static XtNodeIndex PreviousEdge(EdgeSlot slot, NodeMap map)
     {
-        return slot != map.FirstEdgeSlot ? Ptr(map.EdgeSlots, KernelRuntime.GetEdgeRecord(slot).PrevInBody) : 0;
+        var owner=WireEdgeOwner(KernelRuntime.GetEdgeRecord(slot),map);XtNodeIndex previous=0;
+        foreach(var pair in map.EdgeSlots)
+        {
+            if(pair.Key==slot)return previous;
+            if(WireEdgeOwner(KernelRuntime.GetEdgeRecord(pair.Key),map)==owner)previous=pair.Value;
+        }
+        return 0;
+    }
+
+    private static XtNodeIndex WireEdgeOwner(EdgeRecord edge,NodeMap map)
+    {
+        if(edge.WireShellTag!=0)
+            foreach(var pair in map.ShellSlots)
+                if(KernelRuntime.GetShellRecord(pair.Key).Header.Tag==edge.WireShellTag)return pair.Value;
+        return map.WireShellSlot>=0?Ptr(map.ShellSlots,map.WireShellSlot):0;
+    }
+
+    private static XtNodeIndex FirstOwnedEdge(XtNodeIndex owner,NodeMap map)
+    {
+        foreach(var pair in map.EdgeSlots)
+            if(WireEdgeOwner(KernelRuntime.GetEdgeRecord(pair.Key),map)==owner)return pair.Value;
+        return 0;
     }
 
     private static XtNodeIndex NextVertex(VertexSlot slot, NodeMap map)
@@ -1503,8 +1619,6 @@ internal static unsafe class XtWriter
     {
         if (fin.Edge < 0)
             return '?';
-        if (fin.Vertex < 0)
-            return slot == KernelRuntime.GetEdgeRecord(fin.Edge).FirstFinEdge ? '+' : '-';
         return fin.Sense;
     }
 
@@ -1564,20 +1678,20 @@ internal static unsafe class XtWriter
             return 0;
 
         var vertex = KernelRuntime.GetVertexRecord(fin.Vertex);
-        return fin.NextAtVertex != vertex.FirstFinVertex ? Ptr(map.FinSlots, fin.NextAtVertex) : 0;
+        return fin.NextAtVertex != vertex.FirstFinVertex ? Ptr(map.FinSlots, fin.NextAtVertex) : NextSheetDummyAtVertex(fin.Vertex,0,map);
     }
 
     private static XtNodeIndex NextSurface(SurfTag tag, NodeMap map)
-        => ChainNeighbour(tag, map.SurfaceChain, map.SurfaceTags, offset: 1);
+        => ChainNeighbour(tag,map.ConstructionGeometry.Contains(tag)?map.ConstructionSurfaceChain:map.SurfaceChain,map.SurfaceTags,offset:1);
 
     private static XtNodeIndex PreviousSurface(SurfTag tag, NodeMap map)
-        => ChainNeighbour(tag, map.SurfaceChain, map.SurfaceTags, offset: -1);
+        => ChainNeighbour(tag,map.ConstructionGeometry.Contains(tag)?map.ConstructionSurfaceChain:map.SurfaceChain,map.SurfaceTags,offset:-1);
 
     private static XtNodeIndex NextCurve(CurveTag tag, NodeMap map)
-        => ChainNeighbour(tag, map.CurveChain, map.CurveTags, offset: 1);
+        => ChainNeighbour(tag,map.ConstructionGeometry.Contains(tag)?map.ConstructionCurveChain:map.CurveChain,map.CurveTags,offset:1);
 
     private static XtNodeIndex PreviousCurve(CurveTag tag, NodeMap map)
-        => ChainNeighbour(tag, map.CurveChain, map.CurveTags, offset: -1);
+        => ChainNeighbour(tag,map.ConstructionGeometry.Contains(tag)?map.ConstructionCurveChain:map.CurveChain,map.CurveTags,offset:-1);
 
     private static XtNodeIndex ChainNeighbour(int tag, List<int> chain, Dictionary<int, XtNodeIndex> tags, int offset)
     {
@@ -1620,14 +1734,17 @@ internal static unsafe class XtWriter
 
     private static int XtBodyType(KernelBodyType bodyType)
     {
-        // SCH_body_type / generated BODY__body_type: solid=1, wire=2.
+        // SCH_body_type / generated BODY__body_type enumeration.
         return bodyType == ParasolidConstants.PK_BODY_type_solid_c ? 1
-            : bodyType == ParasolidConstants.PK_BODY_type_wire_c ? 2 : bodyType;
+            : bodyType == ParasolidConstants.PK_BODY_type_wire_c ? 2
+            : bodyType == ParasolidConstants.PK_BODY_type_sheet_c ? 3
+            : bodyType == ParasolidConstants.PK_BODY_type_general_c ? 6 : bodyType;
     }
 
     private struct NodeMap
     {
         public XtNodeIndex Body;
+        public KernelBodyType BodyType;
         public ShellSlot WireShellSlot;
         public RegionSlot FirstRegionSlot;
         public FaceSlot FirstFaceSlot;
@@ -1641,6 +1758,7 @@ internal static unsafe class XtWriter
         public Dictionary<int, XtNodeIndex> FaceSlots;
         public Dictionary<int, XtNodeIndex> LoopSlots;
         public Dictionary<int, XtNodeIndex> FinSlots;
+        public Dictionary<int, XtNodeIndex> SheetDummyFins;
         public Dictionary<int, XtNodeIndex> EdgeSlots;
         public Dictionary<int, XtNodeIndex> VertexSlots;
         public Dictionary<int, XtNodeIndex> SurfaceTags;
@@ -1648,6 +1766,9 @@ internal static unsafe class XtWriter
         public Dictionary<int, XtNodeIndex> PointTags;
         public List<int> SurfaceChain;
         public List<int> CurveChain;
+        public List<int> ConstructionSurfaceChain;
+        public List<int> ConstructionCurveChain;
+        public HashSet<int> ConstructionGeometry;
         public HashSet<int> FloatingCurves;
         public Dictionary<int, XtNodeIndex> GeometricOwnerNodes;
         public List<(XtNodeIndex Node, int DependentTag, bool DependentIsCurve, int SharedTag, bool SharedIsCurve)> PendingGeometricOwners;
@@ -1655,6 +1776,7 @@ internal static unsafe class XtWriter
         public NodeMap()
         {
             Body = 0;
+            BodyType = 0;
             WireShellSlot = -1;
             FirstRegionSlot = -1;
             FirstFaceSlot = -1;
@@ -1668,6 +1790,7 @@ internal static unsafe class XtWriter
             FaceSlots = new Dictionary<int, XtNodeIndex>();
             LoopSlots = new Dictionary<int, XtNodeIndex>();
             FinSlots = new Dictionary<int, XtNodeIndex>();
+            SheetDummyFins = new Dictionary<int, XtNodeIndex>();
             EdgeSlots = new Dictionary<int, XtNodeIndex>();
             VertexSlots = new Dictionary<int, XtNodeIndex>();
             SurfaceTags = new Dictionary<int, XtNodeIndex>();
@@ -1675,6 +1798,9 @@ internal static unsafe class XtWriter
             PointTags = new Dictionary<int, XtNodeIndex>();
             SurfaceChain = [];
             CurveChain = [];
+            ConstructionSurfaceChain=[];
+            ConstructionCurveChain=[];
+            ConstructionGeometry=[];
             FloatingCurves = new HashSet<int>();
             GeometricOwnerNodes = new Dictionary<int, XtNodeIndex>();
             PendingGeometricOwners = new List<(XtNodeIndex, int, bool, int, bool)>();

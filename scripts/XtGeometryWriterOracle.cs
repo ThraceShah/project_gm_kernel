@@ -415,9 +415,12 @@ static unsafe void TrimmedFixture()
     AssertTrue(ifail == 0, "oracle CRTRCU");
     Check(PK_EDGE_attach_curves(1, &oracleEdge, &oracleTrimmed), "oracle attach trimmed");
 
-    // Parasolid canonicalises a received TRCURVE-of-LINE back to a LINE, so
-    // the numeric check falls back to the received basis line.
-    VerifyCurve("trimmed", ourBody, oracleBody, trimmed, PK_CLASS_trcurve, 0.5, PK_CLASS_line);
+    // Parasolid canonicalises a received TRCURVE-of-LINE back to a LINE.
+    // Native TR parameters start at zero: trim(t) = basis(parm1 + t).
+    // Compare the same interior point and derivatives after that canonical
+    // representation change, rather than passing the TR parameter to LINE.
+    VerifyCurve("trimmed", ourBody, oracleBody, trimmed, PK_CLASS_trcurve, 0.5 - parm1,
+        PK_CLASS_line, order: 2, fallbackParameterOffset: parm1);
 }
 
 static unsafe void SpCurveFixture()
@@ -657,17 +660,21 @@ static double[] TopFaceVKnots() => [0, 3];
 
 static unsafe void VerifyCurve(
     string name, int ourBody, PK_BODY_t oracleBody, int ourCurve, PK_CLASS_t expectedClass,
-    double t, PK_CLASS_t fallbackClass = 0, int order = 0)
+    double t, PK_CLASS_t fallbackClass = 0, int order = 0, double fallbackParameterOffset = 0)
 {
     int receivedBody = TransmitReceiveAndCompare(name, ourBody, oracleBody);
     int receivedCurve = FindReceivedCurve(receivedBody, expectedClass);
+    var receivedParameter = t;
     if (receivedCurve == 0 && fallbackClass != 0)
+    {
         receivedCurve = FindReceivedCurve(receivedBody, fallbackClass);
+        receivedParameter += fallbackParameterOffset;
+    }
     AssertTrue(receivedCurve != 0, $"{name} received curve not found");
     var ourOutput = stackalloc M.PK_VECTOR_s[11];
     var oracleOutput = stackalloc PK_VECTOR_t[11];
     int ourError = KernelRuntime.CurveEval(ourCurve, t, order, ourOutput);
-    int oracleError = PK_CURVE_eval(receivedCurve, t, order, oracleOutput);
+    int oracleError = PK_CURVE_eval(receivedCurve, receivedParameter, order, oracleOutput);
     if (ourError != oracleError)
         throw new InvalidOperationException($"{name} eval errors differ: ours={ourError} oracle={oracleError}");
     if (ourError == 0)

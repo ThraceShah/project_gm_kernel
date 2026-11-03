@@ -5,17 +5,20 @@ using System.Text.RegularExpressions;
 
 static string ScriptPath([CallerFilePath] string path = "") => path;
 var root = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!, ".."));
-var exports = File.ReadAllText(Path.Combine(root, "src/ProjectGmKernel.Native/KernelExports.cs"));
+var exports = string.Join("\n", Directory.GetFiles(Path.Combine(root, "src/ProjectGmKernel.Native"), "KernelExports*.cs")
+    .Order(StringComparer.Ordinal).Select(File.ReadAllText));
 var runtime = string.Join("\n", Directory.GetFiles(Path.Combine(root, "src/ProjectGmKernel.Native/Runtime"), "KernelRuntime*.cs").Select(File.ReadAllText));
 var functions = new SortedDictionary<string, string>(StringComparer.Ordinal);
-foreach (Match entry in Regex.Matches(exports, "EntryPoint = \"(PK_[^\"]+)\""))
+foreach (Match entry in Regex.Matches(exports, "EntryPoint = \"(PK_[^\"]+|CRTRCU)\""))
 {
     var name = entry.Groups[1].Value;
     var body = Body(exports, name);
-    if (!body.Contains("ConcurrencyKind."))
+    var forwards = new HashSet<string>(StringComparer.Ordinal);
+    while (!body.Contains("ConcurrencyKind."))
     {
-        var call = Regex.Match(body, @"KernelRuntime\.(\w+)\(");
+        var call = Regex.Match(body, @"(?:KernelRuntime\.|(?:return|=>)\s+)(\w+)\(");
         if (!call.Success) throw new InvalidOperationException("Missing dispatch: " + name);
+        if (!forwards.Add(call.Groups[1].Value)) throw new InvalidOperationException("Cyclic dispatch: " + name);
         body = Body(runtime, call.Groups[1].Value);
     }
     var kinds = Regex.Matches(body, @"ConcurrencyKind\.(\w+)").Select(m => m.Groups[1].Value).Distinct().ToArray();

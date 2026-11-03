@@ -83,9 +83,19 @@ internal static unsafe partial class KernelRuntime
             }
             case CurveClass.TRCurve:
             {
-                var basisSlot = GetCurveSlotByTag(TrCurveDataPool[record.DataIndex].BasisCurveTag);
+                ref readonly var trim = ref TrCurveDataPool[record.DataIndex];
+                var basisSlot = GetCurveSlotByTag(trim.BasisCurveTag);
                 if (basisSlot < 0 || !Curves.IsAlive(basisSlot)) return AlgorithmStatus.Unsupported;
-                return EvaluateCurveCore(in Curves[basisSlot], t, order, tangentRequired, values, out direction);
+                var sign = trim.Parm2 >= trim.Parm1 ? 1.0 : -1.0;
+                var basisParameter = Math.FusedMultiplyAdd(sign, t, trim.Parm1);
+                if (!double.IsFinite(basisParameter)) return AlgorithmStatus.NumericalFailure;
+                var status = EvaluateCurveCore(in Curves[basisSlot], basisParameter, order, tangentRequired, values, out direction);
+                if (status == AlgorithmStatus.Success && sign < 0)
+                {
+                    for (var i = 1; i <= Math.Max(order, 1); i += 2) values[i] = Scale(values[i], -1);
+                    direction = Scale(direction, -1);
+                }
+                return status;
             }
             case CurveClass.SPCurve:
             {
