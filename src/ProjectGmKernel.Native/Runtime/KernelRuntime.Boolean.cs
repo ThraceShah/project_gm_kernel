@@ -1,0 +1,299 @@
+using System.Runtime.InteropServices;
+using ProjectGmKernel.Native.Generated;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
+
+namespace ProjectGmKernel.Native.Runtime;
+
+internal static unsafe partial class KernelRuntime
+{
+    public static int BodyBoolean(EntityTag target, int toolCount, EntityTag* tools, PK_BODY_boolean_o_s* options,
+        int* count, EntityTag** bodies)
+    {
+        if (Dispatcher.IsExecuting) return BodyBooleanLegacyCore(target, toolCount, tools, options, count, bodies);
+        var command = new BooleanCommand { Target = target, ToolCount = toolCount, Tools = tools, Options = options, Count = count, Bodies = bodies };
+        var error = Dispatch(ApiId.BodyBoolean, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, target);
+        if (error != 0)
+        {
+            if (count != null) *count = 0;
+            if (bodies != null) *bodies = null;
+        }
+        return error;
+    }
+
+    public static int BodyBoolean2(EntityTag target, int toolCount, EntityTag* tools, PK_BODY_boolean_o_s* options,
+        PK_TOPOL_track_r_s* tracking, PK_boolean_r_s* result)
+    {
+        if (Dispatcher.IsExecuting) return BodyBooleanCore(target, toolCount, tools, options, tracking, result);
+        var command = new BooleanCommand { Target = target, ToolCount = toolCount, Tools = tools, Options = options, Tracking = tracking, Result = result, Modern = 1 };
+        var error = Dispatch(ApiId.BodyBoolean2, ConcurrencyKind.Local, AccessKind.GlobalWrite, ref command, target);
+        if (error != 0)
+        {
+            if (tracking != null) *tracking = default;
+            if (result != null) *result = new PK_boolean_r_s { result = ParasolidConstants.PK_boolean_result_failed_c };
+        }
+        return error;
+    }
+
+    private struct BooleanCommand : IKernelCommand
+    {
+        internal EntityTag Target;
+        internal BufferCount ToolCount;
+        internal EntityTag* Tools;
+        internal PK_BODY_boolean_o_s* Options;
+        internal PK_TOPOL_track_r_s* Tracking;
+        internal PK_boolean_r_s* Result;
+        internal BufferCount* Count;
+        internal EntityTag** Bodies;
+        internal byte Modern;
+        public int Execute()
+        {
+            var owns = EnsureCommandScratch();
+            try { return Modern != 0 ? BodyBooleanCore(Target, ToolCount, Tools, Options, Tracking, Result)
+                : BodyBooleanLegacyCore(Target, ToolCount, Tools, Options, Count, Bodies); }
+            finally { if (owns) ReleaseCommandScratch(State.Session); }
+        }
+    }
+
+    private static int BodyBooleanLegacyCore(EntityTag target, int toolCount, EntityTag* tools, PK_BODY_boolean_o_s* options,
+        int* count, EntityTag** bodies)
+    {
+        if (count != null) *count = 0; if (bodies != null) *bodies = null;
+        if (count == null || bodies == null) return ParasolidConstants.PK_ERROR_bad_parameter;
+        PK_TOPOL_track_r_s tracking = default; PK_boolean_r_s result = default;
+        var error = BodyBooleanCore(target, toolCount, tools, options, &tracking, &result);
+        if (error != 0) return error;
+        error = TopolTrackResultFree(&tracking);
+        if (error != 0) return error;
+        *count = result.n_bodies; *bodies = result.bodies;
+        return 0;
+    }
+
+    private static int ValidateBooleanOptions(PK_BODY_boolean_o_s* options)
+    {
+        if (options == null) return ParasolidConstants.PK_ERROR_bad_parameter;
+        if (options->o_t_version != 19) return ParasolidConstants.PK_ERROR_o_t_version_incorrect;
+        if (options->function != ParasolidConstants.PK_boolean_unite_c && options->function != ParasolidConstants.PK_boolean_subtract_c
+            && options->function != ParasolidConstants.PK_boolean_intersect_c) return ParasolidConstants.PK_ERROR_bad_parameter;
+        if (!double.IsFinite(options->default_tol) || options->default_tol <= 0 || !double.IsFinite(options->max_tol)
+            || options->max_tol < 0 || options->merge_imprinted > 1 || options->tracking > 1 || options->allow_disjoint > 1)
+            return ParasolidConstants.PK_ERROR_bad_parameter;
+        if (options->configuration != null || options->selected_topolset != null || options->matched_region != null
+            || options->prune_in_solid != 0 || options->prune_in_void != 0 || options->fence != ParasolidConstants.PK_boolean_fence_none_c
+            || options->allow_disjoint != 0 || options->selective_merge != 0 || options->merge_attributes != 0 || options->keep_target_edges != 0
+            || options->imprint_complete_targ != ParasolidConstants.PK_imprint_complete_no_c || options->imprint_complete_tool != ParasolidConstants.PK_imprint_complete_no_c
+            || options->target_material_side != ParasolidConstants.PK_boolean_material_default_c || options->tool_material_side != ParasolidConstants.PK_boolean_material_default_c
+            || options->resulting_body_type != ParasolidConstants.PK_boolean_prefer_original_c && options->resulting_body_type != ParasolidConstants.PK_boolean_prefer_solid_c
+            || options->flag_no_effect != ParasolidConstants.PK_boolean_no_effect_basic_c || options->nm_edge_repair != ParasolidConstants.PK_nm_edge_repair_no_c
+            || options->track_regions != ParasolidConstants.PK_track_regions_no_c || options->target_face_overflow != null || options->tool_face_overflow != null
+            || options->imprint_overlapping != 0 || options->update != ParasolidConstants.PK_boolean_update_default_c || options->merge_in_solid != 0
+            || options->merge_in_face != 0 || options->merge_in_edge != 0 || options->impose_bodies != ParasolidConstants.PK_boolean_impose_no_c
+            || options->merge_tools != ParasolidConstants.PK_merge_tools_no_c)
+            return ParasolidConstants.PK_ERROR_not_implemented;
+        return 0;
+    }
+
+    private static int BodyBooleanCore(EntityTag target, int toolCount, EntityTag* tools, PK_BODY_boolean_o_s* options,
+        PK_TOPOL_track_r_s* tracking, PK_boolean_r_s* result)
+    {
+        if (tracking != null) *tracking = default;
+        if (result != null) *result = new PK_boolean_r_s { result = ParasolidConstants.PK_boolean_result_failed_c };
+        if (!IsSessionStarted) return ParasolidConstants.PK_ERROR_not_in_PK;
+        if (tracking == null || result == null || tools == null || toolCount <= 0) return ParasolidConstants.PK_ERROR_bad_parameter;
+        if (toolCount > 15) return ParasolidConstants.PK_ERROR_not_implemented;
+        var optionError = ValidateBooleanOptions(options);
+        if (optionError != 0) return optionError;
+        Span<EntityTag> inputs = stackalloc EntityTag[toolCount + 1]; inputs[0] = target;
+        for (var i = 0; i < toolCount; i++) inputs[i + 1] = tools[i];
+        for (var i = 0; i < inputs.Length; i++)
+        {
+            if (!TryResolveBodySlot(inputs[i], out var slot)) return ParasolidConstants.PK_ERROR_bad_class;
+            if (Bodies[slot].Header.Partition != CurrentPartition) return ParasolidConstants.PK_ERROR_not_in_same_partition;
+            if (Bodies[slot].BodyType != ParasolidConstants.PK_BODY_type_solid_c) return ParasolidConstants.PK_ERROR_not_implemented;
+            for (var j = 0; j < i; j++) if (inputs[j] == inputs[i]) return ParasolidConstants.PK_ERROR_bad_parameter;
+        }
+        var analyticError = TryAnalyticBoolean(inputs, options, tracking, result, out var analyticHandled);
+        if (analyticHandled) return analyticError;
+        var scratch = CommandScratch.Current;
+        var memory = scratch.Take(120000);
+        if (memory.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
+        try
+        {
+            var bytes = MemoryMarshal.AsBytes(memory); var cursor = 0;
+            var faces = ModelSpan<PlanarModelFace>(bytes, ref cursor, PlanarFaceCapacity);
+            var loops = ModelSpan<PlanarModelLoop>(bytes, ref cursor, PlanarPolygonCapacity);
+            var points = ModelSpan<KernelVector3>(bytes, ref cursor, PlanarPointCapacity);
+            var cells = ModelSpan<PlanarModelPolygon>(bytes, ref cursor, PlanarPolygonCapacity);
+            var cellPoints = ModelSpan<KernelVector3>(bytes, ref cursor, PlanarPointCapacity);
+            var cellWork = ModelSpan<KernelVector3>(bytes, ref cursor, PlanarPointCapacity);
+            var output = ModelSpan<PlanarModelPolygon>(bytes, ref cursor, PlanarPolygonCapacity);
+            var outputPoints = ModelSpan<KernelVector3>(bytes, ref cursor, PlanarPointCapacity);
+            if (cursor > bytes.Length) return ParasolidConstants.PK_ERROR_memory_full;
+            var error = ReadPlanarModel(inputs, faces, loops, points, out var nf, out var nl, out var np, out var tolerance);
+            if (error != 0) return error;
+            faces = faces[..nf]; loops = loops[..nl]; points = points[..np];
+            var outputCount = 0; var outputPointCount = 0; var hasClash = false;
+            Span<bool> minus = stackalloc bool[inputs.Length]; Span<bool> plus = stackalloc bool[inputs.Length];
+            for (var f = 0; f < nf; f++)
+            {
+                ref readonly var face = ref faces[f];
+                error = ArrangePlanarFace(in face, faces, loops, points, cells, cellPoints, cellWork, tolerance, out var nc, out _);
+                if (error != 0) return error;
+                for (var c = 0; c < nc; c++)
+                {
+                    var cell = cells[c]; var center = PlanarPolygonCenter(cellPoints.Slice(cell.First, cell.Count));
+                    var duplicate = false; uint classification = 0;
+                    for (var b = 0; b < inputs.Length; b++)
+                    {
+                        if (b == face.Body) { minus[b] = true; plus[b] = false; }
+                        else
+                        {
+                            var position = PlanarClassifyPoint(faces, loops, points, b, center, tolerance, out _);
+                            if (position == 2) return ParasolidConstants.PK_ERROR_eval_failure;
+                            if (position == 0)
+                            {
+                                if (b < face.Body) duplicate = true;
+                                var delta = ProfileScale(face.Normal, tolerance * 32);
+                                var below = ProfileSubtract(center, delta); var above = ProfileAdd(center, delta);
+                                var cm = PlanarClassifyPoint(faces, loops, points, b, below, tolerance, out _);
+                                var cp = PlanarClassifyPoint(faces, loops, points, b, above, tolerance, out _);
+                                if (cm is 0 or 2 || cp is 0 or 2) return ParasolidConstants.PK_ERROR_eval_failure;
+                                minus[b] = cm > 0; plus[b] = cp > 0;
+                            }
+                            else minus[b] = plus[b] = position > 0;
+                            if ((b == 0 || face.Body == 0) && position >= 0) hasClash = true;
+                        }
+                        if (minus[b]) classification |= 1u << (2 * b);
+                        if (plus[b]) classification |= 2u << (2 * b);
+                    }
+                    var inside = BooleanMaterial(minus, options->function); var outside = BooleanMaterial(plus, options->function);
+                    if (inside == outside || duplicate) continue;
+                    if (outputCount == output.Length || outputPointCount > outputPoints.Length - cell.Count)
+                        return ParasolidConstants.PK_ERROR_not_implemented;
+                    cellPoints.Slice(cell.First, cell.Count).CopyTo(outputPoints[outputPointCount..]);
+                    output[outputCount++] = new PlanarModelPolygon { First = outputPointCount, Count = cell.Count,
+                        Face = f, Classification = classification, Reversed = inside ? (byte)0 : (byte)1 };
+                    outputPointCount += cell.Count;
+                }
+            }
+            // Exactly disjoint target/tool pairs preserve the original bodies
+            // on union and the target on subtraction, as the SDK does.
+            if (!hasClash && toolCount == 1)
+            {
+                var n = options->function == ParasolidConstants.PK_boolean_unite_c ? 2
+                    : options->function == ParasolidConstants.PK_boolean_subtract_c ? 1 : 0;
+                var returned = n == 0 ? null : AllocateReturnSlice(n);
+                if (n > 0 && returned == null) return ParasolidConstants.PK_ERROR_memory_full;
+                if (n > 0) returned[0] = target;
+                if (n > 1) returned[1] = tools[0];
+                if (n < 2)
+                {
+                    error = EntityDelete(toolCount, tools);
+                    if (error == 0 && n == 0) error = EntityDelete(1, &target);
+                    if (error != 0) return error;
+                }
+                *result = new PK_boolean_r_s { result = ParasolidConstants.PK_boolean_result_no_clash_c, n_bodies = n, bodies = returned };
+                return 0;
+            }
+            Span<EntityTag> products = stackalloc EntityTag[PlanarFaceCapacity];
+            Span<FaceTag> faceProducts = stackalloc FaceTag[nf]; faceProducts.Clear();
+            error = ReconstructPlanarBodies(faces, output[..outputCount], outputPoints[..outputPointCount], tolerance,
+                true, options->merge_imprinted != 0, products, out var productCount, faceProducts);
+            if (error != 0) return error;
+            var returnedBodies = productCount == 0 ? null : AllocateReturnSlice(productCount);
+            if (productCount > 0 && returnedBodies == null) return ParasolidConstants.PK_ERROR_memory_full;
+            if (options->tracking != 0)
+            {
+                error = CreatePlanarBooleanTracking(faces, loops, points, inputs.Length, products[..productCount], tolerance, tracking);
+                if (error != 0) return error;
+            }
+            error = PreservePlanarFaceHandles(faces, faceProducts, inputs, products[..productCount]);
+            if (error != 0) return error;
+            if (productCount > 0)
+            {
+                error = ReplaceProfileBody(TagRec(target).Slot, TagRec(products[0]).Slot);
+                if (error != 0) return error;
+                products[0] = target;
+            }
+            else
+            {
+                error = EntityDelete(1, &target);
+                if (error != 0) return error;
+            }
+            error = EntityDelete(toolCount, tools);
+            if (error != 0) return error;
+            if (productCount > 0) products[..productCount].CopyTo(new Span<EntityTag>(returnedBodies, productCount));
+            *result = new PK_boolean_r_s { result = hasClash ? ParasolidConstants.PK_boolean_result_success_c
+                : ParasolidConstants.PK_boolean_result_no_clash_c, n_bodies = productCount, bodies = returnedBodies };
+            return 0;
+        }
+        finally { scratch.Return(memory); }
+    }
+
+    private static bool BooleanMaterial(ReadOnlySpan<bool> bodies, int function)
+    {
+        var tools = false;
+        for (var i = 1; i < bodies.Length; i++) tools |= bodies[i];
+        return function == ParasolidConstants.PK_boolean_unite_c ? bodies[0] || tools
+            : function == ParasolidConstants.PK_boolean_intersect_c ? bodies[0] && tools : bodies[0] && !tools;
+    }
+
+    private static int CreatePlanarBooleanTracking(ReadOnlySpan<PlanarModelFace> faces, ReadOnlySpan<PlanarModelLoop> loops,
+        ReadOnlySpan<KernelVector3> points, int inputCount, ReadOnlySpan<BodyTag> bodies, double tolerance, PK_TOPOL_track_r_s* result)
+    {
+        var count = 0;
+        PK_TOPOL_track_record_r_s* records = null; EntityTag* originals = null; int* classes = null; EntityTag* products = null;
+        Span<EntityTag> original = stackalloc EntityTag[inputCount]; Span<int> originalClass = stackalloc int[inputCount];
+        for (var pass = 0; pass < 2; pass++)
+        {
+            var recordIndex = 0; var originIndex = 0;
+            foreach (var body in bodies)
+            {
+                var slot = TagRec(body).Slot; var edge = Bodies[slot].FirstEdgeBody;
+                for (var e = 0; e < Bodies[slot].EdgeCountBody; e++, edge = Edges[edge].NextInBody)
+                {
+                    ref readonly var record = ref Edges[edge];
+                    var a = Points[GetPointSlotByTag(Vertices[record.StartVertex].PointTag)].Position;
+                    var b = Points[GetPointSlotByTag(Vertices[record.EndVertex].PointTag)].Position;
+                    var point = ProfileAdd(a, ProfileScale(ProfileSubtract(b, a), .5)); var n = 0;
+                    for (var input = 0; input < inputCount; input++)
+                    {
+                        var tag = LocatePlanarBoundary(faces, loops, points, input, point, tolerance, out var cls);
+                        if (tag != 0) { original[n] = tag; originalClass[n++] = cls; }
+                    }
+                    if (n < 2) continue;
+                    if (pass != 0)
+                    {
+                        original[..n].CopyTo(new Span<EntityTag>(originals + originIndex, n));
+                        originalClass[..n].CopyTo(new Span<int>(classes + originIndex, n)); products[recordIndex] = record.Header.Tag;
+                        records[recordIndex] = new PK_TOPOL_track_record_r_s { track = ParasolidConstants.PK_TOPOL_track_derive_c,
+                            n_original_topols = n, original_topols = originals + originIndex, original_classes = classes + originIndex,
+                            n_product_topols = 1, product_topols = products + recordIndex };
+                        originIndex += n;
+                    }
+                    recordIndex++;
+                }
+            }
+            if (pass == 0)
+            {
+                count = recordIndex;
+                if (count == 0) return 0;
+                var bytes = (nuint)(count * (sizeof(PK_TOPOL_track_record_r_s) + (2 * inputCount + 1) * sizeof(EntityTag)));
+                records = (PK_TOPOL_track_record_r_s*)State.Session->Returns.TryAllocate(bytes);
+                if (records == null) return ParasolidConstants.PK_ERROR_memory_full;
+                originals = (EntityTag*)(records + count); classes = originals + count * inputCount; products = classes + count * inputCount;
+            }
+        }
+        *result = new PK_TOPOL_track_r_s { n_track_records = count, track_records = records,
+            internal_origs = originals, internal_classes = classes, internal_prods = products };
+        return 0;
+    }
+
+    public static int BooleanResultFree(PK_boolean_r_s* result)
+    {
+        if (result == null) return ParasolidConstants.PK_ERROR_bad_parameter;
+        var error = result->bodies == null ? 0 : KernelRuntime.MemoryFree(result->bodies);
+        if (error == 0 && result->reports != null) error = KernelRuntime.MemoryFree(result->reports);
+        if (error == 0) *result = default;
+        return error;
+    }
+}

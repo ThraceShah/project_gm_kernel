@@ -26,21 +26,22 @@ var steps=new List<(string Name,string[] Arguments,bool Cleanup)>
 };
 foreach(var oracle in new[]{"GeometryPublicApiOracle","GeometryTransformOracle","BrepImportOracle","ProfileModelingOracle","IcurveEvaluationOracle","DisplayBridgeOracle"})
 {
-    steps.Add((oracle,["run",$"scripts/{oracle}.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false"],false));
+    steps.Add((oracle,["run","--no-cache",$"scripts/{oracle}.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false"],false));
     if(oracle=="ProfileModelingOracle")
     {
         // Test the A/B boundary in both directions: our new solids and the
         // independently produced PK reference solids must survive import,
         // fresh export, deep copy and deletion with identical topology.
-        steps.Add(("modeled-body-import",["run","scripts/BrepImportOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","../temp_docs/profile-modeling-oracle"],false));
-        steps.Add(("reference-model-import",["run","scripts/BrepImportOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","../temp_docs/profile-modeling-oracle","--reference"],false));
+        steps.Add(("modeled-body-import",["run","--no-cache","scripts/BrepImportOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","../temp_docs/profile-modeling-oracle"],false));
+        steps.Add(("reference-model-import",["run","--no-cache","scripts/BrepImportOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","../temp_docs/profile-modeling-oracle","--reference"],false));
     }
 }
 var publish=new List<string>{"publish","src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj","-c","Release","-r",rid,"-m:1","-p:UseSharedCompilation=false"};
 if(OperatingSystem.IsLinux())publish.Add("-p:CppCompilerAndLinker=gcc");
+if(Environment.GetEnvironmentVariable("GM_IN_PROCESS_LINK_TASKS")=="1")publish.Add("-p:GmInProcessLinkTasks=true");
 steps.Add(("native-publish",publish.ToArray(),false));
 steps.Add(("native-abi",["run","scripts/AbiSmoke.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false"],false));
-steps.Add(("native-display",["run","scripts/DisplayBridgeOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","--native"],false));
+steps.Add(("native-display",["run","--no-cache","scripts/DisplayBridgeOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","--native"],false));
 
 var summary=new List<string>();
 foreach(var step in steps)

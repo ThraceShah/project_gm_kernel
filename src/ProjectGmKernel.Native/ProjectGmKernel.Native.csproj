@@ -42,15 +42,28 @@
     <InternalsVisibleTo Include="GeometryTransformOracle" />
     <InternalsVisibleTo Include="ProjectGmKernel.DisplayBridge" />
     <InternalsVisibleTo Include="DisplayBridgeOracle" />
+    <InternalsVisibleTo Include="BooleanOperationOracle" />
+    <InternalsVisibleTo Include="AnalyticBooleanOracle" />
+    <InternalsVisibleTo Include="AnalyticSectionOracle" />
+    <InternalsVisibleTo Include="PlanarTrackingOracle" />
+    <InternalsVisibleTo Include="IntersectionOperationOracle" />
+    <InternalsVisibleTo Include="FreeformModelingOracle" />
+    <InternalsVisibleTo Include="LocalOperationOracle" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProjectGmKernel.Xt\ProjectGmKernel.Xt.csproj" />
   </ItemGroup>
+  <!-- Opt-in for build hosts that cannot establish the SDK's task-host IPC.
+       Execute the same trusted SDK tasks in the current .NET MSBuild process. -->
+  <UsingTask TaskName="ComputeManagedAssemblies" AssemblyFile="$(ILLinkTasksAssembly)" Override="true"
+             Condition="'$(GmInProcessLinkTasks)' == 'true' and '$(MSBuildRuntimeType)' == 'Core' and '$(ILLinkTasksAssembly)' != ''" />
+  <UsingTask TaskName="ILLink" AssemblyFile="$(ILLinkTasksAssembly)" Override="true"
+             Condition="'$(GmInProcessLinkTasks)' == 'true' and '$(MSBuildRuntimeType)' == 'Core' and '$(ILLinkTasksAssembly)' != ''" />
   <Target Name="CheckCoreAllocations" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
     <PropertyGroup>
       <AllocationGuardAssembly>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)/../../scripts', '$(TargetPath)'))</AllocationGuardAssembly>
     </PropertyGroup>
-    <Exec WorkingDirectory="../../scripts" Command="dotnet run GenerateFunctionCatalog.cs -- --check" EnvironmentVariables="MSBUILDDISABLENODEREUSE=1" />
-    <Exec WorkingDirectory="../../scripts" Command="dotnet run AllocationBanCheck.cs -- &quot;$(AllocationGuardAssembly)&quot;" EnvironmentVariables="MSBUILDDISABLENODEREUSE=1" />
+    <Exec WorkingDirectory="../../scripts" Command="dotnet run GenerateFunctionCatalog.cs -p:UseSharedCompilation=false -p:BuildInParallel=false -- --check" EnvironmentVariables="MSBUILDDISABLENODEREUSE=1" />
+    <Exec WorkingDirectory="../../scripts" Command="dotnet run AllocationBanCheck.cs -p:UseSharedCompilation=false -p:BuildInParallel=false -- &quot;$(AllocationGuardAssembly)&quot;" EnvironmentVariables="MSBUILDDISABLENODEREUSE=1" />
   </Target>
 </Project>

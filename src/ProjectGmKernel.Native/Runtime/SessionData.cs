@@ -101,7 +101,9 @@ internal unsafe struct SessionData
 
     // ── Scratch arenas for command workspaces ───────────────────
 
-    internal const int ScratchSegmentBytes = 256 * 1024;
+    // Modeling arrangements hold bounded polygon, knot and incidence workspaces
+    // in the per-thread arena, never managed arrays in the kernel hot path.
+    internal const int ScratchSegmentBytes = 4 * 1024 * 1024;
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct ScratchArena

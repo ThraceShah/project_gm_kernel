@@ -1,0 +1,243 @@
+spline-interpolation topology 0: reference=1, self=1
+spline-interpolation topology 1: reference=1, self=1
+spline-interpolation topology 2: reference=0, self=0
+spline-interpolation topology 3: reference=1, self=1
+spline-interpolation topology 4: reference=2, self=2
+spline-interpolation compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 0/0
+  global 21943: 1/1
+  global 21944: 0/0
+  global 21946: 2/2
+  global 21947: 0/0
+PASS spline-interpolation
+rational-surface-sweep topology 0: reference=1, self=1
+rational-surface-sweep topology 1: reference=1, self=1
+rational-surface-sweep topology 2: reference=1, self=1
+rational-surface-sweep topology 3: reference=4, self=4
+rational-surface-sweep topology 4: reference=4, self=4
+rational-surface-sweep compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 1/1
+  global 21943: 4/4
+  global 21944: 0/0
+  global 21946: 4/4
+  global 21947: 0/0
+PASS rational-surface-sweep
+natural-three-section-loft topology 0: reference=1, self=1
+natural-three-section-loft topology 1: reference=1, self=1
+natural-three-section-loft topology 2: reference=1, self=1
+natural-three-section-loft topology 3: reference=4, self=4
+natural-three-section-loft topology 4: reference=4, self=4
+natural-three-section-loft compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 1/1
+  global 21943: 4/4
+  global 21944: 0/0
+  global 21946: 4/4
+  global 21947: 0/0
+PASS natural-three-section-loft
+rational-surface-spin topology 0: reference=1, self=1
+rational-surface-spin topology 1: reference=1, self=1
+rational-surface-spin topology 2: reference=1, self=1
+rational-surface-spin topology 3: reference=4, self=4
+rational-surface-spin topology 4: reference=4, self=4
+rational-surface-spin compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 1/1
+  global 21943: 4/4
+  global 21944: 0/0
+  global 21946: 4/4
+  global 21947: 0/0
+PASS rational-surface-spin
+cylinder-rectangular-sheet topology 0: reference=1, self=1
+cylinder-rectangular-sheet topology 1: reference=1, self=1
+cylinder-rectangular-sheet topology 2: reference=1, self=1
+cylinder-rectangular-sheet topology 3: reference=4, self=4
+cylinder-rectangular-sheet topology 4: reference=4, self=4
+cylinder-rectangular-sheet compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 1/1
+  global 21943: 4/4
+  global 21944: 0/0
+  global 21946: 4/4
+  global 21947: 0/0
+PASS cylinder-rectangular-sheet
+torus-rectangular-sheet topology 0: reference=1, self=1
+torus-rectangular-sheet topology 1: reference=1, self=1
+torus-rectangular-sheet topology 2: reference=1, self=1
+torus-rectangular-sheet topology 3: reference=4, self=4
+torus-rectangular-sheet topology 4: reference=4, self=4
+torus-rectangular-sheet compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 1/1
+  global 21943: 4/4
+  global 21944: 0/0
+  global 21946: 4/4
+  global 21947: 0/0
+PASS torus-rectangular-sheet
+parallel-nurbs-path-solid topology 0: reference=2, self=2
+parallel-nurbs-path-solid topology 1: reference=2, self=2
+parallel-nurbs-path-solid topology 2: reference=6, self=6
+parallel-nurbs-path-solid topology 3: reference=12, self=12
+parallel-nurbs-path-solid topology 4: reference=8, self=8
+parallel-nurbs-path-solid compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+parallel-nurbs-path-solid self XT lifecycle compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+PASS parallel-nurbs-path-solid self XT lifecycle
+parallel-nurbs-path-solid PK XT lifecycle compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+PASS parallel-nurbs-path-solid PK XT lifecycle
+PASS parallel-nurbs-path-solid
+parallel-nurbs-path-hole-solid topology 0: reference=2, self=2
+parallel-nurbs-path-hole-solid topology 1: reference=2, self=2
+parallel-nurbs-path-hole-solid topology 2: reference=10, self=10
+parallel-nurbs-path-hole-solid topology 3: reference=24, self=24
+parallel-nurbs-path-hole-solid topology 4: reference=16, self=16
+parallel-nurbs-path-hole-solid compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 10/10
+  global 21943: 0/0
+  global 21944: 24/24
+  global 21946: 0/0
+  global 21947: 16/16
+PASS parallel-nurbs-path-hole-solid
+two-profile-loft topology 0: reference=2, self=2
+two-profile-loft topology 1: reference=2, self=2
+two-profile-loft topology 2: reference=6, self=6
+two-profile-loft topology 3: reference=12, self=12
+two-profile-loft topology 4: reference=8, self=8
+two-profile-loft compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+PASS two-profile-loft
+three-profile-natural-loft topology 0: reference=2, self=2
+three-profile-natural-loft topology 1: reference=2, self=2
+three-profile-natural-loft topology 2: reference=6, self=6
+three-profile-natural-loft topology 3: reference=12, self=12
+three-profile-natural-loft topology 4: reference=8, self=8
+three-profile-natural-loft compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+three-profile-natural-loft self XT lifecycle compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+PASS three-profile-natural-loft self XT lifecycle
+three-profile-natural-loft PK XT lifecycle compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+PASS three-profile-natural-loft PK XT lifecycle
+PASS three-profile-natural-loft
+nurbs-sheet-sewing topology 0: reference=1, self=1
+nurbs-sheet-sewing topology 1: reference=1, self=1
+nurbs-sheet-sewing topology 2: reference=2, self=2
+nurbs-sheet-sewing topology 3: reference=7, self=7
+nurbs-sheet-sewing topology 4: reference=6, self=6
+nurbs-sheet-sewing compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 2/2
+  global 21943: 7/7
+  global 21944: 0/0
+  global 21946: 6/6
+  global 21947: 0/0
+PASS nurbs-sheet-sewing
+closed-nurbs-cube-sewing topology 0: reference=2, self=2
+closed-nurbs-cube-sewing topology 1: reference=2, self=2
+closed-nurbs-cube-sewing topology 2: reference=6, self=6
+closed-nurbs-cube-sewing topology 3: reference=12, self=12
+closed-nurbs-cube-sewing topology 4: reference=8, self=8
+closed-nurbs-cube-sewing compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 12/12
+  global 21944: 0/0
+  global 21946: 8/8
+  global 21947: 0/0
+PASS closed-nurbs-cube-sewing
+least-squares-point-fit topology 0: reference=1, self=1
+least-squares-point-fit topology 1: reference=1, self=1
+least-squares-point-fit topology 2: reference=0, self=0
+least-squares-point-fit topology 3: reference=1, self=1
+least-squares-point-fit topology 4: reference=2, self=2
+least-squares-point-fit compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 0/0
+  global 21943: 1/1
+  global 21944: 0/0
+  global 21946: 2/2
+  global 21947: 0/0
+PASS least-squares-point-fit
+automatic-grid-surface topology 0: reference=1, self=1
+automatic-grid-surface topology 1: reference=1, self=1
+automatic-grid-surface topology 2: reference=1, self=1
+automatic-grid-surface topology 3: reference=4, self=4
+automatic-grid-surface topology 4: reference=4, self=4
+automatic-grid-surface compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 1/1
+  global 21943: 4/4
+  global 21944: 0/0
+  global 21946: 4/4
+  global 21947: 0/0
+PASS automatic-grid-surface
+explicit-grid-surface topology 0: reference=1, self=1
+explicit-grid-surface topology 1: reference=1, self=1
+explicit-grid-surface topology 2: reference=1, self=1
+explicit-grid-surface topology 3: reference=4, self=4
+explicit-grid-surface topology 4: reference=4, self=4
+explicit-grid-surface compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 1/1
+  global 21943: 4/4
+  global 21944: 0/0
+  global 21946: 4/4
+  global 21947: 0/0
+PASS explicit-grid-surface
+convex-changing-sections-loft topology 0: reference=2, self=2
+convex-changing-sections-loft topology 1: reference=2, self=2
+convex-changing-sections-loft topology 2: reference=6, self=6
+convex-changing-sections-loft topology 3: reference=12, self=12
+convex-changing-sections-loft topology 4: reference=8, self=8
+convex-changing-sections-loft compare global=21921, local=21931, entries=6, pairs=0
+  global 21940: 1/1
+  global 21941: 6/6
+  global 21943: 0/0
+  global 21944: 12/12
+  global 21946: 0/0
+  global 21947: 8/8
+PASS convex-changing-sections-loft
+PASS native/self 2-section multi-loop loft rejection parity
+PASS native/self 3-section multi-loop loft rejection parity
+PASS all 16 freeform modeling cases; default PK_BODY_check and structural comparison passed.

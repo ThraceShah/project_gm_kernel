@@ -7,6 +7,8 @@ internal static class EvaluationMath
     internal static KernelVector3 Vector(double x, double y, double z) => new() { X = x, Y = y, Z = z };
     internal static KernelVector3 Add(in KernelVector3 a, in KernelVector3 b)
         => Vector(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+    internal static KernelVector3 Sub(in KernelVector3 a, in KernelVector3 b)
+        => Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
     internal static KernelVector3 Scale(in KernelVector3 a, double scale)
         => Vector(a.X * scale, a.Y * scale, a.Z * scale);
     internal static KernelVector3 Cross(in KernelVector3 a, in KernelVector3 b)

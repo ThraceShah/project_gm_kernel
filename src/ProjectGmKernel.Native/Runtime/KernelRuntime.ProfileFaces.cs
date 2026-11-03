@@ -383,7 +383,9 @@ internal static unsafe partial class KernelRuntime
     {
         a = edge.ParameterStart; b = edge.ParameterEnd;
         if (edge.HasParameterRange != 0) return double.IsFinite(a) && double.IsFinite(b) && b > a;
-        ref readonly var curve = ref Curves[GetCurveSlotByTag(edge.CurveTag)];
+        var curveSlot = GetCurveSlotByTag(edge.CurveTag);
+        if (curveSlot < 0) return false;
+        ref readonly var curve = ref Curves[curveSlot];
         a = curve.TMin; b = curve.TMax;
         if (curve.Class == CurveClass.Line && edge.StartVertex >= 0 && edge.EndVertex >= 0)
         {
@@ -392,6 +394,7 @@ internal static unsafe partial class KernelRuntime
             var q = Points[GetPointSlotByTag(Vertices[edge.EndVertex].PointTag)].Position;
             a = (p.X-line.LocationX)*line.AxisX+(p.Y-line.LocationY)*line.AxisY+(p.Z-line.LocationZ)*line.AxisZ;
             b = (q.X-line.LocationX)*line.AxisX+(q.Y-line.LocationY)*line.AxisY+(q.Z-line.LocationZ)*line.AxisZ;
+            if (curve.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c) (a, b) = (b, a);
             return b > a;
         }
         return edge.StartVertex < 0 && edge.EndVertex < 0 && curve.Class is CurveClass.Circle or CurveClass.Ellipse;

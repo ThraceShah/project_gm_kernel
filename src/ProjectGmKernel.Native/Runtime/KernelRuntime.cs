@@ -2315,6 +2315,7 @@ internal static unsafe partial class KernelRuntime
 
     private static int PartTransmitBImplementation(int nParts, EntityTag* parts, PK_PART_transmit_o_s* options, PK_MEMORY_block_t* block)
     {
+        if (block != null) *block = default;
         if (nParts <= 0 || parts is null || block is null)
             return ParasolidConstants.PK_ERROR_bad_field_number;
 
@@ -2352,8 +2353,17 @@ internal static unsafe partial class KernelRuntime
                     return ParasolidConstants.PK_ERROR_duplicate_parts;
             }
 
-            if (!TryResolveBodySlot(parts[i], out _) && !TryGetReceivedXt(parts[i], out _, out _))
+            if (!TryResolveBodySlot(parts[i], out var bodySlot) && !TryGetReceivedXt(parts[i], out _, out _))
                 return ParasolidConstants.PK_ERROR_unsuitable_entity;
+            if (bodySlot >= 0)
+            {
+                var edge = Bodies[bodySlot].FirstEdgeBody;
+                for (var k = 0; k < Bodies[bodySlot].EdgeCountBody; k++, edge = Edges[edge].NextInBody)
+                    // Pending blends are persistent PK attributes. Until that
+                    // attribute dialect is serialized, reject rather than save
+                    // a body that silently loses its unfinished modeling state.
+                    if (Edges[edge].PendingBlendKind != 0) return ParasolidConstants.PK_ERROR_not_implemented;
+            }
             partList[i] = parts[i];
         }
 

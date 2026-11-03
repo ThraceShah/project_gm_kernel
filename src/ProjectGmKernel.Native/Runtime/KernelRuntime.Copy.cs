@@ -273,6 +273,11 @@ internal static unsafe partial class KernelRuntime
                 {
                     var a=Edges[from.Slot]; ref var b=ref Edges[to.Slot]; b.Tolerance=a.Tolerance;
                     b.HasParameterRange=a.HasParameterRange; b.ParameterStart=a.ParameterStart; b.ParameterEnd=a.ParameterEnd;
+                    b.PendingBlendKind=a.PendingBlendKind; b.PendingBlendFirst=a.PendingBlendFirst; b.PendingBlendSecond=a.PendingBlendSecond;
+                    if(a.PendingBlendFirstFace!=0)
+                    {
+                        if(!context.Find(a.PendingBlendFirstFace,out b.PendingBlendFirstFace))return ParasolidConstants.PK_ERROR_general_body;
+                    }
                     b.StartVertex=b.EndVertex=-1;
                     if(a.StartVertex>=0)
                     {

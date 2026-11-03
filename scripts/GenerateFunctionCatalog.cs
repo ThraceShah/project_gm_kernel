@@ -9,7 +9,7 @@ var exports = string.Join("\n", Directory.GetFiles(Path.Combine(root, "src/Proje
     .Order(StringComparer.Ordinal).Select(File.ReadAllText));
 var runtime = string.Join("\n", Directory.GetFiles(Path.Combine(root, "src/ProjectGmKernel.Native/Runtime"), "KernelRuntime*.cs").Select(File.ReadAllText));
 var functions = new SortedDictionary<string, string>(StringComparer.Ordinal);
-foreach (Match entry in Regex.Matches(exports, "EntryPoint = \"(PK_[^\"]+|CRTRCU)\""))
+foreach (Match entry in Regex.Matches(exports, "EntryPoint\\s*=\\s*\"(PK_[^\"]+|CRTRCU)\""))
 {
     var name = entry.Groups[1].Value;
     var body = Body(exports, name);
@@ -53,7 +53,16 @@ static string Body(string source, string name)
 {
     var match = Regex.Match(source, @"(?:public|internal|private) static [^\n]+\b" + Regex.Escape(name) + @"\(");
     if (!match.Success) throw new InvalidOperationException("Cannot locate " + name);
-    var start = source.IndexOf('\n', match.Index);
+    // An expression body may begin on the declaration line or after a wrapped
+    // parameter list. Locate the matching ')' instead of assuming a newline.
+    var start = match.Index + match.Length;
+    var parameterDepth = 1;
+    while (parameterDepth != 0 && start < source.Length)
+    {
+        if (source[start] == '(') parameterDepth++;
+        else if (source[start] == ')') parameterDepth--;
+        start++;
+    }
     var brace = source.IndexOf('{', start);
     var expression = source.IndexOf("=>", start, StringComparison.Ordinal);
     if (expression >= 0 && expression < brace)

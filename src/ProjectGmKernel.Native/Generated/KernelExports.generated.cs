@@ -494,18 +494,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_create_spline")]
-    public static int PK_BCURVE_create_spline(int arg0, PK_VECTOR_t* arg1, PK_BCURVE_create_spline_o_t* arg2, int* arg3, int* arg4, int* arg5, nint* arg6)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_create_spline_2")]
-    public static int PK_BCURVE_create_spline_2(int arg0, PK_VECTOR_t* arg1, PK_BCURVE_create_spline_2_o_t* arg2, PK_BCURVE_spline_r_t* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_create_splinewise")]
     public static int PK_BCURVE_create_splinewise(PK_BCURVE_splinewise_sf_t* arg0, int* arg1)
     {
@@ -548,18 +536,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_make_bsurf_lofted")]
-    public static int PK_BCURVE_make_bsurf_lofted(int arg0, int* arg1, PK_BCURVE_make_bsurf_lofted_o_t* arg2, int* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_make_matched")]
-    public static int PK_BCURVE_make_matched(int arg0, int* arg1, PK_BCURVE_make_matched_o_t* arg2, int* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_raise_degree")]
     public static int PK_BCURVE_raise_degree(int arg0, int arg1, PK_BCURVE_raise_degree_o_t* arg2)
     {
@@ -580,24 +556,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_set_approx")]
     public static int PK_BCURVE_set_approx(int arg0, int arg1, int arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_spin")]
-    public static int PK_BCURVE_spin(int arg0, PK_AXIS1_sf_t* arg1, double arg2, int* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_spline_r_f")]
-    public static int PK_BCURVE_spline_r_f(PK_BCURVE_spline_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_sweep")]
-    public static int PK_BCURVE_sweep(int arg0, PK_VECTOR_t arg1, int* arg2)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -692,26 +650,8 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_boolean")]
-    public static int PK_BODY_boolean(int arg0, int arg1, int* arg2, PK_BODY_boolean_o_t* arg3, int* arg4, nint* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_boolean_2")]
-    public static int PK_BODY_boolean_2(int arg0, int arg1, int* arg2, PK_BODY_boolean_o_t* arg3, PK_TOPOL_track_r_t* arg4, PK_boolean_r_t* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_change_partition")]
     public static int PK_BODY_change_partition(int arg0, int arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_contains_vector")]
-    public static int PK_BODY_contains_vector(int arg0, PK_VECTOR_t arg1, int* arg2, int* arg3)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -872,24 +812,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_fix_blends")]
-    public static int PK_BODY_fix_blends(int arg0, PK_BODY_fix_blends_o_t* arg1, int* arg2, nint* arg3, nint* arg4, nint* arg5, int* arg6, int* arg7, int* arg8)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_hollow")]
-    public static int PK_BODY_hollow(int arg0, double arg1, double arg2, byte arg3, int* arg4, nint* arg5, nint* arg6)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_hollow_2")]
-    public static int PK_BODY_hollow_2(int arg0, double arg1, double arg2, PK_BODY_hollow_o_t* arg3, PK_TOPOL_track_r_t* arg4, PK_TOPOL_local_r_t* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_identify_details")]
     public static int PK_BODY_identify_details(int arg0, int arg1, int* arg2, PK_BODY_identify_details_o_t* arg3, PK_identify_details_r_t* arg4)
     {
@@ -968,18 +890,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_imprint_plane")]
-    public static int PK_BODY_imprint_plane(int arg0, int arg1, double arg2, int* arg3, nint* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_imprint_plane_2")]
-    public static int PK_BODY_imprint_plane_2(int arg0, int arg1, PK_BODY_imprint_plane_o_t* arg2, PK_TOPOL_track_r_t* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_intersect_bodies")]
     public static int PK_BODY_intersect_bodies(int arg0, int arg1, int* arg2, int* arg3, nint* arg4)
     {
@@ -1030,12 +940,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_make_facet_body")]
     public static int PK_BODY_make_facet_body(int arg0, int arg1, PK_BODY_make_facet_body_o_t* arg2, int* arg3, PK_TOPOL_track_r_t* arg4, PK_TOPOL_track_r_t* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_make_lofted_body")]
-    public static int PK_BODY_make_lofted_body(int arg0, int* arg1, int* arg2, PK_BODY_make_lofted_body_o_t* arg3, PK_BODY_tracked_loft_r_t* arg4)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -1094,12 +998,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_make_swept_body")]
-    public static int PK_BODY_make_swept_body(int arg0, int arg1, int arg2, PK_BODY_make_swept_body_o_t* arg3, PK_BODY_tracked_sweep_r_t* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_make_swept_body_2")]
     public static int PK_BODY_make_swept_body_2(int arg0, int* arg1, int arg2, int* arg3, PK_BODY_make_swept_body_2_o_t* arg4, PK_BODY_tracked_sweep_2_r_t* arg5)
     {
@@ -1114,18 +1012,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_make_swept_tool")]
     public static int PK_BODY_make_swept_tool(int arg0, PK_AXIS1_sf_t* arg1, int arg2, PK_BODY_make_swept_tool_o_t* arg3, PK_TOPOL_track_r_t* arg4, PK_BODY_sweep_tool_r_t* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_offset")]
-    public static int PK_BODY_offset(int arg0, double arg1, double arg2, byte arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_offset_2")]
-    public static int PK_BODY_offset_2(int arg0, double arg1, double arg2, PK_BODY_offset_o_t* arg3, PK_TOPOL_track_r_t* arg4, PK_TOPOL_local_r_t* arg5)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -1178,12 +1064,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_section_with_surf")]
-    public static int PK_BODY_section_with_surf(int arg0, int arg1, PK_BODY_section_o_t* arg2, PK_section_r_t* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_set_curve_nmnl_state")]
     public static int PK_BODY_set_curve_nmnl_state(int arg0, int arg1)
     {
@@ -1192,12 +1072,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_set_type")]
     public static int PK_BODY_set_type(int arg0, int arg1, PK_BODY_set_type_o_t* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_sew_bodies")]
-    public static int PK_BODY_sew_bodies(int arg0, int* arg1, double arg2, PK_BODY_sew_bodies_o_t* arg3, int* arg4, nint* arg5, int* arg6, nint* arg7, int* arg8, nint* arg9)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -1274,26 +1148,8 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_tracked_loft_r_f")]
-    public static int PK_BODY_tracked_loft_r_f(PK_BODY_tracked_loft_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_tracked_sweep_2_r_f")]
     public static int PK_BODY_tracked_sweep_2_r_f(PK_BODY_tracked_sweep_2_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_tracked_sweep_r_f")]
-    public static int PK_BODY_tracked_sweep_r_f(PK_BODY_tracked_sweep_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BODY_trim")]
-    public static int PK_BODY_trim(int arg0, int arg1, int* arg2, int arg3, int* arg4, byte arg5)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -1318,12 +1174,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_unite_bodies")]
     public static int PK_BODY_unite_bodies(int arg0, int arg1, int* arg2, int* arg3, nint* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_boolean_r_f")]
-    public static int PK_boolean_r_f(PK_boolean_r_t* arg0)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -1382,12 +1232,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_create_splinewise")]
-    public static int PK_BSURF_create_splinewise(PK_BSURF_splinewise_sf_t* arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_eval_approx")]
     public static int PK_BSURF_eval_approx(int arg0, PK_UV_t arg1, int arg2, int arg3, byte arg4, PK_VECTOR_t* arg5)
     {
@@ -1402,18 +1246,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_lower_degree")]
     public static int PK_BSURF_lower_degree(int arg0, int arg1, int arg2, PK_BSURF_lower_degree_o_t* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_make_bcurve_u_isoparam")]
-    public static int PK_BSURF_make_bcurve_u_isoparam(int arg0, double arg1, int* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_make_bcurve_v_isoparam")]
-    public static int PK_BSURF_make_bcurve_v_isoparam(int arg0, double arg1, int* arg2)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -1642,12 +1474,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_CURVE_fix_self_int_r_f")]
     public static int PK_CURVE_fix_self_int_r_f(PK_CURVE_fix_self_int_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_CURVE_intersect_curve")]
-    public static int PK_CURVE_intersect_curve(int arg0, PK_INTERVAL_t arg1, int arg2, PK_INTERVAL_t arg3, PK_CURVE_intersect_curve_o_t* arg4, int* arg5, nint* arg6, nint* arg7, nint* arg8, nint* arg9)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -2104,18 +1930,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_set_blend_chain")]
     public static int PK_EDGE_set_blend_chain(int arg0, int* arg1, PK_EDGE_set_blend_chain_o_t* arg2, int* arg3, nint* arg4, int* arg5, nint* arg6)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_set_blend_chamfer")]
-    public static int PK_EDGE_set_blend_chamfer(int arg0, int* arg1, double arg2, double arg3, int* arg4, PK_EDGE_set_blend_chamfer_o_t* arg5, int* arg6, nint* arg7)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_set_blend_constant")]
-    public static int PK_EDGE_set_blend_constant(int arg0, int* arg1, double arg2, PK_EDGE_set_blend_constant_o_t* arg3, int* arg4, nint* arg5)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -2782,18 +2596,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_FACE_make_valid_faces")]
     public static int PK_FACE_make_valid_faces(int arg0, int* arg1, nint* arg2, byte* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_FACE_offset")]
-    public static int PK_FACE_offset(int arg0, int* arg1, double* arg2, double arg3, byte arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_FACE_offset_2")]
-    public static int PK_FACE_offset_2(int arg0, int* arg1, double* arg2, double arg3, PK_FACE_offset_o_t* arg4, PK_TOPOL_track_r_t* arg5, PK_TOPOL_local_r_t* arg6)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -5060,12 +4862,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_section_r_f")]
-    public static int PK_section_r_f(PK_section_r_t* arg0)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_SESSION_abort")]
     public static int PK_SESSION_abort(int arg0)
     {
@@ -5768,18 +5564,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_SURF_intersect_curve")]
-    public static int PK_SURF_intersect_curve(int arg0, int arg1, PK_INTERVAL_t arg2, PK_SURF_intersect_curve_o_t* arg3, int* arg4, nint* arg5, nint* arg6, nint* arg7, nint* arg8)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_SURF_intersect_surf")]
-    public static int PK_SURF_intersect_surf(int arg0, int arg1, PK_SURF_intersect_surf_o_t* arg2, int* arg3, nint* arg4, int* arg5, nint* arg6, nint* arg7, nint* arg8)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_SURF_make_bsurf")]
     public static int PK_SURF_make_bsurf(int arg0, PK_UVBOX_t arg1, byte arg2, byte arg3, double arg4, int* arg5, byte* arg6)
     {
@@ -5824,12 +5608,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_SURF_make_cus_isocline")]
     public static int PK_SURF_make_cus_isocline(int arg0, PK_UVBOX_t arg1, PK_VECTOR1_t arg2, double arg3, double arg4, PK_SURF_make_cus_isocline_o_t* arg5, int* arg6, nint* arg7, nint* arg8)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_SURF_make_sheet_body")]
-    public static int PK_SURF_make_sheet_body(int arg0, PK_UVBOX_t arg1, int* arg2)
     {
         return KernelRuntime.NotImplemented();
     }

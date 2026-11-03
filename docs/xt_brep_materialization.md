@@ -27,7 +27,9 @@ BODY 的 construction surface/curve 链也按实际所有权保留。例如，�
 
 现有经过验证的单条 open ICurve wire 保留专门的导入路径。通用多面 B-rep 的 INTERSECTION 曲线不因此获得支持；这类图继续保留为 opaque。construction point、acorn shell、并非单顶点 pole loop 的无 edge fin、扩展 B-surface 参数域或缩放 procedural 数据的有效图也保留为 opaque，不替换成近似 primitive。
 
-具有非零 `HALF_EDGE.curve` 的 fin 参数曲线图当前也保留为 opaque。运行时虽然具备 fin 几何依赖引用机制，fresh XT writer 尚未验证其专属曲线的 topological owner 和完整依赖链。导入器因此不将这类图报告为可编辑，原始文档仍可转发；不能在导出时把该指针写成零后声称完成无损往返。
+具有非零 `HALF_EDGE.curve` 的受支持 fin 参数曲线图现在可实体化。fresh XT writer 为每条 fin 根曲线记录 HALFEDGE 拓扑所有者，遍历全部根曲线及依赖，保留 SP 曲线的浮动二维 BCurve；不会因根曲线未挂在 nominal edge 上而漏写。无 nominal curve 的边必须具有有限正容差，并且每个实际面 fin 都提供有效曲线。fin 引用的根曲线若属于另一个 EDGE，按损坏图拒绝。其他未支持的依赖类别仍沿用明确的 opaque 边界。
+
+`scripts/FreeformModelingOracle.cs` 使用双方独立产生的容差扫掠/放样体，验证公共 receive、独立复制、删除源体、平移副本、fresh transmit、真实 PK 完整体检查及结构比较，并核对删除后的实体池基线。该闭环不表示所有建模算法都已支持无 nominal curve 的边；具体修改入口仍有各自的几何范围。
 
 NURBS 的 `SCH_knot_type_t` 和 `SCH_curve_form_t` 是一基枚举，不能把 PK 枚举减去起点后直接写成零基值。控制数据和分类必须同时按相应 schema 转换。
 

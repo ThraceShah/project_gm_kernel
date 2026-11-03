@@ -1,0 +1,848 @@
+block-offset-out volume=287.232/287.2320000000001, area=269.44000000000005/269.44000000000005
+block-offset-out raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=6 received=6
+  global=21943 reference=12 received=12
+  global=21944 reference=0 received=0
+  global=21946 reference=8 received=8
+  global=21947 reference=0 received=0
+PASS block-offset-out
+block-offset-in volume=119.808/119.80799999999999, area=154.24/154.23999999999998
+block-offset-in raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=6 received=6
+  global=21943 reference=12 received=12
+  global=21944 reference=0 received=0
+  global=21946 reference=8 received=8
+  global=21947 reference=0 received=0
+PASS block-offset-in
+oriented-block-offset volume=261.09600000000006/261.0959999999998, area=253.36000000000004/253.3599999999999
+oriented-block-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=6 received=6
+  global=21943 reference=12 received=12
+  global=21944 reference=0 received=0
+  global=21946 reference=8 received=8
+  global=21947 reference=0 received=0
+PASS oriented-block-offset
+oblique-block-offset volume=247.89796654553382/247.89796654553382, area=250.43012896470623/250.43012896470626
+oblique-block-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=6 received=6
+  global=21943 reference=12 received=12
+  global=21944 reference=0 received=0
+  global=21946 reference=8 received=8
+  global=21947 reference=0 received=0
+PASS oblique-block-offset
+prism-offset volume=178.30416796417913/178.3041679641791, area=184.79858805816707/184.79858805816707
+prism-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+PASS prism-offset
+block-face-offset volume=201.6/201.6, area=216/216
+block-face-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=6 received=6
+  global=21943 reference=12 received=12
+  global=21944 reference=0 received=0
+  global=21946 reference=8 received=8
+  global=21947 reference=0 received=0
+PASS block-face-offset
+sphere-offset volume=164.63621020892427/164.63621020892427, area=145.267244301992/145.267244301992
+sphere-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=1 received=1
+  global=21943 reference=0 received=0
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS sphere-offset
+torus-offset volume=63.1654681669719/63.1654681669719, area=157.91367041742973/157.91367041742973
+torus-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=1 received=1
+  global=21943 reference=0 received=0
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS torus-offset
+cylinder-offset volume=225.79883038411276/225.79883038411276, area=205.27166398555704/205.27166398555704
+cylinder-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=3 received=3
+  global=21943 reference=2 received=2
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-offset
+cone-offset volume=294.35866926715545/294.3586692671555, area=247.80213224824985/247.8021322482499
+cone-offset raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=3 received=3
+  global=21943 reference=2 received=2
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cone-offset
+block-closed-hollow-in volume=56.13599999999997/56.13599999999997, area=374.96000000000004/374.96000000000004
+block-closed-hollow-in raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=2 received=2
+  global=21941 reference=12 received=12
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS block-closed-hollow-in
+block-closed-hollow-out volume=69.096/69.09599999999995, area=461.36/461.36
+block-closed-hollow-out raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=2 received=2
+  global=21941 reference=12 received=12
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS block-closed-hollow-out
+block-pierce-in volume=50.62799999999997/50.627999999999986, area=343.52/343.52
+block-pierce-in raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=11 received=11
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS block-pierce-in
+block-pierce-out volume=59.98799999999996/59.987999999999964, area=406.64/406.64
+block-pierce-out raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=11 received=11
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS block-pierce-out
+block-double-pierce volume=45.119999999999976/45.119999999999976, area=312.08/312.0799999999999
+block-double-pierce raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=10 received=10
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS block-double-pierce
+block-varied-wall volume=56.125799999999956/56.125799999999984, area=340.28600000000006/340.28600000000006
+block-varied-wall raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=11 received=11
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS block-varied-wall
+oriented-pierce volume=50.627999999999936/50.62799999999997, area=343.5200000000001/343.5199999999998
+oriented-pierce raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=11 received=11
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS oriented-pierce
+oblique-hollow volume=41.754074491216144/41.75407449121626, area=339.2351590058312/339.23515900583124
+oblique-hollow raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=11 received=11
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+PASS oblique-hollow
+sphere-hollow volume=30.649377928422/30.649377928422, area=204.70617730791093/204.70617730791093
+sphere-hollow raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=2 received=2
+  global=21941 reference=2 received=2
+  global=21943 reference=0 received=0
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS sphere-hollow
+torus-hollow volume=35.530575843921675/35.530575843921675, area=355.3057584392169/355.3057584392169
+torus-hollow raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=2 received=2
+  global=21941 reference=2 received=2
+  global=21943 reference=0 received=0
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS torus-hollow
+cylinder-hollow volume=45.97406689263299/45.97406689263302, area=307.0592659618664/307.0592659618664
+cylinder-hollow raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=2 received=2
+  global=21941 reference=6 received=6
+  global=21943 reference=4 received=4
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-hollow
+cylinder-pierce volume=39.10340375923215/39.10340375923215, area=266.34422517134266/266.3442251713427
+cylinder-pierce raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=5 received=5
+  global=21943 reference=4 received=4
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-pierce
+cone-hollow volume=56.818938154661836/56.818938154661836, area=379.37563006100186/379.3756300610018
+cone-hollow raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=2 received=2
+  global=21941 reference=6 received=6
+  global=21943 reference=4 received=4
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cone-hollow
+cone-pierce volume=44.734649999575936/44.73464999957601, area=305.6377315762984/305.63773157629834
+cone-pierce raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=5 received=5
+  global=21943 reference=4 received=4
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cone-pierce
+block-single-fillet volume=191.72530964914873/191.72530964914873, area=206.55787565803084/206.55787565803084
+block-single-fillet raw: global=21921, local=21930, face pairs=2
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+  face=5437/5567 diff=21959 entity=5547/5653 value=0/0
+    curve=5547 owner=5543 sense=0 t=0,8
+    entity=5547 class=3001
+    curve=5653 owner=5621 sense=1 t=0,8
+    entity=5653 class=3001
+  face=5486/5569 diff=21959 entity=5547/5653 value=0/0
+    curve=5547 owner=5543 sense=0 t=0,8
+    entity=5547 class=3001
+    curve=5653 owner=5621 sense=1 t=0,8
+    entity=5653 class=3001
+block-single-fillet raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+block-single-fillet canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+block-single-fillet canonical volume=191.72530964914873/191.72530964914873, area=206.55787565803084/206.55787565803084
+PASS block-single-fillet
+block-parallel-fillet volume=190.90123859659496/190.90123859659494, area=202.2315026321234/202.23150263212338
+block-parallel-fillet raw: global=21921, local=21930, face pairs=8
+  global=21940 reference=1 received=1
+  global=21941 reference=10 received=10
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+  face=6005/6357 diff=21959 entity=6186/6489 value=0/0
+    curve=6186 owner=6182 sense=0 t=0,8
+    entity=6186 class=3001
+    curve=6489 owner=6439 sense=1 t=0,8
+    entity=6489 class=3001
+  face=6000/6360 diff=21959 entity=6336/6496 value=0/0
+    curve=6336 owner=6332 sense=0 t=0,8
+    entity=6336 class=3001
+    curve=6496 owner=6446 sense=1 t=0,8
+    entity=6496 class=3001
+  face=5995/6359 diff=21959 entity=6324/6493 value=0/0
+  face=5955/6358 diff=21959 entity=6268/6491 value=0/0
+  face=6047/6362 diff=21959 entity=6268/6491 value=0/0
+  face=6077/6363 diff=21959 entity=6324/6493 value=0/0
+  face=6107/6364 diff=21959 entity=6336/6496 value=0/0
+  face=6137/6361 diff=21959 entity=6186/6489 value=0/0
+block-parallel-fillet raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+block-parallel-fillet canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=10 received=10
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+block-parallel-fillet canonical volume=190.90123859659496/190.90123859659494, area=202.2315026321234/202.23150263212338
+PASS block-parallel-fillet
+block-all-fillet volume=189.61349783646642/189.61349783646642, area=195.45769561509815/195.45769561509812
+block-all-fillet raw: global=21921, local=21930, face pairs=26
+  global=21940 reference=1 received=1
+  global=21941 reference=26 received=26
+  global=21943 reference=48 received=48
+  global=21944 reference=0 received=0
+  global=21946 reference=24 received=24
+  global=21947 reference=0 received=0
+  face=7015/7545 diff=21959 entity=7501/7794 value=0/0
+    curve=7501 owner=7498 sense=0 t=-1.6,1.6
+    entity=7501 class=3001
+    curve=7794 owner=7696 sense=1 t=0,3.2
+    entity=7794 class=3001
+  face=7015/7545 diff=21959 entity=7518/7795 value=0/0
+    curve=7518 owner=7514 sense=0 t=-2.6,2.6
+    entity=7518 class=3001
+    curve=7795 owner=7697 sense=1 t=0,5.2
+    entity=7795 class=3001
+  face=7015/7545 diff=21959 entity=7513/7796 value=0/0
+  face=7015/7545 diff=21959 entity=7507/7797 value=0/0
+  face=7010/7546 diff=21959 entity=7372/7801 value=0/0
+  face=7005/7549 diff=21959 entity=7432/7810 value=0/0
+  face=7000/7548 diff=21959 entity=7459/7806 value=0/0
+  face=6966/7544 diff=21959 entity=7393/7790 value=0/0
+  face=6966/7544 diff=21959 entity=7410/7791 value=0/0
+  face=6966/7544 diff=21959 entity=7405/7792 value=0/0
+  face=6966/7544 diff=21959 entity=7399/7793 value=0/0
+  face=6960/7547 diff=21959 entity=7486/7802 value=0/0
+  face=7339/7556 diff=21959 entity=7513/7796 value=0/0
+  face=7327/7569 diff=21959 entity=7299/7828 value=0/0
+  face=7327/7569 diff=21959 entity=7316/7836 value=0/0
+  face=7321/7568 diff=21959 entity=7254/7834 value=0/0
+  face=7321/7568 diff=21959 entity=7271/7824 value=0/0
+  face=7304/7561 diff=21959 entity=7316/7836 value=0/0
+  face=7304/7561 diff=21959 entity=7432/7810 value=0/0
+  face=7282/7557 diff=21959 entity=7299/7828 value=0/0
+  face=7282/7557 diff=21959 entity=7507/7797 value=0/0
+  face=7276/7554 diff=21959 entity=7501/7794 value=0/0
+  face=7259/7555 diff=21959 entity=7271/7824 value=0/0
+  face=7259/7555 diff=21959 entity=7518/7795 value=0/0
+  face=7242/7560 diff=21959 entity=7254/7834 value=0/0
+  face=7242/7560 diff=21959 entity=7459/7806 value=0/0
+  face=7230/7552 diff=21959 entity=7399/7793 value=0/0
+  face=7217/7565 diff=21959 entity=7174/7820 value=0/0
+  face=7204/7567 diff=21959 entity=7157/7830 value=0/0
+  face=7191/7566 diff=21959 entity=7140/7832 value=0/0
+  face=7179/7564 diff=21959 entity=7123/7816 value=0/0
+  face=7162/7553 diff=21959 entity=7174/7820 value=0/0
+  face=7162/7553 diff=21959 entity=7405/7792 value=0/0
+  face=7145/7558 diff=21959 entity=7157/7830 value=0/0
+  face=7145/7558 diff=21959 entity=7372/7801 value=0/0
+  face=7128/7559 diff=21959 entity=7140/7832 value=0/0
+  face=7128/7559 diff=21959 entity=7486/7802 value=0/0
+  face=7110/7551 diff=21959 entity=7123/7816 value=0/0
+  face=7110/7551 diff=21959 entity=7393/7790 value=0/0
+  face=7097/7563 diff=21959 entity=7079/7814 value=0/0
+  face=7084/7562 diff=21959 entity=7068/7815 value=0/0
+  face=7060/7550 diff=21959 entity=7079/7814 value=0/0
+  face=7060/7550 diff=21959 entity=7410/7791 value=0/0
+  face=7060/7550 diff=21959 entity=7068/7815 value=0/0
+block-all-fillet raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+block-all-fillet canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=26 received=26
+  global=21943 reference=48 received=48
+  global=21944 reference=0 received=0
+  global=21946 reference=24 received=24
+  global=21947 reference=0 received=0
+block-all-fillet canonical volume=189.61349783646642/189.61349783646642, area=195.45769561509815/195.45769561509812
+PASS block-all-fillet
+block-single-chamfer volume=191.36/191.35999999999999, area=205.9654833995939/205.9654833995939
+block-single-chamfer raw: global=21921, local=21930, face pairs=3
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+  face=8812/8927 diff=21959 entity=8898/9010 value=0/0
+    curve=8898 owner=8894 sense=0 t=-0.9899494936611666,-0.42426406871192857
+    entity=8898 class=3001
+    curve=9010 owner=8978 sense=1 t=0,0.5656854249492378
+    entity=9010 class=3001
+  face=8763/8926 diff=21959 entity=8915/9002 value=0/0
+    curve=8915 owner=8911 sense=0 t=0.42426406871192857,0.9899494936611666
+    entity=8915 class=3001
+    curve=9002 owner=8970 sense=1 t=0,0.5656854249492378
+    entity=9002 class=3001
+  face=8846/8932 diff=21958 entity=8870/9001 value=0/0
+  face=8846/8932 diff=21959 entity=8915/9002 value=0/0
+  face=8846/8932 diff=21959 entity=8898/9010 value=0/0
+block-single-chamfer raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+block-single-chamfer canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+block-single-chamfer canonical volume=191.36/191.35999999999999, area=205.9654833995939/205.9654833995939
+PASS block-single-chamfer
+block-parallel-chamfer volume=189.44/189.44, area=199.86193359837557/199.86193359837557
+block-parallel-chamfer raw: global=21921, local=21930, face pairs=6
+  global=21940 reference=1 received=1
+  global=21941 reference=10 received=10
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+  face=9375/9730 diff=21959 entity=9619/9859 value=0/0
+    curve=9619 owner=9615 sense=0 t=0.42426406871192857,0.9899494936611666
+    entity=9619 class=3001
+    curve=9859 owner=9809 sense=1 t=0,0.5656854249492378
+    entity=9859 class=3001
+  face=9375/9730 diff=21959 entity=9613/9861 value=0/0
+    curve=9613 owner=9609 sense=0 t=-0.9899494936611666,-0.42426406871192857
+    entity=9613 class=3001
+    curve=9861 owner=9811 sense=1 t=0,0.5656854249492378
+    entity=9861 class=3001
+  face=9375/9730 diff=21959 entity=9607/9855 value=0/0
+  face=9375/9730 diff=21959 entity=9601/9857 value=0/0
+  face=9326/9729 diff=21959 entity=9685/9848 value=0/0
+  face=9326/9729 diff=21959 entity=9667/9850 value=0/0
+  face=9326/9729 diff=21959 entity=9673/9852 value=0/0
+  face=9326/9729 diff=21959 entity=9679/9854 value=0/0
+  face=9412/9736 diff=21958 entity=9436/9844 value=0/0
+  face=9412/9736 diff=21959 entity=9685/9848 value=0/0
+  face=9412/9736 diff=21959 entity=9619/9859 value=0/0
+  face=9444/9737 diff=21958 entity=9468/9845 value=0/0
+  face=9444/9737 diff=21959 entity=9679/9854 value=0/0
+  face=9444/9737 diff=21959 entity=9613/9861 value=0/0
+  face=9476/9738 diff=21958 entity=9500/9846 value=0/0
+  face=9476/9738 diff=21959 entity=9673/9852 value=0/0
+  face=9476/9738 diff=21959 entity=9607/9855 value=0/0
+  face=9508/9735 diff=21958 entity=9532/9843 value=0/0
+  face=9508/9735 diff=21959 entity=9667/9850 value=0/0
+  face=9508/9735 diff=21959 entity=9601/9857 value=0/0
+block-parallel-chamfer raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+block-parallel-chamfer canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=10 received=10
+  global=21943 reference=24 received=24
+  global=21944 reference=0 received=0
+  global=21946 reference=16 received=16
+  global=21947 reference=0 received=0
+block-parallel-chamfer canonical volume=189.44/189.44, area=199.86193359837557/199.86193359837557
+PASS block-parallel-chamfer
+block-all-chamfer volume=186.58133333333342/186.58133333333342, area=190.64728303367656/190.64728303367653
+block-all-chamfer raw: global=21921, local=21930, face pairs=20
+  global=21940 reference=1 received=1
+  global=21941 reference=26 received=26
+  global=21943 reference=48 received=48
+  global=21944 reference=0 received=0
+  global=21946 reference=24 received=24
+  global=21947 reference=0 received=0
+  face=10737/10957 diff=21958 entity=10756/11177 value=0/0
+  face=10737/10957 diff=21959 entity=10738/11227 value=0/0
+    curve=10738 owner=10733 sense=0 t=0,0.5656854249492382
+    entity=10738 class=3001
+    curve=11227 owner=11129 sense=1 t=0,0.5656854249492382
+    entity=11227 class=3001
+  face=10737/10957 diff=21959 entity=10725/11228 value=0/0
+  face=10724/10970 diff=21959 entity=10738/11227 value=0/0
+  face=10717/10969 diff=21959 entity=10725/11228 value=0/0
+  face=10699/10962 diff=21958 entity=10718/11182 value=0/0
+  face=10699/10962 diff=21959 entity=10615/11238 value=0/0
+  face=10676/10958 diff=21958 entity=10700/11178 value=0/0
+  face=10676/10958 diff=21959 entity=10607/11230 value=0/0
+  face=10669/10955 diff=21958 entity=10682/11175 value=0/0
+  face=10669/10955 diff=21959 entity=10593/11224 value=0/0
+  face=10669/10955 diff=21959 entity=10601/11223 value=0/0
+  face=10651/10956 diff=21958 entity=10670/11176 value=0/0
+  face=10651/10956 diff=21959 entity=10587/11226 value=0/0
+  face=10633/10961 diff=21958 entity=10652/11181 value=0/0
+  face=10633/10961 diff=21959 entity=10579/11236 value=0/0
+  face=10620/10953 diff=21958 entity=10634/11173 value=0/0
+  face=10620/10953 diff=21959 entity=10621/11219 value=0/0
+  face=10620/10953 diff=21959 entity=10573/11220 value=0/0
+  face=10606/10966 diff=21959 entity=10615/11238 value=0/0
+  face=10606/10966 diff=21959 entity=10621/11219 value=0/0
+  face=10592/10968 diff=21959 entity=10601/11223 value=0/0
+  face=10592/10968 diff=21959 entity=10607/11230 value=0/0
+  face=10578/10967 diff=21959 entity=10587/11226 value=0/0
+  face=10578/10967 diff=21959 entity=10593/11224 value=0/0
+  face=10565/10965 diff=21959 entity=10573/11220 value=0/0
+  face=10565/10965 diff=21959 entity=10579/11236 value=0/0
+  face=10547/10954 diff=21958 entity=10566/11174 value=0/0
+  face=10547/10954 diff=21959 entity=10493/11222 value=0/0
+  face=10529/10959 diff=21958 entity=10548/11179 value=0/0
+  face=10529/10959 diff=21959 entity=10487/11232 value=0/0
+  face=10511/10960 diff=21958 entity=10530/11180 value=0/0
+  face=10511/10960 diff=21959 entity=10479/11234 value=0/0
+  face=10492/10952 diff=21958 entity=10512/11172 value=0/0
+  face=10492/10952 diff=21959 entity=10473/11218 value=0/0
+  face=10478/10964 diff=21959 entity=10487/11232 value=0/0
+  face=10478/10964 diff=21959 entity=10493/11222 value=0/0
+  face=10463/10963 diff=21959 entity=10473/11218 value=0/0
+  face=10463/10963 diff=21959 entity=10479/11234 value=0/0
+  face=10439/10951 diff=21958 entity=10465/11171 value=0/0
+block-all-chamfer raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+block-all-chamfer canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=26 received=26
+  global=21943 reference=48 received=48
+  global=21944 reference=0 received=0
+  global=21946 reference=24 received=24
+  global=21947 reference=0 received=0
+block-all-chamfer canonical volume=186.58133333333342/186.58133333333342, area=190.64728303367656/190.64728303367653
+PASS block-all-chamfer
+block-unequal-chamfer volume=191.28/191.28000000000003, area=205.98656314599947/205.98656314599947
+block-unequal-chamfer raw: global=21921, local=21930, face pairs=3
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+  face=12234/12349 diff=21959 entity=12320/12432 value=0/0
+    curve=12320 owner=12316 sense=0 t=-0.0894427190999909,0.5813776741499461
+    entity=12320 class=3001
+    curve=12432 owner=12400 sense=1 t=0,0.670820393249937
+    entity=12432 class=3001
+  face=12185/12348 diff=21959 entity=12337/12424 value=0/0
+    curve=12337 owner=12333 sense=0 t=-0.5813776741499461,0.0894427190999909
+    entity=12337 class=3001
+    curve=12424 owner=12392 sense=1 t=0,0.670820393249937
+    entity=12424 class=3001
+  face=12268/12354 diff=21958 entity=12292/12423 value=0/0
+  face=12268/12354 diff=21959 entity=12337/12424 value=0/0
+  face=12268/12354 diff=21959 entity=12320/12432 value=0/0
+block-unequal-chamfer raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+block-unequal-chamfer canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+block-unequal-chamfer canonical volume=191.28/191.28000000000003, area=205.98656314599947/205.98656314599947
+PASS block-unequal-chamfer
+oblique-unequal-chamfer volume=179.1359423538739/179.13594235387393, area=201.92639014605803/201.92639014605803
+oblique-unequal-chamfer raw: global=21921, local=21930, face pairs=3
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+  face=12818/13000 diff=21959 entity=12984/13085 value=0/0
+    curve=12984 owner=12980 sense=0 t=-0.04132853523747911,0.6659595321413022
+    entity=12984 class=3001
+    curve=13085 owner=13053 sense=1 t=0,0.7072880673787799
+    entity=13085 class=3001
+  face=12861/12999 diff=21959 entity=12967/13084 value=0/0
+    curve=12967 owner=12963 sense=0 t=1.4556786529350885,2.162966720313869
+    entity=12967 class=3001
+    curve=13084 owner=13052 sense=1 t=0,0.7072880673787802
+    entity=13084 class=3001
+  face=12915/13001 diff=21958 entity=12939/13070 value=0/0
+  face=12915/13001 diff=21959 entity=12984/13085 value=0/0
+  face=12915/13001 diff=21959 entity=12967/13084 value=0/0
+oblique-unequal-chamfer raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+oblique-unequal-chamfer canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+oblique-unequal-chamfer canonical volume=179.1359423538739/179.13594235387393, area=201.92639014605803/201.92639014605803
+PASS oblique-unequal-chamfer
+oriented-all-fillet volume=189.61349783646645/189.61349782780133, area=195.45769561509812/195.45769561704248
+oriented-all-fillet raw: global=21921, local=21930, face pairs=26
+  global=21940 reference=1 received=1
+  global=21941 reference=26 received=26
+  global=21943 reference=48 received=48
+  global=21944 reference=0 received=0
+  global=21946 reference=24 received=24
+  global=21947 reference=0 received=0
+  face=13444/13974 diff=21959 entity=13930/14224 value=0/0
+    curve=13930 owner=13927 sense=0 t=-1.6000000000000014,1.5999999999999983
+    entity=13930 class=3001
+    curve=14224 owner=14126 sense=1 t=0,3.2000000000000006
+    entity=14224 class=3001
+  face=13444/13974 diff=21959 entity=13947/14225 value=0/0
+    curve=13947 owner=13943 sense=0 t=-2.600000000000001,2.599999999999999
+    entity=13947 class=3001
+    curve=14225 owner=14127 sense=1 t=0,5.199999999999999
+    entity=14225 class=3001
+  face=13444/13974 diff=21959 entity=13942/14226 value=0/0
+  face=13444/13974 diff=21959 entity=13936/14223 value=0/0
+  face=13439/13975 diff=21959 entity=13801/14227 value=0/0
+  face=13434/13978 diff=21959 entity=13861/14239 value=0/0
+  face=13429/13977 diff=21959 entity=13888/14235 value=0/0
+  face=13395/13973 diff=21959 entity=13822/14219 value=0/0
+  face=13395/13973 diff=21959 entity=13839/14220 value=0/0
+  face=13395/13973 diff=21959 entity=13834/14221 value=0/0
+  face=13395/13973 diff=21959 entity=13828/14222 value=0/0
+  face=13389/13976 diff=21959 entity=13915/14231 value=0/0
+  face=13768/13985 diff=21959 entity=13942/14226 value=0/0
+  face=13756/13998 diff=21959 entity=13728/14257 value=0/0
+  face=13756/13998 diff=21959 entity=13745/14265 value=0/0
+  face=13750/13997 diff=21959 entity=13683/14263 value=0/0
+  face=13750/13997 diff=21959 entity=13700/14253 value=0/0
+  face=13733/13990 diff=21959 entity=13745/14265 value=0/0
+  face=13733/13990 diff=21959 entity=13861/14239 value=0/0
+  face=13711/13986 diff=21959 entity=13728/14257 value=0/0
+  face=13711/13986 diff=21959 entity=13936/14223 value=0/0
+  face=13705/13983 diff=21959 entity=13930/14224 value=0/0
+  face=13688/13984 diff=21959 entity=13700/14253 value=0/0
+  face=13688/13984 diff=21959 entity=13947/14225 value=0/0
+  face=13671/13989 diff=21959 entity=13683/14263 value=0/0
+  face=13671/13989 diff=21959 entity=13888/14235 value=0/0
+  face=13659/13981 diff=21959 entity=13828/14222 value=0/0
+  face=13646/13994 diff=21959 entity=13603/14249 value=0/0
+  face=13633/13996 diff=21959 entity=13586/14259 value=0/0
+  face=13620/13995 diff=21959 entity=13569/14261 value=0/0
+  face=13608/13993 diff=21959 entity=13552/14245 value=0/0
+  face=13591/13982 diff=21959 entity=13603/14249 value=0/0
+  face=13591/13982 diff=21959 entity=13834/14221 value=0/0
+  face=13574/13987 diff=21959 entity=13586/14259 value=0/0
+  face=13574/13987 diff=21959 entity=13801/14227 value=0/0
+  face=13557/13988 diff=21959 entity=13569/14261 value=0/0
+  face=13557/13988 diff=21959 entity=13915/14231 value=0/0
+  face=13539/13980 diff=21959 entity=13552/14245 value=0/0
+  face=13539/13980 diff=21959 entity=13822/14219 value=0/0
+  face=13526/13992 diff=21959 entity=13508/14243 value=0/0
+  face=13513/13991 diff=21959 entity=13497/14244 value=0/0
+  face=13489/13979 diff=21959 entity=13508/14243 value=0/0
+  face=13489/13979 diff=21959 entity=13839/14220 value=0/0
+  face=13489/13979 diff=21959 entity=13497/14244 value=0/0
+oriented-all-fillet raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+oriented-all-fillet canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=26 received=26
+  global=21943 reference=48 received=48
+  global=21944 reference=0 received=0
+  global=21946 reference=24 received=24
+  global=21947 reference=0 received=0
+oriented-all-fillet canonical volume=189.61349783646645/189.61349782780133, area=195.4576956150981/195.45769561704248
+PASS oriented-all-fillet
+prism-all-fillet volume=127.47391672306298/127.473916723063, area=142.19723831060136/142.19723831060136
+prism-all-fillet raw: global=21921, local=21930, face pairs=31
+  global=21940 reference=1 received=1
+  global=21941 reference=32 received=32
+  global=21943 reference=60 received=60
+  global=21944 reference=0 received=0
+  global=21946 reference=30 received=30
+  global=21947 reference=0 received=0
+  face=15283/15932 diff=21959 entity=15717/16258 value=0/0
+    curve=15717 owner=15713 sense=0 t=-2.7,2.7
+    entity=15717 class=3001
+    curve=16258 owner=16136 sense=1 t=0,5.4
+    entity=16258 class=3001
+  face=15283/15932 diff=21959 entity=15705/16261 value=0/0
+    curve=15705 owner=15702 sense=0 t=-1.5453929984758115,1.5453929984758112
+    entity=15705 class=3001
+    curve=16261 owner=16139 sense=1 t=0,3.090785996951623
+    entity=16261 class=3001
+  face=15276/15931 diff=21959 entity=15777/16254 value=0/0
+  face=15276/15931 diff=21959 entity=15765/16257 value=0/0
+  face=15269/15930 diff=21959 entity=15804/16250 value=0/0
+  face=15269/15930 diff=21959 entity=15792/16253 value=0/0
+  face=15262/15929 diff=21959 entity=15831/16246 value=0/0
+  face=15262/15929 diff=21959 entity=15819/16249 value=0/0
+  face=15255/15928 diff=21959 entity=15852/16245 value=0/0
+  face=15255/15928 diff=21959 entity=15846/16244 value=0/0
+  face=15192/15926 diff=21959 entity=15732/16234 value=0/0
+  face=15192/15926 diff=21959 entity=15755/16235 value=0/0
+  face=15192/15926 diff=21959 entity=15750/16236 value=0/0
+  face=15192/15926 diff=21959 entity=15744/16232 value=0/0
+  face=15192/15926 diff=21959 entity=15738/16233 value=0/0
+  face=15679/15955 diff=21959 entity=15640/16278 value=0/0
+  face=15679/15955 diff=21959 entity=15674/16277 value=0/0
+  face=15679/15955 diff=21959 entity=15657/16270 value=0/0
+  face=15662/15940 diff=21959 entity=15674/16277 value=0/0
+  face=15662/15940 diff=21959 entity=15792/16253 value=0/0
+  face=15645/15937 diff=21959 entity=15657/16270 value=0/0
+  face=15645/15937 diff=21959 entity=15819/16249 value=0/0
+  face=15622/15941 diff=21959 entity=15640/16278 value=0/0
+  face=15622/15941 diff=21959 entity=15804/16250 value=0/0
+  face=15610/15956 diff=21959 entity=15553/16283 value=0/0
+  face=15610/15956 diff=21959 entity=15570/16284 value=0/0
+  face=15603/15953 diff=21959 entity=15508/16272 value=0/0
+  face=15603/15953 diff=21959 entity=15525/16265 value=0/0
+  face=15592/15950 diff=21959 entity=15491/16268 value=0/0
+  face=15592/15950 diff=21959 entity=15587/16275 value=0/0
+  face=15575/15939 diff=21959 entity=15587/16275 value=0/0
+  face=15575/15939 diff=21959 entity=15744/16232 value=0/0
+  face=15558/15944 diff=21959 entity=15570/16284 value=0/0
+  face=15558/15944 diff=21959 entity=15777/16254 value=0/0
+  face=15536/15943 diff=21959 entity=15553/16283 value=0/0
+  face=15536/15943 diff=21959 entity=15765/16257 value=0/0
+  face=15530/15946 diff=21959 entity=15705/16261 value=0/0
+  face=15513/15934 diff=21959 entity=15525/16265 value=0/0
+  face=15513/15934 diff=21959 entity=15846/16244 value=0/0
+  face=15496/15938 diff=21959 entity=15508/16272 value=0/0
+  face=15496/15938 diff=21959 entity=15831/16246 value=0/0
+  face=15478/15936 diff=21959 entity=15491/16268 value=0/0
+  face=15478/15936 diff=21959 entity=15738/16233 value=0/0
+  face=15465/15951 diff=21959 entity=15422/16281 value=0/0
+  face=15452/15957 diff=21959 entity=15405/16290 value=0/0
+  face=15439/15954 diff=21959 entity=15388/16266 value=0/0
+  face=15427/15948 diff=21959 entity=15371/16263 value=0/0
+  face=15410/15942 diff=21959 entity=15422/16281 value=0/0
+  face=15410/15942 diff=21959 entity=15750/16236 value=0/0
+  face=15393/15947 diff=21959 entity=15405/16290 value=0/0
+  face=15393/15947 diff=21959 entity=15717/16258 value=0/0
+  face=15376/15935 diff=21959 entity=15388/16266 value=0/0
+  face=15376/15935 diff=21959 entity=15852/16245 value=0/0
+  face=15358/15933 diff=21959 entity=15371/16263 value=0/0
+  face=15358/15933 diff=21959 entity=15732/16234 value=0/0
+  face=15345/15952 diff=21959 entity=15327/16286 value=0/0
+  face=15332/15949 diff=21959 entity=15316/16287 value=0/0
+  face=15308/15945 diff=21959 entity=15327/16286 value=0/0
+  face=15308/15945 diff=21959 entity=15755/16235 value=0/0
+  face=15308/15945 diff=21959 entity=15316/16287 value=0/0
+prism-all-fillet raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+prism-all-fillet canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=32 received=32
+  global=21943 reference=60 received=60
+  global=21944 reference=0 received=0
+  global=21946 reference=30 received=30
+  global=21947 reference=0 received=0
+prism-all-fillet canonical volume=127.47391672306298/127.473916723063, area=142.19723831060136/142.19723831060136
+PASS prism-all-fillet
+prism-all-chamfer volume=126.23844238613492/126.23844238613495, area=139.63818357892535/139.63818357892532
+prism-all-chamfer raw: global=21921, local=21930, face pairs=24
+  global=21940 reference=1 received=1
+  global=21941 reference=32 received=32
+  global=21943 reference=60 received=60
+  global=21944 reference=0 received=0
+  global=21946 reference=30 received=30
+  global=21947 reference=0 received=0
+  face=17932/18214 diff=21958 entity=17951/18488 value=0/0
+  face=17932/18214 diff=21959 entity=17891/18550 value=0/0
+    curve=17891 owner=17886 sense=0 t=4.5238543923329745E-31,0.4242640687119283
+    entity=17891 class=3001
+    curve=18550 owner=18428 sense=1 t=0,0.42426406871192857
+    entity=18550 class=3001
+  face=17914/18211 diff=21958 entity=17933/18485 value=0/0
+  face=17914/18211 diff=21959 entity=17878/18545 value=0/0
+  face=17890/18215 diff=21958 entity=17915/18489 value=0/0
+  face=17890/18215 diff=21959 entity=17870/18553 value=0/0
+  face=17877/18230 diff=21959 entity=17891/18550 value=0/0
+  face=17869/18227 diff=21959 entity=17878/18545 value=0/0
+  face=17857/18224 diff=21959 entity=17870/18553 value=0/0
+  face=17839/18213 diff=21958 entity=17858/18487 value=0/0
+  face=17839/18213 diff=21959 entity=17737/18548 value=0/0
+  face=17821/18218 diff=21958 entity=17840/18492 value=0/0
+  face=17821/18218 diff=21959 entity=17731/18559 value=0/0
+  face=17798/18217 diff=21958 entity=17822/18491 value=0/0
+  face=17798/18217 diff=21959 entity=17723/18556 value=0/0
+  face=17791/18220 diff=21958 entity=17804/18494 value=0/0
+  face=17791/18220 diff=21959 entity=17709/18563 value=0/0
+  face=17791/18220 diff=21959 entity=17717/18562 value=0/0
+  face=17773/18208 diff=21958 entity=17792/18482 value=0/0
+  face=17773/18208 diff=21959 entity=17703/18538 value=0/0
+  face=17755/18212 diff=21958 entity=17774/18486 value=0/0
+  face=17755/18212 diff=21959 entity=17695/18547 value=0/0
+  face=17736/18210 diff=21958 entity=17756/18484 value=0/0
+  face=17736/18210 diff=21959 entity=17689/18543 value=0/0
+  face=17722/18225 diff=21959 entity=17731/18559 value=0/0
+  face=17722/18225 diff=21959 entity=17737/18548 value=0/0
+  face=17708/18231 diff=21959 entity=17717/18562 value=0/0
+  face=17708/18231 diff=21959 entity=17723/18556 value=0/0
+  face=17694/18228 diff=21959 entity=17703/18538 value=0/0
+  face=17694/18228 diff=21959 entity=17709/18563 value=0/0
+  face=17681/18222 diff=21959 entity=17689/18543 value=0/0
+  face=17681/18222 diff=21959 entity=17695/18547 value=0/0
+  face=17663/18216 diff=21958 entity=17682/18490 value=0/0
+  face=17663/18216 diff=21959 entity=17609/18554 value=0/0
+  face=17645/18221 diff=21958 entity=17664/18495 value=0/0
+  face=17645/18221 diff=21959 entity=17603/18565 value=0/0
+  face=17627/18209 diff=21958 entity=17646/18483 value=0/0
+  face=17627/18209 diff=21959 entity=17595/18541 value=0/0
+  face=17608/18207 diff=21958 entity=17628/18481 value=0/0
+  face=17608/18207 diff=21959 entity=17589/18536 value=0/0
+  face=17594/18226 diff=21959 entity=17603/18565 value=0/0
+  face=17594/18226 diff=21959 entity=17609/18554 value=0/0
+  face=17579/18223 diff=21959 entity=17589/18536 value=0/0
+  face=17579/18223 diff=21959 entity=17595/18541 value=0/0
+  face=17555/18219 diff=21958 entity=17581/18493 value=0/0
+prism-all-chamfer raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+prism-all-chamfer canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=32 received=32
+  global=21943 reference=60 received=60
+  global=21944 reference=0 received=0
+  global=21946 reference=30 received=30
+  global=21947 reference=0 received=0
+prism-all-chamfer canonical volume=126.23844238613492/126.23844238613495, area=139.63818357892535/139.63818357892532
+PASS prism-all-chamfer
+oblique-single-fillet volume=179.7014288391863/179.70142883011013, area=202.8806553565065/202.8806553551452
+oblique-single-fillet raw: global=21921, local=21930, face pairs=3
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+  face=19876/19984 diff=21959 entity=19967/20064 value=0/0
+    curve=19967 owner=19963 sense=0 t=0,8
+    entity=19967 class=3001
+    curve=20064 owner=20032 sense=1 t=0,8.000000000000002
+    entity=20064 class=3001
+  face=19852/19987 diff=21959 entity=19956/20072 value=0/0
+    curve=19956 owner=19952 sense=0 t=3.141592653589793,4.71238898038469
+    ellipse=19956 p=(1.6797436923898257,2.7,0) axis=(0,0,1) ref=(-1,0,0)
+    curve=20072 owner=20040 sense=1 t=4.712388980384691,6.283185307179586
+    ellipse=20072 p=(1.679743692389826,2.7,0) axis=(-0,0,-1) ref=(1,0,0)
+  face=19906/19989 diff=21959 entity=19967/20064 value=0/0
+  face=19906/19989 diff=21959 entity=19956/20072 value=0/0
+oblique-single-fillet raw has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.
+oblique-single-fillet canonical: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=7 received=7
+  global=21943 reference=15 received=15
+  global=21944 reference=0 received=0
+  global=21946 reference=10 received=10
+  global=21947 reference=0 received=0
+oblique-single-fillet canonical volume=179.7014288391863/179.70142883011013, area=202.8806553565065/202.8806553551452
+PASS oblique-single-fillet
+cylinder-rim-fillet volume=169.01805527821213/169.01805527821213, area=166.33871160747384/166.33871160747384
+cylinder-rim-fillet raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=4 received=4
+  global=21943 reference=3 received=3
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-rim-fillet
+cylinder-both-rim-fillet volume=168.39010726257538/168.39010726257538, area=163.03141992109886/163.03141992109886
+cylinder-both-rim-fillet raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=5 received=5
+  global=21943 reference=4 received=4
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-both-rim-fillet
+cylinder-rim-chamfer volume=168.20505946340234/168.20505946340234, area=165.0210711626669/165.0210711626669
+cylinder-rim-chamfer raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=4 received=4
+  global=21943 reference=3 received=3
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-rim-chamfer
+cylinder-both-rim-chamfer volume=166.7641156329558/166.7641156329558, area=160.396139031485/160.396139031485
+cylinder-both-rim-chamfer raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=5 received=5
+  global=21943 reference=4 received=4
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-both-rim-chamfer
+cylinder-unequal-chamfer volume=168.00609192867495/168.00609192867495, area=164.97657949336664/164.97657949336664
+cylinder-unequal-chamfer raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=4 received=4
+  global=21943 reference=3 received=3
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-unequal-chamfer
+Local operation oracle: 41 passed, 0 failed.

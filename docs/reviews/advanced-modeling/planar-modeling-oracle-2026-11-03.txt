@@ -1,0 +1,338 @@
+coincident-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS coincident-15903
+overlap-two-axes-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=14, received count=14
+  global entry=21943, master count=32, received count=32
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=20, received count=20
+  global entry=21947, master count=0, received count=0
+PASS overlap-two-axes-15903
+aligned-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=14, received count=14
+  global entry=21943, master count=28, received count=28
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=16, received count=16
+  global entry=21947, master count=0, received count=0
+PASS aligned-15903
+touching-face-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=10, received count=10
+  global entry=21943, master count=20, received count=20
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=12, received count=12
+  global entry=21947, master count=0, received count=0
+PASS touching-face-15903
+disjoint-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+disjoint-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS disjoint-15903
+nested-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS nested-15903
+crossing-rotated-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=20, received count=20
+  global entry=21943, master count=42, received count=42
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=24, received count=24
+  global entry=21947, master count=0, received count=0
+PASS crossing-rotated-15903
+translated-large-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS translated-large-15903
+two-tools-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=10, received count=10
+  global entry=21943, master count=28, received count=28
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=24, received count=24
+  global entry=21947, master count=0, received count=0
+PASS two-tools-15903
+closed-cavity-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS closed-cavity-15903
+through-hole-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=8, received count=8
+  global entry=21943, master count=20, received count=20
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=16, received count=16
+  global entry=21947, master count=0, received count=0
+PASS through-hole-15903
+coincident-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS coincident-15901
+overlap-two-axes-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS overlap-two-axes-15901
+aligned-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS aligned-15901
+PASS touching-face-15901
+PASS disjoint-15901
+nested-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS nested-15901
+crossing-rotated-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=8, received count=8
+  global entry=21943, master count=18, received count=18
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=12, received count=12
+  global entry=21947, master count=0, received count=0
+PASS crossing-rotated-15901
+translated-large-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS translated-large-15901
+two-tools-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+two-tools-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS two-tools-15901
+closed-cavity-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS closed-cavity-15901
+through-hole-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS through-hole-15901
+PASS coincident-15902
+overlap-two-axes-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=8, received count=8
+  global entry=21943, master count=18, received count=18
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=12, received count=12
+  global entry=21947, master count=0, received count=0
+PASS overlap-two-axes-15902
+aligned-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS aligned-15902
+touching-face-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS touching-face-15902
+disjoint-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS disjoint-15902
+nested-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=2, received count=2
+  global entry=21941, master count=12, received count=12
+  global entry=21943, master count=24, received count=24
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=16, received count=16
+  global entry=21947, master count=0, received count=0
+PASS nested-15902
+crossing-rotated-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=7, received count=7
+  global entry=21943, master count=15, received count=15
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=10, received count=10
+  global entry=21947, master count=0, received count=0
+crossing-rotated-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=5, received count=5
+  global entry=21943, master count=9, received count=9
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=6, received count=6
+  global entry=21947, master count=0, received count=0
+PASS crossing-rotated-15902
+PASS translated-large-15902
+two-tools-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=14, received count=14
+  global entry=21943, master count=36, received count=36
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=24, received count=24
+  global entry=21947, master count=0, received count=0
+PASS two-tools-15902
+closed-cavity-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=2, received count=2
+  global entry=21941, master count=12, received count=12
+  global entry=21943, master count=24, received count=24
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=16, received count=16
+  global entry=21947, master count=0, received count=0
+PASS closed-cavity-15902
+through-hole-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=10, received count=10
+  global entry=21943, master count=24, received count=24
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=16, received count=16
+  global entry=21947, master count=0, received count=0
+PASS through-hole-15902
+imprint body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=10, received count=10
+  global entry=21943, master count=20, received count=20
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=12, received count=12
+  global entry=21947, master count=0, received count=0
+PASS imprint
+oblique-imprint body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=8, received count=8
+  global entry=21943, master count=14, received count=14
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS oblique-imprint
+trim-keep body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=4, received count=4
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=4, received count=4
+  global entry=21947, master count=0, received count=0
+PASS trim-keep
+trim-remove body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=4, received count=4
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=4, received count=4
+  global entry=21947, master count=0, received count=0
+PASS trim-remove
+section-both body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+section-both body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS section-both
+section-front body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS section-front
+section-back body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS section-back
+section-miss body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS section-miss
+section-coincident body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=6, received count=6
+  global entry=21943, master count=12, received count=12
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=8, received count=8
+  global entry=21947, master count=0, received count=0
+PASS section-coincident
+PASS outside-default-size-box negative fixture
+PASS all 43 independent modeling fixtures

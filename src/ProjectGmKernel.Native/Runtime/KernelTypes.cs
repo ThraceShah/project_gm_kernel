@@ -40,6 +40,7 @@ global using BlendBoundTag = int;
 global using TransfTag = int;
 global using BodyTag = int;
 global using EntityTag = int;
+global using FaceTag = int;
 
 // Kernel-internal enum aliases — mirror PK_*_t values but decouple from ABI surface.
 // Values match PK_*_t for zero-cost conversion at API boundary.
@@ -52,6 +53,7 @@ global using KernelKnotType = int;       // PK_knot_type_t
 global using KernelSelfIntersect = int;  // PK_self_intersect_t
 global using KernelConvexity = int;      // PK_convexity_t
 global using KernelLogical = byte;       // PK_LOGICAL_t
+global using KernelBlendKind = int;     // pending local blend definition
 
 // XT schema metadata aliases.
 global using XtNodeType = int;

@@ -150,6 +150,10 @@ internal struct EdgeRecord
     public FinSlot LastFinEdge;
     public int FinCount;
     public CurveTag CurveTag;
+    public KernelBlendKind PendingBlendKind;
+    public double PendingBlendFirst;
+    public double PendingBlendSecond;
+    public FaceTag PendingBlendFirstFace;
     public double Tolerance;     // 0 = accurate edge (XT null-double)
     public EdgeSlot PrevInBody;   // sibling ring
     public EdgeSlot NextInBody;   // sibling chain

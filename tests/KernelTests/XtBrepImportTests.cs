@@ -77,24 +77,18 @@ public unsafe class XtBrepImportTests : IDisposable
     }
 
     [Fact]
-    public void Receive_UnmaterializedFinCurvePreservesOriginalXtAsOpaque()
+    public void Receive_FinCurveWithWrongTopologicalOwnerIsRejected()
     {
         var source = CreatePosed(0);
         var document = XtText.DecodeDocument(Transmit(source));
         var fin = document.Nodes.First(n => n.Type == (int)XtNodeTypes.Halfedge);
         var edge = document.Nodes.Single(n => n.Index == fin.Fields[6].Pointer);
-        // This adapter fixture exercises the unsupported-field policy. It is
-        // not a claim that the copied 3D edge curve is a valid tolerant pcurve.
+        // A curve owned by an EDGE cannot simultaneously be owned by a fin.
         fin.Fields[7] = edge.Fields[6];
         var text = XtText.Encode(document);
         var before = Counts();
-        Assert.Equal(0, Receive(text, out var received));
-        Assert.True(KernelRuntime.TryResolveBodySlot(received, out var slot));
-        Assert.True(KernelRuntime.Xt.IsOpaque(slot));
-        var preserved = XtText.DecodeDocument(Transmit(received));
-        Assert.Equal(fin.Fields[7].Pointer, preserved.Nodes.Single(n => n.Index == fin.Index).Fields[7].Pointer);
-        Assert.Equal(document.Nodes.Length, preserved.Nodes.Length);
-        Assert.Equal(0, KernelRuntime.EntityDelete(1, &received));
+        Assert.Equal(ParasolidConstants.PK_ERROR_corrupt_file, Receive(text, out var received));
+        Assert.Equal(0, received);
         Assert.Equal(before, Counts());
     }
 

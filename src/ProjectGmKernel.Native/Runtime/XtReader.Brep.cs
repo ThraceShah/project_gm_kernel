@@ -202,14 +202,26 @@ internal static unsafe partial class XtReader
             AddTopology(edge);
             if (!expanded.Add(edge.Index)) return;
             Tolerance(edge, 2);
-            AddGeometry(Ptr(edge, 6));
-            Require(IsCurve(Node(Ptr(edge, 6))));
+            var nominal = Ptr(edge, 6);
+            if (nominal != 0)
+            {
+                AddGeometry(nominal);
+                Require(IsCurve(Node(nominal)));
+            }
+            else Require(edge.Fields[2].Kind == XtFieldKind.Real && edge.Fields[2].Real > 0);
             Require(Ptr(edge, 3) != 0);
+            var parameterCurves = 0;
             Walk(Ptr(edge, 3), XtNodeTypes.Halfedge, 5, fin =>
             {
                 Require(Ptr(fin, 6) == edge.Index);
+                if (nominal == 0 && Ptr(fin, 1) != 0)
+                {
+                    Require(Ptr(fin, 7) != 0);
+                    parameterCurves++;
+                }
                 AddFin(fin);
             });
+            if (nominal == 0) Require(parameterCurves > 0);
         }
 
         private void AddFin(XtNode fin)
@@ -226,8 +238,8 @@ internal static unsafe partial class XtReader
             if (Ptr(fin, 7) != 0)
             {
                 AddGeometry(Ptr(fin, 7));
-                Require(IsCurve(Node(Ptr(fin, 7))));
-                throw new NotSupportedException("Fin-specific parameter curves require lossless owner-aware XT export.");
+                var curve = Node(Ptr(fin, 7));
+                Require(IsCurve(curve) && Ptr(curve, 2) == fin.Index);
             }
         }
 

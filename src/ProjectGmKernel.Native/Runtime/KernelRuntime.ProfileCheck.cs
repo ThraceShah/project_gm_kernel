@@ -47,7 +47,7 @@ internal static unsafe partial class KernelRuntime
             if(!Edges.IsAlive(edge)||Edges[edge].Body!=slot)
             {ProfileFault(found,ref n,ParasolidConstants.PK_BODY_state_corrupt_c,bodyTag);break;}
             ref readonly var e=ref Edges[edge];
-            if(options->missing_geom==ParasolidConstants.PK_check_missing_geom_yes_c&&GetCurveSlotByTag(e.CurveTag)<0)
+            if(options->missing_geom==ParasolidConstants.PK_check_missing_geom_yes_c&&!HasBoundaryEdgeGeometry(in e))
                 ProfileFault(found,ref n,ParasolidConstants.PK_TOPOL_state_no_geom_c,e.Header.Tag);
             if(e.StartVertex>=0&&(!Vertices.IsAlive(e.StartVertex)||Vertices[e.StartVertex].Body!=slot)
                 ||e.EndVertex>=0&&(!Vertices.IsAlive(e.EndVertex)||Vertices[e.EndVertex].Body!=slot)
@@ -132,5 +132,26 @@ internal static unsafe partial class KernelRuntime
     private static void ProfileFault(Span<PK_check_fault_s> faults,ref int count,int state,EntityTag entity)
     {
         if(count<faults.Length)faults[count++]=new PK_check_fault_s{state=state,entity_1=entity};
+    }
+
+    private static bool HasBoundaryEdgeGeometry(in EdgeRecord edge)
+    {
+        if (GetCurveSlotByTag(edge.CurveTag) >= 0) return true;
+        if (!(edge.Tolerance > 0) || !double.IsFinite(edge.Tolerance)) return false;
+        // A tolerant edge may have no nominal 3D curve. Each actual face use
+        // then owns its precise curve on that face; dummy sheet fins do not.
+        var uses = 0; var fin = edge.FirstFinEdge;
+        for (var i = 0; i < edge.FinCount; i++)
+        {
+            if (!Fins.IsAlive(fin)) return false;
+            ref readonly var record = ref Fins[fin];
+            if (record.Loop >= 0)
+            {
+                uses++;
+                if (GetCurveSlotByTag(record.Curve) < 0) return false;
+            }
+            fin = record.NextOfEdge;
+        }
+        return uses > 0;
     }
 }

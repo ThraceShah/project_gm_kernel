@@ -222,6 +222,16 @@ internal static unsafe partial class XtWriter
             if (curveTag > 0 && !map.CurveTags.ContainsKey(curveTag))
                 map.CurveTags.Add(curveTag, AddIndex(nodes, ref graph, ref map));
         }
+        foreach (var fin in map.FinSlots)
+        {
+            var curveTag = KernelRuntime.GetFinRecord(fin.Key).Curve;
+            if (curveTag <= 0) continue;
+            if (map.FinCurveOwners.TryGetValue(curveTag, out var owner) && owner != fin.Value)
+                throw new NotSupportedException("A fin curve must have one topological owner.");
+            map.FinCurveOwners[curveTag] = fin.Value;
+            if (!map.CurveTags.ContainsKey(curveTag))
+                map.CurveTags.Add(curveTag, AddIndex(nodes, ref graph, ref map));
+        }
         var vertexSlot = body.FirstVertexBody;
         for (var i = 0; i < body.VertexCountBody; i++, vertexSlot = KernelRuntime.GetVertexRecord(vertexSlot).NextInBody)
         {
@@ -1513,11 +1523,11 @@ internal static unsafe partial class XtWriter
         return slotOrTag >= 0 && map.TryGetValue(slotOrTag, out var value) ? value : 0;
     }
 
-    // Parasolid chains ownerless dependency geometry (a trimmed curve's basis,
-    // an SP curve's 2D B-curve, a swept section) in the body's boundary chain
-    // with the body itself as owner; owner=0 is rejected on receive.
+    // A fin's root curve is owned by that HALFEDGE, while its 3D basis curves
+    // belong to the body. SP curves' 2D basis curves are floating nodes.
     private static XtNodeIndex CurveOwner(CurveRecord curve, NodeMap map)
     {
+        if (map.FinCurveOwners.TryGetValue(curve.Header.Tag, out var fin)) return fin;
         var edge = Ptr(map.EdgeSlots, curve.OwnerEdge);
         return edge != 0 ? edge : map.Body;
     }
@@ -1763,6 +1773,7 @@ internal static unsafe partial class XtWriter
         public Dictionary<int, XtNodeIndex> VertexSlots;
         public Dictionary<int, XtNodeIndex> SurfaceTags;
         public Dictionary<int, XtNodeIndex> CurveTags;
+        public Dictionary<int, XtNodeIndex> FinCurveOwners;
         public Dictionary<int, XtNodeIndex> PointTags;
         public List<int> SurfaceChain;
         public List<int> CurveChain;
@@ -1795,6 +1806,7 @@ internal static unsafe partial class XtWriter
             VertexSlots = new Dictionary<int, XtNodeIndex>();
             SurfaceTags = new Dictionary<int, XtNodeIndex>();
             CurveTags = new Dictionary<int, XtNodeIndex>();
+            FinCurveOwners = new Dictionary<int, XtNodeIndex>();
             PointTags = new Dictionary<int, XtNodeIndex>();
             SurfaceChain = [];
             CurveChain = [];

@@ -1,0 +1,255 @@
+equal-overlap-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+equal-overlap-15903 volume=56.548667338602314/56.54866731686833, area=75.39822270521174/75.39822266400827
+PASS equal-overlap-15903
+unequal-overlap-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+unequal-overlap-15903 volume=121.86761467238425/121.86761462194929, area=120.95131672256728/120.95131666317064
+PASS unequal-overlap-15903
+off-axis-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+off-axis-15903 volume=56.2864805579721/56.28648055881603, area=75.05023935545515/75.05023935706122
+PASS off-axis-15903
+coincident-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+coincident-15903 volume=33.510321638291124/33.510321638291124, area=50.26548245743669/50.26548245743669
+PASS coincident-15903
+disjoint-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+disjoint-15903 volume=33.510321638291124/33.510321638291124, area=50.26548245743669/50.26548245743669
+disjoint-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+disjoint-15903 volume=4.1887902047863905/4.1887902047863905, area=12.566370614359172/12.566370614359172
+PASS disjoint-15903
+contained-tool-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+contained-tool-15903 volume=113.09733552923255/113.09733552923255, area=113.09733552923255/113.09733552923255
+PASS contained-tool-15903
+containing-tool-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+containing-tool-15903 volume=113.09733552923255/113.09733552923255, area=113.09733552923255/113.09733552923255
+PASS containing-tool-15903
+concentric-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+concentric-15903 volume=113.09733552923255/113.09733552923255, area=113.09733552923255/113.09733552923255
+PASS concentric-15903
+translated-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+translated-15903 volume=56.54866733860206/56.54866731686818, area=75.39822270521127/75.39822266400799
+PASS translated-15903
+rotated-bases-15903 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+rotated-bases-15903 volume=56.54866753388218/56.54866754491333, area=75.39822316378542/75.39822318453213
+PASS rotated-bases-15903
+equal-overlap-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+equal-overlap-15901 volume=10.471975517213426/10.471975512026006, area=25.132741240578554/25.132741229695124
+PASS equal-overlap-15901
+unequal-overlap-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+unequal-overlap-15901 volume=24.740041999774128/24.74004199489241, area=42.41150061262296/42.41150060510064
+PASS unequal-overlap-15901
+off-axis-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+off-axis-15901 volume=10.73416268355878/10.734162683805208, area=25.480725490353358/25.48072549128161
+PASS off-axis-15901
+coincident-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+coincident-15901 volume=33.510321638291124/33.510321638291124, area=50.26548245743669/50.26548245743669
+PASS coincident-15901
+PASS disjoint-15901
+contained-tool-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+contained-tool-15901 volume=4.1887902047863905/4.1887902047863905, area=12.566370614359172/12.566370614359172
+PASS contained-tool-15901
+containing-tool-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+containing-tool-15901 volume=4.1887902047863905/4.1887902047863905, area=12.566370614359172/12.566370614359172
+PASS containing-tool-15901
+concentric-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+concentric-15901 volume=4.1887902047863905/4.1887902047863905, area=12.566370614359172/12.566370614359172
+PASS concentric-15901
+translated-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+translated-15901 volume=10.47197551721274/10.471975512025924, area=25.132741240577257/25.132741229694975
+PASS translated-15901
+rotated-bases-15901 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+rotated-bases-15901 volume=10.471975508079538/10.47197551157651, area=25.13274121965091/25.13274122885177
+PASS rotated-bases-15901
+equal-overlap-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+equal-overlap-15902 volume=23.038345741727774/23.038345727602103, area=50.265481972895145/50.26548194685169
+PASS equal-overlap-15902
+unequal-overlap-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+unequal-overlap-15902 volume=88.35729302673137/88.3572929781879, area=127.23450180781188/127.23450175420567
+PASS unequal-overlap-15902
+off-axis-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+off-axis-15902 volume=22.7761589313332/22.776158931452272, area=50.26548242290567/50.26548242480634
+PASS off-axis-15902
+PASS coincident-15902
+disjoint-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=1, received count=1
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+disjoint-15902 volume=33.510321638291124/33.510321638291124, area=50.26548245743669/50.26548245743669
+PASS disjoint-15902
+contained-tool-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=2, received count=2
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+contained-tool-15902 volume=108.90854532444617/108.90854532444617, area=125.66370614359172/125.66370614359172
+PASS contained-tool-15902
+PASS containing-tool-15902
+concentric-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=2, received count=2
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=0, received count=0
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+concentric-15902 volume=108.90854532444617/108.90854532444617, area=125.66370614359172/125.66370614359172
+PASS concentric-15902
+translated-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+translated-15902 volume=23.038345741727376/23.03834572760199, area=50.265481972894364/50.265481946851516
+PASS translated-15902
+rotated-bases-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+rotated-bases-15902 volume=23.03834572748666/23.038345744093274, area=50.26548193690323/50.265481961168334
+PASS rotated-bases-15902
+PASS all 30 independent analytic Boolean fixtures, point classifications, entity lifetimes, tracking and strict XT body comparison.

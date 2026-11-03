@@ -311,8 +311,10 @@ static (bool Ok, string Output) RunProcess(string fileName, string arguments, st
     startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     using var process = System.Diagnostics.Process.Start(startInfo);
 
-    process!.WaitForExit();
-    var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+    var stdout = process!.StandardOutput.ReadToEndAsync();
+    var stderr = process.StandardError.ReadToEndAsync();
+    process.WaitForExit();
+    var output = stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult();
     return (process.ExitCode == 0, output);
 }
 
@@ -1784,7 +1786,7 @@ Console.WriteLine("\n=== Build Validation ===");
 var buildOk = true;
 
 Console.Write("  Building ProjectGmKernel.Native ... ");
-var nativeBuild = RunProcess("dotnet", "build src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj --no-restore -v q", repoRoot);
+var nativeBuild = RunProcess("dotnet", "build src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj --no-restore -m:1 -p:UseSharedCompilation=false -v minimal", repoRoot);
 if (nativeBuild.Ok)
 {
     Console.WriteLine("OK");
@@ -1803,7 +1805,9 @@ else
 Console.WriteLine("\n=== ABI Sizeof Validation ===");
 WriteAbiCheckProject();
 Console.WriteLine($"  Wrote {Path.GetRelativePath(repoRoot, Path.Combine(abiCheckDir, "Program.cs"))}");
-var abiCheck = RunProcess("dotnet", "run --project temp_docs/abi_check/AbiCheck.csproj -v q", repoRoot);
+// The immediately preceding gate built the exact promoted API assembly. Avoid
+// rebuilding it through a second parallel project graph for this layout probe.
+var abiCheck = RunProcess("dotnet", "run --project temp_docs/abi_check/AbiCheck.csproj -p:BuildProjectReferences=false -p:UseSharedCompilation=false -p:BuildInParallel=false", repoRoot);
 var abiValidationOk = abiCheck.Ok;
 if (abiCheck.Output.Length > 0)
     Console.Write(abiCheck.Output);
