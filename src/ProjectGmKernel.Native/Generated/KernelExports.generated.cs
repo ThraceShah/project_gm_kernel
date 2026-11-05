@@ -2996,12 +2996,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_GEOM_range")]
-    public static int PK_GEOM_range(int arg0, int arg1, PK_GEOM_range_o_t* arg2, int* arg3, PK_range_2_r_t* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_GEOM_range_array")]
     public static int PK_GEOM_range_array(int arg0, int* arg1, int arg2, int* arg3, PK_GEOM_range_array_o_t* arg4, int* arg5, PK_range_2_r_t* arg6)
     {
@@ -3022,12 +3016,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_GEOM_range_local_vector")]
     public static int PK_GEOM_range_local_vector(int arg0, PK_VECTOR_t arg1, PK_GEOM_range_local_vector_o_t* arg2, int* arg3, nint* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_GEOM_range_vector")]
-    public static int PK_GEOM_range_vector(int arg0, PK_VECTOR_t arg1, PK_GEOM_range_vector_o_t* arg2, int* arg3, PK_range_1_r_t* arg4)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -5428,12 +5416,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_SURF_ask_part")]
     public static int PK_SURF_ask_part(int arg0, int* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_SURF_create_blend")]
-    public static int PK_SURF_create_blend(int arg0, double arg1, int arg2, double arg3, PK_VECTOR_t arg4, PK_VECTOR_t arg5, PK_SURF_create_blend_o_t* arg6, int* arg7)
     {
         return KernelRuntime.NotImplemented();
     }

@@ -601,6 +601,7 @@ var functions = new List<(string Name, string RetType, List<(string Name, string
 var constants = new List<(string Name, string Value, long IntValue)>();
 // Per-struct anonymous union member offsets: structName -> (fieldName -> offset)
 var structUnionOffsets = new Dictionary<string, Dictionary<string, long>>();
+var structFieldOffsets = new Dictionary<string, Dictionary<string, long>>();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Parsing
@@ -777,6 +778,7 @@ unsafe
 
             var fields = new List<(string Name, string Type, bool IsPtr, bool IsConst, bool IsArray, long ArrSize, string Comment)>();
             var unionMemberOffsets = new Dictionary<string, long>(); // union member name -> shared FieldOffset
+            var fieldOffsets = new Dictionary<string, long>();
 
             CXCursorVisitor fieldVisitor = (fieldCursor, _, _) =>
             {
@@ -850,6 +852,8 @@ unsafe
                     return CXChildVisitResult.CXChildVisit_Continue;
 
                 var fname = NormalizeTypeName(GetSpelling(fieldCursor));
+                var abiOffset = clang.Cursor_getOffsetOfField(fieldCursor);
+                if (abiOffset >= 0) fieldOffsets[fname] = abiOffset / 8;
                 var ftype = clang.getCursorType(fieldCursor);
                 var fkind = ftype.kind;
                 var isConst = clang.isConstQualifiedType(ftype) != 0;
@@ -1006,7 +1010,10 @@ unsafe
             {
                 structs.Add((spelling, fields));
                 if (unionMemberOffsets.Count > 0)
+                {
                     structUnionOffsets[spelling] = new Dictionary<string, long>(unionMemberOffsets);
+                    structFieldOffsets[spelling] = fieldOffsets;
+                }
             }
             else
                 unions.Add((spelling, fields));
@@ -1402,8 +1409,9 @@ void GenerateStructs(StringBuilder sb, string access)
                 else
                 {
                     offset = Math.Max(offset, maxUnionEnd);
-                    fieldOffset = offset;
-                    offset += GetFieldAbiSize(f.Type, f.IsPtr, f.IsArray, f.ArrSize);
+                    fieldOffset = structFieldOffsets.TryGetValue(s.Name, out var offsets) && offsets.TryGetValue(f.Name, out var abiOffset)
+                        ? abiOffset : offset;
+                    offset = fieldOffset + GetFieldAbiSize(f.Type, f.IsPtr, f.IsArray, f.ArrSize);
                 }
                 sb.AppendLine($"        [FieldOffset({fieldOffset})]");
                 EmitField(sb, f, fname);

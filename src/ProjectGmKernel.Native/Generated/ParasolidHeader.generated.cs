@@ -9512,7 +9512,7 @@ namespace ProjectGmKernel.Native.Generated;
     {
         [FieldOffset(0)]
         public int detail_type;
-        [FieldOffset(4)]
+        [FieldOffset(8)]
         public PK_FACE_array_t faces;
         [FieldOffset(16)]
         public PK_detail_def_hole_t hole;
@@ -10123,7 +10123,7 @@ namespace ProjectGmKernel.Native.Generated;
     {
         [FieldOffset(0)]
         public byte have_param_bound;
-        [FieldOffset(1)]
+        [FieldOffset(4)]
         public int param_bound_class;
         [FieldOffset(8)]
         public PK_INTERVAL_t interval;

@@ -217,7 +217,8 @@ public unsafe class IntersectionOperationTests:IDisposable
     {
         var sphere=Sphere(0,0,0,2);var torusSf=new PK_TORUS_sf_s{basis_set=Axis(),major_radius=3,minor_radius=1};int torus=0;Assert.Equal(0,KernelRuntime.TorusCreate(&torusSf,&torus));
         var options=SurfaceOptions();int np=9,nc=9;PK_VECTOR_s* p=null;int* c=null;PK_INTERVAL_s* intervals=null;int* types=null;
-        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.SurfIntersectSurf(sphere,torus,&options,&np,&p,&nc,&c,&intervals,&types));Assert.Equal(0,np);Assert.Equal(0,nc);
+        Assert.Equal(0,KernelRuntime.SurfIntersectSurf(sphere,torus,&options,&np,&p,&nc,&c,&intervals,&types));Assert.Equal(0,np);Assert.Equal(1,nc);
+        Assert.Equal(ParasolidConstants.PK_intersect_curve_tangent_c,types[0]);Free(p);Free(c);Free(intervals);Free(types);
         var first=Plane(0,0,0,0,0,1);var second=Plane(1,0,0,1e-13,0,1,0,1,0);
         Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.SurfIntersectSurf(first,second,&options,&np,&p,&nc,&c,&intervals,&types));
         Span<double> coefficients=stackalloc double[3]{.25-1e-16,-1,1};Span<double> roots=stackalloc double[4];

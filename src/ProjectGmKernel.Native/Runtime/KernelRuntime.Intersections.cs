@@ -377,7 +377,7 @@ internal static unsafe partial class KernelRuntime
         if(ba!=bb)return ParasolidConstants.PK_ERROR_not_in_same_body;
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[64];Span<KernelVector3> isolated=stackalloc KernelVector3[64];
         var status=FindSurfaceIntersections(sa,sb,branches,out var nc,isolated,out var np);
-        if(status==AlgorithmStatus.Unsupported&&(Surfaces[sa].Class==SurfaceClass.BSurface||Surfaces[sb].Class==SurfaceClass.BSurface))
+        if(status==AlgorithmStatus.Unsupported)
             return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         if(options->have_vector!=0)

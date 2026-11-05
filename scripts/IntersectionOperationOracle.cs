@@ -57,6 +57,12 @@ try
             SS("tensor-transposed-three-isocurves",TensorPatch(0,false,true),Plane(0,0,0,0,0,1));
             SS("tensor-rational-transposed-isocurves",TensorPatch(0,true,true),Plane(0,0,0,0,0,1));
             SS("general-near-isoparametric-three-branches",TensorPatch(5,false,false),Plane(0,0,0,0,0,1));
+            SS("general-skew-cylinders",Cylinder(1),Cylinder(.6,0,.1,.2,1,0,0));
+            SS("general-eccentric-sphere-cylinder",Sphere(.2,.1,.3,1),Cylinder(.6));
+            SS("general-sphere-torus",Torus(1,.4),Sphere(.2,0,0,1));
+            SS("general-eccentric-torus-cylinder",Torus(2,.6),Cylinder(.5,2));
+            SS("general-translated-tori",Torus(2,.6),Torus(2,.6,.2));
+            SS("coaxial-sphere-torus-tangent-circle",Sphere(0,0,0,2),Torus(3,1));
             SS("tensor-quadratic-crossing",TensorPatch(1,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-tangent-isocurve",TensorPatch(2,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-disjoint",TensorPatch(3,false,false),Plane(0,0,0,0,0,1));
@@ -75,6 +81,8 @@ try
             SC("general-nurbs-line",GeneralPatch(0),Line(.5,.5,0,0,0,1),-1,1);
             CC("general-bcurve-bcurve-three-crossings",Cubic(false),0,1,StraightBCurve(),0,1);
             ProjectionContracts();
+            DistanceContracts();
+            BlendContracts();
             ExtremeTensorScaleBoundary("tensor-rational-extreme-small-scale",1e-200,PK_ERROR_weight_le_0);
             ExtremeTensorScaleBoundary("tensor-rational-extreme-large-scale",1e200,0);
             Require(failures==0,$"{failures} independent intersection cases failed; {cases} passed.");
@@ -328,6 +336,105 @@ unsafe void ProjectionContracts()
     mr=Interval(0,mt);pr.value[0]=0;pr.value[1]=pt;CompareWire("curve-inverse-bounded-wire",curve.Managed,mr,curve.Oracle,pr);cases++;
     Log("PASS public surface/curve inverse, bounded global projection and independent reconstructed-wire comparisons");
 }
+
+unsafe void DistanceContracts()
+{
+    VectorDistance("distance-point-paraboloid",GeneralPatch(0),.5,.5,-1);
+    VectorDistance("distance-point-rational-surface",GeneralPatch(4),.2,.7,-1);
+    VectorDistance("distance-point-sphere",Sphere(0,0,0,2),3,.2,.1);
+    VectorDistance("distance-point-cylinder",Cylinder(2),3,.2,4);
+    VectorDistance("distance-point-cone",Cone(2,.3),3,.2,4);
+    VectorDistance("distance-point-torus",Torus(3,1),4.2,.2,.1);
+    VectorDistance("distance-point-bcurve",Cubic(false),.4,.7,.1);
+    PairDistance("distance-line-paraboloid",Line(.5,.5,-1,1,0,0),GeneralPatch(0));
+    PairDistance("distance-nurbs-plane",GeneralPatch(0),Plane(0,0,-1,0,0,1));
+}
+
+unsafe void BlendContracts()
+{
+    BlendCase("blend-positive-planes",false,false,.2);
+    BlendCase("blend-negative-planes",false,false,-.2);
+    BlendCase("blend-plane-sphere",true,false,.2);
+    BlendCase("blend-sphere-plane",true,true,.2);
+}
+
+unsafe void BlendCase(string label,bool spherePair,bool sphereFirst,double radius)
+{
+    try
+    {
+        var plane=Plane(0,0,0,0,0,1);var other=spherePair?Sphere(0,0,1,1):Plane(0,0,0,1,0,0,0,1,0);
+        var a=sphereFirst?other:plane;var b=sphereFirst?plane:other;
+        var start=new M.PK_VECTOR_s();var end=new M.PK_VECTOR_s();start.coord[0]=spherePair?1:0;end.coord[1]=sphereFirst?-1:1;
+        var mo=new M.PK_SURF_create_blend_o_s{o_t_version=1};var po=new PK_SURF_create_blend_o_t();int m=0,p=0;
+        Check(KernelRuntime.SurfCreateBlend(a.Managed,radius,b.Managed,radius,start,end,&mo,&m),label+" managed create");
+        Check(PK_SURF_create_blend(a.Oracle,radius,b.Oracle,radius,new PK_VECTOR_t(start.coord[0],0,0),new PK_VECTOR_t(0,end.coord[1],0),&po,&p),label+" native create");
+        int mc=0,pc=0;Check(KernelRuntime.EntityAskClass(m,&mc),label+" managed class");Check(PK_ENTITY_ask_class(p,&pc),label+" native class");Require(mc==pc,label+" exact geometry class");
+        M.PK_VECTOR_s* mj=stackalloc M.PK_VECTOR_s[9];PK_VECTOR_t* pj=stackalloc PK_VECTOR_t[9];
+        for(var i=0;i<5;i++)
+        {
+            var uv=new M.PK_UV_s();uv.param[0]=.23+i*.17;uv.param[1]=.19+i*.13;var puv=new PK_UV_t(uv.param[0],uv.param[1]);
+            Check(KernelRuntime.SurfEval(m,uv,2,2,0,mj),label+" managed jets");Check(PK_SURF_eval(p,puv,2,2,PK_LOGICAL_false,pj),label+" native jets");
+            for(var j=0;j<9;j++)for(var d=0;d<3;d++)Equal(mj[j].coord[d],pj[j].coord[d],label+" D0/D1/D2");
+        }
+        var ma=a.Managed;var mb=b.Managed;Check(KernelRuntime.EntityDelete(1,&ma),label+" delete first support");Check(KernelRuntime.EntityDelete(1,&mb),label+" delete second support");
+        var tool=spherePair?Plane(0,0,.2,0,0,1):Plane(0,.37,0,0,1,0,1,0,0);
+        SSCore(label+"-intersection",new(m,p),tool);Log("PASS "+label+": same public create API, native jets, independent support lifetime and intersection wire");
+    }
+    catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
+}
+
+unsafe void VectorDistance(string label,GeometryPair geometry,double x,double y,double z)
+{
+    try
+    {
+        var mo=new M.PK_GEOM_range_vector_o_s{o_t_version=2,have_tolerance=1,tolerance=1e-8,guess=new(){type=M.ParasolidConstants.PK_range_guess_no_c},opt_level=M.ParasolidConstants.PK_range_opt_accuracy_c};
+        var po=new PK_GEOM_range_vector_o_t{have_tolerance=PK_LOGICAL_true,tolerance=1e-8,opt_level=PK_range_opt_accuracy_c};
+        var query=new M.PK_VECTOR_s();query.coord[0]=x;query.coord[1]=y;query.coord[2]=z;int ms=0,ps=0;
+        M.PK_range_1_r_s mr=default;PK_range_1_r_t pr=default;
+        Check(KernelRuntime.GeomRangeVector(geometry.Managed,query,&mo,&ms,&mr),label+" managed");
+        Check(PK_GEOM_range_vector(geometry.Oracle,new PK_VECTOR_t(x,y,z),&po,&ps,&pr),label+" native");
+        Require(ms==ps&&ms==PK_range_result_found_c,label+" status");Equal(mr.distance,pr.distance,label+" minimum");
+        Require(mr.end.entity==geometry.Managed&&pr.end.entity==geometry.Oracle&&mr.end.sub_entity==pr.end.sub_entity,label+" endpoint entities");
+        Require(mr.end.region==(byte)pr.end.region&&mr.end.negative==(byte)pr.end.negative,label+" endpoint flags");
+        for(var d=0;d<3;d++)Equal(mr.end.vector.coord[d],pr.end.vector.coord[d],label+" witness");
+        for(var d=0;d<2;d++)Equal(mr.end.parameters[d],pr.end.parameters[d],label+" parameters");
+        DistanceWitnessWire(label,mr.end.vector,pr.end.vector,query,new PK_VECTOR_t(x,y,z));
+        cases++;Log("PASS "+label+": global minimum, native parameters/flags and independent XT wire");
+    }
+    catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
+}
+
+unsafe void PairDistance(string label,GeometryPair a,GeometryPair b)
+{
+    try
+    {
+        var mo=new M.PK_GEOM_range_o_s{o_t_version=3,have_tolerance=1,tolerance=1e-8,range_type=M.ParasolidConstants.PK_range_type_minimum_c,opt_level=M.ParasolidConstants.PK_range_opt_accuracy_c};
+        var guesses=(M.PK_range_guess_s*)mo.guesses;guesses[0].type=guesses[1].type=M.ParasolidConstants.PK_range_guess_no_c;
+        var po=new PK_GEOM_range_o_t{have_tolerance=PK_LOGICAL_true,tolerance=1e-8,opt_level=PK_range_opt_accuracy_c};int ms=0,ps=0;M.PK_range_2_r_s mr=default;PK_range_2_r_t pr=default;
+        Check(KernelRuntime.GeomRange(a.Managed,b.Managed,&mo,&ms,&mr),label+" managed");Check(PK_GEOM_range(a.Oracle,b.Oracle,&po,&ps,&pr),label+" native");
+        Require(ms==ps&&ms==PK_range_result_found_c,label+" status");Equal(mr.distance,pr.distance,label+" minimum");
+        var me=(M.PK_range_end_s*)mr.ends;var pe=&pr.endsI0;
+        for(var i=0;i<2;i++)
+        {
+            Require(me[i].entity==(i==0?a.Managed:b.Managed)&&pe[i].entity==(i==0?a.Oracle:b.Oracle)&&me[i].sub_entity==pe[i].sub_entity,label+" endpoint entity");
+            Require(me[i].region==(byte)pe[i].region&&me[i].negative==(byte)pe[i].negative,label+" endpoint flags");
+            for(var d=0;d<2;d++)Equal(me[i].parameters[d],pe[i].parameters[d],label+" endpoint parameters");
+            for(var d=0;d<3;d++)Equal(me[i].vector.coord[d],pe[i].vector.coord[d],label+" endpoint witness");
+        }
+        DistanceWitnessWire(label,me[0].vector,pe[0].vector,me[1].vector,pe[1].vector);cases++;Log("PASS "+label+": global pair minimum and independent XT wire");
+    }
+    catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
+}
+
+unsafe void DistanceWitnessWire(string label,M.PK_VECTOR_s ma,PK_VECTOR_t pa,M.PK_VECTOR_s mb,PK_VECTOR_t pb)
+{
+    var ml=new M.PK_LINE_sf_s();ml.basis_set.location=ma;var pl=new PK_LINE_sf_t();pl.basis_set.location=pa;
+    var md=0.0;var pd=0.0;
+    for(var d=0;d<3;d++){var m=mb.coord[d]-ma.coord[d];var p=pb.coord[d]-pa.coord[d];ml.basis_set.axis.coord[d]=m;pl.basis_set.axis.coord[d]=p;md+=m*m;pd+=p*p;}
+    for(var d=0;d<3;d++){ml.basis_set.axis.coord[d]/=Math.Sqrt(md);pl.basis_set.axis.coord[d]/=Math.Sqrt(pd);}
+    int mc=0,pc=0;Check(KernelRuntime.LineCreate(&ml,&mc),label+" managed witness line");Check(PK_LINE_create(&pl,&pc),label+" native witness line");
+    var mr=Interval(0,Math.Sqrt(md));PK_INTERVAL_t pr=new();pr.value[0]=0;pr.value[1]=Math.Sqrt(pd);CompareWire(label,mc,mr,pc,pr);
+}
 unsafe void CheckBody(int body,string label)
 {
     var options=new PK_BODY_check_o_t{max_faults=100};int count=0;PK_check_fault_t* faults=null;
@@ -373,12 +480,12 @@ static unsafe GeometryPair Plane(double x,double y,double z,double nx,double ny,
 {var sf=new M.PK_PLANE_sf_s{basis_set=Axis(x,y,z,nx,ny,nz,rx,ry,rz)};int m=0,p=0;Check(KernelRuntime.PlaneCreate(&sf,&m),"self plane");Check(PK_PLANE_create((PK_PLANE_sf_t*)&sf,&p),"PK plane");return new(m,p);}
 static unsafe GeometryPair Sphere(double x,double y,double z,double radius)
 {var sf=new M.PK_SPHERE_sf_s{basis_set=Axis(x,y,z),radius=radius};int m=0,p=0;Check(KernelRuntime.SphereCreate(&sf,&m),"self sphere");Check(PK_SPHERE_create((PK_SPHERE_sf_t*)&sf,&p),"PK sphere");return new(m,p);}
-static unsafe GeometryPair Cylinder(double radius)
-{var sf=new M.PK_CYL_sf_s{basis_set=Axis(),radius=radius};int m=0,p=0;Check(KernelRuntime.CylCreate(&sf,&m),"self cylinder");Check(PK_CYL_create((PK_CYL_sf_t*)&sf,&p),"PK cylinder");return new(m,p);}
+static unsafe GeometryPair Cylinder(double radius,double x=0,double y=0,double z=0,double nx=0,double ny=0,double nz=1)
+{var sf=new M.PK_CYL_sf_s{basis_set=Axis(x,y,z,nx,ny,nz,nx==1?0:1,nx==1?1:0,0),radius=radius};int m=0,p=0;Check(KernelRuntime.CylCreate(&sf,&m),"self cylinder");Check(PK_CYL_create((PK_CYL_sf_t*)&sf,&p),"PK cylinder");return new(m,p);}
 static unsafe GeometryPair Cone(double radius,double angle)
 {var sf=new M.PK_CONE_sf_s{basis_set=Axis(),radius=radius,semi_angle=angle};int m=0,p=0;Check(KernelRuntime.ConeCreate(&sf,&m),"self cone");Check(PK_CONE_create((PK_CONE_sf_t*)&sf,&p),"PK cone");return new(m,p);}
-static unsafe GeometryPair Torus(double a,double b)
-{var sf=new M.PK_TORUS_sf_s{basis_set=Axis(),major_radius=a,minor_radius=b};int m=0,p=0;Check(KernelRuntime.TorusCreate(&sf,&m),"self torus");Check(PK_TORUS_create((PK_TORUS_sf_t*)&sf,&p),"PK torus");return new(m,p);}
+static unsafe GeometryPair Torus(double a,double b,double z=0)
+{var sf=new M.PK_TORUS_sf_s{basis_set=Axis(0,0,z),major_radius=a,minor_radius=b};int m=0,p=0;Check(KernelRuntime.TorusCreate(&sf,&m),"self torus");Check(PK_TORUS_create((PK_TORUS_sf_t*)&sf,&p),"PK torus");return new(m,p);}
 static unsafe GeometryPair Cubic(bool rational)
 {
     var dim=rational?4:3;double* vertices=stackalloc double[4*dim];double* zs=stackalloc double[4]{-.08,.14,-.14,.08};

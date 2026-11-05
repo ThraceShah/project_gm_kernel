@@ -18,6 +18,8 @@ internal static unsafe partial class KernelRuntime
         Span<SurfaceIntersectionNode> nodes, out BufferCount nn, Span<SurfaceIntersectionSegment> segments, out BufferCount ne)
     {
         nn = ne = 0;
+        if (Surfaces[first].Class != SurfaceClass.BSurface && Surfaces[second].Class != SurfaceClass.BSurface)
+            return DiscoverAnalyticSurfaceIntersections(first, second, nodes, out nn, segments, out ne);
         var a = Surfaces[first]; var b = Surfaces[second]; var reverse = a.Class != SurfaceClass.BSurface;
         if (reverse) (a, b) = (b, a);
         if (a.Class != SurfaceClass.BSurface) return AlgorithmStatus.Unsupported;

@@ -349,7 +349,51 @@ internal static class OperationIntersection
         }
         if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Cylinder)return SphereCylinder(a,b,curves,out nc);
         if(b.Kind==SurfaceClass.Sphere&&a.Kind==SurfaceClass.Cylinder)return SphereCylinder(b,a,curves,out nc);
+        if(a.Kind==SurfaceClass.Torus&&b.Kind==SurfaceClass.Torus)return CoaxialTori(a,b,curves,out nc);
+        if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(a,b,curves,out nc);
+        if(b.Kind==SurfaceClass.Sphere&&a.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(b,a,curves,out nc);
         return AlgorithmStatus.Unsupported;
+    }
+
+    private static AlgorithmStatus CoaxialSphereTorus(in AnalyticSurface sphere,in AnalyticSurface torus,
+        Span<OperationIntersectionBranch> curves,out BufferCount count)
+    {
+        count=0;
+        if(!(torus.Radius>torus.Secondary))return AlgorithmStatus.Unsupported;
+        var offset=Sub(sphere.Origin,torus.Origin);var z=Dot(offset,torus.Axis);
+        if(Norm(Sub(offset,Scale(torus.Axis,z)))!=0)return AlgorithmStatus.Unsupported;
+        return RevolvedCirclePair(torus,-torus.Radius,z,sphere.Radius,curves,out count);
+    }
+
+    private static AlgorithmStatus CoaxialTori(in AnalyticSurface a,in AnalyticSurface b,
+        Span<OperationIntersectionBranch> curves,out BufferCount count)
+    {
+        count=0;
+        if(!(a.Radius>a.Secondary)||!(b.Radius>b.Secondary)||Norm(Cross(a.Axis,b.Axis))!=0)return AlgorithmStatus.Unsupported;
+        var offset=Sub(b.Origin,a.Origin);var z=Dot(offset,a.Axis);
+        if(Norm(Sub(offset,Scale(a.Axis,z)))!=0)return AlgorithmStatus.Unsupported;
+        return RevolvedCirclePair(a,b.Radius-a.Radius,z,b.Secondary,curves,out count);
+    }
+
+    private static AlgorithmStatus RevolvedCirclePair(in AnalyticSurface a,double dr,double z,double otherRadius,
+        Span<OperationIntersectionBranch> curves,out BufferCount count)
+    {
+        count=0;var separation=Math.Sqrt(dr*dr+z*z);
+        if(separation==0)return AlgorithmStatus.Success;
+        if(separation>a.Secondary+otherRadius||separation<Math.Abs(a.Secondary-otherRadius))return AlgorithmStatus.Success;
+        var along=(separation*separation+(a.Secondary-otherRadius)*(a.Secondary+otherRadius))/(2*separation);
+        var height2=(a.Secondary-along)*(a.Secondary+along);
+        if(height2<0)return AlgorithmStatus.NumericalFailure;
+        var height=Math.Sqrt(height2);var radial=a.Radius+along*dr/separation;var axial=along*z/separation;
+        for(var i=0;i<(height==0?1:2);i++)
+        {
+            var sign=i==0?1:-1;var radius=radial-sign*height*z/separation;
+            var center=Add(a.Origin,Scale(a.Axis,axial+sign*height*dr/separation));
+            if(!(radius>0))return AlgorithmStatus.Unsupported;
+            if(count==curves.Length)return AlgorithmStatus.OutputTooSmall;
+            curves[count++]=Circle(center,a.Axis,a.X,radius,height==0?IntersectionCurveKind.Tangent:IntersectionCurveKind.Simple);
+        }
+        return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus SphereCylinder(in AnalyticSurface sphere,in AnalyticSurface cylinder,
