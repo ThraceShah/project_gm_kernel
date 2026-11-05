@@ -87,5 +87,8 @@ Editing remains limited to degree 16, 1024 directional workspace poles and
 8192 surface poles. Public knot removal, degree reduction, extension, joining,
 unclamped and periodic editing remain open. Automatic twists for doubly
 clamped corners, periodic grids and curve-clamped boundaries remain open.
-General procedural/variable-radius blends and the other remaining capabilities
-listed above have not been completed by these narrower implementations.
+General procedural blends and the other remaining capabilities listed above
+have not been completed by these narrower implementations. Variable-radius
+blends are deferred at the user's request. Analytically simplified two-stage
+blends have a separate geometry/parameterization boundary and performance
+probe in `docs/reviews/advanced-modeling/blend-support-performance-2026-11-05.md`.
