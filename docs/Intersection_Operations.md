@@ -194,9 +194,10 @@ coordinates near the previous UV pair, avoiding a false discontinuity at an
 angular seam. Singular poles and multiple equivalent NURBS parameterizations
 remain caller-visible geometry issues.
 
-The helpers are intended for later imprint/trim construction. They do not
-themselves build edge p-curves, split faces, classify solids, or prove a Boolean
-result is a closed body.
+The helpers now feed the bounded curved-sheet imprint/trim/section pipeline in
+`docs/Curved_Surface_Pipeline.md`. That path builds exact-support ICURVE edges,
+splits natural rectangular faces and classifies their sheet cells. The helpers
+alone do not classify solids or prove a Boolean result is a closed body.
 
 ## Failure, ownership, and validation
 

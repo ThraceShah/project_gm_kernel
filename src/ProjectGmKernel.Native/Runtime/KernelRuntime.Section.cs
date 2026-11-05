@@ -46,12 +46,14 @@ internal static unsafe partial class KernelRuntime
             || options->merge_imprinted != 0 || options->merge_new_faces != 0)
             return ParasolidConstants.PK_ERROR_not_implemented;
         if (!TryResolveBodySlot(body, out var slot)) return ParasolidConstants.PK_ERROR_bad_class;
-        if (Bodies[slot].BodyType != ParasolidConstants.PK_BODY_type_solid_c) return ParasolidConstants.PK_ERROR_not_implemented;
+        var sheet = Bodies[slot].BodyType == ParasolidConstants.PK_BODY_type_sheet_c;
+        if (!sheet && Bodies[slot].BodyType != ParasolidConstants.PK_BODY_type_solid_c) return ParasolidConstants.PK_ERROR_not_implemented;
         if (!State.Session->Tags.TryResolve(surface, CurrentSessionId, out var sr) || sr.Pool != (byte)PoolKind.Surface)
             return ParasolidConstants.PK_ERROR_bad_class;
         if (Surfaces[sr.Slot].Class != SurfaceClass.Plane) return ParasolidConstants.PK_ERROR_not_implemented;
         if (Bodies[slot].Header.Partition != CurrentPartition || Surfaces[sr.Slot].Header.Partition != CurrentPartition)
             return ParasolidConstants.PK_ERROR_not_in_same_partition;
+        if (sheet) return SectionCurvedSheet(slot, surface, options, result);
         var sphereError = TrySectionSphere(body, surface, options, result, out var sphereHandled);
         if (sphereHandled) return sphereError;
         var rotationalError = TrySectionRotationalBody(body, surface, options, result, out var rotationalHandled);

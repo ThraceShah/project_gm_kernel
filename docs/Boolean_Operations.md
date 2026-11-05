@@ -151,3 +151,8 @@ unbounded topology are not implemented by this planar arrangement engine.
 The sphere extension has its own explicit scope. These supported paths are
 working modeling operations, not a claim that all C/D/E roadmap items or all
 generated PK exports are complete.
+
+The bounded natural-NURBS-sheet extension connects existing exact plane/surface
+intersection to imprint, seed trim, plane-side classification and sheet B-rep
+construction. Its scope and independent oracle are documented in
+`docs/Curved_Surface_Pipeline.md`; it does not broaden the solid Boolean API.

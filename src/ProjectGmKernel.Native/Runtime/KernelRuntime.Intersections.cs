@@ -361,15 +361,8 @@ internal static unsafe partial class KernelRuntime
         error=IntersectionGeometryBody(first,sa,out var ba);if(error!=0)return error;
         error=IntersectionGeometryBody(second,sb,out var bb);if(error!=0)return error;
         if(ba!=bb)return ParasolidConstants.PK_ERROR_not_in_same_body;
-        var analyticA=TryPrepareSurface(Surfaces[sa],out var a);var analyticB=TryPrepareSurface(Surfaces[sb],out var b);
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[64];Span<KernelVector3> isolated=stackalloc KernelVector3[64];
-        AlgorithmStatus status;BufferCount nc,np;
-        if(analyticA&&analyticB)status=OperationIntersection.Surfaces(a,b,branches,out nc,isolated,out np);
-        else if(analyticA&&a.Kind==SurfaceClass.Plane&&Surfaces[sb].Class==SurfaceClass.BSurface)
-            status=RuledBSurfacePlaneIntersection.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[sb].DataIndex]),a,branches,out nc,isolated,out np);
-        else if(analyticB&&b.Kind==SurfaceClass.Plane&&Surfaces[sa].Class==SurfaceClass.BSurface)
-            status=RuledBSurfacePlaneIntersection.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[sa].DataIndex]),b,branches,out nc,isolated,out np);
-        else return ParasolidConstants.PK_ERROR_not_implemented;
+        var status=FindSurfaceIntersections(sa,sb,branches,out var nc,isolated,out var np);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         if(options->have_vector!=0)
         {
@@ -401,6 +394,21 @@ internal static unsafe partial class KernelRuntime
         if(error!=0)
         {State.Session->Returns.TryFree(vectors);State.Session->Returns.TryFree(tags);State.Session->Returns.TryFree(ranges);State.Session->Returns.TryFree(types);return error;}
         *points=vectors;*pointCount=np;*curves=tags;*intervals=ranges;*kinds=types;*curveCount=nc;return 0;
+    }
+
+    // Modeling callers intersect supports across bodies; public ownership checks
+    // stay in SurfIntersectSurfCore. Discovery itself never publishes geometry.
+    private static AlgorithmStatus FindSurfaceIntersections(SurfaceSlot sa,SurfaceSlot sb,
+        Span<OperationIntersectionBranch> branches,out BufferCount nc,Span<KernelVector3> isolated,out BufferCount np)
+    {
+        nc=np=0;
+        var analyticA=TryPrepareSurface(Surfaces[sa],out var a);var analyticB=TryPrepareSurface(Surfaces[sb],out var b);
+        if(analyticA&&analyticB)return OperationIntersection.Surfaces(a,b,branches,out nc,isolated,out np);
+        else if(analyticA&&a.Kind==SurfaceClass.Plane&&Surfaces[sb].Class==SurfaceClass.BSurface)
+            return RuledBSurfacePlaneIntersection.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[sb].DataIndex]),a,branches,out nc,isolated,out np);
+        else if(analyticB&&b.Kind==SurfaceClass.Plane&&Surfaces[sa].Class==SurfaceClass.BSurface)
+            return RuledBSurfacePlaneIntersection.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[sa].DataIndex]),b,branches,out nc,isolated,out np);
+        return AlgorithmStatus.Unsupported;
     }
 
     private static int IntersectionGeometryBody(SurfTag tag,SurfaceSlot slot,out BodySlot body)

@@ -83,6 +83,12 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_not_in_same_partition;
         var solid = Bodies[slot].BodyType == ParasolidConstants.PK_BODY_type_solid_c;
         if (!solid && Bodies[slot].BodyType != ParasolidConstants.PK_BODY_type_sheet_c) return ParasolidConstants.PK_ERROR_not_implemented;
+        if (!solid && Bodies[slot].FaceCountBody == 1)
+        {
+            var support = GetSurfaceSlotByTag(Faces[Bodies[slot].FirstFaceBody].SurfTag);
+            if (support >= 0 && Surfaces[support].Class == SurfaceClass.BSurface)
+                return ImprintCurvedSheet(slot, plane, tolerance, count, edges);
+        }
         var scratch = CommandScratch.Current; var memory = scratch.Take(120000);
         if (memory.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
         try

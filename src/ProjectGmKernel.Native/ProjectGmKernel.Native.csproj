@@ -48,6 +48,7 @@
     <InternalsVisibleTo Include="PlanarTrackingOracle" />
     <InternalsVisibleTo Include="IntersectionOperationOracle" />
     <InternalsVisibleTo Include="FreeformModelingOracle" />
+    <InternalsVisibleTo Include="CurvedSheetPartitionOracle" />
     <InternalsVisibleTo Include="LocalOperationOracle" />
     <InternalsVisibleTo Include="RotationalModelingOracle" />
     <InternalsVisibleTo Include="BCurveAnalyticIntersectionOracle" />
