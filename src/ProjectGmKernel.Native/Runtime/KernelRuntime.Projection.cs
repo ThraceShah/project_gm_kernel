@@ -103,6 +103,9 @@ internal static unsafe partial class KernelRuntime
         }
         else if (record.Class == CurveClass.ICurve)
         {
+            ref readonly var procedural=ref ICurveDataPool[record.DataIndex];
+            if(procedural.ProgramBlock>0)
+                return ParameteriseNestedSpine(procedural,point,parameter);
             var checkpoint = CommandScratch.ThreadArenaOffset;
             try
             {

@@ -100,6 +100,10 @@ internal static unsafe partial class KernelRuntime
             ref readonly var surface = ref Surfaces[slot];
             switch (surface.Class)
             {
+                case SurfaceClass.BlendSurface:
+                    if(tags.Length<3)return 0;
+                    ref readonly var blend=ref BlendedEdgeDataPool[surface.DataIndex];
+                    tags[0]=blend.Surface0Tag;tags[1]=blend.Surface1Tag;tags[2]=blend.SpineTag;return 3;
                 case SurfaceClass.Offset: tags[0] = OffsetDataPool[surface.DataIndex].BaseSurfTag; return 1;
                 case SurfaceClass.Swept: tags[0] = SweptDataPool[surface.DataIndex].SectionCurveTag; return 1;
                 case SurfaceClass.Spun: tags[0] = SpunDataPool[surface.DataIndex].ProfileCurveTag; return 1;
@@ -112,7 +116,7 @@ internal static unsafe partial class KernelRuntime
     {
         var acquired = pool == PoolKind.Curve ? Curves[slot].DependenciesAcquired : Surfaces[slot].DependenciesAcquired;
         if (acquired == 0) return;
-        Span<GeomTag> tags = stackalloc GeomTag[2];
+        Span<GeomTag> tags = stackalloc GeomTag[3];
         var count = GetGeometryDependencyTags(pool, slot, tags);
         var ownsLifetime = pool != PoolKind.Curve || Curves[slot].Class != CurveClass.ICurve
             || ICurveDataPool[Curves[slot].DataIndex].OwnsSupportSurfaces != 0;

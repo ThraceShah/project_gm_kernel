@@ -167,7 +167,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var from=ICurveDataPool[data]; var next=CloneData(ref ICurveDataPool,data);
                 if(next<0) return ParasolidConstants.PK_ERROR_memory_full;
-                ref var to=ref ICurveDataPool[next]; to.HvecBlock=to.UvValueBlock=-1;
+                ref var to=ref ICurveDataPool[next]; to.HvecBlock=to.UvValueBlock=to.ProgramBlock=-1;
                 // The copied supports are resources of the new graph. Clear
                 // inherited source tags before any fallible cloning step so
                 // rollback cannot mistake a source support for an owned copy.
@@ -182,7 +182,8 @@ internal static unsafe partial class KernelRuntime
                 AcquireGeometryDependency(PoolKind.Surface,GetSurfaceSlotByTag(to.Surface1Tag));
                 Curves[GetCurveSlotByTag(clone)].DependenciesAcquired=1;
                 return CopyPayload(from.HvecBlock,(nuint)(from.HvecCount*3*8),ref to.HvecBlock)
-                    && CopyPayload(from.UvValueBlock,(nuint)(from.UvValueCount*8),ref to.UvValueBlock)?0:ParasolidConstants.PK_ERROR_memory_full;
+                    && CopyPayload(from.UvValueBlock,(nuint)(from.UvValueCount*8),ref to.UvValueBlock)
+                    && CopyPayload(from.ProgramBlock,NestedBlendProgramBytes(from.ProgramSurfaceCount,from.ProgramSpineCount,from.ProgramChartCount,from.ProgramScalarCount),ref to.ProgramBlock)?0:ParasolidConstants.PK_ERROR_memory_full;
             }
             default: return ParasolidConstants.PK_ERROR_not_implemented;
         }
@@ -219,6 +220,18 @@ internal static unsafe partial class KernelRuntime
                 var next=CloneData(ref OffsetDataPool,data);error=NewCopiedSurface(source,next,out clone);if(error!=0)return error;
                 OffsetDataPool[next].BaseSurfTag=support;AcquireGeometryDependency(PoolKind.Surface,GetSurfaceSlotByTag(support));
                 Surfaces[GetSurfaceSlotByTag(clone)].DependenciesAcquired=1;return 0;
+            }
+            case SurfaceClass.BlendSurface:
+            {
+                var from=BlendedEdgeDataPool[data];var next=CloneData(ref BlendedEdgeDataPool,data);if(next<0)return ParasolidConstants.PK_ERROR_memory_full;
+                ref var to=ref BlendedEdgeDataPool[next];to.ProgramBlock=-1;to.HvecBlock=-1;to.Surface0Tag=to.Surface1Tag=to.SpineTag=0;
+                error=NewCopiedSurface(source,next,out clone);if(error!=0)return error;
+                error=CloneEntity(from.Surface0Tag,ref context,depth,out to.Surface0Tag);if(error!=0)return error;
+                error=CloneEntity(from.Surface1Tag,ref context,depth,out to.Surface1Tag);if(error!=0)return error;
+                error=CloneEntity(from.SpineTag,ref context,depth,out to.SpineTag);if(error!=0)return error;
+                AcquireGeometryDependency(PoolKind.Surface,GetSurfaceSlotByTag(to.Surface0Tag));AcquireGeometryDependency(PoolKind.Surface,GetSurfaceSlotByTag(to.Surface1Tag));AcquireGeometryDependency(PoolKind.Curve,GetCurveSlotByTag(to.SpineTag));
+                Surfaces[GetSurfaceSlotByTag(clone)].DependenciesAcquired=1;
+                return CopyPayload(from.ProgramBlock,NestedBlendProgramBytes(from.ProgramSurfaceCount,from.ProgramSpineCount,from.ProgramChartCount,from.ProgramScalarCount),ref to.ProgramBlock)?0:ParasolidConstants.PK_ERROR_memory_full;
             }
             case SurfaceClass.Swept:
             {

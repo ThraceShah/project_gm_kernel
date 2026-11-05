@@ -62,7 +62,7 @@ internal static unsafe partial class KernelRuntime
     private static int TryAdoptDependentGeometry(GeomTag geometry)
     {
         var record = TagRec(geometry);
-        Span<GeomTag> dependencies = stackalloc GeomTag[2];
+        Span<GeomTag> dependencies = stackalloc GeomTag[3];
         if (GeometricOwnerCount((PoolKind)record.Pool, record.Slot) == 0 && GetConstructionBody(geometry) < 0
             && GetGeometryDependencyTags((PoolKind)record.Pool, record.Slot, dependencies) == 0) return 0;
         var ownsScratch = EnsureCommandScratch();
@@ -121,7 +121,7 @@ internal static unsafe partial class KernelRuntime
             if (fin.CurveReferenceAcquired != 0 && fin.Edge >= 0)
                 IncludeBoundaryGeometry(fin.Curve, component, ref boundaryCount);
         }
-        Span<GeomTag> dependencies = stackalloc GeomTag[2];
+        Span<GeomTag> dependencies = stackalloc GeomTag[3];
         for (var head = 0; head < boundaryCount; head++)
         {
             var record = TagRec(component[head]);

@@ -210,7 +210,7 @@ internal static unsafe partial class KernelRuntime
         if (!double.IsFinite(u0) || !double.IsFinite(u1) || !double.IsFinite(v0) || !double.IsFinite(v1) || !(u1 > u0) || !(v1 > v0))
             return ParasolidConstants.PK_ERROR_bad_parameter;
         ref readonly var support = ref Surfaces[slot];
-        if (support.Class == SurfaceClass.BSurface)
+        if (support.Class is SurfaceClass.BSurface or SurfaceClass.BlendSurface)
         {
             if (u0 < support.UMin || u1 > support.UMax || v0 < support.VMin || v1 > support.VMax) return ParasolidConstants.PK_ERROR_bad_parameter;
         }
@@ -257,6 +257,8 @@ internal static unsafe partial class KernelRuntime
     {
         curve = 0; a = start; b = end;
         ref readonly var support = ref Surfaces[GetSurfaceSlotByTag(surface)];
+        if(support.Class==SurfaceClass.BlendSurface)
+            return NestedBlendIsoparam(surface,constantU,fixedValue,start,end,out curve,out a,out b);
         if (support.Class == SurfaceClass.BSurface)
         {
             CurveTag product = 0; var error = BSurfMakeBCurveIsoparamCore(surface, fixedValue, constantU, &product);

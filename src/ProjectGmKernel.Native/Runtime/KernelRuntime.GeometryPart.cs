@@ -12,7 +12,7 @@ internal static unsafe partial class KernelRuntime
         EntityTag* topology, GeomTag* geometry)
     {
         if (topologyPool == PoolKind.Vertex) return 0;
-        Span<GeomTag> dependencies = stackalloc GeomTag[2];
+        Span<GeomTag> dependencies = stackalloc GeomTag[3];
         var needsGraph = false;
         for (var i = 0; i < count; i++)
         {
@@ -63,7 +63,7 @@ internal static unsafe partial class KernelRuntime
     {
         count = 0; part = -1;
         if (!AddGeometryPartTag(geometry, component, ref count)) return ParasolidConstants.PK_ERROR_memory_full;
-        Span<GeomTag> dependencies = stackalloc GeomTag[2];
+        Span<GeomTag> dependencies = stackalloc GeomTag[3];
         for (var head = 0; head < count; head++)
         {
             var tag = component[head];

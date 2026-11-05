@@ -501,6 +501,7 @@ internal static unsafe partial class KernelRuntime
     private static AlgorithmStatus IntersectionSurfaceParameters(in SurfaceRecord record,in KernelVector3 point,out PK_UV_s uv)
     {
         uv=default;
+        if(record.Class==SurfaceClass.BlendSurface)return ParameteriseNestedSurface(record,point,out uv);
         if(TryPrepareSurface(record,out var surface))
         {
             if(AnalyticImplicitEvaluation.GeometricDeviation(surface,point,out var error)!=AlgorithmStatus.Success||error>OperationIntersection.DistanceTolerance)return AlgorithmStatus.InvalidInput;

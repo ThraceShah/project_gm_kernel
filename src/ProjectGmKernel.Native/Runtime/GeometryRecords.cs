@@ -520,6 +520,10 @@ internal struct ICurveData
     public int SourceSchema;         // schema id the INTERSECTION node was read from, 0 = unknown
     public int ImportFlags;          // decode diagnostics bit set, definition comes with the XT decode task
     public KernelSense Sense;        // source curve sense (XT node field 6)
+    public DataSlot ProgramBlock;
+    public BufferCount ProgramSurfaceCount,ProgramSpineCount,ProgramChartCount;
+    public BlendSpineIndex ProgramSpine;
+    public BufferCount ProgramScalarCount;
 }
 
 /// <summary>
@@ -645,6 +649,10 @@ internal struct BlendedEdgeData
     public int HvecCount;
     public CurveTag ApproxSpineTag;     // optional approximate spine
     public double ApproxSpineCtol;
+    public DataSlot ProgramBlock;
+    public BufferCount ProgramSurfaceCount,ProgramSpineCount,ProgramChartCount;
+    public BlendSurfaceIndex ProgramRoot;
+    public BufferCount ProgramScalarCount;
 }
 
 /// <summary>

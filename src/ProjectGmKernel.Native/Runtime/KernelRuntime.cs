@@ -3376,6 +3376,7 @@ internal static unsafe partial class KernelRuntime
                 case SurfaceClass.Sphere: SphereDataPool.Free(surface.DataIndex); break;
                 case SurfaceClass.Torus: TorusDataPool.Free(surface.DataIndex); break;
                 case SurfaceClass.BSurface: FreeBSurfaceData(surface.DataIndex); break;
+                case SurfaceClass.BlendSurface: FreeNestedBlendData(surface.DataIndex); break;
                 case SurfaceClass.Offset: OffsetDataPool.Free(surface.DataIndex); break;
                 case SurfaceClass.Swept: SweptDataPool.Free(surface.DataIndex); break;
                 case SurfaceClass.Spun: SpunDataPool.Free(surface.DataIndex); break;

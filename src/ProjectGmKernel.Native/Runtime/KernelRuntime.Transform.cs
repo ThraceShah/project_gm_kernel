@@ -36,7 +36,7 @@ internal static unsafe partial class KernelRuntime
     // walking into it would change geometry the caller did not select.
     private static int ValidateExplicitTransformClosure(ReadOnlySpan<GeomTag> geometries)
     {
-        Span<GeomTag> dependencies=stackalloc GeomTag[2];
+        Span<GeomTag> dependencies=stackalloc GeomTag[3];
         for(var i=0;i<geometries.Length;i++)
         {
             if(!IsValidTag(geometries[i]))return ParasolidConstants.PK_ERROR_unknown_class;
@@ -325,6 +325,8 @@ internal static unsafe partial class KernelRuntime
             case CurveClass.ICurve:
             {
                 ref var d=ref ICurveDataPool[index]; if(!State.Session->TrySnapshot(ref d)) return ParasolidConstants.PK_ERROR_memory_full;
+                if(d.ProgramBlock>0)
+                {error=TransformNestedProgram(d.ProgramBlock,d.ProgramSurfaceCount,d.ProgramSpineCount,d.ProgramChartCount,d.ProgramScalarCount,curve.Header.Partition,m,scale,parity);if(error!=0)return error;}
                 if(!SnapshotPayload(d.HvecBlock,(nuint)(d.HvecCount*3*8),curve.Header.Partition)
                     || !SnapshotPayload(d.UvValueBlock,(nuint)(d.UvValueCount*8),curve.Header.Partition)) return ParasolidConstants.PK_ERROR_memory_full;
                 error=TransformEntity(d.Surface0Tag,m,scale,parity,ref visited,depth);if(error!=0)return error;
@@ -376,6 +378,7 @@ internal static unsafe partial class KernelRuntime
             case SurfaceClass.Offset:return TransformUv(OffsetDataPool[s.DataIndex].BaseSurfTag,scale,parity,ref u,ref v,depth+1);
             case SurfaceClass.Swept:u*=CurveParameterScale(SweptDataPool[s.DataIndex].SectionCurveTag,scale);v*=scale;break;
             case SurfaceClass.Spun:u*=CurveParameterScale(SpunDataPool[s.DataIndex].ProfileCurveTag,scale);v*=parity;break;
+            case SurfaceClass.BlendSurface:if(parity<0)v=1-v;break;
         }
         return double.IsFinite(u)&&double.IsFinite(v);
     }
@@ -425,6 +428,17 @@ internal static unsafe partial class KernelRuntime
         var index=surface.DataIndex;int error;
         switch(surface.Class)
         {
+            case SurfaceClass.BlendSurface:
+            {
+                ref var d=ref BlendedEdgeDataPool[index];if(!State.Session->TrySnapshot(ref d))return ParasolidConstants.PK_ERROR_memory_full;
+                error=TransformEntity(d.Surface0Tag,m,scale,parity,ref visited,depth);if(error!=0)return error;
+                error=TransformEntity(d.Surface1Tag,m,scale,parity,ref visited,depth);if(error!=0)return error;
+                error=TransformEntity(d.SpineTag,m,scale,parity,ref visited,depth);if(error!=0)return error;
+                error=TransformNestedProgram(d.ProgramBlock,d.ProgramSurfaceCount,d.ProgramSpineCount,d.ProgramChartCount,d.ProgramScalarCount,surface.Header.Partition,m,scale,parity);if(error!=0)return error;
+                d.Range0*=scale;d.Range1*=scale;
+                if(parity<0){(d.Surface0Tag,d.Surface1Tag)=(d.Surface1Tag,d.Surface0Tag);(d.Range0,d.Range1)=(d.Range1,d.Range0);}
+                break;
+            }
             case SurfaceClass.Plane:
             {
                 ref var d=ref PlaneDataPool[index];if(!State.Session->TrySnapshot(ref d))return ParasolidConstants.PK_ERROR_memory_full;

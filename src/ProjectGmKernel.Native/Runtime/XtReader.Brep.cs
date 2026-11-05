@@ -74,6 +74,8 @@ internal static unsafe partial class XtReader
                 Tolerance(vertex, 6);
                 AddGeometry(Ptr(vertex, 5), XtNodeTypes.Point);
             });
+            if(root.Fields[17].Integer==2&&Ptr(root,28)==0&&Geometry.Any(node=>node.Type==(int)XtNodeTypes.Intersection))
+                throw new NotSupportedException("Vertexless intersection wire topology remains opaque.");
             foreach (var node in Topology)
             {
                 if (node.Type == (int)XtNodeTypes.Halfedge)
@@ -286,6 +288,12 @@ internal static unsafe partial class XtReader
                     Require(IsSurface(Node(Ptr(node, 7)))); break;
                 case XtNodeTypes.OffsetSurf:
                     AddGeometry(Ptr(node, 9)); Require(IsSurface(Node(Ptr(node, 9)))); break;
+                case XtNodeTypes.Intersection:
+                    AddGeometry(Ptr(node,7));AddGeometry(Ptr(node,8));
+                    Require(IsSurface(Node(Ptr(node,7)))&&IsSurface(Node(Ptr(node,8))));break;
+                case XtNodeTypes.BlendedEdge:
+                    AddGeometry(Ptr(node,8));AddGeometry(Ptr(node,9));AddGeometry(Ptr(node,10),XtNodeTypes.Intersection);
+                    Require(IsSurface(Node(Ptr(node,8)))&&IsSurface(Node(Ptr(node,9))));break;
                 default: throw new NotSupportedException("Unsupported boundary geometry.");
             }
             visitingGeometry.Remove(index);
@@ -294,11 +302,11 @@ internal static unsafe partial class XtReader
         }
 
         private static bool IsCurve(XtNode node) => (XtNodeTypes)node.Type is XtNodeTypes.Line or XtNodeTypes.Circle
-            or XtNodeTypes.Ellipse or XtNodeTypes.BCurve or XtNodeTypes.TrimmedCurve or XtNodeTypes.SpCurve;
+            or XtNodeTypes.Ellipse or XtNodeTypes.BCurve or XtNodeTypes.TrimmedCurve or XtNodeTypes.SpCurve or XtNodeTypes.Intersection;
 
         private static bool IsSurface(XtNode node) => (XtNodeTypes)node.Type is XtNodeTypes.Plane or XtNodeTypes.Cylinder
             or XtNodeTypes.Cone or XtNodeTypes.Sphere or XtNodeTypes.Torus or XtNodeTypes.BSurface
-            or XtNodeTypes.SweptSurf or XtNodeTypes.SpunSurf or XtNodeTypes.OffsetSurf;
+            or XtNodeTypes.SweptSurf or XtNodeTypes.SpunSurf or XtNodeTypes.OffsetSurf or XtNodeTypes.BlendedEdge;
 
         private static void ValidateGeometryFields(XtNode node)
         {
@@ -309,6 +317,7 @@ internal static unsafe partial class XtReader
                 XtNodeTypes.Circle or XtNodeTypes.Cylinder or XtNodeTypes.Sphere or XtNodeTypes.SpCurve => 11,
                 XtNodeTypes.Ellipse or XtNodeTypes.Torus or XtNodeTypes.TrimmedCurve or XtNodeTypes.OffsetSurf => 12,
                 XtNodeTypes.Cone => 13, XtNodeTypes.SpunSurf => 16,
+                XtNodeTypes.Intersection=>node.Fields.Length==14?14:13,XtNodeTypes.BlendedEdge=>19,
                 _ => throw new NotSupportedException("Unsupported boundary geometry."),
             };
             Require(node.Fields.Length == expected);

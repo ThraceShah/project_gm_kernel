@@ -118,6 +118,19 @@ internal static unsafe partial class KernelRuntime
                 if (error == 0) OffsetDataPool[Surfaces[GetSurfaceSlotByTag(created)].DataIndex].Check = (OffsetCheckState)fields[7].Character;
                 break;
             }
+            case XtNodeTypes.Intersection:
+            {
+                var a=XtMapped(geometry,tags,fields[7].Pointer,0);var b=XtMapped(geometry,tags,fields[8].Pointer,0);
+                var status=MaterializeNestedBlendSpine(document,node,a,b,out created);if(status!=AlgorithmStatus.Success)return status;error=0;break;
+            }
+            case XtNodeTypes.BlendedEdge:
+            {
+                if(fields[7].Character!='R'||fields[13].Real!=1||fields[14].Real!=1||fields[15].Pointer!=0||fields[16].Pointer!=0||fields[17].Pointer!=0||fields[18].Pointer!=0)
+                    return AlgorithmStatus.Unsupported;
+                if(!(Math.Abs(fields[11].Real)>0&&Math.Abs(fields[11].Real)==Math.Abs(fields[12].Real)))return AlgorithmStatus.Unsupported;
+                var a=XtMapped(geometry,tags,fields[8].Pointer,0);var b=XtMapped(geometry,tags,fields[9].Pointer,0);var curve=XtMapped(geometry,tags,fields[10].Pointer,0);
+                error=CompileAndBindNestedBlend(a,b,curve,fields[11].Real,fields[12].Real,&created);break;
+            }
             default: return AlgorithmStatus.Unsupported;
         }
         if (error == ParasolidConstants.PK_ERROR_memory_full || error < 0) return AlgorithmStatus.WorkspaceTooSmall;

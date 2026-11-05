@@ -294,6 +294,9 @@ internal static unsafe partial class XtWriter
                 case SurfaceClass.Offset:
                     node = OffsetSurfaceNode(pair.Value, pair.Key, surface, map);
                     break;
+                case SurfaceClass.BlendSurface:
+                    node=BlendedEdgeNode(pair.Value,pair.Key,surface,map);
+                    break;
                 default:
                     throw new NotSupportedException("Unsupported surface class for XT writer.");
             }
@@ -387,6 +390,14 @@ internal static unsafe partial class XtWriter
                     case SurfaceClass.Offset:
                         changed |= AddSurfaceTag(KernelRuntime.OffsetDataPool[surface.DataIndex].BaseSurfTag, tag, isCurve: false, ref map, nodes, ref graph);
                         break;
+                    case SurfaceClass.BlendSurface:
+                    {
+                        ref readonly var blend=ref KernelRuntime.BlendedEdgeDataPool[surface.DataIndex];
+                        changed|=AddSurfaceTag(blend.Surface0Tag,tag,false,ref map,nodes,ref graph);
+                        changed|=AddSurfaceTag(blend.Surface1Tag,tag,false,ref map,nodes,ref graph);
+                        changed|=AddCurveTag(blend.SpineTag,tag,false,ref map,nodes,ref graph);
+                        break;
+                    }
                 }
             }
         }
@@ -1504,6 +1515,23 @@ internal static unsafe partial class XtWriter
                 XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.BaseSurfTag)),
                 XtFieldValue.RealValue(distance),
                 XtFieldValue.Null(),
+            ],
+        };
+    }
+
+    private static XtNode BlendedEdgeNode(XtNodeIndex index,SurfTag tag,SurfaceRecord surface,NodeMap map)
+    {
+        ref readonly var data=ref KernelRuntime.BlendedEdgeDataPool[surface.DataIndex];
+        return new()
+        {
+            Type=(int)XtNodeTypes.BlendedEdge,Index=index,
+            Fields=
+            [
+                XtFieldValue.Int(NodeId(index,map)),XtFieldValue.Ptr(0),XtFieldValue.Ptr(SurfaceOwner(surface,map)),
+                XtFieldValue.Ptr(NextSurface(tag,map)),XtFieldValue.Ptr(PreviousSurface(tag,map)),GeometricOwnerField(tag,map),SenseField(surface.Sense),
+                XtFieldValue.Char('R'),XtFieldValue.Ptr(Ptr(map.SurfaceTags,data.Surface0Tag)),XtFieldValue.Ptr(Ptr(map.SurfaceTags,data.Surface1Tag)),
+                XtFieldValue.Ptr(Ptr(map.CurveTags,data.SpineTag)),XtFieldValue.RealValue(data.Range0),XtFieldValue.RealValue(data.Range1),
+                XtFieldValue.RealValue(1),XtFieldValue.RealValue(1),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),
             ],
         };
     }

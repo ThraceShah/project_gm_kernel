@@ -17,6 +17,7 @@ internal static unsafe partial class KernelRuntime
         var owned1 = data.OwnsSupportSurfaces != 0 ? data.Surface1Tag : 0;
         blocks->Free(DereferenceBlock(data.HvecBlock));
         blocks->Free(DereferenceBlock(data.UvValueBlock));
+        if(data.ProgramBlock>0)blocks->Free(DereferenceBlock(data.ProgramBlock));
         ICurveDataPool.Free(dataIndex);
         ReleaseImportedICurveSupport(owned0);
         if (owned1 != owned0) ReleaseImportedICurveSupport(owned1);

@@ -46,11 +46,13 @@ internal static unsafe partial class KernelRuntime
         if(Math.Abs(firstRange)!=Math.Abs(secondRange))return ParasolidConstants.PK_ERROR_not_implemented;
         var sa=GetSurfaceSlotByTag(first);var sb=GetSurfaceSlotByTag(second);if(sa<0||sb<0)return ParasolidConstants.PK_ERROR_bad_class;
         if(Surfaces[sa].Header.Partition!=CurrentPartition||Surfaces[sb].Header.Partition!=CurrentPartition)return ParasolidConstants.PK_ERROR_not_in_same_partition;
-        if(!TryPrepareSurface(Surfaces[sa],out var a)||!TryPrepareSurface(Surfaces[sb],out var b))return ParasolidConstants.PK_ERROR_not_implemented;
+        if(!TryPrepareSurface(Surfaces[sa],out var a)||!TryPrepareSurface(Surfaces[sb],out var b))
+            return CreateGeneralRollingBlend(first,firstRange,second,secondRange,aPoint,bPoint,options,result);
         var found=OffsetAnalyticBlendSupport(a,firstRange,out var offsetA);if(found!=AlgorithmStatus.Success)return IntersectionError(found);
         found=OffsetAnalyticBlendSupport(b,secondRange,out var offsetB);if(found!=AlgorithmStatus.Success)return IntersectionError(found);
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[16];Span<KernelVector3> points=stackalloc KernelVector3[16];
         found=OperationIntersection.Surfaces(offsetA,offsetB,branches,out var count,points,out var pointCount);
+        if(found==AlgorithmStatus.Unsupported)return CreateGeneralRollingBlend(first,firstRange,second,secondRange,aPoint,bPoint,options,result);
         if(found!=AlgorithmStatus.Success)return IntersectionError(found);
         if(pointCount!=0)return ParasolidConstants.PK_ERROR_not_implemented;
         var chosen=-1;var score=double.PositiveInfinity;var ambiguous=false;

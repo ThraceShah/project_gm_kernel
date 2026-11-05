@@ -130,6 +130,7 @@ internal enum ApiId : ushort
     BSurfAddVKnot = 152,
     BSurfRaiseDegree = 153,
     BSurfReparameterise = 154,
+    BlendSfAsk = 155,
     BCurveCreateSpline = 180,
     BCurveCreateSpline2 = 181,
     BCurveSplineResultFree = 182,

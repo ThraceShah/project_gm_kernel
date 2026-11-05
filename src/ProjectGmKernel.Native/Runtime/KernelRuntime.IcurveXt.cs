@@ -255,7 +255,7 @@ internal static unsafe partial class KernelRuntime
         }
         else if (fields[6].Kind != XtFieldKind.Empty)
             return false;
-        if (hvecCount > MaxIcurveImportHvecs || chartHvecs.Length < hvecCount * 3)
+        if (chartHvecs.Length < (long)hvecCount * 3)
             return false;
 
         baseParameter = fields[0].Real;

@@ -554,12 +554,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BLENDSF_ask")]
-    public static int PK_BLENDSF_ask(int arg0, PK_BLENDSF_sf_t* arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BODY_add_to_compound")]
     public static int PK_BODY_add_to_compound(int arg0, int* arg1, int arg2, PK_BODY_add_to_compound_o_t* arg3)
     {

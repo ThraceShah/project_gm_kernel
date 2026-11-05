@@ -72,6 +72,8 @@ global using DerivativeOrder = int;
 global using SplineDegree = int;
 global using KnotIndex = int;
 global using ControlPointIndex = int;
+global using BlendSurfaceIndex = int;
+global using BlendSpineIndex = int;
 
 // Memory ownership and allocator metadata.
 global using MemoryPageIndex = int;

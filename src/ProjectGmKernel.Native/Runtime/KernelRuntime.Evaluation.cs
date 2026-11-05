@@ -148,6 +148,13 @@ internal static unsafe partial class KernelRuntime
         out KernelVector3 direction, ChartSide side)
     {
         direction = default;
+        ref readonly var procedural=ref ICurveDataPool[record.DataIndex];
+        if(procedural.ProgramBlock>0)
+        {
+            var program=GetNestedBlendProgram(procedural.ProgramBlock,procedural.ProgramSurfaceCount,procedural.ProgramSpineCount,procedural.ProgramChartCount,procedural.ProgramScalarCount);
+            var proceduralStatus=JointNestedBlendEvaluation.EvaluateSpine(program,procedural.ProgramSpine,t,tangentRequired?Math.Max(order,1):order,values);
+            if(proceduralStatus==AlgorithmStatus.Success&&tangentRequired)direction=Unit(values[1]);return proceduralStatus;
+        }
         var prepareStatus = TryPrepareICurveView(in record, out var view, out var chartFailure);
         LastChartBuildFailure = chartFailure;
         if (prepareStatus != AlgorithmStatus.Success)
@@ -235,6 +242,11 @@ internal static unsafe partial class KernelRuntime
                 ref readonly var data = ref BSurfaceDataStore[record.DataIndex];
                 return BSurfaceEvaluation.Evaluate(GetBSurfaceView(in data), u, v, in layout,
                     CommandScratch.Current.AvailableSpanOfDoubles(), values);
+            }
+            case SurfaceClass.BlendSurface:
+            {
+                ref readonly var blend=ref BlendedEdgeDataPool[record.DataIndex];
+                return JointNestedBlendEvaluation.Evaluate(GetNestedBlendProgram(blend),blend.ProgramRoot,u,v,layout,values);
             }
             case SurfaceClass.Swept:
             {
