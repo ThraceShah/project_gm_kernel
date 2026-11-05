@@ -110,7 +110,7 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    internal static NestedBlendProgram GetNestedBlendProgram(in BlendedEdgeData data)
+    internal static NestedBlendProgram GetNestedBlendProgram(scoped in BlendedEdgeData data)
         =>GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
 
     internal static NestedBlendProgram GetNestedBlendProgram(DataSlot block,BufferCount surfaceCount,BufferCount spineCount,BufferCount chartCount,BufferCount scalarCount=0)
@@ -133,7 +133,7 @@ internal static unsafe partial class KernelRuntime
         ref var data=ref ICurveDataPool[dataSlot];data.HvecBlock=data.UvValueBlock=data.ProgramBlock=-1;
         data.Surface0Tag=first;data.Surface1Tag=second;data.BaseParameter=charts[0].Parameter;data.BaseScale=charts[0].Scale;
         data.ChartCount=charts.Length;data.HvecCount=charts.Length+2;data.UvType=IntersectionUvType.None;data.ExtendedChartCount=0;
-        data.Sense=ParasolidConstants.PK_TOPOL_sense_positive_c;data.ChordalError=source.ChordalError;data.AngularError=source.AngularError;
+        data.Sense=source.Sense==ParasolidConstants.PK_TOPOL_sense_negative_c?source.Sense:ParasolidConstants.PK_TOPOL_sense_positive_c;data.ChordalError=source.ChordalError;data.AngularError=source.AngularError;
         var hull=(KernelVector3*)State.Session->Blocks.TryAllocate((nuint)(data.HvecCount*sizeof(KernelVector3)));
         if(hull==null){FreeICurveData(dataSlot);return ParasolidConstants.PK_ERROR_memory_full;}
         data.HvecBlock=State.Session->Blocks.HandleOf(hull);

@@ -8,7 +8,7 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 /// <summary>Joint occurrence solve: every nested spine contributes its point,
 /// its native parameter and a nearest-spine stationarity equation. Nested
 /// normals use those unknowns directly instead of invoking inner Newton loops.</summary>
-internal static class JointNestedBlendEvaluation
+internal static partial class JointNestedBlendEvaluation
 {
     private const BufferCount MaxOccurrences=16,MaxVariables=63;
     private struct Occurrence
@@ -38,6 +38,13 @@ internal static class JointNestedBlendEvaluation
         return EvaluateCore(program,spine,-1,0,0,layout,output,false,default,out _,out _,contacts);
     }
 
+    internal static AlgorithmStatus ProjectBoundary(in NestedBlendProgram program,BlendSpineIndex spine,BufferOffset side,BufferOffset axis,double value,
+        Span<KernelVector3> output,Span<double> contacts)
+    {
+        SurfaceDerivativeLayout.TryCreate(0,0,out var layout);
+        return EvaluateCore(program,spine,-1,0,0,layout,output,false,default,out _,out _,contacts,side*2+axis,value);
+    }
+
     internal static AlgorithmStatus Distance(in NestedBlendProgram program,BlendSurfaceIndex surface,in TaylorVector path,
         out TaylorJet distance,out TaylorVector normal)
     {
@@ -55,7 +62,8 @@ internal static class JointNestedBlendEvaluation
 
     private static AlgorithmStatus EvaluateCore(in NestedBlendProgram program,BlendSpineIndex rootSpine,
         BlendSurfaceIndex surface,double u,double v,in SurfaceDerivativeLayout layout,Span<KernelVector3> output,
-        bool nearest,in TaylorVector path,out TaylorJet distance,out TaylorVector normal,Span<double> contacts=default)
+        bool nearest,in TaylorVector path,out TaylorJet distance,out TaylorVector normal,Span<double> contacts=default,BufferOffset boundary=-1,double boundaryValue=0,
+        Span<TaylorJet> snapshot=default,Span<Occurrence> nodeSnapshot=default,Span<BufferCount> counts=default)
     {
         distance=default;normal=default;
         if(!nearest&&(layout.UOrder>2||layout.VOrder>2||output.Length<layout.Count)||layout.UOrder>TaylorJet.MaxOrder)return AlgorithmStatus.Unsupported;
@@ -75,6 +83,8 @@ internal static class JointNestedBlendEvaluation
                 var support=program.Surfaces[side==0?spine.First:spine.Second];
                 if(support.IsBSpline)
                 {
+                    if(side==1&&occurrences[i].FirstUv>=0&&program.Surfaces[spine.First].SplineBasis==support.SplineBasis)
+                    {occurrences[i].SecondUv=occurrences[i].FirstUv;continue;}
                     if(n+2>MaxVariables)return AlgorithmStatus.Unsupported;
                     var splineParameter=i==0?u:state[occurrences[i].Offset+3];var domain=Chart(program,occurrences[i].Spine);var segment=0;
                     while(segment<domain.Length-2&&domain[segment+1].Parameter<=splineParameter)segment++;
@@ -88,6 +98,8 @@ internal static class JointNestedBlendEvaluation
                     if(side==0)occurrences[i].FirstUv=n;else occurrences[i].SecondUv=n;n+=2;continue;
                 }
                 if(!support.IsBlend)continue;
+                if(side==1&&occurrences[i].FirstChild>=0&&occurrences[occurrences[i].FirstChild].Spine==support.Spine)
+                {occurrences[i].SecondChild=occurrences[i].FirstChild;continue;}
                 if(count==MaxOccurrences||n+4>MaxVariables)return AlgorithmStatus.Unsupported;
                 var child=count++;occurrences[child]=new(){Spine=support.Spine,Offset=n,Parent=i,FirstChild=-1,SecondChild=-1,FirstUv=-1,SecondUv=-1};
                 if(side==0)occurrences[i].FirstChild=child;else occurrences[i].SecondChild=child;
@@ -105,26 +117,30 @@ internal static class JointNestedBlendEvaluation
             }
         }
         var nodes=occurrences[..count];state=state[..n];candidate=candidate[..n];
+        var tolerance=ResidualAccuracy(program,rootSpine,first);if(!double.IsFinite(tolerance))return AlgorithmStatus.InvalidInput;
+        var boundaryUv=boundary<0?-1:(boundary<2?nodes[0].FirstUv:nodes[0].SecondUv)+(boundary%2);
+        if(boundary>=0){if(boundaryUv<3)return AlgorithmStatus.InvalidInput;state[boundaryUv]=boundaryValue;}
         Span<TaylorJet> variables=stackalloc TaylorJet[MaxVariables],residual=stackalloc TaylorJet[MaxVariables];
         Span<double> matrix=stackalloc double[MaxVariables*MaxVariables],rhs=stackalloc double[MaxVariables];
         Span<double> scalarResidual=stackalloc double[MaxVariables];
         Span<int> pivots=stackalloc int[MaxVariables];var converged=false;
         for(var iteration=0;iteration<20;iteration++)
         {
-            var status=Assemble(program,nodes,state,u,scalarResidual[..n],matrix[..(n*n)],nearest,path.Value);if(status!=AlgorithmStatus.Success)return status;
+            var status=Assemble(program,nodes,state,u,scalarResidual[..n],matrix[..(n*n)],nearest,path.Value,boundaryUv,boundaryValue);if(status!=AlgorithmStatus.Success)return status;
             var error=Maximum(scalarResidual[..n]);
-            if(error<2e-13)
+            if(error<tolerance)
             {status=ValidateNearest(program,nodes,state,matrix[..(n*n)],nearest);if(status!=AlgorithmStatus.Success)return status;}
             status=SmallLinearSolve.LuFactorize(matrix[..(n*n)],n,pivots);if(status!=AlgorithmStatus.Success)return status;
-            if(error<2e-13){converged=true;break;}
+            if(error<tolerance){converged=true;break;}
             for(var row=0;row<n;row++)rhs[row]=-scalarResidual[row];
             status=SmallLinearSolve.LuSolveInPlace(matrix,n,pivots,rhs[..n]);if(status!=AlgorithmStatus.Success)return status;
             var accepted=false;
             for(var attempt=0;attempt<10;attempt++)
             {
                 var factor=Math.ScaleB(1,-attempt);for(var k=0;k<n;k++)candidate[k]=state[k]+factor*rhs[k];
+                if(boundaryUv>=0)candidate[boundaryUv]=boundaryValue;
                 WrapClosedParameters(program,nodes,candidate,nearest);
-                status=Assemble(program,nodes,candidate,u,scalarResidual[..n],default,nearest,path.Value);
+                status=Assemble(program,nodes,candidate,u,scalarResidual[..n],default,nearest,path.Value,boundaryUv,boundaryValue);
                 if(status!=AlgorithmStatus.Success||!(Maximum(scalarResidual[..n])<error))continue;
                 candidate.CopyTo(state);accepted=true;break;
             }
@@ -145,6 +161,7 @@ internal static class JointNestedBlendEvaluation
             for(var k=0;k<n;k++)variables[k][order]=rhs[k];
         }
         var center=Point(variables,0);
+        if(!snapshot.IsEmpty){variables[..n].CopyTo(snapshot);nodes.CopyTo(nodeSnapshot);counts[0]=n;counts[1]=nodes.Length;}
         if(nearest)
         {
             var offset=path-center;var length=offset.Norm();if(!(length[0]>1e-15))return AlgorithmStatus.Singular;
@@ -189,7 +206,7 @@ internal static class JointNestedBlendEvaluation
                 if(i!=root)selected[i]=nodes[i].Parent>=0&&selected[nodes[i].Parent];if(!selected[i])continue;
                 var node=nodes[i];for(var j=0;j<4;j++){if(i==root&&j==3)parameterIndex=count;map[count++]=node.Offset+j;}
                 if(node.FirstUv>=0){map[count++]=node.FirstUv;map[count++]=node.FirstUv+1;}
-                if(node.SecondUv>=0){map[count++]=node.SecondUv;map[count++]=node.SecondUv+1;}
+                if(node.SecondUv>=0&&node.SecondUv!=node.FirstUv){map[count++]=node.SecondUv;map[count++]=node.SecondUv+1;}
             }
             for(var i=0;i<count;i++)for(var j=0;j<count;j++)block[i*count+j]=matrix[map[i]*n+map[j]];
             var status=SmallLinearSolve.LuFactorize(block[..(count*count)],count,pivots);if(status!=AlgorithmStatus.Success)return status;
@@ -216,7 +233,7 @@ internal static class JointNestedBlendEvaluation
     }
 
     private static AlgorithmStatus Assemble(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
-        ReadOnlySpan<double> state,double parameter,Span<double> residual,Span<double> matrix,bool nearest,in KernelVector3 target)
+        ReadOnlySpan<double> state,double parameter,Span<double> residual,Span<double> matrix,bool nearest,in KernelVector3 target,BufferOffset boundaryUv=-1,double boundaryValue=0)
     {
         var n=state.Length;matrix.Clear();
         for(var i=nodes.Length-1;i>=0;i--)
@@ -229,12 +246,17 @@ internal static class JointNestedBlendEvaluation
             if(firstChild>=0)AddGradient(matrix,n,node.Offset,nodes[firstChild].Offset,Scale(a.Gradient,-1));
             if(secondChild>=0)AddGradient(matrix,n,node.Offset+1,nodes[secondChild].Offset,Scale(b.Gradient,-1));
             if(uv0>=0)SplineRows(program.Surfaces[spine.First],contact0,point,node.Offset,uv0,node.Offset,state,residual,matrix);
-            if(uv1>=0)SplineRows(program.Surfaces[spine.Second],contact1,point,node.Offset,uv1,node.Offset+1,state,residual,matrix);
+            if(uv1>=0)SplineRows(program.Surfaces[spine.Second],contact1,point,node.Offset,uv1,node.Offset+1,state,residual,matrix,uv1!=uv0);
             var t=i==0&&!nearest?parameter:state[node.Offset+3];var charts=Chart(program,node.Spine);
             if(!InChartDomain(program,node.Spine,t,i!=0||nearest))return AlgorithmStatus.InvalidInput;
             var segment=0;while(segment<charts.Length-2&&charts[segment+1].Parameter<=t)segment++;
             var chart=charts[segment];residual[node.Offset+2]=Dot(chart.Chord,Sub(point,chart.Position))-(t-chart.Parameter)/chart.Scale;
             AddGradient(matrix,n,node.Offset+2,node.Offset,chart.Chord);
+            if(i==0&&boundaryUv>=0)
+            {
+                residual[2]=state[boundaryUv]-boundaryValue;
+                if(!matrix.IsEmpty){matrix.Slice(2*n,n).Clear();matrix[2*n+boundaryUv]=1;}
+            }
             if(i!=0||nearest)
             {
                 if(!matrix.IsEmpty)matrix[(node.Offset+2)*n+node.Offset+3]=-1/chart.Scale;
@@ -291,6 +313,22 @@ internal static class JointNestedBlendEvaluation
     private static void AddGradient(Span<double> matrix,BufferCount n,BufferOffset row,BufferOffset column,in KernelVector3 value)
     {if(matrix.IsEmpty)return;matrix[row*n+column]+=value.X;matrix[row*n+column+1]+=value.Y;matrix[row*n+column+2]+=value.Z;}
     private static double Maximum(ReadOnlySpan<double> residual){var result=0.0;foreach(var value in residual)result=Math.Max(result,Math.Abs(value));return result;}
+    private static double ResidualAccuracy(in NestedBlendProgram program,BlendSpineIndex spine,in KernelVector3 point)
+    {
+        var scale=MaximumCoordinate(point);var charts=Chart(program,spine);scale=Math.Max(scale,Math.Max(MaximumCoordinate(charts[0].Position),MaximumCoordinate(charts[^1].Position)));
+        foreach(var node in program.Surfaces)
+        {
+            if(node.IsBlend)scale=Math.Max(scale,Math.Max(Math.Abs(node.Range0),Math.Abs(node.Range1)));
+            else if(node.IsBSpline)
+            {
+                var poles=program.Spline(node).Vertices;var weight=node.Rational?poles[3]:1;
+                if(weight!=0)scale=Math.Max(scale,Math.Max(Math.Abs(poles[0]/weight),Math.Max(Math.Abs(poles[1]/weight),Math.Abs(poles[2]/weight))));
+            }
+            else scale=Math.Max(scale,Math.Max(MaximumCoordinate(node.Analytic.Origin),Math.Max(Math.Abs(node.Analytic.Radius),node.Analytic.Kind==SurfaceClass.Cone?0:Math.Abs(node.Analytic.Secondary))));
+        }
+        return 64*SmallLinearSolve.MachineEpsilon*(scale>0?scale:1);
+    }
+    private static double MaximumCoordinate(in KernelVector3 point)=>Math.Max(Math.Abs(point.X),Math.Max(Math.Abs(point.Y),Math.Abs(point.Z)));
 
     private static AlgorithmStatus Residual(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<TaylorJet> variables,TaylorJet parameter,Span<TaylorJet> residual,bool nearest,in TaylorVector target)
@@ -384,12 +422,13 @@ internal static class JointNestedBlendEvaluation
         var q=Point(variables,node.Offset)-point;residual[uv]=TaylorVector.Dot(q,su.Unit());residual[uv+1]=TaylorVector.Dot(q,sv.Unit());return AlgorithmStatus.Success;
     }
     private static void SplineRows(in BlendSurfaceInstruction surface,in NestedSplineEvaluation.ContactJet contact,in KernelVector3 point,
-        BufferOffset pointOffset,BufferOffset uv,BufferOffset row,ReadOnlySpan<double> state,Span<double> residual,Span<double> matrix)
+        BufferOffset pointOffset,BufferOffset uv,BufferOffset row,ReadOnlySpan<double> state,Span<double> residual,Span<double> matrix,bool includeStationarity=true)
     {
         var n=state.Length;var q=Sub(point,contact.Point);var tu=Unit(contact.Du);var tv=Unit(contact.Dv);
         var uLength=Math.Sqrt(Dot(contact.Du,contact.Du));var vLength=Math.Sqrt(Dot(contact.Dv,contact.Dv));
         residual[uv]=Dot(q,tu);residual[uv+1]=Dot(q,tv);if(matrix.IsEmpty)return;
         matrix[row*n+uv]+=surface.NormalSense*Dot(q,contact.NormalU);matrix[row*n+uv+1]+=surface.NormalSense*Dot(q,contact.NormalV);
+        if(!includeStationarity)return;
         AddGradient(matrix,n,uv,pointOffset,tu);AddGradient(matrix,n,uv+1,pointOffset,tv);
         var tuu=Scale(Sub(contact.Duu,Scale(tu,Dot(tu,contact.Duu))),1/uLength);var tuv=Scale(Sub(contact.Duv,Scale(tu,Dot(tu,contact.Duv))),1/uLength);
         var tvu=Scale(Sub(contact.Duv,Scale(tv,Dot(tv,contact.Duv))),1/vLength);var tvv=Scale(Sub(contact.Dvv,Scale(tv,Dot(tv,contact.Dvv))),1/vLength);

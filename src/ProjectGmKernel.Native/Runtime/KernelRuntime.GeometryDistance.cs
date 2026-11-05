@@ -110,6 +110,10 @@ internal static unsafe partial class KernelRuntime
             var status=ClosestBSurface(GetBSurfaceView(BSurfaceDataStore[Surfaces[slot].DataIndex]),point,tolerance,ref best);
             if(status!=AlgorithmStatus.Success)return IntersectionError(status);u=best.U;v=best.V;foot=best.Point;
         }
+        else if(pool==PoolKind.Surface&&Surfaces[slot].Class==SurfaceClass.BlendSurface||pool==PoolKind.Curve&&Curves[slot].Class==CurveClass.ICurve&&ICurveDataPool[Curves[slot].DataIndex].ProgramBlock>0)
+        {
+            error=ClosestProceduralVector(geometry,point,tolerance,out foot,out u,out v);if(error!=0)return error;
+        }
         else if(pool==PoolKind.Curve)
         {
             var curve=Curves[slot];var interval=new PK_INTERVAL_s();interval.value[0]=curve.TMin;interval.value[1]=curve.TMax;

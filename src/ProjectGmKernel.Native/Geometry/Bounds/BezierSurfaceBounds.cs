@@ -198,4 +198,50 @@ internal static class BezierSurfaceBounds
             for (var i = 1; i < (dp + 1) * (dq + 1); i++) hull[d] = IntervalNumber.Hull(hull[d], restricted[4 * i + d]);
         }
     }
+
+    /// <summary>XYZ, Su, Sv, Suu, Suv, Svv, each three consecutive components.</summary>
+    internal static AlgorithmStatus BoundSecond(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
+    {
+        if(output.Length<18)return AlgorithmStatus.WorkspaceTooSmall;
+        Span<IntervalNumber> jets=stackalloc IntervalNumber[27];var status=BoundRectangularSecond(patch,box,jets);if(status!=AlgorithmStatus.Success)return status;
+        jets[..3].CopyTo(output);jets.Slice(9,3).CopyTo(output[3..]);jets.Slice(3,3).CopyTo(output[6..]);jets.Slice(18,3).CopyTo(output[9..]);jets.Slice(12,3).CopyTo(output[12..]);jets.Slice(6,3).CopyTo(output[15..]);
+        return AlgorithmStatus.Success;
+    }
+
+    // Rectangular jets (i,j), 0<=i,j<=2, u-major. Mixed order three
+    // is needed to bound the exact linear extension of a rational surface.
+    internal static AlgorithmStatus BoundRectangularSecond(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
+    {
+        if(output.Length<27)return AlgorithmStatus.WorkspaceTooSmall;
+        Span<IntervalNumber> first=stackalloc IntervalNumber[9],homogeneous=stackalloc IntervalNumber[36];var status=Bound(patch,box,first);if(status!=AlgorithmStatus.Success)return status;
+        for(var i=0;i<=2;i++)for(var j=0;j<=2;j++)HomogeneousJetHull(patch,box,i,j,homogeneous.Slice(4*(3*i+j),4));
+        var weight=homogeneous[3];if(weight.Lower<=0)return AlgorithmStatus.NumericalFailure;
+        for(var i=0;i<=2;i++)for(var j=0;j<=2;j++)for(var d=0;d<3;d++)
+        {
+            var at=3*(3*i+j)+d;
+            if(i==0&&j==0){output[at]=first[d];continue;}
+            if(i==1&&j==0){output[at]=first[3+d];continue;}
+            if(i==0&&j==1){output[at]=first[6+d];continue;}
+            var value=homogeneous[4*(3*i+j)+d];
+            for(var a=0;a<=i;a++)for(var b=0;b<=j;b++)
+            {if(a==i&&b==j)continue;var coefficient=(i==2&&a==1?2:1)*(j==2&&b==1?2:1);value-=coefficient*output[3*(3*a+b)+d]*homogeneous[4*(3*(i-a)+(j-b))+3];}
+            output[at]=value/weight;if(!output[at].Finite)return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    private static void HomogeneousJetHull(in BezierSurfacePatch patch,in SurfaceParameterBox box,DerivativeOrder uOrder,DerivativeOrder vOrder,Span<IntervalNumber> hull)
+    {
+        if(uOrder>patch.UDegree||vOrder>patch.VDegree){hull.Clear();return;}
+        Span<IntervalNumber> a=stackalloc IntervalNumber[MaxScalars],b=stackalloc IntervalNumber[MaxScalars];patch.Poles.CopyTo(a);var p=patch.UDegree;var q=patch.VDegree;
+        for(var axis=0;axis<2;axis++)for(var k=0;k<(axis==0?uOrder:vOrder);k++)
+        {
+            var np=p-(axis==0?1:0);var nq=q-(axis==1?1:0);var scale=axis==0?p/(new IntervalNumber(patch.Domain.U1)-patch.Domain.U0):q/(new IntervalNumber(patch.Domain.V1)-patch.Domain.V0);
+            for(var u=0;u<=np;u++)for(var v=0;v<=nq;v++)for(var d=0;d<4;d++)
+            {var at=4*(u*(q+1)+v)+d;b[4*(u*(nq+1)+v)+d]=scale*(a[at+(axis==0?4*(q+1):4)]-a[at]);}
+            b[..(4*(np+1)*(nq+1))].CopyTo(a);p=np;q=nq;
+        }
+        Restrict(new(a[..(4*(p+1)*(q+1))],p,q,patch.Domain),box,b);
+        for(var d=0;d<4;d++){hull[d]=b[d];for(var i=1;i<(p+1)*(q+1);i++)hull[d]=IntervalNumber.Hull(hull[d],b[4*i+d]);}
+    }
 }

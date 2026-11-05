@@ -34,21 +34,17 @@ internal static unsafe partial class KernelRuntime
             var scale=Math.Max(1,OperationIntersection.Norm(Sub(start,end)));var step=.05*scale;
             var feature=Math.Min(RollingFeature(program.Surfaces[a]),RollingFeature(program.Surfaces[b]));if(double.IsFinite(feature))step=Math.Min(step,.5*feature);
             if(!(step>1e-12*scale))return ParasolidConstants.PK_ERROR_at_singularity;
-            Span<KernelVector3> points=stackalloc KernelVector3[512];points[0]=initial;var count=1;var previous=initial;var previousTangent=tangent;
-            var initialTangent=tangent;var closed=false;var ctol=0.0;var minimumStep=step*1e-6;
-            for(var visited=0;visited<2048&&count<points.Length;visited++)
+            Span<KernelVector3> points=stackalloc KernelVector3[512],backward=stackalloc KernelVector3[512];
+            status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,tangent,step,contacts,points,out var count,out var closed,out var ctol);
+            if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            if(!closed)
             {
-                var target=Add(previous,Scale(previousTangent,step));
-                status=RollingBlendProjectJoint(projector,projectionSpine,projectedCharts[projectionChart..],target,target,previousTangent,contacts,out var point,out var nextTangent);
-                var correction=OperationIntersection.Norm(Sub(point,target));
-                if(status!=AlgorithmStatus.Success||correction>step*.15||Dot(previousTangent,nextTangent)<.9659258262890683)
-                {step*=.5;if(step<minimumStep)return EvaluationError(status==AlgorithmStatus.Success?AlgorithmStatus.NotConverged:status);continue;}
-                ctol=Math.Max(ctol,correction);
-                if(count>=8&&OperationIntersection.Norm(Sub(point,initial))<step*.8&&Dot(nextTangent,initialTangent)>.9)
-                {points[count++]=initial;closed=true;break;}
-                points[count++]=point;previous=point;previousTangent=nextTangent;
+                status=RollingBlendSample(program,a,b,initial,out _,out _,out _,contacts);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,Scale(tangent,-1),step,contacts,backward,out var left,out var leftClosed,out var leftError);
+                if(status!=AlgorithmStatus.Success||leftClosed)return EvaluationError(status==AlgorithmStatus.Success?AlgorithmStatus.NotConverged:status);
+                if(left+count-1>points.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                points[..count].CopyTo(points[(left-1)..]);for(var i=0;i<left-1;i++)points[i]=backward[left-1-i];count+=left-1;ctol=Math.Max(ctol,leftError);
             }
-            if(!closed)return ParasolidConstants.PK_ERROR_not_implemented;
             status=RollingBlendSample(program,a,b,end,out _,out _,out var endNormal);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var nearest=points[0];var best=OperationIntersection.Norm(Sub(nearest,end));for(var i=1;i<count;i++){var distance=OperationIntersection.Norm(Sub(points[i],end));if(distance<best){best=distance;nearest=points[i];}}
             // The two inputs select the rolling branch; neither is required
@@ -58,7 +54,7 @@ internal static unsafe partial class KernelRuntime
             status=RollingBlendProjectJoint(projector,projectionSpine,projectedCharts[projectionChart..],nearest,nearest,endNormal,contacts,out var endPoint,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var matched=false;for(var i=0;i<count-1;i++)if(OperationIntersection.Norm(Sub(points[i],endPoint))<2*step)matched=true;
             if(!matched)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-            status=compiler.ChartSpine(a,b,points[..count],0,1,Math.Max(2*ctol,1e-8*scale),Math.PI/12,LimitType.Help,LimitType.Help,out var spineIndex);
+            status=compiler.ChartSpine(a,b,points[..count],0,1,Math.Max(2*ctol,1e-8*scale),Math.PI/12,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spineIndex,r0*r1<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c);
             if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             CurveTag spine=0;error=BindNestedBlendSpine(offset0,offset1,compiler.View,spineIndex,&spine);if(error!=0)return error;
             return CompileAndBindNestedBlend(copies[0],copies[1],spine,r0,r1,result);
@@ -69,6 +65,65 @@ internal static unsafe partial class KernelRuntime
     private static double RollingFeature(in BlendSurfaceInstruction surface)
         =>surface.IsBlend?Math.Abs(surface.Range0):surface.Analytic.Kind==SurfaceClass.Torus?surface.Analytic.Secondary:
             surface.Analytic.Kind is SurfaceClass.Sphere or SurfaceClass.Cylinder?surface.Analytic.Radius:double.PositiveInfinity;
+
+    private static AlgorithmStatus TraceRollingBlend(in NestedBlendProgram program,BlendSpineIndex spine,Span<BlendChartInstruction> charts,
+        in KernelVector3 initial,in KernelVector3 tangent,double step,Span<double> contacts,Span<KernelVector3> points,
+        out BufferCount count,out bool closed,out double error)
+    {
+        count=1;closed=false;error=0;points[0]=initial;var previous=initial;var direction=tangent;var minimum=step*1e-6;Span<double> savedContacts=stackalloc double[4];
+        for(var visited=0;visited<2048&&count<points.Length;visited++)
+        {
+            var target=Add(previous,Scale(direction,step));contacts.CopyTo(savedContacts);
+            var status=RollingBlendProjectJoint(program,spine,charts,target,target,direction,contacts,out var point,out var next);
+            if(status==AlgorithmStatus.Success&&!RollingContactsInside(program,spine,contacts)){savedContacts.CopyTo(contacts);status=AlgorithmStatus.InvalidInput;}
+            var correction=OperationIntersection.Norm(Sub(point,target));
+            if(status!=AlgorithmStatus.Success||correction>step*.15||Dot(direction,next)<.9659258262890683)
+            {
+                var boundary=RollingBlendBoundary(program,spine,charts,previous,direction,step,contacts,out var endpoint);
+                if(boundary==AlgorithmStatus.Success){if(OperationIntersection.Norm(Sub(endpoint,previous))>1e-12)points[count++]=endpoint;return AlgorithmStatus.Success;}
+                step*=.5;if(step<minimum)return status==AlgorithmStatus.Success?AlgorithmStatus.NotConverged:status;continue;
+            }
+            error=Math.Max(error,correction);
+            if(count>=8&&OperationIntersection.Norm(Sub(point,initial))<step*.8&&Dot(next,tangent)>.9)
+            {points[count++]=initial;closed=true;return AlgorithmStatus.Success;}
+            points[count++]=point;previous=point;direction=next;
+        }
+        return AlgorithmStatus.NotConverged;
+    }
+
+    private static bool RollingContactsInside(in NestedBlendProgram program,BlendSpineIndex spine,ReadOnlySpan<double> contacts)
+    {
+        var definition=program.Spines[spine];
+        for(var side=0;side<2;side++)
+        {
+            var source=program.Surfaces[side==0?definition.First:definition.Second];if(!source.IsBSpline)continue;var view=program.Spline(source);
+            if(!BSurfaceEvaluation.IsInDomain(view,contacts[2*side],contacts[2*side+1]))return false;
+        }
+        return true;
+    }
+
+    private static AlgorithmStatus RollingBlendBoundary(in NestedBlendProgram program,BlendSpineIndex spine,Span<BlendChartInstruction> charts,
+        in KernelVector3 last,in KernelVector3 direction,double step,Span<double> contacts,out KernelVector3 endpoint)
+    {
+        endpoint=default;var definition=program.Spines[spine];
+        Span<double> trial=stackalloc double[4];Span<KernelVector3> jet=stackalloc KernelVector3[1];
+        for(var side=0;side<2;side++)
+        {
+            var surface=program.Surfaces[side==0?definition.First:definition.Second];if(!surface.IsBSpline)continue;var spline=program.Spline(surface);
+            for(var axis=0;axis<2;axis++)
+            {
+                if(axis==0?spline.UPeriodic:spline.VPeriodic)continue;
+                var lo=axis==0?spline.UStart:spline.VStart;var hi=axis==0?spline.UEnd:spline.VEnd;var current=contacts[2*side+axis];var value=current-lo<hi-current?lo:hi;
+                if(Math.Abs(current-value)>.05*(hi-lo))continue;
+                contacts.CopyTo(trial);trial[2*side+axis]=value;
+                charts[0]=new(){Position=last,Chord=direction,Scale=1,FirstU=trial[0],FirstV=trial[1],SecondU=trial[2],SecondV=trial[3]};charts[1]=charts[0];charts[1].Position=Add(last,direction);charts[1].Parameter=1;
+                var status=JointNestedBlendEvaluation.ProjectBoundary(program,spine,side,axis,value,jet,trial);if(status!=AlgorithmStatus.Success)continue;
+                var delta=Sub(jet[0],last);if(OperationIntersection.Norm(delta)>4*step||Dot(delta,direction)<-1e-10)continue;
+                endpoint=jet[0];trial.CopyTo(contacts);return AlgorithmStatus.Success;
+            }
+        }
+        return AlgorithmStatus.NotConverged;
+    }
 
     private static AlgorithmStatus RollingBlendSample(in NestedBlendProgram program,BlendSurfaceIndex a,BlendSurfaceIndex b,
         in KernelVector3 point,out double d0,out double d1,out KernelVector3 tangent,Span<double> contacts=default)

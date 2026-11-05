@@ -11,7 +11,7 @@ internal static unsafe partial class KernelRuntime
         curve=0;var owns=EnsureCommandScratch();var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {
-            var fields=node.Fields;if(fields[6].Character!='+')return AlgorithmStatus.Unsupported;
+            var fields=node.Fields;
             var chart=FindNodeByIndex(document.Nodes,fields[9].Pointer);var start=FindNodeByIndex(document.Nodes,fields[10].Pointer);var end=FindNodeByIndex(document.Nodes,fields[11].Pointer);
             if(chart==null||start==null||end==null)return AlgorithmStatus.InvalidInput;
             if(chart.VariableLength<2||chart.VariableLength>NestedChartLimit)return AlgorithmStatus.Unsupported;
@@ -25,7 +25,7 @@ internal static unsafe partial class KernelRuntime
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return AlgorithmStatus.WorkspaceTooSmall;
             var status=compiler.Surface(first,out var a);if(status!=AlgorithmStatus.Success)return status;
             status=compiler.Surface(second,out var b);if(status!=AlgorithmStatus.Success)return status;
-            status=compiler.ChartSpine(a,b,MemoryMarshal.Cast<double,KernelVector3>(chartBuffer[..(count*3)]),baseParameter,baseScale,ctol,atol,startType,endType,out var root);if(status!=AlgorithmStatus.Success)return status;
+            status=compiler.ChartSpine(a,b,MemoryMarshal.Cast<double,KernelVector3>(chartBuffer[..(count*3)]),baseParameter,baseScale,ctol,atol,startType,endType,out var root,XtSense(fields[6].Character));if(status!=AlgorithmStatus.Success)return status;
             CurveTag result=0;var error=BindNestedBlendSpine(first,second,compiler.View,root,&result);if(error!=0)return error==Generated.ParasolidConstants.PK_ERROR_memory_full?AlgorithmStatus.WorkspaceTooSmall:AlgorithmStatus.InvalidInput;
             ref var data=ref ICurveDataPool[Curves[GetCurveSlotByTag(result)].DataIndex];
             data.ParameterError=error0;data.ParameterErrorProvided=hasError0;data.ParameterError1=error1;data.ParameterError1Provided=hasError1;data.SourceSchema=document.Schema.SchemaNumber;

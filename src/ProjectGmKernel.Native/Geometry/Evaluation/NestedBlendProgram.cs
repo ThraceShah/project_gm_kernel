@@ -13,6 +13,7 @@ internal struct BlendSurfaceInstruction
     internal BlendSurfaceIndex First,Second;
     internal BlendSpineIndex Spine;
     internal double Range0,Range1;
+    internal bool ReverseSection;
     internal double NormalSense;
     internal BlendSurfaceIndex SplineBasis;
     internal BufferOffset ScalarOffset;
@@ -28,6 +29,7 @@ internal struct BlendSpineInstruction
     internal BufferOffset ChartOffset;
     internal BufferCount ChartCount;
     internal LimitType StartType,EndType;
+    internal KernelSense Sense;
     internal double ChordalError,AngularError;
 }
 

@@ -47,7 +47,13 @@ internal static class ParametricSurfaceIntersection
     internal static AlgorithmStatus Find(in BezierSurfacePatch first, in BezierSurfacePatch second,
         Span<SurfaceIntersectionNode> nodes, ref BufferCount nodeCount,
         Span<SurfaceIntersectionSegment> segments, ref BufferCount segmentCount)
+        =>FindProcedural(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),nodes,ref nodeCount,segments,ref segmentCount);
+
+    internal static AlgorithmStatus FindProcedural(scoped in SurfaceIntersectionPatch firstSource,scoped in SurfaceIntersectionPatch secondSource,
+        Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount)
     {
+        Span<SurfaceBoundCacheEntry> firstCache=stackalloc SurfaceBoundCacheEntry[256],secondCache=stackalloc SurfaceBoundCacheEntry[256];firstCache.Clear();secondCache.Clear();
+        var first=new SurfaceIntersectionPatch(firstSource,firstCache);var second=new SurfaceIntersectionPatch(secondSource,secondCache);
         Span<ParameterCell> pending = stackalloc ParameterCell[256];
         var initial = new ParameterCell { Lower = new() { U = first.Domain.U0, V = first.Domain.V0, S = second.Domain.U0, T = second.Domain.V0 },
             Upper = new() { U = first.Domain.U1, V = first.Domain.V1, S = second.Domain.U1, T = second.Domain.V1 } };
@@ -55,14 +61,15 @@ internal static class ParametricSurfaceIntersection
         Span<IntervalNumber> f = stackalloc IntervalNumber[3]; Span<IntervalNumber> jac = stackalloc IntervalNumber[12];
         Span<SurfaceIntersectionNode> roots = stackalloc SurfaceIntersectionNode[32];
         Span<SurfaceIntersectionNode> faceRoots = stackalloc SurfaceIntersectionNode[16];
-        Span<double> inverse = stackalloc double[9];
+        Span<double> inverse = stackalloc double[9];Span<IntervalNumber> check=stackalloc IntervalNumber[9];
         while (count > 0)
         {
             if (++visited > MaxCells) return AlgorithmStatus.NotConverged;
             var cell = pending[--count]; var savedNodes = nodeCount; var savedSegments = segmentCount;
-            var status = Bounds(first, second, cell, f, jac); if (status != AlgorithmStatus.Success) return status;
-            if (!f[0].ContainsZero || !f[1].ContainsZero || !f[2].ContainsZero) continue;
-            var free = SelectGraphAxis(jac, cell, inverse); var size = 0.0;
+            var status = Bounds(first, second, cell, f, jac);if(status!=AlgorithmStatus.Success&&status!=AlgorithmStatus.NotConverged)return status;
+            var bounded=status==AlgorithmStatus.Success;
+            if (bounded&&(!f[0].ContainsZero || !f[1].ContainsZero || !f[2].ContainsZero)) continue;
+            var free = bounded?SelectGraphAxis(jac, cell, inverse):-1; var size = 0.0;
             for (var d = 0; d < 4; d++) size = Math.Max(size, cell.Width(d) / initial.Width(d));
             var accepted = free >= 0 && size <= .14;
             var nr = 0;
@@ -72,7 +79,7 @@ internal static class ParametricSurfaceIntersection
                 {
                     var face = cell; var at = end == 0 ? cell.Lower.Parameter(axis) : cell.Upper.Parameter(axis);
                     face.Lower.SetParameter(axis, at); face.Upper.SetParameter(axis, at);
-                    status = Bounds(first, second, face, f, jac); if (status != AlgorithmStatus.Success) return status;
+                    status = Bounds(first, second, face, f, jac);if(status==AlgorithmStatus.NotConverged){accepted=false;break;}if(status!=AlgorithmStatus.Success)return status;
                     var containedBoundary = false;
                     for (var row = 0; row < 3; row++)
                     {
@@ -126,6 +133,7 @@ internal static class ParametricSurfaceIntersection
             if (cell.Depth >= 48 || count + 2 > pending.Length) return AlgorithmStatus.NotConverged;
             var split = 0; var widest = 0.0;
             for (var d = 0; d < 4; d++) if (cell.Width(d) / initial.Width(d) > widest) { split = d; widest = cell.Width(d) / initial.Width(d); }
+            if(!bounded){if(first.IsProcedural&&first.Bound(cell.First,check)==AlgorithmStatus.NotConverged)split=0;else if(second.IsProcedural&&second.Bound(cell.Second,check)==AlgorithmStatus.NotConverged)split=2;}
             var middle = cell.Lower.Parameter(split) + cell.Width(split) * .4931471805599453;
             if (!(middle > cell.Lower.Parameter(split) && middle < cell.Upper.Parameter(split))) return AlgorithmStatus.NumericalFailure;
             var right = cell; cell.Upper.SetParameter(split, middle); right.Lower.SetParameter(split, middle); cell.Depth++; right.Depth = cell.Depth;
@@ -136,10 +144,14 @@ internal static class ParametricSurfaceIntersection
 
     internal static AlgorithmStatus Bounds(in BezierSurfacePatch first, in BezierSurfacePatch second,
         in ParameterCell cell, Span<IntervalNumber> residual, Span<IntervalNumber> jacobian)
+        =>Bounds(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),cell,residual,jacobian);
+
+    private static AlgorithmStatus Bounds(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
+        in ParameterCell cell,Span<IntervalNumber> residual,Span<IntervalNumber> jacobian)
     {
         Span<IntervalNumber> a = stackalloc IntervalNumber[9]; Span<IntervalNumber> b = stackalloc IntervalNumber[9];
-        var status = BezierSurfaceBounds.Bound(first, cell.First, a); if (status != AlgorithmStatus.Success) return status;
-        status = BezierSurfaceBounds.Bound(second, cell.Second, b); if (status != AlgorithmStatus.Success) return status;
+        var status = first.Bound(cell.First, a); if (status != AlgorithmStatus.Success) return status;
+        status = second.Bound(cell.Second, b); if (status != AlgorithmStatus.Success) return status;
         for (var d = 0; d < 3; d++)
         {
             residual[d] = a[d] - b[d]; jacobian[4 * d] = a[3 + d]; jacobian[4 * d + 1] = a[6 + d];
@@ -162,6 +174,10 @@ internal static class ParametricSurfaceIntersection
 
     internal static AlgorithmStatus Isolate(in BezierSurfacePatch first, in BezierSurfacePatch second,
         in ParameterCell domain, BufferOffset fixedAxis, Span<SurfaceIntersectionNode> roots, out BufferCount rootCount)
+        =>Isolate(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),domain,fixedAxis,roots,out rootCount);
+
+    private static AlgorithmStatus Isolate(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
+        in ParameterCell domain,BufferOffset fixedAxis,Span<SurfaceIntersectionNode> roots,out BufferCount rootCount)
     {
         rootCount = 0;
         Span<ParameterCell> pending = stackalloc ParameterCell[160]; pending[0] = domain; var count = 1; var visited = 0;
@@ -173,7 +189,7 @@ internal static class ParametricSurfaceIntersection
         while (count > 0)
         {
             if (++visited > 12000) return AlgorithmStatus.NotConverged;
-            var cell = pending[--count]; var status = Bounds(first, second, cell, f, jac); if (status != AlgorithmStatus.Success) return status;
+            var cell = pending[--count];var bounded=false;var status = Bounds(first, second, cell, f, jac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;bounded=true;if(status!=AlgorithmStatus.Success)return status;
             if (!f[0].ContainsZero || !f[1].ContainsZero || !f[2].ContainsZero) continue;
             var point = cell.Center;
             if (Invert(jac, axes, inverse) && Contraction(jac, axes, inverse, cell) < .8)
@@ -181,7 +197,7 @@ internal static class ParametricSurfaceIntersection
                 for (var iteration = 0; iteration < 12; iteration++)
                 {
                     var singleton = new ParameterCell { Lower = point, Upper = point };
-                    status = Bounds(first, second, singleton, centerF, centerJac); if (status != AlgorithmStatus.Success) return status;
+                    status = Bounds(first, second, singleton, centerF, centerJac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
                     if (!Invert(centerJac, axes, inverse)) break;
                     var step = 0.0;
                     for (var r = 0; r < 3; r++)
@@ -193,7 +209,7 @@ internal static class ParametricSurfaceIntersection
                     if (step < 2e-14) break;
                 }
                 var anchor = new ParameterCell { Lower = point, Upper = point };
-                status = Bounds(first, second, anchor, centerF, centerJac); if (status != AlgorithmStatus.Success) return status;
+                status = Bounds(first, second, anchor, centerF, centerJac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
                 var empty = false; var unique = true;
                 // Certify on a small extension of the unknown domain, allowing
                 // a root on a shared cell boundary to be isolated by both sides.
@@ -203,7 +219,7 @@ internal static class ParametricSurfaceIntersection
                     var axis = axes[r]; var margin = Math.Max(cell.Width(axis) * .05, 1e-11);
                     expanded.Lower.SetParameter(axis, cell.Lower.Parameter(axis) - margin); expanded.Upper.SetParameter(axis, cell.Upper.Parameter(axis) + margin);
                 }
-                status = Bounds(first, second, expanded, f, jac); if (status != AlgorithmStatus.Success) return status;
+                status = Bounds(first, second, expanded, f, jac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
                 if (!Invert(centerJac, axes, inverse)) unique = false;
                 for (var r = 0; r < 3 && unique; r++)
                 {
@@ -222,7 +238,7 @@ internal static class ParametricSurfaceIntersection
                 if (empty) continue;
                 if (unique && centerF[0].Magnitude < 1e-9 && centerF[1].Magnitude < 1e-9 && centerF[2].Magnitude < 1e-9)
                 {
-                    status = BezierSurfaceBounds.Bound(first, anchor.First, position); if (status != AlgorithmStatus.Success) return status;
+                    status = first.Bound(anchor.First, position); if (status != AlgorithmStatus.Success) return status;
                     point.Point = Vector(position[0].Midpoint, position[1].Midpoint, position[2].Midpoint);
                     var duplicate = false;
                     for (var i = 0; i < rootCount; i++) if (SameParameters(roots[i], point, domain)) duplicate = true;
@@ -230,6 +246,7 @@ internal static class ParametricSurfaceIntersection
                     continue;
                 }
             }
+            Subdivide:
             if (cell.Depth >= 44 || count + 2 > pending.Length) return AlgorithmStatus.NotConverged;
             var split = axes[0]; var width = 0.0;
             for (var i = 0; i < 3; i++)
@@ -237,6 +254,7 @@ internal static class ParametricSurfaceIntersection
                 var axis = axes[i]; var relative = cell.Width(axis) / Math.Max(domain.Width(axis), 1e-30);
                 if (relative > width) { split = axis; width = relative; }
             }
+            if(!bounded){if(fixedAxis!=0&&first.IsProcedural&&first.Bound(cell.First,position)==AlgorithmStatus.NotConverged)split=0;else if(fixedAxis!=2&&second.IsProcedural&&second.Bound(cell.Second,position)==AlgorithmStatus.NotConverged)split=2;}
             var middle = cell.Lower.Parameter(split) + cell.Width(split) * .4931471805599453;
             if (!(middle > cell.Lower.Parameter(split) && middle < cell.Upper.Parameter(split))) return AlgorithmStatus.NumericalFailure;
             var right = cell; cell.Upper.SetParameter(split, middle); right.Lower.SetParameter(split, middle); cell.Depth++; right.Depth = cell.Depth;
@@ -287,7 +305,7 @@ internal static class ParametricSurfaceIntersection
         return true;
     }
 
-    private static AlgorithmStatus AddSegment(in BezierSurfacePatch patch,in ParameterCell cell,in SurfaceIntersectionNode a, in SurfaceIntersectionNode b, in ParameterCell domain,
+    private static AlgorithmStatus AddSegment(in SurfaceIntersectionPatch patch,in ParameterCell cell,in SurfaceIntersectionNode a, in SurfaceIntersectionNode b, in ParameterCell domain,
         Span<SurfaceIntersectionNode> nodes, ref BufferCount nodeCount, Span<SurfaceIntersectionSegment> segments, ref BufferCount segmentCount)
     {
         var start = -1; var end = -1;
@@ -297,7 +315,7 @@ internal static class ParametricSurfaceIntersection
         if (start == end) return AlgorithmStatus.NumericalFailure;
         for (var i = 0; i < segmentCount; i++) if (segments[i].Start == start && segments[i].End == end || segments[i].Start == end && segments[i].End == start) return AlgorithmStatus.Success;
         if (segmentCount == segments.Length) return AlgorithmStatus.OutputTooSmall;
-        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var status=BezierSurfaceBounds.Bound(patch,cell.First,bounds);if(status!=AlgorithmStatus.Success)return status;
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var status=patch.Bound(cell.First,bounds);if(status!=AlgorithmStatus.Success)return status;
         var chord=Sub(b.Point,a.Point);var square=Dot(chord,chord);var error=0.0;
         for(var corner=0;corner<8;corner++)
         {

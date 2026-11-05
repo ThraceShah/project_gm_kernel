@@ -30,6 +30,7 @@ internal static class NestedBlendSeriesEvaluation
         in TaylorVector n0,in TaylorVector n1,double v,in SurfaceDerivativeLayout layout,Span<KernelVector3> output)
     {
         var radius=Math.Abs(node.Range0);var x=n1*(-node.Range1/radius);var end=n0*(-node.Range0/radius);
+        if(node.ReverseSection)(x,end)=(end,x);
         var cosine=TaylorVector.Dot(x,end);var transverse=end-x*cosine;var sine=transverse.Norm();
         if(!(sine[0]>1e-7))return AlgorithmStatus.Singular;
         var y=transverse/sine;var arc=TaylorJet.Atan2(sine,cosine);var theta=arc*v;

@@ -5296,7 +5296,7 @@ namespace ProjectGmKernel.Native.Generated;
         public double tolerance;
         public PK_range_bound_t bound;
         public int range_type;
-        public fixed byte param_bounds[16]; // ABI storage for PK_range_param_bound_t*[2] (8 bytes/element)
+        public fixed long param_bounds[2]; // ABI storage for PK_range_param_bound_t*[2] (8 bytes/element)
         public int opt_level;
     }
 
@@ -5335,9 +5335,9 @@ namespace ProjectGmKernel.Native.Generated;
         public byte have_tolerance;
         public double tolerance;
         public PK_range_bound_t bound;
-        public fixed byte guesses[96]; // ABI storage for PK_range_guess_t[2] (48 bytes/element)
+        public fixed long guesses[12]; // ABI storage for PK_range_guess_t[2] (48 bytes/element)
         public int range_type;
-        public fixed byte param_bound[80]; // ABI storage for PK_range_param_bound_t[2] (40 bytes/element)
+        public fixed long param_bound[10]; // ABI storage for PK_range_param_bound_t[2] (40 bytes/element)
         public int opt_level;
     }
 
@@ -7234,7 +7234,7 @@ namespace ProjectGmKernel.Native.Generated;
         public byte have_tolerance;
         public double tolerance;
         public PK_range_bound_t bound;
-        public fixed byte guesses[96]; // ABI storage for PK_range_guess_t[2] (48 bytes/element)
+        public fixed long guesses[12]; // ABI storage for PK_range_guess_t[2] (48 bytes/element)
         public int range_type;
         public PK_range_param_bound_t param_bound;
         public int opt_level;
@@ -7268,7 +7268,7 @@ namespace ProjectGmKernel.Native.Generated;
         public byte have_tolerance;
         public double tolerance;
         public PK_range_bound_t bound;
-        public fixed byte guesses[96]; // ABI storage for PK_range_guess_t[2] (48 bytes/element)
+        public fixed long guesses[12]; // ABI storage for PK_range_guess_t[2] (48 bytes/element)
         public int range_type;
         public int opt_level;
     }
@@ -8316,7 +8316,7 @@ namespace ProjectGmKernel.Native.Generated;
     internal unsafe struct PK_LROD_ask_lballs_r_s
     {
         public int r_t_version;
-        public fixed byte lballs[16]; // ABI storage for PK_LBALL_t[2] (8 bytes/element)
+        public fixed int lballs[4]; // ABI storage for PK_LBALL_t[2] (8 bytes/element)
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -8523,7 +8523,7 @@ namespace ProjectGmKernel.Native.Generated;
     internal unsafe struct PK_range_2_r_s
     {
         public double distance;
-        public fixed byte ends[112]; // ABI storage for PK_range_end_t[2] (56 bytes/element)
+        public fixed long ends[14]; // ABI storage for PK_range_end_t[2] (56 bytes/element)
     }
 
     [StructLayout(LayoutKind.Sequential)]

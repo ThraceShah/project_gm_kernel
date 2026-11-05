@@ -19,7 +19,7 @@ internal static unsafe partial class KernelRuntime
         internal IntersectionCurveSpan Curve;
         internal AnalyticSurface Analytic;
         internal BufferCount Pieces;
-        internal bool Bounded,IsAnalytic;
+        internal bool Bounded,IsAnalytic,IsBlend,IsProceduralCurve;
         internal IntervalBox3 Extent;
         internal KernelVector3 Seed;
     }
@@ -39,6 +39,11 @@ internal static unsafe partial class KernelRuntime
         error=PrepareDistanceOperand(second,out var b);if(error!=0)return error;
         PK_range_end_s ea=default,eb=default;double distance;
         var exact=ExactGeometryDistance(a,b,out ea,out eb,out distance);
+        if(exact==AlgorithmStatus.Unsupported)
+        {
+            error=SeparatedProceduralSphereDistance(a,b,tolerance,out var handled,out ea,out eb,out distance);if(error!=0)return error;
+            if(handled)exact=AlgorithmStatus.Success;
+        }
         if(exact==AlgorithmStatus.Success){}
         else if(exact!=AlgorithmStatus.Unsupported)return IntersectionError(exact);
         else if(a.Pool==PoolKind.Point||b.Pool==PoolKind.Point)
@@ -58,12 +63,11 @@ internal static unsafe partial class KernelRuntime
             if((long)a.Pieces*b.Pieces>200000)return ParasolidConstants.PK_ERROR_not_implemented;
             for(var i=0;i<a.Pieces;i++)
             {
-                var found=DistanceGeometryPiece(a,region,i,ap,out var p,out var q,out var domain,out var empty);if(found!=AlgorithmStatus.Success)return IntersectionError(found);if(empty)continue;
-                var patch=new BezierSurfacePatch(ap[..(4*(p+1)*(q+1))],p,q,domain);
+                var found=DistancePatch(a,region,i,ap,out var patch,out var empty);if(found!=AlgorithmStatus.Success)return IntersectionError(found);if(empty)continue;
                 for(var j=0;j<b.Pieces;j++)
                 {
-                    found=DistanceGeometryPiece(b,region,j,bp,out var r,out var s,out var otherDomain,out empty);if(found!=AlgorithmStatus.Success)return IntersectionError(found);if(empty)continue;
-                    found=BezierPairDistance.Minimum(patch,new(bp[..(4*(r+1)*(s+1))],r,s,otherDomain),tolerance,ref best);if(found!=AlgorithmStatus.Success)return IntersectionError(found);
+                    found=DistancePatch(b,region,j,bp,out var other,out empty);if(found!=AlgorithmStatus.Success)return IntersectionError(found);if(empty)continue;
+                    found=BezierPairDistance.MinimumProcedural(patch,other,tolerance,ref best);if(found!=AlgorithmStatus.Success)return IntersectionError(found);
                 }
             }
             if(!double.IsFinite(best.Upper))return ParasolidConstants.PK_ERROR_eval_failure;
@@ -74,6 +78,24 @@ internal static unsafe partial class KernelRuntime
         var outcome=RangeBoundResult(distance,options->bound);*status=outcome;
         if(outcome==ParasolidConstants.PK_range_result_found_c){result->distance=distance;var ends=(PK_range_end_s*)result->ends;ends[0]=ea;ends[1]=eb;}
         return 0;
+    }
+
+    private static int SeparatedProceduralSphereDistance(in DistanceOperand first,in DistanceOperand second,double tolerance,
+        out bool handled,out PK_range_end_s a,out PK_range_end_s b,out double distance)
+    {
+        handled=false;a=b=default;distance=0;var reverse=first.IsAnalytic&&first.Analytic.Kind==SurfaceClass.Sphere;
+        var sphere=reverse?first:second;var other=reverse?second:first;
+        if(!sphere.IsAnalytic||sphere.Analytic.Kind!=SurfaceClass.Sphere||!other.IsBlend&&!other.IsProceduralCurve)return 0;
+        var error=ClosestProceduralVector(other.Tag,sphere.Analytic.Origin,tolerance,out var foot,out var u,out var v);if(error!=0)return error;
+        var radial=Sub(foot,sphere.Analytic.Origin);var length=OperationIntersection.Norm(radial);
+        // The certified center minimum must place the entire procedural
+        // domain outside the sphere. Intersecting/contained cases retain the
+        // general pair solver.
+        if(length<=sphere.Analytic.Radius+tolerance)return 0;
+        var sphereFoot=Add(sphere.Analytic.Origin,Scale(radial,sphere.Analytic.Radius/length));
+        error=DistanceGeometryEnd(other,foot,u,v,out var proceduralEnd);if(error!=0)return error;
+        error=DistanceGeometryEnd(sphere,sphereFoot,0,0,out var sphereEnd);if(error!=0)return error;
+        a=reverse?sphereEnd:proceduralEnd;b=reverse?proceduralEnd:sphereEnd;distance=length-sphere.Analytic.Radius;handled=true;return 0;
     }
 
     private static int PrepareDistanceOperand(GeomTag tag,out DistanceOperand operand)
@@ -88,6 +110,13 @@ internal static unsafe partial class KernelRuntime
         if(operand.Pool==PoolKind.Curve)
         {
             var record=Curves[operand.Slot];var interval=new PK_INTERVAL_s();interval.value[0]=record.TMin;interval.value[1]=record.TMax;
+            if(record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].ProgramBlock>0)
+            {
+                var data=ICurveDataPool[record.DataIndex];var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);var spine=program.Spines[data.ProgramSpine];
+                operand.IsProceduralCurve=operand.Bounded=true;operand.Pieces=spine.ChartCount-1;
+                var found=EvaluateCurveCore(in record,record.TMin+(record.TMax-record.TMin)*.5,0,false,point,out _);if(found!=AlgorithmStatus.Success)return EvaluationError(found);operand.Seed=point[0];
+                found=BlendExtent(program,data.ProgramSpine,new(record.TMin,record.TMax,0,1),out operand.Extent,spineOnly:true);return found==AlgorithmStatus.Success?0:IntersectionError(found);
+            }
             error=ResolveIntersectionCurve(tag,interval,out operand.Curve);if(error!=0)return error;
             operand.Pieces=GeneralCurvePieceCount(operand.Curve);if(operand.Pieces<=0)return ParasolidConstants.PK_ERROR_not_implemented;
             var evaluated=EvaluateCurveCore(in record,record.TMin+(record.TMax-record.TMin)*.5,0,false,point,out _);if(evaluated!=AlgorithmStatus.Success)return EvaluationError(evaluated);operand.Seed=point[0];
@@ -112,6 +141,12 @@ internal static unsafe partial class KernelRuntime
         var analytic=TryPrepareSurface(support,out operand.Analytic);
         var status=EvaluateSurfaceCore(in support,analytic?0:support.UMin+(support.UMax-support.UMin)*.5,analytic?0:support.VMin+(support.VMax-support.VMin)*.5,layout,point,0);
         if(status!=AlgorithmStatus.Success)return EvaluationError(status);operand.Seed=point[0];
+        if(support.Class==SurfaceClass.BlendSurface)
+        {
+            var data=BlendedEdgeDataPool[support.DataIndex];var program=GetNestedBlendProgram(data);var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];
+            operand.IsBlend=true;operand.Bounded=true;operand.Pieces=spine.ChartCount-1;
+            status=BlendExtent(program,data.ProgramRoot,new(support.UMin,support.UMax,support.VMin,support.VMax),out operand.Extent);return status==AlgorithmStatus.Success?0:IntersectionError(status);
+        }
         if(support.Class==SurfaceClass.BSurface)
         {
             var view=GetBSurfaceView(BSurfaceDataStore[support.DataIndex]);operand.Pieces=(view.UVertexCount-view.UDegree)*(view.VVertexCount-view.VDegree);
@@ -131,6 +166,25 @@ internal static unsafe partial class KernelRuntime
     {
         var delta=new IntervalNumber(-distance,distance);var x=new IntervalNumber(box.XLo,box.XHi)+delta;var y=new IntervalNumber(box.YLo,box.YHi)+delta;var z=new IntervalNumber(box.ZLo,box.ZHi)+delta;
         return new(x.Lower,x.Upper,y.Lower,y.Upper,z.Lower,z.Upper);
+    }
+
+    private static AlgorithmStatus DistancePatch(in DistanceOperand operand,in IntervalBox3 region,BufferOffset index,Span<IntervalNumber> poles,
+        out SurfaceIntersectionPatch patch,out bool empty)
+    {
+        patch=default;empty=false;
+        if(operand.IsBlend)
+        {
+            var record=Surfaces[operand.Slot];var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
+            var lo=Math.Max(record.UMin,charts[index].Parameter);var hi=Math.Min(record.UMax,charts[index+1].Parameter);empty=hi<=lo;
+            patch=new(program,data.ProgramRoot,new(lo,hi,record.VMin,record.VMax));return AlgorithmStatus.Success;
+        }
+        if(operand.IsProceduralCurve)
+        {
+            var record=Curves[operand.Slot];var data=ICurveDataPool[record.DataIndex];var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);var spine=program.Spines[data.ProgramSpine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
+            var lo=Math.Max(record.TMin,charts[index].Parameter);var hi=Math.Min(record.TMax,charts[index+1].Parameter);empty=hi<=lo;patch=new(program,data.ProgramSpine,lo,hi);return AlgorithmStatus.Success;
+        }
+        var status=DistanceGeometryPiece(operand,region,index,poles,out var p,out var q,out var domain,out empty);if(status!=AlgorithmStatus.Success||empty)return status;
+        patch=new(new BezierSurfacePatch(poles[..(4*(p+1)*(q+1))],p,q,domain));return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus DistanceGeometryPiece(in DistanceOperand operand,in IntervalBox3 region,BufferOffset index,
@@ -166,7 +220,7 @@ internal static unsafe partial class KernelRuntime
         end.vector.coord[0]=point.X;end.vector.coord[1]=point.Y;end.vector.coord[2]=point.Z;
         if(operand.IsAnalytic)
         {var status=OperationIntersection.Parameters(operand.Analytic,point,out u,out v);if(status!=AlgorithmStatus.Success)return IntersectionError(status);}
-        else if(operand.Pool==PoolKind.Curve)
+        else if(operand.Pool==PoolKind.Curve&&!operand.IsProceduralCurve)
         {if(!GeneralCurveNativeParameter(operand.Curve,point,u,out u))return ParasolidConstants.PK_ERROR_eval_failure;u=(u-operand.Curve.Offset)/operand.Curve.Scale;v=0;}
         end.parameters[0]=u;end.parameters[1]=v;return 0;
     }

@@ -26,9 +26,9 @@ internal static class NestedSplineEvaluation
         TaylorJet u,TaylorJet v,out TaylorVector point,out TaylorVector du,out TaylorVector dv)
     {
         point=du=dv=default;var order=Math.Max(u.Order,v.Order);var source=program.Spline(node);
-        if(order>TaylorJet.MaxOrder||!BSurfaceEvaluation.IsInDomain(source,u[0],v[0]))return AlgorithmStatus.InvalidInput;
+        if(order>TaylorJet.MaxOrder||!double.IsFinite(u[0])||!double.IsFinite(v[0]))return AlgorithmStatus.InvalidInput;
         SurfaceDerivativeLayout.TryCreate(order+1,order+1,out var layout);Span<KernelVector3> jets=stackalloc KernelVector3[121];
-        var status=BSurfaceEvaluation.EvaluateInDomain(source,u[0],v[0],layout,program.Workspace,jets);if(status!=AlgorithmStatus.Success)return status;
+        var status=BSurfaceEvaluation.Evaluate(source,u[0],v[0],layout,program.Workspace,jets);if(status!=AlgorithmStatus.Success)return status;
         Span<TaylorJet> up=stackalloc TaylorJet[TaylorJet.MaxOrder+1],vp=stackalloc TaylorJet[TaylorJet.MaxOrder+1];
         up[0]=vp[0]=new(1,order);var x=u-u[0];var y=v-v[0];
         for(var k=1;k<=order;k++){up[k]=up[k-1]*x;vp[k]=vp[k-1]*y;}
@@ -52,7 +52,7 @@ internal static class NestedSplineEvaluation
         double u,double v,Span<KernelVector3> jets)
     {
         var source=program.Spline(node);SurfaceDerivativeLayout.TryCreate(2,2,out var layout);
-        return BSurfaceEvaluation.EvaluateInDomain(source,u,v,layout,program.Workspace,jets);
+        return BSurfaceEvaluation.Evaluate(source,u,v,layout,program.Workspace,jets);
     }
 
     internal static AlgorithmStatus Closest(in NestedBlendProgram program,in BlendSurfaceInstruction node,in KernelVector3 point,
@@ -73,17 +73,18 @@ internal static class NestedSplineEvaluation
 
     private static AlgorithmStatus Refine(in NestedBlendProgram program,in BlendSurfaceInstruction node,in KernelVector3 point,ref double u,ref double v)
     {
-        var source=program.Spline(node);
         Span<KernelVector3> jets=stackalloc KernelVector3[9];
         for(var iteration=0;iteration<16;iteration++)
         {
             var status=NumericJets(program,node,u,v,jets);if(status!=AlgorithmStatus.Success)return status;
             var q=Sub(point,jets[0]);var su=jets[3];var sv=jets[1];var gu=Dot(q,su);var gv=Dot(q,sv);
-            if(Math.Max(Math.Abs(gu),Math.Abs(gv))<2e-13)return AlgorithmStatus.Success;
+            var scale=Math.Max(Math.Max(Math.Abs(point.X),Math.Max(Math.Abs(point.Y),Math.Abs(point.Z))),Math.Max(Math.Abs(jets[0].X),Math.Max(Math.Abs(jets[0].Y),Math.Abs(jets[0].Z))));
+            scale=Math.Max(scale,Math.Sqrt(Math.Max(Dot(su,su),Dot(sv,sv))));var tolerance=64*SmallLinearSolve.MachineEpsilon*Math.Max(scale,double.Epsilon);
+            if(Math.Max(Math.Abs(gu)/Math.Sqrt(Dot(su,su)),Math.Abs(gv)/Math.Sqrt(Dot(sv,sv)))<tolerance)return AlgorithmStatus.Success;
             var a=Dot(su,su)-Dot(q,jets[6]);var b=Dot(su,sv)-Dot(q,jets[4]);var c=Dot(sv,sv)-Dot(q,jets[2]);var determinant=a*c-b*b;
             if(!(a>0&&c>0&&determinant>1e-12*a*c))return AlgorithmStatus.Singular;
             var nextU=u+(gu*c-gv*b)/determinant;var nextV=v+(gv*a-gu*b)/determinant;
-            if(!BSurfaceEvaluation.IsInDomain(source,nextU,nextV))return AlgorithmStatus.Unsupported;
+            if(!double.IsFinite(nextU)||!double.IsFinite(nextV))return AlgorithmStatus.NumericalFailure;
             u=nextU;v=nextV;
         }
         return AlgorithmStatus.NotConverged;

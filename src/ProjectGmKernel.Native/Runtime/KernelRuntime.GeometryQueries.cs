@@ -266,6 +266,8 @@ internal static unsafe partial class KernelRuntime
                 }
                 case SurfaceClass.Sphere: u0 = 0; u1 = Math.Tau; v0 = -Math.PI / 2; v1 = Math.PI / 2; return 0;
                 case SurfaceClass.Torus: u0 = 0; u1 = Math.Tau; v0 = -Math.PI; v1 = Math.PI; return 0;
+                case SurfaceClass.BlendSurface:
+                    u0=surface.UMin;u1=surface.UMax;v0=surface.VMin;v1=surface.VMax;return 0;
                 case SurfaceClass.BSurface:
                 {
                     var view = GetBSurfaceView(in BSurfaceDataStore[surface.DataIndex]);

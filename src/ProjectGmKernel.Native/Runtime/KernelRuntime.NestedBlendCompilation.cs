@@ -71,6 +71,7 @@ internal static unsafe partial class KernelRuntime
                 status=Surface(data.Surface1Tag,out instruction.Second);if(status!=AlgorithmStatus.Success)return status;
                 status=Spine(data.SpineTag,out instruction.Spine);if(status!=AlgorithmStatus.Success)return status;
                 instruction.IsBlend=true;instruction.Range0=data.Range0;instruction.Range1=data.Range1;
+                instruction.ReverseSection=spines[instruction.Spine].Sense==ParasolidConstants.PK_TOPOL_sense_negative_c;
                 instruction.NormalSense=GetNestedBlendProgram(data).Surfaces[data.ProgramRoot].NormalSense*SenseSign(source.Sense);
             }
             else return AlgorithmStatus.Unsupported;
@@ -93,12 +94,12 @@ internal static unsafe partial class KernelRuntime
                 original.CopyTo(charts[nh..]);nh+=original.Length;return AlgorithmStatus.Success;
             }
             var hulls=HvecSpan(data);var positions=MemoryMarshal.Cast<double,KernelVector3>(hulls.Slice(data.StartLimit.HvecCount*3,data.ChartCount*3));
-            status=ChartSpine(a,b,positions,data.BaseParameter,data.BaseScale,data.ChordalError,data.AngularError,data.StartLimit.Type,data.EndLimit.Type,out index);
+            status=ChartSpine(a,b,positions,data.BaseParameter,data.BaseScale,data.ChordalError,data.AngularError,data.StartLimit.Type,data.EndLimit.Type,out index,data.Sense);
             if(status==AlgorithmStatus.Success)spineTags[index]=tag;return status;
         }
 
         internal AlgorithmStatus ChartSpine(BlendSurfaceIndex a,BlendSurfaceIndex b,scoped ReadOnlySpan<KernelVector3> positions,
-            double baseParameter,double baseScale,double chordalError,double angularError,LimitType start,LimitType end,out BlendSpineIndex index)
+            double baseParameter,double baseScale,double chordalError,double angularError,LimitType start,LimitType end,out BlendSpineIndex index,KernelSense sense=ParasolidConstants.PK_TOPOL_sense_positive_c)
         {
             index=-1;var count=positions.Length;if(count<2||nc==spines.Length||nh+count>charts.Length)return AlgorithmStatus.OutputTooSmall;
             if(start is not (LimitType.Artificial or LimitType.Help)||end is not (LimitType.Artificial or LimitType.Help))return AlgorithmStatus.Unsupported;
@@ -116,7 +117,7 @@ internal static unsafe partial class KernelRuntime
                 charts[nh+i]=new(){FirstU=u0,FirstV=v0,SecondU=u1,SecondV=v1};
             }
             var built=OriginalChartParameterMap.Build(positions,tangents,baseParameter,baseScale,parameters,scales,chords,out _,out _);if(built!=AlgorithmStatus.Success)return built;
-            index=nc++;spineTags[index]=0;spines[index]=new(){First=a,Second=b,ChartOffset=nh,ChartCount=count,StartType=start,EndType=end,ChordalError=chordalError,AngularError=angularError};
+            index=nc++;spineTags[index]=0;spines[index]=new(){First=a,Second=b,ChartOffset=nh,ChartCount=count,StartType=start,EndType=end,ChordalError=chordalError,AngularError=angularError,Sense=sense};
             for(var i=0;i<count;i++)
             {
                 var witness=charts[nh];witness.Position=positions[i];witness.Parameter=parameters[i];witness.Scale=i<count-1?scales[i]:1;witness.Chord=i<count-1?chords[i]:default;charts[nh++]=witness;
@@ -143,6 +144,7 @@ internal static unsafe partial class KernelRuntime
             status=Spine(spine,out var curve);if(status!=AlgorithmStatus.Success)return status;
             if(ns==surfaces.Length)return AlgorithmStatus.OutputTooSmall;
             index=ns++;surfaceTags[index]=0;surfaces[index]=new(){IsBlend=true,First=a,Second=b,Spine=curve,Range0=r0,Range1=r1,NormalSense=1};
+            surfaces[index].ReverseSection=spines[curve].Sense==ParasolidConstants.PK_TOPOL_sense_negative_c;
             var definition=spines[curve];var domain=charts.Slice(definition.ChartOffset,definition.ChartCount);var u=(domain[0].Parameter+domain[^1].Parameter)*.5;
             SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> jet=stackalloc KernelVector3[4];var view=View;
             status=JointNestedBlendEvaluation.Evaluate(view,index,u,.5,layout,jet);if(status!=AlgorithmStatus.Success)return status;

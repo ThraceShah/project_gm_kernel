@@ -15,9 +15,11 @@ internal static unsafe partial class KernelRuntime
     private const BufferCount GeneralIntersectionBranchLimit = 64;
 
     private static AlgorithmStatus DiscoverGeneralSurfaceIntersections(SurfaceSlot first, SurfaceSlot second,
-        Span<SurfaceIntersectionNode> nodes, out BufferCount nn, Span<SurfaceIntersectionSegment> segments, out BufferCount ne)
+        Span<SurfaceIntersectionNode> nodes, out BufferCount nn, Span<SurfaceIntersectionSegment> segments, out BufferCount ne,PK_SURF_intersect_surf_o_s* options=null)
     {
         nn = ne = 0;
+        if(Surfaces[first].Class==SurfaceClass.BlendSurface||Surfaces[second].Class==SurfaceClass.BlendSurface)
+            return DiscoverBlendIntersections(first,second,options,nodes,out nn,segments,out ne);
         if (Surfaces[first].Class != SurfaceClass.BSurface && Surfaces[second].Class != SurfaceClass.BSurface)
             return DiscoverAnalyticSurfaceIntersections(first, second, nodes, out nn, segments, out ne);
         var a = Surfaces[first]; var b = Surfaces[second]; var reverse = a.Class != SurfaceClass.BSurface;
@@ -142,7 +144,13 @@ internal static unsafe partial class KernelRuntime
                 var periodic = (d & 1) == 0 ? view.UPeriodic : view.VPeriodic;
                 if (periodic) difference -= period * Math.Round(difference / period); scale = Math.Max(1, period);
             }
-            else if ((d & 1) == 0 && record.Class != SurfaceClass.Plane || (d & 1) != 0 && record.Class == SurfaceClass.Torus)
+            else if(record.Class==SurfaceClass.BlendSurface&&(d&1)==0)
+            {
+                var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
+                if(spine.StartType==LimitType.Help&&spine.EndType==LimitType.Help&&Dot(Sub(charts[0].Position,charts[^1].Position),Sub(charts[0].Position,charts[^1].Position))==0)
+                {var period=record.UMax-record.UMin;difference-=period*Math.Round(difference/period);}
+            }
+            else if ((d & 1) == 0 && record.Class is SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Sphere or SurfaceClass.Torus || (d & 1) != 0 && record.Class == SurfaceClass.Torus)
                 difference -= Math.Tau * Math.Round(difference / Math.Tau);
             if (Math.Abs(difference) > 2e-9 * scale) return false;
         }
@@ -211,17 +219,22 @@ internal static unsafe partial class KernelRuntime
             var edges = ModelSpan<SurfaceIntersectionSegment>(bytes, ref cursor, GeneralIntersectionNodeLimit);
             var ordered = ModelSpan<SurfaceIntersectionNode>(bytes, ref cursor, GeneralIntersectionNodeLimit + GeneralIntersectionBranchLimit);
             var branches = ModelSpan<GeneralIntersectionBranch>(bytes, ref cursor, GeneralIntersectionBranchLimit);
-            var status = DiscoverGeneralSurfaceIntersections(first, second, nodes, out var nn, edges, out var ne);
-            if (status != AlgorithmStatus.Success) return IntersectionError(status);
-            if (ne == 0) return 0;
+            var status = DiscoverGeneralSurfaceIntersections(first, second, nodes, out var nn, edges, out var ne,options);
+            if (status != AlgorithmStatus.Success)return IntersectionError(status);
+            // L limits describe an artificial chart extent. An open pair
+            // cannot certify completeness of the continuation beyond it.
+            var unboundedBlendPair=Surfaces[first].Class==SurfaceClass.BlendSurface&&Surfaces[second].Class==SurfaceClass.BlendSurface
+                &&(options->have_uvbox_1==0||options->have_uvbox_2==0)&&(BlendHasArtificialLimit(first)||BlendHasArtificialLimit(second));
+            if (ne == 0) return unboundedBlendPair?ParasolidConstants.PK_ERROR_cant_do_intersect:0;
             status = OrderGeneralIntersectionGraph(nodes[..nn], edges[..ne], ordered, branches, out var nb);
-            if (status != AlgorithmStatus.Success) return IntersectionError(status);
+            if (status != AlgorithmStatus.Success)return IntersectionError(status);
             for (var i = 0; i < nb; i++)
             {
                 ref readonly var branch = ref branches[i];
                 if (branch.Closed != 0) continue;
-                if (!GeneralIntersectionBoundary(first, second, ordered[branch.First])
-                    || !GeneralIntersectionBoundary(first, second, ordered[branch.First + branch.Count - 1]))
+                if(unboundedBlendPair)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                if (!GeneralIntersectionBoundary(first, second, ordered[branch.First],options)
+                    || !GeneralIntersectionBoundary(first, second, ordered[branch.First + branch.Count - 1],options))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;
             }
             if (options->have_vector != 0)
@@ -269,11 +282,23 @@ internal static unsafe partial class KernelRuntime
         finally { scratch.Return(memory); }
     }
 
-    private static bool GeneralIntersectionBoundary(SurfaceSlot first, SurfaceSlot second, in SurfaceIntersectionNode node)
+    private static bool GeneralIntersectionBoundary(SurfaceSlot first, SurfaceSlot second, in SurfaceIntersectionNode node,PK_SURF_intersect_surf_o_s* options=null)
     {
         for (var i = 0; i < 2; i++)
         {
             var record = Surfaces[i == 0 ? first : second];
+            if(record.Class==SurfaceClass.BlendSurface||record.Class==SurfaceClass.BSurface&&options!=null&&(i==0?options->have_uvbox_1:options->have_uvbox_2)!=0)
+            {
+                var box=BlendIntersectionDomain(record,options,i==0);var paramU=i==0?node.U:node.S;var paramV=i==0?node.V:node.T;
+                var lower=Math.Abs(paramU-box.U0)<=2e-9*Math.Max(1,box.U1-box.U0);var upper=Math.Abs(paramU-box.U1)<=2e-9*Math.Max(1,box.U1-box.U0);
+                if(record.Class==SurfaceClass.BlendSurface&&(options==null||(i==0?options->have_uvbox_1:options->have_uvbox_2)==0))
+                {
+                    var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];
+                    lower&=spine.StartType!=LimitType.Artificial;upper&=spine.EndType!=LimitType.Artificial;
+                }
+                if(lower||upper||Math.Abs(paramV-box.V0)<=2e-9*Math.Max(1,box.V1-box.V0)||Math.Abs(paramV-box.V1)<=2e-9*Math.Max(1,box.V1-box.V0))return true;
+                continue;
+            }
             if (record.Class != SurfaceClass.BSurface) continue;
             var view = GetBSurfaceView(BSurfaceDataStore[record.DataIndex]);
             var u = i == 0 ? node.U : node.S; var v = i == 0 ? node.V : node.T;
@@ -315,6 +340,15 @@ internal static unsafe partial class KernelRuntime
                 if (OperationIntersection.Norm(Sub(a[0], b[0])) > 1e-8) return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 chart[3 * i] = a[0].X; chart[3 * i + 1] = a[0].Y; chart[3 * i + 2] = a[0].Z;
                 uv[4 * i] = sample.U; uv[4 * i + 1] = sample.V; uv[4 * i + 2] = sample.S; uv[4 * i + 3] = sample.T;
+            }
+            if(Surfaces[firstSlot].Class==SurfaceClass.BlendSurface||Surfaces[secondSlot].Class==SurfaceClass.BlendSurface)
+            {
+                var compiler=new NestedProgramCompiler();if(!compiler.Ready)return ParasolidConstants.PK_ERROR_memory_full;
+                status=compiler.Surface(first,out var firstInstruction);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                status=compiler.Surface(second,out var secondInstruction);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                status=compiler.ChartSpine(firstInstruction,secondInstruction,MemoryMarshal.Cast<double,KernelVector3>(chart),0,1,Math.Max(chordalError,1e-12),angularError,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spine);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                CurveTag created=0;var error=BindNestedBlendSpine(first,second,compiler.View,spine,&created);if(error!=0)return error;
+                ICurveDataPool[Curves[GetCurveSlotByTag(created)].DataIndex].OwnsSupportSurfaces=ownsSupports?(byte)1:(byte)0;curve=created;return 0;
             }
             var input = new IcurveDecodeInput { Surface0Tag = first, Surface1Tag = second,
                 BaseScale = 1, ChartCount = samples.Length, ChartHvecs = chart, UvType = IntersectionUvType.Both, UvValues = uv,

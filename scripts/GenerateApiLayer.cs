@@ -888,7 +888,13 @@ unsafe
                         else
                         {
                             var byteCount = checked(totalSize * elementSize);
-                            fields.Add((fname, "byte", false, false, true, byteCount,
+                            // Opaque arrays must retain the C element alignment.
+                            // A byte buffer can move later fields (for example
+                            // PK_GEOM_range_o_t.param_bound) four bytes early.
+                            var alignment = clang.Type_getAlignOf(currentType);
+                            var storage = alignment >= 8 ? "long" : alignment >= 4 ? "int" : alignment >= 2 ? "short" : "byte";
+                            var storageSize = alignment >= 8 ? 8 : alignment >= 4 ? 4 : alignment >= 2 ? 2 : 1;
+                            fields.Add((fname, storage, false, false, true, byteCount / storageSize,
                                 $"ABI storage for {csElem}[{totalSize}] ({elementSize} bytes/element)"));
                         }
                         return CXChildVisitResult.CXChildVisit_Continue;
@@ -1671,6 +1677,7 @@ static void ObserveSize(string name, int actual)
 AssertSize(nameof(PK_VECTOR_s), Marshal.SizeOf<PK_VECTOR_s>(), 24);
 AssertSize(nameof(PK_POINT_sf_s), Marshal.SizeOf<PK_POINT_sf_s>(), 24);
 AssertSize(nameof(PK_SESSION_start_o_s), Marshal.SizeOf<PK_SESSION_start_o_s>(), 24);
+AssertSize(nameof(PK_GEOM_range_o_s), Marshal.SizeOf<PK_GEOM_range_o_s>(), 240);
 AssertSize(nameof(PK_BOX_s), Marshal.SizeOf<PK_BOX_s>(), 48);
 AssertSize(nameof(PK_INTERVAL_s), Marshal.SizeOf<PK_INTERVAL_s>(), 16);
 AssertSize(nameof(PK_UVBOX_s), Marshal.SizeOf<PK_UVBOX_s>(), 32);
