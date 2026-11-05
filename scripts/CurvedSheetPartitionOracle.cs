@@ -25,15 +25,18 @@ try
         try
         {
             var failures = 0; var passed = 0;
-            foreach (var kind in new[] { 0, 1, 2, 3, 4, 5, 6, 7 })
-            foreach (var operation in new[] { 0, 1, 2, 3, 4, 5 })
+            foreach (var kind in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 })
+            foreach (var operation in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
             {
-                var name = (kind == 6 ? "isoparametric-line" : kind == 7 ? "tensor-isoparametric" : (kind % 2 == 1 ? "rational" : "polynomial") + (kind < 2 ? "-bilinear" : kind < 4 ? "-cubic" : "-multispan-cubic"))
-                    + "-" + new[] { "imprint", "trim-keep", "trim-remove", "section-front", "section-back", "section-both" }[operation];
+                if(kind<8&&operation>=6)continue;
+                var name = (kind>=8?(kind==9?"rational":"polynomial")+"-closed-loop":kind == 6 ? "isoparametric-line" : kind == 7 ? "tensor-isoparametric" : (kind % 2 == 1 ? "rational" : "polynomial") + (kind < 2 ? "-bilinear" : kind < 4 ? "-cubic" : "-multispan-cubic"))
+                    + "-" + new[] { "imprint", "trim-keep", "trim-remove", "section-front", "section-back", "section-both", "second-plane", "repeat-plane", "annulus-front", "annulus-back", "annulus-both" }[operation];
+                if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
                 try
                 {
                     var ours = Produce(true, kind, operation); var reference = Produce(false, kind, operation);
                     Require(ours.Length == reference.Length, name + " result count");
+                    for(var j=0;j<reference.Length;j++)File.WriteAllBytes(Path.Combine(directory,name+"-"+j+"-reference.x_t"),TransmitReference(reference[j]));
                     var matched = new bool[reference.Length];
                     for (var i = 0; i < ours.Length; i++)
                     {
@@ -65,33 +68,61 @@ static unsafe int[] Produce(bool self, int kind, int operation)
 {
     // The homogeneous bilinear patch has a curved hyperbola intersection and
     // exact rational support. Each kernel constructs its own inputs.
-    var rational = kind < 6 && kind % 2 == 1; var nu = kind == 6 ? 2 : kind == 7 ? 3 : kind < 2 ? 2 : kind < 4 ? 4 : 5;
-    var nv = kind == 7 ? 3 : 2;
+    var rational = kind < 6 && kind % 2 == 1||kind==9; var nu = kind == 6 ? 2 : kind >= 7 ? 3 : kind < 2 ? 2 : kind < 4 ? 4 : 5;
+    var nv = kind >= 7 ? 3 : 2;
     double* poles = stackalloc double[56]; var dim = rational ? 4 : 3;
     double* heights = stackalloc double[7] { -.08, .14, -.14, .08, -.14, .14, -.08 };
     if (kind >= 4) { heights[2] = heights[3] = .14; heights[4] = -.08; }
     for (var u = 0; u < nu; u++) for (var v = 0; v < nv; v++)
     {
         var i = (u * nv + v) * dim; var w = rational ? 1 + .25 * u + .5 * v : 1;
-        poles[i] = (kind is < 2 or 6 ? u : kind == 7 ? u * .5 : u / 3.0) * w; poles[i + 1] = (kind == 7 ? v * .5 : v) * w;
-        poles[i + 2] = kind is < 2 or 6 ? u * v * w : kind == 7 ? (u == 2 ? 1 : 0) + (v == 2 ? 1 : 0) : heights[u] + v * w; if (rational) poles[i + 3] = w;
+        poles[i] = (kind is < 2 or 6 ? u : kind >= 7 ? u * .5 : u / 3.0) * w; poles[i + 1] = (kind >= 7 ? v * .5 : v) * w;
+        poles[i + 2] = kind>=8?((u==1?-.25:.25)+(v==1?-.25:.25)-.0625)*w:kind is < 2 or 6 ? u * v * w : kind == 7 ? (u == 2 ? 1 : 0) + (v == 2 ? 1 : 0) : heights[u] + v * w; if (rational) poles[i + 3] = w;
     }
     double* knots = stackalloc double[2] { 0, 1 }; int* mult = stackalloc int[2] { 2, 2 };
     double* uk = stackalloc double[3] { 0, 1, 2 }; int* um = stackalloc int[3] { 4, kind < 4 ? 4 : 1, 4 };
-    var definition = new PK_BSURF_sf_t { u_degree = kind is < 2 or 6 ? 1 : kind == 7 ? 2 : 3, v_degree = kind == 7 ? 2 : 1, n_u_vertices = nu, n_v_vertices = nv, vertex_dim = dim,
+    var definition = new PK_BSURF_sf_t { u_degree = kind is < 2 or 6 ? 1 : kind >= 7 ? 2 : 3, v_degree = kind >= 7 ? 2 : 1, n_u_vertices = nu, n_v_vertices = nv, vertex_dim = dim,
         is_rational = rational ? PK_LOGICAL_true : PK_LOGICAL_false, vertex = poles, n_u_knots = 2, n_v_knots = 2,
         u_knot = knots, v_knot = knots, u_knot_mult = mult, v_knot_mult = mult,
         form = PK_BSURF_form_arbitrary_c, u_knot_type = PK_knot_non_uniform_c, v_knot_type = PK_knot_non_uniform_c,
         self_intersecting = PK_self_intersect_false_c, convexity = PK_convexity_unset_c };
     if (kind is >= 2 and < 6) { definition.u_knot = uk; definition.u_knot_mult = um; definition.n_u_knots = kind < 4 ? 2 : 3; }
-    if (kind == 7) { mult[0] = mult[1] = 3; }
+    if (kind >= 7) { mult[0] = mult[1] = 3; }
     int surface = 0; Check(self ? KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&definition, &surface) : PK_BSURF_create(&definition, &surface), "create NURBS");
     var box = new PK_UVBOX_t(); box.param[2] = kind is 4 or 5 ? 2 : 1; box.param[3] = 1; int body = 0;
     Check(self ? KernelRuntime.SurfMakeSheetBody(surface, *(M.PK_UVBOX_s*)&box, &body) : PK_SURF_make_sheet_body(surface, box, &body), "make sheet");
     var planeDefinition = new PK_PLANE_sf_t(); planeDefinition.basis_set.location = new(0, 0, kind < 2 ? .25 : 0);
     planeDefinition.basis_set.axis = new(0, 0, 1); planeDefinition.basis_set.ref_direction = new(1, 0, 0);
-    if (kind >= 6) { planeDefinition.basis_set.location = new(.5, 0, 0); planeDefinition.basis_set.axis = new(1, 0, 0); planeDefinition.basis_set.ref_direction = new(0, 1, 0); }
+    if (kind is 6 or 7) { planeDefinition.basis_set.location = new(.5, 0, 0); planeDefinition.basis_set.axis = new(1, 0, 0); planeDefinition.basis_set.ref_direction = new(0, 1, 0); }
     int plane = 0; Check(self ? KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&planeDefinition, &plane) : PK_PLANE_create(&planeDefinition, &plane), "create plane");
+    if(operation>=6)
+    {
+        int n=0;int* barriers=null;
+        Check(self?KernelRuntime.BodyImprintPlane(body,plane,1e-8,&n,&barriers):PK_BODY_imprint_plane(body,plane,1e-8,&n,&barriers),"first closed imprint");
+        try
+        {
+            Require(n==1,"closed barrier count");
+            if(operation>=8)
+            {
+                var inner=InnerFace(self,body);
+                Check(self?KernelRuntime.BodyTrim(body,n,barriers,1,&inner,PK_LOGICAL_false):PK_BODY_trim(body,n,barriers,1,&inner,PK_LOGICAL_false),"annulus trim");
+            }
+        }
+        finally{Check(self?KernelRuntime.MemoryFree(barriers):PK_MEMORY_free(barriers),"free barrier");}
+        planeDefinition.basis_set.location=new(.5,0,0);planeDefinition.basis_set.axis=new(1,0,0);planeDefinition.basis_set.ref_direction=new(0,1,0);
+        Check(self?KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&planeDefinition,&plane):PK_PLANE_create(&planeDefinition,&plane),"second plane");
+        if(operation is 6 or 7)
+        {
+            for(var repeat=0;repeat<(operation==7?2:1);repeat++)
+            {
+                n=0;barriers=null;
+                Check(self?KernelRuntime.BodyImprintPlane(body,plane,1e-8,&n,&barriers):PK_BODY_imprint_plane(body,plane,1e-8,&n,&barriers),"second/repeated imprint");
+                try{Require(n==3,"all second-plane edges");}finally{Check(self?KernelRuntime.MemoryFree(barriers):PK_MEMORY_free(barriers),"free second edges");}
+            }
+            return [body];
+        }
+        operation-=5;
+    }
     if (operation >= 3)
     {
         var options = new PK_BODY_section_o_t { fence = operation == 3 ? PK_section_fence_front_c : operation == 4 ? PK_section_fence_back_c : PK_section_fence_both_c, default_tol = 1e-8 };
@@ -122,9 +153,9 @@ static unsafe int[] Produce(bool self, int kind, int operation)
                 for (var i = 0; i < nf; i++)
                 {
                     int ne = 0; int* boundary = null; Check(self ? KernelRuntime.FaceAskEdges(faces[i], &ne, &boundary) : PK_FACE_ask_edges(faces[i], &ne, &boundary), "face edges");
-                    if (ne == (kind >= 6 ? 4 : 3))
+                    if (ne == (kind>=8?1:kind >= 6 ? 4 : 3))
                     {
-                        if (kind < 6) seed = faces[i];
+                        if (kind < 6||kind>=8) seed = faces[i];
                         else
                         {
                             int* vertices = stackalloc int[2]; var high = false;
@@ -157,6 +188,13 @@ static unsafe byte[] Transmit(int body)
     try { using var stream = new MemoryStream(); for (var b = &block; b != null; b = b->next) stream.Write(new ReadOnlySpan<byte>(b->bytes, checked((int)b->n_bytes))); return stream.ToArray(); }
     finally { Check(KernelRuntime.MemoryBlockFree(&block), "free text"); }
 }
+static unsafe byte[] TransmitReference(int body)
+{
+    var options=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;
+    Check(PK_PART_transmit_b(1,&body,&options,&block),"reference text transmit");
+    try{using var stream=new MemoryStream();for(var b=&block;b!=null;b=b->next)stream.Write(new ReadOnlySpan<byte>(b->bytes,checked((int)b->n_bytes)));return stream.ToArray();}
+    finally{Check(PK_MEMORY_block_f(&block),"free reference text");}
+}
 static unsafe int Receive(byte[] bytes)
 {
     fixed (byte* p = bytes)
@@ -177,7 +215,25 @@ static unsafe void CheckBody(int body, string name, Action<string> log)
     finally { if (regions != null) PK_MEMORY_free(regions); }
     var options = new PK_BODY_check_o_t { max_faults = 100 }; int n = 0; PK_check_fault_t* faults = null;
     Check(PK_BODY_check(body, &options, &n, &faults), "BODY_check");
-    try { for (var i = 0; i < n; i++) log($"{name} fault={faults[i].state}, entity={faults[i].entity_1}/{faults[i].entity_2}"); Require(n == 0, "body faults=" + n); }
+    try
+    {
+        for (var i = 0; i < n; i++)
+        {
+            log($"{name} fault={faults[i].state}, entity={faults[i].entity_1}/{faults[i].entity_2}");
+            if(faults[i].state==PK_EDGE_state_bad_vertex_c)
+            {
+                int curve=0,point=0;PK_POINT_sf_t position;double t=0;PK_VECTOR_t evaluated;PK_INTERVAL_t range;
+                var ec=PK_EDGE_ask_curve(faults[i].entity_1,&curve);var ep=PK_VERTEX_ask_point(faults[i].entity_2,&point);
+                if(ec==0&&ep==0&&PK_POINT_ask(point,&position)==0)
+                {
+                    var inverse=PK_CURVE_parameterise_vector(curve,position.position,&t);var eval=PK_CURVE_eval(curve,t,0,&evaluated);PK_CURVE_ask_interval(curve,&range);
+                    var distance=0.0;for(var d=0;d<3;d++)distance+=Math.Pow(evaluated.coord[d]-position.position.coord[d],2);
+                    log($"  vertex=({position.position.coord[0]:R},{position.position.coord[1]:R},{position.position.coord[2]:R}), curve={curve}, native_inverse={inverse}, t={t:R}, interval=[{range.value[0]:R},{range.value[1]:R}], eval={eval}, distance={Math.Sqrt(distance):R}");
+                }
+            }
+        }
+        Require(n == 0, "body faults=" + n);
+    }
     finally { if (faults != null) PK_MEMORY_free(faults); }
 }
 static unsafe void Compare(int reference, int actual, string name, Action<string> log)
@@ -223,7 +279,7 @@ static unsafe PK_VECTOR_t VertexCenter(int body)
     PK_VECTOR_t center = default;
     try
     {
-        Require(n > 0, "bounded sheet vertices");
+        if(n==0)return center;
         for (var i = 0; i < n; i++)
         {
             int point = 0; Check(PK_VERTEX_ask_point(vertices[i], &point), "vertex point"); PK_POINT_sf_t sf;
@@ -233,6 +289,20 @@ static unsafe PK_VECTOR_t VertexCenter(int body)
     }
     finally { if (vertices != null) PK_MEMORY_free(vertices); }
 }
-static void Check(int error, string operation) { if (error != 0) throw new Exception(operation + ": error=" + error); }
+static unsafe int InnerFace(bool self,int body)
+{
+    int n=0;int* faces=null;Check(self?KernelRuntime.BodyAskFaces(body,&n,&faces):PK_BODY_ask_faces(body,&n,&faces),"inner faces");
+    try
+    {
+        for(var i=0;i<n;i++)
+        {
+            int ne=0;int* edges=null;Check(self?KernelRuntime.FaceAskEdges(faces[i],&ne,&edges):PK_FACE_ask_edges(faces[i],&ne,&edges),"inner face edges");
+            Check(self?KernelRuntime.MemoryFree(edges):PK_MEMORY_free(edges),"free inner edges");if(ne==1)return faces[i];
+        }
+        throw new Exception("missing closed inner face");
+    }
+    finally{Check(self?KernelRuntime.MemoryFree(faces):PK_MEMORY_free(faces),"free inner faces");}
+}
+static void Check(int error, string operation) { if (error != 0) throw new Exception(operation + ": error=" + error+$", stage={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}, algorithm={KernelRuntime.LastSheetAlgorithmStatus}, chart={KernelRuntime.LastChartBuildFailure}, eval_kind={KernelRuntime.LastICurveEvalReport.Kind}, detail={KernelRuntime.LastICurveEvalReport.Detail}, segment={KernelRuntime.LastICurveEvalReport.Segment}, residual={KernelRuntime.LastICurveEvalReport.Residual:R}"); }
 static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
 static string ScriptPath([CallerFilePath] string path = "") => path;

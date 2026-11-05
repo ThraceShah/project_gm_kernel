@@ -138,6 +138,15 @@ internal static unsafe partial class KernelRuntime
         DerivativeOrder order, bool tangentRequired, Span<KernelVector3> values,
         out KernelVector3 direction, ChartSide side = ChartSide.Right)
     {
+        var checkpoint = CommandScratch.ThreadArenaOffset;
+        try { return EvaluateICurvePrepared(in record, t, order, tangentRequired, values, out direction, side); }
+        finally { CommandScratch.ThreadArenaOffset = checkpoint; }
+    }
+
+    private static AlgorithmStatus EvaluateICurvePrepared(in CurveRecord record, double t,
+        DerivativeOrder order, bool tangentRequired, Span<KernelVector3> values,
+        out KernelVector3 direction, ChartSide side)
+    {
         direction = default;
         var prepareStatus = TryPrepareICurveView(in record, out var view, out var chartFailure);
         LastChartBuildFailure = chartFailure;

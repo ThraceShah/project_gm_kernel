@@ -118,6 +118,8 @@ internal enum ApiId : ushort
     CurveIntersectCurve = 140,
     SurfIntersectCurve = 141,
     SurfIntersectSurf = 142,
+    SurfParameteriseVector = 143,
+    CurveParameteriseVector = 144,
     BCurveCreateSpline = 180,
     BCurveCreateSpline2 = 181,
     BCurveSplineResultFree = 182,

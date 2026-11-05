@@ -28,6 +28,15 @@ SDK 的修剪曲线创建函数是返回 `void`、通过输出参数报告错误
 
 ## 2. 原生参数与 NURBS 数据
 
+### 点到参数与投影基础
+
+`PK_SURF_parameterise_vector`、`PK_CURVE_parameterise_vector` 已接入生产导出及事务分派。
+解析几何使用原生参数；B 曲面和 B 曲线通过保守 Bezier 包围及全局距离分支定界定位参数，
+Newton 只改善候选上界。ICURVE 使用原始 chart 参数映射并重新求值验证所在分支，修剪曲线映射回公开区间。
+公开 parameterise 要求输入点在几何上；离面/离线点返回对应错误，不能把最近点当成成功的参数化结果。
+内部最近点基础可用于距离查询，但本次未增加通用公开距离 API。一般求交与双 UV、闭合分支的范围见
+[Curved_Surface_Pipeline.md](Curved_Surface_Pipeline.md)。
+
 ### 参数域
 
 `PK_CURVE_ask_interval` 和 `PK_SURF_ask_uvbox` 返回与现有几何类别相符的原生参数域。NURBS 使用有效节点域；圆及椭圆使用角参数；Swept 的第一参数来自定义曲线，第二参数表示沿方向的距离；Spun 的第一参数来自定义曲线，第二参数为旋转角。Offset 继承基础曲面的参数域。

@@ -1,103 +1,111 @@
-# Exact curved-sheet partition and trimming
+# Regular surface intersection, sheet partition and trimming
 
-The existing plane/NURBS intersection solver now feeds a modeling pipeline:
+Updated 2026-11-05. The pipeline connects bounded surface intersection,
+parameter-space arrangement, plane-side classification and shared B-rep
+construction. It retains the earlier exact intersection paths and adds a
+general regular-locus solver. This stage covers sheet modeling; curved-solid
+Boolean assembly and blend construction remain separate work.
 
-1. Discover every supported exact intersection branch and boundary root.
-2. Match branch endpoints to the natural face boundary with a checked 3D
-   residual, then construct the boundary/intersection incidence graph.
-3. Traverse that graph into face loops and classify each connected cell on the
-   front or back of the cutting plane.
-4. Build shared vertices, edges, fins and faces using the common B-rep builder.
-   Imprint keeps the partition; seed trimming selects its faces; section
-   publishes independently owned front/back sheet components.
+## Intersection foundations
 
-This is a bounded connection of the existing exact intersection capabilities.
-It does not implement arbitrary NURBS/NURBS intersection or curved-solid
-Boolean construction.
+Positive-weight polynomial/rational B-splines are extracted into homogeneous
+Bezier spans using outward-rounded interval arithmetic. Restricted control
+hulls enclose positions and first derivatives, including zero-width parameter
+boxes. Common homogeneous weight scaling is normalized before extraction.
 
-## Public operations
+The general solver subdivides the four-dimensional parameter domain. Hull
+separation excludes empty cells; a contracting Jacobian minor proves a cell is
+a regular graph. Complete boundary-root isolation and intermediate sections
+admit its arcs. Searching the whole domain discovers internal closed loops
+without boundary seeds. Joining uses position and both support UV pairs,
+including adjacent knot spans and analytic chart seams.
 
-| Operation | New behavior |
+Supported pairs include NURBS/NURBS and NURBS with plane, cylinder, cone,
+sphere or ring torus. Analytic operands use bounded rational charts during
+discovery and native parameters in the result. Curve/curve and surface/curve
+operations use the same bounded roots for regular NURBS boundary crossings.
+Global B-spline closest-point search uses distance bounds; Newton only improves
+candidate points. Public `PK_SURF_parameterise_vector` and
+`PK_CURVE_parameterise_vector` validate membership before returning parameters.
+
+Results are ICURVEs defined by two independently owned exact supports and
+verified chart witnesses with paired UV data. Chart anchors do not replace the
+intersection with a polyline. Each admitted cell supplies a conservative
+chordal-error bound; charts retain explicit angular bounds. Seed selection
+checks actual curve membership between anchors and rejects ambiguity.
+
+## Public sheet operations
+
+| Operation | Behavior |
 | --- | --- |
-| `PK_BODY_imprint_plane` | Partition a natural rectangular NURBS sheet and return the exact cutting edges |
-| `PK_BODY_imprint_plane_2` | The same partition with one create tracking record containing all cutting edges |
-| `PK_BODY_trim` | Consume the partition through existing barrier/seed selection, keeping or removing the selected component |
-| `PK_BODY_section_with_surf` | Classify cells and return front, back or both sets of sheet bodies; no cap faces are created |
+| `PK_BODY_imprint_plane` | Partition B-surface sheet faces and return cutting edges |
+| `PK_BODY_imprint_plane_2` | The same partition with create tracking |
+| `PK_BODY_trim` | Keep or remove the component selected by barriers and seed faces |
+| `PK_BODY_section_with_surf` | Return connected front, back or both sheet components without cap faces |
 
-The body and one surviving original face retain their tags. A missing imprint
-leaves the original topology intact. A missing section preserves all original
-handles on the retained side, or consumes the sheet when that side is excluded.
-Other geometry is independently owned; deleting the original support or the
-cutting plane cannot invalidate a returned sheet. Mutations and returned memory
-participate in command rollback.
+The arrangement reads actual boundary loops, curve ranges and fin senses.
+Shared input edges are split once. Open cuts are clipped against the material
+domain; internal closed cuts produce an inner face and an outer face with a
+hole. Exact isoparametric-ray intersections determine UV winding. The rotation
+system traces cycles, nests holes, classifies material cells and feeds the
+common B-rep builder.
 
-## Supported boundary
+The same path accepts smaller rectangular domains, multiple B-surface faces,
+existing holes and previously trimmed faces. A second plane splits existing
+ICURVE edges, including wrapped arcs of closed curves. Repeating a plane
+preserves topology and returns its existing cut edges. Sheet export uses
+shared closed-curve limit nodes and null dummy-fin loop links, as required by
+real Parasolid receive and body checking.
 
-Input is a single positively oriented, nonperiodic B-surface face with its full
-natural rectangular boundary. Exact boundary curve definitions, parameter
-ranges and traversal senses are checked, rather than inferred from four corner
-positions. Positive-weight ruled polynomial/rational patches and the existing
-separable tensor intersection family can participate when their branches meet
-the conditions below.
+The body and surviving source faces retain their tags. A no-hit imprint
+preserves all original topology. A no-hit section retains the original handles
+on an included side, or consumes the sheet if that side is excluded. Returned
+geometry owns its dependencies. Allocation and numerical failures roll back
+both geometry and topology and publish no partial result arrays.
 
-Each cut must be transverse, open, and have two distinct endpoints on the
-rectangle. Multiple disjoint cuts are supported, including multiple result
-components on one side. Endpoints at corners, shared endpoints, interior
-junctions, isolated contacts, tangencies, boundary coincidence, closed interior
-loops, periodic patches and previously trimmed input domains are rejected.
-Branches that terminate at an interior knot boundary still require continuation
-and joining before this path can use them. Interior knots of multiplicity at
-least the degree are rejected because they require additional crease topology.
+## Explicit boundaries
 
-The boundary root count must equal twice the cut count. Cell boundary signs
-must agree throughout the root-free boundary arcs. A missing or ambiguous
-partition is an error, never a successful empty classification. Limits are 64
-cut branches, 132 boundary vertices and 65 face cells. Existing solver degree,
-weight and numerical restrictions also apply.
+The generic paths require a regular transverse locus, positive rational
+weights and degrees at most 16. Coincident areas, isolated contacts, tangent
+branches, singular crossings and unresolved numerical cells return an error;
+they never become a successful empty intersection. C0 interior knots still
+need crease topology and are rejected. Complete pole/periodic face-domain
+decomposition, mixed analytic/B-surface sheet arrangements and general
+curved-solid point classification are not included.
 
-## Geometry and parameterization
-
-Spatial intersections are discovered as exact rational Bezier branches. Their
-topological edges use `ICURVE`, matching real Parasolid imprint/section output.
-The two exact supports determine the geometry. Thirty-three verified chart
-witnesses (two for a straight ruling) and paired UV values define each curve's independent parameterization;
-they do not replace the curve with a polyline. Positive-weight Bezier subdivision
-provides conservative chordal/angular chart bounds and checks monotone chord
-projection. Unsupported charts fail before result publication.
-
-Native and independent charts can use different anchor counts. Oracle reports
-that count as a parameterization diagnostic. Region, shell, face, edge and
-vertex counts, curve/surface classes, senses, tolerances and missing topology
-remain required checks. Every received body must pass real `PK_BODY_check`.
-
-The plane-side classification here is for connected sheet cells during section;
-it does not extend `PK_BODY_contains_vector` to arbitrary curved solids.
+Capacity limits are 8,192 intersection nodes, 64 branches per pair, and 200,000
+discovery cells per span pair. Sheet arrangements allow 512 faces, 4,096 edges,
+4,096 points, 2,048 loops and 16,384 coedges. Root isolation and continuation
+have separate bounded workspaces and iteration budgets. Exceeding a capacity
+fails atomically. These limits do not certify every possible regular input
+will converge within the budgets.
 
 ## Verification
 
-`tests/KernelTests/CurvedSheetPartitionTests.cs` covers curved imprint-to-trim,
-modern tracking, disconnected sections, no-hit identity, singular/unsupported
-boundaries and allocation failure rollback. Computational code uses stack or
-unmanaged command scratch and is covered by the allocation IL guard.
+Computational tests independently evaluate B-spline positions and derivatives
+against bounds, discover open and internal closed branches, verify both UV
+domains, test global distance minima, and check chart membership. Public tests
+cover source deletion, closed-loop trimming, repeated cutting, annular section,
+managed allocation counts and injected allocation failures.
 
-`scripts/CurvedSheetPartitionOracle.cs` independently constructs polynomial and
-rational bilinear, cubic and smooth multi-span inputs, straight rulings and
-non-ruled tensor isocurves in both kernels. Its 48
-fixtures cover imprint, both trim choices and all section fences. It saves our
-text XT, receives it in real Parasolid, checks each body, matches unordered
-components, and invokes `PK_DEBUG_BODY_compare` with structural gates. Generated
-models and diagnostics are under `temp_docs/curved-sheet-partition-oracle/`.
+The independent native oracles create the same operands and operations in
+both kernels, export our text XT, receive it in real Parasolid, run full
+`PK_BODY_check`, and invoke `PK_DEBUG_BODY_compare`. Region/shell semantics,
+topology counts, geometry classes, senses, tolerances and missing entities are
+hard gates. Native chart anchor counts and internal parameterization differences
+are diagnostic only. Extreme-weight native failures remain explicit boundary
+diagnostics and are excluded from compatibility counts.
 
-The oracle is registered in `scripts/VerifyAdvancedModeling.cs`. Run it with:
+Run the complete regression, native oracle and NativeAOT gates with:
 
 ```sh
-MSBUILDDISABLENODEREUSE=1 dotnet run scripts/CurvedSheetPartitionOracle.cs -p:UseSharedCompilation=false -p:BuildInParallel=false
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAdvancedModeling.cs
 ```
 
-Validated on 2026-11-05: all 1,224 KernelTests (including 16 new partition
-regressions), all 48 curved-sheet oracle cases, and all 44 existing intersection
-oracle cases passed. Linux x64 NativeAOT publication, the function catalog and
-the zero-allocation IL guard passed. Logs are in
-`temp_docs/curved-sheet-tests.log`, `temp_docs/curved-sheet-oracle-build.log`,
-`temp_docs/curved-sheet-intersection-regression.log` and
-`temp_docs/curved-sheet-aot.log`.
+The suite also runs all kernel/XT tests, earlier modeling oracles, the function
+catalog, allocation IL guard, NativeAOT publication and native ABI/modeling
+smoke tests. Current logs are under
+`temp_docs/advanced-modeling-verification/` and
+`temp_docs/public-modeling-verification/`; generated intersection and sheet XT
+fixtures are under `temp_docs/intersection-operation-oracle/` and
+`temp_docs/curved-sheet-partition-oracle/`.

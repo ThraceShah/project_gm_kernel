@@ -169,8 +169,18 @@ internal static unsafe partial class KernelRuntime
             return status;
         }
         if(TryGetIntersectionConic(ca,out var first)&&TryGetIntersectionConic(cb,out var second))
-            return IntersectConics(first,a.Lower,a.Upper,second,b.Lower,b.Upper,found,out count);
-        if(a.Slot==b.Slot&&ca.Class==CurveClass.BCurve)
+        {
+            var conicStatus=IntersectConics(first,a.Lower,a.Upper,second,b.Lower,b.Upper,found,out count);
+            if(conicStatus!=AlgorithmStatus.Unsupported)return conicStatus;
+        }
+        var equalBCurves=a.Slot==b.Slot;
+        if(ca.Class==CurveClass.BCurve&&cb.Class==CurveClass.BCurve&&!equalBCurves)
+        {
+            var av=GetBCurveView(BCurveDataStore[ca.DataIndex]);var bv=GetBCurveView(BCurveDataStore[cb.DataIndex]);
+            equalBCurves=av.Degree==bv.Degree&&av.Dimension==bv.Dimension&&av.Rational==bv.Rational
+                &&av.Knots.SequenceEqual(bv.Knots)&&av.Vertices.SequenceEqual(bv.Vertices);
+        }
+        if(equalBCurves&&ca.Class==CurveClass.BCurve)
         {
             var lo=Math.Max(a.Lower,b.Lower);var hi=Math.Min(a.Upper,b.Upper);if(hi<lo)return AlgorithmStatus.Success;
             Span<KernelVector3> jet=stackalloc KernelVector3[1];
@@ -180,6 +190,7 @@ internal static unsafe partial class KernelRuntime
             {status=EvaluateCurveCore(in ca,hi,0,false,jet,out _);if(status!=AlgorithmStatus.Success)return status;if(!OperationIntersection.AddPoint(found,ref count,jet[0],hi,hi,IntersectionVectorKind.End))return AlgorithmStatus.OutputTooSmall;}
             return AlgorithmStatus.Success;
         }
+        if(GeneralCurvePieceCount(a)>0&&GeneralCurvePieceCount(b)>0)return IntersectBCurves(a,b,found,out count);
         return AlgorithmStatus.Unsupported;
     }
 
@@ -301,14 +312,17 @@ internal static unsafe partial class KernelRuntime
         var surfaceSlot=GetSurfaceSlotByTag(surface);if(surfaceSlot<0)return ParasolidConstants.PK_ERROR_bad_class;
         error=ResolveIntersectionCurve(curve,interval,out var span);if(error!=0)return error;
         if(Surfaces[surfaceSlot].Header.Partition!=Curves[span.Slot].Header.Partition)return ParasolidConstants.PK_ERROR_not_in_same_partition;
-        if(!TryPrepareSurface(Surfaces[surfaceSlot],out var prepared))return ParasolidConstants.PK_ERROR_not_implemented;
         Span<OperationIntersectionPoint> found=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-        var status=IntersectSurfaceCurve(prepared,span,found,out var n);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+        var analytic=TryPrepareSurface(Surfaces[surfaceSlot],out var prepared);
+        BufferCount n=0;
+        var status=analytic?IntersectSurfaceCurve(prepared,span,found,out n)
+            :Surfaces[surfaceSlot].Class==SurfaceClass.BSurface?IntersectBSurfaceCurve(surfaceSlot,span,found,out n):AlgorithmStatus.Unsupported;
+        if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         for(var i=0;i<n;i++)
         {
             found[i].First=(found[i].First-span.Offset)/span.Scale;if(span.Scale<0)found[i].Kind=ReverseIntersectionKind(found[i].Kind);
             if(found[i].Kind is IntersectionVectorKind.Start or IntersectionVectorKind.End){found[i].U=-1;found[i].V=-1;}
-            else if(OperationIntersection.Parameters(prepared,found[i].Point,out found[i].U,out found[i].V)!=AlgorithmStatus.Success)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            else if(analytic&&OperationIntersection.Parameters(prepared,found[i].Point,out found[i].U,out found[i].V)!=AlgorithmStatus.Success)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
         OperationIntersection.Sort(found[..n]);
         return PublishPointIntersections(found[..n],true,count,points,parameters,curveParameters,null,kinds);
@@ -363,6 +377,8 @@ internal static unsafe partial class KernelRuntime
         if(ba!=bb)return ParasolidConstants.PK_ERROR_not_in_same_body;
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[64];Span<KernelVector3> isolated=stackalloc KernelVector3[64];
         var status=FindSurfaceIntersections(sa,sb,branches,out var nc,isolated,out var np);
+        if(status==AlgorithmStatus.Unsupported&&(Surfaces[sa].Class==SurfaceClass.BSurface||Surfaces[sb].Class==SurfaceClass.BSurface))
+            return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         if(options->have_vector!=0)
         {
@@ -485,6 +501,7 @@ internal static unsafe partial class KernelRuntime
         // certify branches and therefore cannot turn a missing seed into empty.
         var view=GetBSurfaceView(BSurfaceDataStore[record.DataIndex]);
         SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> jet=stackalloc KernelVector3[4];
+        var best=double.PositiveInfinity;PK_UV_s bestUv=default;
         for(var seed=0;seed<25;seed++)
         {
             var u=view.UStart+(view.UEnd-view.UStart)*(seed%5)/4;var v=view.VStart+(view.VEnd-view.VStart)*(seed/5)/4;
@@ -492,7 +509,8 @@ internal static unsafe partial class KernelRuntime
             {
                 var status=EvaluateSurfaceCore(in record,u,v,layout,jet,0);if(status!=AlgorithmStatus.Success)return status;
                 var r=Sub(point,jet[0]);var error=OperationIntersection.Norm(r);
-                if(error<=OperationIntersection.DistanceTolerance){uv.param[0]=u;uv.param[1]=v;return AlgorithmStatus.Success;}
+                if(error<best){best=error;bestUv.param[0]=u;bestUv.param[1]=v;}
+                if(error<=2e-13){uv.param[0]=u;uv.param[1]=v;return AlgorithmStatus.Success;}
                 var du=jet[layout.GetIndex(1,0)];var dv=jet[layout.GetIndex(0,1)];var aa=Dot(du,du);var ab=Dot(du,dv);var bb=Dot(dv,dv);var determinant=aa*bb-ab*ab;
                 if(!(determinant>1e-28*aa*bb))break;
                 var ru=Dot(r,du);var rv=Dot(r,dv);var su=(ru*bb-rv*ab)/determinant;var sv=(rv*aa-ru*ab)/determinant;
@@ -500,6 +518,11 @@ internal static unsafe partial class KernelRuntime
                 if(nextU==u&&nextV==v)break;u=nextU;v=nextV;
             }
         }
+        if(best<=OperationIntersection.DistanceTolerance){uv=bestUv;return AlgorithmStatus.Success;}
+        var projection=new Geometry.Projection.ProjectionPoint{DistanceUpper=double.PositiveInfinity};
+        var projected=ClosestBSurface(view,point,1e-10,ref projection);
+        if(projected==AlgorithmStatus.Success&&projection.DistanceUpper<=OperationIntersection.DistanceTolerance)
+        {uv.param[0]=projection.U;uv.param[1]=projection.V;return AlgorithmStatus.Success;}
         return AlgorithmStatus.NotConverged;
     }
 

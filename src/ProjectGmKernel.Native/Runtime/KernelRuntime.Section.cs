@@ -53,7 +53,7 @@ internal static unsafe partial class KernelRuntime
         if (Surfaces[sr.Slot].Class != SurfaceClass.Plane) return ParasolidConstants.PK_ERROR_not_implemented;
         if (Bodies[slot].Header.Partition != CurrentPartition || Surfaces[sr.Slot].Header.Partition != CurrentPartition)
             return ParasolidConstants.PK_ERROR_not_in_same_partition;
-        if (sheet) return SectionCurvedSheet(slot, surface, options, result);
+        if (sheet) return SectionGeneralSheet(slot, surface, options, result);
         var sphereError = TrySectionSphere(body, surface, options, result, out var sphereHandled);
         if (sphereHandled) return sphereError;
         var rotationalError = TrySectionRotationalBody(body, surface, options, result, out var rotationalHandled);

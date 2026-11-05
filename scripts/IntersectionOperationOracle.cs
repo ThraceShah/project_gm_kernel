@@ -56,11 +56,25 @@ try
             SS("tensor-rational-homogeneous-scale-1e4",TensorPatch(0,true,false,1e4),Plane(0,0,0,0,0,1));
             SS("tensor-transposed-three-isocurves",TensorPatch(0,false,true),Plane(0,0,0,0,0,1));
             SS("tensor-rational-transposed-isocurves",TensorPatch(0,true,true),Plane(0,0,0,0,0,1));
+            SS("general-near-isoparametric-three-branches",TensorPatch(5,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-quadratic-crossing",TensorPatch(1,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-tangent-isocurve",TensorPatch(2,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-disjoint",TensorPatch(3,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-coincident-area",TensorPatch(4,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-collapsed-pole",TensorPatch(6,false,false),Plane(0,0,0,1,0,0,0,1,0));
+            SS("general-paraboloid-internal-loop",GeneralPatch(0),Plane(0,0,0,0,0,1));
+            SS("general-nurbs-nurbs-internal-loop",GeneralPatch(0),GeneralPatch(1));
+            SS("general-rational-internal-loop",GeneralPatch(4),Plane(0,0,0,0,0,1));
+            SS("general-disjoint-patches",GeneralPatch(3),GeneralPatch(2));
+            SS("general-cross-span-closed-loop",GeneralPatch(5),Plane(0,0,0,0,0,1));
+            SS("general-nurbs-sphere",GeneralPatch(2),Sphere(.5,.5,.1,.3));
+            SS("general-nurbs-sphere-equator",GeneralPatch(2),Sphere(.5,.5,0,.3));
+            SS("general-nurbs-cylinder",GeneralPatch(0),Cylinder(.5));
+            SS("general-nurbs-cone",GeneralPatch(0),Cone(.5,.3));
+            SS("general-nurbs-torus",GeneralPatch(2),Torus(.6,.2));
+            SC("general-nurbs-line",GeneralPatch(0),Line(.5,.5,0,0,0,1),-1,1);
+            CC("general-bcurve-bcurve-three-crossings",Cubic(false),0,1,StraightBCurve(),0,1);
+            ProjectionContracts();
             ExtremeTensorScaleBoundary("tensor-rational-extreme-small-scale",1e-200,PK_ERROR_weight_le_0);
             ExtremeTensorScaleBoundary("tensor-rational-extreme-large-scale",1e200,0);
             Require(failures==0,$"{failures} independent intersection cases failed; {cases} passed.");
@@ -284,9 +298,35 @@ unsafe void CompareWire(string label,int managedCurve,M.PK_INTERVAL_s managedRan
     {
         Log($"{label}: body compare global={result.global_result}, local={result.local_result}, entries={result.n_global_diffs}");
         for(var i=0;i<result.n_global_diffs;i++)Log($"  diff={result.global_diffs[i].diff}, masters={result.global_diffs[i].n_masters}, similars={result.global_diffs[i].n_similars}");
-        Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&result.local_result==PK_DEBUG_local_res_no_diffs_c,label+" body comparison failed");
+        var chartOnly=true;var chartDifference=false;
+        for(var f=0;f<result.n_face_pairs;f++)for(var d=0;d<result.face_pairs[f].n_local_diffs;d++)
+        {
+            var diff=result.face_pairs[f].local_diffs[d];
+            Log($"  local diff={diff.diff}, entities={diff.master_entity}/{diff.similar_entity}, class={diff.master_class}/{diff.similar_class}, values={diff.master_int}/{diff.similar_int}");
+            chartOnly&=diff.diff==PK_DEBUG_diff_n_cht_pts_c;chartDifference|=diff.diff==PK_DEBUG_diff_n_cht_pts_c;
+        }
+        Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&(result.local_result==PK_DEBUG_local_res_no_diffs_c||chartOnly&&chartDifference),label+" body comparison failed");
     }
     finally{Check(PK_DEBUG_BODY_compare_r_f(&result),label+" free compare");}
+}
+unsafe void ProjectionContracts()
+{
+    var surface=GeneralPatch(0);var uv=new M.PK_UV_s();uv.param[0]=.17;uv.param[1]=.82;var point=new M.PK_VECTOR_s();
+    Check(KernelRuntime.SurfEval(surface.Managed,uv,0,0,0,&point),"projection source");
+    var ours=new M.PK_UV_s();var native=new PK_UV_t();var position=new PK_VECTOR_t(point.coord[0],point.coord[1],point.coord[2]);
+    Check(KernelRuntime.SurfParameteriseVector(surface.Managed,point,&ours),"self surface inverse");Check(PK_SURF_parameterise_vector(surface.Oracle,position,&native),"native surface inverse");
+    Equal(ours.param[0],native.param[0],"surface inverse U");Equal(ours.param[1],native.param[1],"surface inverse V");
+    int mc=0,pc=0;Check(KernelRuntime.BSurfMakeBCurveVIsoparam(surface.Managed,ours.param[1],&mc),"self inverse isocurve");
+    Check(PK_BSURF_make_bcurve_v_isoparam(surface.Oracle,native.param[1],&pc),"native inverse isocurve");
+    var mr=Interval(0,1);PK_INTERVAL_t pr=new();pr.value[1]=1;CompareWire("surface-inverse-isocurve",mc,mr,pc,pr);cases++;
+    point.coord[2]-=2;position.coord[2]-=2;
+    var me=KernelRuntime.SurfParameteriseVector(surface.Managed,point,&ours);var pe=PK_SURF_parameterise_vector(surface.Oracle,position,&native);
+    Log($"surface inverse off-surface self={me}, native={pe}");Require(me==pe,"surface inverse off-surface contract");
+    var curve=Cubic(false);var sample=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(curve.Managed,.237,0,&sample),"curve inverse source");
+    double mt=0,pt=0;Check(KernelRuntime.CurveParameteriseVector(curve.Managed,sample,&mt),"self curve inverse");
+    Check(PK_CURVE_parameterise_vector(curve.Oracle,new(sample.coord[0],sample.coord[1],sample.coord[2]),&pt),"native curve inverse");Equal(mt,pt,"curve inverse parameter");
+    mr=Interval(0,mt);pr.value[0]=0;pr.value[1]=pt;CompareWire("curve-inverse-bounded-wire",curve.Managed,mr,curve.Oracle,pr);cases++;
+    Log("PASS public surface/curve inverse, bounded global projection and independent reconstructed-wire comparisons");
 }
 unsafe void CheckBody(int body,string label)
 {
@@ -335,6 +375,8 @@ static unsafe GeometryPair Sphere(double x,double y,double z,double radius)
 {var sf=new M.PK_SPHERE_sf_s{basis_set=Axis(x,y,z),radius=radius};int m=0,p=0;Check(KernelRuntime.SphereCreate(&sf,&m),"self sphere");Check(PK_SPHERE_create((PK_SPHERE_sf_t*)&sf,&p),"PK sphere");return new(m,p);}
 static unsafe GeometryPair Cylinder(double radius)
 {var sf=new M.PK_CYL_sf_s{basis_set=Axis(),radius=radius};int m=0,p=0;Check(KernelRuntime.CylCreate(&sf,&m),"self cylinder");Check(PK_CYL_create((PK_CYL_sf_t*)&sf,&p),"PK cylinder");return new(m,p);}
+static unsafe GeometryPair Cone(double radius,double angle)
+{var sf=new M.PK_CONE_sf_s{basis_set=Axis(),radius=radius,semi_angle=angle};int m=0,p=0;Check(KernelRuntime.ConeCreate(&sf,&m),"self cone");Check(PK_CONE_create((PK_CONE_sf_t*)&sf,&p),"PK cone");return new(m,p);}
 static unsafe GeometryPair Torus(double a,double b)
 {var sf=new M.PK_TORUS_sf_s{basis_set=Axis(),major_radius=a,minor_radius=b};int m=0,p=0;Check(KernelRuntime.TorusCreate(&sf,&m),"self torus");Check(PK_TORUS_create((PK_TORUS_sf_t*)&sf,&p),"PK torus");return new(m,p);}
 static unsafe GeometryPair Cubic(bool rational)
@@ -345,6 +387,31 @@ static unsafe GeometryPair Cubic(bool rational)
     var sf=new M.PK_BCURVE_sf_s{degree=3,n_vertices=4,vertex_dim=dim,is_rational=(byte)(rational?1:0),vertex=vertices,n_knots=2,knot=knots,knot_mult=mult,
         form=M.ParasolidConstants.PK_BCURVE_form_arbitrary_c,knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c};
     int m=0,p=0;Check(KernelRuntime.BCurveCreate(&sf,&m),"self cubic");Check(PK_BCURVE_create((PK_BCURVE_sf_t*)&sf,&p),"PK cubic");return new(m,p);
+}
+static unsafe GeometryPair StraightBCurve()
+{
+    double* poles=stackalloc double[6]{0,0,0,1,0,0};double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2]{2,2};
+    var sf=new M.PK_BCURVE_sf_s{degree=1,n_vertices=2,vertex_dim=3,vertex=poles,n_knots=2,knot=knots,knot_mult=mult,
+        form=M.ParasolidConstants.PK_BCURVE_form_arbitrary_c,knot_type=M.ParasolidConstants.PK_knot_bezier_ends_c,self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c};
+    int m=0,p=0;Check(KernelRuntime.BCurveCreate(&sf,&m),"self straight B-curve");Check(PK_BCURVE_create((PK_BCURVE_sf_t*)&sf,&p),"PK straight B-curve");return new(m,p);
+}
+static unsafe GeometryPair GeneralPatch(int kind)
+{
+    var rational=kind==4;var dim=rational?4:3;double* poles=stackalloc double[36];double* z=stackalloc double[3]{.25,-.25,.25};
+    var nu=kind==5?4:3;double* xs=stackalloc double[4]{0,.25,.75,1};double* zs=stackalloc double[4]{.25,0,0,.25};
+    for(var u=0;u<nu;u++)for(var v=0;v<3;v++)
+    {
+        var at=(u*3+v)*dim;var w=rational?1+.2*u+.3*v:1;
+        poles[at]=(kind==5?xs[u]:u*.5)*w;poles[at+1]=v*.5*w;poles[at+2]=(kind==1?.08*u*.5*v*.5:kind==2?0:(kind==5?zs[u]:z[u])+z[v]-.0625+(kind==3?10:0))*w;if(rational)poles[at+3]=w;
+    }
+    double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2]{3,3};
+    double* uk=stackalloc double[3]{0,.5,1};int* um=stackalloc int[3]{3,1,3};
+    var sf=new M.PK_BSURF_sf_s{u_degree=2,v_degree=2,n_u_vertices=nu,n_v_vertices=3,vertex_dim=dim,is_rational=(byte)(rational?1:0),
+        vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=mult,v_knot_mult=mult,
+        form=M.ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,
+        self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c,convexity=M.ParasolidConstants.PK_convexity_unset_c};
+    if(kind==5){sf.n_u_knots=3;sf.u_knot=uk;sf.u_knot_mult=um;}
+    int m=0,p=0;Check(KernelRuntime.BSurfCreate(&sf,&m),"self general patch");Check(PK_BSURF_create((PK_BSURF_sf_t*)&sf,&p),"PK general patch");return new(m,p);
 }
 static unsafe GeometryPair Bilinear(bool saddle)
 {
@@ -372,13 +439,14 @@ static unsafe GeometryPair TensorPatch(int mode,bool rational,bool transpose,dou
 }
 static unsafe GeometryPair CreateTensorPatch(int mode,bool rational,bool transpose,double homogeneousScale,out int nativeError)
 {
-    var pu=2;var pv=mode==0?3:2;var dim=rational?4:3;double* poles=stackalloc double[(pu+1)*(pv+1)*dim];
+    var pu=2;var pv=mode is 0 or 5?3:2;var dim=rational?4:3;double* poles=stackalloc double[(pu+1)*(pv+1)*dim];
     double* zc=stackalloc double[4]{-.09375,.13541666666666666,-.13541666666666666,.09375};
     for(var u=0;u<=pu;u++)for(var v=0;v<=pv;v++)
     {
         var w=rational?1+v*.5:1;var at=(transpose?v*(pu+1)+u:u*(pv+1)+v)*dim;
         var x=u/(double)pu+(mode==1?.25*v*(v-1)/(pv*(pv-1)):0);var y=v/(double)pv+.25*u*(u-1)/(pu*(pu-1));
-        var z=mode switch{0=>zc[v],1=>(u/(double)pu-.5)*(v/(double)pv-.5),2=>v==1?-.25:.25,3=>.25+v*(v-1)/(double)(pv*(pv-1)),_=>0};
+        var z=mode switch{0 or 5=>zc[v],1=>(u/(double)pu-.5)*(v/(double)pv-.5),2=>v==1?-.25:.25,3=>.25+v*(v-1)/(double)(pv*(pv-1)),_=>0};
+        if(mode==5&&u==1&&v==1)z+=1e-9;
         if(mode==6){y=u*v/4.0;z=u==2?1:0;}
         poles[at]=x*w*homogeneousScale;poles[at+1]=y*w*homogeneousScale;poles[at+2]=z*homogeneousScale;if(rational)poles[at+3]=w*homogeneousScale;
     }

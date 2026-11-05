@@ -243,11 +243,23 @@ validation counts and any remaining oracle differences are recorded in the
 stage validation report after execution; this document's support matrix is not
 a substitute for those results.
 
-## Remaining C/D intersection work
+## General regular-locus extension
 
-General NURBS/NURBS and analytic/NURBS surface intersection, general oblique
-cone/torus intersection, complete singular-locus handling, pole/periodic patch
-splitting, arbitrary coincident-region decomposition, general ellipse/ellipse
-and B-curve/B-curve intersection, and guaranteed continuation through all
-singular branches remain outside this implementation. Their absence is
-reported by the API rather than hidden by an empty success result.
+The fallback now uses outward-rounded homogeneous Bezier bounds and exhaustive
+parameter subdivision for NURBS/NURBS and analytic/NURBS pairs. Regular roots
+also support NURBS boundary curve intersections. It discovers internal closed
+components, joins adjacent spans with both UV pairs, and publishes independently
+owned ICURVEs. Analytic charts cover plane, cylinder, cone, sphere and ring
+torus. Existing exact paths keep precedence. See
+[Curved_Surface_Pipeline.md](Curved_Surface_Pipeline.md) for the algorithm,
+capacities, sheet arrangement and current validation workflow.
+
+The native oracle adds polynomial/rational closed loops, NURBS/NURBS,
+cross-span continuation, sphere/equator, cylinder, cone and torus intersections,
+BCurve/BCurve crossings and public inverse-parameter contracts. Both kernels
+construct their own reference geometry before received-wire comparison.
+
+Complete singular-locus handling, pole/periodic face-domain splitting,
+arbitrary coincident-region decomposition and continuation through singular
+branches remain outside the general fallback. Unresolved or over-budget cells
+fail the operation instead of hiding a missing component in an empty success.

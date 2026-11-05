@@ -778,6 +778,8 @@ internal static unsafe partial class XtWriter
     private static XtNode HalfedgeNode(FinSlot slot, NodeMap map)
     {
         var fin = KernelRuntime.GetFinRecord(slot);
+        var sheetDummy = fin.Loop < 0 && fin.Edge >= 0
+            && KernelRuntime.GetBodyRecord(KernelRuntime.GetEdgeRecord(fin.Edge).Body).BodyType == ParasolidConstants.PK_BODY_type_sheet_c;
         return new XtNode
         {
             Type = (int)XtNodeTypes.Halfedge,
@@ -786,8 +788,8 @@ internal static unsafe partial class XtWriter
             [
                 XtFieldValue.Ptr(0),
                 XtFieldValue.Ptr(Ptr(map.LoopSlots, fin.Loop)),
-                XtFieldValue.Ptr(Ptr(map.FinSlots, fin.NextInLoop)),
-                XtFieldValue.Ptr(Ptr(map.FinSlots, fin.PrevInLoop)),
+                XtFieldValue.Ptr(sheetDummy ? 0 : Ptr(map.FinSlots, fin.NextInLoop)),
+                XtFieldValue.Ptr(sheetDummy ? 0 : Ptr(map.FinSlots, fin.PrevInLoop)),
                 XtFieldValue.Ptr(Ptr(map.VertexSlots, fin.Vertex)),
                 XtFieldValue.Ptr(map.SheetDummyFins.TryGetValue(fin.Edge,out var dummy)?dummy:Ptr(map.FinSlots, fin.Other)),
                 XtFieldValue.Ptr(Ptr(map.EdgeSlots, fin.Edge)),
@@ -1161,12 +1163,19 @@ internal static unsafe partial class XtWriter
         var hvecs = ICurveHvecs(in data);
         var chartNode = AddIndex(nodes, ref graph, ref map);
         var startNode = AddIndex(nodes, ref graph, ref map);
-        var endNode = AddIndex(nodes, ref graph, ref map);
+        // A closed INTERSECTION shares one help LIMIT at both ends. Equal
+        // coordinates in two distinct LIMIT nodes describe an open support
+        // and make a laminar closed edge invalid after trim/copy.
+        var startOffset = data.StartLimit.HvecIndex * 3;
+        var endOffset = data.EndLimit.HvecIndex * 3;
+        var closed = data.StartLimit.Type == LimitType.Help && data.EndLimit.Type == LimitType.Help
+            && hvecs.Slice(startOffset, 3).SequenceEqual(hvecs.Slice(endOffset, 3));
+        var endNode = closed ? startNode : AddIndex(nodes, ref graph, ref map);
         var dataNode = AddIndex(nodes, ref graph, ref map);
 
         SetNode(nodes, map, chartNode, ChartNode(chartNode, in data, hvecs));
         SetNode(nodes, map, startNode, LimitNode(startNode, in data.StartLimit, hvecs));
-        SetNode(nodes, map, endNode, LimitNode(endNode, in data.EndLimit, hvecs));
+        if (!closed) SetNode(nodes, map, endNode, LimitNode(endNode, in data.EndLimit, hvecs));
         SetNode(nodes, map, dataNode, IntersectionDataNode(dataNode, in data));
 
         var sense = curve.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c ? '-' : '+';

@@ -104,13 +104,13 @@ internal static unsafe partial class KernelRuntime
             if (slot < 0) return ParasolidConstants.PK_ERROR_bad_class;
             ref readonly var curve = ref Curves[slot];
             if (curve.Header.Partition != CurrentPartition) return ParasolidConstants.PK_ERROR_not_in_same_partition;
-            if (curve.Class is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve))
+            if (curve.Class is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve or CurveClass.ICurve))
                 return ParasolidConstants.PK_ERROR_not_implemented;
             var a = bounds[i].value[0];
             var b = bounds[i].value[1];
             if (!double.IsFinite(a) || !double.IsFinite(b) || !(b > a)
                 || curve.Class is CurveClass.Circle or CurveClass.Ellipse && b - a > Math.Tau + 1e-12
-                || curve.Class == CurveClass.BCurve && (a < curve.TMin || b > curve.TMax))
+                || curve.Class is CurveClass.BCurve or CurveClass.ICurve && (a < curve.TMin || b > curve.TMax))
                 return ParasolidConstants.PK_ERROR_bad_parameter;
             var splitError=ProfileCurveBreaks(in curve,a,b,breaks,out var breakCount);
             if(splitError!=0)return splitError;
@@ -174,7 +174,8 @@ internal static unsafe partial class KernelRuntime
         {
             ref var segment = ref segments[i];
             var periodicRing = segment.Start == segment.End
-                && Curves[GetCurveSlotByTag(segment.Curve)].Class is CurveClass.Circle or CurveClass.Ellipse;
+                && (Curves[GetCurveSlotByTag(segment.Curve)].Class is CurveClass.Circle or CurveClass.Ellipse
+                    || ProfileClosedICurve(segment.Curve, segment.T0, segment.T1));
             if (!periodicRing)
                 for (var end = 0; end < 2; end++)
                 {
@@ -220,6 +221,14 @@ internal static unsafe partial class KernelRuntime
 
     private static bool ProfileSegmentsTouch(in ProfileSegment a, in ProfileSegment b)
         => a.Start == b.Start || a.Start == b.End || a.End == b.Start || a.End == b.End;
+
+    private static bool ProfileClosedICurve(CurveTag tag, double first, double last)
+    {
+        var record = Curves[GetCurveSlotByTag(tag)];
+        if (record.Class != CurveClass.ICurve || first != record.TMin || last != record.TMax) return false;
+        var data = ICurveDataPool[record.DataIndex];
+        return data.StartLimit.Type == LimitType.Help && data.EndLimit.Type == LimitType.Help;
+    }
 
     private static int MatchProfilePoint(Span<KernelVector3> points, ref int count, in KernelVector3 point, double tolerance)
     {

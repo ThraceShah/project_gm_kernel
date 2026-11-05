@@ -84,12 +84,26 @@ public unsafe class IsoParametricIntersectionTests:IDisposable
     }
 
     [Fact]
-    public void NearSeparablePatch_IsRejectedInsteadOfSilentlyChangingItsZeroSet()
+    public void NearSeparablePatch_UsesTheGeneralSolverWithoutRoundingItsZeroSet()
     {
-        var surface=Patch(5,false,false);var plane=Plane();var result=new Result();var options=Options();
-        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.SurfIntersectSurf(surface,plane,&options,
-            &result.PointCount,&result.Points,&result.CurveCount,&result.Curves,&result.Intervals,&result.Kinds));
-        Assert.Equal(0,result.CurveCount);Assert.Equal(0,result.PointCount);Assert.True(result.Curves==null&&result.Points==null);
+        var surface=Patch(5,false,false);var plane=Plane();using var result=Intersect(surface,plane);
+        var diagnostics=new System.Text.StringBuilder();
+        for(var i=0;i<result.CurveCount;i++)
+        {
+            var a=new PK_VECTOR_s();var b=new PK_VECTOR_s();KernelRuntime.CurveEval(result.Curves[i],result.Intervals[i].value[0],0,&a);KernelRuntime.CurveEval(result.Curves[i],result.Intervals[i].value[1],0,&b);
+            diagnostics.Append($" [{a.coord[0]:R},{a.coord[1]:R}] -> [{b.coord[0]:R},{b.coord[1]:R}]");
+        }
+        Assert.True(result.CurveCount==3,diagnostics.ToString());Assert.Equal(0,result.PointCount);
+        for(var i=0;i<result.CurveCount;i++)
+        {
+            int cls=0;Assert.Equal(0,KernelRuntime.EntityAskClass(result.Curves[i],&cls));Assert.Equal(ParasolidConstants.PK_CLASS_icurve,cls);
+            for(var sample=0;sample<=8;sample++)
+            {
+                var t=result.Intervals[i].value[0]+(result.Intervals[i].value[1]-result.Intervals[i].value[0])*sample/8;
+                var point=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[i],t,0,&point));Assert.InRange(Math.Abs(point.coord[2]),0,1e-8);
+                Assert.Equal(ProjectGmKernel.Native.Computation.AlgorithmStatus.Success,KernelRuntime.TryIntersectionPairedParameters(surface,plane,new(){X=point.coord[0],Y=point.coord[1],Z=point.coord[2]},out _,out _));
+            }
+        }
     }
 
     [Fact]

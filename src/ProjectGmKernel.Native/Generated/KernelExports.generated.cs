@@ -1544,12 +1544,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_CURVE_parameterise_vector")]
-    public static int PK_CURVE_parameterise_vector(int arg0, PK_VECTOR_t arg1, double* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_CURVE_project")]
     public static int PK_CURVE_project(int arg0, int* arg1, PK_INTERVAL_t* arg2, int arg3, int* arg4, PK_CURVE_project_o_t* arg5, PK_CURVE_project_r_t* arg6, PK_ENTITY_track_r_t* arg7)
     {
@@ -5620,12 +5614,6 @@ internal static unsafe partial class KernelExports
 
     [UnmanagedCallersOnly(EntryPoint = "PK_SURF_offset")]
     public static int PK_SURF_offset(int arg0, double arg1, int* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_SURF_parameterise_vector")]
-    public static int PK_SURF_parameterise_vector(int arg0, PK_VECTOR_t arg1, PK_UV_t* arg2)
     {
         return KernelRuntime.NotImplemented();
     }

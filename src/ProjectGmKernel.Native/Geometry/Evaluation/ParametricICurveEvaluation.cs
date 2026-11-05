@@ -438,6 +438,8 @@ internal static class ParametricICurveEvaluation
                     trial[offset] = Math.FusedMultiplyAdd(alpha, correction[0], state[offset]);
                     trial[offset + 1] = Math.FusedMultiplyAdd(alpha, correction[1], state[offset + 1]);
                 }
+                ClampDomainRoundoff(in view.Surface0, trial[..2]);
+                ClampDomainRoundoff(in view.Surface1, trial[2..]);
                 if (!WithinNeighborhood(in view, plan, start, trial, startJet0, startJet1, radius)) continue;
                 var trialStatus = EvaluateSystem(in view, t, plan, segment, trial, divisor, ref budget,
                     trialF, trialJ, trialJet0, trialJet1, out _, out detail);
@@ -754,6 +756,26 @@ internal static class ParametricICurveEvaluation
             return false;
         }
         return Math.Abs(du) <= uTolerance && Math.Abs(dv) <= vTolerance;
+    }
+
+    // A boundary root can produce an outward Newton component of a few ULPs.
+    // Keep that component on its domain boundary; FinishRoot still checks the
+    // full physical system and the unmodified UV correction before accepting.
+    private static void ClampDomainRoundoff(in ICurveSupportView surface, Span<double> uv)
+    {
+        if (!surface.IsBSurface) return;
+        var spline = surface.BSpline;
+        if (!spline.UPeriodic) ClampParameter(spline.UKnots, spline.UDegree, spline.UVertexCount, ref uv[0]);
+        if (!spline.VPeriodic) ClampParameter(spline.VKnots, spline.VDegree, spline.VVertexCount, ref uv[1]);
+    }
+
+    private static void ClampParameter(ReadOnlySpan<double> knots, SplineDegree degree, BufferCount count, ref double value)
+    {
+        var boundary = value < knots[degree] ? knots[degree] : value > knots[count] ? knots[count] : value;
+        if (boundary == value) return;
+        var width = TraversedKnotWidth(knots, degree, count, false, boundary, boundary);
+        if (TryUvResolution(width, boundary, boundary, out var tolerance) && Math.Abs(value - boundary) <= tolerance)
+            value = boundary;
     }
 
     private static bool TryUvResolution(double cellWidth, double a, double b, out double tolerance)

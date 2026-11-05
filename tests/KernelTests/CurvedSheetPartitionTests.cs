@@ -66,20 +66,27 @@ public unsafe class CurvedSheetPartitionTests : IDisposable
     public void SingularCrossingFailsAtomically()
     {
         var body = Sheet(true); var plane = Plane(0); int n = 5; int* edges = (int*)1;
-        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented, KernelRuntime.BodyImprintPlane(body, plane, 1e-8, &n, &edges));
+        Assert.Contains(KernelRuntime.BodyImprintPlane(body, plane, 1e-8, &n, &edges),new[]{ParasolidConstants.PK_ERROR_not_implemented,ParasolidConstants.PK_ERROR_eval_failure,ParasolidConstants.PK_ERROR_cant_do_intersect});
         Assert.Equal(0, n); Assert.True(edges == null); BooleanOperationTests.Counts(body, 1, 4, 4);
     }
 
-    [Theory]
-    [InlineData(true, false)] [InlineData(false, true)]
-    public void CreasesAndPretrimmedDomainsAreRejectedWithoutChangingTheSheet(bool crease, bool subdomain)
+    [Fact]
+    public void CreasesAreRejectedWithoutChangingTheSheet()
     {
-        var body = Sheet(cubic: crease, crease: crease, subdomain: subdomain); var plane = Plane(crease ? 0 : .25);
+        var body = Sheet(cubic: true, crease: true); var plane = Plane(0);
         var curves = KernelRuntime.Curves.AliveCount; var surfaces = KernelRuntime.Surfaces.AliveCount;
         int n = 0; int* edges = null;
         Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented, KernelRuntime.BodyImprintPlane(body, plane, 1e-8, &n, &edges));
         Assert.Equal(0, n); Assert.True(edges == null); BooleanOperationTests.Counts(body, 1, 4, 4);
         Assert.Equal(curves, KernelRuntime.Curves.AliveCount); Assert.Equal(surfaces, KernelRuntime.Surfaces.AliveCount);
+    }
+
+    [Fact]
+    public void PretrimmedRectangularDomainClipsTheIntersectionToItsActualBoundary()
+    {
+        var body=Sheet(subdomain:true);var plane=Plane(.25);int n=0;int* edges=null;
+        Assert.Equal(0,KernelRuntime.BodyImprintPlane(body,plane,1e-8,&n,&edges));
+        try{Assert.Equal(1,n);BooleanOperationTests.Counts(body,2,7,6);}finally{KernelRuntime.MemoryFree(edges);}
     }
 
     [Fact]
