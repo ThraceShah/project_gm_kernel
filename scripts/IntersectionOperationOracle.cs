@@ -73,6 +73,7 @@ try
             SS("general-rational-internal-loop",GeneralPatch(4),Plane(0,0,0,0,0,1));
             SS("general-disjoint-patches",GeneralPatch(3),GeneralPatch(2));
             SS("general-cross-span-closed-loop",GeneralPatch(5),Plane(0,0,0,0,0,1));
+            SS("general-convex-isolated-plane-contact",GeneralPatch(0),Plane(0,0,-.0625,0,0,1));
             SS("general-nurbs-sphere",GeneralPatch(2),Sphere(.5,.5,.1,.3));
             SS("general-nurbs-sphere-equator",GeneralPatch(2),Sphere(.5,.5,0,.3));
             SS("general-nurbs-cylinder",GeneralPatch(0),Cylinder(.5));
@@ -83,6 +84,7 @@ try
             ProjectionContracts();
             DistanceContracts();
             BlendContracts();
+            SplineEditingContracts();
             ExtremeTensorScaleBoundary("tensor-rational-extreme-small-scale",1e-200,PK_ERROR_weight_le_0);
             ExtremeTensorScaleBoundary("tensor-rational-extreme-large-scale",1e200,0);
             Require(failures==0,$"{failures} independent intersection cases failed; {cases} passed.");
@@ -260,7 +262,12 @@ unsafe void SSCore(string label,GeometryPair a,GeometryPair b)
     try
     {
         Require(mnp==pnp&&mnc==pnc,$"{label}: isolated {mnp}/{pnp}, curves {mnc}/{pnc}");
-        for(var i=0;i<mnp;i++){var found=false;for(var j=0;j<pnp;j++)if(Distance(mp[i],pp[j])<2e-8)found=true;Require(found,label+" isolated point");}
+        for(var i=0;i<mnp;i++)
+        {
+            var found=-1;for(var j=0;j<pnp;j++)if(Distance(mp[i],pp[j])<2e-8)found=j;Require(found>=0,label+" isolated point");
+            var ma=mp[i];var pa=pp[found];var mb=ma;var pb=pa;mb.coord[2]+=1;pb.coord[2]+=1;
+            DistanceWitnessWire(label+"-isolated-point"+i,ma,pa,mb,pb);
+        }
         var matched=new bool[pnc];
         for(var i=0;i<mnc;i++)
         {
@@ -348,6 +355,8 @@ unsafe void DistanceContracts()
     VectorDistance("distance-point-bcurve",Cubic(false),.4,.7,.1);
     PairDistance("distance-line-paraboloid",Line(.5,.5,-1,1,0,0),GeneralPatch(0));
     PairDistance("distance-nurbs-plane",GeneralPatch(0),Plane(0,0,-1,0,0,1));
+    PairDistance("distance-skew-infinite-lines",Line(0,0,0,1,0,0),Line(0,1,1,0,1,0));
+    PairDistance("distance-separated-spheres",Sphere(0,0,0,2),Sphere(6,1,.2,1));
 }
 
 unsafe void BlendContracts()
@@ -356,6 +365,40 @@ unsafe void BlendContracts()
     BlendCase("blend-negative-planes",false,false,-.2);
     BlendCase("blend-plane-sphere",true,false,.2);
     BlendCase("blend-sphere-plane",true,true,.2);
+}
+
+unsafe void SplineEditingContracts()
+{
+    foreach(var rational in new[]{false,true})for(var operation=0;operation<3;operation++)
+    {
+        var label="edit-"+(rational?"rational":"polynomial")+"-curve-"+operation;
+        try
+        {
+            var curve=Cubic(rational);
+            Check(KernelRuntime.BCurveAddKnot(curve.Managed,.37),label+" self insert");Check(PK_BCURVE_add_knot(curve.Oracle,.37),label+" native insert");
+            if(operation==1)
+            {
+                var mo=new M.PK_BCURVE_raise_degree_o_s{o_t_version=1};var po=new PK_BCURVE_raise_degree_o_t();
+                Check(KernelRuntime.BCurveRaiseDegree(curve.Managed,2,&mo),label+" self elevate");Check(PK_BCURVE_raise_degree(curve.Oracle,2,&po),label+" native elevate");
+            }
+            if(operation==2)
+            {
+                var mr=Interval(-2,3);PK_INTERVAL_t pr=new();pr.value[0]=-2;pr.value[1]=3;var mo=new M.PK_BCURVE_reparameterise_o_s{o_t_version=1};var po=new PK_BCURVE_reparameterise_o_t();
+                Check(KernelRuntime.BCurveReparameterise(curve.Managed,mr,&mo),label+" self reparameterise");Check(PK_BCURVE_reparameterise(curve.Oracle,pr,&po),label+" native reparameterise");
+            }
+            var mrange=new M.PK_INTERVAL_s();PK_INTERVAL_t prange;Check(KernelRuntime.CurveAskInterval(curve.Managed,&mrange),label+" self domain");Check(PK_CURVE_ask_interval(curve.Oracle,&prange),label+" native domain");
+            Equal(mrange.value[0],prange.value[0],label+" domain start");Equal(mrange.value[1],prange.value[1],label+" domain end");
+            M.PK_VECTOR_s* mj=stackalloc M.PK_VECTOR_s[3];PK_VECTOR_t* pj=stackalloc PK_VECTOR_t[3];
+            for(var i=0;i<=12;i++)
+            {
+                var t=i==12?mrange.value[1]:mrange.value[0]+(mrange.value[1]-mrange.value[0])*i/12;
+                Check(KernelRuntime.CurveEval(curve.Managed,t,2,mj),label+" self jets");Check(PK_CURVE_eval(curve.Oracle,t,2,pj),label+" native jets");
+                for(var j=0;j<3;j++)for(var d=0;d<3;d++)Equal(mj[j].coord[d],pj[j].coord[d],label+" D0/D1/D2");
+            }
+            CompareWire(label,curve.Managed,mrange,curve.Oracle,prange);cases++;Log("PASS "+label+": same editing API, native jets and independent XT wire");
+        }
+        catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
+    }
 }
 
 unsafe void BlendCase(string label,bool spherePair,bool sphereFirst,double radius)

@@ -263,3 +263,12 @@ Complete singular-locus handling, pole/periodic face-domain splitting,
 arbitrary coincident-region decomposition and continuation through singular
 branches remain outside the general fallback. Unresolved or over-budget cells
 fail the operation instead of hiding a missing component in an empty success.
+
+The pure-geometry increment adds finite-domain analytic-pair discovery for
+sphere/ring-torus supports and skew cylinders, exact coaxial tangent circles,
+and isolated plane contacts whose strictly convex/concave homogeneous numerator
+has certified exact zero value and gradient. Nearby regular loops are not
+collapsed into points. These cases extend the supported subset; they do not
+complete arbitrary singular or coincident decomposition. Scope and independent
+oracle evidence are recorded in `docs/Geometry_Completion_Plan.md` and
+`docs/reviews/advanced-modeling/pure-geometry-increment-2026-11-05.md`.

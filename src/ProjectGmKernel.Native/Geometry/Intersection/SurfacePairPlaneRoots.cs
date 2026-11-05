@@ -57,7 +57,7 @@ internal static class SurfacePairPlaneRoots
                     for(var c=0;c<4;c++)
                     {
                         IntervalNumber m=r==c?1:0;for(var k=0;k<4;k++)m-=inverse[4*r+k]*jac[4*k+c];
-                        image+=m*new IntervalNumber(extended.Lower.Parameter(c)-point.Parameter(c),extended.Upper.Parameter(c)-point.Parameter(c));
+                        image+=m*(new IntervalNumber(extended.Lower.Parameter(c),extended.Upper.Parameter(c))-point.Parameter(c));
                     }
                     empty|=image.Upper<cell.Lower.Parameter(r)||image.Lower>cell.Upper.Parameter(r);
                     unique&=image.Lower>extended.Lower.Parameter(r)&&image.Upper<extended.Upper.Parameter(r);

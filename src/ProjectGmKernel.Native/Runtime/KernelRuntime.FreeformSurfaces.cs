@@ -161,14 +161,22 @@ internal static unsafe partial class KernelRuntime
         Span<double> basis = stackalloc double[FreeformSplineMath.MaxDegree + 1];
         if (!FreeformSplineMath.Basis(constantU ? view.UKnots : view.VKnots, fixedCount, fixedDegree, parameter, basis, out var first))
             return ParasolidConstants.PK_ERROR_bad_parameter;
-        Span<double> poles = stackalloc double[count * data.VertexDim]; poles.Clear();
+        Span<double> poles = stackalloc double[count * data.VertexDim];
         var input = data.PolesSpan();
+        var pivot=0;for(var j=1;j<=fixedDegree;j++)if(basis[j]>basis[pivot])pivot=j;
         for (var i = 0; i < count; i++)
+        {
+            var anchor=(constantU?(first+pivot)*data.NVVertices+i:i*data.NVVertices+first+pivot)*data.VertexDim;
+            for(var d=0;d<data.VertexDim;d++)poles[i*data.VertexDim+d]=input[anchor+d];
+            // Affine accumulation preserves constant homogeneous coordinates:
+            // rounded basis sums must not detach an isocurve from a boundary.
             for (var j = 0; j <= fixedDegree; j++)
             {
+                if(j==pivot)continue;
                 var index = (constantU ? (first + j) * data.NVVertices + i : i * data.NVVertices + first + j) * data.VertexDim;
-                for (var d = 0; d < data.VertexDim; d++) poles[i * data.VertexDim + d] += basis[j] * input[index + d];
+                for (var d = 0; d < data.VertexDim; d++) poles[i * data.VertexDim + d] += basis[j] * (input[index + d]-input[anchor+d]);
             }
+        }
         return CreateFreeformCurve(constantU ? data.VDegree : data.UDegree, poles, data.VertexDim, data.IsRational != 0,
             constantU ? data.VKnotsSpan() : data.UKnotsSpan(), constantU ? data.VKnotMultsSpan() : data.UKnotMultsSpan(),
             (constantU ? data.IsVClosed : data.IsUClosed) != 0, curve);

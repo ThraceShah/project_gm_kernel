@@ -30,15 +30,19 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_bad_parameter;
         if (definition->u_degree is not (1 or 3) || definition->v_degree is not (1 or 3)
             || definition->n_u_positions > 32 || definition->n_v_positions > 32
-            || definition->u_end != ParasolidConstants.PK_PARAM_end_natural_c || definition->U_end != ParasolidConstants.PK_PARAM_end_natural_c
-            || definition->v_end != ParasolidConstants.PK_PARAM_end_natural_c || definition->V_end != ParasolidConstants.PK_PARAM_end_natural_c
             || definition->u_how_knot is not (ParasolidConstants.PK_PARAM_knot_auto_c or ParasolidConstants.PK_PARAM_knot_defined_c)
-            || definition->v_how_knot is not (ParasolidConstants.PK_PARAM_knot_auto_c or ParasolidConstants.PK_PARAM_knot_defined_c)
-            || definition->u_v != ParasolidConstants.PK_PARAM_twist_no_c || definition->u_V != ParasolidConstants.PK_PARAM_twist_no_c
-            || definition->U_v != ParasolidConstants.PK_PARAM_twist_no_c || definition->U_V != ParasolidConstants.PK_PARAM_twist_no_c)
+            || definition->v_how_knot is not (ParasolidConstants.PK_PARAM_knot_auto_c or ParasolidConstants.PK_PARAM_knot_defined_c))
             return ParasolidConstants.PK_ERROR_not_implemented;
         var nu = definition->n_u_positions; var nv = definition->n_v_positions;
         var ud = definition->u_degree; var vd = definition->v_degree;
+        var error=ValidateGridBoundary(definition->u_end,ud,definition->u_derivs,nv);if(error!=0)return error;
+        error=ValidateGridBoundary(definition->U_end,ud,definition->U_derivs,nv);if(error!=0)return error;
+        error=ValidateGridBoundary(definition->v_end,vd,definition->v_derivs,nu);if(error!=0)return error;
+        error=ValidateGridBoundary(definition->V_end,vd,definition->V_derivs,nu);if(error!=0)return error;
+        error=ValidateGridTwist(definition->u_end,definition->v_end,definition->u_v,definition->u_v_twist);if(error!=0)return error;
+        error=ValidateGridTwist(definition->u_end,definition->V_end,definition->u_V,definition->u_V_twist);if(error!=0)return error;
+        error=ValidateGridTwist(definition->U_end,definition->v_end,definition->U_v,definition->U_v_twist);if(error!=0)return error;
+        error=ValidateGridTwist(definition->U_end,definition->V_end,definition->U_V,definition->U_V_twist);if(error!=0)return error;
         var cu = ud * (nu - 1) + 1; var cv = vd * (nv - 1) + 1;
         if (cu * cv > 8192) return ParasolidConstants.PK_ERROR_not_implemented;
         Span<double> uParameters = stackalloc double[nu]; Span<double> vParameters = stackalloc double[nv];
@@ -60,6 +64,14 @@ internal static unsafe partial class KernelRuntime
             Span<double> positions = stackalloc double[Math.Max(nu, nv) * 3];
             Span<double> column = stackalloc double[Math.Max(cu, cv) * 3];
             Span<double> diagonal = stackalloc double[Math.Max(nu, nv)]; Span<double> seconds = stackalloc double[positions.Length];
+            Span<double> lowerV=stackalloc double[cu*3],upperV=stackalloc double[cu*3];
+            var lowUScale=1/(uParameters[1]-uParameters[0]);var highUScale=1/(uParameters[^1]-uParameters[^2]);
+            var lowVScale=1/(vParameters[1]-vParameters[0]);var highVScale=1/(vParameters[^1]-vParameters[^2]);
+            Span<double> firstU=stackalloc double[3],lastU=stackalloc double[3];
+            if(definition->v_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c
+                &&!GridBoundarySpline(uParameters,ud,definition->v_derivs,lowVScale,definition->u_v,definition->u_v_twist,definition->U_v,definition->U_v_twist,lowerV,diagonal,seconds))return ParasolidConstants.PK_ERROR_bad_parameter;
+            if(definition->V_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c
+                &&!GridBoundarySpline(uParameters,ud,definition->V_derivs,highVScale,definition->u_V,definition->u_V_twist,definition->U_V,definition->U_V_twist,upperV,diagonal,seconds))return ParasolidConstants.PK_ERROR_bad_parameter;
             for (var j = 0; j < nv; j++)
             {
                 for (var i = 0; i < nu; i++) for (var d = 0; d < 3; d++)
@@ -67,8 +79,15 @@ internal static unsafe partial class KernelRuntime
                     var value = definition->positions[j * nu + i].coord[d];
                     if (!double.IsFinite(value)) return ParasolidConstants.PK_ERROR_bad_vertex; positions[3 * i + d] = value;
                 }
+                for(var d=0;d<3;d++)
+                {
+                    if(definition->u_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c)firstU[d]=definition->u_derivs[j].coord[d]*lowUScale;
+                    if(definition->U_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c)lastU[d]=definition->U_derivs[j].coord[d]*highUScale;
+                }
                 if (ud == 1) positions[..(nu * 3)].CopyTo(column);
-                else if (!FreeformSplineMath.Interpolate(uParameters, positions[..(nu * 3)], 3, default, default, column, diagonal, seconds))
+                else if (!FreeformSplineMath.Interpolate(uParameters, positions[..(nu * 3)], 3,
+                    definition->u_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c?firstU:default,
+                    definition->U_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c?lastU:default,column,diagonal,seconds))
                     return ParasolidConstants.PK_ERROR_bad_parameter;
                 for (var i = 0; i < cu; i++) column.Slice(3 * i, 3).CopyTo(intermediate.Slice((i * nv + j) * 3, 3));
             }
@@ -77,12 +96,50 @@ internal static unsafe partial class KernelRuntime
             {
                 intermediate.Slice(i * nv * 3, nv * 3).CopyTo(positions);
                 if (vd == 1) positions[..(nv * 3)].CopyTo(poles.Slice(i * cv * 3, nv * 3));
-                else if (!FreeformSplineMath.Interpolate(vParameters, positions[..(nv * 3)], 3, default, default, poles.Slice(i * cv * 3, cv * 3), diagonal, seconds))
+                else if (!FreeformSplineMath.Interpolate(vParameters, positions[..(nv * 3)], 3,
+                    definition->v_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c?lowerV.Slice(3*i,3):default,
+                    definition->V_end==ParasolidConstants.PK_PARAM_end_clamped_vector_c?upperV.Slice(3*i,3):default,
+                    poles.Slice(i * cv * 3, cv * 3), diagonal, seconds))
                     return ParasolidConstants.PK_ERROR_bad_parameter;
             }
             return CreateFreeformSurface(ud, vd, cu, cv, poles, 3, false, uParameters, uMults, vParameters, vMults, false, false, surface);
         }
         finally { CommandScratchReturn(intermediate); }
+    }
+
+    private static int ValidateGridBoundary(PK_PARAM_end_t mode,SplineDegree degree,PK_VECTOR_s* derivatives,BufferCount count)
+    {
+        if(mode==ParasolidConstants.PK_PARAM_end_natural_c)return 0;
+        if(mode!=ParasolidConstants.PK_PARAM_end_clamped_vector_c||degree!=3)return ParasolidConstants.PK_ERROR_not_implemented;
+        if(derivatives==null)return ParasolidConstants.PK_ERROR_bad_parameter;
+        for(var i=0;i<count;i++)for(var d=0;d<3;d++)if(!double.IsFinite(derivatives[i].coord[d]))return ParasolidConstants.PK_ERROR_bad_parameter;
+        return 0;
+    }
+
+    private static int ValidateGridTwist(PK_PARAM_end_t u,PK_PARAM_end_t v,PK_PARAM_twist_t mode,PK_VECTOR_s twist)
+    {
+        if(mode is not (ParasolidConstants.PK_PARAM_twist_no_c or ParasolidConstants.PK_PARAM_twist_yes_c))return ParasolidConstants.PK_ERROR_bad_parameter;
+        var clamped=u==ParasolidConstants.PK_PARAM_end_clamped_vector_c&&v==ParasolidConstants.PK_PARAM_end_clamped_vector_c;
+        if(mode==ParasolidConstants.PK_PARAM_twist_yes_c)
+        {
+            if(!clamped)return ParasolidConstants.PK_ERROR_bad_parameter;
+            for(var d=0;d<3;d++)if(!double.IsFinite(twist.coord[d]))return ParasolidConstants.PK_ERROR_bad_parameter;
+        }
+        else if(clamped)return ParasolidConstants.PK_ERROR_not_implemented;
+        return 0;
+    }
+
+    private static bool GridBoundarySpline(ReadOnlySpan<double> parameters,SplineDegree degree,PK_VECTOR_s* derivatives,double scale,
+        PK_PARAM_twist_t firstMode,PK_VECTOR_s firstTwist,PK_PARAM_twist_t lastMode,PK_VECTOR_s lastTwist,
+        Span<double> poles,Span<double> diagonal,Span<double> seconds)
+    {
+        Span<double> positions=stackalloc double[3*parameters.Length];
+        for(var i=0;i<parameters.Length;i++)for(var d=0;d<3;d++)positions[3*i+d]=derivatives[i].coord[d]*scale;
+        if(degree==1){positions.CopyTo(poles);return true;}
+        Span<double> first=stackalloc double[3],last=stackalloc double[3];
+        for(var d=0;d<3;d++){first[d]=firstTwist.coord[d]*scale/(parameters[1]-parameters[0]);last[d]=lastTwist.coord[d]*scale/(parameters[^1]-parameters[^2]);}
+        return FreeformSplineMath.Interpolate(parameters,positions,3,
+            firstMode==ParasolidConstants.PK_PARAM_twist_yes_c?first:default,lastMode==ParasolidConstants.PK_PARAM_twist_yes_c?last:default,poles,diagonal,seconds);
     }
 
     private static bool FreeformGridParameters(ReadOnlySpan<PK_VECTOR_s> positions, BufferCount nu, BufferCount nv,

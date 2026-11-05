@@ -31,7 +31,8 @@ try
             var names = new[] { "spline-interpolation", "rational-surface-sweep", "natural-three-section-loft", "rational-surface-spin",
                 "cylinder-rectangular-sheet", "torus-rectangular-sheet", "parallel-nurbs-path-solid", "parallel-nurbs-path-hole-solid",
                 "two-profile-loft", "three-profile-natural-loft", "nurbs-sheet-sewing", "closed-nurbs-cube-sewing", "least-squares-point-fit",
-                "automatic-grid-surface", "explicit-grid-surface", "convex-changing-sections-loft" };
+                "automatic-grid-surface", "explicit-grid-surface", "convex-changing-sections-loft", "clamped-bicubic-twists", "clamped-multispan-twists",
+                "edited-polynomial-surface", "edited-rational-surface", "reparameterised-polynomial-surface", "reparameterised-rational-surface" };
             var failures = 0;
             for (var scenario = 0; scenario < names.Length; scenario++)
             {
@@ -71,6 +72,8 @@ finally { File.WriteAllText(Path.Combine(directory, "report.txt"), report.ToStri
 
 static unsafe int Produce(bool self, int scenario)
 {
+    if(scenario>=18)return EditedSurface(self,(scenario-18)%2!=0,scenario>=20);
+    if(scenario>=16)return ConstrainedSurface(self,scenario-14);
     if (scenario == 15)
     {
         var coordinates = new[]
@@ -234,6 +237,76 @@ static unsafe int Produce(bool self, int scenario)
         return Sew(self, 6, bodies);
     }
     throw new Exception("Unknown scenario");
+}
+
+static unsafe int ConstrainedSurface(bool self,int count)
+{
+    double* u=stackalloc double[3]{0,.7,2};double* v=stackalloc double[3]{-1,.2,1};if(count==2){u[1]=2;v[1]=1;}
+    PK_VECTOR_t* points=stackalloc PK_VECTOR_t[count*count];PK_VECTOR_t* ul=stackalloc PK_VECTOR_t[count];PK_VECTOR_t* uh=stackalloc PK_VECTOR_t[count];PK_VECTOR_t* vl=stackalloc PK_VECTOR_t[count];PK_VECTOR_t* vh=stackalloc PK_VECTOR_t[count];
+    for(var j=0;j<count;j++)for(var i=0;i<count;i++)points[j*count+i]=ConstrainedJet(u[i],v[j],0,0);
+    for(var i=0;i<count;i++){ul[i]=ConstrainedJet(0,v[i],1,0);uh[i]=ConstrainedJet(2,v[i],1,0);vl[i]=ConstrainedJet(u[i],-1,0,1);vh[i]=ConstrainedJet(u[i],1,0,1);}
+    var hu=u[1]-u[0];var hU=u[count-1]-u[count-2];var hv=v[1]-v[0];var hV=v[count-1]-v[count-2];
+    for(var i=0;i<count;i++)for(var d=0;d<3;d++){ul[i].coord[d]*=hu;uh[i].coord[d]*=hU;vl[i].coord[d]*=hv;vh[i].coord[d]*=hV;}
+    var sf=new PK_BSURF_splinewise_sf_t{u_degree=3,v_degree=3,n_u_positions=count,n_v_positions=count,positions=points,
+        u_end=PK_PARAM_end_clamped_vector_c,U_end=PK_PARAM_end_clamped_vector_c,v_end=PK_PARAM_end_clamped_vector_c,V_end=PK_PARAM_end_clamped_vector_c,
+        u_derivs=ul,U_derivs=uh,v_derivs=vl,V_derivs=vh,u_how_knot=PK_PARAM_knot_defined_c,v_how_knot=PK_PARAM_knot_defined_c,u_knot=u,v_knot=v,
+        u_v=PK_PARAM_twist_yes_c,u_V=PK_PARAM_twist_yes_c,U_v=PK_PARAM_twist_yes_c,U_V=PK_PARAM_twist_yes_c,
+        u_v_twist=ConstrainedJet(0,-1,1,1),u_V_twist=ConstrainedJet(0,1,1,1),U_v_twist=ConstrainedJet(2,-1,1,1),U_V_twist=ConstrainedJet(2,1,1,1)};
+    for(var d=0;d<3;d++){sf.u_v_twist.coord[d]*=hu*hv;sf.u_V_twist.coord[d]*=hu*hV;sf.U_v_twist.coord[d]*=hU*hv;sf.U_V_twist.coord[d]*=hU*hV;}
+    int surface=0;Check(self?KernelRuntime.BSurfCreateSplinewise((M.PK_BSURF_splinewise_sf_s*)&sf,&surface):PK_BSURF_create_splinewise(&sf,&surface),"constrained surface create");
+    PK_VECTOR_t* jet=stackalloc PK_VECTOR_t[9];
+    for(var i=0;i<=6;i++)for(var j=0;j<=6;j++)
+    {
+        var uv=new PK_UV_t(i/3.0,-1+j/3.0);Check(self?KernelRuntime.SurfEval(surface,*(M.PK_UV_s*)&uv,2,2,0,(M.PK_VECTOR_s*)jet):PK_SURF_eval(surface,uv,2,2,PK_LOGICAL_false,jet),"constrained surface jets");
+        for(var a=0;a<=2;a++)for(var b=0;b<=2;b++)
+        {var expected=ConstrainedJet(uv.param[0],uv.param[1],a,b);for(var d=0;d<3;d++)Require(Math.Abs(jet[b*3+a].coord[d]-expected.coord[d])<2e-9,$"independent bicubic jet mismatch self={self} uv={uv.param[0]:R}/{uv.param[1]:R} order={a}/{b} component={d} expected={expected.coord[d]:R} actual={jet[b*3+a].coord[d]:R}");}
+    }
+    var box=Box(0,-1,2,1);int body=0;Check(self?KernelRuntime.SurfMakeSheetBody(surface,*(M.PK_UVBOX_s*)&box,&body):PK_SURF_make_sheet_body(surface,box,&body),"constrained sheet");return body;
+}
+
+static unsafe PK_VECTOR_t ConstrainedJet(double u,double v,int a,int b)
+{
+    var x=b==0?(a==0?u:a==1?1:0):0;var y=a==0?(b==0?v:b==1?1:0):0;
+    var z=(a,b) switch{(0,0)=>u*u*v+u*v*v+.3*u*u*u-.2*v*v*v,(1,0)=>2*u*v+v*v+.9*u*u,(0,1)=>u*u+2*u*v-.6*v*v,
+        (2,0)=>2*v+1.8*u,(0,2)=>2*u-1.2*v,(1,1)=>2*u+2*v,(2,1)=>2,(1,2)=>2,_=>0};return new(x,y,z);
+}
+
+static unsafe int EditedSurface(bool self,bool rational,bool reparameterise)
+{
+    var dim=rational?4:3;double* poles=stackalloc double[36];double* z=stackalloc double[3]{.25,-.25,.25};
+    for(var u=0;u<3;u++)for(var v=0;v<3;v++)
+    {var i=(3*u+v)*dim;var w=rational?1+.2*u+.3*v:1;poles[i]=u*.5*w;poles[i+1]=v*.5*w;poles[i+2]=(z[u]+z[v]-.0625)*w;if(rational)poles[i+3]=w;}
+    double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2]{3,3};
+    var sf=new PK_BSURF_sf_t{u_degree=2,v_degree=2,n_u_vertices=3,n_v_vertices=3,vertex_dim=dim,is_rational=rational?PK_LOGICAL_true:PK_LOGICAL_false,
+        vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=mult,v_knot_mult=mult,form=PK_BSURF_form_arbitrary_c,
+        u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};
+    int source=0,surface=0;Check(self?KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&source):PK_BSURF_create(&sf,&source),"editing source");
+    Check(self?KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&surface):PK_BSURF_create(&sf,&surface),"editing target");
+    Check(self?KernelRuntime.BSurfAddUKnot(surface,.37):PK_BSURF_add_u_knot(surface,.37),"surface insert U");
+    Check(self?KernelRuntime.BSurfAddVKnot(surface,.63):PK_BSURF_add_v_knot(surface,.63),"surface insert V");
+    var raise=new PK_BSURF_raise_degree_o_t();Check(self?KernelRuntime.BSurfRaiseDegree(surface,PK_PARAM_direction_u_c,1,(M.PK_BSURF_raise_degree_o_s*)&raise):PK_BSURF_raise_degree(surface,PK_PARAM_direction_u_c,1,&raise),"surface elevate U");
+    Check(self?KernelRuntime.BSurfRaiseDegree(surface,PK_PARAM_direction_v_c,2,(M.PK_BSURF_raise_degree_o_s*)&raise):PK_BSURF_raise_degree(surface,PK_PARAM_direction_v_c,2,&raise),"surface elevate V");
+    if(reparameterise)
+    {
+        var options=new PK_BSURF_reparameterise_o_t{have_u_interval=PK_LOGICAL_true,have_v_interval=PK_LOGICAL_true,transpose=PK_LOGICAL_true,reverse_u=PK_LOGICAL_true};
+        options.u_interval.value[0]=-2;options.u_interval.value[1]=3;options.v_interval.value[0]=7;options.v_interval.value[1]=9;
+        Check(self?KernelRuntime.BSurfReparameterise(surface,(M.PK_BSURF_reparameterise_o_s*)&options):PK_BSURF_reparameterise(surface,&options),"surface parameter map");
+    }
+    PK_UVBOX_t domain;Check(self?KernelRuntime.SurfAskUvbox(surface,(M.PK_UVBOX_s*)&domain):PK_SURF_ask_uvbox(surface,&domain),"edited domain");
+    PK_VECTOR_t* actual=stackalloc PK_VECTOR_t[9];PK_VECTOR_t* expected=stackalloc PK_VECTOR_t[9];
+    for(var i=0;i<=6;i++)for(var j=0;j<=6;j++)
+    {
+        var x=i/6.0;var y=j/6.0;var uv=new PK_UV_t(domain.param[0]+(domain.param[2]-domain.param[0])*x,domain.param[1]+(domain.param[3]-domain.param[1])*y);
+        var original=new PK_UV_t(reparameterise?y:x,reparameterise?1-x:y);
+        Check(self?KernelRuntime.SurfEval(surface,*(M.PK_UV_s*)&uv,2,2,0,(M.PK_VECTOR_s*)actual):PK_SURF_eval(surface,uv,2,2,PK_LOGICAL_false,actual),"edited jets");
+        Check(self?KernelRuntime.SurfEval(source,*(M.PK_UV_s*)&original,2,2,0,(M.PK_VECTOR_s*)expected):PK_SURF_eval(source,original,2,2,PK_LOGICAL_false,expected),"original jets");
+        for(var a=0;a<=2;a++)for(var b=0;b<=2;b++)for(var d=0;d<3;d++)
+        {
+            var wanted=reparameterise?expected[a*3+b].coord[d]*Math.Pow(-1/(domain.param[2]-domain.param[0]),a)*Math.Pow(1/(domain.param[3]-domain.param[1]),b):expected[b*3+a].coord[d];
+            Require(Math.Abs(wanted-actual[b*3+a].coord[d])<2e-8,$"editing jet mismatch self={self}, map={reparameterise}, derivative={a}/{b}, expected={wanted:R}, actual={actual[b*3+a].coord[d]:R}");
+        }
+    }
+    int body=0;Check(self?KernelRuntime.SurfMakeSheetBody(surface,*(M.PK_UVBOX_s*)&domain,&body):PK_SURF_make_sheet_body(surface,domain,&body),"edited sheet");return body;
 }
 
 static unsafe int Surface(bool self, int scenario)

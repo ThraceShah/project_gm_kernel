@@ -440,12 +440,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_add_knot")]
-    public static int PK_BCURVE_add_knot(int arg0, double arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_ask_knots")]
     public static int PK_BCURVE_ask_knots(int arg0, PK_BCURVE_ask_knots_o_t* arg1, int* arg2, nint* arg3, nint* arg4)
     {
@@ -536,20 +530,8 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_raise_degree")]
-    public static int PK_BCURVE_raise_degree(int arg0, int arg1, PK_BCURVE_raise_degree_o_t* arg2)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_remove_knots")]
     public static int PK_BCURVE_remove_knots(int arg0, PK_BCURVE_remove_knots_o_t* arg1, int* arg2, nint* arg3, nint* arg4)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BCURVE_reparameterise")]
-    public static int PK_BCURVE_reparameterise(int arg0, PK_INTERVAL_t arg1, PK_BCURVE_reparameterise_o_t* arg2)
     {
         return KernelRuntime.NotImplemented();
     }
@@ -1178,18 +1160,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_add_u_knot")]
-    public static int PK_BSURF_add_u_knot(int arg0, double arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_add_v_knot")]
-    public static int PK_BSURF_add_v_knot(int arg0, double arg1)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_ask_knots")]
     public static int PK_BSURF_ask_knots(int arg0, int arg1, PK_BSURF_ask_knots_o_t* arg2, int* arg3, nint* arg4, nint* arg5)
     {
@@ -1250,20 +1220,8 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_raise_degree")]
-    public static int PK_BSURF_raise_degree(int arg0, int arg1, int arg2, PK_BSURF_raise_degree_o_t* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_remove_knots")]
     public static int PK_BSURF_remove_knots(int arg0, int arg1, PK_BSURF_remove_knots_o_t* arg2, int* arg3, nint* arg4, nint* arg5)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
-    [UnmanagedCallersOnly(EntryPoint = "PK_BSURF_reparameterise")]
-    public static int PK_BSURF_reparameterise(int arg0, PK_BSURF_reparameterise_o_t* arg1)
     {
         return KernelRuntime.NotImplemented();
     }

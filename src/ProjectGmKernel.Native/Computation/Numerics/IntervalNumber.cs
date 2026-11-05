@@ -15,6 +15,12 @@ internal readonly struct IntervalNumber(double lower, double upper)
     {
         if (a.Lower == 0 && a.Upper == 0) return b;
         if (b.Lower == 0 && b.Upper == 0) return a;
+        if (a.Lower == a.Upper && b.Lower == b.Upper)
+        {
+            var sum=a.Lower+b.Lower;var tail=sum-a.Lower;
+            var error=(a.Lower-(sum-tail))+(b.Lower-tail);
+            if(double.IsFinite(sum)&&error==0)return new(sum);
+        }
         return new(Math.BitDecrement(a.Lower + b.Lower), Math.BitIncrement(a.Upper + b.Upper));
     }
     public static IntervalNumber operator -(IntervalNumber a) => new(-a.Upper, -a.Lower);
@@ -26,13 +32,23 @@ internal readonly struct IntervalNumber(double lower, double upper)
         if (a.Lower == 1 && a.Upper == 1) return b;
         if (b.Lower == 1 && b.Upper == 1) return a;
         var p = a.Lower * b.Lower; var q = a.Lower * b.Upper;
+        if(a.Lower==a.Upper&&b.Lower==b.Upper&&double.IsFinite(p)&&Math.Abs(p)>=Math.ScaleB(1,-969)
+            &&Math.FusedMultiplyAdd(a.Lower,b.Lower,-p)==0)return new(p);
         var r = a.Upper * b.Lower; var s = a.Upper * b.Upper;
         return new(Math.BitDecrement(Math.Min(Math.Min(p, q), Math.Min(r, s))),
             Math.BitIncrement(Math.Max(Math.Max(p, q), Math.Max(r, s))));
     }
     public static IntervalNumber operator /(IntervalNumber a, IntervalNumber b)
-        => b.Lower == 1 && b.Upper == 1 ? a : b.ContainsZero ? new(double.NegativeInfinity, double.PositiveInfinity)
-            : a * new IntervalNumber(Math.BitDecrement(1 / b.Upper), Math.BitIncrement(1 / b.Lower));
+    {
+        if(b.Lower==1&&b.Upper==1)return a;
+        if(b.ContainsZero)return new(double.NegativeInfinity,double.PositiveInfinity);
+        if(a.Lower==a.Upper&&b.Lower==b.Upper)
+        {
+            var quotient=a.Lower/b.Lower;
+            if(double.IsFinite(quotient)&&Math.Abs(a.Lower)>=Math.ScaleB(1,-969)&&Math.FusedMultiplyAdd(quotient,b.Lower,-a.Lower)==0)return new(quotient);
+        }
+        return a*new IntervalNumber(Math.BitDecrement(1/b.Upper),Math.BitIncrement(1/b.Lower));
+    }
     internal static IntervalNumber Hull(IntervalNumber a, IntervalNumber b)
         => new(Math.Min(a.Lower, b.Lower), Math.Max(a.Upper, b.Upper));
     internal static IntervalNumber Square(IntervalNumber a)

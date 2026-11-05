@@ -17,8 +17,9 @@ The A/B baseline and its acceptance evidence are documented in `docs/Public_Mode
 | B-rep and import | Primitive solids, wires, sheets, holes, closed-edge and pole-loop topology; actual source geometry from supported XT graphs | `docs/xt_brep_materialization.md` |
 | Profile modeling | Bounded wires and planar faces, polygonal holes, distance-bounded straight/oblique extrusion, signed partial/full revolution | `docs/Profile_Modeling.md` |
 | Intersection operations | Exact analytic paths plus bounded regular NURBS/NURBS and analytic/NURBS discovery, closed branches, paired UV, boundary intersections and inverse parameters | `docs/Intersection_Operations.md`, `docs/Curved_Surface_Pipeline.md` |
+| Pure geometry extension | Geometry-bounded analytic SSI, certified convex plane contacts, global supported minimum-distance/projection queries, exact cylindrical/toroidal blends and seven spline edits | `docs/Geometry_Completion_Plan.md` |
 | Boolean and editing | Planar solid Boolean, complete-sphere scope; NURBS sheet imprint, closed-loop/holed trimming, repeated plane cuts and connected front/back section | `docs/Boolean_Operations.md`, `docs/Curved_Surface_Pipeline.md`, `docs/Analytic_Boolean_Operations.md` |
-| Freeform construction | Interpolation/fitting, exact curve matching, spline-grid surfaces, rational sweep/spin surfaces, certified parallel-profile solid sweeps/lofts and complete-edge sewing | `docs/Freeform_Modeling.md` |
+| Freeform construction | Interpolation/fitting, exact curve matching, clamped spline-grid surfaces with corner twists, rational sweep/spin surfaces, certified parallel-profile solid sweeps/lofts and complete-edge sewing | `docs/Freeform_Modeling.md` |
 | Local operations | Convex/analytic offsets and hollows, independent or uniform-all-edge convex fillets/chamfers, cylinder rim operations | `docs/Local_Operations.md` |
 | Interchange | Fresh runtime-derived XT output, preserved opaque documents for unsupported import graphs, schema and corpus tooling | `docs/project_gm_kernel_xt_library.md`, `docs/xt_all_versions_support_status.md` |
 | Visualization | Real PK faceting and line rendering, PKToy viewer buffers, exact mapping to independent face/edge identifiers, native and managed integration | `docs/Display_Bridge.md` |
@@ -36,6 +37,15 @@ MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAdvancedModeling.cs
 It checks the new independent intersection, planar/analytic Boolean, tracking, section, freeform and local-operation oracles, then the complete A/B suite and additional NativeAOT C-export modeling. Its actual exit statuses are recorded in `temp_docs/advanced-modeling-verification`; persistent evidence belongs in `docs/reviews/advanced-modeling`.
 
 The 2026-11-05 general-surface run passed all 14 top-level gates and all 14 nested gates, including 59 independent intersection contracts, 70 curved-sheet fixtures, XT tests, NativeAOT and native smoke checks. The final full kernel run passed 1,250 tests. The implemented descriptor count is 163; the Release allocation IL guard checked 1,935 methods and was clean. Scope, comparison qualifications and final-run details are recorded in `docs/reviews/advanced-modeling/general-surface-validation-2026-11-05.md`.
+
+The subsequent pure-geometry increments passed all 14 top-level and 14 nested
+gates, with 87 intersection/distance/blend/curve-editing contracts, 22 freeform
+construction scenarios and the same 70 curved-sheet fixtures. The final full
+kernel rerun passed 1,306 tests; XT tests passed 12. NativeAOT and native smoke
+checks passed with 173 implemented descriptors and a clean Release allocation
+guard covering 1,994 methods. This run used SDK 10.0.302. Supported subsets and
+remaining geometry boundaries are recorded in `docs/Geometry_Completion_Plan.md`
+and `docs/reviews/advanced-modeling/pure-geometry-increment-2026-11-05.md`.
 
 The final 2026-11-03 advanced run passed all 10 top-level gates and all 14 nested A/B gates: 1107 kernel tests, 12 XT tests, 224 cases across the seven main independent oracle matrices, four additional tolerant-geometry lifecycle cases, two additional loft rejection-contract cases, and the NativeAOT modeling/display checks. The implemented descriptor count is 161, up from the A/B baseline's 124. The production managed-allocation IL guard checked 1789 methods and was clean. See `docs/reviews/advanced-modeling/validation-2026-11-03.txt` for the exact environment, optional in-process MSBuild task configuration, raw comparison qualifications and actual exit statuses.
 

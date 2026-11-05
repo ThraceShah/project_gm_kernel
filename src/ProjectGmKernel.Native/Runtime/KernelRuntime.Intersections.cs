@@ -378,6 +378,17 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[64];Span<KernelVector3> isolated=stackalloc KernelVector3[64];
         var status=FindSurfaceIntersections(sa,sb,branches,out var nc,isolated,out var np);
         if(status==AlgorithmStatus.Unsupported)
+        {
+            var bs=Surfaces[sa].Class==SurfaceClass.BSurface?sa:Surfaces[sb].Class==SurfaceClass.BSurface?sb:-1;
+            var ps=bs==sa?sb:sa;
+            if(bs>=0&&TryPrepareSurface(Surfaces[ps],out var plane)&&plane.Kind==SurfaceClass.Plane)
+            {
+                var contact=ConvexPlaneContacts.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[bs].DataIndex]),plane,isolated,out var contacts);
+                if(contact==AlgorithmStatus.Success){status=contact;np=contacts;nc=0;}
+                else if(contact!=AlgorithmStatus.Unsupported)return IntersectionError(contact);
+            }
+        }
+        if(status==AlgorithmStatus.Unsupported)
             return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         if(options->have_vector!=0)

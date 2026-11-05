@@ -38,7 +38,10 @@ internal static unsafe partial class KernelRuntime
         error=PrepareDistanceOperand(first,out var a);if(error!=0)return error;
         error=PrepareDistanceOperand(second,out var b);if(error!=0)return error;
         PK_range_end_s ea=default,eb=default;double distance;
-        if(a.Pool==PoolKind.Point||b.Pool==PoolKind.Point)
+        var exact=ExactGeometryDistance(a,b,out ea,out eb,out distance);
+        if(exact==AlgorithmStatus.Success){}
+        else if(exact!=AlgorithmStatus.Unsupported)return IntersectionError(exact);
+        else if(a.Pool==PoolKind.Point||b.Pool==PoolKind.Point)
         {
             var pointFirst=a.Pool==PoolKind.Point;var point=pointFirst?a:b;var other=pointFirst?b:a;
             error=ClosestGeometryVector(other.Tag,point.Seed,tolerance,out var foot,out distance);if(error!=0)return error;

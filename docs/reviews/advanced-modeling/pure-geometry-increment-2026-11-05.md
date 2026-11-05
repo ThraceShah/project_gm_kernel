@@ -59,8 +59,60 @@ offset/swept/spun/procedural-blend supports, maximum/local/array ranges,
 parameter-bounded range options, general curve projection and arbitrary
 minimum-family metadata remain open. General procedural and variable-radius
 Blend surfaces are not connected by the analytic simplification increment.
-Geometry editing and constrained construction are the next increment.
+The editing and constrained-construction subset is recorded below.
 
 No unsupported or numerical-failure case was converted to a successful empty
 result to increase coverage. Existing extreme-weight native BOUNDARY cases
 remain excluded from the positive compatibility count.
+
+## Editing, constrained surfaces and contact increment
+
+Seven additional public APIs implement B-curve/B-surface insertion, elevation
+and reparameterization. Degree elevation restores original knot continuity
+using inverse Boehm steps certified by interval reinsertion. The original tag
+survives; payload replacement, allocation failures and mark/goto restoration
+participate in the runtime transaction system. Attached geometry is rejected.
+Degrees above 16, unclamped/periodic input and the documented workspace limits
+are outside this subset.
+
+Spline-grid construction supports cubic clamped boundary vectors and explicit
+corner twists. Independent native experiments established normalized adjacent
+segment vector semantics and transpose-before-reversal parameter maps; the
+regressions exercise nonuniform domains, rational data and D0--D2 mixed jets.
+
+Strict convex/concave plane-numerator bounds now certify isolated NURBS plane
+contacts when value and gradient are exactly zero. The contact test includes
+nearby regular closed curves and a disjoint case. Exact singleton interval
+operations are checked against exact BigInteger fractions across normal and
+subnormal ranges; Krawczyk displacements also enclose subtraction rounding.
+Tighter bounds exposed an isoparametric extraction rounding defect: a constant
+coordinate could shrink by one ULP and lose a finite-domain boundary crossing.
+Affine accumulation preserves these coordinates. Direct boundary fixtures,
+repeated closed-edge imprint and annulus section verify the correction without
+relaxing topology counts or native checks.
+
+Exact infinite line/line, sphere/sphere and plane/plane minima supplement the
+bounded distance solver, including witnesses and known continuous-family flags.
+Generic maximum/local/array queries and arbitrary pair-family metadata remain
+open. The blend increment remains the exact cylinder/torus simplification;
+general procedural and variable-radius blends are still open. Public knot
+removal, degree reduction, extension, joining, periodic editing, automatic
+doubly-clamped corner twists and curve-clamped grids are also still open.
+
+The final combined suite passed all 14 top-level and all 14 nested gates.
+IntersectionOperationOracle passed 87 contracts and FreeformModelingOracle
+passed 22 scenarios, with real-PK receive/full-check and independent body
+comparison. CurvedSheetPartitionOracle passed all 70 fixtures. XT tests passed
+12. Release NativeAOT, native ABI, display and advanced modeling smoke tests
+passed with 173 implemented dispatch descriptors; the Release allocation IL
+guard checked 1,994 methods and was CLEAN. The combined suite's kernel run
+passed 1,295 tests before the last additional invalid-edit and distance-family
+cases. The final full kernel rerun passed all 1,306 tests, with zero failures
+and zero skips. Evidence is in `temp_docs/pure-geometry-final-kernel-tests.log`.
+
+Environment: Linux x64, .NET SDK 10.0.302 and real Parasolid 38.0.150. Final
+logs are `temp_docs/pure-geometry-final-verification.log`,
+`temp_docs/advanced-modeling-verification/summary.txt`,
+`temp_docs/public-modeling-verification/summary.txt`,
+`temp_docs/pure-geometry-final-editing-tests.log` and
+`temp_docs/pure-geometry-final-kernel-tests.log`.

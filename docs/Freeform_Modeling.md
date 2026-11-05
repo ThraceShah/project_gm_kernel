@@ -4,7 +4,7 @@
 
 功能定义对齐用户提供的 Parasolid Functional Description 第 18–19 章 Geometry / B-Curves And B-Surfaces、第 42 章 Sweeping、第 44 章 Lofting 及 sheet sewing 定义。函数签名、选项版本、内存释放结构来自项目使用的 SDK 头文件。原始文档和私有 SDK 不复制进源码。
 
-这里描述的是已经实现的范围。一般 NURBS/NURBS 求交与布尔、任意移动标架扫掠、带导轨放样、任意间隙和局部边匹配缝合仍不在本模块的完成范围内。
+这里描述的是已经实现的范围。规则 NURBS/NURBS 求交见 `docs/Curved_Surface_Pipeline.md`；一般奇异求交、曲面实体布尔、任意移动标架扫掠、带导轨放样、任意间隙和局部边匹配缝合仍不在本模块的完成范围内。
 
 ## 公开接口
 
@@ -17,7 +17,8 @@
 | `PK_BCURVE_sweep` | 构造精确的线性平移曲面，保留原曲线参数为 u，平移参数 v 为 `[0,1]`。 |
 | `PK_BCURVE_spin` | 将普通或有理 B 曲线围绕给定轴旋转，使用精确有理二次圆弧生成张量积曲面。 |
 | `PK_BSURF_make_bcurve_u_isoparam` / `_v_isoparam` | 从张量积控制网精确提取等参数曲线。u 入口固定 u 并返回沿 v 的曲线，v 入口反之。 |
-| `PK_BSURF_create_splinewise` | 用线性或自然三次插值构造通过二维点阵的张量积曲面。 |
+| `PK_BSURF_create_splinewise` | 用线性或三次插值构造通过二维点阵的张量积曲面，支持自然端条件、夹持导数和显式角点 twist。 |
+| B 曲线 / 曲面插结、升阶和重参数化 | 七个公开入口，保留游离几何句柄及形状，支持普通和正权重有理数据。 |
 | `PK_SURF_make_sheet_body` | 将支持范围内的解析面或 B 曲面的正则 UV 矩形构造成一面、四边、四顶点的 sheet body。 |
 | `PK_BODY_make_swept_body` | 将平面有界 sheet 沿一条受支持的空间路径平行平移，构造侧面和两个端盖；支持孔环。 |
 | `PK_BODY_make_lofted_body` | 在匹配的闭合平面轮廓之间构造经过连续有效性证明的自然放样实体。 |
@@ -48,9 +49,19 @@
 
 ### 点阵插值
 
-`PK_BSURF_create_splinewise` 的位置数组按恒定 v 的行排列：`positions[j * n_u_positions + i]`。每个方向可以选择一次或三次插值。当前支持自然端条件、无 corner twist，以及自动参数或显式参数数组。
+`PK_BSURF_create_splinewise` 的位置数组按恒定 v 的行排列：`positions[j * n_u_positions + i]`。每个方向可以选择一次或三次插值，支持自然端条件，以及三次方向的 `clamped_vector` 边界一阶导数。相邻两边均夹持时，当前要求显式提供该角点 twist；未指定 twist 的自动估计、周期条件和曲线夹持仍未接通。
+
+夹持向量遵循真实 Parasolid 的相邻参数段归一化约定。底层参数导数等于输入向量除以相邻段宽，角点混合导数除以两个方向的段宽乘积。单面和多跨双三次多项式用非均匀参数测试 D0、D1、D2 及混合导数，并独立构造 native 结果比较。
 
 自动参数在同一方向的所有行上累加每一段的弦长，再归一化到 `[0,1]`；不是均匀参数，也不是先分别归一化每一行再平均。显式 `u_knot` / `v_knot` 数组给出各点阵行列的严格递增参数，保留其原始范围。每方向最多 32 个样本，生成控制网最多 8192 个控制点。
+
+### B 几何编辑
+
+公开 `PK_BCURVE_add_knot`、`PK_BCURVE_raise_degree`、`PK_BCURVE_reparameterise`，以及 `PK_BSURF_add_u_knot`、`PK_BSURF_add_v_knot`、`PK_BSURF_raise_degree`、`PK_BSURF_reparameterise` 已接通。输入为开放、端部夹持、非周期的普通或正权重有理 B 几何；已经归属拓扑、construction body 或其他几何依赖的对象返回 `PK_ERROR_is_attached`。
+
+插结保留原始形状；升阶在齐次 Bezier 升阶后，通过带全参数距离界的逆 Boehm 操作恢复原有节点连续度。曲线重参数化保留原句柄并按区间比例缩放导数。曲面支持区间重映射，以及先交换 U/V 后再反转方向的组合。新旧 payload 参与命令事务，分配失败恢复原始几何；复制、导出和后续求值使用新定义。
+
+次数上限 16；曲线及单方向编辑工作控制点上限 1024，曲面控制网上限 8192。公开删结、降阶、延长、拼接、未夹持端和周期编辑仍未完成；升阶内部使用逆插结，不等同于已经实现公开删结接口。
 
 ### 有界 sheet
 
@@ -114,7 +125,7 @@ fin 的顶层 trimmed curve 由 HALFEDGE 拥有；SP 曲线、二维曲线和支
 - 自研和原生 tolerant XT 的 self receive → copy → 删除原件 → 平移副本 → self transmit → PK receive/check/compare → delete，检查几何池无泄漏。
 - 多环放样的失败状态与 fault topology 一致。
 
-本轮独立验收通过 16 个正向建模场景、4 个 tolerant XT 生命周期往返，以及两截面和三截面两组多环放样拒绝协议对照。非同形放样的严格 PK 对照使用宽度和高度分别变化的三个矩形截面；一般凸斜四边形的连续有效性由单元测试检验。不同斜截面组合可能触发 PK 自身不同的拟合和容差分配，不把这些情形的原生几何逐点一致性概括为已经完成。
+本轮独立验收通过 22 个正向建模场景、4 个 tolerant XT 生命周期往返，以及两截面和三截面两组多环放样拒绝协议对照。新增场景覆盖双三次夹持/twist、普通/有理曲面编辑及组合参数映射。非同形放样的严格 PK 对照使用宽度和高度分别变化的三个矩形截面；一般凸斜四边形的连续有效性由单元测试检验。不同斜截面组合可能触发 PK 自身不同的拟合和容差分配，不把这些情形的原生几何逐点一致性概括为已经完成。
 
 不同但等价的 B 样条控制网或曲面参数化不要求逐字节相同。默认 BODY_check、拓扑、类型、sense、容差和缺失几何检查不关闭，也不把失败改记为通过。
 

@@ -72,6 +72,48 @@ public unsafe class GeometryDistanceTests:IDisposable
         Assert.Equal((nint)4,System.Runtime.InteropServices.Marshal.OffsetOf<PK_range_param_bound_s>(nameof(PK_range_param_bound_s.param_bound_class)));
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void InfiniteLinesSupportSkewAndNonUniqueParallelMinima(bool parallel)
+    {
+        var a=Line(0,0,0,1,0,0);var b=Line(0,1,1,parallel?1:0,parallel?0:1,0);var options=PairOptions();int status=0;PK_range_2_r_s result=default;
+        Assert.Equal(0,KernelRuntime.GeomRange(a,b,&options,&status,&result));Near(parallel?Math.Sqrt(2):1,result.distance);var ends=(PK_range_end_s*)result.ends;
+        Assert.Equal(parallel?1:0,ends[0].region);Assert.Equal(parallel?1:0,ends[1].region);
+        if(!parallel){Near(0,ends[0].parameters[0]);Near(-1,ends[1].parameters[0]);}
+    }
+
+    [Theory]
+    [InlineData(6,2,1,3,0)] [InlineData(1,3,1,1,0)] [InlineData(1,1,3,1,0)]
+    [InlineData(2,2,2,0,1)] [InlineData(0,2,1,1,1)] [InlineData(0,2,2,0,1)]
+    [InlineData(3,2,1,0,0)] [InlineData(1,2,1,0,0)]
+    public void SpherePairsReturnValidGlobalWitnessesForNestedIntersectingAndConcentricCases(double offset,double ra,double rb,double distance,int region)
+    {
+        var sf=new PK_SPHERE_sf_s{radius=ra};sf.basis_set.axis.coord[2]=1;sf.basis_set.ref_direction.coord[0]=1;int a=0,b=0;
+        Assert.Equal(0,KernelRuntime.SphereCreate(&sf,&a));sf.radius=rb;sf.basis_set.location.coord[0]=offset;Assert.Equal(0,KernelRuntime.SphereCreate(&sf,&b));
+        var options=PairOptions();int status=0;PK_range_2_r_s result=default;Assert.Equal(0,KernelRuntime.GeomRange(a,b,&options,&status,&result));
+        Assert.Equal(ParasolidConstants.PK_range_result_found_c,status);Near(distance,result.distance);var ends=(PK_range_end_s*)result.ends;
+        for(var i=0;i<2;i++)
+        {
+            var x=ends[i].vector.coord[0]-(i==0?0:offset);var y=ends[i].vector.coord[1];var z=ends[i].vector.coord[2];Near(i==0?ra:rb,Math.Sqrt(x*x+y*y+z*z));
+            Assert.Equal(region,ends[i].region);var uv=new PK_UV_s();uv.param[0]=ends[i].parameters[0];uv.param[1]=ends[i].parameters[1];var point=new PK_VECTOR_s();
+            Assert.Equal(0,KernelRuntime.SurfEval(i==0?a:b,uv,0,0,0,&point));for(var d=0;d<3;d++)Near(ends[i].vector.coord[d],point.coord[d]);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void PlanePairsReturnAValidWitnessForParallelAndIntersectingFamilies(bool parallel)
+    {
+        var a=GeneralSurfaceIntersectionTests.Plane();var sf=new PK_PLANE_sf_s();sf.basis_set.location=Point(0,0,2);
+        sf.basis_set.axis=parallel?Point(0,0,1):Point(1,0,0);sf.basis_set.ref_direction=parallel?Point(1,0,0):Point(0,1,0);int b=0;Assert.Equal(0,KernelRuntime.PlaneCreate(&sf,&b));
+        var options=PairOptions();int status=0;PK_range_2_r_s result=default;Assert.Equal(0,KernelRuntime.GeomRange(a,b,&options,&status,&result));Near(parallel?2:0,result.distance);
+        var ends=(PK_range_end_s*)result.ends;for(var i=0;i<2;i++)
+        {
+            Assert.Equal(1,ends[i].region);var uv=new PK_UV_s();uv.param[0]=ends[i].parameters[0];uv.param[1]=ends[i].parameters[1];var point=new PK_VECTOR_s();
+            Assert.Equal(0,KernelRuntime.SurfEval(i==0?a:b,uv,0,0,0,&point));for(var d=0;d<3;d++)Near(ends[i].vector.coord[d],point.coord[d]);
+        }
+    }
+
     internal static PK_GEOM_range_vector_o_s VectorOptions()=>new(){o_t_version=2,have_tolerance=1,tolerance=1e-9,guess=new(){type=ParasolidConstants.PK_range_guess_no_c},opt_level=ParasolidConstants.PK_range_opt_accuracy_c};
     internal static PK_GEOM_range_o_s PairOptions()
     {

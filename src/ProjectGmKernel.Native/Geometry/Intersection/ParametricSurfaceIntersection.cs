@@ -213,7 +213,7 @@ internal static class ParametricSurfaceIntersection
                     {
                         IntervalNumber value = r == c ? 1 : 0;
                         for (var k = 0; k < 3; k++) value -= inverse[3 * r + k] * jac[4 * k + axes[c]];
-                        image += value * new IntervalNumber(expanded.Lower.Parameter(axes[c]) - point.Parameter(axes[c]), expanded.Upper.Parameter(axes[c]) - point.Parameter(axes[c]));
+                        image += value * (new IntervalNumber(expanded.Lower.Parameter(axes[c]), expanded.Upper.Parameter(axes[c])) - point.Parameter(axes[c]));
                     }
                     var axis = axes[r];
                     if (image.Upper < cell.Lower.Parameter(axis) || image.Lower > cell.Upper.Parameter(axis)) empty = true;
