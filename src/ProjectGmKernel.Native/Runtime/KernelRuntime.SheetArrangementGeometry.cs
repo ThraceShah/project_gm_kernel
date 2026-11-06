@@ -63,6 +63,8 @@ internal static unsafe partial class KernelRuntime
     {
         if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Cylinder)
             return CylindricalLoopWinding(surface,edges,loop,query,out winding);
+        if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Sphere)
+            return SphericalLoopWinding(surface,edges,loop,query,out winding);
         var vertical=BlendWindingPrefersVertical(surface,edges,loop,query);var error=0;winding=0;
         for(var attempt=0;attempt<6;attempt++)
         {

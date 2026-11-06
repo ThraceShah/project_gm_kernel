@@ -14,7 +14,8 @@ internal static unsafe partial class KernelRuntime
         var f=Bodies[body].FirstFaceBody;var curved=false;
         for(var i=0;i<Bodies[body].FaceCountBody;i++,f=Faces[f].NextInBody)
         {
-            var slot=GetSurfaceSlotByTag(Faces[f].SurfTag);if(slot<0||Surfaces[slot].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+            var slot=GetSurfaceSlotByTag(Faces[f].SurfTag);if(slot<0||Surfaces[slot].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+            if(Surfaces[slot].Class==SurfaceClass.Sphere&&Faces[f].LoopCount==0)return ParasolidConstants.PK_ERROR_not_implemented;
             curved|=Surfaces[slot].Class!=SurfaceClass.Plane;
         }
         if(!curved)return ParasolidConstants.PK_ERROR_not_implemented;handled=true;
@@ -43,7 +44,14 @@ internal static unsafe partial class KernelRuntime
             {
                 var support=faces[i].Surface;if(RegularPointOutsideSupport(support,point))continue;
                 if(RegularPointAwayFromBSurface(GetSurfaceSlotByTag(support),point))continue;
-                var uv=new PK_UV_s();error=SurfParameteriseVectorCore(support,vector,&uv);
+                var uv=new PK_UV_s();
+                if(Surfaces[GetSurfaceSlotByTag(support)].Class==SurfaceClass.Sphere&&TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(support)],out var sphere))
+                {
+                    if(Math.Abs(Geometry.Intersection.OperationIntersection.Norm(Geometry.Evaluation.EvaluationMath.Sub(point,sphere.Origin))-sphere.Radius)>1e-8)continue;
+                    var status=Geometry.Intersection.OperationIntersection.Parameters(sphere,point,out var u,out var v);if(status!=Computation.AlgorithmStatus.Success)return IntersectionError(status);
+                    uv.param[0]=u;uv.param[1]=v;error=0;
+                }
+                else error=SurfParameteriseVectorCore(support,vector,&uv);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
                 error=RegularFaceContains(view,i,uv,out var inside);if(error!=0)return error;
                 if(inside){*enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Faces[sources[i]].Header.Tag;return 0;}

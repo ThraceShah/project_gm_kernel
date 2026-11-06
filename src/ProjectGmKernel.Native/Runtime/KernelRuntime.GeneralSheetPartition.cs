@@ -23,6 +23,8 @@ internal static unsafe partial class KernelRuntime
         {
             var support=GetSurfaceSlotByTag(Faces[source].SurfTag);
             if(support<0)return ParasolidConstants.PK_ERROR_missing_geom;
+            if(Surfaces[support].Class==SurfaceClass.Sphere)
+            {var domainError=ValidateSphericalFaceDomain(source);if(domainError!=0)return domainError;continue;}
             if(Surfaces[support].Class==SurfaceClass.BlendSurface)continue;
             if(Surfaces[support].Class!=SurfaceClass.BSurface)return ParasolidConstants.PK_ERROR_not_implemented;
             var data=BSurfaceDataStore[Surfaces[support].DataIndex];

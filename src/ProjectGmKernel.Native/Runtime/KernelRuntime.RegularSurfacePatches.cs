@@ -56,6 +56,8 @@ internal static unsafe partial class KernelRuntime
         extent=default;var record=Surfaces[slot];
         if(record.Class==SurfaceClass.BSurface)
         {extent=GeneralSurfaceExtent(GetBSurfaceView(BSurfaceDataStore[record.DataIndex]));return AlgorithmStatus.Success;}
+        if(record.Class==SurfaceClass.Sphere&&TryPrepareSurface(record,out var sphere))
+        {extent=AnalyticBallBounds(sphere.Origin,sphere.Radius);return AlgorithmStatus.Success;}
         if(record.Class!=SurfaceClass.BlendSurface)return AlgorithmStatus.Unsupported;
         var data=BlendedEdgeDataPool[record.DataIndex];
         return BlendExtent(GetNestedBlendProgram(data),data.ProgramRoot,new(record.UMin,record.UMax,record.VMin,record.VMax),out extent);

@@ -10,6 +10,7 @@ internal static unsafe partial class KernelRuntime
         out PK_UV_s left,out byte positive)
     {
         left=default;positive=0;var support=Surfaces[GetSurfaceSlotByTag(surface)];
+        if(support.Class==SurfaceClass.Sphere)return SphericalCycleWitness(surface,edges,loop,out left,out positive);
         var extent=Math.Min(support.UMax-support.UMin,support.VMax-support.VMin);
         if(support.Class is SurfaceClass.Plane or SurfaceClass.Cylinder)extent=PlanarLoopParameterScale(surface,edges,loop);
         for(var attempt=0;attempt<24;attempt++)

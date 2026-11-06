@@ -32,7 +32,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if(nf==faces.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                 var record=Faces[face];var sf=GetSurfaceSlotByTag(record.SurfTag);if(sf<0)return ParasolidConstants.PK_ERROR_missing_geom;
-                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
                 if(Surfaces[sf].Class==SurfaceClass.BSurface)
                 {
                     var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[sf].DataIndex]);
@@ -66,6 +66,10 @@ internal static unsafe partial class KernelRuntime
                         }
                         coedges[nc++]=new(){Edge=index,Forward=Fins[fin].Sense=='+'?(byte)1:(byte)0};
                     }
+                }
+                if(Surfaces[sf].Class==SurfaceClass.Sphere)
+                {
+                    var error=ValidateSphericalFaceDomain(face);if(error!=0)return error;
                 }
             }
         }
@@ -118,6 +122,12 @@ internal static unsafe partial class KernelRuntime
                     var transverse=Sub(direction,Scale(analytic.Axis,Dot(direction,analytic.Axis)));var speed=OperationIntersection.Norm(transverse);
                     if(speed<1e-12)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     var upper=(OperationIntersection.Norm(radial)+analytic.Radius)/speed;
+                    var status=OperationIntersection.AnalyticLine(analytic,point,direction,0,upper+1e-8*Math.Max(1,upper),roots,out n);
+                    if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                }
+                else if(analytic.Kind==SurfaceClass.Sphere)
+                {
+                    var upper=OperationIntersection.Norm(Sub(point,analytic.Origin))+analytic.Radius;
                     var status=OperationIntersection.AnalyticLine(analytic,point,direction,0,upper+1e-8*Math.Max(1,upper),roots,out n);
                     if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 }

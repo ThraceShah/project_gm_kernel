@@ -133,6 +133,12 @@ internal static unsafe partial class KernelRuntime
     {
         if(count==halfedges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
         ref readonly var record=ref model.Edges[edge];
+        if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Sphere)
+        {
+            var sphericalError=SphericalHalfedgeAngle(surface,record,forward,false,model.Points,out var startAngle);if(sphericalError!=0)return sphericalError;
+            sphericalError=SphericalHalfedgeAngle(surface,record,forward,true,model.Points,out var endAngle);if(sphericalError!=0)return sphericalError;
+            halfedges[count++]=new(){Edge=edge,Forward=forward,Next=-1,StartAngle=startAngle,EndAngle=endAngle};return 0;
+        }
         var error=SheetCoedgePoint(surface,record,forward,0,out _,out var start,out _);if(error!=0)return error;
         error=SheetCoedgePoint(surface,record,forward,1,out _,out var end,out _);if(error!=0)return error;
         halfedges[count++]=new(){Edge=edge,Forward=forward,Next=-1,StartAngle=Math.Atan2(start.param[1],start.param[0]),EndAngle=Math.Atan2(end.param[1],end.param[0])};return 0;

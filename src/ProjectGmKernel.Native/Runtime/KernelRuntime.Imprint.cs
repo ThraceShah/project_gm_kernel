@@ -86,7 +86,7 @@ internal static unsafe partial class KernelRuntime
         if (!solid && Bodies[slot].FaceCountBody > 0)
         {
             var support = GetSurfaceSlotByTag(Faces[Bodies[slot].FirstFaceBody].SurfTag);
-            if (support >= 0 && Surfaces[support].Class is SurfaceClass.BSurface or SurfaceClass.BlendSurface)
+            if (support >= 0 && Surfaces[support].Class is SurfaceClass.BSurface or SurfaceClass.BlendSurface or SurfaceClass.Sphere)
                 return ImprintGeneralSheet(slot, plane, tolerance, count, edges);
         }
         var scratch = CommandScratch.Current; var memory = scratch.Take(120000);
