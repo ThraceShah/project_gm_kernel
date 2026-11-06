@@ -90,7 +90,7 @@ static unsafe void FixChain(bool own,int body,int[] edges,double radius)
     var fix=new PK_BODY_fix_blends_o_t{tolerance=1e-7,update=PK_blend_edge_update_v261_c,local_check=PK_LOGICAL_true};int fault,fe,ft;int* output;
     var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&n,&output,null,null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&n,&output,null,null,&fault,&fe,&ft);
     Console.WriteLine($"TIME FixBlends own={own} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
-    if(own&&ModelingPerformance.Enabled){var p=ModelingPerformance.Last;Console.WriteLine($"PROOF bounds={p.BoundRequests}, actual={p.BoundEvaluations}, hits={p.BoundCacheHits}, cells={KernelRuntime.LastRegularBlendDomainCells}, ms={TimeSpan.FromTicks(p.ElapsedTicks*TimeSpan.TicksPerSecond/Stopwatch.Frequency).TotalMilliseconds:F3}");}
+    if(own&&ModelingPerformance.Enabled)PrintProfile("FixBlends");
     if(own&&error!=0&&KernelRuntime.IsValidTag(KernelRuntime.LastRegularBlendDomainFace))
     {
         var face=KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(KernelRuntime.LastRegularBlendDomainFace).Slot];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(face.SurfTag)];Console.WriteLine($"obstacle class={surface.Class}, orientation={face.Orientation}, surfaceSense={surface.Sense}");
@@ -109,7 +109,13 @@ static unsafe void Cut(bool own,int target)
     var tool=Block(own,1.05,.5,-.1,1,2,2);var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
     var started=Stopwatch.GetTimestamp();Check(own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(target,1,&tool,&options,&n,&bodies),"cut reloaded chain");
     Console.WriteLine($"TIME Boolean own={own} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
+    if(own&&ModelingPerformance.Enabled)PrintProfile("Boolean");
     try{Require(n==1&&bodies[0]==target,"one chain Boolean result");}finally{Free(own,bodies);}
+}
+static void PrintProfile(string operation)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} elapsed-ms={p.ElapsedTicks*milliseconds:F3}, pairs={p.SurfacePairs}, ssi-cells={p.SsiCells}, root-cells={p.RootCells}, roots={p.Roots}, budget-failures={p.BudgetFailures}, winding={p.WindingCalls}, bound-requests={p.BoundRequests}, bound-evaluations={p.BoundEvaluations}, cache-hits={p.BoundCacheHits}, bound-ms={p.BoundTicks*milliseconds:F3}");
 }
 static unsafe void RefilletNested(bool own,int target,bool transformed)
 {

@@ -84,6 +84,25 @@ public unsafe class ModelingPerformanceTests:IDisposable
     }
 
     [Fact]
+    public void ReadOnlyChildProofMergesWorkIntoTheMutatingOperationWithoutSharingItsCache()
+    {
+        ModelingPerformance.Context operation=default,proof=default;
+        using(var outer=new ModelingPerformance.Scope(&operation))
+        {
+            ModelingPerformance.Cell(root:false);
+            using(var inner=new ModelingPerformance.Scope(&proof,immutableGeometry:true))
+            {
+                Assert.True(operation.Entries==null);Assert.True(proof.Entries!=null);
+                ModelingPerformance.Cell(root:true);ModelingPerformance.Root();ModelingPerformance.BoundRequest();
+            }
+            Assert.Equal(1,operation.Profile.SsiCells);Assert.Equal(1,operation.Profile.RootCells);
+            Assert.Equal(1,operation.Profile.Roots);Assert.Equal(1,operation.Profile.BoundRequests);
+            Assert.True(operation.Entries==null);
+        }
+        Assert.Equal(1,ModelingPerformance.Last.RootCells);Assert.True(ModelingPerformance.Last.ElapsedTicks>=proof.Profile.ElapsedTicks);
+    }
+
+    [Fact]
     public void ACachedBoundPreservesTheOriginalShortOutputError()
     {
         var program=new NestedBlendProgram(NestedBlendSeriesTests.Surfaces(),NestedBlendSeriesTests.Spines(),NestedBlendSeriesTests.Charts());

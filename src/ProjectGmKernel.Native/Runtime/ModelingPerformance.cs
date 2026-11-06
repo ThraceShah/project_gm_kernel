@@ -67,6 +67,16 @@ internal static unsafe class ModelingPerformance
             {
                 var ended=Stopwatch.GetTimestamp();context->Profile.Stages[(int)context->Stage]+=ended-context->StageStarted;
                 context->Profile.ElapsedTicks=ended-context->Started;Last=context->Profile;
+                if(previous!=null&&previous->Capture)
+                {
+                    // The parent's elapsed/stage clocks already include this
+                    // child. Merge work counters, never time the API twice.
+                    ref var parent=ref previous->Profile;var child=context->Profile;
+                    parent.SsiCells+=child.SsiCells;parent.RootCells+=child.RootCells;parent.Roots+=child.Roots;
+                    parent.BudgetFailures+=child.BudgetFailures;parent.SurfacePairs+=child.SurfacePairs;parent.WindingCalls+=child.WindingCalls;
+                    parent.BoundRequests+=child.BoundRequests;parent.BoundEvaluations+=child.BoundEvaluations;
+                    parent.BoundCacheHits+=child.BoundCacheHits;parent.BoundTicks+=child.BoundTicks;
+                }
             }
             else Last=default;
             current=previous;

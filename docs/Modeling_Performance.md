@@ -34,6 +34,12 @@ miss；不以采样、模型名或近似几何相等提高命中率。只保存�
 只有显式标明 `immutableGeometry:true` 的 scope 可以启用缓存；可能修改几何的
 scope 默认只记录 profile。零托管分配与 AOT 兼容性保持不变。
 
+`FixLocalBlendsCore` 的外层 profile 记录整条圆角操作，构造后的只读 domain、
+contact 证明分别建立局部 scope；这些 scope 的工作计数汇总回外层，缓存随各自
+证明结束释放。子阶段 elapsed 不重复相加到完整 API 时间，父阶段时钟已包含它。
+不能把最后一个证明阶段的 `Last` 误标为整条圆角耗时。`BlendChainOracle.cs`
+可直接输出完整 FixBlends/Boolean 时间和这两类操作的 profile，不再需要临时插桩。
+
 单元测试覆盖同界逐位比较、generation/sense/root/类别/四个端点失配、跨命令清空、
 精确 iso wrapper 复用以及可选内存分配失败退回。
 

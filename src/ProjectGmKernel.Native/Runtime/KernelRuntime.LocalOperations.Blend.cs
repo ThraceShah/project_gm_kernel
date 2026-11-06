@@ -78,6 +78,7 @@ internal static unsafe partial class KernelRuntime
     private static int FixLocalBlendsCore(EntityTag body,PK_BODY_fix_blends_o_s* options,int* outputCount,
         EntityTag** output,PK_FACE_array_s** unders,EntityTag** topols,int* fault,EntityTag* faultEdge,EntityTag* faultTopol)
     {
+        ModelingPerformance.Context profile=default;using var evidence=new ModelingPerformance.Scope(&profile);
         var error=ResolveLocalBody(body,out var slot);if(error!=0)return error;
         if(options==null||outputCount==null||fault==null||faultEdge==null||faultTopol==null)return ParasolidConstants.PK_ERROR_bad_parameter;
         if(options->o_t_version!=31)return ParasolidConstants.PK_ERROR_o_t_version_incorrect;
