@@ -172,7 +172,10 @@ internal static unsafe partial class KernelRuntime
         {
             var reduced=IntersectProceduralICurveTwoPlanes(slot,first,last,GetSurfaceSlotByTag(a.Header.Tag),support,cutting,output,out count);
             if(reduced==AlgorithmStatus.Success)return reduced;
-            if(reduced is not (AlgorithmStatus.Unsupported or AlgorithmStatus.NotConverged))return reduced;
+            // A rounded near-parallel pair can make the infinite plane line
+            // ill-conditioned while its bounded spline problem is separated.
+            // Keep the complete finite four-parameter proof as the fallback.
+            if(reduced is not (AlgorithmStatus.Unsupported or AlgorithmStatus.NotConverged or AlgorithmStatus.NumericalFailure))return reduced;
             count=0;
         }
         var av=GetBSurfaceView(BSurfaceDataStore[a.DataIndex]);var bv=b.Class==SurfaceClass.BSurface?GetBSurfaceView(BSurfaceDataStore[b.DataIndex]):default;

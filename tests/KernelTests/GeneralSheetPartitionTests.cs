@@ -77,6 +77,20 @@ public unsafe class GeneralSheetPartitionTests : IDisposable
     }
 
     [Theory]
+    [InlineData(-1.0)] [InlineData(1.0)]
+    public void NearParallelSecondPlaneUsesCompleteFiniteIntersectionProof(double direction)
+    {
+        var body=Sheet();Imprint(body,GeneralSurfaceIntersectionTests.Plane(),1);
+        var definition=new PK_PLANE_sf_s();definition.basis_set.location.coord[2]=.1;
+        definition.basis_set.axis.coord[0]=direction*Math.ScaleB(1,-50);definition.basis_set.axis.coord[2]=1;
+        definition.basis_set.ref_direction.coord[0]=1;int plane;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));
+        // The new plane cuts the surface in a second complete loop, but its
+        // infinite intersection line with the old loop's plane is far away.
+        Imprint(body,plane,1);BooleanOperationTests.Counts(body,3,6,4);
+    }
+
+    [Theory]
     [InlineData(18200)] [InlineData(18201)] [InlineData(18202)]
     public void SectionOfAnAlreadyTrimmedAnnulusReturnsConnectedMaterialCells(int fence)
     {
