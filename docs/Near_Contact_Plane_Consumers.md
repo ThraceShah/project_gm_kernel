@@ -43,3 +43,5 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/ConvexPlaneContactOracle
 验证源码基于 `3469085`，叠加 `22ff784` 与 `a0817ac`。托管 Release 的 175 项调度目录检查通过，核心 2,407 方法分配 IL 检查 CLEAN。最终原始 oracle 日志保存在 `docs/reviews/near-contact-plane-consumers-oracle.log`；它记录每个高度、操作、完整检查及严格结构差异。
 
 最终六档 SSI、12/12 次布尔及全部非空结果重载比较通过。最大十五项归一化物性残差 `4.27e-10`，薄帽体积的解析相对误差自研小于 `7.18e-8`、PK 小于 `1.08e-7`。最细帽体体积约 `5.58e-15`，结果为 `2F/1E/0V`，没有退化为零体积成功。公共 SSI 的闭环残差最大 `1.53e-14`。
+
+最终 KernelTests Release 全量 `1,582/1,582` 通过，零失败、零跳过。构建及测试原始输出（路径相对化）见 `docs/reviews/near-contact-plane-consumers-tests.log`。测试期间还运行了独立 PK oracle，本轮日志的操作耗时不是独占性能基准；M5 性能结果以单独的固定源码与独占计算窗口记录为准。

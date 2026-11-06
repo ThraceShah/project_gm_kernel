@@ -1,0 +1,42 @@
+Validation source: 3469085 + 22ff784 + a0817ac + 3a311f2
+SDK: 10.0.302; Parasolid: 38.0.150
+Production managed Release build:
+  Determining projects to restore...
+src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+  All projects are up-to-date for restore.
+src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+  ProjectGmKernel.Xt -> src/ProjectGmKernel.Xt/bin/Release/net10.0/ProjectGmKernel.Xt.dll
+src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanBuild.cs(256,56): warning CS9080: Use of variable 'scoped ReadOnlySpan<int> indices' in this context may expose referenced variables outside of their declaration scope [src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj]
+  ProjectGmKernel.Native -> src/ProjectGmKernel.Native/bin/Release/net10.0/ProjectGmKernel.Native.dll
+  Function catalog: 175 implemented dispatch descriptors verified.
+  allocation IL guard: checked 2407 methods
+  allocation IL guard: CLEAN
+
+Build succeeded.
+
+src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanBuild.cs(256,56): warning CS9080: Use of variable 'scoped ReadOnlySpan<int> indices' in this context may expose referenced variables outside of their declaration scope [src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:15.82
+
+KernelTests managed Release final:
+  Determining projects to restore...
+src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9 [tests/KernelTests/KernelTests.csproj]
+  All projects are up-to-date for restore.
+src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+  ProjectGmKernel.Xt -> src/ProjectGmKernel.Xt/bin/Release/net10.0/ProjectGmKernel.Xt.dll
+  ProjectGmKernel.Xt -> src/ProjectGmKernel.Xt/bin/Release/net10.0/ProjectGmKernel.Xt.dll
+src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanBuild.cs(256,56): warning CS9080: Use of variable 'scoped ReadOnlySpan<int> indices' in this context may expose referenced variables outside of their declaration scope [src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj]
+  ProjectGmKernel.Native -> src/ProjectGmKernel.Native/bin/Release/testhooks/ProjectGmKernel.Native.dll
+  Function catalog: 175 implemented dispatch descriptors verified.
+  allocation IL guard: checked 2417 methods
+  allocation IL guard: CLEAN
+  KernelTests -> tests/KernelTests/bin/Release/net10.0/KernelTests.dll
+Test run for tests/KernelTests/bin/Release/net10.0/KernelTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: temp_docs/contact-final-test-results/contact-final.trx
+
+Passed!  - Failed:     0, Passed:  1582, Skipped:     0, Total:  1582, Duration: 4 m 27 s - KernelTests.dll (net10.0)
