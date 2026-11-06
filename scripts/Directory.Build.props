@@ -4,6 +4,7 @@
   </ItemGroup>
   <ItemGroup Condition="'$(UseParasolidScriptHost)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidScriptHost.cs" Link="ParasolidScriptHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidBodyCompare.cs" Link="ParasolidBodyCompare.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseParasolidMarkOracle)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidMarkOracleStorage.cs" Link="ParasolidMarkOracleStorage.cs" />

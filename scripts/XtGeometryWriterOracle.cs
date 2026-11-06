@@ -528,10 +528,9 @@ static unsafe void BSurfaceFixture()
     PK_FACE_t oracleFace = FindOraclePlaneFace(oracleBody, 0, 0, 1, 4);
     AssertTrue(oracleFace != 0, "oracle top face");
     PK_BSURF_t oracleBsurf = CreateOracleBSurface(poles, TopFaceUKnots(), TopFaceVKnots());
-    PK_local_check_t check;
-    Check(PK_FACE_replace_surfs(1, &oracleFace, &oracleBsurf, 1e-6, PK_LOGICAL_false, &check), "oracle replace surfs");
+    AttachOracleSurface(oracleFace, oracleBsurf);
 
-    VerifySurface("bsurf", ourBody, oracleBody, bsurf, PK_CLASS_bsurf, 0.3, 0.7, downgradedCompare: true);
+    VerifySurface("bsurf", ourBody, oracleBody, bsurf, PK_CLASS_bsurf, 0.3, 0.7);
 }
 
 static unsafe void SweptFixture()
@@ -570,10 +569,9 @@ static unsafe void SweptFixture()
     PK_SWEPT_sf_t oracleSweptSf = new(oracleSection, new PK_VECTOR1_t(0.0, 0.0, 1.0));
     PK_SWEPT_t oracleSwept;
     Check(PK_SWEPT_create(&oracleSweptSf, &oracleSwept), "oracle swept create");
-    PK_local_check_t check;
-    Check(PK_FACE_replace_surfs(1, &oracleFace, &oracleSwept, 1e-6, PK_LOGICAL_false, &check), "oracle replace surfs");
+    AttachOracleSurface(oracleFace, oracleSwept);
 
-    VerifySurface("swept", ourBody, oracleBody, swept, PK_CLASS_swept, 0.5, 0.5, downgradedCompare: true);
+    VerifySurface("swept", ourBody, oracleBody, swept, PK_CLASS_swept, 0.5, 0.5);
 }
 
 static unsafe void SpunFixture()
@@ -602,10 +600,9 @@ static unsafe void SpunFixture()
     PK_SPUN_sf_t oracleSpunSf = new(oracleProfile, new PK_AXIS1_sf_t(new PK_VECTOR_t(0.0, 0.0, 0.0), new PK_VECTOR1_t(0.0, 0.0, 1.0)));
     PK_SPUN_t oracleSpun;
     Check(PK_SPUN_create(&oracleSpunSf, &oracleSpun), "oracle spun create");
-    PK_local_check_t check;
-    Check(PK_FACE_replace_surfs(1, &oracleFace, &oracleSpun, 1e-6, PK_LOGICAL_false, &check), "oracle replace surfs");
+    AttachOracleSurface(oracleFace, oracleSpun);
 
-    VerifySurface("spun", ourBody, oracleBody, spun, PK_CLASS_spun, 0.5, 0.5, downgradedCompare: true);
+    VerifySurface("spun", ourBody, oracleBody, spun, PK_CLASS_spun, 0.5, 0.5);
 }
 
 static unsafe void OffsetFixture()
@@ -629,10 +626,9 @@ static unsafe void OffsetFixture()
     PK_OFFSET_sf_t oracleOffsetSf = new(oracleBsurf, 1.0);
     PK_OFFSET_t oracleOffset;
     Check(PK_OFFSET_create(&oracleOffsetSf, &oracleOffset), "oracle offset create");
-    PK_local_check_t check;
-    Check(PK_FACE_replace_surfs(1, &oracleFace, &oracleOffset, 1e-6, PK_LOGICAL_false, &check), "oracle replace surfs");
+    AttachOracleSurface(oracleFace, oracleOffset);
 
-    VerifySurface("offset", ourBody, oracleBody, offset, PK_CLASS_offset, 0.3, 0.7, downgradedCompare: true);
+    VerifySurface("offset", ourBody, oracleBody, offset, PK_CLASS_offset, 0.3, 0.7);
 }
 
 // Cubic Bezier poles of a planar patch over the face rectangle at height z.
@@ -684,14 +680,14 @@ static unsafe void VerifyCurve(
 
 static unsafe void VerifySurface(
     string name, int ourBody, PK_BODY_t oracleBody, int ourSurface, PK_CLASS_t expectedClass,
-    double u, double v, bool downgradedCompare = false)
+    double u, double v)
 {
-    int receivedBody = TransmitReceiveAndCompare(name, ourBody, oracleBody, downgradedCompare);
+    int receivedBody = TransmitReceiveAndCompare(name, ourBody, oracleBody);
     {
-        if (downgradedCompare)
-            VerifyTopologyCounts(name, ourBody, receivedBody);
         int receivedSurface = FindReceivedSurface(receivedBody, expectedClass);
         AssertTrue(receivedSurface != 0, $"{name} received surface not found");
+        int referenceSurface = FindReceivedSurface(oracleBody, expectedClass);
+        AssertTrue(referenceSurface != 0, $"{name} independent surface not found");
         var ourOutput = stackalloc M.PK_VECTOR_s[121];
         var oracleOutput = stackalloc PK_VECTOR_t[121];
         var uv = new M.PK_UV_s();
@@ -705,30 +701,26 @@ static unsafe void VerifySurface(
         if (ourError != oracleError)
             throw new InvalidOperationException($"{name} eval errors differ: ours={ourError} oracle={oracleError}");
         if (ourError == 0)
+        {
             CompareVectors(ourOutput, oracleOutput, 1, name);
+            // Independently created analytic supports may use a different UV
+            // origin (e.g. equivalent section lines of a swept plane).
+            Check(PK_SURF_parameterise_vector(referenceSurface, *(PK_VECTOR_t*)ourOutput, &oracleUv), name + " independent inverse");
+            Check(PK_SURF_eval(referenceSurface, oracleUv, 0, 0, 0, oracleOutput), name + " independent surface eval");
+            CompareVectors(ourOutput, oracleOutput, 1, name + " independent reference");
+        }
     }
     Console.WriteLine($"{name}: XT receive + body compare + evaluation passed");
 }
 
-static unsafe void VerifyTopologyCounts(string name, int ourBody, int receivedBody)
+static unsafe void AttachOracleSurface(PK_FACE_t face, PK_SURF_t surface)
 {
-    // Face-replacement fixtures cannot use a PK-mutated reference for
-    // PK_DEBUG_BODY_compare (replace_surfs recomputes the face's edge curves
-    // while our attach keeps them), so the structural requirement is that the
-    // received topology counts match our kernel's exactly.
-    int ourFaces = CountOurFaces(ourBody);
-    int ourEdges = CountOurEdges(ourBody);
-    int ourVertices = CountOurVertices(ourBody);
-    int receivedFaces = CountOracleFaces(receivedBody);
-    int receivedEdges = CountOracleEdges(receivedBody);
-    int receivedVertices = CountOracleVertices(receivedBody);
-    if (ourFaces != receivedFaces || ourEdges != receivedEdges || ourVertices != receivedVertices)
-        throw new InvalidOperationException(
-            $"{name} topology counts differ: faces ours={ourFaces} received={receivedFaces}, " +
-            $"edges ours={ourEdges} received={receivedEdges}, vertices ours={ourVertices} received={receivedVertices}");
+    Check(PK_TOPOL_detach_geom(face), "oracle detach face");
+    var sense = PK_LOGICAL_true;
+    Check(PK_FACE_attach_surfs(1, &face, &surface, &sense), "oracle attach surface");
 }
 
-static unsafe int TransmitReceiveAndCompare(string name, int ourBody, PK_BODY_t oracleBody, bool downgradedCompare = false)
+static unsafe int TransmitReceiveAndCompare(string name, int ourBody, PK_BODY_t oracleBody)
 {
     var outputDir = Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "xt-geometry-writer-oracle");
     Directory.CreateDirectory(outputDir);
@@ -765,26 +757,7 @@ static unsafe int TransmitReceiveAndCompare(string name, int ourBody, PK_BODY_t 
         {
             AssertTrue(count == 1, $"{name} received part count {count}");
             int receivedBody = receivedParts[0];
-            var compare = new PK_DEBUG_BODY_compare_o_t { max_diffs = 64, all_tests = 0, acc_dev_tests = 0, non_match_tests = 0 };
-            var result = new PK_DEBUG_BODY_compare_r_t();
-            Check(PK_DEBUG_BODY_compare(oracleBody, receivedBody, &compare, &result), $"{name} body compare");
-            try
-            {
-                if (result.global_result != PK_DEBUG_global_res_no_diffs_c || result.local_result != PK_DEBUG_local_res_no_diffs_c)
-                {
-                    for (var i = 0; i < result.n_global_diffs; i++) Console.WriteLine($"diff={result.global_diffs[i].diff}");
-                    for (var i = 0; i < result.n_face_pairs; i++)
-                    {
-                        var pair = result.face_pairs[i];
-                        for (var j = 0; j < pair.n_local_diffs; j++)
-                            Console.WriteLine($"face={pair.master_face}/{pair.similar_face} diff={pair.local_diffs[j].diff}");
-                    }
-                    if (!downgradedCompare)
-                        throw new InvalidOperationException($"{name} compare: global={result.global_result} local={result.local_result}");
-                    Console.WriteLine($"{name} compare downgraded (replace_surfs recomputes edge curves): global={result.global_result} local={result.local_result}");
-                }
-            }
-            finally { Check(PK_DEBUG_BODY_compare_r_f(&result), $"{name} free compare"); }
+            ParasolidBodyCompare.AssertEquivalent(oracleBody, receivedBody, name);
             return receivedBody;
         }
         finally { Check(PK_MEMORY_free(receivedParts), $"{name} free received"); }
@@ -829,64 +802,6 @@ static unsafe int FindReceivedSurface(int body, PK_CLASS_t expectedClass)
     }
     finally { PK_MEMORY_free(faces); }
     return 0;
-}
-
-static unsafe int CountOurFaces(int body)
-{
-    int count;
-    int* faces;
-    Check(KernelRuntime.BodyAskFaces(body, &count, &faces), "our faces");
-    Check(KernelRuntime.MemoryFree(faces), "free our faces");
-    return count;
-}
-
-static unsafe int CountOurEdges(int body)
-{
-    int count;
-    int* edges;
-    Check(KernelRuntime.BodyAskEdges(body, &count, &edges), "our edges");
-    Check(KernelRuntime.MemoryFree(edges), "free our edges");
-    return count;
-}
-
-static unsafe int CountOurVertices(int body)
-{
-    int count;
-    int* vertices;
-    Check(KernelRuntime.BodyAskVertices(body, &count, &vertices), "our vertices");
-    if (vertices != null)
-        Check(KernelRuntime.MemoryFree(vertices), "free our vertices");
-    return count;
-}
-
-static unsafe int CountOracleFaces(int body)
-{
-    int count;
-    int* faces;
-    Check(PK_BODY_ask_faces(body, &count, &faces), "oracle faces");
-    if (faces != null)
-        Check(PK_MEMORY_free(faces), "free oracle faces");
-    return count;
-}
-
-static unsafe int CountOracleEdges(int body)
-{
-    int count;
-    int* edges;
-    Check(PK_BODY_ask_edges(body, &count, &edges), "oracle edges");
-    if (edges != null)
-        Check(PK_MEMORY_free(edges), "free oracle edges");
-    return count;
-}
-
-static unsafe int CountOracleVertices(int body)
-{
-    int count;
-    int* vertices;
-    Check(PK_BODY_ask_vertices(body, &count, &vertices), "oracle vertices");
-    if (vertices != null)
-        Check(PK_MEMORY_free(vertices), "free oracle vertices");
-    return count;
 }
 
 // ── Search helpers (our side) ────────────────────────────────────

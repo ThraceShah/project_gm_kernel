@@ -321,6 +321,7 @@ unsafe void CompareWire(string label,int managedCurve,M.PK_INTERVAL_s managedRan
             chartOnly&=diff.diff==PK_DEBUG_diff_n_cht_pts_c;chartDifference|=diff.diff==PK_DEBUG_diff_n_cht_pts_c;
         }
         Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&(result.local_result==PK_DEBUG_local_res_no_diffs_c||chartOnly&&chartDifference),label+" body comparison failed");
+        ParasolidBodyCompare.AssertWireGeometry(referenceBody,received,label);
     }
     finally{Check(PK_DEBUG_BODY_compare_r_f(&result),label+" free compare");}
 }

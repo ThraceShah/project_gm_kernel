@@ -342,86 +342,8 @@ static unsafe void FreeParasolidArray<T>(T* values)
 
 static unsafe bool AssertBodyCompare(PK_BODY_t master, PK_BODY_t similar, string label)
 {
-    var options = new PK_DEBUG_BODY_compare_o_t
-    {
-        max_diffs = 64,
-        all_tests = PK_LOGICAL_false,
-        acc_dev_tests = PK_LOGICAL_false,
-        non_match_tests = PK_LOGICAL_false,
-    };
-    var results = new PK_DEBUG_BODY_compare_r_t();
-    CheckParasolid(PK_DEBUG_BODY_compare(master, similar, &options, &results), "PK_DEBUG_BODY_compare");
-    try
-    {
-        var ok = results.global_result == PK_DEBUG_global_res_no_diffs_c;
-        if (!ok)
-        {
-            Console.WriteLine($"{label} body compare mismatch: global={results.global_result} local={results.local_result} global_diffs={results.n_global_diffs} face_pairs={results.n_face_pairs}");
-            PrintBodyCompareDiffs(&results);
-        }
-        else if (results.local_result != PK_DEBUG_local_res_no_diffs_c)
-        {
-            Console.WriteLine($"{label} body compare local diagnostics: local={results.local_result} face_pairs={results.n_face_pairs}");
-        }
-
-        return ok;
-    }
-    finally
-    {
-        CheckParasolid(PK_DEBUG_BODY_compare_r_f(&results), "PK_DEBUG_BODY_compare_r_f");
-    }
-}
-
-static unsafe void PrintBodyCompareDiffs(PK_DEBUG_BODY_compare_r_t* results)
-{
-    for (var i = 0; i < results->n_global_diffs; i++)
-    {
-        var diff = &results->global_diffs[i];
-        Console.WriteLine($"  global diff {i}: {DiffName(diff->diff)}({diff->diff}) master={diff->n_masters} similar={diff->n_similars}");
-    }
-
-    for (var i = 0; i < results->n_face_pairs; i++)
-    {
-        var pair = &results->face_pairs[i];
-        for (var j = 0; j < pair->n_local_diffs; j++)
-        {
-            var diff = &pair->local_diffs[j];
-            Console.WriteLine(
-                $"  local diff face_pair={i} diff={DiffName(diff->diff)}({diff->diff}) master_entity={diff->master_entity} similar_entity={diff->similar_entity} master_int={diff->master_int} similar_int={diff->similar_int} master_double={diff->master_double:R} similar_double={diff->similar_double:R} master_logical={diff->master_logical} similar_logical={diff->similar_logical}");
-        }
-    }
-}
-
-static string DiffName(PK_DEBUG_diff_t diff)
-{
-    return diff switch
-    {
-        PK_DEBUG_diff_n_shells_c => "n_shells",
-        PK_DEBUG_diff_n_faces_c => "n_faces",
-        PK_DEBUG_diff_n_loops_c => "n_loops",
-        PK_DEBUG_diff_n_acc_edges_c => "n_acc_edges",
-        PK_DEBUG_diff_n_tol_edges_c => "n_tol_edges",
-        PK_DEBUG_diff_n_fins_c => "n_fins",
-        PK_DEBUG_diff_n_acc_vxs_c => "n_acc_vxs",
-        PK_DEBUG_diff_n_tol_vxs_c => "n_tol_vxs",
-        PK_DEBUG_diff_n_vxs_c => "n_vxs",
-        PK_DEBUG_diff_n_cht_pts_c => "n_cht_pts",
-        PK_DEBUG_diff_surf_dev_c => "surf_dev",
-        PK_DEBUG_diff_curve_dev_c => "curve_dev",
-        PK_DEBUG_diff_vx_dev_c => "vx_dev",
-        PK_DEBUG_diff_surf_class_c => "surf_class",
-        PK_DEBUG_diff_curve_class_c => "curve_class",
-        PK_DEBUG_diff_edge_tol_c => "edge_tol",
-        PK_DEBUG_diff_vx_tol_c => "vx_tol",
-        PK_DEBUG_diff_face_sense_c => "face_sense",
-        PK_DEBUG_diff_surf_sense_c => "surf_sense",
-        PK_DEBUG_diff_curve_sense_c => "curve_sense",
-        PK_DEBUG_diff_vx_missing_c => "vx_missing",
-        PK_DEBUG_diff_face_match_c => "face_match",
-        PK_DEBUG_diff_fin_match_c => "fin_match",
-        PK_DEBUG_diff_vx_match_c => "vx_match",
-        _ => "unknown",
-    };
+    ParasolidBodyCompare.AssertEquivalent(master, similar, label);
+    return true;
 }
 
 static void CheckParasolid(PK_ERROR_code_t error, string name)

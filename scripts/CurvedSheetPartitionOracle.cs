@@ -342,7 +342,7 @@ static unsafe void Compare(int reference, int actual, string name, Action<string
     }
     var options = new PK_DEBUG_BODY_compare_o_t { max_diffs = 64, all_tests = PK_LOGICAL_false, num_tests = PK_LOGICAL_true,
         tol_dev_tests = PK_LOGICAL_true, tol_tests = PK_LOGICAL_true, class_tests = PK_LOGICAL_true, sense_tests = PK_LOGICAL_true,
-        missing_tests = PK_LOGICAL_true, acc_dev_tests = PK_LOGICAL_false, non_match_tests = PK_LOGICAL_false };
+        missing_tests = PK_LOGICAL_true, acc_dev_tests = PK_LOGICAL_false, non_match_tests = PK_LOGICAL_true };
     PK_DEBUG_BODY_compare_r_t result; Check(PK_DEBUG_BODY_compare(reference, actual, &options, &result), "compare");
     try
     {
@@ -358,7 +358,6 @@ static unsafe void Compare(int reference, int actual, string name, Action<string
             log($"  {(chart ? "PARAMETERIZATION" : "STRUCTURE")} face={f} diff={d.diff} entity={d.master_entity}/{d.similar_entity} class={d.master_class}/{d.similar_class} int={d.master_int}/{d.similar_int} value={d.master_double:R}/{d.similar_double:R}");
             if (!chart) structuralDiffs++;
         }
-        Require(result.n_face_pairs == Count(actual, 2), "complete face matching");
         Require(result.global_result == PK_DEBUG_global_res_no_diffs_c && structuralDiffs == 0, "structural comparison");
     }
     finally { PK_DEBUG_BODY_compare_r_f(&result); }

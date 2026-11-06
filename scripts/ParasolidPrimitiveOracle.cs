@@ -145,26 +145,7 @@ static unsafe void CheckParasolidFile(string dir, string label, PK_BODY_t expect
 
 static unsafe void AssertBodyCompare(PK_BODY_t master, PK_BODY_t similar, string label)
 {
-    var options = new PK_DEBUG_BODY_compare_o_t
-    {
-        max_diffs = 64,
-        all_tests = PK_LOGICAL_false,
-        acc_dev_tests = PK_LOGICAL_false,
-        non_match_tests = PK_LOGICAL_false,
-    };
-    var results = new PK_DEBUG_BODY_compare_r_t();
-    CheckParasolid(PK_DEBUG_BODY_compare(master, similar, &options, &results), "PK_DEBUG_BODY_compare " + label);
-    try
-    {
-        if (results.global_result != PK_DEBUG_global_res_no_diffs_c)
-            throw new InvalidOperationException($"{label} body compare mismatch: global={results.global_result} local={results.local_result} global_diffs={results.n_global_diffs} face_pairs={results.n_face_pairs}");
-        if (results.local_result != PK_DEBUG_local_res_no_diffs_c)
-            Console.WriteLine($"{label} body compare local diagnostics: local={results.local_result} face_pairs={results.n_face_pairs}");
-    }
-    finally
-    {
-        CheckParasolid(PK_DEBUG_BODY_compare_r_f(&results), "PK_DEBUG_BODY_compare_r_f " + label);
-    }
+    ParasolidBodyCompare.AssertEquivalent(master, similar, label);
 }
 
 static unsafe void AssertBodyCounts(PK_BODY_t body, int regionsExpected, int shellsExpected, int facesExpected, int edgesExpected, int verticesExpected)

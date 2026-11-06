@@ -209,24 +209,7 @@ static unsafe void CompareBodies(PK_BODY_t expected, PK_BODY_t actual, string la
         return;
     }
 
-    var options = new PK_DEBUG_BODY_compare_o_t
-    {
-        max_diffs = 64,
-        all_tests = PK_LOGICAL_false,
-        acc_dev_tests = PK_LOGICAL_false,
-        non_match_tests = PK_LOGICAL_false,
-    };
-    var results = new PK_DEBUG_BODY_compare_r_t();
-    Check(PK_DEBUG_BODY_compare(expected, actual, &options, &results), "PK_DEBUG_BODY_compare " + label);
-    try
-    {
-        if (results.global_result != PK_DEBUG_global_res_no_diffs_c)
-            throw new InvalidOperationException($"body differs: global={results.global_result} local={results.local_result} diffs={results.n_global_diffs}");
-    }
-    finally
-    {
-        Check(PK_DEBUG_BODY_compare_r_f(&results), "PK_DEBUG_BODY_compare_r_f " + label);
-    }
+    ParasolidBodyCompare.AssertEquivalent(expected, actual, label);
     CompareFaceIntegerAttributes(expected,actual,label);
 }
 

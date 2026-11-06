@@ -945,24 +945,7 @@ public static unsafe class ParasolidXtCorpusHost
 
     private static void CompareBodies(PK_BODY_t expected, PK_BODY_t received, string caseId)
     {
-        var options = new PK_DEBUG_BODY_compare_o_t
-        {
-            max_diffs = 64,
-            all_tests = PK_LOGICAL_false,
-            acc_dev_tests = PK_LOGICAL_false,
-            non_match_tests = PK_LOGICAL_false,
-        };
-        var results = new PK_DEBUG_BODY_compare_r_t();
-        Check(PK_DEBUG_BODY_compare(expected, received, &options, &results), "PK_DEBUG_BODY_compare " + caseId);
-        try
-        {
-            if (results.global_result != PK_DEBUG_global_res_no_diffs_c)
-                throw new InvalidOperationException($"body compare mismatch: global={results.global_result}, local={results.local_result}, global_diffs={results.n_global_diffs}, face_pairs={results.n_face_pairs}");
-        }
-        finally
-        {
-            Check(PK_DEBUG_BODY_compare_r_f(&results), "PK_DEBUG_BODY_compare_r_f " + caseId);
-        }
+        ParasolidBodyCompare.AssertEquivalent(expected, received, caseId);
     }
 
     private static CorpusBodyCounts AskCounts(PK_BODY_t body)

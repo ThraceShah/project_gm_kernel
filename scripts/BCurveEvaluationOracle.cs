@@ -224,23 +224,7 @@ static unsafe void CheckBodyRoundtrip(bool rational)
         try
         {
             if (count != 1) throw new InvalidOperationException("B-curve roundtrip part count.");
-            var compare = new PK_DEBUG_BODY_compare_o_t { max_diffs = 64, all_tests = 0, acc_dev_tests = 0, non_match_tests = 0 };
-            var result = new PK_DEBUG_BODY_compare_r_t();
-            Check(PK_DEBUG_BODY_compare(referenceBody, parts[0], &compare, &result), "B-curve body compare");
-            try
-            {
-                if (result.global_result != PK_DEBUG_global_res_no_diffs_c || result.local_result != PK_DEBUG_local_res_no_diffs_c)
-                {
-                    for (var i = 0; i < result.n_global_diffs; i++) Console.WriteLine($"diff={result.global_diffs[i].diff}");
-                    for (var i = 0; i < result.n_face_pairs; i++)
-                    {
-                        var pair = result.face_pairs[i];
-                        for (var j = 0; j < pair.n_local_diffs; j++) Console.WriteLine($"face={pair.master_face}/{pair.similar_face} diff={pair.local_diffs[j].diff}");
-                    }
-                    throw new InvalidOperationException($"global={result.global_result} local={result.local_result}");
-                }
-            }
-            finally { Check(PK_DEBUG_BODY_compare_r_f(&result), "free compare"); }
+            ParasolidBodyCompare.AssertEquivalent(referenceBody, parts[0], "B-curve body compare");
         }
         finally { Check(PK_MEMORY_free(parts), "free received parts"); }
     }

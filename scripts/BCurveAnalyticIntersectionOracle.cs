@@ -146,6 +146,7 @@ unsafe void CompareWire(string label,GeometryPair curve,double lo,double hi,doub
         Log($"{label}: global={result.global_result}, local={result.local_result}, diff entries={result.n_global_diffs}");
         for(var i=0;i<result.n_global_diffs;i++)Log($"  diff={result.global_diffs[i].diff}, masters={result.global_diffs[i].n_masters}, similars={result.global_diffs[i].n_similars}");
         Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&result.local_result==PK_DEBUG_local_res_no_diffs_c,label+" strict comparison");
+        ParasolidBodyCompare.AssertWireGeometry(pb,imported,label);
     }
     finally{Check(PK_DEBUG_BODY_compare_r_f(&result),"free comparison");Check(KernelRuntime.EntityDelete(1,&mb),"delete self wire");Check(PK_ENTITY_delete(1,&pb),"delete reference wire");Check(PK_ENTITY_delete(1,&imported),"delete imported wire");}
 }

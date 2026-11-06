@@ -100,6 +100,15 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 如果 `PK_DEBUG_BODY_compare` 的 full local deviation / face matching 检查会把 Parasolid 内部参数化或 transmit 排序差异误判成失败，允许把这些项目降级为诊断输出；但 receive、拓扑计数、region/shell 语义、类型/sense/容差/missing 等结构一致性必须作为通过条件。
 
+### PK_DEBUG_BODY_compare 验收规则
+
+- 优先调用 `scripts/ParasolidBodyCompare.cs` 的 `AssertEquivalent`（由 `UseParasolidScriptHost=true` 引入），比较独立真实 PK 基准和我们导出后由真实 PK 加载的 body。
+- 手动调用时必须设置 `max_diffs>0`、`all_tests=false`、`acc_dev_tests=false`、`tol_dev_tests=true`，保留数量、类型、sense、容差、missing 和匹配检查。`max_diffs` 限制有差异的面配对数量，不是几何容差；默认值 0 只比较拓扑数量。
+- 调用成功不代表相同；必须同时验收 global/local 结果并输出差异类型及 face/entity。`n_global_diffs` 包含数量相等的记录，`n_face_pairs` 不是成功匹配面总数，禁止以它等于总面数作为通过条件。
+- 默认只允许 `n_cht_pts`（内部 chart points）作为诊断。其他降级必须逐项白名单并有独立验证，禁止忽略整个 local/global 结果或同时关闭两种偏差检查来通过几何验收。
+- wire 没有面，body compare 不验证曲线形状；必须额外匹配导出后的有限边，检查曲线类型/sense/端点/裁剪范围及双向几何距离，并保留目标 API 的参数、导数等专项测试。采样不能宣称为任意曲线的完整等价证明。
+- 比较辅助代码必须有负例：同拓扑但尺寸错误的实体、平移或裁剪错误的 wire 必须失败；等价曲面升阶/插结在容差内应通过。结果用 `PK_DEBUG_BODY_compare_r_f` 释放。
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

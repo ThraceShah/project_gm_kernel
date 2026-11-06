@@ -219,24 +219,7 @@ static unsafe void ReceiveAndCompare(byte[] bytes, PK_BODY_t expected, string la
         {
             if (count != 1)
                 throw new InvalidOperationException(label + " returned " + count + " parts");
-            var compareOptions = new PK_DEBUG_BODY_compare_o_t
-            {
-                max_diffs = 64,
-                all_tests = PK_LOGICAL_false,
-                acc_dev_tests = PK_LOGICAL_false,
-                non_match_tests = PK_LOGICAL_false,
-            };
-            var results = new PK_DEBUG_BODY_compare_r_t();
-            Check(PK_DEBUG_BODY_compare(expected, parts[0], &compareOptions, &results), "PK_DEBUG_BODY_compare " + label);
-            try
-            {
-                if (results.global_result != PK_DEBUG_global_res_no_diffs_c)
-                    throw new InvalidOperationException($"{label} differs: global={results.global_result} local={results.local_result} global_diffs={results.n_global_diffs} face_pairs={results.n_face_pairs}");
-            }
-            finally
-            {
-                Check(PK_DEBUG_BODY_compare_r_f(&results), "PK_DEBUG_BODY_compare_r_f " + label);
-            }
+            ParasolidBodyCompare.AssertEquivalent(expected, parts[0], label);
         }
         finally
         {
