@@ -58,7 +58,7 @@ internal static unsafe partial class KernelRuntime
             if(count==0)continue;if(count<3)return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
             var error=OrderCornerCycle(model.Edges,cycle[..count]);if(error!=0)return error;
             cycle[..count].CopyTo(model.Coedges[nc..]);model.Loops[nl]=new(){FirstCoedge=nc,CoedgeCount=count};nc+=count;
-            face.FirstLoop=nl++;model.Faces[nf]=face;if(f<originalFaces)retained[retainedCount++]=sources[f];nf++;
+            face.FirstLoop=nl++;model.Faces[nf]=face;model.Sources[nf]=model.Sources[f];if(f<originalFaces)retained[retainedCount++]=sources[f];nf++;
         }
         model.NF=nf;model.NL=nl;model.NC=nc;return 0;
     }

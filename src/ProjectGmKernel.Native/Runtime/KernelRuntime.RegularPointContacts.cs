@@ -48,13 +48,15 @@ internal static unsafe partial class KernelRuntime
         if(!precisions.IsEmpty)precisions[index]=Math.Max(precisions[index],Vertices[vertex].Tolerance);return 0;
     }
 
-    private static int TransferRegularPointLoops(ref SheetArrangement model,ReadOnlySpan<BufferOffset> indices,BodyTag body)
+    private static int TransferRegularPointLoops(scoped ref SheetArrangement model,scoped ReadOnlySpan<BufferOffset> indices,BodyTag body)
     {
         var view=new RegularBoundaryView(model.Edges[..model.NE],model.Coedges[..model.NC],model.Loops[..model.NL],model.Faces[..model.NF]);
         var face=Bodies[TagRec(body).Slot].FirstFaceBody;
         for(var i=0;i<indices.Length;i++,face=Faces[face].NextInBody)
         {
-            var index=indices[i];var source=model.Sources[index];var loop=Faces[source].FirstLoop;
+            var index=indices[i];var source=model.Sources[index];
+            if(source<0||!Faces.IsAlive(source)||!RegularCoincidentSupports(model.Faces[index].Surface,Faces[source].SurfTag))continue;
+            var loop=Faces[source].FirstLoop;
             for(var l=0;l<Faces[source].LoopCount;l++,loop=Loops[loop].NextInFace)
             {
                 if(!RegularVertexLoop(loop,out var vertex))continue;var error=SheetOriginalVertex(vertex,out var point);if(error!=0)return error;

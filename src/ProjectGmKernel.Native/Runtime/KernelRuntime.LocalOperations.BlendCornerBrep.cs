@@ -116,7 +116,7 @@ internal static unsafe partial class KernelRuntime
             var band=bandLoops.Slice(4*e,4);error=OrderCornerCycle(edges,band);if(error!=0)return error;
             error=SheetCycleWitness(bands[e],edges[..model.NE],band,out _,out var positive);if(error!=0)return error;
             model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=4};band.CopyTo(model.Coedges[model.NC..]);model.NC+=4;
-            model.Faces[model.NF++]=new(){Surface=bands[e],Sense=positive!=0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c,FirstLoop=model.NL++,LoopCount=1};
+            model.Faces[model.NF]=new(){Surface=bands[e],Sense=positive!=0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c,FirstLoop=model.NL++,LoopCount=1};model.Sources[model.NF++]=-1;
         }
         error=OrderCornerCycle(edges,sphereLoop);if(error!=0)return error;
         var aEdge=edges[sphereLoop[0].Edge];var bEdge=edges[sphereLoop[1].Edge];var cEdge=edges[sphereLoop[2].Edge];
@@ -124,7 +124,7 @@ internal static unsafe partial class KernelRuntime
         var sphereData=SphereDataPool[Surfaces[GetSurfaceSlotByTag(sphere)].DataIndex];var center=new KernelVector3{X=sphereData.CenterX,Y=sphereData.CenterY,Z=sphereData.CenterZ};
         var orientation=Dot(ProfileCross(Sub(pb,pa),Sub(pc,pa)),Sub(pa,center));if(!(orientation>0))return ParasolidConstants.PK_ERROR_bad_loop;
         model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=3};sphereLoop.CopyTo(model.Coedges[model.NC..]);model.NC+=3;
-        model.Faces[model.NF++]=new(){Surface=sphere,Sense=ParasolidConstants.PK_TOPOL_sense_positive_c,FirstLoop=model.NL++,LoopCount=1};
+        model.Faces[model.NF]=new(){Surface=sphere,Sense=ParasolidConstants.PK_TOPOL_sense_positive_c,FirstLoop=model.NL++,LoopCount=1};model.Sources[model.NF++]=-1;
         Span<FaceSlot> retained=stackalloc FaceSlot[nf];var retainedCount=nf;
         if(vanished.Contains((byte)1)){error=ReduceCornerEvent(ref model,nf,sourceFaces,retained,out retainedCount);if(error!=0)return error;}else sourceFaces.CopyTo(retained);
         Span<BufferOffset> indices=stackalloc BufferOffset[model.NF];for(var i=0;i<indices.Length;i++)indices[i]=i;

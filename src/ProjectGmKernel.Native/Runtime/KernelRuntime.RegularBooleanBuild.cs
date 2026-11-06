@@ -204,10 +204,17 @@ internal static unsafe partial class KernelRuntime
             var coedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,model.NC);var loops=ModelSpan<ModelingLoop>(bytes,ref cursor,model.NL);
             var faces=ModelSpan<ModelingFace>(bytes,ref cursor,indices.Length);var cavities=ModelSpan<byte>(bytes,ref cursor,indices.Length);
             if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;var np=0;var ne=0;var nc=0;var nl=0;
+            BodySlot commonOwner=-1;
+            foreach(var index in indices)
+            {
+                var source=model.Sources[index];if(source<0)continue;
+                var owner=TopologyBody(PoolKind.Face,source);
+                if(commonOwner==-1)commonOwner=owner;else if(commonOwner!=owner){commonOwner=-2;break;}
+            }
             for(var i=0;i<indices.Length;i++)
             {
                 var index=indices[i];var face=model.Faces[index];var reverse=reversed[index]!=0;var surface=0;
-                var sourceOwner=TopologyBody(PoolKind.Face,model.Sources[index]);
+                var sourceOwner=model.Sources[index]>=0?TopologyBody(PoolKind.Face,model.Sources[index]):commonOwner;
                 for(var previous=0;previous<i;previous++)if(model.Faces[indices[previous]].Surface==face.Surface){surface=faces[previous].Surface;break;}
                 if(surface==0){var error=TryCloneEntityCore(face.Surface,out surface);if(error!=0)return error;}
                 faces[i]=new(){Surface=surface,Sense=reverse?ToggleModelingSense(face.Sense):face.Sense,FirstLoop=nl,LoopCount=face.LoopCount};cavities[i]=cavityFaces[index];
