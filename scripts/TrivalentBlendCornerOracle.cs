@@ -19,7 +19,7 @@ unsafe
   try
   {
    var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","trivalent-corner-oracle");Directory.CreateDirectory(directory);
-   var consumer=args.Contains("--consumer");var refillet=args.Contains("--refillet");var orderText=args.FirstOrDefault(a=>a.StartsWith("--order=",StringComparison.Ordinal));var permutation=orderText==null?0:int.Parse(orderText.AsSpan(8));Require(permutation>=0&&permutation<3,"cyclic three-edge order");var filtered=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();var cases=filtered.Length==0?new[]{"base","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","uv-scaled","tilted","extended-tilted","skew-base","skew-rigid","skew-mirror-scale","skew-tilted","zero-single","zero-double","zero-all","zero-near","zero-single-mirror-scale","zero-double-tilted","zero-all-mirror-scale"}:filtered;
+   var consumer=args.Contains("--consumer");var refillet=args.Contains("--refillet");var lifecycle=args.Contains("--lifecycle");var orderText=args.FirstOrDefault(a=>a.StartsWith("--order=",StringComparison.Ordinal));var permutation=orderText==null?0:int.Parse(orderText.AsSpan(8));Require(permutation>=0&&permutation<3,"cyclic three-edge order");var filtered=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();var cases=filtered.Length==0?new[]{"base","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","uv-scaled","tilted","extended-tilted","skew-base","skew-rigid","skew-mirror-scale","skew-tilted","zero-single","zero-double","zero-all","zero-near","zero-single-mirror-scale","zero-double-tilted","zero-all-mirror-scale"}:filtered;
    foreach(var name in cases)
    {
     foreach(var authorOwn in args.Contains("--native-author")?new[]{false}:args.Contains("--self-author")?new[]{true}:new[]{false,true})
@@ -29,6 +29,7 @@ unsafe
     var native=Corner(false,name,source,permutation);CheckBody(native,label+" native");File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitNative(native));
     var own=Corner(true,name,source,permutation);var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,label+"-self.x_t"),bytes);var received=Receive(bytes);CheckBody(received,label+" received");Compare(native,received,label);
     ValidateCorner(own,native,(name.StartsWith("zero-near",StringComparison.Ordinal)?.999999:name.StartsWith("zero-",StringComparison.Ordinal)?1:.1)*(name.EndsWith("mirror-scale",StringComparison.Ordinal)?1.7:1));
+    if(lifecycle){Require(name=="base","base lifecycle fixture");CheckCornerLifecycle(own,native,label,directory);}
     if(name is "zero-single" or "zero-double" or "zero-all")CheckExtinctionReload(ref own,native,name);
     if(consumer){Require(name=="base"||name=="extended-base","consumer probe uses untransformed source");ConsumeCorner(ref own,ref native,label,directory,refillet);}
     Check(PK_ENTITY_delete(1,&received),"delete received");Check(PK_ENTITY_delete(1,&native),"delete reference");Check(KernelRuntime.EntityDelete(1,&own),"delete self corner");
@@ -80,6 +81,28 @@ static unsafe int Corner(bool own,string name,byte[] source,int permutation)
  else{var fix=new PK_BODY_fix_blends_o_t{update=PK_blend_edge_update_v261_c,tolerance=1e-7};int fault,edge,topol;int* blends;PK_FACE_array_t* unders;int* replaced;Check(PK_BODY_fix_blends(body,&fix,&n,&blends,&unders,&replaced,&fault,&edge,&topol),"native corner fix");Require(n==expectedProducts,"surviving edge blends plus a vertex blend");PK_MEMORY_free(blends);PK_MEMORY_free(replaced);for(var i=0;i<n;i++)PK_MEMORY_free(unders[i].array);PK_MEMORY_free(unders);}
  Console.WriteLine($"TIME {(own?"self":"native")} {name} ms={Stopwatch.GetElapsedTime(began).TotalMilliseconds:F3}");return body;
 }
+static unsafe void CheckCornerLifecycle(int own,int reference,string label,string directory)
+{
+ var before=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
+ int imported=0,copy=0,nativeCopy=0,transform=0,nativeTransform=0,received=0;
+ try
+ {
+  imported=ReceiveManaged(Transmit(own));Check(KernelRuntime.EntityCopy(imported,&copy),"copy reloaded corner");Check(KernelRuntime.EntityDelete(1,&imported),"delete reloaded corner source");imported=0;Check(PK_ENTITY_copy(reference,&nativeCopy),"independent corner copy");
+  var form=new M.PK_TRANSF_sf_s();form.matrix[0]=-2;form.matrix[5]=form.matrix[10]=2;form.matrix[15]=1;form.matrix[3]=3;form.matrix[7]=5;form.matrix[11]=7;
+  Check(KernelRuntime.TransfCreate(&form,&transform),"corner mirror-scale transform");Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&nativeTransform),"native mirror-scale transform");int n;int* replaced;byte* exact;
+  Check(KernelRuntime.BodyTransform(copy,transform,0,&n,&replaced,&exact),"copied corner mirror-scale");Free(true,replaced);Free(true,exact);PK_LOGICAL_t* nativeExact;
+  Check(PK_BODY_transform(nativeCopy,nativeTransform,0,&n,&replaced,&nativeExact),"independent copied corner mirror-scale");Free(false,replaced);Free(false,nativeExact);
+  File.WriteAllBytes(Path.Combine(directory,label+"-lifecycle-self.x_t"),Transmit(copy));File.WriteAllBytes(Path.Combine(directory,label+"-lifecycle-reference.x_t"),TransmitNative(nativeCopy));
+  received=Receive(Transmit(copy));CheckBody(received,label+" lifecycle received");CheckBody(nativeCopy,label+" lifecycle native");Compare(nativeCopy,received,label+" lifecycle");ValidateCorner(copy,nativeCopy,.2);
+  var query=new PK_VECTOR_t(2.2,5.8,8);int actual,expected,topology;Check(KernelRuntime.BodyContainsVector(copy,*(M.PK_VECTOR_s*)&query,&actual,&topology),"transformed corner material");Check(PK_BODY_contains_vector(nativeCopy,query,&expected,&topology),"native transformed corner material");Require(actual==expected&&actual==PK_enclosure_inside_c,"transformed corner interior");
+ }
+ finally
+ {
+  if(imported!=0&&KernelRuntime.IsValidTag(imported))Check(KernelRuntime.EntityDelete(1,&imported),"delete lifecycle imported source");if(copy!=0&&KernelRuntime.IsValidTag(copy))Check(KernelRuntime.EntityDelete(1,&copy),"delete lifecycle corner copy");if(transform!=0&&KernelRuntime.IsValidTag(transform))Check(KernelRuntime.EntityDelete(1,&transform),"delete lifecycle transform");
+  if(received!=0)Check(PK_ENTITY_delete(1,&received),"delete lifecycle receive");if(nativeCopy!=0)Check(PK_ENTITY_delete(1,&nativeCopy),"delete native lifecycle copy");if(nativeTransform!=0)Check(PK_ENTITY_delete(1,&nativeTransform),"delete native lifecycle transform");
+ }
+ Require(before==(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks),"corner lifecycle pool and return ownership");Console.WriteLine("PASS reload/copy/delete/mirror-scale corner lifecycle "+label);
+}
 static unsafe void CheckExtinctionReload(ref int own,int reference,string name)
 {
  var reloaded=ReceiveManaged(Transmit(own));var previous=own;Check(KernelRuntime.EntityDelete(1,&previous),"delete pre-reload extinction body");own=reloaded;
@@ -100,7 +123,7 @@ static unsafe void ConsumeCorner(ref int own,ref int reference,string label,stri
  if(!refillet)return;
  own=CutCorner(true,own,Block(true,.5,1.1,.7,.5,1,1));reference=CutCorner(false,reference,Block(false,.5,1.1,.7,.5,1,1));
  File.WriteAllBytes(Path.Combine(directory,label+"-refillet-input-self.x_t"),Transmit(own));File.WriteAllBytes(Path.Combine(directory,label+"-refillet-input-reference.x_t"),TransmitNative(reference));
- RefilletCornerCut(false,reference);File.WriteAllBytes(Path.Combine(directory,label+"-refillet-reference.x_t"),TransmitNative(reference));RefilletCornerCut(true,own);
+ RefilletCornerCut(false,reference);CheckBody(reference,label+" native re-fillet");File.WriteAllBytes(Path.Combine(directory,label+"-refillet-reference.x_t"),TransmitNative(reference));RefilletCornerCut(true,own);
  File.WriteAllBytes(Path.Combine(directory,label+"-refillet-self.x_t"),Transmit(own));File.WriteAllBytes(Path.Combine(directory,label+"-refillet-reference.x_t"),TransmitNative(reference));
  received=Receive(Transmit(own));try{CheckBody(received,label+" refillet received");CheckBody(reference,label+" refillet reference");Compare(reference,received,label+" cut-new-edge-refillet");}finally{Check(PK_ENTITY_delete(1,&received),"delete re-fillet received");}
  Console.WriteLine("PASS corner -> reload -> Sphere/Blend cut -> second cut -> new edge fillet "+label);

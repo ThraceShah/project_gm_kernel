@@ -93,6 +93,12 @@ maximum observed mass residual is `5.0464e-8`. Actual finite boundaries,
 source-support contacts and live spherical interfaces are checked independently.
 Zero-band cases additionally save/reload through this kernel, delete the original
 and classify interior, removed-corner and exterior points against native PK.
+The base lifecycle matrix independently reloads, copies and deletes the received
+source, then mirrors/scales the copy. Both author families pass fresh native
+receive/full checks, strict comparison, material classification, transformed
+radius/G1 checks and restoration of geometry/return-memory ownership. This tests
+transformation after modeling, separately from constructing a corner in a
+transformed source.
 
 The final integration hook is `BuildTrivalentLocalBlendCorner`, after the axial
 and planar paths and before the regular single-edge/chain path. Its products
@@ -103,5 +109,6 @@ The producer, oracle and tests use the public `set_blend_constant` /
 
 ```sh
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/TrivalentBlendCornerOracle.cs -c Release -p:UseSharedCompilation=false -p:BuildInParallel=false
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/TrivalentBlendCornerOracle.cs -c Release -p:UseSharedCompilation=false -- base --lifecycle
 MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests -c Release --filter FullyQualifiedName~TrivalentSolidBlendTests -p:UseSharedCompilation=false -p:BuildInParallel=false
 ```
