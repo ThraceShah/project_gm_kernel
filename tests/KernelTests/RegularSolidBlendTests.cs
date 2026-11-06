@@ -117,7 +117,13 @@ public unsafe class RegularSolidBlendTests:IDisposable
             var point=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(tag,curve.TMin+(curve.TMax-curve.TMin)*i/(count-1),0,&point));
             var value=i==0?old[7]:i==count-1?old[^1]:XtFieldValue.Vec(point.coord[0],point.coord[1],point.coord[2]);chart.Fields[7+i]=value;
             point.coord[0]=value.Vector.X;point.coord[1]=value.Vector.Y;point.coord[2]=value.Vector.Z;var at=new PK_UV_s();
-            Assert.Equal(0,KernelRuntime.SurfParameteriseVector(data.Surface0Tag,point,&at));uv.Fields[1+2*i]=XtFieldValue.RealValue(at.param[0]);uv.Fields[2+2*i]=XtFieldValue.RealValue(at.param[1]);
+            // The manufactured roof has x=u, y=v, also on its linear
+            // extension. Full contact charts now extend beyond the finite
+            // cap; a bounded global inverse deliberately cannot recover
+            // those anchors. Supply the independent manufactured UV instead.
+            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(data.Surface0Tag)].Class==SurfaceClass.BSurface){at.param[0]=point.coord[0];at.param[1]=point.coord[1];}
+            else Assert.Equal(0,KernelRuntime.SurfParameteriseVector(data.Surface0Tag,point,&at));
+            uv.Fields[1+2*i]=XtFieldValue.RealValue(at.param[0]);uv.Fields[2+2*i]=XtFieldValue.RealValue(at.param[1]);
         }
         var blocks=KernelRuntime.BlocksLiveBytes;Assert.Equal(0,XtBrepImportTests.Receive(XtText.Encode(document),out var received));
         Assert.True(KernelRuntime.TryResolveBodySlot(received,out var slot));Assert.False(KernelRuntime.Xt.IsOpaque(slot));

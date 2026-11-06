@@ -9,6 +9,11 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    internal enum RegularBlendDomainStage:byte{Face,Extent,Band,Material,Complete}
+    [ThreadStatic] internal static RegularBlendDomainStage LastRegularBlendDomainStage;
+    [ThreadStatic] internal static FaceTag LastRegularBlendDomainFace;
+    [ThreadStatic] internal static BufferCount LastRegularBlendDomainCells;
+    [ThreadStatic] internal static AlgorithmStatus LastRegularBlendDomainStatus;
     // Certify whole-band clearance for four-sided supports, including both
     // contacts. Existing finite obstacles may be separated by interval boxes;
     // interacting fillets and self-intersections still require local repair.
@@ -26,15 +31,22 @@ internal static unsafe partial class KernelRuntime
         var record=Surfaces[slot];
         if(first<record.UMin||last>record.UMax)return ParasolidConstants.PK_ERROR_not_implemented;
         var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);
+        // Construction has finished; all support/program data is immutable
+        // until this proof returns. The scope ends before B-rep publication.
+        ModelingPerformance.Context profile=default;using var evidence=new ModelingPerformance.Scope(&profile,immutableGeometry:true);
+        var bandPatch=new Geometry.Intersection.SurfaceIntersectionPatch(program,data.ProgramRoot,new(first,last,0,1));
+        bandPatch=new(bandPatch,record.Header.Tag,record.Header.Generation,record.Sense);
         var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];
         var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
         if(charts.Length<2||first<charts[0].Parameter||last>charts[^1].Parameter)
             return ParasolidConstants.PK_ERROR_not_implemented;
         Span<SurfaceParameterBox> cells=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        Span<IntervalNumber> splinePoles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         var visited=0;var capCount=0;var finiteObstacles=false;var face=Bodies[body].FirstFaceBody;
         for(var f=0;f<Bodies[body].FaceCountBody;f++,face=Faces[face].NextInBody)
         {
+            LastRegularBlendDomainStage=RegularBlendDomainStage.Face;LastRegularBlendDomainFace=Faces[face].Header.Tag;
             if(supports.Contains(face))continue;
             var surface=GetSurfaceSlotByTag(Faces[face].SurfTag);
             if(surface<0)return ParasolidConstants.PK_ERROR_missing_geom;
@@ -59,7 +71,8 @@ internal static unsafe partial class KernelRuntime
                 // face's infinite halfspace. Certify separation from that
                 // finite face instead, then check the material component.
                 if(!removesMaterial)return ParasolidConstants.PK_ERROR_not_implemented;
-                var status=RegularFiniteFaceExtent(face,out obstacle);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                LastRegularBlendDomainStage=RegularBlendDomainStage.Extent;
+                var status=RegularFiniteFaceExtent(face,out obstacle);LastRegularBlendDomainStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 finiteObstacles=true;
             }
             var covered=first;
@@ -71,9 +84,10 @@ internal static unsafe partial class KernelRuntime
                 covered=hi;cells[0]=new(lo,hi,0,1);depths[0]=0;var pending=1;
                 while(pending>0)
                 {
+                    LastRegularBlendDomainStage=RegularBlendDomainStage.Band;LastRegularBlendDomainCells=visited+1;
                     if(++visited>32768)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     var index=--pending;var cell=cells[index];var depth=depths[index];
-                    var status=JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,cell,bounds);
+                    var status=bandPatch.Bound(cell,bounds);LastRegularBlendDomainStatus=status;
                     if(status==AlgorithmStatus.Success)
                     {
                         if(halfspace)
@@ -87,6 +101,26 @@ internal static unsafe partial class KernelRuntime
                         else if(bounds[0].Upper<obstacle.XLo-tolerance||bounds[0].Lower>obstacle.XHi+tolerance
                             ||bounds[1].Upper<obstacle.YLo-tolerance||bounds[1].Lower>obstacle.YHi+tolerance
                             ||bounds[2].Upper<obstacle.ZLo-tolerance||bounds[2].Lower>obstacle.ZHi+tolerance)continue;
+                        else if(Surfaces[surface].Class==SurfaceClass.BSurface)
+                        {
+                            // A global support AABB can overlap a nearby
+                            // fillet although the whole curved support stays
+                            // clear. Prove separation of both full patches;
+                            // do not infer overlap from that coarse box.
+                            var separated=true;var extent=new IntervalBox3(obstacle.XLo,obstacle.XHi,obstacle.YLo,obstacle.YHi,obstacle.ZLo,obstacle.ZHi);
+                            for(var piece=0;piece<RegularSurfacePatchCount(surface);piece++)
+                            {
+                                var found=RegularSurfacePatch(surface,piece,extent,splinePoles,out var patch);if(found!=AlgorithmStatus.Success)return IntersectionError(found);
+                                if(patch.Domain.U1<=patch.Domain.U0||patch.Domain.V1<=patch.Domain.V0)continue;
+                                found=ParametricPatchSeparation.CertifyDisjoint(bandPatch,patch,cell,patch.Domain,tolerance,ref visited,32768);
+                                LastRegularBlendDomainCells=visited;LastRegularBlendDomainStatus=found;
+                                if(found!=AlgorithmStatus.Success){separated=false;break;}
+                            }
+                            if(separated)continue;
+                            // Both-patch refinement has already consumed the
+                            // shared proof budget; an unresolved pair fails.
+                            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        }
                     }
                     else if(status!=AlgorithmStatus.NotConverged)return IntersectionError(status);
                     if(depth>=32||pending+2>cells.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
@@ -107,12 +141,13 @@ internal static unsafe partial class KernelRuntime
         if(capCount!=2)return ParasolidConstants.PK_ERROR_not_implemented;
         if(finiteObstacles)
         {
+            LastRegularBlendDomainStage=RegularBlendDomainStage.Material;
             SurfaceDerivativeLayout.TryCreate(0,0,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[1];
             var status=JointNestedBlendEvaluation.Evaluate(program,data.ProgramRoot,first+(last-first)*.5,.5,layout,point);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var vector=new PK_VECTOR_s();WriteVector(&vector,point[0]);int enclosure;EntityTag topology;
             var error=BodyContainsVectorCore(Bodies[body].Header.Tag,vector,&enclosure,&topology);if(error!=0)return error;
             if(enclosure!=ParasolidConstants.PK_enclosure_inside_c)return ParasolidConstants.PK_ERROR_radius_too_large;
         }
-        return 0;
+        LastRegularBlendDomainStage=RegularBlendDomainStage.Complete;return 0;
     }
 }

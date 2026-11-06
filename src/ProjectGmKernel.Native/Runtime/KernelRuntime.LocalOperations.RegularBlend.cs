@@ -8,7 +8,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RegularBlendStage:byte{None,Supports,Roll,Contacts,Ends,Trim,Loops,Build,Publish,Release}
+    internal enum RegularBlendStage:byte{None,Supports,Roll,Contacts,Ends,EndCircle,EndIntersection,EndParameters,Clearance,Trim,Loops,Build,Publish,Release}
     [ThreadStatic] internal static RegularBlendStage LastRegularBlendStage;
     // A single regular edge ending at two trivalent vertices. Contact curves
     // replace the selected edge; each end curve replaces its old cap corner.
@@ -16,6 +16,7 @@ internal static unsafe partial class KernelRuntime
         Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
     {
         made=0;LastRegularBlendStage=RegularBlendStage.Supports;
+        if(selected.Length>1)return BuildRegularBlendChain(body,faces,selected,descriptions,products,out made);
         if(selected.Length!=1||Bodies[body].RegionCount!=2||Bodies[body].ShellCount!=2)return ParasolidConstants.PK_ERROR_not_implemented;
         var edge=selected[0];var original=Edges[edge];
         if(original.PendingBlendKind!=1||original.StartVertex<0||original.EndVertex<0
@@ -27,7 +28,7 @@ internal static unsafe partial class KernelRuntime
         for(var side=0;side<2;side++)
         {
             var support=Surfaces[GetSurfaceSlotByTag(Faces[supports[side]].SurfTag)];
-            if(support.Class is not (SurfaceClass.Plane or SurfaceClass.BSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+            if(support.Class is not (SurfaceClass.Plane or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
             var error=RegularBlendEndFace(body,ends[side],fa,fb,out caps[side]);if(error!=0)return error;
             capSurfaces[side]=Faces[caps[side]].SurfTag;
             if(Surfaces[GetSurfaceSlotByTag(capSurfaces[side])].Class!=SurfaceClass.Plane)
@@ -40,7 +41,8 @@ internal static unsafe partial class KernelRuntime
         }
         if(caps[0]==caps[1])return ParasolidConstants.PK_ERROR_not_implemented;
         var sa=Faces[fa].SurfTag;var sb=Faces[fb].SurfTag;
-        if(Surfaces[GetSurfaceSlotByTag(sa)].Class!=SurfaceClass.BSurface&&Surfaces[GetSurfaceSlotByTag(sb)].Class!=SurfaceClass.BSurface)
+        if(Surfaces[GetSurfaceSlotByTag(sa)].Class is not (SurfaceClass.BSurface or SurfaceClass.BlendSurface)
+            &&Surfaces[GetSurfaceSlotByTag(sb)].Class is not (SurfaceClass.BSurface or SurfaceClass.BlendSurface))
             return ParasolidConstants.PK_ERROR_not_implemented;
         if(!TryProfileEdgeRange(original,out var first,out var last))return ParasolidConstants.PK_ERROR_not_implemented;
         Span<KernelVector3> jet=stackalloc KernelVector3[2];
@@ -57,8 +59,16 @@ internal static unsafe partial class KernelRuntime
         error0=SheetOriginalVertex(ends[1],out var end);if(error0!=0)return error0;
         var options=new PK_SURF_create_blend_o_s{o_t_version=1,have_help=1};WriteVector(&options.help,jet[0]);SurfTag blend=0;
         LastRegularBlendStage=RegularBlendStage.Roll;
-        error0=CreateGeneralRollingBlend(sa,direction*LocalSenseSign(Faces[fa].Orientation)*radius,
-            sb,direction*LocalSenseSign(Faces[fb].Orientation)*radius,start,end,&options,&blend);if(error0!=0)return error0;
+        Span<AnalyticSurface> termination=stackalloc AnalyticSurface[2];
+        for(var cap=0;cap<2;cap++)
+        {
+            if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(capSurfaces[cap])],out var plane))return ParasolidConstants.PK_ERROR_not_implemented;
+            var originalSupport=Surfaces[GetSurfaceSlotByTag(Faces[caps[cap]].SurfTag)];
+            var outward=Scale(plane.Axis,LocalSenseSign(Faces[caps[cap]].Orientation)*LocalSenseSign(originalSupport.Sense));
+            termination[cap]=new(SurfaceClass.Plane,plane.Origin,outward,plane.X);
+        }
+        error0=CreateFiniteRollingBlend(sa,direction*LocalSenseSign(Faces[fa].Orientation)*radius,
+            sb,direction*LocalSenseSign(Faces[fb].Orientation)*radius,start,end,&options,&blend,termination);if(error0!=0)return error0;
 
         Span<CurveTag> curves=stackalloc CurveTag[4];Span<double> lo=stackalloc double[4],hi=stackalloc double[4];
         curves.Clear();
@@ -86,6 +96,7 @@ internal static unsafe partial class KernelRuntime
             // discover an interior branch. Certify its entire circle plane.
             if(Math.Abs(u0-u1)<1e-10)
             {
+                LastRegularBlendStage=RegularBlendStage.EndCircle;
                 error0=NestedBlendIsoparam(blend,true,(u0+u1)*.5,0,1,out var circle,out _,out _);if(error0!=0)return error0;
                 TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(capSurfaces[cap])],out var plane);
                 var data=CircleDataPool[Curves[GetCurveSlotByTag(circle)].DataIndex];
@@ -96,10 +107,12 @@ internal static unsafe partial class KernelRuntime
             }
             if(curves[2+cap]==0)
             {
+                LastRegularBlendStage=RegularBlendStage.EndIntersection;
                 error0=PrepareSheetCutCurves(blend,capSurfaces[cap],cuts,out var count);if(error0!=0)return error0;
                 if(count!=1||cuts[0].Closed!=0)return ParasolidConstants.PK_ERROR_not_implemented;
                 curves[2+cap]=cuts[0].Curve;
             }
+            LastRegularBlendStage=RegularBlendStage.EndParameters;
             var p=new PK_VECTOR_s();WriteVector(&p,contacts[cap]);double a=0,b=0;
             error0=CurveParameteriseVectorCore(curves[2+cap],p,&a);if(error0!=0)return error0;
             WriteVector(&p,contacts[2+cap]);error0=CurveParameteriseVectorCore(curves[2+cap],p,&b);if(error0!=0)return error0;
@@ -107,12 +120,13 @@ internal static unsafe partial class KernelRuntime
             {
                 if(a>Math.Tau-1e-9)a=0;if(b>Math.Tau-1e-9)b=0;
                 if(Math.Abs(a-b)>Math.PI+1e-9)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                if(direction>0)Curves[GetCurveSlotByTag(curves[2+cap])].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
+                Curves[GetCurveSlotByTag(curves[2+cap])].Sense=direction>0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
             }
             lo[2+cap]=a;hi[2+cap]=b;
         }
         var firstStation=Math.Min(Math.Min(stations[0],stations[1]),Math.Min(stations[2],stations[3]));
         var lastStation=Math.Max(Math.Max(stations[0],stations[1]),Math.Max(stations[2],stations[3]));
+        LastRegularBlendStage=RegularBlendStage.Clearance;
         error0=ValidateRegularBlendDomain(body,supports,caps,blend,firstStation,lastStation,direction<0);if(error0!=0)return error0;
         error0=AssembleRegularLocalBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products);
         if(error0!=0)return error0;
@@ -203,6 +217,7 @@ internal static unsafe partial class KernelRuntime
                 var side=supports.IndexOf(a);if(side<0)side=supports.IndexOf(b);if(side<0)return ParasolidConstants.PK_ERROR_not_implemented;
                 var contact=2*side+cap;var p=new PK_VECTOR_s();WriteVector(&p,contacts[contact]);double t=0;
                 error=CurveParameteriseVectorCore(old.CurveTag,p,&t);if(error!=0)return error;
+                LiftPeriodicEdgeParameter(old.CurveTag,edges[e].Start,edges[e].End,ref t);
                 if(t<=edges[e].Start+1e-10||t>=edges[e].End-1e-10)return ParasolidConstants.PK_ERROR_bad_parameter;
                 var atStart=old.StartVertex==ends[cap];if(atStart)edges[e].StartVertex=vertices[contact];else edges[e].EndVertex=vertices[contact];
                 if(atStart==(LocalSenseSign(Curves[GetCurveSlotByTag(old.CurveTag)].Sense)>0))edges[e].Start=t;else edges[e].End=t;

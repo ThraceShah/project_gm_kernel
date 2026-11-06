@@ -9,6 +9,8 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    internal enum RollingBuildStage:byte{Clone,Offset,Compile,Seed,Project,Forward,Backward,EndSeed,EndProject,Charts,Proof,Bind}
+    [ThreadStatic] internal static RollingBuildStage LastRollingBuildStage;
     private static int CreateGeneralRollingBlend(SurfTag first,double r0,SurfTag second,double r1,
         in KernelVector3 start,in KernelVector3 end,PK_SURF_create_blend_o_s* options,SurfTag* result)
         =>CreateGeneralRollingBlend(first,r0,second,r1,start,end,options,result,default);
@@ -27,16 +29,20 @@ internal static unsafe partial class KernelRuntime
     private static int CreateGeneralRollingBlend(SurfTag first,double r0,SurfTag second,double r1,
         in KernelVector3 start,in KernelVector3 end,PK_SURF_create_blend_o_s* options,SurfTag* result,ReadOnlySpan<AnalyticSurface> outwardTerminationPlanes)
     {
+        LastRollingBuildStage=RollingBuildStage.Clone;
         Span<GeomTag> source=stackalloc GeomTag[2]{first,second},copies=stackalloc GeomTag[2];
         var error=TryCloneEntitiesCore(source,copies);if(error!=0)return error;
+        LastRollingBuildStage=RollingBuildStage.Offset;
         error=RollingOffsetSupport(copies[0],r0,0,out var offset0);if(error!=0)return error;
         error=RollingOffsetSupport(copies[1],r1,0,out var offset1);if(error!=0)return error;
         var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {
+            LastRollingBuildStage=RollingBuildStage.Compile;
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return ParasolidConstants.PK_ERROR_memory_full;
             var status=compiler.Surface(offset0,out var a);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             status=compiler.Surface(offset1,out var b);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            LastRollingBuildStage=RollingBuildStage.Seed;
             var program=compiler.View;var seed=options->have_help!=0?Vector(options->help.coord[0],options->help.coord[1],options->help.coord[2]):start;
             Span<double> contacts=stackalloc double[4];status=RollingBlendSample(program,a,b,seed,out _,out _,out var normal,contacts);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var projectedSpines=NestedWorkspace<BlendSpineInstruction>(program.Spines.Length+1);var projectedCharts=NestedWorkspace<BlendChartInstruction>(program.Charts.Length+2);
@@ -45,37 +51,45 @@ internal static unsafe partial class KernelRuntime
             projectedSpines[projectionSpine]=new(){First=a,Second=b,ChartOffset=projectionChart,ChartCount=2};
             program=new(program.Surfaces,program.Spines,program.Charts,program.Scalars,CommandScratch.Current.AvailableSpanOfDoubles());
             var projector=new NestedBlendProgram(program.Surfaces,projectedSpines,projectedCharts,program.Scalars,CommandScratch.Current.AvailableSpanOfDoubles());
+            LastRollingBuildStage=RollingBuildStage.Project;
             status=RollingBlendProjectJoint(projector,projectionSpine,projectedCharts[projectionChart..],seed,seed,normal,contacts,out var initial,out var tangent);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var scale=Math.Max(1,OperationIntersection.Norm(Sub(start,end)));var step=.05*scale;
             var feature=Math.Min(RollingFeature(program.Surfaces[a]),RollingFeature(program.Surfaces[b]));if(double.IsFinite(feature))step=Math.Min(step,.5*feature);
             if(!(step>1e-12*scale))return ParasolidConstants.PK_ERROR_at_singularity;
             Span<KernelVector3> points=stackalloc KernelVector3[512],backward=stackalloc KernelVector3[512];
+            LastRollingBuildStage=RollingBuildStage.Forward;
             status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,tangent,step,contacts,points,out var count,out var closed,out var ctol,outwardTerminationPlanes,Math.Abs(r0));
             if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             if(!closed)
             {
+                LastRollingBuildStage=RollingBuildStage.Backward;
                 status=RollingBlendSample(program,a,b,initial,out _,out _,out _,contacts);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,Scale(tangent,-1),step,contacts,backward,out var left,out var leftClosed,out var leftError,outwardTerminationPlanes,Math.Abs(r0));
                 if(status!=AlgorithmStatus.Success||leftClosed)return EvaluationError(status==AlgorithmStatus.Success?AlgorithmStatus.NotConverged:status);
                 if(left+count-1>points.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 points[..count].CopyTo(points[(left-1)..]);for(var i=0;i<left-1;i++)points[i]=backward[left-1-i];count+=left-1;ctol=Math.Max(ctol,leftError);
             }
+            LastRollingBuildStage=RollingBuildStage.EndSeed;
             status=RollingBlendSample(program,a,b,end,out _,out _,out var endNormal);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var nearest=points[0];var best=OperationIntersection.Norm(Sub(nearest,end));for(var i=1;i<count;i++){var distance=OperationIntersection.Norm(Sub(points[i],end));if(distance<best){best=distance;nearest=points[i];}}
             // The two inputs select the rolling branch; neither is required
             // to lie on its offset spine. In particular a hint's tangent
             // plane can miss a small closed spine completely.
             if(best>OperationIntersection.Norm(Sub(start,end))+Math.Abs(r0)+Math.Abs(r1))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            LastRollingBuildStage=RollingBuildStage.EndProject;
             status=RollingBlendProjectJoint(projector,projectionSpine,projectedCharts[projectionChart..],nearest,nearest,endNormal,contacts,out var endPoint,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var matched=false;for(var i=0;i<count-1;i++)if(OperationIntersection.Norm(Sub(points[i],endPoint))<2*step)matched=true;
             if(!matched)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            LastRollingBuildStage=RollingBuildStage.Charts;
             status=compiler.ChartSpine(a,b,points[..count],0,1,Math.Max(2*ctol,1e-8*scale),Math.PI/12,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spineIndex,r0*r1<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c);
             if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             if(!outwardTerminationPlanes.IsEmpty)
             {
+                LastRollingBuildStage=RollingBuildStage.Proof;
                 status=CertifyFiniteRollingTrace(compiler.View,spineIndex,outwardTerminationPlanes,Math.Abs(r0),closed);
                 if(status!=AlgorithmStatus.Success)return IntersectionError(status);
             }
+            LastRollingBuildStage=RollingBuildStage.Bind;
             CurveTag spine=0;error=BindNestedBlendSpine(offset0,offset1,compiler.View,spineIndex,&spine);if(error!=0)return error;
             return CompileAndBindNestedBlend(copies[0],copies[1],spine,r0,r1,result);
         }
