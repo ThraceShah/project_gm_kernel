@@ -8,7 +8,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private struct RegularCutFamily{internal SurfTag First,Second;internal BufferOffset Start;internal BufferCount Count;}
+    private struct RegularCutFamily{internal SurfTag First,Second;internal BufferOffset Start;internal BufferCount Count;internal SurfacePairRelation Relation;}
     private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;}
 
     private static int PrepareRegularSupportCuts(SurfTag first,SurfTag second,Span<SheetCutCurve> cuts,out BufferCount count)
@@ -65,10 +65,11 @@ internal static unsafe partial class KernelRuntime
             for(var k=0;k<loop.CoedgeCount;k++)
             {
                 var edge=input.Edges[input.Coedges[loop.FirstCoedge+k].Edge];
-                var status=IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out var n);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                LastSheetPartitionStage=SheetPartitionStage.BoundaryIntersections;LastSheetCurve=edge.Curve;LastSheetParameter=edge.Start;
+                var status=IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out var n);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 for(var r=0;r<n;r++)
                 {
-                    if(roots[r].Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    if(roots[r].Kind is not (IntersectionVectorKind.Simple or IntersectionVectorKind.Start or IntersectionVectorKind.End or IntersectionVectorKind.Tangent))return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     var duplicate=false;for(var i=0;i<count;i++)duplicate|=ProfileDistance(points[i],roots[r].Point)<1e-8;
                     if(!duplicate){if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;points[count++]=roots[r].Point;}
                 }
@@ -84,6 +85,7 @@ internal static unsafe partial class KernelRuntime
         Span<KernelVector3> roots=stackalloc KernelVector3[SheetPointLimit];var nRoots=0;
         var error=RegularBoundarySurfaceRoots(input,first,input.Faces[second].Surface,roots,ref nRoots);if(error!=0)return error;
         error=RegularBoundarySurfaceRoots(input,second,input.Faces[first].Surface,roots,ref nRoots);if(error!=0)return error;
+        LastSheetPartitionStage=SheetPartitionStage.CutClip;
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<KernelVector3> point=stackalloc KernelVector3[1];
         foreach(ref readonly var curve in curves)
         {
@@ -114,8 +116,9 @@ internal static unsafe partial class KernelRuntime
                 if(status==AlgorithmStatus.InvalidInput)continue;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(input.Faces[second].Surface)],point[0],out var b);
                 if(status==AlgorithmStatus.InvalidInput)continue;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-                error=RegularFaceContains(input,first,a,out var insideA);if(error!=0)return error;if(!insideA)continue;
-                error=RegularFaceContains(input,second,b,out var insideB);if(error!=0)return error;if(!insideB)continue;
+                error=RegularFiniteFaceContains(input,first,a,point[0],out var insideA,out var boundaryA);if(error!=0)return error;if(!insideA)continue;
+                error=RegularFiniteFaceContains(input,second,b,point[0],out var insideB,out var boundaryB);if(error!=0)return error;if(!insideB)continue;
+                if(boundaryA&&boundaryB)continue;
                 var cut=curve;cut.First=lo;cut.Last=hi;cut.Closed=closed?(byte)1:(byte)0;
                 if(wrap)
                 {
@@ -140,7 +143,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int SplitRegularSourceEdges(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,
-        Span<SheetSourceEdge> sources,Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model)
+        Span<SheetSourceEdge> sources,Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model,bool coincident=false)
     {
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<BufferOffset> vertices=stackalloc BufferOffset[SheetPointLimit+2];
         for(var e=0;e<input.Edges.Length;e++)
@@ -153,6 +156,14 @@ internal static unsafe partial class KernelRuntime
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
                 if(!OperationIntersection.InInterval(t,edge.Start,edge.End))continue;
+                if(coincident&&!model.VertexPrecisions.IsEmpty&&model.OriginalVertices[p]>=0
+                    &&Vertices[model.OriginalVertices[p]].Body!=Edges[original[e]].Body
+                    &&t>edge.Start+1e-10&&t<edge.End-1e-10)
+                {
+                    // A planar vertex-on-edge imprint is a local-precision
+                    // merge only if surviving cells use both source bodies.
+                    if(RegularPlanarImprintJunction(input,p,e))model.VertexMergeCandidates[p]=1;
+                }
                 var duplicate=false;for(var k=0;k<n;k++)duplicate|=Math.Abs(parameters[k]-t)<1e-10||vertices[k]==p;
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=Math.Clamp(t,edge.Start,edge.End);vertices[n++]=p;}
             }

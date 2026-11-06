@@ -26,7 +26,7 @@ internal static unsafe partial class KernelRuntime
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
             var model=new SheetArrangement
             {
-                Points=ModelSpan<KernelVector3>(bytes,ref cursor,SheetPointLimit),OriginalVertices=ModelSpan<VertexSlot>(bytes,ref cursor,SheetPointLimit),
+                Points=ModelSpan<KernelVector3>(bytes,ref cursor,SheetPointLimit),OriginalVertices=ModelSpan<VertexSlot>(bytes,ref cursor,SheetPointLimit),VertexPrecisions=ModelSpan<double>(bytes,ref cursor,SheetPointLimit),VertexMergeCandidates=ModelSpan<byte>(bytes,ref cursor,SheetPointLimit),
                 Edges=ModelSpan<ModelingEdge>(bytes,ref cursor,SheetEdgeLimit),CutEdges=ModelSpan<byte>(bytes,ref cursor,SheetEdgeLimit),
                 Coedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,SheetCoedgeLimit),Loops=ModelSpan<ModelingLoop>(bytes,ref cursor,SheetLoopLimit),
                 Faces=ModelSpan<ModelingFace>(bytes,ref cursor,SheetFaceLimit),Sources=ModelSpan<FaceSlot>(bytes,ref cursor,SheetFaceLimit),
@@ -42,7 +42,8 @@ internal static unsafe partial class KernelRuntime
             var halfedges=ModelSpan<SheetHalfedge>(bytes,ref cursor,2*SheetEdgeLimit);var cycleCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,2*SheetEdgeLimit);
             var cycles=ModelSpan<SheetCycle>(bytes,ref cursor,SheetLoopLimit);if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;
             var error=ReadRegularBoundaries(inputs,model.Points,model.OriginalVertices,inputEdges,originalEdges,inputCoedges,inputLoops,inputFaces,sources,owners,offsets,
-                out model.NP,out var ne,out var nc,out var nl,out var nf);if(error!=0)return error;
+                out model.NP,out var ne,out var nc,out var nl,out var nf,model.Tolerance,model.VertexPrecisions);if(error!=0)return error;
+            model.VertexMergeCandidates[..model.NP].Clear();
             var input=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
             for(var a=0;a<nf;a++)for(var b=a+1;b<nf;b++)
@@ -53,12 +54,19 @@ internal static unsafe partial class KernelRuntime
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
                 if(family<0)
                 {
-                    error=PrepareRegularSupportCuts(first,second,supportCuts,out var n);if(error!=0)return error;
+                    var relation=RegularCoincidentSupports(first,second)?SurfacePairRelation.CoincidentArea:SurfacePairRelation.Unresolved;var n=0;
+                    if(relation!=SurfacePairRelation.CoincidentArea){error=PrepareRegularSupportCuts(first,second,supportCuts,out n);if(error!=0)return error;relation=n==0?SurfacePairRelation.Empty:SurfacePairRelation.RegularCurves;}
                     if(familyCount==families.Length||ownedCount>owned.Length-n)return ParasolidConstants.PK_ERROR_not_implemented;
-                    family=familyCount;families[familyCount++]=new(){First=first,Second=second,Start=ownedCount,Count=n};
+                    family=familyCount;families[familyCount++]=new(){First=first,Second=second,Start=ownedCount,Count=n,Relation=relation};
                     supportCuts[..n].CopyTo(owned[ownedCount..]);ownedCount+=n;
                 }
-                var data=families[family];if(data.Count==0)continue;
+                var data=families[family];
+                if(data.Relation==SurfacePairRelation.CoincidentArea)
+                {
+                    error=ArrangeRegularCoincidentDomains(input,a,b,cuts,ref cutCount,ref model);if(error!=0)return error;
+                    continue;
+                }
+                if(data.Count==0)continue;
                 LastRegularBooleanStage=RegularBooleanStage.Clip;ModelingPerformance.Stage(RegularBooleanStage.Clip);
                 error=ClipRegularFacePair(input,a,b,owned.Slice(data.Start,data.Count),cuts,ref cutCount,owned,ref ownedCount,ref model);if(error!=0)return error;
             }
@@ -83,34 +91,43 @@ internal static unsafe partial class KernelRuntime
                 }
             }
             LastRegularBooleanStage=RegularBooleanStage.Split;ModelingPerformance.Stage(RegularBooleanStage.Split);
-            error=SplitRegularSourceEdges(input,originalEdges[..ne],sourceEdges,owned,ref ownedCount,ref model);if(error!=0)return error;
+            var coincident=false;for(var i=0;i<familyCount;i++)coincident|=families[i].Relation==SurfacePairRelation.CoincidentArea;
+            error=SplitRegularSourceEdges(input,originalEdges[..ne],sourceEdges,owned,ref ownedCount,ref model,coincident);if(error!=0)return error;
             Span<SheetCutCurve> faceCuts=stackalloc SheetCutCurve[RegularCutLimit];
             for(var f=0;f<nf;f++)
             {
                 LastRegularBooleanStage=RegularBooleanStage.Arrange;ModelingPerformance.Stage(RegularBooleanStage.Arrange);LastRegularBooleanFace=f;var n=0;
                 for(var c=0;c<cutCount;c++)if(cuts[c].First==f||cuts[c].Second==f)faceCuts[n++]=cuts[c].Cut;
-                error=ArrangeSheetFace(sources[f],0,sourceEdges[..ne],faceCuts[..n],ref model,halfedges,cycleCoedges,cycles,true);if(error!=0)return error;
+                error=ArrangeSheetFace(sources[f],0,sourceEdges[..ne],faceCuts[..n],ref model,halfedges,cycleCoedges,cycles,true,coincident);if(error!=0)return error;
             }
             LastRegularBooleanStage=RegularBooleanStage.Classify;ModelingPerformance.Stage(RegularBooleanStage.Classify);
+            if(coincident){error=UnifyRegularCoincidentEdges(ref model);if(error!=0)return error;}
             Span<byte> selected=stackalloc byte[model.NF],reversed=stackalloc byte[model.NF];selected.Clear();reversed.Clear();
             Span<BufferOffset> bodyFaces=stackalloc BufferOffset[RegularInputFaces];Span<bool> minus=stackalloc bool[inputs.Length],plus=stackalloc bool[inputs.Length];
-            SurfaceDerivativeLayout.TryCreate(0,0,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[1];var hasClash=cutCount>0;var targetClash=false;
+            SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[4];var hasClash=cutCount>0;var targetClash=false;
             for(var c=0;c<cutCount;c++)targetClash|=owners[cuts[c].First]==0||owners[cuts[c].Second]==0;
             for(var f=0;f<model.NF;f++)
             {
                 LastRegularBooleanFace=f;var sourceIndex=sources[..nf].IndexOf(model.Sources[f]);if(sourceIndex<0)return ParasolidConstants.PK_ERROR_bad_loop;
                 var owner=owners[sourceIndex];var uv=model.Witnesses[f];var surface=GetSurfaceSlotByTag(model.Faces[f].Surface);
                 var status=EvaluateSurfaceCore(in Surfaces[surface],uv.param[0],uv.param[1],in layout,point,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                var outward=Geometry.Evaluation.EvaluationMath.Scale(ProfileCross(point[layout.GetIndex(1,0)],point[layout.GetIndex(0,1)]),LocalSenseSign(model.Faces[f].Sense)*LocalSenseSign(Surfaces[surface].Sense));
+                var canonicalOwner=owner;
                 for(var b=0;b<inputs.Length;b++)
                 {
                     if(b==owner){minus[b]=true;plus[b]=false;continue;}
+                    if(coincident)
+                    {
+                        error=RegularCoincidentMaterial(input,model.Faces[f].Surface,point[0],outward,offsets[b],offsets[b+1],out var on,out minus[b],out plus[b]);if(error!=0)return error;
+                        if(on){hasClash=true;if(owner==0||b==0)targetClash=true;canonicalOwner=Math.Min(canonicalOwner,b);continue;}
+                    }
                     var n=offsets[b+1]-offsets[b];for(var i=0;i<n;i++)bodyFaces[i]=offsets[b]+i;
                     error=RegularClassify(input,bodyFaces[..n],default,point[0],out var winding,out _);if(error!=0)return error;
                     if(winding is <0 or >1)return ParasolidConstants.PK_ERROR_bad_loop;
                     minus[b]=plus[b]=winding==1;if(winding==1){hasClash=true;if(owner==0||b==0)targetClash=true;}
                 }
                 var inside=BooleanMaterial(minus,options->function);var outside=BooleanMaterial(plus,options->function);
-                if(inside!=outside){selected[f]=1;reversed[f]=inside?(byte)0:(byte)1;}
+                if(inside!=outside&&canonicalOwner==owner){selected[f]=1;reversed[f]=inside?(byte)0:(byte)1;}
             }
             if(!hasClash)
             {
@@ -123,7 +140,7 @@ internal static unsafe partial class KernelRuntime
             else
             {
                 LastRegularBooleanStage=RegularBooleanStage.Components;ModelingPerformance.Stage(RegularBooleanStage.Components);
-                error=MergeRegularBooleanCells(ref model,selected,reversed);if(error!=0)return error;
+                error=MergeRegularBooleanCells(ref model,selected,reversed,coincident);if(error!=0)return error;
                 error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],options,result);if(error!=0)return error;
                 if(!targetClash)result->result=ParasolidConstants.PK_boolean_result_no_clash_c;
             }

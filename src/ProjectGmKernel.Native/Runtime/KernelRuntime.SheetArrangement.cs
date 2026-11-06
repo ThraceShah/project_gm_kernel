@@ -34,6 +34,8 @@ internal static unsafe partial class KernelRuntime
     {
         internal Span<KernelVector3> Points;
         internal Span<VertexSlot> OriginalVertices;
+        internal Span<double> VertexPrecisions;
+        internal Span<byte> VertexMergeCandidates;
         internal Span<ModelingEdge> Edges;
         internal Span<byte> CutEdges;
         internal Span<ModelingCoedge> Coedges;
@@ -56,7 +58,7 @@ internal static unsafe partial class KernelRuntime
             }
             if(index>=0)return 0;
             if(NP==Points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-            index=NP;OriginalVertices[NP]=original;Points[NP++]=point;return 0;
+            index=NP;OriginalVertices[NP]=original;if(!VertexPrecisions.IsEmpty)VertexPrecisions[NP]=original>=0?Vertices[original].Tolerance:0;if(!VertexMergeCandidates.IsEmpty)VertexMergeCandidates[NP]=0;Points[NP++]=point;return 0;
         }
         internal int AddEdge(CurveTag curve,double first,double last,BufferOffset start,BufferOffset end,bool cut,out BufferOffset index)
         {
@@ -145,7 +147,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int ArrangeSheetFace(FaceSlot face,SurfTag plane,ReadOnlySpan<SheetSourceEdge> sources,ReadOnlySpan<SheetCutCurve> cuts,
-        ref SheetArrangement model,Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles,bool borrowGeometry=false)
+        ref SheetArrangement model,Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles,bool borrowGeometry=false,bool checkAllBoundaries=false)
     {
         var surface=Faces[face].SurfTag;var support=Surfaces[GetSurfaceSlotByTag(surface)];
         var reverse=LocalSenseSign(Faces[face].Orientation)*LocalSenseSign(support.Sense)<0;
@@ -165,6 +167,7 @@ internal static unsafe partial class KernelRuntime
             }
         }
         Span<double> parameters=stackalloc double[SheetPointLimit];Span<BufferOffset> endpoints=stackalloc BufferOffset[SheetPointLimit];
+        Span<OperationIntersectionPoint> coincidenceRoots=stackalloc OperationIntersectionPoint[checkAllBoundaries?IntersectionPointCapacity:0];
         for(var c=0;c<cuts.Length;c++)
         {
             ref readonly var cut=ref cuts[c];var n=0;
@@ -197,7 +200,7 @@ internal static unsafe partial class KernelRuntime
                 {
                     var fraction=.3819660112501051+attempt*.037;var t=first+span*fraction;if(t>cut.Last)t=cut.First+t-cut.Last;
                     var error=SheetCurveUV(surface,cut.Curve,t,true,out var uv,out _,out var point);if(error!=0)return error;
-                    error=SheetPointOnCoincidentBoundary(face,sources,point,out var coincident);if(error!=0)return error;
+                    error=SheetPointOnCoincidentBoundary(face,sources,point,out var coincident,checkAllBoundaries);if(error!=0)return error;
                     if(coincident){inside=false;located=true;break;}
                     error=SheetSourceContains(face,uv,out inside);
                     if(error==ParasolidConstants.PK_ERROR_eval_failure)continue;if(error!=0)return error;located=true;break;
@@ -218,7 +221,24 @@ internal static unsafe partial class KernelRuntime
                 CurveTag curve=cut.Curve;var lower=first;var upper=last;
                 if(wrap){var error=CloneSheetCurveArc(cut.Curve,first,last,true,out curve,out lower,out upper);if(error!=0)return error;}
                 var positive=LocalSenseSign(Curves[GetCurveSlotByTag(curve)].Sense)>0;
-                var add=model.AddEdge(curve,lower,upper,positive?a:b,positive?b:a,true,out var edge);if(add!=0)return add;
+                BufferOffset edge=-1;
+                if(checkAllBoundaries)
+                {
+                    var candidate=new ModelingEdge{Curve=curve,Start=lower,End=upper,StartVertex=positive?a:b,EndVertex=positive?b:a};
+                    for(var existing=0;existing<model.NE;existing++)
+                    {
+                        var equivalentError=EquivalentRegularEdges(candidate,model.Edges[existing],coincidenceRoots,out var equivalent,out _);if(equivalentError!=0)return equivalentError;
+                        if(equivalent){edge=existing;break;}
+                    }
+                    if(edge>=0&&curve!=cut.Curve){var unused=curve;var deleted=EntityDelete(1,&unused);if(deleted!=0)return deleted;}
+                }
+                var add=0;if(edge<0){add=model.AddEdge(curve,lower,upper,positive?a:b,positive?b:a,true,out edge);if(add!=0)return add;}
+                if(checkAllBoundaries)
+                {
+                    if(cut.KeepImprint!=0)model.CutEdges[edge]|=2;
+                    var already=false;for(var h=0;h<nh;h++)already|=halfedges[h].Edge==edge;if(already)continue;
+                    model.CutEdges[edge]|=1;
+                }
                 add=AddSheetHalfedge(surface,ref model,edge,1,halfedges,ref nh);if(add!=0)return add;
                 add=AddSheetHalfedge(surface,ref model,edge,0,halfedges,ref nh);if(add!=0)return add;
             }

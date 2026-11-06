@@ -152,6 +152,14 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionPoint> found,out BufferCount count)
     {
         count=0;ref readonly var ca=ref Curves[a.Slot];ref readonly var cb=ref Curves[b.Slot];
+        if(ca.Class==CurveClass.ICurve||cb.Class==CurveClass.ICurve)return IntersectRegularCurvePair(a,b,found,out count);
+        if(TryAffineCurve(a,out var ap,out var ad,out var aBase,out var aScale,out var alo,out var ahi)
+            &&TryAffineCurve(b,out var bp,out var bd,out var bBase,out var bScale,out var blo,out var bhi))
+        {
+            var affineStatus=OperationIntersection.LineLine(ap,ad,alo,ahi,bp,bd,blo,bhi,found,out count);
+            if(affineStatus!=AlgorithmStatus.Success)return affineStatus;
+            for(var i=0;i<count;i++){found[i].First=aBase+found[i].First/aScale;found[i].Second=bBase+found[i].Second/bScale;}return affineStatus;
+        }
         if(ca.Class==CurveClass.Line)
         {
             GetIntersectionLine(ca,out var p,out var d);
@@ -183,7 +191,7 @@ internal static unsafe partial class KernelRuntime
         if(equalBCurves&&ca.Class==CurveClass.BCurve)
         {
             var lo=Math.Max(a.Lower,b.Lower);var hi=Math.Min(a.Upper,b.Upper);if(hi<lo)return AlgorithmStatus.Success;
-            Span<KernelVector3> jet=stackalloc KernelVector3[1];
+            Span<KernelVector3> jet=stackalloc KernelVector3[2];
             var status=EvaluateCurveCore(in ca,lo,0,false,jet,out _);if(status!=AlgorithmStatus.Success)return status;
             if(!OperationIntersection.AddPoint(found,ref count,jet[0],lo,lo,hi==lo?IntersectionVectorKind.Tangent:IntersectionVectorKind.Start))return AlgorithmStatus.OutputTooSmall;
             if(hi>lo)

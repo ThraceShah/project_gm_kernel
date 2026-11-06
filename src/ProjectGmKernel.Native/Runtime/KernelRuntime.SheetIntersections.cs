@@ -15,6 +15,7 @@ internal static unsafe partial class KernelRuntime
         internal CurveTag Curve;
         internal double First, Last;
         internal byte Closed;
+        internal byte KeepImprint;
     }
 
     private static int PrepareSheetCutCurves(SurfTag surface, SurfTag plane, Span<SheetCutCurve> cuts, out BufferCount count)
@@ -30,6 +31,8 @@ internal static unsafe partial class KernelRuntime
         // first. A repeated Boolean may encounter the old planar tool first.
         if(Surfaces[a].Class==SurfaceClass.Plane&&Surfaces[b].Class!=SurfaceClass.Plane)
         { (surface,plane)=(plane,surface);(a,b)=(b,a); }
+        if(TryAffinePlanarSurface(a,out _,out _,out _)&&Surfaces[b].Class==SurfaceClass.BSurface&&!TryAffinePlanarSurface(b,out _,out _,out _))
+        { (surface,plane)=(plane,surface);(a,b)=(b,a); }
         if(Surfaces[a].Class==SurfaceClass.BlendSurface&&Surfaces[b].Class==SurfaceClass.Plane)
         {
             var exact=TryPrepareBlendPlaneIsocut(surface,plane,cuts,out count,out var handled);
@@ -37,7 +40,12 @@ internal static unsafe partial class KernelRuntime
         }
         Span<OperationIntersectionBranch> branches = stackalloc OperationIntersectionBranch[64];
         Span<KernelVector3> isolated = stackalloc KernelVector3[64];
-        var status = FindSurfaceIntersections(a, b, branches, out var nc, isolated, out var np);
+        BufferCount nc,np;
+        var status=Surfaces[a].Class==SurfaceClass.BSurface&&TryAffinePlanarSurface(b,out var affinePlane,out _,out _)
+            ?RuledBSurfacePlaneIntersection.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[a].DataIndex]),affinePlane,branches,out nc,isolated,out np)
+            :FindSurfaceIntersections(a,b,branches,out nc,isolated,out np);
+        if(status==AlgorithmStatus.Success&&Surfaces[b].Class==SurfaceClass.BSurface&&TryAffinePlanarSurface(b,out _,out _,out _)
+            &&!BranchesInsideAffineSurface(b,branches[..nc]))status=AlgorithmStatus.Unsupported;
         if (status == AlgorithmStatus.Unsupported)
         {
             var options = new PK_SURF_intersect_surf_o_s { o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_pline_c };
@@ -55,6 +63,7 @@ internal static unsafe partial class KernelRuntime
                 options.uvbox_2.param[0]=support.UMin;options.uvbox_2.param[1]=support.VMin;
                 options.uvbox_2.param[2]=support.UMax;options.uvbox_2.param[3]=support.VMax;
             }
+            nc=0;np=0;
             int* curves = null; PK_INTERVAL_s* intervals = null; int* kinds = null;
             var error = GeneralSurfIntersectSurf(a,b,-1,&options,&nc,&curves,&intervals,&kinds);
             try

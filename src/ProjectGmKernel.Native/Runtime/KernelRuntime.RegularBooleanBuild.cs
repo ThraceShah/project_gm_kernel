@@ -198,6 +198,8 @@ internal static unsafe partial class KernelRuntime
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
             var points=ModelSpan<KernelVector3>(bytes,ref cursor,model.NP);var vertexMap=ModelSpan<BufferOffset>(bytes,ref cursor,model.NP);vertexMap.Fill(-1);
+            var vertexPrecisions=ModelSpan<double>(bytes,ref cursor,model.NP);
+            var vertexOwners=ModelSpan<BodySlot>(bytes,ref cursor,model.NP);vertexOwners.Fill(-1);
             var edges=ModelSpan<ModelingEdge>(bytes,ref cursor,model.NE);var edgeMap=ModelSpan<BufferOffset>(bytes,ref cursor,model.NE);edgeMap.Fill(-1);
             var coedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,model.NC);var loops=ModelSpan<ModelingLoop>(bytes,ref cursor,model.NL);
             var faces=ModelSpan<ModelingFace>(bytes,ref cursor,indices.Length);var cavities=ModelSpan<byte>(bytes,ref cursor,indices.Length);
@@ -205,6 +207,7 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<indices.Length;i++)
             {
                 var index=indices[i];var face=model.Faces[index];var reverse=reversed[index]!=0;var surface=0;
+                var sourceOwner=TopologyBody(PoolKind.Face,model.Sources[index]);
                 for(var previous=0;previous<i;previous++)if(model.Faces[indices[previous]].Surface==face.Surface){surface=faces[previous].Surface;break;}
                 if(surface==0){var error=TryCloneEntityCore(face.Surface,out surface);if(error!=0)return error;}
                 faces[i]=new(){Surface=surface,Sense=reverse?ToggleModelingSense(face.Sense):face.Sense,FirstLoop=nl,LoopCount=face.LoopCount};cavities[i]=cavityFaces[index];
@@ -221,16 +224,36 @@ internal static unsafe partial class KernelRuntime
                             for(var side=0;side<2;side++)
                             {
                                 var v=side==0?source.StartVertex:source.EndVertex;var mapped=-1;
-                                if(v>=0){mapped=vertexMap[v];if(mapped<0){mapped=np;vertexMap[v]=np;points[np++]=model.Points[v];}}
+                                if(v>=0)
+                                {
+                                    mapped=vertexMap[v];
+                                    if(mapped<0){mapped=np;vertexMap[v]=np;vertexOwners[np]=sourceOwner;vertexPrecisions[np]=model.VertexPrecisions.IsEmpty?0:model.VertexPrecisions[v];points[np++]=model.Points[v];}
+                                    else if(vertexOwners[mapped]!=sourceOwner)vertexOwners[mapped]=-2;
+                                }
                                 if(side==0)start=mapped;else end=mapped;
                             }
                             e=ne;edgeMap[coedge.Edge]=ne;edges[ne++]=new(){Curve=curve,Start=source.Start,End=source.End,StartVertex=start,EndVertex=end};
+                        }
+                        var sourceEdge=model.Edges[coedge.Edge];
+                        for(var side=0;side<2;side++)
+                        {
+                            var v=side==0?sourceEdge.StartVertex:sourceEdge.EndVertex;if(v<0)continue;var mapped=vertexMap[v];
+                            if(vertexOwners[mapped]!=sourceOwner)vertexOwners[mapped]=-2;
                         }
                         coedges[nc++]=new(){Edge=e,Forward=(byte)(coedge.Forward^(reverse?1:0))};
                     }
                 }
             }
-            return BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities);
+            if(!model.VertexMergeCandidates.IsEmpty)for(var v=0;v<model.NP;v++)
+            {
+                var mapped=vertexMap[v];var original=model.OriginalVertices[v];
+                if(mapped>=0&&original>=0&&(vertexOwners[mapped]==-2||vertexOwners[mapped]!=Vertices[original].Body)&&model.VertexMergeCandidates[v]!=0)
+                    return ParasolidConstants.PK_ERROR_not_implemented; // Newly welded event precision is not yet certified.
+            }
+            var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities);if(built!=0)return built;
+            var vertex=Bodies[TagRec(body).Slot].FirstVertexBody;
+            for(var i=0;i<np;i++,vertex=Vertices[vertex].NextInBody)Vertices[vertex].Tolerance=vertexPrecisions[i];
+            return 0;
         }
         finally{scratch.Return(memory);}
     }

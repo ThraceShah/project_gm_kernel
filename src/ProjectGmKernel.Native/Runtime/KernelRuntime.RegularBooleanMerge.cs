@@ -7,7 +7,7 @@ internal static unsafe partial class KernelRuntime
 {
     // A tool hidden inside another tool cannot leave an imprint through a
     // surviving source face. Cancel common cell edges before building shells.
-    private static int MergeRegularBooleanCells(scoped ref SheetArrangement model,Span<byte> selected,Span<byte> reversed)
+    private static int MergeRegularBooleanCells(scoped ref SheetArrangement model,Span<byte> selected,Span<byte> reversed,bool mergeCoincidentGeometry=false)
     {
         Span<BufferOffset> labels=stackalloc BufferOffset[model.NF],first=stackalloc BufferOffset[model.NE];labels.Fill(-1);first.Fill(-1);
         for(var f=0;f<model.NF;f++)if(selected[f]!=0)
@@ -20,7 +20,7 @@ internal static unsafe partial class KernelRuntime
                 {
                     var edge=model.Coedges[loop.FirstCoedge+k].Edge;var other=first[edge];
                     if(other<0){first[edge]=f;continue;}
-                    if(model.Sources[f]!=model.Sources[other]||reversed[f]!=reversed[other])continue;
+                    if(model.Sources[f]!=model.Sources[other]||reversed[f]!=reversed[other]||(model.CutEdges[edge]&2)!=0)continue;
                     var from=Math.Max(labels[f],labels[other]);var to=Math.Min(labels[f],labels[other]);
                     for(var j=0;j<=f;j++)if(labels[j]==from)labels[j]=to;
                 }
@@ -84,15 +84,16 @@ internal static unsafe partial class KernelRuntime
                 model.Witnesses[nf]=model.Witnesses[seed];reversed[nf]=reversed[seed];selected[nf++]=1;
             }
             coedges[..nc].CopyTo(model.Coedges);loops[..nl].CopyTo(model.Loops);model.NF=nf;model.NC=nc;model.NL=nl;
-            return MergeRegularBooleanEdges(ref model);
+            return MergeRegularBooleanEdges(ref model,mergeCoincidentGeometry);
         }
         finally{scratch.Return(memory);}
     }
 
-    private static int MergeRegularBooleanEdges(scoped ref SheetArrangement model)
+    private static int MergeRegularBooleanEdges(scoped ref SheetArrangement model,bool mergeCoincidentGeometry)
     {
         Span<BufferOffset> first=stackalloc BufferOffset[model.NP],second=stackalloc BufferOffset[model.NP];
         Span<byte> active=stackalloc byte[model.NE];
+        Span<Geometry.Intersection.OperationIntersectionPoint> roots=stackalloc Geometry.Intersection.OperationIntersectionPoint[IntersectionPointCapacity];
         while(true)
         {
             first.Fill(-1);second.Fill(-1);active.Clear();
@@ -113,7 +114,19 @@ internal static unsafe partial class KernelRuntime
             for(var v=0;v<model.NP;v++)
             {
                 var a=first[v];var b=second[v];if(a<0||b<0||b>=model.NE||a==b)continue;
-                var ea=model.Edges[a];var eb=model.Edges[b];if(ea.Curve!=eb.Curve)continue;
+                if(((model.CutEdges[a]|model.CutEdges[b])&2)!=0)continue;
+                var ea=model.Edges[a];var eb=model.Edges[b];
+                if(ea.Curve!=eb.Curve)
+                {
+                    if(!mergeCoincidentGeometry)continue;
+                    var error=ReparameterizeRegularEdge(ea,eb,roots,out var handled,out var mapped,out var flip);if(error!=0)return error;
+                    if(handled){eb=model.Edges[b]=mapped;if(flip!=0)for(var c=0;c<model.NC;c++)if(model.Coedges[c].Edge==b)model.Coedges[c].Forward^=1;}
+                    else
+                    {
+                        error=ReparameterizeRegularEdge(eb,ea,roots,out handled,out mapped,out flip);if(error!=0)return error;if(!handled)continue;
+                        ea=model.Edges[a]=mapped;if(flip!=0)for(var c=0;c<model.NC;c++)if(model.Coedges[c].Edge==a)model.Coedges[c].Forward^=1;
+                    }
+                }
                 if(ea.Start>eb.Start){(a,b)=(b,a);(ea,eb)=(eb,ea);}
                 if(Math.Abs(ea.End-eb.Start)>1e-12)continue;
                 var positive=LocalSenseSign(Curves[GetCurveSlotByTag(ea.Curve)].Sense)>0;

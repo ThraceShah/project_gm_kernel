@@ -18,7 +18,7 @@ using(host)unsafe
     try
     {
         var passed=0;var failures=0;
-        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block"})
+        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
             var name=$"{kind}-{function}";if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
@@ -35,7 +35,7 @@ using(host)unsafe
                 }
                 passed++;Console.WriteLine("PASS "+name);
             }
-            catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+": "+ex.Message);}
+            catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+": "+ex);}
         }
         Require(failures==0,$"{failures} regular curved Boolean cases failed");Console.WriteLine($"PASS all {passed} regular curved Boolean cases");
     }
@@ -45,7 +45,12 @@ using(host)unsafe
 static unsafe int[] Produce(bool own,string kind,int function)
 {
     var target=Roof(own,0,0,0,.8);int tool;
-    if(kind=="nurbs")tool=Roof(own,.3,.2,.05,.2);
+    if(kind.StartsWith("same-domain",StringComparison.Ordinal))
+    {
+        tool=Roof(own,0,0,0,.8);
+        if(own&&kind.EndsWith("reloaded",StringComparison.Ordinal)){var old=tool;tool=ReceiveOwn(Transmit(tool));Check(KernelRuntime.EntityDelete(1,&old),"delete serialized same-domain source");}
+    }
+    else if(kind=="nurbs")tool=Roof(own,.3,.2,.05,.2);
     else if(kind=="closed-cut")tool=Block(own,.5,.5,1.08,2,2,1);
     else if(kind=="disjoint")tool=Block(own,3,3,.25,1,1,1);
     else if(kind=="enclosed-tool")tool=Block(own,.5,.5,.25,.2,.2,.2);
@@ -144,7 +149,9 @@ static unsafe void CheckBody(int body,string name)
 }
 static unsafe void Compare(int reference,int actual,string name)
 {
-    for(var kind=0;kind<5;kind++){var a=Count(reference,kind);var b=Count(actual,kind);Console.WriteLine($"{name} topology {kind}: native={a} own={b}");Require(a==b,name+" topology count "+kind);}
+    Span<int> nativeCounts=stackalloc int[5],selfCounts=stackalloc int[5];
+    for(var kind=0;kind<5;kind++){nativeCounts[kind]=Count(reference,kind);selfCounts[kind]=Count(actual,kind);Console.WriteLine($"{name} topology {kind}: native={nativeCounts[kind]} own={selfCounts[kind]}");}
+    for(var kind=0;kind<5;kind++)Require(nativeCounts[kind]==selfCounts[kind],name+" topology count "+kind);
     var options=new PK_DEBUG_BODY_compare_o_t{max_diffs=1024,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,
         class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_true};PK_DEBUG_BODY_compare_r_t result;
     Check(PK_DEBUG_BODY_compare(reference,actual,&options,&result),"structural compare");
@@ -196,6 +203,6 @@ static unsafe PK_VECTOR_t Center(int body)
     return new(values[2],values[3],values[4]);
 }
 static unsafe double Distance(PK_VECTOR_t a,PK_VECTOR_t b){var sum=0.0;for(var d=0;d<3;d++)sum+=Math.Pow(a.coord[d]-b.coord[d],2);return Math.Sqrt(sum);}
-static void Check(int error,string name){if(error!=0)throw new Exception($"{name}: error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}");}
+static void Check(int error,string name){if(error!=0)throw new Exception($"{name}: error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, status={KernelRuntime.LastSheetAlgorithmStatus}");}
 static void Require(bool value,string message){if(!value)throw new Exception(message);}
 static string ScriptPath([CallerFilePath]string path="")=>path;

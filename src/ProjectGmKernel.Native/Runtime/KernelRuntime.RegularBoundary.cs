@@ -21,7 +21,7 @@ internal static unsafe partial class KernelRuntime
     private static int ReadRegularBoundaries(ReadOnlySpan<BodyTag> bodies,Span<KernelVector3> points,Span<VertexSlot> vertices,
         Span<ModelingEdge> edges,Span<EdgeSlot> sourceEdges,Span<ModelingCoedge> coedges,Span<ModelingLoop> loops,
         Span<ModelingFace> faces,Span<FaceSlot> sources,Span<BufferOffset> owners,Span<BufferOffset> offsets,
-        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf)
+        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,double tolerance=1e-8,Span<double> vertexPrecisions=default)
     {
         np=ne=nc=nl=nf=0;
         for(var b=0;b<bodies.Length;b++)
@@ -58,7 +58,14 @@ internal static unsafe partial class KernelRuntime
                                 if(oldVertex>=0)
                                 {
                                     v=vertices[..np].IndexOf(oldVertex);
-                                    if(v<0){if(np==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;var error=SheetOriginalVertex(oldVertex,out var p);if(error!=0)return error;v=np;vertices[np]=oldVertex;points[np++]=p;}
+                                    if(v<0)
+                                    {
+                                        var error=SheetOriginalVertex(oldVertex,out var p);if(error!=0)return error;
+                                        for(var candidate=0;candidate<np;candidate++)if(Vertices[vertices[candidate]].Body!=slot&&ProfileDistance(points[candidate],p)<=tolerance)
+                                        {if(v>=0)return ParasolidConstants.PK_ERROR_not_implemented;v=candidate;}
+                                        if(v<0){if(np==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;v=np;vertices[np]=oldVertex;if(!vertexPrecisions.IsEmpty)vertexPrecisions[np]=Vertices[oldVertex].Tolerance;points[np++]=p;}
+                                    }
+                                    if(!vertexPrecisions.IsEmpty)vertexPrecisions[v]=Math.Max(vertexPrecisions[v],Vertices[oldVertex].Tolerance);
                                 }
                                 if(side==0)start=v;else end=v;
                             }

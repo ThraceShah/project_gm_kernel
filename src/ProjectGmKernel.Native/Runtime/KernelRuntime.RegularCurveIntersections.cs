@@ -39,7 +39,20 @@ internal static unsafe partial class KernelRuntime
     {
         count=0;var slot=GetSurfaceSlotByTag(surface);var cs=GetCurveSlotByTag(curve);
         if(slot<0||cs<0)return AlgorithmStatus.InvalidInput;
+        if(Curves[cs].Class==CurveClass.ICurve)
+        {
+            var data=ICurveDataPool[Curves[cs].DataIndex];
+            if(RegularCoincidentSupports(surface,data.Surface0Tag)||RegularCoincidentSupports(surface,data.Surface1Tag))
+            {
+                if(output.Length<2)return AlgorithmStatus.OutputTooSmall;Span<KernelVector3> point=stackalloc KernelVector3[2];
+                var status=EvaluateCurveCore(in Curves[cs],first,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
+                output[count++]=new(){Point=point[0],First=first,Kind=IntersectionVectorKind.Start};
+                status=EvaluateCurveCore(in Curves[cs],last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
+                output[count++]=new(){Point=point[0],First=last,Kind=IntersectionVectorKind.End};return AlgorithmStatus.Success;
+            }
+        }
         if(Surfaces[slot].Class==SurfaceClass.Plane)return IntersectSheetCurvePlane(curve,first,last,surface,output,out count);
+        if(RegularPlanarSupport(slot,out var plane,out _))return IntersectSheetCurvePlane(curve,first,last,plane,output,out count);
         if(Curves[cs].Class==CurveClass.ICurve&&ICurveDataPool[Curves[cs].DataIndex].IsBlendContact!=0)
             return IntersectBlendContactSurface(slot,cs,first,last,output,out count);
         if(Curves[cs].Class==CurveClass.ICurve)return IntersectRegularICurveSurface(slot,cs,first,last,output,out count);
@@ -66,6 +79,15 @@ internal static unsafe partial class KernelRuntime
         }
         var interval=new PK_INTERVAL_s();interval.value[0]=first;interval.value[1]=last;
         if(ResolveIntersectionCurve(curve,interval,out var span)!=0)return AlgorithmStatus.Unsupported;
+        if(AffineCurveOnSurfaceBoundary(slot,span))
+        {
+            if(output.Length<2)return AlgorithmStatus.OutputTooSmall;
+            Span<KernelVector3> point=stackalloc KernelVector3[2];
+            var status=EvaluateCurveCore(in Curves[cs],first,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
+            output[count++]=new(){Point=point[0],First=first,Kind=IntersectionVectorKind.Start};
+            status=EvaluateCurveCore(in Curves[cs],last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
+            if(count==output.Length)return AlgorithmStatus.OutputTooSmall;output[count++]=new(){Point=point[0],First=last,Kind=IntersectionVectorKind.End};return AlgorithmStatus.Success;
+        }
         AlgorithmStatus found;
         if(TryPrepareSurface(Surfaces[slot],out var analytic))found=IntersectSurfaceCurve(analytic,span,output,out count);
         else if(Surfaces[slot].Class==SurfaceClass.BSurface)found=IntersectBSurfaceCurve(slot,span,output,out count);

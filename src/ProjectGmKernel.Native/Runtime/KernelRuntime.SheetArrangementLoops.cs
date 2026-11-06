@@ -99,7 +99,7 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
-    private static int SheetPointOnCoincidentBoundary(FaceSlot face,ReadOnlySpan<SheetSourceEdge> sources,in KernelVector3 point,out bool on)
+    private static int SheetPointOnCoincidentBoundary(FaceSlot face,ReadOnlySpan<SheetSourceEdge> sources,in KernelVector3 point,out bool on,bool allBoundaries=false)
     {
         on=false;var loop=Faces[face].FirstLoop;var vector=new PK_VECTOR_s();WriteVector(&vector,point);
         for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
@@ -108,7 +108,7 @@ internal static unsafe partial class KernelRuntime
             for(var k=0;k<Loops[loop].FinCount;k++,fin=Fins[fin].NextInLoop)
             {
                 var edge=Fins[fin].Edge;var coincident=false;
-                foreach(ref readonly var source in sources)if(source.Source==edge&&source.InPlane!=0)coincident=true;
+                foreach(ref readonly var source in sources)if(source.Source==edge&&(allBoundaries||source.InPlane!=0))coincident=true;
                 if(!coincident)continue;double parameter=0;var error=CurveParameteriseVectorCore(Edges[edge].CurveTag,vector,&parameter);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 if(!TryProfileEdgeRange(Edges[edge],out var first,out var last))return ParasolidConstants.PK_ERROR_not_implemented;

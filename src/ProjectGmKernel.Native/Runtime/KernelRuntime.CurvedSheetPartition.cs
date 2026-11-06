@@ -19,14 +19,15 @@ internal static unsafe partial class KernelRuntime
         Span<KernelVector3> jet = stackalloc KernelVector3[2];
         var status = EvaluateCurveCore(in record, start, 1, false, jet, out _);
         if (status != AlgorithmStatus.Success) return EvaluationError(status);
-        status = TryIntersectionPairedParameters(surface, plane, jet[0], out var firstUv, out _);
+        status = TryIntersectionPairedParameters(surface, plane, jet[0], out var firstUv, out var secondUv);
         if (status != AlgorithmStatus.Success) return IntersectionError(status);
         SurfaceDerivativeLayout.TryCreate(1, 1, out var layout); Span<KernelVector3> surfaceJet = stackalloc KernelVector3[4];
         status = EvaluateSurfaceCore(in Surfaces[GetSurfaceSlotByTag(surface)], firstUv.param[0], firstUv.param[1], in layout, surfaceJet, 0);
         if (status != AlgorithmStatus.Success) return EvaluationError(status);
-        var normal = ProfileCross(surfaceJet[layout.GetIndex(1, 0)], surfaceJet[layout.GetIndex(0, 1)]);
-        TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(plane)], out var cutting);
-        var forward = Dot(ProfileCross(normal, Scale(cutting.Axis, LocalSenseSign(Surfaces[GetSurfaceSlotByTag(plane)].Sense))), jet[1]) > 0;
+        var normal=Scale(ProfileCross(surfaceJet[layout.GetIndex(1,0)],surfaceJet[layout.GetIndex(0,1)]),LocalSenseSign(Surfaces[GetSurfaceSlotByTag(surface)].Sense));
+        status=EvaluateSurfaceCore(in Surfaces[GetSurfaceSlotByTag(plane)],secondUv.param[0],secondUv.param[1],in layout,surfaceJet,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+        var secondNormal=Scale(ProfileCross(surfaceJet[layout.GetIndex(1,0)],surfaceJet[layout.GetIndex(0,1)]),LocalSenseSign(Surfaces[GetSurfaceSlotByTag(plane)].Sense));
+        var forward=Dot(ProfileCross(normal,secondNormal),jet[1])>0;
         var first = forward ? surface : plane; var second = forward ? plane : surface;
         for (var i = 0; i < count; i++)
         {

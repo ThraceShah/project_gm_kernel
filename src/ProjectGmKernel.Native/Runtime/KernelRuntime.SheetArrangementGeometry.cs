@@ -127,6 +127,7 @@ internal static unsafe partial class KernelRuntime
         PK_UV_s query,double du,double dv,out BufferCount winding)
     {
         winding=0;var record=Surfaces[GetSurfaceSlotByTag(surface)];
+        LastSheetRayU=query.param[0];LastSheetRayV=query.param[1];
         if(record.Class==SurfaceClass.Plane)return PlanarLoopWinding(surface,edges,loop,query,du,dv,out winding);
         if(query.param[0]<record.UMin||query.param[0]>record.UMax||query.param[1]<record.VMin||query.param[1]>record.VMax)return 0;
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
@@ -134,7 +135,8 @@ internal static unsafe partial class KernelRuntime
         {
             ref readonly var edge=ref edges[coedge.Edge];
             LastSheetPartitionStage=SheetPartitionStage.RayIntersections;
-            var status=IntersectParametricBoundaryRay(surface,query,du,dv,edge,roots,out var count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            LastSheetCurve=edge.Curve;LastSheetParameter=edge.Start;
+            var status=IntersectParametricBoundaryRay(surface,query,du,dv,edge,roots,out var count);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
             for(var i=0;i<count;i++)
             {
                 var root=roots[i];if(root.Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_eval_failure;

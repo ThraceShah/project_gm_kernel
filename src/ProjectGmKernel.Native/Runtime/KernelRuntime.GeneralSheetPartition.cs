@@ -10,6 +10,7 @@ internal static unsafe partial class KernelRuntime
     [ThreadStatic] internal static CurveTag LastSheetCurve;
     [ThreadStatic] internal static double LastSheetParameter;
     [ThreadStatic] internal static Computation.AlgorithmStatus LastSheetAlgorithmStatus;
+    [ThreadStatic] internal static double LastSheetRayU,LastSheetRayV;
     private static int PartitionGeneralSheet(BodySlot body,SurfTag plane,double tolerance,out BodyTag partition,
         Span<FaceSlot> products,Span<FaceSlot> sourceFaces,Span<sbyte> sides,out BufferCount faceCount,
         Span<EdgeSlot> cutEdges,out BufferCount cutCount,out bool changed)
