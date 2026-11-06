@@ -63,6 +63,9 @@ The test: Every changed line should trace directly to the user's request.
   MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests && pkill -f testhost.dll 2>/dev/null; true
   ```
 - 禁止不带 `MSBUILDDISABLENODEREUSE=1` 直接运行 `dotnet build` 或 `dotnet test`。
+- NativeAOT 编译测试按 C ABI 改动范围触发：不涉及 C ABI 改动时，不得运行 NativeAOT 编译或发布来验证，也不得通过验证脚本间接触发。默认使用托管构建、单元测试和 Parasolid oracle 验证，保留 C# 快速编译和迭代的优势。
+- C ABI 改动包括 C exports 的名称、数量、函数签名、调用约定、ABI 结构体的尺寸/字段偏移/对齐，以及原生调用边界的内存所有权契约变化。纯算法、建模逻辑和内部实现改动不触发 NativeAOT 编译测试。
+- 只有涉及上述 C ABI 改动，或用户明确要求时，才执行 NativeAOT 编译及相应原生 ABI 验证；AOT 兼容性仍须在日常代码设计中保持。
 
 ## 5. Goal-Driven Execution
 
