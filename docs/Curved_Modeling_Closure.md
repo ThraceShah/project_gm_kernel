@@ -131,3 +131,9 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/BlendOperationOracle.cs 
 Stage 3 starts after milestones 1/2 are committed and pushed. General curved
 cutters, general curved-solid classification and Boolean assembly are not
 implemented by these plane-cut sheet increments.
+
+Verification now follows the updated `AGENTS.md`: ordinary invocations of
+`scripts/VerifyPublicModeling.cs` and `scripts/VerifyAdvancedModeling.cs` run
+managed builds, tests and real Parasolid oracles without NativeAOT publication.
+Only a C ABI change or an explicit user request warrants adding
+`-- --native-abi`, which enables publication and native smoke checks.

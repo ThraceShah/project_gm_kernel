@@ -10,6 +10,7 @@ var configured=Environment.GetEnvironmentVariable("PARASOLID_SCHEMA_DIR")??Envir
 var schema=Path.GetFullPath(configured,scriptDirectory);
 if(!Directory.Exists(schema)){Console.Error.WriteLine("The advanced modeling suite requires the real Parasolid SDK schema. Configure PARASOLID_SCHEMA_DIR relative to this script.");return 1;}
 var output=Path.Combine(root,"temp_docs","advanced-modeling-verification");Directory.CreateDirectory(output);
+var verifyNativeAbi=args.Contains("--native-abi");
 var steps=new List<(string Name,string[] Arguments)>
 {
     ("production-build",["build","src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj","-m:1","-p:UseSharedCompilation=false"]),
@@ -17,9 +18,12 @@ var steps=new List<(string Name,string[] Arguments)>
 foreach(var oracle in new[]{"IntersectionOperationOracle","BCurveAnalyticIntersectionOracle","BooleanOperationOracle","PlanarTrackingOracle","AnalyticBooleanOracle","AnalyticSectionOracle","RotationalModelingOracle","FreeformModelingOracle","CurvedSheetPartitionOracle","LocalOperationOracle","LocalTopologyChangeOracle"})
     steps.Add((oracle,["run","--no-cache",$"scripts/{oracle}.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false"]));
 // This child preserves the actual test exit before cleanup, checks all kernel
-// and XT tests, replays the A/B oracles, publishes NativeAOT and exercises display.
-steps.Add(("public-modeling-regression",["run","--no-cache","scripts/VerifyPublicModeling.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false"]));
-steps.Add(("native-advanced-modeling",["run","--no-cache","scripts/NativeAdvancedModelingSmoke.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false"]));
+// and XT tests, replays the A/B oracles and exercises managed display. Native
+// publication and ABI smoke checks require an explicit C ABI verification run.
+var publicArguments=new List<string>{"run","--no-cache","scripts/VerifyPublicModeling.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false"};
+if(verifyNativeAbi)publicArguments.AddRange(["--","--native-abi"]);
+steps.Add(("public-modeling-regression",publicArguments.ToArray()));
+if(verifyNativeAbi)steps.Add(("native-advanced-modeling",["run","--no-cache","scripts/NativeAdvancedModelingSmoke.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false"]));
 var summary=new List<string>();
 foreach(var step in steps)
 {

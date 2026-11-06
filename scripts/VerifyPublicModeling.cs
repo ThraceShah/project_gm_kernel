@@ -18,6 +18,8 @@ if(!Directory.Exists(schemaDirectory))
 }
 var directory=Path.Combine(root,"temp_docs","public-modeling-verification");Directory.CreateDirectory(directory);
 var rid=RuntimeInformation.RuntimeIdentifier;
+var verifyNativeAbi=args.Contains("--native-abi");
+Console.WriteLine(verifyNativeAbi?"Verification: managed and native C ABI.":"Verification: managed builds, tests and Parasolid oracles.");
 var steps=new List<(string Name,string[] Arguments,bool Cleanup)>
 {
     ("kernel-tests",["test","tests/KernelTests/KernelTests.csproj","-m:1","-p:UseSharedCompilation=false"],true),
@@ -36,6 +38,8 @@ foreach(var oracle in new[]{"GeometryPublicApiOracle","GeometryTransformOracle",
         steps.Add(("reference-model-import",["run","--no-cache","scripts/BrepImportOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","../temp_docs/profile-modeling-oracle","--reference"],false));
     }
 }
+if(verifyNativeAbi)
+{
 // A crashed analyzer can otherwise leave a successful build with incomplete
 // AOT/trim checks (AD0001). Keep that failure visible in the release gate.
 var publish=new List<string>{"publish","src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj","-c","Release","-r",rid,"-m:1","-p:UseSharedCompilation=false","-p:WarningsAsErrors=AD0001"};
@@ -44,6 +48,7 @@ if(Environment.GetEnvironmentVariable("GM_IN_PROCESS_LINK_TASKS")=="1")publish.A
 steps.Add(("native-publish",publish.ToArray(),false));
 steps.Add(("native-abi",["run","scripts/AbiSmoke.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false"],false));
 steps.Add(("native-display",["run","--no-cache","scripts/DisplayBridgeOracle.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false","--","--native"],false));
+}
 
 var summary=new List<string>();
 foreach(var step in steps)
@@ -69,7 +74,7 @@ foreach(var step in steps)
     summary.Add(line);Console.WriteLine(line);File.WriteAllLines(Path.Combine(directory,"summary.txt"),summary);
     if(process.ExitCode!=0)return process.ExitCode;
 }
-Console.WriteLine("PASS all stage A/B acceptance gates.");
+Console.WriteLine(verifyNativeAbi?"PASS all stage A/B acceptance gates including native C ABI.":"PASS all managed stage A/B acceptance gates.");
 return 0;
 
 static string ScriptPath([CallerFilePath]string path="")=>path;
