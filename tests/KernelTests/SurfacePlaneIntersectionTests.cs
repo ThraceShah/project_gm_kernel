@@ -73,6 +73,27 @@ public class SurfacePlaneIntersectionTests
         Assert.Equal(0,low,8);Assert.Equal(1,high,8);
     }
 
+    [Fact]
+    public void ExhaustedSharedBudgetCannotPublishAResult()
+    {
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[16];poles.Clear();
+        for(var i=0;i<2;i++)for(var j=0;j<2;j++){var at=4*(2*i+j);poles[at]=i;poles[at+1]=j;poles[at+2]=i-.5;poles[at+3]=1;}
+        var patch=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,1,1,new(0,1,0,1)));
+        Span<SurfaceIntersectionNode> nodes=stackalloc SurfaceIntersectionNode[64];Span<SurfaceIntersectionSegment> edges=stackalloc SurfaceIntersectionSegment[64];var nn=0;var ne=0;var remaining=0;
+        Assert.Equal(AlgorithmStatus.NotConverged,SurfacePlaneIntersection.Find(patch,Plane(),nodes,ref nn,edges,ref ne,ref remaining));
+        Assert.Equal(0,nn);Assert.Equal(0,ne);
+    }
+
+    [Fact]
+    public void IsolatedCornerContactCannotSucceedAsAnEmptyGraph()
+    {
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[16];poles.Clear();
+        for(var i=0;i<2;i++)for(var j=0;j<2;j++){var at=4*(2*i+j);poles[at]=i;poles[at+1]=j;poles[at+2]=i+j;poles[at+3]=1;}
+        var patch=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,1,1,new(0,1,0,1)));
+        Span<SurfaceIntersectionNode> nodes=stackalloc SurfaceIntersectionNode[64];Span<SurfaceIntersectionSegment> edges=stackalloc SurfaceIntersectionSegment[64];var nn=0;var ne=0;
+        Assert.Equal(AlgorithmStatus.NotConverged,SurfacePlaneIntersection.Find(patch,Plane(),nodes,ref nn,edges,ref ne));
+    }
+
     private static AnalyticSurface Plane()=>new(SurfaceClass.Plane,default,new KernelVector3{Z=1},new KernelVector3{X=1});
     private static int Components(ReadOnlySpan<SurfaceIntersectionNode> nodes,ReadOnlySpan<SurfaceIntersectionSegment> edges,bool closed)
     {

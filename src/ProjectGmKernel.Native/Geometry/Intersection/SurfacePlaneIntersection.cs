@@ -16,6 +16,14 @@ internal static class SurfacePlaneIntersection
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,
         Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount)
     {
+        BufferCount remaining=32768;
+        return Find(patch,plane,nodes,ref nodeCount,segments,ref segmentCount,ref remaining);
+    }
+
+    internal static AlgorithmStatus Find(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,
+        Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,
+        Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining)
+    {
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];pending[0]=patch.Domain;depths[0]=0;var count=1;var visited=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
@@ -23,7 +31,7 @@ internal static class SurfacePlaneIntersection
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[32];
         while(count>0)
         {
-            if(++visited>32768)return AlgorithmStatus.NotConverged;
+            if(++visited>32768||remaining--<=0)return AlgorithmStatus.NotConverged;
             var index=--count;var cell=pending[index];var depth=depths[index];var free=-1;
             var savedNodes=nodeCount;var savedSegments=segmentCount;
             var status=patch.Bound(cell,bounds);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
@@ -55,6 +63,9 @@ internal static class SurfacePlaneIntersection
                 for(var r=0;r<nr;r++)
                 {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n);if(status!=AlgorithmStatus.Success)goto Retry;}
             }
+            // A lone corner contact is not an empty locus. This graph-only
+            // result has no isolated-point output, so reject it explicitly.
+            if(n==1)return AlgorithmStatus.NotConverged;
             for(var i=1;i<n;i++)for(var j=i;j>0&&boundary[j].Parameter(free)<boundary[j-1].Parameter(free);j--)
                 (boundary[j],boundary[j-1])=(boundary[j-1],boundary[j]);
             for(var i=0;i+1<n;i++)
