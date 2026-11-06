@@ -126,7 +126,7 @@ internal static unsafe partial class KernelRuntime
         if(parameter<parameters[0]-1e-10||parameter>parameters[^1]+1e-10)return AlgorithmStatus.InvalidInput;
         parameter=Math.Clamp(parameter,parameters[0],parameters[^1]);var segment=0;while(segment<n-2&&parameters[segment+1]<=parameter)segment++;
         var lo=Math.Min(station[segment],station[segment+1]);var hi=Math.Max(station[segment],station[segment+1]);
-        u=station[segment]+(station[segment+1]-station[segment])*(parameter-parameters[segment])/(parameters[segment+1]-parameters[segment]);
+        u=Math.Clamp(station[segment]+(station[segment+1]-station[segment])*(parameter-parameters[segment])/(parameters[segment+1]-parameters[segment]),lo,hi);
         var blend=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(data.Surface1Tag)].DataIndex];var program=GetNestedBlendProgram(blend);var v=BlendContactV(data);
         SurfaceDerivativeLayout.TryCreate(Math.Max(1,order),0,out var layout);Span<KernelVector3> jet=stackalloc KernelVector3[3];
         var converged=false;var denominator=0.0;
