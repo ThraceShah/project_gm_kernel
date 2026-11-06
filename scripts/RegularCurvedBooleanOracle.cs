@@ -18,7 +18,7 @@ using(host)unsafe
     try
     {
         var passed=0;var failures=0;
-        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous"})
+        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
             var name=$"{kind}-{function}";if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
@@ -52,12 +52,21 @@ static unsafe int[] Produce(bool own,string kind,int function)
     else if(kind=="enclosed-target")tool=Block(own,.5,.5,-.25,3,3,3);
     else tool=Block(own,.25,.25,.25,1,1,1);
     var options=new PK_BODY_boolean_o_t{function=function,default_tol=1e-5,tracking=PK_LOGICAL_false};int count;int* bodies;
-    if(kind=="continuous")
+    if(kind is "continuous" or "reloaded" or "reloaded-block")
     {
         var first=options;first.function=PK_boolean_subtract_c;
         Check(own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&first,&count,&bodies):PK_BODY_boolean(target,1,&tool,&first,&count,&bodies),"first continuous subtraction");
         try{Require(count==1,"continuous source component");target=bodies[0];}finally{Check(own?KernelRuntime.MemoryFree(bodies):PK_MEMORY_free(bodies),"first continuous result");}
-        tool=Roof(own,.4,.35,.1,.2);
+        if(own&&kind.StartsWith("reloaded",StringComparison.Ordinal))
+        {
+            var bytes=Transmit(target);
+            File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle",$"{kind}-{function}-source.x_t"),bytes);
+            var old=target;target=ReceiveOwn(bytes);Check(KernelRuntime.EntityDelete(1,&old),"delete serialized source");
+            Require(KernelRuntime.TryResolveBodySlot(target,out var restored)&&!KernelRuntime.Xt.IsOpaque(restored),"editable self-received curved solid");
+            var point=new M.PK_VECTOR_s();point.coord[0]=point.coord[1]=.9;point.coord[2]=.5;int enclosure,topology;
+            Check(KernelRuntime.BodyContainsVector(target,point,&enclosure,&topology),"classification after self receive");Require(enclosure==PK_enclosure_inside_c,"restored material classification");
+        }
+        tool=kind=="reloaded-block"?Block(own,.75,.75,.5,.3,.3,.4):Roof(own,.4,.35,.1,.2);
     }
     int* tools=stackalloc int[2]{tool,0};var toolCount=1;
     if(kind is "two-tools" or "mixed-disjoint")
@@ -116,6 +125,14 @@ static unsafe int Receive(byte[] bytes)
     {
         var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,p);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int n;int* parts;
         Check(PK_PART_receive_b(block,&options,&n,&parts),"real PK receive");try{Require(n==1,"one received solid");return parts[0];}finally{PK_MEMORY_free(parts);}
+    }
+}
+static unsafe int ReceiveOwn(byte[] bytes)
+{
+    fixed(byte* p=bytes)
+    {
+        var block=new M.PK_MEMORY_block_s{bytes=p,n_bytes=(nuint)bytes.Length};var options=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};int n;int* parts;
+        Check(KernelRuntime.PartReceiveB(block,&options,&n,&parts),"self receive");try{Require(n==1,"one self-received solid");return parts[0];}finally{KernelRuntime.MemoryFree(parts);}
     }
 }
 static unsafe void CheckBody(int body,string name)

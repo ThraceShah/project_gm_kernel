@@ -151,6 +151,67 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         finally{KernelRuntime.MemoryFree(faces);KernelRuntime.MemoryFree(result);}
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void SavedTrimmedCurvedResultRestoresFiniteEdgeRangesAndContinuesModeling(bool negativeSense)
+    {
+        var target=RoofSolid();var tool=BooleanOperationTests.Block(.25,.25,.25,1,1,1);
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int count;int* bodies;
+        Assert.Equal(0,KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&bodies));KernelRuntime.MemoryFree(bodies);
+        if(negativeSense)
+        {
+            Assert.True(KernelRuntime.TryResolveBodySlot(target,out var source));var reverse=KernelRuntime.Bodies[source].FirstEdgeBody;
+            var reversing=new HashSet<int>();
+            for(var i=0;i<KernelRuntime.Bodies[source].EdgeCountBody;i++,reverse=KernelRuntime.Edges[reverse].NextInBody)
+            {
+                var c=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[reverse].CurveTag)];
+                if(c.Class==CurveClass.BCurve&&c.Sense!=ParasolidConstants.PK_TOPOL_sense_negative_c)reversing.Add(c.Header.Tag);
+            }
+            Assert.NotEmpty(reversing);reverse=KernelRuntime.Bodies[source].FirstEdgeBody;
+            for(var i=0;i<KernelRuntime.Bodies[source].EdgeCountBody;i++,reverse=KernelRuntime.Edges[reverse].NextInBody)
+            {
+                ref var e=ref KernelRuntime.Edges[reverse];ref var c=ref KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(e.CurveTag)];
+                if(!reversing.Contains(e.CurveTag))continue;c.Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
+                (e.StartVertex,e.EndVertex)=(e.EndVertex,e.StartVertex);var fin=e.FirstFinEdge;
+                for(var j=0;j<e.FinCount;j++,fin=KernelRuntime.Fins[fin].NextOfEdge)KernelRuntime.Fins[fin].Sense=KernelRuntime.Fins[fin].Sense=='+'?'-':'+';
+            }
+        }
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(target),out var received));
+        Assert.True(KernelRuntime.TryResolveBodySlot(target,out var original));Assert.True(KernelRuntime.TryResolveBodySlot(received,out var restored));
+        Assert.False(KernelRuntime.Xt.IsOpaque(restored));
+        var edge=KernelRuntime.Bodies[original].FirstEdgeBody;var trimmed=0;var intersections=0;
+        for(var i=0;i<KernelRuntime.Bodies[original].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var before=KernelRuntime.Edges[edge];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(before.CurveTag)];
+            if(curve.Class is not (CurveClass.BCurve or CurveClass.ICurve))continue;
+            Assert.NotEqual(0,before.HasParameterRange);if(curve.Class==CurveClass.ICurve)intersections++;
+            if(before.ParameterStart>curve.TMin+1e-9||before.ParameterEnd<curve.TMax-1e-9)trimmed++;
+            var candidate=KernelRuntime.Bodies[restored].FirstEdgeBody;var found=false;
+            var p=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[before.StartVertex].PointTag)].Position;
+            var q=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[before.EndVertex].PointTag)].Position;
+            for(var j=0;j<KernelRuntime.Bodies[restored].EdgeCountBody;j++,candidate=KernelRuntime.Edges[candidate].NextInBody)
+            {
+                var after=KernelRuntime.Edges[candidate];if(after.StartVertex<0||after.EndVertex<0)continue;
+                if(KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(after.CurveTag)].Class!=curve.Class)continue;
+                var a=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[after.StartVertex].PointTag)].Position;
+                var b=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[after.EndVertex].PointTag)].Position;
+                if(Distance(p,a)>1e-9||Distance(q,b)>1e-9)continue;
+                Assert.True(after.HasParameterRange!=0,$"Missing interval on {curve.Class} sense={curve.Sense}, curve={before.CurveTag}/{after.CurveTag}, range={before.ParameterStart:R}/{before.ParameterEnd:R}");Assert.InRange(Math.Abs(before.ParameterStart-after.ParameterStart),0,1e-8);
+                Assert.InRange(Math.Abs(before.ParameterEnd-after.ParameterEnd),0,1e-8);found=true;break;
+            }
+            Assert.True(found,"Restored finite edge has corresponding endpoints and curve class");
+        }
+        Assert.True(trimmed>0);Assert.True(intersections>0);
+        var point=new PK_VECTOR_s();point.coord[0]=point.coord[1]=.9;point.coord[2]=.5;int enclosure,topology;
+        Assert.Equal(0,KernelRuntime.BodyContainsVector(received,point,&enclosure,&topology));Assert.Equal(ParasolidConstants.PK_enclosure_inside_c,enclosure);
+        tool=BooleanOperationTests.Block(.75,.75,.5,.3,.3,.4);
+        Assert.Equal(0,KernelRuntime.BodyBoolean(received,1,&tool,&options,&count,&bodies));
+        try{Assert.Equal(1,count);Assert.Equal(received,bodies[0]);}finally{KernelRuntime.MemoryFree(bodies);}
+    }
+
+    private static double Distance(KernelVector3 a,KernelVector3 b)
+        =>Math.Sqrt((a.X-b.X)*(a.X-b.X)+(a.Y-b.Y)*(a.Y-b.Y)+(a.Z-b.Z)*(a.Z-b.Z));
+
     [Fact]
     public void WarmBooleanAndClassificationAllocateNoManagedMemory()
     {

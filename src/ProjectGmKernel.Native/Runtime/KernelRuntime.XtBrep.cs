@@ -154,6 +154,8 @@ internal static unsafe partial class KernelRuntime
                             else edge.EndVertex = previousVertex;
                         }
                     }
+                    var rangeStatus = RestoreXtEdgeRange(ref edge);
+                    if (rangeStatus != AlgorithmStatus.Success) return rangeStatus;
                     break;
             }
         }
@@ -182,6 +184,48 @@ internal static unsafe partial class KernelRuntime
         }
         bodyTag = completed;
         return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus RestoreXtEdgeRange(ref EdgeRecord edge)
+    {
+        var curveSlot = GetCurveSlotByTag(edge.CurveTag);
+        if (curveSlot < 0 || edge.StartVertex < 0 || edge.EndVertex < 0 || edge.StartVertex == edge.EndVertex)
+            return AlgorithmStatus.Success;
+        var curve = Curves[curveSlot];
+        if (curve.Class is not (CurveClass.BCurve or CurveClass.ICurve or CurveClass.TRCurve)) return AlgorithmStatus.Success;
+        if (curve.Class == CurveClass.BCurve)
+        {
+            var data = BCurveDataStore[curve.DataIndex];
+            if (data.IsPeriodic != 0 || data.IsClosed != 0 || data.SelfIntersecting == ParasolidConstants.PK_self_intersect_true_c)
+                return AlgorithmStatus.Success;
+        }
+        var start = GetPointSlotByTag(Vertices[edge.StartVertex].PointTag);
+        var end = GetPointSlotByTag(Vertices[edge.EndVertex].PointTag);
+        if (start < 0 || end < 0) return AlgorithmStatus.Success;
+        var ownsScratch = EnsureCommandScratch();
+        try
+        {
+            // An XT EDGE is trimmed by its vertices, independently of the
+            // curve's natural domain. Recover those parameters before any
+            // finite-boundary operation consumes the materialized edge.
+            var point = new PK_VECTOR_s(); double a = 0, b = 0;
+            WriteVector(&point, Points[start].Position);
+            var error = CurveParameteriseVectorCore(edge.CurveTag, point, &a);
+            if (error == 0)
+            {
+                WriteVector(&point, Points[end].Position);
+                error = CurveParameteriseVectorCore(edge.CurveTag, point, &b);
+            }
+            if (error == ParasolidConstants.PK_ERROR_memory_full) return AlgorithmStatus.WorkspaceTooSmall;
+            // Tolerant or unsupported branches remain readable; no guessed
+            // natural-domain interval is installed when inversion fails.
+            if (error != 0) return AlgorithmStatus.Success;
+            if (curve.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c) (a, b) = (b, a);
+            if (!double.IsFinite(a) || !double.IsFinite(b) || !(b > a)) return AlgorithmStatus.Success;
+            edge.ParameterStart = a; edge.ParameterEnd = b; edge.HasParameterRange = 1;
+            return AlgorithmStatus.Success;
+        }
+        finally { if (ownsScratch) ReleaseCommandScratch(State.Session); }
     }
 
     private static int XtMapped(ReadOnlySpan<XtNode> nodes, ReadOnlySpan<int> values, XtNodeIndex index, int missing = -1)

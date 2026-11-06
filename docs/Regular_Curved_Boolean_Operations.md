@@ -68,10 +68,21 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/RegularCurvedBooleanOrac
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/VerifyAdvancedModeling.cs
 ```
 
-The focused oracle covers nine configurations with all three operations:
+The focused oracle covers eleven configurations with all three operations:
 block cutter, curved NURBS cutter, closed interior cut, disjoint operands,
 enclosed tool, enclosed target, overlapping tools with triple crossings, mixed
-overlapping/disjoint tools and a second Boolean on a previously cut solid.
+overlapping/disjoint tools, a second Boolean on a previously cut solid, and
+self XT save/reload followed by another NURBS or block Boolean.
+
+XT materialization restores finite BCurve, ICurve and trimmed-curve edge
+parameters from the actual endpoint vertices, respecting the curve sense.
+It does not replace a trimmed edge interval by its basis curve's natural
+domain. Closed/periodic or declared self-intersecting BCurves, vertexless edges
+and endpoint inversions outside the existing supported projection contract
+remain outside this recovery path; unsupported/tolerant edges are still
+readable without an invented interval. The reloaded regression deletes its
+source before classification and further modeling to verify independent
+ownership.
 
 For every result it exports our text `x_t` under
 `temp_docs/regular-curved-boolean-oracle/`, receives it in real Parasolid and
@@ -92,6 +103,19 @@ disconnected roots without boundary seeds.
 This increment changes internal algorithms and no C exports, ABI layout or
 native memory ownership contract. Its verification uses managed compilation,
 unit tests and the real Parasolid oracle. It does not publish NativeAOT.
+
+## XT finite-edge recovery verification — 2026-11-06
+
+The new regression first failed because all imported BCurve/ICurve edge
+interval flags were zero. It now checks real truncated intervals, normal and
+negative BCurve sense, classification after self receive and a second block
+subtraction. The independent `reloaded` / `reloaded-block` oracle passes all
+six union/intersection/subtraction cases against native PK, including full
+`PK_BODY_check`, structure, topology, mass properties and point classification.
+The expanded complete Boolean oracle passes **33/33** cases, and the focused
+regular Boolean plus XT B-rep import suite passes **63/63** tests.
+The intermediate self-generated XT inputs and final outputs are retained in
+`temp_docs/regular-curved-boolean-oracle/`.
 
 ## Verified results — 2026-11-06
 
