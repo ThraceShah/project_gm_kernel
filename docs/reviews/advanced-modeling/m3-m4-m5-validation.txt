@@ -1,0 +1,1784 @@
+Source revision: 88cf31b7fc84ab15222ff6e0aec36719c7d00c92
+Validation: Linux x64; .NET SDK 10.0.302; native Parasolid 38.0.150; managed build, no NativeAOT.
+Condensed from complete logs: CHART/global compare diagnostic detail and compiler warnings omitted; full logs retain hashes below.
+TRX m345-final-all.trx: 1603/1603; zero failures/aborts/timeouts/unexecuted; SHA256=938b45ae4792b207ad3bebf1b12204ffc2e7fb561ee3bb4df7dd88241f7c2c8e
+TRX m345-xt-final.trx: 12/12; zero failures/aborts/timeouts/unexecuted; SHA256=513c3723939e7ab8579e899c6766fe21f76652f3d9f90b914decd939033c0de9
+
+FILE temp_docs/m345-final-all-tests.log SHA256=bf33d5efdd47b1a9171f07886ceeb799949bf440164652fd10016e131243881a
+  Function catalog: 175 implemented dispatch descriptors verified.
+  allocation IL guard: checked 2432 methods
+  allocation IL guard: CLEAN
+Passed!  - Failed:     0, Passed:  1603, Skipped:     0, Total:  1603, Duration: 3 m 54 s - KernelTests.dll (net10.0)
+
+FILE temp_docs/m345-final-xt-tests.log SHA256=f36aaf6b791f24a3eca5868b074b14c9b70dce3c26a1e94d375f8b7fbcbbd8f7
+Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 534 ms - ProjectGmKernel.Xt.Tests.dll (net10.0)
+
+FILE temp_docs/m345-final-m1-accepted.log SHA256=bbc4c1e4284d9c8bd1be4f2a71049ffb01e3bacf46fb19bd0e62ca2b9c804aa7
+plane-nurbs reference input full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=3.157, error=0
+plane-nurbs reference fillet full BODY_check: 0 faults
+TIME self BODY_fix_blends radius=0.1 ms=1799.332, error=0
+FINITE Blend sampling extent=[0.14931443461556992,1.1508107363474886] from actual contact edges
+PASS 9 sections: radius, both contact positions and tangent continuity, independent native geometry
+plane-nurbs-fillet reference full BODY_check: 0 faults
+plane-nurbs-fillet received full BODY_check: 0 faults
+plane-nurbs-fillet PK mass: volume=1.0250977823728746/1.0250977804630355, area=5.9779722462190845/5.977972235333378, max normalized residual=1.5600100106849315E-09
+plane-nurbs-lifecycle reference full BODY_check: 0 faults
+plane-nurbs-lifecycle received full BODY_check: 0 faults
+plane-nurbs-lifecycle PK mass: volume=8.200782257399158/8.200782245537717, area=23.911888981305726/23.911888947706032, max normalized residual=5.391722711710726E-09
+TIME independent lifecycle ms=660.821
+PASS independent lifecycle: self XT receive, copy, source deletion, mirror-scale, PK full check/strict compare/mass, cleanup
+TIME PK BODY_boolean x=.5 ms=1.693, error=0
+plane-nurbs reference fillet cut full BODY_check: 0 faults
+TIME self BODY_boolean x=.5 ms=4167.632, error=0
+plane-nurbs-fillet-cut reference full BODY_check: 0 faults
+plane-nurbs-fillet-cut received full BODY_check: 0 faults
+plane-nurbs-fillet-cut PK mass: volume=0.5125488912006642/0.5125488901751184, area=4.037863891329698/4.037863881147942, max normalized residual=2.0210462415186295E-09
+TIME case plane-nurbs ms=6971.026
+depressed-roof reference input full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.15 ms=2.371, error=0
+depressed-roof reference fillet full BODY_check: 0 faults
+TIME self BODY_fix_blends radius=0.15 ms=526.951, error=0
+FINITE Blend sampling extent=[0.19953363562197954,1.2005526951506291] from actual contact edges
+PASS 9 sections: radius, both contact positions and tangent continuity, independent native geometry
+depressed-roof-fillet reference full BODY_check: 0 faults
+depressed-roof-fillet received full BODY_check: 0 faults
+depressed-roof-fillet PK mass: volume=0.9810636574745202/0.9810636589379215, area=5.918300484489002/5.918300492143143, max normalized residual=1.106361374406739E-09
+TIME PK BODY_boolean x=.5 ms=1.327, error=0
+depressed-roof reference fillet cut full BODY_check: 0 faults
+TIME self BODY_boolean x=.5 ms=2125.734, error=0
+depressed-roof-fillet-cut reference full BODY_check: 0 faults
+depressed-roof-fillet-cut received full BODY_check: 0 faults
+depressed-roof-fillet-cut PK mass: volume=0.49053182927944505/0.49053183074288925, area=3.9278493490611384/3.9278493580675313, max normalized residual=1.827651847040704E-09
+TIME case depressed-roof ms=2761.799
+nurbs-nurbs reference input full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=3.305, error=0
+nurbs-nurbs reference fillet full BODY_check: 0 faults
+TIME self BODY_fix_blends radius=0.1 ms=2516.821, error=0
+FINITE Blend sampling extent=[0.14924043226589218,1.1509368039971941] from actual contact edges
+PASS 9 sections: radius, both contact positions and tangent continuity, independent native geometry
+nurbs-nurbs-fillet reference full BODY_check: 0 faults
+nurbs-nurbs-fillet received full BODY_check: 0 faults
+nurbs-nurbs-fillet PK mass: volume=1.0454221208615762/1.0454221202263583, area=5.992014398196872/5.992014395665208, max normalized residual=3.620793126750586E-10
+TIME PK BODY_boolean x=.5 ms=3.380, error=0
+nurbs-nurbs reference fillet cut full BODY_check: 0 faults
+TIME self BODY_boolean x=.5 ms=12301.890, error=0
+nurbs-nurbs-fillet-cut reference full BODY_check: 0 faults
+nurbs-nurbs-fillet-cut received full BODY_check: 0 faults
+nurbs-nurbs-fillet-cut PK mass: volume=0.5227110602824623/0.5227110601342633, area=4.0828816671271975/4.082881659788376, max normalized residual=1.4438308005153308E-09
+TIME case nurbs-nurbs ms=15026.584
+concave-plane-nurbs reference input full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=2.431, error=0
+concave-plane-nurbs reference fillet full BODY_check: 0 faults
+TIME self BODY_fix_blends radius=0.1 ms=1511.505, error=0
+FINITE Blend sampling extent=[0.1466880877110252,1.1538876910558395] from actual contact edges
+PASS 9 sections: radius, both contact positions and tangent continuity, independent native geometry
+concave-plane-nurbs-fillet reference full BODY_check: 0 faults
+concave-plane-nurbs-fillet received full BODY_check: 0 faults
+concave-plane-nurbs-fillet PK mass: volume=0.7669004244935018/0.7669004244983124, area=5.444205522977119/5.44420550631087, max normalized residual=2.5862379413621207E-09
+TIME PK BODY_boolean x=.5 ms=1.742, error=0
+concave-plane-nurbs reference fillet cut full BODY_check: 0 faults
+TIME self BODY_boolean x=.5 ms=7637.029, error=0
+concave-plane-nurbs-fillet-cut reference full BODY_check: 0 faults
+concave-plane-nurbs-fillet-cut received full BODY_check: 0 faults
+concave-plane-nurbs-fillet-cut PK mass: volume=0.3834502121600001/0.38345021206775065, area=3.502011284523525/3.502011283471239, max normalized residual=2.337369214837647E-10
+TIME case concave-plane-nurbs ms=9397.296
+concave-nurbs-nurbs reference input full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=4.359, error=0
+concave-nurbs-nurbs reference fillet full BODY_check: 0 faults
+TIME self BODY_fix_blends radius=0.1 ms=5296.696, error=0
+FINITE Blend sampling extent=[0.14687451130561702,1.153728833733607] from actual contact edges
+PASS 9 sections: radius, both contact positions and tangent continuity, independent native geometry
+concave-nurbs-nurbs-fillet reference full BODY_check: 0 faults
+concave-nurbs-nurbs-fillet received full BODY_check: 0 faults
+concave-nurbs-nurbs-fillet PK mass: volume=0.7613769506414482/0.7613769506438757, area=5.459920122453318/5.459920122435941, max normalized residual=2.690003970952123E-12
+TIME PK BODY_boolean x=.5 ms=2.575, error=0
+concave-nurbs-nurbs reference fillet cut full BODY_check: 0 faults
+TIME self BODY_boolean x=.5 ms=42054.980, error=0
+concave-nurbs-nurbs-fillet-cut reference full BODY_check: 0 faults
+concave-nurbs-nurbs-fillet-cut received full BODY_check: 0 faults
+concave-nurbs-nurbs-fillet-cut PK mass: volume=0.3806884752786143/0.38068847533526673, area=3.499400148623131/3.4994001492636606, max normalized residual=1.4235884476467116E-10
+TIME case concave-nurbs-nurbs ms=47863.343
+PASS all 5 freeform solid fillet and subsequent cutting cases
+TIME total ms=82562.481
+
+FILE temp_docs/m345-final-regular-verified.log SHA256=4fb161668fc6c41053935b8fba23cec7e26a567efb0f0e1051ae0c43b503fe55
+PASS block-15903
+PASS block-15901
+PASS block-15902
+PASS nurbs-15903
+PASS nurbs-15901
+PASS nurbs-15902
+PASS closed-cut-15903
+PASS closed-cut-15901
+PASS closed-cut-15902
+PASS disjoint-15903
+PASS disjoint-15901
+PASS disjoint-15902
+PASS enclosed-tool-15903
+PASS enclosed-tool-15901
+PASS enclosed-tool-15902
+PASS enclosed-target-15903
+PASS enclosed-target-15901
+PASS enclosed-target-15902
+PASS two-tools-15903
+PASS two-tools-15901
+PASS two-tools-15902
+PASS mixed-disjoint-15903
+PASS mixed-disjoint-15901
+PASS mixed-disjoint-15902
+PASS continuous-15903
+PASS continuous-15901
+PASS continuous-15902
+PASS reloaded-15903
+PASS reloaded-15901
+PASS reloaded-15902
+PASS reloaded-block-15903
+PASS reloaded-block-15901
+PASS reloaded-block-15902
+PASS same-domain-15903
+PASS same-domain-15901
+PASS same-domain-15902
+PASS same-domain-reloaded-15903
+PASS same-domain-reloaded-15901
+PASS same-domain-reloaded-15902
+PASS same-domain-partial-15903
+PASS same-domain-partial-15901
+PASS same-domain-partial-15902
+PASS same-domain-partial-reloaded-15903
+PASS same-domain-partial-reloaded-15901
+PASS same-domain-partial-reloaded-15902
+PASS all 45 regular curved Boolean cases
+
+FILE temp_docs/m345-final-sheet-verified.log SHA256=92a4dc02a172837ef02de9f0905e65555daabc91ba00b93cccaf573c5f036024
+PASS polynomial-bilinear-imprint
+PASS polynomial-bilinear-trim-keep
+PASS polynomial-bilinear-trim-remove
+PASS polynomial-bilinear-section-front
+PASS polynomial-bilinear-section-back
+PASS polynomial-bilinear-section-both
+PASS rational-bilinear-imprint
+PASS rational-bilinear-trim-keep
+PASS rational-bilinear-trim-remove
+PASS rational-bilinear-section-front
+PASS rational-bilinear-section-back
+PASS rational-bilinear-section-both
+PASS polynomial-cubic-imprint
+PASS polynomial-cubic-trim-keep
+PASS polynomial-cubic-trim-remove
+PASS polynomial-cubic-section-front
+PASS polynomial-cubic-section-back
+PASS polynomial-cubic-section-both
+PASS rational-cubic-imprint
+PASS rational-cubic-trim-keep
+PASS rational-cubic-trim-remove
+PASS rational-cubic-section-front
+PASS rational-cubic-section-back
+PASS rational-cubic-section-both
+PASS polynomial-multispan-cubic-imprint
+PASS polynomial-multispan-cubic-trim-keep
+PASS polynomial-multispan-cubic-trim-remove
+PASS polynomial-multispan-cubic-section-front
+PASS polynomial-multispan-cubic-section-back
+PASS polynomial-multispan-cubic-section-both
+PASS rational-multispan-cubic-imprint
+PASS rational-multispan-cubic-trim-keep
+PASS rational-multispan-cubic-trim-remove
+PASS rational-multispan-cubic-section-front
+PASS rational-multispan-cubic-section-back
+PASS rational-multispan-cubic-section-both
+PASS isoparametric-line-imprint
+PASS isoparametric-line-trim-keep
+PASS isoparametric-line-trim-remove
+PASS isoparametric-line-section-front
+PASS isoparametric-line-section-back
+PASS isoparametric-line-section-both
+PASS tensor-isoparametric-imprint
+PASS tensor-isoparametric-trim-keep
+PASS tensor-isoparametric-trim-remove
+PASS tensor-isoparametric-section-front
+PASS tensor-isoparametric-section-back
+PASS tensor-isoparametric-section-both
+PASS polynomial-closed-loop-imprint
+PASS polynomial-closed-loop-trim-keep
+PASS polynomial-closed-loop-trim-remove
+PASS polynomial-closed-loop-section-front
+PASS polynomial-closed-loop-section-back
+PASS polynomial-closed-loop-section-both
+PASS polynomial-closed-loop-second-plane
+PASS polynomial-closed-loop-repeat-plane
+PASS polynomial-closed-loop-annulus-front
+PASS polynomial-closed-loop-annulus-back
+PASS polynomial-closed-loop-annulus-both
+PASS rational-closed-loop-imprint
+PASS rational-closed-loop-trim-keep
+PASS rational-closed-loop-trim-remove
+PASS rational-closed-loop-section-front
+PASS rational-closed-loop-section-back
+PASS rational-closed-loop-section-both
+PASS rational-closed-loop-second-plane
+PASS rational-closed-loop-repeat-plane
+PASS rational-closed-loop-annulus-front
+PASS rational-closed-loop-annulus-back
+PASS rational-closed-loop-annulus-both
+PASS open-nurbs-blend-imprint
+PASS open-nurbs-blend-trim-keep
+PASS open-nurbs-blend-trim-remove
+PASS open-nurbs-blend-section-front
+PASS open-nurbs-blend-section-back
+PASS open-nurbs-blend-section-both
+PASS open-nurbs-blend-second-plane
+PASS open-nurbs-blend-trim-second-plane
+PASS open-nurbs-blend-repeat-second-plane
+PASS all 79 curved sheet cases
+
+FILE temp_docs/m345-final-mixed-boolean.log SHA256=b0d512637ace7d913506ea23cf62e733289c0c2250d82a1d8b3d90c55cf1c741
+PASS symmetric-unite 6.649s
+PASS symmetric-intersect 6.555s
+PASS symmetric-subtract 6.448s
+PASS asymmetric-unite 8.760s
+PASS asymmetric-intersect 8.705s
+PASS asymmetric-subtract 8.812s
+PASS continuous-x-subtract 16.620s
+PASS continuous-xy-subtract 11.939s
+PASS continuous-asymmetric-contact-subtract 32.846s
+PASS cavity-subtract 11.641s
+PASS closed-loop-subtract 5.709s
+PASS two-crossings-subtract 18.358s
+PASS two-tools-unite 10.764s
+PASS two-tools-intersect 10.191s
+PASS two-tools-subtract 10.547s
+PASS nurbs-unite 33.688s
+PASS nurbs-intersect 32.273s
+PASS nurbs-subtract 31.834s
+PASS blend-unite 227.231s
+PASS blend-intersect 209.474s
+PASS blend-subtract 242.947s
+PASS tilted-cylinder-subtract 10.145s
+PASS refillet-new-edge 19.911s
+SUMMARY strict passed=23, failed=0, timed-out=0
+
+FILE temp_docs/m345-final-analytic-boolean.log SHA256=3b96e04c8848592f1486b7a537ce30c1a05db86da3365dfcc60676a8209658a9
+PASS basic-15903
+PASS basic-15901
+PASS basic-15902
+PASS seam-15903
+PASS seam-15901
+PASS seam-15902
+PASS mirrored-15903
+PASS mirrored-15901
+PASS mirrored-15902
+PASS reload-partial-15903
+PASS reload-partial-15901
+PASS reload-partial-15902
+PASS reload-partial-seam-15903
+PASS reload-partial-seam-15901
+PASS reload-partial-seam-15902
+PASS repeat-partial-15903
+PASS repeat-partial-15901
+PASS repeat-partial-15902
+PASS all 18 mixed analytic Boolean cases
+
+FILE temp_docs/m345-final-near-contact-verified.log SHA256=e055efe8743d6115a2993a45f6cc70b77b5777cd3d1b7aa8bc5f77308b2e7628
+SSI own h=-0.015625 error=0 points=0 curves=0 seconds=0.039822
+SSI PK h=-0.015625 error=0 points=0 curves=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h-0.015625-op15902-0 PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+reloaded result received full BODY_check: 0 faults
+h-0.015625-op15902-0 reloaded PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+PASS solid height=-0.015625 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+PASS solid height=-0.015625 op=15901
+SSI own h=0 error=0 points=1 curves=0 seconds=0.000093
+SSI PK h=0 error=0 points=1 curves=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h0-op15902-0 PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+reloaded result received full BODY_check: 0 faults
+h0-op15902-0 reloaded PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+PASS solid height=0 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+PASS solid height=0 op=15901
+SSI own h=0.015625 error=0 points=0 curves=1 seconds=0.028708
+SSI PK h=0.015625 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=1.5213524884316598E-14 angle=6.283185307179584 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h0.015625-op15902-0 PK mass: volume=1.3329498369987314/1.3329498373558641, area=6.946696749703323/6.946696751433791, max normalized residual=2.1775943737032975E-10
+reloaded result received full BODY_check: 0 faults
+h0.015625-op15902-0 reloaded PK mass: volume=1.3329498369987314/1.3329498373558641, area=6.946696749703323/6.946696751433791, max normalized residual=2.1775943737032975E-10
+PASS solid height=0.015625 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h0.015625-op15901-0 PK mass: volume=0.00038349519468282604/0.00038349519499155147, area=0.09893395237322429/0.09893395252140574, max normalized residual=1.3484109113102175E-10
+h0.015625-op15901-0 analytic cap volume=0.0003834951969714103, relative residual native=5.967699889808387E-09, own=5.162669181046908E-09
+reloaded result received full BODY_check: 0 faults
+h0.015625-op15901-0 reloaded PK mass: volume=0.00038349519468282604/0.00038349519499155147, area=0.09893395237322429/0.09893395252140574, max normalized residual=1.3484109113102175E-10
+h0.015625-op15901-0 reloaded analytic cap volume=0.0003834951969714103, relative residual native=5.967699889808387E-09, own=5.162669181046908E-09
+PASS solid height=0.015625 op=15901
+SSI own h=1.52587890625E-05 error=0 points=0 curves=1 seconds=0.005234
+SSI PK h=1.52587890625E-05 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=3.1501578824861057E-15 angle=6.283185307179584 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h1.52587890625E-05-op15902-0 PK mass: volume=1.3333333309455708/1.3333333312636373, area=6.947455927197666/6.947455928724722, max normalized residual=1.9214398030262666E-10
+reloaded result received full BODY_check: 0 faults
+h1.52587890625E-05-op15902-0 reloaded PK mass: volume=1.3333333309455708/1.3333333312636373, area=6.947455927197666/6.947455928724722, max normalized residual=1.9214398030262666E-10
+PASS solid height=1.52587890625E-05 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h1.52587890625E-05-op15901-0 PK mass: volume=3.6572948209858973E-10/3.657294935724292E-10, area=9.587452189153845E-05/9.587452723974043E-05, max normalized residual=4.260471120445722E-10
+h1.52587890625E-05-op15901-0 analytic cap volume=3.657295198167899E-10, relative residual native=1.031314076360701E-07, own=7.175893457223026E-08
+reloaded result received full BODY_check: 0 faults
+h1.52587890625E-05-op15901-0 reloaded PK mass: volume=3.6572948209858973E-10/3.657294935724292E-10, area=9.587452189153845E-05/9.587452723974043E-05, max normalized residual=4.260471120445722E-10
+h1.52587890625E-05-op15901-0 reloaded analytic cap volume=3.657295198167899E-10, relative residual native=1.031314076360701E-07, own=7.175893457223026E-08
+PASS solid height=1.52587890625E-05 op=15901
+SSI own h=9.5367431640625E-07 error=0 points=0 curves=1 seconds=0.003974
+SSI PK h=9.5367431640625E-07 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=8.585485719304594E-15 angle=6.283185307179586 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15902-0 PK mass: volume=1.333333331309758/1.3333333313164122, area=6.9474559279260575/6.947455927957994, max normalized residual=4.018421961289363E-12
+reloaded result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15902-0 reloaded PK mass: volume=1.333333331309758/1.3333333313164122, area=6.9474559279260575/6.947455927957994, max normalized residual=4.018421961289363E-12
+PASS solid height=9.5367431640625E-07 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15901-0 PK mass: volume=1.4286307841897276E-12/1.4286309003950154E-12, area=5.992114759804793E-06/5.992115207564163E-06, max normalized residual=3.914489294804773E-11
+h9.5367431640625E-07-op15901-0 analytic cap volume=1.4286309367843356E-12, relative residual native=1.0681177631255423E-07, own=2.5471463160897656E-08
+reloaded result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15901-0 reloaded PK mass: volume=1.4286307841897276E-12/1.4286309003950154E-12, area=5.992114759804793E-06/5.992115207564163E-06, max normalized residual=3.914489294804773E-11
+h9.5367431640625E-07-op15901-0 reloaded analytic cap volume=1.4286309367843356E-12, relative residual native=1.0681177631255423E-07, own=2.5471463160897656E-08
+PASS solid height=9.5367431640625E-07 op=15901
+SSI own h=5.960464477539063E-08 error=0 points=0 curves=1 seconds=0.004680
+SSI PK h=5.960464477539063E-08 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=6.145456807571766E-15 angle=6.283185307179589 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15902-0 PK mass: volume=1.3333333312983726/1.3333333313054532, area=6.9474559278674475/6.947455927901435, max normalized residual=4.276579058147067E-12
+reloaded result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15902-0 reloaded PK mass: volume=1.3333333312983726/1.3333333313054532, area=6.9474559278674475/6.947455927901435, max normalized residual=4.276579058147067E-12
+PASS solid height=5.960464477539063E-08 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15901-0 PK mass: volume=5.580588995429945E-15/5.580589988709498E-15, area=3.7450700505950975E-07/3.7450701225001003E-07, max normalized residual=1.4749468485478157E-11
+h5.960464477539063E-08-op15901-0 analytic cap volume=5.580589596813811E-15, relative residual native=1.077634996793364E-07, own=7.022478176743618E-08
+reloaded result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15901-0 reloaded PK mass: volume=5.580588995429945E-15/5.580589988709498E-15, area=3.7450700505950975E-07/3.7450701225001003E-07, max normalized residual=1.4749468485478157E-11
+h5.960464477539063E-08-op15901-0 reloaded analytic cap volume=5.580589596813811E-15, relative residual native=1.077634996793364E-07, own=7.022478176743618E-08
+PASS solid height=5.960464477539063E-08 op=15901
+
+FILE temp_docs/m345-final-spherical-domain.log SHA256=81fc0d34c8a5bee7199c4a5c002066a2a898a868e434481e5477493c5a74190f
+PASS native-frame
+PASS pole-frame
+PASS rational-native-frame
+PASS rational-pole-frame
+PASS all 4 spherical domain cases
+
+FILE temp_docs/m345-final-cylinder-extents.log SHA256=1667337c86accf3da03e8bb38e651170359160ba28fde9d2cd638e5b648839c1
+PASS full-z
+PASS full-oblique
+PASS seam
+PASS rational-bulge
+PASS all 4 cylindrical extent cases
+
+FILE temp_docs/m345-final-chain-accepted.log SHA256=7eb4c96c9532b1f5e9cb162d8edf7691d8447e88f430d1e02b822856ac790cff
+ROUND 1 chain-2-base-self-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=2271.806
+TIME FixBlends own=False ms=3.589
+chain-2-base-self-source native full BODY_check: 0 faults
+chain-2-base-self-source received full BODY_check: 0 faults
+chain-2-base-self-source PK mass: volume=1.0250977819198717/1.0250977817129163, area=5.977972244063891/5.9779722432418785, max normalized residual=1.1780108194689722E-10
+TIME Boolean own=True ms=8591.205
+TIME Boolean own=False ms=1.696
+chain-2-base-self-source cut native full BODY_check: 0 faults
+chain-2-base-self-source cut received full BODY_check: 0 faults
+chain-2-base-self-source cut PK mass: volume=0.5649759025938826/0.5649759024109154, area=4.236492420294968/4.236492414863921, max normalized residual=1.0371535538578502E-09
+PASS chain-2-base-self-source
+ROUND 1 chain-2-reflected-self-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=2584.597
+TIME FixBlends own=False ms=3.155
+chain-2-reflected-self-source native full BODY_check: 0 faults
+chain-2-reflected-self-source received full BODY_check: 0 faults
+chain-2-reflected-self-source PK mass: volume=5.036305402348925/5.036305401722299, area=17.27633979403925/17.276339792761718, max normalized residual=2.362963176532797E-10
+PASS chain-2-reflected-self-source
+ROUND 1 chain-3-base-self-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1804.443
+TIME FixBlends own=False ms=4.123
+chain-3-base-self-source native full BODY_check: 0 faults
+chain-3-base-self-source received full BODY_check: 0 faults
+chain-3-base-self-source PK mass: volume=1.025097781825585/1.0250977809212491, area=5.977972243255186/5.977972239110462, max normalized residual=5.939725081863624E-10
+TIME Boolean own=True ms=10390.854
+TIME Boolean own=False ms=1.610
+chain-3-base-self-source cut native full BODY_check: 0 faults
+chain-3-base-self-source cut received full BODY_check: 0 faults
+chain-3-base-self-source cut PK mass: volume=0.5649759029382627/0.5649759019369522, area=4.23649242241313/4.236492412089557, max normalized residual=1.9714672102451463E-09
+PASS chain-3-base-self-source
+ROUND 1 chain-3-reflected-self-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=2695.677
+TIME FixBlends own=False ms=4.071
+chain-3-reflected-self-source native full BODY_check: 0 faults
+chain-3-reflected-self-source received full BODY_check: 0 faults
+chain-3-reflected-self-source PK mass: volume=5.036305400698806/5.036305398557835, area=17.27633978863786/17.27633978406166, max normalized residual=7.750162471024642E-10
+PASS chain-3-reflected-self-source
+ROUND 1 chain-2-base-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1647.339
+TIME FixBlends own=False ms=2.909
+chain-2-base-pk-source native full BODY_check: 0 faults
+chain-2-base-pk-source received full BODY_check: 0 faults
+chain-2-base-pk-source PK mass: volume=1.0250977821767282/1.0250977820648666, area=5.97797224562256/5.977972245267317, max normalized residual=7.01552461781311E-11
+TIME Boolean own=True ms=8317.903
+TIME Boolean own=False ms=1.504
+chain-2-base-pk-source cut native full BODY_check: 0 faults
+chain-2-base-pk-source cut received full BODY_check: 0 faults
+chain-2-base-pk-source cut PK mass: volume=0.564975902763023/0.5649759026825991, area=4.236492421300131/4.236492416539896, max normalized residual=9.090502744898622E-10
+PASS chain-2-base-pk-source
+ROUND 1 chain-2-reflected-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=2512.433
+TIME FixBlends own=False ms=3.098
+chain-2-reflected-pk-source native full BODY_check: 0 faults
+chain-2-reflected-pk-source received full BODY_check: 0 faults
+chain-2-reflected-pk-source PK mass: volume=5.036305403528095/5.036305403398636, area=17.276339798233938/17.276339797770074, max normalized residual=8.954347470190882E-11
+PASS chain-2-reflected-pk-source
+ROUND 1 chain-3-base-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1739.469
+TIME FixBlends own=False ms=4.005
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.025097781737099, area=5.977972246023245/5.977972243935576, max normalized residual=2.99179852107527E-10
+TIME Boolean own=True ms=10384.487
+TIME Boolean own=False ms=1.604
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027140004, area=4.236492423395728/4.236492416727825, max normalized residual=1.2733530431245046E-09
+PASS chain-3-base-pk-source
+ROUND 1 chain-3-reflected-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=2782.223
+TIME FixBlends own=False ms=4.345
+chain-3-reflected-pk-source native full BODY_check: 0 faults
+chain-3-reflected-pk-source received full BODY_check: 0 faults
+chain-3-reflected-pk-source PK mass: volume=5.0363054029748096/5.036305403315883, area=17.276339796739958/17.27633979842417, max normalized residual=4.890663912284974E-10
+PASS chain-3-reflected-pk-source
+
+FILE temp_docs/m345-final-support-chain-verified.log SHA256=cca7b9d6f403a3f463362b4f06a6521ea33f2113bc344ebabcee7cc0ad6abd47
+TIME FixBlends own=True seconds=8.883385 error=0 faces=3
+TIME FixBlends own=False seconds=0.017107 error=0 faces=3
+asymmetric43-base native full BODY_check: 0 faults
+asymmetric43-base received full BODY_check: 0 faults
+asymmetric43-base PK mass: volume=1.0250977821450686/1.0250977822771132, area=5.977972241927273/5.977972242708399, max normalized residual=1.1194172858416629E-10
+TIME Boolean own=True seconds=31.435973
+TIME Boolean own=False seconds=0.002787
+asymmetric43-base cut native full BODY_check: 0 faults
+asymmetric43-base cut received full BODY_check: 0 faults
+asymmetric43-base cut PK mass: volume=0.564975903092338/0.5649759031808433, area=4.2364924258334336/4.236492425335182, max normalized residual=5.119009892103578E-10
+PASS asymmetric43-base
+TIME FixBlends own=True seconds=17.119872 error=0 faces=3
+TIME FixBlends own=False seconds=0.016904 error=0 faces=3
+asymmetric43-reflected native full BODY_check: 0 faults
+asymmetric43-reflected received full BODY_check: 0 faults
+asymmetric43-reflected PK mass: volume=5.036305403714121/5.036305405873003, area=17.276339833019886/17.27633984044611, max normalized residual=1.2509210940643715E-09
+TIME Boolean own=True seconds=26.583752
+TIME Boolean own=False seconds=0.001590
+asymmetric43-reflected cut native full BODY_check: 0 faults
+asymmetric43-reflected cut received full BODY_check: 0 faults
+asymmetric43-reflected cut PK mass: volume=2.775726611697629/2.7757266106713616, area=12.24346311623987/12.243463090552016, max normalized residual=1.9396628658634617E-09
+PASS asymmetric43-reflected
+TIME FixBlends own=True seconds=2.648980 error=0 faces=3
+TIME FixBlends own=False seconds=0.005308 error=0 faces=3
+asymmetric61-base native full BODY_check: 0 faults
+asymmetric61-base received full BODY_check: 0 faults
+asymmetric61-base PK mass: volume=1.025097782014627/1.025097782056716, area=5.977972240313598/5.977972240639111, max normalized residual=4.6648645009996266E-11
+TIME Boolean own=True seconds=9.495339
+TIME Boolean own=False seconds=0.001692
+asymmetric61-base cut native full BODY_check: 0 faults
+asymmetric61-base cut received full BODY_check: 0 faults
+asymmetric61-base cut PK mass: volume=0.5649759029976972/0.5649759030811567, area=4.236492422499353/4.236492418736311, max normalized residual=7.642609598201773E-10
+PASS asymmetric61-base
+TIME FixBlends own=True seconds=5.461898 error=0 faces=3
+TIME FixBlends own=False seconds=0.005895 error=0 faces=3
+asymmetric61-reflected native full BODY_check: 0 faults
+asymmetric61-reflected received full BODY_check: 0 faults
+asymmetric61-reflected PK mass: volume=5.036305401618842/5.036305400509256, area=17.276339812411052/17.276339808977003, max normalized residual=8.755408264654665E-10
+TIME Boolean own=True seconds=21.017767
+TIME Boolean own=False seconds=0.001736
+asymmetric61-reflected cut native full BODY_check: 0 faults
+asymmetric61-reflected cut received full BODY_check: 0 faults
+asymmetric61-reflected cut PK mass: volume=2.775726611148594/2.7757266115359345, area=12.243463101054894/12.243463100872379, max normalized residual=2.281692385259814E-09
+PASS asymmetric61-reflected
+TIME FixBlends own=True seconds=2.584374 error=0 faces=3
+TIME FixBlends own=False seconds=0.004667 error=0 faces=3
+oblique43-base native full BODY_check: 0 faults
+oblique43-base received full BODY_check: 0 faults
+oblique43-base PK mass: volume=1.0250977812342077/1.0250977813727344, area=5.977972249855187/5.977972251506805, max normalized residual=2.3669030750825667E-10
+TIME Boolean own=True seconds=9.854652
+TIME Boolean own=False seconds=0.001615
+oblique43-base cut native full BODY_check: 0 faults
+oblique43-base cut received full BODY_check: 0 faults
+oblique43-base cut PK mass: volume=0.5649759029136734/0.5649759030535834, area=4.236492420880841/4.236492418653599, max normalized residual=4.921627531283872E-10
+PASS oblique43-base
+TIME FixBlends own=True seconds=5.508060 error=0 faces=3
+TIME FixBlends own=False seconds=0.005568 error=0 faces=3
+oblique43-reflected native full BODY_check: 0 faults
+oblique43-reflected received full BODY_check: 0 faults
+oblique43-reflected PK mass: volume=5.036305402033105/5.036305403460299, area=17.27633982164491/17.27633982624143, max normalized residual=1.1818765359625988E-09
+TIME Boolean own=True seconds=21.158176
+TIME Boolean own=False seconds=0.001546
+oblique43-reflected cut native full BODY_check: 0 faults
+oblique43-reflected cut received full BODY_check: 0 faults
+oblique43-reflected cut PK mass: volume=2.7757266109805268/2.775726611445272, area=12.243463103498332/12.243463104306667, max normalized residual=2.3578558789235727E-09
+PASS oblique43-reflected
+TIME FixBlends own=True seconds=8.207504 error=0 faces=3
+TIME FixBlends own=False seconds=0.011327 error=0 faces=3
+nurbs43-base native full BODY_check: 0 faults
+nurbs43-base received full BODY_check: 0 faults
+nurbs43-base PK mass: volume=1.0454221193325481/1.0454221199155247, area=5.99201438626182/5.99201439014701, max normalized residual=5.556610345614733E-10
+TIME Boolean own=True seconds=29.376575
+TIME Boolean own=False seconds=0.002065
+nurbs43-base cut native full BODY_check: 0 faults
+nurbs43-base cut received full BODY_check: 0 faults
+nurbs43-base cut PK mass: volume=0.577025406505888/0.5770254070884756, area=4.281677608808836/4.281677613137977, max normalized residual=8.196525653772111E-10
+PASS nurbs43-base
+TIME FixBlends own=True seconds=15.045975 error=0 faces=3
+TIME FixBlends own=False seconds=0.012394 error=0 faces=3
+nurbs43-reflected native full BODY_check: 0 faults
+nurbs43-reflected received full BODY_check: 0 faults
+nurbs43-reflected PK mass: volume=5.136158871724883/5.1361588754960135, area=17.316921623571304/17.316921637275687, max normalized residual=2.0238187598895486E-09
+TIME Boolean own=True seconds=44.894638
+TIME Boolean own=False seconds=0.002349
+nurbs43-reflected cut native full BODY_check: 0 faults
+nurbs43-reflected cut received full BODY_check: 0 faults
+nurbs43-reflected cut PK mass: volume=2.8349258199983938/2.834925824538322, area=12.374048280875357/12.374048300397522, max normalized residual=3.1748215447651326E-09
+PASS nurbs43-reflected
+
+FILE temp_docs/m345-final-nested-complete.log SHA256=d977c3f12fffc1cd4b07dcde848890420cdcfb809a3b99c74ec867330c4fae2e
+ROUND 1 chain-1-base-self-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1599.962
+PROFILE operation=FixBlends elapsed-ms=1594.910, pairs=0, ssi-cells=0, root-cells=329, roots=5, budget-failures=0, winding=4, bound-requests=889, bound-evaluations=726, cache-hits=54, bound-ms=524.072
+TIME FixBlends own=False ms=2.681
+chain-1-base-self-source native full BODY_check: 0 faults
+chain-1-base-self-source received full BODY_check: 0 faults
+chain-1-base-self-source PK mass: volume=1.0250977808405128/1.0250977804630355, area=5.977972237320137/5.977972235333378, max normalized residual=5.914423767813719E-10
+TIME FixBlends own=True ms=22100.855
+PROFILE operation=FixBlends elapsed-ms=22100.792, pairs=0, ssi-cells=0, root-cells=10461, roots=10, budget-failures=0, winding=8, bound-requests=52310, bound-evaluations=26188, cache-hits=16652, bound-ms=17036.139
+TIME FixBlends own=False ms=1.484
+chain-1-base-self-source cut native full BODY_check: 0 faults
+chain-1-base-self-source cut received full BODY_check: 0 faults
+chain-1-base-self-source cut PK mass: volume=1.0143323494416945/1.014332350351193, area=5.983946156195977/5.98394616270165, max normalized residual=9.315182545626259E-10
+PASS chain-1-base-self-source
+ROUND 1 chain-1-reflected-self-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1708.933
+PROFILE operation=FixBlends elapsed-ms=1708.901, pairs=0, ssi-cells=0, root-cells=561, roots=5, budget-failures=0, winding=4, bound-requests=1411, bound-evaluations=1195, cache-hits=83, bound-ms=843.709
+TIME FixBlends own=False ms=1.989
+chain-1-reflected-self-source native full BODY_check: 0 faults
+chain-1-reflected-self-source received full BODY_check: 0 faults
+chain-1-reflected-self-source PK mass: volume=5.036305391909219/5.036305395977021, area=17.276339755414863/17.276339771404988, max normalized residual=2.3400451589642834E-09
+TIME FixBlends own=True ms=35297.804
+PROFILE operation=FixBlends elapsed-ms=35297.761, pairs=0, ssi-cells=0, root-cells=15156, roots=11, budget-failures=0, winding=9, bound-requests=78006, bound-evaluations=34835, cache-hits=26090, bound-ms=26744.414
+TIME FixBlends own=False ms=1.560
+chain-1-reflected-self-source cut native full BODY_check: 0 faults
+chain-1-reflected-self-source cut received full BODY_check: 0 faults
+chain-1-reflected-self-source cut PK mass: volume=4.98341483553847/4.983414837108075, area=17.293604415662756/17.293604417693057, max normalized residual=6.455002247730724E-10
+PASS chain-1-reflected-self-source
+ROUND 1 chain-1-base-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1087.638
+PROFILE operation=FixBlends elapsed-ms=1087.611, pairs=0, ssi-cells=0, root-cells=329, roots=5, budget-failures=0, winding=4, bound-requests=889, bound-evaluations=728, cache-hits=52, bound-ms=427.600
+TIME FixBlends own=False ms=1.787
+chain-1-base-pk-source native full BODY_check: 0 faults
+chain-1-base-pk-source received full BODY_check: 0 faults
+chain-1-base-pk-source PK mass: volume=1.0250977823728746/1.0250977822731426, area=5.9779722462190845/5.9779722461858755, max normalized residual=5.201483688199239E-11
+TIME FixBlends own=True ms=22387.198
+PROFILE operation=FixBlends elapsed-ms=22387.160, pairs=0, ssi-cells=0, root-cells=10642, roots=10, budget-failures=0, winding=8, bound-requests=53576, bound-evaluations=26732, cache-hits=16755, bound-ms=17302.953
+TIME FixBlends own=False ms=1.463
+chain-1-base-pk-source cut native full BODY_check: 0 faults
+chain-1-base-pk-source cut received full BODY_check: 0 faults
+chain-1-base-pk-source cut PK mass: volume=1.0143323494907375/1.0143323503357111, area=5.983946156530579/5.9839461621744325, max normalized residual=8.081181123315036E-10
+PASS chain-1-base-pk-source
+ROUND 1 chain-1-reflected-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1658.545
+PROFILE operation=FixBlends elapsed-ms=1658.522, pairs=0, ssi-cells=0, root-cells=561, roots=5, budget-failures=0, winding=4, bound-requests=1411, bound-evaluations=1197, cache-hits=81, bound-ms=825.820
+TIME FixBlends own=False ms=1.753
+chain-1-reflected-pk-source native full BODY_check: 0 faults
+chain-1-reflected-pk-source received full BODY_check: 0 faults
+chain-1-reflected-pk-source PK mass: volume=5.036305403733639/5.03630540356542, area=17.276339798001317/17.27633979821111, max normalized residual=1.7960484876270994E-10
+TIME FixBlends own=True ms=35797.627
+PROFILE operation=FixBlends elapsed-ms=35797.590, pairs=0, ssi-cells=0, root-cells=14812, roots=11, budget-failures=0, winding=9, bound-requests=77157, bound-evaluations=34485, cache-hits=25947, bound-ms=27137.883
+TIME FixBlends own=False ms=1.643
+chain-1-reflected-pk-source cut native full BODY_check: 0 faults
+chain-1-reflected-pk-source cut received full BODY_check: 0 faults
+chain-1-reflected-pk-source cut PK mass: volume=4.983414836582246/4.9834148369690805, area=17.293604414756427/17.293604416979147, max normalized residual=1.7446405548328116E-10
+PASS chain-1-reflected-pk-source
+
+FILE temp_docs/m345-final-corner-matrix.log SHA256=00db184a720841142fcfabb6101016244b4bed17026e2c8272c6c6fab618df02
+TIME native base ms=4.593
+base-native-author native full BODY_check: 0 faults
+TIME self base ms=2042.751
+base-native-author received full BODY_check: 0 faults
+base-native-author PK mass: volume=1.0101729950300062/1.0101729946601947, area=5.876619966892573/5.87661996521879, max normalized residual=2.4340197627967453E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+PASS base-native-author
+TIME native base ms=4.193
+base-self-author native full BODY_check: 0 faults
+TIME self base ms=1462.693
+base-self-author received full BODY_check: 0 faults
+base-self-author PK mass: volume=1.0101729947510274/1.010172995015005, area=5.876619965157478/5.876619966394154, max normalized residual=2.535697932194166E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS base-self-author
+TIME native rigid ms=3.160
+rigid-native-author native full BODY_check: 0 faults
+TIME self rigid ms=3003.992
+rigid-native-author received full BODY_check: 0 faults
+rigid-native-author PK mass: volume=1.010172994928065/1.01017299419267, area=5.876619966285979/5.876619962243561, max normalized residual=5.878495504693141E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0862729127413684E-12; source contact G1 samples=54
+PASS rigid-native-author
+TIME native rigid ms=3.346
+rigid-self-author native full BODY_check: 0 faults
+TIME self rigid ms=3016.871
+rigid-self-author received full BODY_check: 0 faults
+rigid-self-author PK mass: volume=1.0101729946138187/1.0101729945362135, area=5.876619964456685/5.8766199634189284, max normalized residual=1.9528236643891075E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0865771516069126E-12; source contact G1 samples=54
+PASS rigid-self-author
+TIME native mirror-scale ms=3.030
+mirror-scale-native-author native full BODY_check: 0 faults
+TIME self mirror-scale ms=3673.661
+mirror-scale-native-author received full BODY_check: 0 faults
+mirror-scale-native-author PK mass: volume=4.96297992380123/4.96297992343501, area=16.98343170158579/16.98343169872407, max normalized residual=2.923680792092056E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.8466416962980865E-12; source contact G1 samples=54
+PASS mirror-scale-native-author
+TIME native mirror-scale ms=3.197
+mirror-scale-self-author native full BODY_check: 0 faults
+TIME self mirror-scale ms=3649.355
+mirror-scale-self-author received full BODY_check: 0 faults
+mirror-scale-self-author PK mass: volume=4.962979922518409/4.962979918395013, area=16.983431697127717/16.983431683737525, max normalized residual=2.4787464303788863E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.8464519221729527E-12; source contact G1 samples=54
+PASS mirror-scale-self-author
+TIME native extended-base ms=3.164
+extended-base-native-author native full BODY_check: 0 faults
+TIME self extended-base ms=1847.559
+extended-base-native-author received full BODY_check: 0 faults
+extended-base-native-author PK mass: volume=1.021326184656591/1.0213261841228878, area=5.894296898865522/5.894296896142057, max normalized residual=3.9503158175813603E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6419088320565297E-12; source contact G1 samples=54
+PASS extended-base-native-author
+TIME native extended-base ms=3.110
+extended-base-self-author native full BODY_check: 0 faults
+TIME self extended-base ms=1797.062
+extended-base-self-author received full BODY_check: 0 faults
+extended-base-self-author PK mass: volume=1.0213262041126567/1.021326172152107, area=5.894297000507126/5.8942968319177576, max normalized residual=2.4453453083191373E-08
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6420198534206065E-12; source contact G1 samples=54
+PASS extended-base-self-author
+TIME native extended-rigid ms=3.458
+extended-rigid-native-author native full BODY_check: 0 faults
+TIME self extended-rigid ms=3134.089
+extended-rigid-native-author received full BODY_check: 0 faults
+extended-rigid-native-author PK mass: volume=1.0213261846647406/1.0213261873496924, area=5.894296901651188/5.8942969188038585, max normalized residual=2.4879506409189437E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6428708639319465E-12; source contact G1 samples=54
+PASS extended-rigid-native-author
+TIME native extended-rigid ms=3.204
+extended-rigid-self-author native full BODY_check: 0 faults
+TIME self extended-rigid ms=3284.108
+extended-rigid-self-author received full BODY_check: 0 faults
+extended-rigid-self-author PK mass: volume=1.0213262042031268/1.0213261752573841, area=5.894297003293354/5.894296854576194, max normalized residual=2.157104057066315E-08
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6425751262698158E-12; source contact G1 samples=54
+PASS extended-rigid-self-author
+TIME native extended-mirror-scale ms=3.210
+extended-mirror-scale-native-author native full BODY_check: 0 faults
+TIME self extended-mirror-scale ms=4126.072
+extended-mirror-scale-native-author received full BODY_check: 0 faults
+extended-mirror-scale-native-author PK mass: volume=5.017775515558026/5.017775610617537, area=17.03451796139078/17.03451825126775, max normalized residual=5.046381235126174E-08
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=3.4835876005778214E-13; source contact G1 samples=54
+PASS extended-mirror-scale-native-author
+TIME native extended-mirror-scale ms=3.230
+extended-mirror-scale-self-author native full BODY_check: 0 faults
+TIME self extended-mirror-scale ms=3983.950
+extended-mirror-scale-self-author received full BODY_check: 0 faults
+extended-mirror-scale-self-author PK mass: volume=5.017775544170613/5.017775548529946, area=17.034518045372852/17.0345180605908, max normalized residual=5.717834946390072E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=3.483599630751319E-13; source contact G1 samples=54
+PASS extended-mirror-scale-self-author
+TIME native uv-reversed ms=3.606
+uv-reversed-native-author native full BODY_check: 0 faults
+TIME self uv-reversed ms=1354.757
+uv-reversed-native-author received full BODY_check: 0 faults
+uv-reversed-native-author PK mass: volume=1.0101729950592828/1.0101729949355653, area=5.876619967033836/5.876619964539151, max normalized residual=3.6277784131547707E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311849907906E-12; source contact G1 samples=54
+PASS uv-reversed-native-author
+TIME native uv-reversed ms=3.269
+uv-reversed-self-author native full BODY_check: 0 faults
+TIME self uv-reversed ms=1291.965
+uv-reversed-self-author received full BODY_check: 0 faults
+uv-reversed-self-author PK mass: volume=1.0101729946303912/1.0101729914017297, area=5.876619964451987/5.8766199442608125, max normalized residual=2.936206313362788E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0863532303934934E-12; source contact G1 samples=54
+PASS uv-reversed-self-author
+TIME native uv-scaled ms=3.381
+uv-scaled-native-author native full BODY_check: 0 faults
+TIME self uv-scaled ms=1530.567
+uv-scaled-native-author received full BODY_check: 0 faults
+uv-scaled-native-author PK mass: volume=1.0101729949352753/1.0101729942059572, area=5.876619966281289/5.876619962291495, max normalized residual=5.801968705738838E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0863532310139873E-12; source contact G1 samples=54
+PASS uv-scaled-native-author
+TIME native uv-scaled ms=3.506
+uv-scaled-self-author native full BODY_check: 0 faults
+TIME self uv-scaled ms=1491.494
+uv-scaled-self-author received full BODY_check: 0 faults
+uv-scaled-self-author PK mass: volume=1.0101729947364266/1.0101729945607676, area=5.876619965064471/5.876619963466862, max normalized residual=3.129191404146531E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS uv-scaled-self-author
+TIME native tilted ms=3.323
+tilted-native-author native full BODY_check: 0 faults
+TIME self tilted ms=3158.352
+tilted-native-author received full BODY_check: 0 faults
+tilted-native-author PK mass: volume=1.0101729956009888/1.0101729947344391, area=5.8766199694519825/5.876619965284421, max normalized residual=6.060479458804491E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.086083900467385E-12; source contact G1 samples=54
+PASS tilted-native-author
+TIME native tilted ms=3.605
+tilted-self-author native full BODY_check: 0 faults
+TIME self tilted ms=3047.880
+tilted-self-author received full BODY_check: 0 faults
+tilted-self-author PK mass: volume=1.010172995279778/1.0101729951619167, area=5.8766199676226725/5.876619966459793, max normalized residual=1.6910627254242743E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.086083900467385E-12; source contact G1 samples=54
+PASS tilted-self-author
+TIME native extended-tilted ms=3.118
+extended-tilted-native-author native full BODY_check: 0 faults
+TIME self extended-tilted ms=3913.426
+extended-tilted-native-author received full BODY_check: 0 faults
+extended-tilted-native-author PK mass: volume=1.0213261845358321/1.0213261878979452, area=5.894296902464001/5.894296919953436, max normalized residual=2.536797448199054E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6397982046919446E-12; source contact G1 samples=54
+PASS extended-tilted-native-author
+TIME native extended-tilted ms=3.442
+extended-tilted-self-author native full BODY_check: 0 faults
+TIME self extended-tilted ms=3959.214
+extended-tilted-self-author received full BODY_check: 0 faults
+extended-tilted-self-author PK mass: volume=1.0213262063810353/1.0213261746035789, area=5.894297004106333/5.89429685572575, max normalized residual=2.152222094397191E-08
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6416826683141738E-12; source contact G1 samples=54
+PASS extended-tilted-self-author
+TIME native skew-base ms=0.808
+skew-base-native-author native full BODY_check: 0 faults
+TIME self skew-base ms=6.910
+skew-base-native-author received full BODY_check: 0 faults
+skew-base-native-author PK mass: volume=3.7355597000168075/3.7355597000178227, area=14.563206774190002/14.56320677417957, max normalized residual=7.34696388859829E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.577566798522237E-16; source contact G1 samples=54
+PASS skew-base-native-author
+TIME native skew-base ms=0.962
+skew-base-self-author native full BODY_check: 0 faults
+TIME self skew-base ms=0.508
+skew-base-self-author received full BODY_check: 0 faults
+skew-base-self-author PK mass: volume=3.735559699727261/3.735559699728276, area=14.563206773354151/14.563206773343719, max normalized residual=7.348792856690132E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=6.473657049138938E-16; source contact G1 samples=54
+PASS skew-base-self-author
+TIME native skew-rigid ms=0.783
+skew-rigid-native-author native full BODY_check: 0 faults
+TIME self skew-rigid ms=0.727
+skew-rigid-native-author received full BODY_check: 0 faults
+skew-rigid-native-author PK mass: volume=3.735559700024899/3.73555970002589, area=14.56320677418999/14.563206774179584, max normalized residual=7.045295616797268E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.831026719408895E-15; source contact G1 samples=54
+PASS skew-rigid-native-author
+TIME native skew-rigid ms=1.053
+skew-rigid-self-author native full BODY_check: 0 faults
+TIME self skew-rigid ms=0.492
+skew-rigid-self-author received full BODY_check: 0 faults
+skew-rigid-self-author PK mass: volume=3.735559699735543/3.735559699736527, area=14.563206773354151/14.563206773343731, max normalized residual=7.041908305416345E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.2560739669470201E-15; source contact G1 samples=54
+PASS skew-rigid-self-author
+TIME native skew-mirror-scale ms=0.895
+skew-mirror-scale-native-author native full BODY_check: 0 faults
+TIME self skew-mirror-scale ms=0.494
+skew-mirror-scale-native-author received full BODY_check: 0 faults
+skew-mirror-scale-native-author PK mass: volume=18.35280480624057/18.35280480627563, area=42.08766757782736/42.087667577853, max normalized residual=1.1626040182700484E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.3322676295501878E-15; source contact G1 samples=54
+PASS skew-mirror-scale-native-author
+TIME native skew-mirror-scale ms=0.813
+skew-mirror-scale-self-author native full BODY_check: 0 faults
+TIME self skew-mirror-scale ms=0.543
+skew-mirror-scale-self-author received full BODY_check: 0 faults
+skew-mirror-scale-self-author PK mass: volume=18.35280480473233/18.35280480476741, area=42.08766757526788/42.087667575293565, max normalized residual=1.1625516236762557E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.4217791915866692E-15; source contact G1 samples=54
+PASS skew-mirror-scale-self-author
+TIME native skew-tilted ms=0.836
+skew-tilted-native-author native full BODY_check: 0 faults
+TIME self skew-tilted ms=0.496
+skew-tilted-native-author received full BODY_check: 0 faults
+skew-tilted-native-author PK mass: volume=3.7355596999215233/3.7355597000173764, area=14.5632067740605/14.563206774179593, max normalized residual=3.763876154724978E-11
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.4217791915866692E-15; source contact G1 samples=54
+PASS skew-tilted-native-author
+TIME native skew-tilted ms=1.552
+skew-tilted-self-author native full BODY_check: 0 faults
+TIME self skew-tilted ms=0.445
+skew-tilted-self-author received full BODY_check: 0 faults
+skew-tilted-self-author PK mass: volume=3.7355596996329803/3.7355596997288343, area=14.563206773224644/14.563206773343731, max normalized residual=3.7637902289226916E-11
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=2.175583928816829E-15; source contact G1 samples=54
+PASS skew-tilted-self-author
+TIME native zero-single ms=0.816
+zero-single-native-author native full BODY_check: 0 faults
+TIME self zero-single ms=3.194
+zero-single-native-author received full BODY_check: 0 faults
+zero-single-native-author PK mass: volume=3.0943951023931953/3.0943951021921072, area=13.068583470577034/13.068583470367168, max normalized residual=3.324805979276914E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=5.551115123125783E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-native-author
+TIME native zero-single ms=0.861
+zero-single-self-author native full BODY_check: 0 faults
+TIME self zero-single ms=0.386
+zero-single-self-author received full BODY_check: 0 faults
+zero-single-self-author PK mass: volume=3.0943951023931953/3.094395102131898, area=13.068583470577034/13.06858347036717, max normalized residual=3.426577404270968E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=9.155133597044475E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-self-author
+TIME native zero-double ms=0.806
+zero-double-native-author native full BODY_check: 0 faults
+TIME self zero-double ms=0.373
+zero-double-native-author received full BODY_check: 0 faults
+zero-double-native-author PK mass: volume=1.3089969389957472/1.3089969393779524, area=7.497787143782139/7.497787143572273, max normalized residual=3.7776494801400953E-10
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=4.440892098500626E-16; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-double-native-author
+TIME native zero-double ms=0.782
+zero-double-self-author native full BODY_check: 0 faults
+TIME self zero-double ms=0.311
+zero-double-self-author received full BODY_check: 0 faults
+zero-double-self-author PK mass: volume=1.3089969389957472/1.3089969386033162, area=7.497787143782139/7.497787143572273, max normalized residual=5.437538243028357E-10
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=4.965068306494546E-16; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-double-self-author
+TIME native zero-all ms=0.820
+zero-all-native-author native full BODY_check: 0 faults
+TIME self zero-all ms=0.267
+zero-all-native-author received full BODY_check: 0 faults
+zero-all-native-author PK mass: volume=0.5235987755982988/0.5235987757891618, area=3.9269908169872414/3.9269908167773764, max normalized residual=5.880064981930935E-10
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-all-native-author
+TIME native zero-all ms=0.823
+zero-all-self-author native full BODY_check: 0 faults
+TIME self zero-all ms=0.277
+zero-all-self-author received full BODY_check: 0 faults
+zero-all-self-author PK mass: volume=0.5235987755982988/0.5235987757891619, area=3.9269908169872414/3.9269908167773764, max normalized residual=6.949167705918378E-10
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-all-self-author
+TIME native zero-near ms=0.725
+zero-near-native-author native full BODY_check: 0 faults
+TIME self zero-near ms=0.408
+zero-near-native-author received full BODY_check: 0 faults
+zero-near-native-author PK mass: volume=0.523599560996322/0.5235995611871842, area=3.9269936753938004/3.926993675183934, max normalized residual=5.880036366279033E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.710277376051325E-16; source contact G1 samples=54
+PASS zero-near-native-author
+TIME native zero-near ms=0.777
+zero-near-self-author native full BODY_check: 0 faults
+TIME self zero-near ms=0.372
+zero-near-self-author received full BODY_check: 0 faults
+zero-near-self-author PK mass: volume=0.523599560996322/0.5235995611871836, area=3.9269936753938004/3.926993675183937, max normalized residual=6.949133536026962E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.710277376051325E-16; source contact G1 samples=54
+PASS zero-near-self-author
+TIME native zero-single-mirror-scale ms=0.897
+zero-single-mirror-scale-native-author native full BODY_check: 0 faults
+TIME self zero-single-mirror-scale ms=0.371
+zero-single-mirror-scale-native-author received full BODY_check: 0 faults
+zero-single-mirror-scale-native-author PK mass: volume=15.202763138057769/15.202763137414326, area=37.76820622996763/37.76820622936113, max normalized residual=1.841080830317968E-09
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=1.8619006149354546E-15; source contact G1 samples=18
+PASS zero-single-mirror-scale-native-author
+TIME native zero-single-mirror-scale ms=0.762
+zero-single-mirror-scale-self-author native full BODY_check: 0 faults
+TIME self zero-single-mirror-scale ms=0.389
+zero-single-mirror-scale-self-author received full BODY_check: 0 faults
+zero-single-mirror-scale-self-author PK mass: volume=15.202763138057762/15.202763136615658, area=37.76820622996762/37.76820622936112, max normalized residual=2.4200787310184174E-09
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=1.8444410139024814E-15; source contact G1 samples=18
+PASS zero-single-mirror-scale-self-author
+TIME native zero-double-tilted ms=0.826
+zero-double-tilted-native-author native full BODY_check: 0 faults
+TIME self zero-double-tilted ms=0.305
+zero-double-tilted-native-author received full BODY_check: 0 faults
+zero-double-tilted-native-author PK mass: volume=1.3089969393295064/1.308996939117787, area=7.4977871422303295/7.497787143572269, max normalized residual=6.368405233702703E-10
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=1.2560739669470201E-15; source contact G1 samples=0
+PASS zero-double-tilted-native-author
+TIME native zero-double-tilted ms=0.868
+zero-double-tilted-self-author native full BODY_check: 0 faults
+TIME self zero-double-tilted ms=0.316
+zero-double-tilted-self-author received full BODY_check: 0 faults
+zero-double-tilted-self-author PK mass: volume=1.3089969393295033/1.3089969386032156, area=7.497787142230317/7.497787143572272, max normalized residual=1.2391722508770725E-09
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=1.1102230246251565E-15; source contact G1 samples=0
+PASS zero-double-tilted-self-author
+TIME native zero-all-mirror-scale ms=0.831
+zero-all-mirror-scale-native-author native full BODY_check: 0 faults
+TIME self zero-all-mirror-scale ms=0.282
+zero-all-mirror-scale-native-author received full BODY_check: 0 faults
+zero-all-mirror-scale-native-author PK mass: volume=2.57244078451444/2.572440785796656, area=11.349003461093123/11.349003460486621, max normalized residual=2.8263875578014897E-09
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS zero-all-mirror-scale-native-author
+TIME native zero-all-mirror-scale ms=0.799
+zero-all-mirror-scale-self-author native full BODY_check: 0 faults
+TIME self zero-all-mirror-scale ms=0.306
+zero-all-mirror-scale-self-author received full BODY_check: 0 faults
+zero-all-mirror-scale-self-author PK mass: volume=2.5724407845144417/2.5724407852938045, area=11.349003461093126/11.349003460486621, max normalized residual=2.7833189527554014E-09
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS zero-all-mirror-scale-self-author
+
+FILE temp_docs/m345-final-order1.log SHA256=9cb91a3ca59905788754e99b510fc9a52da706b7dc47d28f257124367f9e035b
+TIME native base ms=4.441
+base-order1-native-author native full BODY_check: 0 faults
+TIME self base ms=1978.730
+base-order1-native-author received full BODY_check: 0 faults
+base-order1-native-author PK mass: volume=1.0101729950300065/1.0101729946558744, area=5.876619966892573/5.876619965179367, max normalized residual=2.491348345045888E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+PASS base-order1-native-author
+TIME native base ms=3.263
+base-order1-self-author native full BODY_check: 0 faults
+TIME self base ms=1613.498
+base-order1-self-author received full BODY_check: 0 faults
+base-order1-self-author PK mass: volume=1.0101729947510274/1.010172995015005, area=5.876619965157478/5.876619966394154, max normalized residual=2.535753947797026E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS base-order1-self-author
+TIME native extended-base ms=5.038
+extended-base-order1-native-author native full BODY_check: 0 faults
+TIME self extended-base ms=2034.321
+extended-base-order1-native-author received full BODY_check: 0 faults
+extended-base-order1-native-author PK mass: volume=1.021326184656591/1.021326184115207, area=5.894296898865521/5.894296896079168, max normalized residual=4.0415337649773244E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6419088320565297E-12; source contact G1 samples=54
+PASS extended-base-order1-native-author
+TIME native extended-base ms=3.156
+extended-base-order1-self-author native full BODY_check: 0 faults
+TIME self extended-base ms=1864.886
+extended-base-order1-self-author received full BODY_check: 0 faults
+extended-base-order1-self-author PK mass: volume=1.0213262041126567/1.021326172152107, area=5.894297000507126/5.8942968319177576, max normalized residual=2.4453453083191373E-08
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6420198534206065E-12; source contact G1 samples=54
+PASS extended-base-order1-self-author
+TIME native skew-base ms=0.825
+skew-base-order1-native-author native full BODY_check: 0 faults
+TIME self skew-base ms=6.809
+skew-base-order1-native-author received full BODY_check: 0 faults
+skew-base-order1-native-author PK mass: volume=3.7355597000168075/3.7355597000178227, area=14.563206774190004/14.56320677417957, max normalized residual=7.347878372527665E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.577566798522237E-16; source contact G1 samples=54
+PASS skew-base-order1-native-author
+TIME native skew-base ms=0.896
+skew-base-order1-self-author native full BODY_check: 0 faults
+TIME self skew-base ms=0.533
+skew-base-order1-self-author received full BODY_check: 0 faults
+skew-base-order1-self-author PK mass: volume=3.735559699727261/3.735559699728276, area=14.563206773354151/14.563206773343719, max normalized residual=7.348792856690132E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=6.473657049138938E-16; source contact G1 samples=54
+PASS skew-base-order1-self-author
+TIME native zero-single ms=0.840
+zero-single-order1-native-author native full BODY_check: 0 faults
+TIME self zero-single ms=3.364
+zero-single-order1-native-author received full BODY_check: 0 faults
+zero-single-order1-native-author PK mass: volume=3.0943951023931953/3.0943951029065335, area=13.068583470577034/13.06858347036717, max normalized residual=2.908710272071212E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=4.440892098500626E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order1-native-author
+TIME native zero-single ms=0.829
+zero-single-order1-self-author native full BODY_check: 0 faults
+TIME self zero-single ms=0.416
+zero-single-order1-self-author received full BODY_check: 0 faults
+zero-single-order1-self-author PK mass: volume=3.0943951023931953/3.094395102131898, area=13.068583470577034/13.06858347036717, max normalized residual=3.426577404270968E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=9.155133597044475E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order1-self-author
+TIME native zero-double ms=0.774
+zero-double-order1-native-author native full BODY_check: 0 faults
+TIME self zero-double ms=0.341
+zero-double-order1-native-author received full BODY_check: 0 faults
+zero-double-order1-native-author PK mass: volume=1.3089969389957472/1.308996939317743, area=7.497787143782139/7.497787143572273, max normalized residual=3.6513361573528915E-10
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=4.965068306494546E-16; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-double-order1-native-author
+TIME native zero-double ms=0.799
+zero-double-order1-self-author native full BODY_check: 0 faults
+TIME self zero-double ms=0.386
+zero-double-order1-self-author received full BODY_check: 0 faults
+zero-double-order1-self-author PK mass: volume=1.3089969389957472/1.3089969386033162, area=7.497787143782139/7.497787143572273, max normalized residual=5.437538243028357E-10
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=4.965068306494546E-16; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-double-order1-self-author
+TIME native zero-all ms=0.841
+zero-all-order1-native-author native full BODY_check: 0 faults
+TIME self zero-all ms=0.292
+zero-all-order1-native-author received full BODY_check: 0 faults
+zero-all-order1-native-author PK mass: volume=0.5235987755982988/0.523598775789162, area=3.9269908169872414/3.9269908167773777, max normalized residual=5.880065665145104E-10
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-all-order1-native-author
+TIME native zero-all ms=0.778
+zero-all-order1-self-author native full BODY_check: 0 faults
+TIME self zero-all ms=0.310
+zero-all-order1-self-author received full BODY_check: 0 faults
+zero-all-order1-self-author PK mass: volume=0.5235987755982988/0.5235987757891619, area=3.9269908169872414/3.9269908167773764, max normalized residual=6.949167705918378E-10
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-all-order1-self-author
+
+FILE temp_docs/m345-final-order2.log SHA256=5eea9d14265baedc6b500ad5b787c26d4f6a8f12d66b73d550334c6376889189
+TIME native base ms=4.132
+base-order2-native-author native full BODY_check: 0 faults
+TIME self base ms=1815.436
+base-order2-native-author received full BODY_check: 0 faults
+base-order2-native-author PK mass: volume=1.0101729950300062/1.0101729946558746, area=5.876619966892573/5.876619965179367, max normalized residual=2.491348345045888E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+PASS base-order2-native-author
+TIME native base ms=3.163
+base-order2-self-author native full BODY_check: 0 faults
+TIME self base ms=1332.578
+base-order2-self-author received full BODY_check: 0 faults
+base-order2-self-author PK mass: volume=1.0101729947510274/1.0101729950140577, area=5.876619965157478/5.87661996638871, max normalized residual=2.531736727126813E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS base-order2-self-author
+TIME native extended-base ms=3.120
+extended-base-order2-native-author native full BODY_check: 0 faults
+TIME self extended-base ms=1748.216
+extended-base-order2-native-author received full BODY_check: 0 faults
+extended-base-order2-native-author PK mass: volume=1.021326184656591/1.0213261841152068, area=5.894296898865521/5.894296896079168, max normalized residual=4.0415337649773244E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6419088320565297E-12; source contact G1 samples=54
+PASS extended-base-order2-native-author
+TIME native extended-base ms=2.948
+extended-base-order2-self-author native full BODY_check: 0 faults
+TIME self extended-base ms=1761.358
+extended-base-order2-self-author received full BODY_check: 0 faults
+extended-base-order2-self-author PK mass: volume=1.0213262041126567/1.0213261721496916, area=5.894297000507126/5.89429683190718, max normalized residual=2.4454987295715063E-08
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.6420198534206065E-12; source contact G1 samples=54
+PASS extended-base-order2-self-author
+TIME native skew-base ms=0.771
+skew-base-order2-native-author native full BODY_check: 0 faults
+TIME self skew-base ms=6.649
+skew-base-order2-native-author received full BODY_check: 0 faults
+skew-base-order2-native-author PK mass: volume=3.7355597000168075/3.7355597000239675, area=14.563206774190002/14.56320677419889, max normalized residual=5.63751907941771E-12
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.441197019893352E-16; source contact G1 samples=54
+PASS skew-base-order2-native-author
+TIME native skew-base ms=0.842
+skew-base-order2-self-author native full BODY_check: 0 faults
+TIME self skew-base ms=0.556
+skew-base-order2-self-author received full BODY_check: 0 faults
+skew-base-order2-self-author PK mass: volume=3.735559699727261/3.735559699734422, area=14.563206773354151/14.563206773363042, max normalized residual=5.637793424775344E-12
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=7.108895957933346E-16; source contact G1 samples=54
+PASS skew-base-order2-self-author
+TIME native zero-single ms=0.824
+zero-single-order2-native-author native full BODY_check: 0 faults
+TIME self zero-single ms=3.078
+zero-single-order2-native-author received full BODY_check: 0 faults
+zero-single-order2-native-author PK mass: volume=3.0943951023931953/3.094395102906534, area=13.068583470577034/13.06858347036717, max normalized residual=2.9087101417754535E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=4.440892098500626E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order2-native-author
+TIME native zero-single ms=0.807
+zero-single-order2-self-author native full BODY_check: 0 faults
+TIME self zero-single ms=0.401
+zero-single-order2-self-author received full BODY_check: 0 faults
+zero-single-order2-self-author PK mass: volume=3.0943951023931953/3.0943951029065335, area=13.068583470577034/13.068583470367168, max normalized residual=2.9087100114796943E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=9.155133597044475E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order2-self-author
+TIME native zero-double ms=0.826
+zero-double-order2-native-author native full BODY_check: 0 faults
+TIME self zero-double ms=0.328
+zero-double-order2-native-author received full BODY_check: 0 faults
+zero-double-order2-native-author PK mass: volume=1.3089969389957472/1.308996939317743, area=7.497787143782139/7.497787143572273, max normalized residual=3.6513361573528915E-10
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=4.965068306494546E-16; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-double-order2-native-author
+TIME native zero-double ms=0.831
+zero-double-order2-self-author native full BODY_check: 0 faults
+TIME self zero-double ms=0.358
+zero-double-order2-self-author received full BODY_check: 0 faults
+zero-double-order2-self-author PK mass: volume=1.3089969389957472/1.3089969393177427, area=7.497787143782139/7.497787143572273, max normalized residual=3.6513365472328927E-10
+PASS radius/center and 27 spherical interface position samples; 9 live-band G1 samples
+PASS independent finite band geometry samples=36, max distance=4.965068306494546E-16; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-double-order2-self-author
+TIME native zero-all ms=0.768
+zero-all-order2-native-author native full BODY_check: 0 faults
+TIME self zero-all ms=0.292
+zero-all-order2-native-author received full BODY_check: 0 faults
+zero-all-order2-native-author PK mass: volume=0.5235987755982988/0.5235987757891621, area=3.9269908169872414/3.9269908167773777, max normalized residual=5.880064981930935E-10
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-all-order2-native-author
+TIME native zero-all ms=0.700
+zero-all-order2-self-author native full BODY_check: 0 faults
+TIME self zero-all ms=0.248
+zero-all-order2-self-author received full BODY_check: 0 faults
+zero-all-order2-self-author PK mass: volume=0.5235987755982988/0.523598775789162, area=3.9269908169872414/3.9269908167773773, max normalized residual=5.880065665145104E-10
+PASS radius/center and 27 spherical interface position samples; 0 live-band G1 samples
+PASS independent finite band geometry samples=0, max distance=0; source contact G1 samples=0
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-all-order2-self-author
+
+FILE temp_docs/m345-final-order3.log SHA256=3cbe03b616c22e3c8edbc66d4b7fa8556943ee40ffeeab2e5fc7ce7869d82c1b
+TIME native base ms=26.609
+base-order3-native-author native full BODY_check: 0 faults
+TIME self base ms=5885.257
+base-order3-native-author received full BODY_check: 0 faults
+base-order3-native-author PK mass: volume=1.0101729950300065/1.0101729946558744, area=5.876619966892573/5.876619965179367, max normalized residual=2.491348345045888E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+PASS base-order3-native-author
+TIME native base ms=10.102
+base-order3-self-author native full BODY_check: 0 faults
+TIME self base ms=2900.723
+base-order3-self-author received full BODY_check: 0 faults
+base-order3-self-author PK mass: volume=1.0101729947510274/1.010172995015005, area=5.876619965157478/5.876619966394154, max normalized residual=2.5356976948399165E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS base-order3-self-author
+TIME native skew-base ms=1.407
+skew-base-order3-native-author native full BODY_check: 0 faults
+TIME self skew-base ms=14.046
+skew-base-order3-native-author received full BODY_check: 0 faults
+skew-base-order3-native-author PK mass: volume=3.7355597000168075/3.7355597000178227, area=14.563206774190004/14.56320677417957, max normalized residual=7.347878372527665E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.577566798522237E-16; source contact G1 samples=54
+PASS skew-base-order3-native-author
+TIME native skew-base ms=1.301
+skew-base-order3-self-author native full BODY_check: 0 faults
+TIME self skew-base ms=1.044
+skew-base-order3-self-author received full BODY_check: 0 faults
+skew-base-order3-self-author PK mass: volume=3.735559699727261/3.735559699728276, area=14.563206773354151/14.563206773343719, max normalized residual=7.348792856690132E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=6.473657049138938E-16; source contact G1 samples=54
+PASS skew-base-order3-self-author
+TIME native zero-single ms=1.352
+zero-single-order3-native-author native full BODY_check: 0 faults
+TIME self zero-single ms=4.758
+zero-single-order3-native-author received full BODY_check: 0 faults
+zero-single-order3-native-author PK mass: volume=3.0943951023931953/3.0943951029065335, area=13.068583470577034/13.06858347036717, max normalized residual=2.9087101417754535E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=4.440892098500626E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order3-native-author
+TIME native zero-single ms=1.359
+zero-single-order3-self-author native full BODY_check: 0 faults
+TIME self zero-single ms=0.690
+zero-single-order3-self-author received full BODY_check: 0 faults
+zero-single-order3-self-author PK mass: volume=3.0943951023931953/3.094395102131898, area=13.068583470577034/13.06858347036717, max normalized residual=3.426577404270968E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=9.155133597044475E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order3-self-author
+
+FILE temp_docs/m345-final-order4.log SHA256=9797a93466b566a9934795a0455a10ab0cd5413b5b7ee76b1e85d7f94f97e569
+TIME native base ms=12.426
+base-order4-native-author native full BODY_check: 0 faults
+TIME self base ms=5266.163
+base-order4-native-author received full BODY_check: 0 faults
+base-order4-native-author PK mass: volume=1.0101729950300065/1.0101729946558744, area=5.876619966892573/5.876619965179367, max normalized residual=2.491348345045888E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+PASS base-order4-native-author
+TIME native base ms=8.926
+base-order4-self-author native full BODY_check: 0 faults
+TIME self base ms=4530.747
+base-order4-self-author received full BODY_check: 0 faults
+base-order4-self-author PK mass: volume=1.0101729947510274/1.0101729950140579, area=5.876619965157478/5.87661996638871, max normalized residual=2.531727945019585E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS base-order4-self-author
+TIME native skew-base ms=1.309
+skew-base-order4-native-author native full BODY_check: 0 faults
+TIME self skew-base ms=18.870
+skew-base-order4-native-author received full BODY_check: 0 faults
+skew-base-order4-native-author PK mass: volume=3.7355597000168075/3.7355597000239675, area=14.563206774190004/14.56320677419889, max normalized residual=5.637610527810647E-12
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.441197019893352E-16; source contact G1 samples=54
+PASS skew-base-order4-native-author
+TIME native skew-base ms=1.307
+skew-base-order4-self-author native full BODY_check: 0 faults
+TIME self skew-base ms=0.665
+skew-base-order4-self-author received full BODY_check: 0 faults
+skew-base-order4-self-author PK mass: volume=3.735559699727261/3.735559699734422, area=14.563206773354151/14.563206773363042, max normalized residual=5.637793424775344E-12
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=7.108895957933346E-16; source contact G1 samples=54
+PASS skew-base-order4-self-author
+TIME native zero-single ms=6.940
+zero-single-order4-native-author native full BODY_check: 0 faults
+TIME self zero-single ms=14.037
+zero-single-order4-native-author received full BODY_check: 0 faults
+zero-single-order4-native-author PK mass: volume=3.0943951023931953/3.094395102906534, area=13.068583470577034/13.06858347036717, max normalized residual=2.908710272071212E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=4.440892098500626E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order4-native-author
+TIME native zero-single ms=1.407
+zero-single-order4-self-author native full BODY_check: 0 faults
+TIME self zero-single ms=0.704
+zero-single-order4-self-author received full BODY_check: 0 faults
+zero-single-order4-self-author PK mass: volume=3.0943951023931953/3.0943951029065335, area=13.068583470577034/13.068583470367168, max normalized residual=2.9087101417754535E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=9.155133597044475E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order4-self-author
+
+FILE temp_docs/m345-final-order5.log SHA256=9814bdc9b59238a91d4456d6718843f1497271bd56322af3eaecb9f10a936dc7
+TIME native base ms=4.441
+base-order5-native-author native full BODY_check: 0 faults
+TIME self base ms=1989.547
+base-order5-native-author received full BODY_check: 0 faults
+base-order5-native-author PK mass: volume=1.0101729950300062/1.0101729946601947, area=5.876619966892573/5.87661996521879, max normalized residual=2.4340197627967453E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+PASS base-order5-native-author
+TIME native base ms=3.303
+base-order5-self-author native full BODY_check: 0 faults
+TIME self base ms=1498.475
+base-order5-self-author received full BODY_check: 0 faults
+base-order5-self-author PK mass: volume=1.0101729947510272/1.0101729950150047, area=5.876619965157478/5.876619966394154, max normalized residual=2.535697932194166E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS base-order5-self-author
+TIME native skew-base ms=0.817
+skew-base-order5-native-author native full BODY_check: 0 faults
+TIME self skew-base ms=7.171
+skew-base-order5-native-author received full BODY_check: 0 faults
+skew-base-order5-native-author PK mass: volume=3.7355597000168075/3.7355597000178227, area=14.563206774190002/14.56320677417957, max normalized residual=7.34696388859829E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=4.577566798522237E-16; source contact G1 samples=54
+PASS skew-base-order5-native-author
+TIME native skew-base ms=0.824
+skew-base-order5-self-author native full BODY_check: 0 faults
+TIME self skew-base ms=0.706
+skew-base-order5-self-author received full BODY_check: 0 faults
+skew-base-order5-self-author PK mass: volume=3.735559699727261/3.735559699728276, area=14.563206773354151/14.563206773343719, max normalized residual=7.348792856690132E-13
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=6.473657049138938E-16; source contact G1 samples=54
+PASS skew-base-order5-self-author
+TIME native zero-single ms=0.845
+zero-single-order5-native-author native full BODY_check: 0 faults
+TIME self zero-single ms=3.254
+zero-single-order5-native-author received full BODY_check: 0 faults
+zero-single-order5-native-author PK mass: volume=3.0943951023931953/3.0943951021921072, area=13.068583470577034/13.068583470367168, max normalized residual=3.3248049137972096E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=5.551115123125783E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order5-native-author
+TIME native zero-single ms=0.893
+zero-single-order5-self-author native full BODY_check: 0 faults
+TIME self zero-single ms=0.594
+zero-single-order5-self-author received full BODY_check: 0 faults
+zero-single-order5-self-author PK mass: volume=3.0943951023931953/3.094395102131898, area=13.068583470577034/13.06858347036717, max normalized residual=3.426577404270968E-10
+PASS radius/center and 27 spherical interface position samples; 18 live-band G1 samples
+PASS independent finite band geometry samples=72, max distance=9.155133597044475E-16; source contact G1 samples=18
+PASS extinction XT reload/delete and interior/removed-corner/outside classification
+PASS zero-single-order5-self-author
+
+FILE temp_docs/m345-final-corner-full-chain.log SHA256=29b4e6dbe6adb71dc647ea057cd1a28d71b6f08fa933434827ff1223963efd46
+TIME native base ms=7.216
+base-native-author native full BODY_check: 0 faults
+TIME self base ms=4809.472
+base-native-author received full BODY_check: 0 faults
+base-native-author PK mass: volume=1.0101729950300062/1.0101729946601947, area=5.876619966892573/5.87661996521879, max normalized residual=2.4340197627967453E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+TIME self Sphere/Blend cut 30999.9ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME PK Sphere/Blend cut 1.4ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+base-native-author cut received full BODY_check: 0 faults
+base-native-author cut reference full BODY_check: 0 faults
+base-native-author sphere-band-cut PK mass: volume=0.9638022086483938/0.9638022079277682, area=5.745885214420273/5.745885211064784, max normalized residual=4.97412735787612E-10
+PASS reloaded Sphere/Blend crossing consumer and 5 material classifications base-native-author
+TIME self Sphere/Blend cut 7032.7ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME PK Sphere/Blend cut 1.3ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME native new curved edge r=.025 3.0ms error=0,count=1,fault=18391,stage=None,domain=Face/0/NotRun
+base-native-author native re-fillet full BODY_check: 0 faults
+TIME self new curved edge r=.025 6098.1ms error=0,count=1,fault=18391,stage=Release,domain=Complete/841/Success
+base-native-author refillet received full BODY_check: 0 faults
+base-native-author refillet reference full BODY_check: 0 faults
+base-native-author cut-new-edge-refillet PK mass: volume=0.8997163878317871/0.8997163867896705, area=6.012447599305636/6.0124475937329915, max normalized residual=7.946789603919621E-10
+PASS corner -> reload -> Sphere/Blend cut -> second cut -> new edge fillet base-native-author
+PASS base-native-author
+TIME native base ms=3.256
+base-self-author native full BODY_check: 0 faults
+TIME self base ms=1371.309
+base-self-author received full BODY_check: 0 faults
+base-self-author PK mass: volume=1.0101729947510274/1.010172995015005, area=5.876619965157478/5.876619966394154, max normalized residual=2.535697932194166E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+TIME self Sphere/Blend cut 24969.4ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME PK Sphere/Blend cut 1.3ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+base-self-author cut received full BODY_check: 0 faults
+base-self-author cut reference full BODY_check: 0 faults
+base-self-author sphere-band-cut PK mass: volume=0.9638022081444928/0.9638022082960793, area=5.745885211472887/5.74588521225714, max normalized residual=2.1413691081808481E-10
+PASS reloaded Sphere/Blend crossing consumer and 5 material classifications base-self-author
+TIME self Sphere/Blend cut 6388.5ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME PK Sphere/Blend cut 1.3ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME native new curved edge r=.025 3.3ms error=0,count=1,fault=18391,stage=Release,domain=Complete/841/Success
+base-self-author native re-fillet full BODY_check: 0 faults
+TIME self new curved edge r=.025 5914.8ms error=0,count=1,fault=18391,stage=Release,domain=Complete/2444/Success
+base-self-author refillet received full BODY_check: 0 faults
+base-self-author refillet reference full BODY_check: 0 faults
+base-self-author cut-new-edge-refillet PK mass: volume=0.8997163868627067/0.8997163871579819, area=6.012447589744359/6.012447594925347, max normalized residual=7.388273518899415E-10
+PASS corner -> reload -> Sphere/Blend cut -> second cut -> new edge fillet base-self-author
+PASS base-self-author
+
+FILE temp_docs/m345-corner-provenance-oracle.log SHA256=0780e6304c950403160765491820b0bb6d0e56a4f3d2302a217cb3b1c3cd7fef
+TIME native base ms=4.179
+base-native-author native full BODY_check: 0 faults
+TIME self base ms=1789.229
+base-native-author received full BODY_check: 0 faults
+base-native-author PK mass: volume=1.0101729950300062/1.0101729946601947, area=5.876619966892573/5.87661996521879, max normalized residual=2.4340197627967453E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311857887316E-12; source contact G1 samples=54
+base-native-author lifecycle received full BODY_check: 0 faults
+base-native-author lifecycle native full BODY_check: 0 faults
+base-native-author lifecycle PK mass: volume=8.081383960024999/8.081383941679002, area=23.506479868701085/23.506479809841828, max normalized residual=6.450112071188396E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=2.1720405069710913E-12; source contact G1 samples=54
+PASS reload/copy/delete/mirror-scale corner lifecycle base-native-author
+TIME self Sphere/Blend cut 16540.8ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME PK Sphere/Blend cut 1.3ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+base-native-author cut received full BODY_check: 0 faults
+base-native-author cut reference full BODY_check: 0 faults
+base-native-author sphere-band-cut PK mass: volume=0.9638022086483938/0.9638022070410468, area=5.745885214420272/5.745885206447732, max normalized residual=1.1818374769407967E-09
+PASS reloaded Sphere/Blend crossing consumer and 5 material classifications base-native-author
+PASS base-native-author
+TIME native base ms=4.329
+base-self-author native full BODY_check: 0 faults
+TIME self base ms=1406.530
+base-self-author received full BODY_check: 0 faults
+base-self-author PK mass: volume=1.0101729947510274/1.010172995015005, area=5.876619965157478/5.876619966394154, max normalized residual=2.535697932194166E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+base-self-author lifecycle received full BODY_check: 0 faults
+base-self-author lifecycle native full BODY_check: 0 faults
+base-self-author lifecycle PK mass: volume=8.081383934949754/8.081383935387624, area=23.50647980165712/23.50647979472039, max normalized residual=7.441454733726529E-09
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=2.172263277860794E-12; source contact G1 samples=54
+PASS reload/copy/delete/mirror-scale corner lifecycle base-self-author
+TIME self Sphere/Blend cut 15681.0ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+TIME PK Sphere/Blend cut 1.2ms,error=0,stage=Publish,face=21,sheet=SurfaceInverse
+base-self-author cut received full BODY_check: 0 faults
+base-self-author cut reference full BODY_check: 0 faults
+base-self-author sphere-band-cut PK mass: volume=0.9638022081444928/0.9638022077554274, area=5.745885211472887/5.74588520883575, max normalized residual=3.9092523049820433E-10
+PASS reloaded Sphere/Blend crossing consumer and 5 material classifications base-self-author
+PASS base-self-author
+
+FILE temp_docs/m345-performance-final-uncached.log SHA256=1b2b049d308f745bd5407807314eb1b8af39cfd25474a4b8283bc956aa39c382
+ROUND 1 chain-3-base-pk-source bound-cache=False spline-reuse=True
+TIME FixBlends own=True ms=2109.393
+PROFILE operation=FixBlends elapsed-ms=2103.123, pairs=0, ssi-cells=0, root-cells=651, roots=11, budget-failures=0, winding=30, bound-requests=2162, bound-evaluations=1601, cache-hits=0, bound-ms=1007.023
+TIME FixBlends own=False ms=4.362
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.025097781737099, area=5.977972246023245/5.977972243935576, max normalized residual=2.99179852107527E-10
+TIME Boolean own=True ms=12678.370
+PROFILE operation=Boolean elapsed-ms=12651.713, pairs=54, ssi-cells=150, root-cells=5601, roots=77, budget-failures=0, winding=179, bound-requests=16499, bound-evaluations=9858, cache-hits=0, bound-ms=6236.912
+TIME Boolean own=False ms=1.727
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027140004, area=4.236492423395728/4.236492416727825, max normalized residual=1.2733530431245046E-09
+PASS chain-3-base-pk-source
+ROUND 2 chain-3-base-pk-source bound-cache=False spline-reuse=True
+TIME FixBlends own=True ms=1632.649
+PROFILE operation=FixBlends elapsed-ms=1632.518, pairs=0, ssi-cells=0, root-cells=651, roots=11, budget-failures=0, winding=30, bound-requests=2162, bound-evaluations=1601, cache-hits=0, bound-ms=947.260
+TIME FixBlends own=False ms=4.155
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.025097781737099, area=5.977972246023245/5.977972243935576, max normalized residual=2.99179852107527E-10
+TIME Boolean own=True ms=12342.909
+PROFILE operation=Boolean elapsed-ms=12342.838, pairs=54, ssi-cells=150, root-cells=5601, roots=77, budget-failures=0, winding=179, bound-requests=16499, bound-evaluations=9858, cache-hits=0, bound-ms=6117.630
+TIME Boolean own=False ms=1.477
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027140004, area=4.236492423395728/4.236492416727825, max normalized residual=1.2733530431245046E-09
+PASS chain-3-base-pk-source
+
+FILE temp_docs/m345-performance-final-cached.log SHA256=3e899b39d756ccef6459424a3041bd3b38556214ea942dd719fa467ade669296
+ROUND 1 chain-3-base-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=2111.734
+PROFILE operation=FixBlends elapsed-ms=2105.441, pairs=0, ssi-cells=0, root-cells=651, roots=11, budget-failures=0, winding=30, bound-requests=2162, bound-evaluations=1547, cache-hits=54, bound-ms=991.847
+TIME FixBlends own=False ms=4.361
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.025097781737099, area=5.977972246023245/5.977972243935576, max normalized residual=2.99179852107527E-10
+TIME Boolean own=True ms=10057.196
+PROFILE operation=Boolean elapsed-ms=10030.700, pairs=54, ssi-cells=150, root-cells=5601, roots=77, budget-failures=0, winding=179, bound-requests=16499, bound-evaluations=5055, cache-hits=4803, bound-ms=3532.564
+TIME Boolean own=False ms=1.624
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027140004, area=4.236492423395728/4.236492416727825, max normalized residual=1.2733530431245046E-09
+PASS chain-3-base-pk-source
+ROUND 2 chain-3-base-pk-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1594.366
+PROFILE operation=FixBlends elapsed-ms=1594.260, pairs=0, ssi-cells=0, root-cells=651, roots=11, budget-failures=0, winding=30, bound-requests=2162, bound-evaluations=1547, cache-hits=54, bound-ms=912.646
+TIME FixBlends own=False ms=3.728
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.025097781737099, area=5.977972246023245/5.977972243935576, max normalized residual=2.99179852107527E-10
+TIME Boolean own=True ms=9720.022
+PROFILE operation=Boolean elapsed-ms=9719.941, pairs=54, ssi-cells=150, root-cells=5601, roots=77, budget-failures=0, winding=179, bound-requests=16499, bound-evaluations=5044, cache-hits=4814, bound-ms=3459.423
+TIME Boolean own=False ms=1.565
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027140004, area=4.236492423395728/4.236492416727825, max normalized residual=1.2733530431245046E-09
+PASS chain-3-base-pk-source
+
+FILE temp_docs/m345-final-production-build.log SHA256=ec735c4d5eee9aaff1f13e7b15dcd74af49bcc642dee6c9548839588438b8729
+  Function catalog: 175 implemented dispatch descriptors verified.
+  allocation IL guard: checked 2422 methods
+  allocation IL guard: CLEAN
+
+Native C# source fingerprints (excluding bin/obj):
+edd37586f99a8f2e1aa52b109b6da48c5e8b99f7ec93c9c5c9325a883d263541 src/ProjectGmKernel.Native/Computation/AlgorithmStatus.cs
+8ea68dff5ac6c938e6f66db89266479788c6cf43b46b6b0cb1e01da0d38ff2fd src/ProjectGmKernel.Native/Computation/Numerics/BlockSchurSolve.cs
+2f4d84d1552adb522f943866711cfcd9f4984361370e96ddc4f343762f83260a src/ProjectGmKernel.Native/Computation/Numerics/IntervalDual.cs
+0209f70d1017a28f4fee88cdaddf199320a4d9f2bb870d7537d968adc65311a4 src/ProjectGmKernel.Native/Computation/Numerics/IntervalNumber.cs
+6a7e571cd3b467da78d7c28fabf74206978b9068bc79d4912d80c9a0a1e0ca00 src/ProjectGmKernel.Native/Computation/Numerics/IntervalRootCheck.cs
+60256d24f2b4efb22ea36451f3e14989e4f29fccd610c466476c31bb0d19bafa src/ProjectGmKernel.Native/Computation/Numerics/LevenbergMarquardtStep.cs
+34e8b4f72c62b336c5a1646939828983f1d1780a5f282aca1b40b0cd07f19ad6 src/ProjectGmKernel.Native/Computation/Numerics/NewtonStep.cs
+74ebcb691d00385f2b854557ce7d5888908a9bbf215f9369676136bf63439f6f src/ProjectGmKernel.Native/Computation/Numerics/SmallLinearSolve.cs
+9dd1248012528acfd3724bc824baba509640993f68204ee2d77604b95180dbcd src/ProjectGmKernel.Native/Computation/Numerics/TaylorJet.cs
+eb0a0932a5dcdcc2f0e56481c8d5cb104a96ed42fa9d8d1ab59e4b5fb6afa214 src/ProjectGmKernel.Native/Computation/Numerics/TaylorVector.cs
+a31eb4a919afb5bbb56ccfeb00b3b5251ce6422d583c9992a4329c06bb871845 src/ProjectGmKernel.Native/Computation/Numerics/TrustRegionStep.cs
+e96397b1ba522f42ed4f6761fc6c7d8323322aacb16e5583e0061300d30a84d6 src/ProjectGmKernel.Native/Computation/WorkBuffer.cs
+76cea3efdb24a2ed45a6c0bbfe3f6e92a7f7600992b03b73f683710ca1dc50d7 src/ProjectGmKernel.Native/Generated/KernelExports.generated.cs
+dced98710ad8cad0b29f45bf90b10dcc8af4a84e2fbee119d40aac5144f23a32 src/ProjectGmKernel.Native/Generated/ParasolidHeader.generated.cs
+02aae695fec4c0ba9eefc3e5ab581d3251e05e0db365fbaaaec80e072d524306 src/ProjectGmKernel.Native/Geometry/Bounds/AnalyticBezierPatches.cs
+6687147f77f0f24870610ebaec4cd13914d48fbd7d302eadb6c6a708cbf848f0 src/ProjectGmKernel.Native/Geometry/Bounds/BezierCurveBounds.cs
+f6c9d6d89ec3885660c372a9363f0a3524f59dcfda2d77b98d94893d07ebc33a src/ProjectGmKernel.Native/Geometry/Bounds/BezierSurfaceBounds.cs
+a64e499d9bc41cf37c86b45ea2705c20cdf4f65cea980458f0f640552356c752 src/ProjectGmKernel.Native/Geometry/Bounds/OffsetBezierBounds.cs
+75fae50a50d42c84a59d7d885de69df6c6d754914bfe996fc3eba3cabaccf7f0 src/ProjectGmKernel.Native/Geometry/Bounds/ParametricPatchSeparation.cs
+e8e80e1ac14e295842eb4790b70374469150439ae7e008dda9f39a1bda60b281 src/ProjectGmKernel.Native/Geometry/Bounds/RollingBallReach.cs
+12beb58138b06c9a18a6902d801a41f7694bf0bdb0ca58f96aac83bf2908bad2 src/ProjectGmKernel.Native/Geometry/Caching/EvaluationBudget.cs
+9edccbf344a515fc69dff63f3de2eb85debc10e3c5110657823260e2918a6594 src/ProjectGmKernel.Native/Geometry/Caching/EvaluationCounters.cs
+389f5e3f8cdf91d738265bb7f72dcefa12772261c1b582cf534489f4add279b8 src/ProjectGmKernel.Native/Geometry/Caching/EvaluationDiagnostics.cs
+391f6d00493b2a09bdef30bddf31b7c4a430f82f4979bcebde7bdcd1c28275d1 src/ProjectGmKernel.Native/Geometry/Caching/EvaluationSampleStore.cs
+93e3e74746c0457242ce5ca50da6e705ba1bbbd50c3fcbd93ae5fa134fc9a405 src/ProjectGmKernel.Native/Geometry/Caching/FailureReplayRing.cs
+2d538f37f84335a55d7863acd8d42591390f0071d610d64da313b317870573d2 src/ProjectGmKernel.Native/Geometry/Caching/FrozenResidualScale.cs
+40231fc5753f246db6358ec994985480151a0fcbd0ab41c9c799ccc62b966778 src/ProjectGmKernel.Native/Geometry/Caching/ParameterCorrespondence.cs
+41ea9d3df2a2631a4c24e156952c2bd6b819082c471cad09303abfb8d6100e0c src/ProjectGmKernel.Native/Geometry/Caching/ResidualMemo.cs
+1512500058de45a2bcd323a843781118fa5e5805b9c6ad700195e6979dc1fb52 src/ProjectGmKernel.Native/Geometry/Caching/SharedSpineMemo.cs
+745f5704916a3132d4f233882ef85f0ac876cd277bcc805661b67f84d51f764c src/ProjectGmKernel.Native/Geometry/Caching/SolveStateBuffer.cs
+dc6995e3fdaabe0b1607e493008389c3bd8b99b22f628672991c5e5bd8e4f8f2 src/ProjectGmKernel.Native/Geometry/Construction/FreeformSplineMath.cs
+a186368c72b085c92d356f3fda0c81f5f18e0dd98992bace9987faabe46c7857 src/ProjectGmKernel.Native/Geometry/Construction/SplineEditingMath.cs
+aaaaa6d8e54dd64f18c63cda2cf16d661e9ea235f65522797121a3e38513fb34 src/ProjectGmKernel.Native/Geometry/Evaluation/AffineImplicitJets.cs
+607ecda0d1e83d63b7a806799f9e074101ea3bd39f102bf786cf7dfc030a4aa3 src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticDistanceSeries.cs
+dc8f8b2fe3ff0eab4ffa436348a8eca653b1b5ab05d58fa4b2244eac3c4318fb src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticImplicitEvaluation.cs
+6970229452daf78ee4ca071927bf027acec6785a6781cf686c34bc0869fe3dac src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticParametricEvaluation.cs
+8b9ff44dd4ca9d12debe59738297b75b9c1dbf702d7871821c2766bb674c389c src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticSurface.cs
+6e2973795a16335e2258e936d9a7f4fdce4242e8cbda5207e389dc087d8ea115 src/ProjectGmKernel.Native/Geometry/Evaluation/BCurveEvaluation.cs
+45c3436f371abf6eba6ac3758503601585c7015defe776418ea7261a30dc0250 src/ProjectGmKernel.Native/Geometry/Evaluation/BCurveView.cs
+a4086261c8ee56589aaf00512b36167d8eda64c64d9344e417a8a64d2a99b893 src/ProjectGmKernel.Native/Geometry/Evaluation/BSurfaceEvaluation.cs
+114c57ed9a41a3325b3203b3e65823dd3c5f686efb450d38c5dac1970cfb6075 src/ProjectGmKernel.Native/Geometry/Evaluation/BSurfaceView.cs
+de7a03c44fbd8787e23aca4016780535c88bac7861fcce3332efc5f66ab602be src/ProjectGmKernel.Native/Geometry/Evaluation/BlendBoundComposition.cs
+08709d49d01e4ba2f7a2a6011d9db8aa762b5cb2c18e19b809c7e7b2a42542d8 src/ProjectGmKernel.Native/Geometry/Evaluation/BlendEnvelopeSolve.cs
+f495133ab7f60b8e47e798d7e44dfbcc2709d5b6eae51550ad63b61b5420b8de src/ProjectGmKernel.Native/Geometry/Evaluation/BlendEvaluation.cs
+75b6a00c1a6cf8eabb8958983af09f32e2faee787e011087eb00d9ddec267176 src/ProjectGmKernel.Native/Geometry/Evaluation/BlendImplicitEvaluation.cs
+9a8709f8bac71a77223101819a9170ce7d81a51656cf63e0a92149f52dc7cb04 src/ProjectGmKernel.Native/Geometry/Evaluation/CaseFValidator.cs
+aee3892bb900c197b9ef841bec82437cea9826f1c0ba92df44c4238915658d7a src/ProjectGmKernel.Native/Geometry/Evaluation/CurveEvaluation.cs
+d94fad1b33b28b01f09439a4462ac481a35e5296968f308e0bd97302a8452135 src/ProjectGmKernel.Native/Geometry/Evaluation/EvaluationMath.cs
+51d8658322bd094b4ab4b08f5663c194711cbc99d930d161ad239fc29a6cef8c src/ProjectGmKernel.Native/Geometry/Evaluation/ICurveEvaluation.cs
+2c48aa9677bd6a5cb525f42c4b7a9b6b0e050493a8ffdf324aa173f65a00b849 src/ProjectGmKernel.Native/Geometry/Evaluation/ICurveSupportView.cs
+8e87134e7897d72135c353b0943faac4317ae48ad8ea873e9ddb7ab53a244b9b src/ProjectGmKernel.Native/Geometry/Evaluation/ICurveView.cs
+36b76a8e971072de2c5eafaa4b3681aa580276f4df130145e627f6c41a60721c src/ProjectGmKernel.Native/Geometry/Evaluation/JointNestedBlendContactParameters.cs
+706cf5b03ee26d537c2f49f39c361cfc486529c40426faab9b25c2ebf866dc07 src/ProjectGmKernel.Native/Geometry/Evaluation/JointNestedBlendEvaluation.cs
+e7291b94a0988730900eb3245c004a6b3dc9e9f7f2ee03f253b94d916c491147 src/ProjectGmKernel.Native/Geometry/Evaluation/LocalDistanceEvaluation.cs
+ea576dc341e55f2109e5fd9f73dac28279335bf8d55cfe9b4611bb0d0a8ede1c src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendBounds.cs
+98431add62dfe6ed4f5d98a4686e681705e58b192ad3b3acc2730c2a6cf157b9 src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendIntervalSupport.cs
+7a3006d5ff925c4d0ed89651472c6f06a451fbc5202ee4e0b5d60e40706b1f46 src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendProgram.cs
+42d8c0dc25d5d44af2b94c60d4296c1a679dce9dfbbb05cc5998ad545c212991 src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendSeriesEvaluation.cs
+7b8e566813087e162cc8d9782f9a6f0933754fec889d74ad6c5eb478366067fc src/ProjectGmKernel.Native/Geometry/Evaluation/NestedSplineEvaluation.cs
+60ba5643cf0003cffc0782ce17bbb2476d3b907eadbdc15de8f6afdd00b15b26 src/ProjectGmKernel.Native/Geometry/Evaluation/OffsetSurfaceEvaluation.cs
+460197f0cee1f024548963f3585439550cdc0b36511159f3d347632ff4c8fedb src/ProjectGmKernel.Native/Geometry/Evaluation/OriginalChartParameterMap.cs
+4a8ba4aaa3c617b8d0829632604658affd8d9f6a35f463e6bcbe3b0f18bc0174 src/ProjectGmKernel.Native/Geometry/Evaluation/ParametricICurveEvaluation.cs
+a375df201f5297d121ca25178e79c093f72fcb75582316efb098d0008472a882 src/ProjectGmKernel.Native/Geometry/Evaluation/SpCurveEvaluation.cs
+979cb4b58065961c5a00359bfdd551d8d00832f187a187e574adcde63ea822b5 src/ProjectGmKernel.Native/Geometry/Evaluation/SplinePlaneResidual.cs
+5e146fd3d548ff6ea8d17c6a680676cb0a8abd04719986883b0eb9272fe64352 src/ProjectGmKernel.Native/Geometry/Evaluation/SurfaceDerivativeLayout.cs
+80a926d446f6f11c610217a5eca3dbcec07abe9fca291de4b6abd324df3589bc src/ProjectGmKernel.Native/Geometry/Evaluation/SurfaceDistanceEvaluation.cs
+11cd656903b5075772791865c54fe98a06345c19b1fcbc77694d627d0a7681f0 src/ProjectGmKernel.Native/Geometry/Evaluation/SurfaceEvaluation.cs
+637307c35ee7c423679a2b171503fbbf25812fa536a616646fc039f4919669c9 src/ProjectGmKernel.Native/Geometry/Evaluation/SweptSpunImplicit.cs
+375b8c03e14b69a167210ca58b36c66fd94fd1b5fa05cc71e70f985275e2fdb8 src/ProjectGmKernel.Native/Geometry/Evaluation/SweptSpunSurfaceEvaluation.cs
+fed73d680ff10d4cbcaeec59bc5ed89e0b99f19d69e0b2e8d8bad62afbd26e13 src/ProjectGmKernel.Native/Geometry/Intersection/BCurveAnalyticIntersection.cs
+1e1f96bdbf99cfdf85214cf89ef5b413fafc0765ad53e4c8ca5beb32213aa458 src/ProjectGmKernel.Native/Geometry/Intersection/BCurvePlaneIntersection.cs
+971c651ac1c8a23a7f76c011656804116aeb1d41038df5031e606c98802ce4da src/ProjectGmKernel.Native/Geometry/Intersection/BezierCurveIntersection.cs
+f85c5344a1e7e169fd982ea75162b7a8548d5d142d40f26594a17d123b4240b9 src/ProjectGmKernel.Native/Geometry/Intersection/BlendJointLift.cs
+cf2fb0921fc2fe023cb393a89ca189fb67e665181fc8a829bd495e56e1201d41 src/ProjectGmKernel.Native/Geometry/Intersection/BoundedPolynomialRoots.cs
+ffdec9de9a5c4709f3f11e340f581aca16066bcd27e924aa99b8d72f40f28f69 src/ProjectGmKernel.Native/Geometry/Intersection/ContinuityCellRules.cs
+2db5670a84cc01fa243c49ab6143f4f881d348a8778cb070cc26f18b4995ed1c src/ProjectGmKernel.Native/Geometry/Intersection/ConvexPlaneContacts.cs
+1ac9946e54b9d3f3e9c98566f3ff906dbb83ea8aff107ced2b34dd8c192e736b src/ProjectGmKernel.Native/Geometry/Intersection/ICurveConstraintPlan.cs
+fc1de2767960f175384e02d4ca726be417d0cdae9cc5d36a96d6cdd28792ded2 src/ProjectGmKernel.Native/Geometry/Intersection/ICurveContinuation.cs
+0aea6935ae2794b170a7ddf6f3d7acab9f6d185fd3899caf475d91552dd90ce0 src/ProjectGmKernel.Native/Geometry/Intersection/ICurveCorrection.cs
+5e014f53a5ea8a0f4f61bd8bee36676deb1391deb64e9a7b77f925d131af0101 src/ProjectGmKernel.Native/Geometry/Intersection/ICurveMultiSeed.cs
+05d518368cdce50eb703eb217ebace7501fe3afa3c9847a2215bd25e024a4cf2 src/ProjectGmKernel.Native/Geometry/Intersection/ICurveSeedSelection.cs
+3259e89c447880d9d49f0d7f993e4386d7912e04502d2b9938047bfca4e1a3b4 src/ProjectGmKernel.Native/Geometry/Intersection/IsoParametricBSurfacePlaneIntersection.cs
+dda077a0900ad4b5fa981e9086a208ec7b135f3097a721cf09aa5f6c58b668d0 src/ProjectGmKernel.Native/Geometry/Intersection/JointBlendResidual.cs
+fa9a652ec65b8c74ff197b8229a39fa70ae09e3f89a284a7b165117ef1243c94 src/ProjectGmKernel.Native/Geometry/Intersection/OperationIntersection.cs
+0df672beea81ba4637566e84bd5196865dbdf1aaff0fa9dc62b7fea2f0eb8d2c src/ProjectGmKernel.Native/Geometry/Intersection/ParametricSurfaceIntersection.cs
+477310c621788e39a9f64b474ea467aa8b67b0b3c1b4f835f07e3faf6b5dfc57 src/ProjectGmKernel.Native/Geometry/Intersection/PseudoArclengthStep.cs
+e618b6ce6ec8ee2cc490214e6d5daf4f3509d77cf5b03412ed2e89c3253db546 src/ProjectGmKernel.Native/Geometry/Intersection/RuledBSurfacePlaneIntersection.cs
+8c54d63950f6f685d7c93f30b0ae73ecfd357be0ec7968ffb8c944033d4ad44a src/ProjectGmKernel.Native/Geometry/Intersection/SurfaceIntersectionPatch.cs
+d60eb27c1558a6e81b2de2d61f3a2ad0023993cf6e35b2be952c81afed4c329f src/ProjectGmKernel.Native/Geometry/Intersection/SurfaceIsoPlaneRoots.cs
+dbe86dfeb57d703cd0b662a9cea010a2549b92c2b46aa73d9e2c4c47993e644b src/ProjectGmKernel.Native/Geometry/Intersection/SurfacePairPlaneRoots.cs
+c84c879a1b8ea36fb9dfb4ac98e177fa64a35389c5b3ff1ec405bc3ceaf56f52 src/ProjectGmKernel.Native/Geometry/Intersection/SurfacePairRelation.cs
+f1d043b3d156b3d6250f576f3825e9640a8f85952e52f6c50efaaf1fe8055420 src/ProjectGmKernel.Native/Geometry/Intersection/SurfacePlaneIntersection.cs
+b6be2a3ba9303e608bca980549f3994a707b19f4fbcb2b0ba432342c4f665840 src/ProjectGmKernel.Native/Geometry/Intersection/SurfaceTripleRoots.cs
+4e50057d254c0894675abe55c6ce14a43674b7d101b1ad4ee783e147d6b9efb8 src/ProjectGmKernel.Native/Geometry/Intersection/TerminatorEvaluation.cs
+029eab81e2f3684e4e58c9b813c028294388cf2e9e6073f4d15f706fab2afa6d src/ProjectGmKernel.Native/Geometry/LocalOperations/ConvexLocalModel.cs
+81d1fcd003f3914982ddd96095718e6e25fec214bbfa96d6bc56125273c62992 src/ProjectGmKernel.Native/Geometry/Projection/BSplineProjection.cs
+a2533d6f55817d84aab423aa421a92df4b57d6be39e06173d793011f2eabf35a src/ProjectGmKernel.Native/Geometry/Projection/BezierPairDistance.cs
+e8b2d2ef53d2e33fbaab0306f65bc3a7409cba2694a7ad026c37dfdc53d39ccb src/ProjectGmKernel.Native/KernelExports.Boolean.cs
+755e4d7eed037fbb15a2e914e76dac77dc21ac6f9bc2b6d8cb848508e984b60e src/ProjectGmKernel.Native/KernelExports.Display.cs
+d4aef6c0595619ce4bcf1dc39264a18778167bfcea766466e578ff7bbc92825f src/ProjectGmKernel.Native/KernelExports.Distance.cs
+7821cd1d53e50f0582038bc7b4858a6a85517a6b5cd0c660fa93f09d26a9bbfb src/ProjectGmKernel.Native/KernelExports.Freeform.cs
+36e47376adf3a92704f495cb6fe2c82b766bfcb9f29443ba6da1d71791a10751 src/ProjectGmKernel.Native/KernelExports.Geometry.cs
+4c494e3daab411ed3ff055dd9f06fcc0c32a9ba1376d4c569f5e24d39365d917 src/ProjectGmKernel.Native/KernelExports.GeometryManagement.cs
+0afdfc09dd44d2f677b522b1e38c7c6babe0b8957a114cc1b80389dee3e5cf58 src/ProjectGmKernel.Native/KernelExports.Intersections.cs
+9c9540a344c6c571a05d879436a384ee96e26e69f76472a4d92c44112360a8b5 src/ProjectGmKernel.Native/KernelExports.LocalOperations.cs
+2b4c3dc225df8d6830d98ef29317d52ca7cb7f4e1872ec441be6594ab565743a src/ProjectGmKernel.Native/KernelExports.Profiles.cs
+f3d8cc6af5642b80bee60f00d32a85a3b75cfac1ca884ef514ea49bb4bc9b2ed src/ProjectGmKernel.Native/KernelExports.Projection.cs
+e3e8c752ca862c0051a15ba397fdbeb2cf1c2479a73a5e5509bee5043e9b5279 src/ProjectGmKernel.Native/KernelExports.SplineEditing.cs
+748a38c3be0d4e798b7ddd29a73e31091002d285451eb0d9600bf1fa323c95e1 src/ProjectGmKernel.Native/KernelExports.SurfaceBlend.cs
+d54647be9a6ff7f7168b2ca802aa42fe474cb08fdb14749d1132cb90a1f1c858 src/ProjectGmKernel.Native/KernelExports.TopologyEditing.cs
+eecbd2852819329b5569316cf2fa20bdd2bb1cda0691edb554d99eefe41b133c src/ProjectGmKernel.Native/KernelExports.TopologyQueries.cs
+e44fec0ccbc87af925db84a458d1d9cadec16cc2fab063e8022fe5208b720f5d src/ProjectGmKernel.Native/KernelExports.cs
+6e64743a9dd984a443d6326ac1197d2b6579be116707c92640ef0428cc0a632c src/ProjectGmKernel.Native/Runtime/ApiDispatch.cs
+5e78e56f6d0d6910a7c41d6b4e4bdf00a8ab1b75291c96044c356b39c68220b2 src/ProjectGmKernel.Native/Runtime/BlockAllocator.cs
+b32b454874252a060eb4f209eb344e9730c2e4935a1e7aca1f56ba3f0e67b6ca src/ProjectGmKernel.Native/Runtime/CommandScratch.cs
+91d3ac35adaea3738a56c3bfab76aa40a2d8bf550ead0d16eeab5dab00d08330 src/ProjectGmKernel.Native/Runtime/DisplaySnapshot.cs
+b27efe3bf3f9d1d8adcd8a8a6e40f4d279df273bdad01a70a6f0961b0373e1e3 src/ProjectGmKernel.Native/Runtime/EntityPools.cs
+a278bc15eb3ebc06fa842c2d7cd6f88d4745ea38e41ebb6aaf72acda349e3ad3 src/ProjectGmKernel.Native/Runtime/FunctionCatalog.generated.cs
+f9917ec3bf4355fcfa39d866afa3adffaeded2c078b5a39b1c604ab429e77ccd src/ProjectGmKernel.Native/Runtime/GeometryEvaluationCache.cs
+b29079ee644a67166e3d7004bcc4042e62c2997419296f8fa05dbd4f23bbab69 src/ProjectGmKernel.Native/Runtime/GeometryQueryCommands.cs
+85a2ad4694909e6bbc760aea16b3831ff8a3e3f846329fcbee9213f7d022ee27 src/ProjectGmKernel.Native/Runtime/GeometryRecords.cs
+b002f33badd40d30c1e2c2ff1d6125141a4d0f2e2ad2bac54f4a8d71367bb96f src/ProjectGmKernel.Native/Runtime/IntegrityChecker.cs
+8dd5211e769b397362986d08aeaf0c71d039076b8e881fb9844b80cd2388c1a1 src/ProjectGmKernel.Native/Runtime/KernelAffineTransform.cs
+18fca53ecfa0b71acb1bf22e610cc3f9ba063ce78d2d2b80cf0668481d923c03 src/ProjectGmKernel.Native/Runtime/KernelExportCommands.cs
+0c0d179a955620af2f40f972000d4f7589c8afd260b38c57e90b39357a1e3c80 src/ProjectGmKernel.Native/Runtime/KernelExportPartitionCommands.cs
+f587297fe12943dc9ea30f4b2bf25fe55e8b3d0ead1fc1bfacb4718d6959b723 src/ProjectGmKernel.Native/Runtime/KernelRuntime.AffineCurveRelations.cs
+e75cc6084979a1d8835b8b8f8af8876b1fcdab4a8cf474e626c322a7bbdad7d7 src/ProjectGmKernel.Native/Runtime/KernelRuntime.AffineSurfaceRelations.cs
+63c21088c7defd73987669ad4d8d1c310899311f4b17d168ec108d9e0034be81 src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticBoolean.cs
+bca7cbd01c1528ed4d2698209fea2bbe7680e69e285f00a48d4a07f85887e1b0 src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticFaceDomain.cs
+5f9a6d4ac88f4c98fa840752c910e8260646862abf3ce2ae8d837ebc3e8fa414 src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticIntersections.cs
+198d122719a960014048eb22dedcac94c7aff432b39125fb94675199f32d5915 src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticSection.cs
+d20453e285dfebd3c3b8405fc791bfbaf2df5d9fce3bbb061033a8d43bd8b679 src/ProjectGmKernel.Native/Runtime/KernelRuntime.BCurve.cs
+39209f9a75bdffeb6736b217db18c07608cf7ccb365e39258ef1ce22cba80320 src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendContactCurve.cs
+46765b1bbc774b6efcf1356eb515f312f8d1b8d14a24441ebb7ae974ead78e41 src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendContactXt.cs
+8148c5658a2256927fbb616bb43ac2148df62cd8c6e4a5034bed517b9fb9ce7a src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendDistance.cs
+a10109f05305ed4891286da81378b7f0a215001d13da551957441653825b71a0 src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendIntersections.cs
+f13e024bcc851fd976680c41b69fbdc93bd79b26bd1baca4598ef16df65f6a0f src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendPlaneIsocut.cs
+f37ce68243b199bede234e857021fec15a8f9761ed67ab7ed02159e4f345842a src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendSheetRays.cs
+5b305315e4bfcc7fbd41fa95c83bb8e4cb2cb76d2fe4acd5e46ed3b64a8f9798 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Boolean.cs
+9eb472f2b04c0ef1d57ad49b7dad9ace0ce880f01af9db9940474afb0f212b84 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Classification.cs
+f48df1f11104fbae05a22da64b0e3c9d3d9695d477251bbd5fca28e8fcd6cc21 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ConstructionGeometry.cs
+0820d971f02a43ec4d6f71af20580eb3d48e60d7418b107e1edc7dd496a2aca2 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ContactSupportCuts.cs
+191648b6be5eb82c7921fc7b23eda32cfd49ba49cf642b51845e52cf0689c772 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Copy.cs
+6d6d35adcfe5c36feb10e80f15c55603f93ecf6abfd0ba9a299baef1ee488a23 src/ProjectGmKernel.Native/Runtime/KernelRuntime.CurvedSheetPartition.cs
+47c206913f1e6433acfef4fa8aaf7a65522362d8f49fe0264c2044e86c4fd58d src/ProjectGmKernel.Native/Runtime/KernelRuntime.CylindricalFaceExtent.cs
+b541a91b0274a9172ff073a3b6b86007b0bedb03737d35885fd7951074df2cf7 src/ProjectGmKernel.Native/Runtime/KernelRuntime.EdgeSubdivision.cs
+5ea47b3d1f6e7ec93042bf3def3391e49eede32f08570cb7552eec78651a2d2c src/ProjectGmKernel.Native/Runtime/KernelRuntime.EntryPoints.cs
+a99bda193fa4f6c4398be688bdfc95af8c5161336fba566ea484692d0b396638 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Evaluation.cs
+7aeb5bbbfa194eae79ca0c3a73ef20937cb31bc8321c2fc03adfb6f08f79cdfb src/ProjectGmKernel.Native/Runtime/KernelRuntime.ExactGeometryDistance.cs
+5ddf82b31e5300385eb94971b47928a84a3455d638189a93b05f6adedc7155aa src/ProjectGmKernel.Native/Runtime/KernelRuntime.FiniteNurbsPlaneSeparation.cs
+09eb72266eac31904b5852c52dae249bc60bfaa35b90d9a80d45bf767157e418 src/ProjectGmKernel.Native/Runtime/KernelRuntime.FinitePlaneSeparation.cs
+e826e32654ff7eb9e0e62c62f6f6cef83575c4657e5e1b123b876aaaef84f119 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Freeform.cs
+7500212302462d6f97bd77ca85b9f57145cd644fdcc1eb354739fcffa69262ef src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformBodies.cs
+3841363702347f38d3decad0c9b0f264e39e76d8ed2a4f52092250aa9dbb8ad5 src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformCurves.cs
+1b4d7b5b438fc88ae44f0ee496bec4fa8cd621c01bfa1949bc87aab142847b2f src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformGrid.cs
+247a3ef8c05ab1fe2c8c4a255a6257b73dba9f7ac697e652c63f00c78b604cfa src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformLoftCertificate.cs
+9b6d3b77b712d018497a330c644a1d6381c6f22ad18f6bf3e122aa56b2fa0214 src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformSurfaces.cs
+08fa7a8465979213b90bb608a767729233dedc9e3cd2ac6d3e7e5d66f19e6ce6 src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformTolerant.cs
+b80200b212f240d63100fcf023bd6ccf386c13f66b0c99301ae9ac64d87ce6e6 src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformTracking.cs
+7d5e977967798dd6ff07f766f5059440410857d8d9fbe0e2253b35e35f95d474 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Functions.cs
+0e3d4ea282a1905b2d07a23b898394fea9689fc5801323d4067fa33b2c65fdd6 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeneralCurveIntersections.cs
+ef7d845a56664d2defa1f17fbe161c8c74b69a089b5cadb207d294f89fbd3404 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeneralIntersections.cs
+8d87c2321741e97d8fb6572259ed7d173dd8c65991b2c3fcdb69b3be72cecccf src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeneralSheetPartition.cs
+53aa37f6ec2190bd9d048f229fd4e8201e5867d8f7eb7ae616f501a7e5332348 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryCreate.cs
+70468e42ac66b2b14ac5384f9b10d34db9b344f5212c427e067c5df308257382 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryDependencies.cs
+c9da2045b43f2f9497d7c8d2f501a0d36e3745969490b61c005afbb7b9eadff2 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryDistance.cs
+21c0cbf1639037827721e7f5b1cf3c05df85128d80b0de889310011ecddff944 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryDistancePairs.cs
+26764778bbfb1d518c37c668448c713ce48968ba746bd3f716ffce0178c298b7 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryManagement.cs
+70c58b23a43c25960f602899b321d2743b517192389ef3113ead7043b2a3e290 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryOwnership.cs
+037b8b93f5c2f3c71863d481f1acf668fc78e0c351f83fe7817b71217f672448 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryPart.cs
+19fdad24583ab83e3546e088705e38b3b87bf8f021dac3d1aec952384adf8364 src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryQueries.cs
+5fc1edfeb938c0e99320ea969b6e3f673487b8de4ef74629218d9af46d7850fe src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryQueryEntryPoints.cs
+210bed7bea3da1d81c52ae0be745577f7d85e174ebaa7d8ffa01df03f48d37f5 src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveBSurfaceXt.cs
+f6d996504f55a20e76a5a36326fa65f426836f5ce04e6904a7ec0bfab2a15563 src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveDecode.cs
+c393333440816e7eadb3d4a374615a6c812fa5da0a3cf4b811fb11421cd8c5c1 src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveWireXt.cs
+ed2b3f34a76b130382fb10d04098168c7f53d8c296b5f7fd1d9cb4daa8a97b05 src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveXt.cs
+86b175a6372bd282a521df8eed287808c10175ffe4a59a5c96bc47ae16930fba src/ProjectGmKernel.Native/Runtime/KernelRuntime.Imprint.cs
+f323f03aafce1c0c80a89291f628019537e4538cfaeb85fc9a4dbbe282cb7bd5 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Intersections.cs
+1d5dab2e8dc73eff51586a88fee7bd4bbfee624e49e0d23328111068ca1786f6 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Analytic.cs
+cea49bffa86ba72189d6df6f3f8900b95d24840f7ff8bd70224ac462659d2ab9 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.AxialBlend.cs
+d817903ac6b8d29019096fdef4764d8b3bc4d8dd0bf409af87b695464c9c1ce2 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Blend.cs
+e6ea4e812638e0c054f337159b831574b888b7ec936b1cd0e9f52397e45c2ae3 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendChain.cs
+9fe22c589e5ebda9e1c4038a6616ea247336681b4a6dcf1ff6ffc61ee8efc04f src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerBrep.cs
+efdde5d71db432f8b6a8b5bf06264e704229ed4082293261c004c8a976990297 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerEvents.cs
+70df41dd8994cf752c60aab158b3f871cd749a990394ae4208bd92062d51ce8e src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerGeometry.cs
+a02f07f97c55da510e2fa4b00261e2897d2cc93c4dff831d3d67e6849e6f95db src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerValidation.cs
+2dcaeded782b0949f7eb0a445a21222547a43380e885872dda41b54e6191f45a src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCorners.cs
+5a6177df31a643df17f0ef10d4ae938b0f946c37db56bdd3b759645e1e3498ab src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendSupportChain.cs
+a938261f0dc8519fb1b8fcb8e7b377c73ee541df8bb616e56a9dbe6188b8ef37 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Brep.cs
+2803c45372675e0241b5ef1c74071f078e44806e561abda45bf966b925f687ef src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Offset.cs
+1c89374ca6ebe1152049dd73c7db7fc01b085e1f5e8b236089ab5baaebb0e4d2 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.PlanarBlend.cs
+68eaa37230539a24f7375c10f222c4164ea40754e67b4ae591d26a4b717552c0 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.RegularBlend.cs
+a3c96bf70fe385c67247f0101d172a73cd1229ada3d38611642640d28f5c95fa src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.RegularBlendValidation.cs
+2949b198156860ddb76b53e3fee8a3a4d5b7e263cccb84e4329e40ed29a8f558 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Topology.cs
+8a45ebd2abac594c83debd64641c7322e324767147dc4182825d0c573581f4c6 src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.cs
+1081b42e9593c74cc043cc37f74b4e788e57a672ce4c6e49c5d576619ee60d99 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Memory.cs
+016e6b6274030c5021e9a7a985b7807e2be1e5f5230344573bdf4e3a59121b2f src/ProjectGmKernel.Native/Runtime/KernelRuntime.ModelingBrep.cs
+caa7ee3da95838c6ebf822d1ea8e0e2df0842dfd3cb70c18c6c3d9dc6b5c1c1b src/ProjectGmKernel.Native/Runtime/KernelRuntime.ModelingFaceCopy.cs
+3b4c846fc217345b593cf285e39c22e8961332fc1d2505e25f2113fe1eba2543 src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlend.cs
+81eac0e4642f25ba08ad6e5f5ad600dd5f31d3c287189dc569000d622027ebaf src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendCompilation.cs
+0192233a0c109a6b37ede9ac8162ff16b829885726e244857f94e782c1924e4e src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendConstruction.cs
+1bc2b3463cf62cb2d078fe0c2dc6aa402b338f72a314cfc513c7f58c68c88538 src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendTransform.cs
+b02ef917662a6c2aff9b6d423b8b265c82ab71fa84110c780e84bbdde7706552 src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendXt.cs
+507b4c69b85213c3c665c64e49e733d669da09337b953b606aaabfed9315910d src/ProjectGmKernel.Native/Runtime/KernelRuntime.PartGeometryQuery.cs
+bb1f40a71aebe6d4e01cb72e5247812f359c697b18a5cb20822a64983d169ae3 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Partitions.cs
+f1017a42694ae6ded2b6258ec87381e308bc04ac35625891eed52bcee0e43fb2 src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarArrangement.cs
+cfce644551d03496004fa301a2b91ea875d5f0b890ba672fcadffb9eeafb0de8 src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarComponents.cs
+f8bb64f5bcbbd1f5d3da774a8c370c71823f99f3c7aedbd9737921b8eb0b1af6 src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarCurveWinding.cs
+0c0f41eebed6e07d46dff311221931c217031aee7afd28b4efc5265f05b28d7e src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarReconstruction.cs
+51b7446e34b2ffa07aeea8206cb826fef52750721b54be8f29b2cdf642b779fd src/ProjectGmKernel.Native/Runtime/KernelRuntime.PrepareEvaluation.cs
+fe26ced75937a9131b8fd598239d2b27a89c4c80c29e485e7291a379cb836bba src/ProjectGmKernel.Native/Runtime/KernelRuntime.PrimitiveLoops.cs
+4c21d6cb57f0bb31c2303cc1bee725e026f5a6fcb80feb112797fbc8932cc137 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Procedural.cs
+a43f3448786014ff0c472e838d36437a2c1df5acee9398763d8b5ccbf59f2301 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProceduralPlaneRoots.cs
+63e68f41d45389722399115ab70a45d6f68cb86747f762f4df5fc4f06d3d7116 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileCheck.cs
+300fc3b5e40ab37373ee4a9c57c7bb31379b44329e4d9b20a342373a7bfea10f src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileCurveBounds.cs
+9c8e111d663236e092262277a28621a5b4bbc0802a1e702ef3062e1a65fa2505 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileFaces.cs
+2fd00b5c4f4f362433591a6b31abfcdac48d8dad360b0627af042758ffda6fb8 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileIdentity.cs
+da4365b59d4a2fcb22c8775ef434cb90b2e39adf6a441165a739576d7d79ec22 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileSplineSweep.cs
+ecc66d343c80180701251f0c03c3940c39e33a1ae3daa7569997255cce8aa0f7 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileSweep.cs
+861beb2e034ec3facf13964139293a789ceecca3572baf86f75a50ae415c4f95 src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileTracking.cs
+ca34762346b08503debe9612d188d78f8fbd48c41e3a0098ff18e626d32c8cdc src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileValidation.cs
+5a8a69d6d6ac3688bc7317b1fffe859be2fbfa7e9e6265510074f8832055a960 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Profiles.cs
+e193cf152284f515755a2873081ddd132c6d2fc45a3fc3420a07eea201c49cc7 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Projection.cs
+28ebf83a5657e4d1db2002909143c09d2f8c86d67ec5517d110ad114035fa2c7 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBoolean.cs
+0b75ec75752b2d97af7858d30784ce086c4edf432e8b3042bbfda043927a9c56 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanBuild.cs
+df8b5214ba6035e3334062405909ca95a5b908d85f6c086bc1e38bd5e278d86d src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanCuts.cs
+af113bc937d46e843d2ff4681476c8c95f2a5dd34bd1a62225d653a9da540359 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanMerge.cs
+26761617238c1f55d4f4ec7a7089b564a071df995ea40ad5812f01d607eb2280 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBoundary.cs
+aebb98f4169c01466f42cba1dde3fb5cb301d9bb528c169d00dc47944d39f5a6 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularCellWitness.cs
+d0af418d89c7f6dd06fe672068e489c97ff35d927767b74d217f11523b5331b9 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularClassification.cs
+a34cf671680c42d2708f55096901a0c87415b1dfc1dc3016cc70d1ca70646092 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularCurveIntersections.cs
+fbc5810cc4a76de1d6dd04a6b610199b74bc9046dea2afcdbaf0cabfd8964667 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularCurvePairRelations.cs
+03985343c2a6d1b45f79e4324b1a85799abebb93eff93ce5d5959ead7e980452 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularFiniteBounds.cs
+c0a1503a201fbacf99fbdf87d625c68a23211475dca52cc43e3b895193736d0f src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularPointContacts.cs
+ba85cf82348abc926dfd5215a7b8cd45da7e43f5d03a7f8c592202bda5249395 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularSurfacePatches.cs
+9ea41aa96c87d64fb47bc444189e730ddb8d4a64390c88af928038788d409555 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingBlendContinuation.cs
+25c23e4abc684d1e05fc64a3784ff40cc6820194bef60ab67249fa0bd267668a src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalBoolean.Build.cs
+628e80d0187cd545546c9cdd0fc55e7033d1fcdd8a08114725bfd5cc57795bbb src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalBoolean.Classification.cs
+53065691305ea12f9b202688e783810606e7ddd71e537b5c59f1b83869a39949 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalBoolean.cs
+a4e9980f8f85366e454cec81661e9788e5750395ba7cfc62944d05f58461faa4 src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalSection.cs
+0879e847488048111dad3c73f8947fd29b229f186376b7219a31e4c76cf6e67d src/ProjectGmKernel.Native/Runtime/KernelRuntime.Section.cs
+ce169b550022e21a9cea941007e710a6a558658aa28d7da331ea66ae04aebc40 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Sewing.cs
+2cd90a5b136f33f0190e3eff64693ae0bdc903a6b18b3c10d8baa2e8ee892f5f src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetArrangement.cs
+6a7f53a29ddaf191f9f1d42f8588215f6d192cb00fdac00f7e00812d41a7131d src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetArrangementGeometry.cs
+9acbf48e5dffa9f3c463a27c8269ed76bf143efc9cec495382f6f521e465ec9e src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetArrangementLoops.cs
+012d7b2f9af94ee23c40a6740d4c54c186e82b131cfa8b8ab81fd84e37fc8755 src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetIntersections.cs
+5f370213ecf3bb6efd114a77ebd281cb2e05679778136e05e7a69d57fee4b502 src/ProjectGmKernel.Native/Runtime/KernelRuntime.SphericalFaceDomain.cs
+4ad625bf1694cd8c50d111dfdad57d2f674277a8a440819c2c4cece0769d0056 src/ProjectGmKernel.Native/Runtime/KernelRuntime.SplineEditing.cs
+ee938941bd6cc1b2809e80ac23ccb3605a3fcec3289e69da61d498b8aba6706a src/ProjectGmKernel.Native/Runtime/KernelRuntime.SplineSurfaceEditing.cs
+2d4dceb3538e2143e5359ca1085ff13a174f716e6d801ba4ee278f8d42ebec52 src/ProjectGmKernel.Native/Runtime/KernelRuntime.SurfaceBlend.cs
+61d4b4c9b8eb4125ff89202983b6205ea1152c4c27fb4d898fbdbbb7d08f5010 src/ProjectGmKernel.Native/Runtime/KernelRuntime.SurfacePairRelations.cs
+23cac83b4415db56572733a733773963be803db253d1af555ba0dd11306c918a src/ProjectGmKernel.Native/Runtime/KernelRuntime.TopologyQueries.cs
+53c527e5d01c9234ee56eaf50c36a4f5e9d5461c17c56679abbac679ba080246 src/ProjectGmKernel.Native/Runtime/KernelRuntime.Transform.cs
+4f36e16c918f87d7b47b8ebda29b100feba63b702cf171ffdd5287edfaca67ad src/ProjectGmKernel.Native/Runtime/KernelRuntime.Trim.cs
+3f1f66a5c085cd3da9c95abaaa497f3269ca9da4c9e56716a912e90c6b1a2f82 src/ProjectGmKernel.Native/Runtime/KernelRuntime.XtBrep.cs
+36426129bddb4eade217b6e0e13cf7805ecad0ddf6505013c5cce147a3b5d760 src/ProjectGmKernel.Native/Runtime/KernelRuntime.XtBrepGeometry.cs
+beb26ac90a12f2bb40e7bfb71d1c87a8c488af58e98854af5055dfeda972f54d src/ProjectGmKernel.Native/Runtime/KernelRuntime.cs
+7c8a8431485b30e684c35d5083017b61c1952a2f42313f9c104b9202a11888a6 src/ProjectGmKernel.Native/Runtime/KernelTypes.cs
+41df1eaae8a44dd747dcb675c28e51532bca5bf01a34775ec6a2a192ca42534b src/ProjectGmKernel.Native/Runtime/ModelingPerformance.cs
+00dc2eb12679365c319518fffd68d66b468a94375670b613866a7c7d6572fbfa src/ProjectGmKernel.Native/Runtime/PagedEntityPool.cs
+798c8fd2635f42110cfc2e1cf23ae5e9b4727477afae9df44ef1288f9f62e16b src/ProjectGmKernel.Native/Runtime/ReturnAllocator.cs
+4be6b079d09ebdafc25c2a68acda8d32a687e94df44cadd1106c34934bea1b61 src/ProjectGmKernel.Native/Runtime/SessionData.cs
+127cccffa906543552da2ebc9948a6dda474f60d61ac45052c436d06199181cb src/ProjectGmKernel.Native/Runtime/SessionMemory.cs
+095b8608268905462b81ed3f41fedbd14b545266f8e021910583b3581cd79d9b src/ProjectGmKernel.Native/Runtime/StableTable.cs
+cd143f6c05fac501b036249fd8f180406217032045c3abf1475021e96c21b035 src/ProjectGmKernel.Native/Runtime/TagMap.cs
+5117f6abd9d80554f3e61e5d1b25c2f1a9e3502fde414979e1a918dc65b6495d src/ProjectGmKernel.Native/Runtime/TopologyRecords.cs
+dfdb782256e102b64c046cb3827acdb7ea884718a00ee4be9599d86f9cc085aa src/ProjectGmKernel.Native/Runtime/XtAssociationTable.cs
+ee170799fa33a9ea594dce0109214450845b9c75772d4cb037fd14fb2e6eb666 src/ProjectGmKernel.Native/Runtime/XtCompatibilityAdapters.cs
+541903f518ea1dd282e19a099de74d4104907f3457fc357ec69929cc2f8fe4a0 src/ProjectGmKernel.Native/Runtime/XtCorpusInspection.cs
+e02179b63af93c6b830dd1658e87751079ace3f890a0d215e3b54d6d8b60ea19 src/ProjectGmKernel.Native/Runtime/XtManagedAliases.cs
+225ecb62a5ac3cbb7b94a61c741f22f1d62b0bbb11a570fbc19d07117617b0e2 src/ProjectGmKernel.Native/Runtime/XtReader.Brep.cs
+ae9cdd60f63166458b0c89c4a8e4120c1ddad6ebe236e3d1568135b14a369a4b src/ProjectGmKernel.Native/Runtime/XtReader.cs
+9b7d0e225a11c80663499933ec6eb86d53287b3f0395ef648b90c4bf31266dfc src/ProjectGmKernel.Native/Runtime/XtSchemaRegistry.cs
+6992b6536f9a94eaf5f59b7deead471babc9d2409877cb30abfcf8426609c113 src/ProjectGmKernel.Native/Runtime/XtWriter.Display.cs
+a626be6df91c417ed2ae174156519e543c42b7ed1c5a589fe26e328155017bda src/ProjectGmKernel.Native/Runtime/XtWriter.cs

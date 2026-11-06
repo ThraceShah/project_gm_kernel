@@ -38,6 +38,27 @@ remaining multi-minute Blend/Blend cost are recorded in
 `docs/Mixed_Curved_Boolean_Operations.md` and
 `docs/reviews/advanced-modeling/mixed-curved-modeling-2026-11-06.md`.
 
+The subsequent M3–M5 increment connects certified near-contact curves, isolated
+point loops, coincident finite-domain overlays and finite spherical charts to
+solid consumers. Local modeling adds split smooth chains, real face-partition
+transitions, equal-radius trivalent corners with defined band-extinction
+events, and re-filleting with an existing Blend support. These are geometric
+and topological categories, not fixture-specific constructors. Whole-operation
+profiles and immutable-phase certified-bound reuse target the same modeling
+pipeline. Detailed contracts are in
+`docs/Intersection_Local_Modeling_Architecture.md`,
+`docs/Near_Contact_Plane_Consumers.md`, `docs/Trivalent_Corner_Blends.md`,
+`docs/Smooth_Support_Chain_Acceptance.md` and `docs/Modeling_Performance.md`.
+The catalog now contains 175 implemented dispatch descriptors; the newly
+implemented edge-split entry keeps its existing exported ABI signature.
+Final integrated Release validation passed 1,603 kernel tests and 12 XT tests,
+45 regular curved Boolean cases, 79 sheet cases, 23 mixed-solid cases, 18 finite
+analytic cases and 84 corner/order cases. Nested re-fillets and the complete
+corner/cut/new-edge re-fillet chain pass independent PK comparison. The final
+complete-chain cache A/B reduces Boolean elapsed by about 21% on its measured
+input. Exact gates, snapshots and unsupported events are recorded in
+`docs/reviews/advanced-modeling/m3-m4-m5-2026-11-06.md`.
+
 | Area | Implemented scope | Reference |
 | --- | --- | --- |
 | Runtime | Session and partition management, typed entity pools, generations, return memory, command dispatch, journaling and rollback for covered operations | `docs/memory_architecture.md`, `docs/API_Dispatch_Model.md` |
@@ -50,7 +71,7 @@ remaining multi-minute Blend/Blend cost are recorded in
 | Pure geometry extension | Geometry-bounded analytic SSI, certified convex plane contacts, global supported minimum-distance/projection queries, exact cylindrical/toroidal blends and seven spline edits | `docs/Geometry_Completion_Plan.md` |
 | Boolean and editing | Planar and complete-sphere Boolean; finite regular Plane/Cylinder/NURBS/Blend mixed-solid Boolean within the documented pair contracts, cavities, multiple tools, repeated cuts and classification; regular NURBS/Blend sheet imprint, trim and section | `docs/Mixed_Curved_Boolean_Operations.md`, `docs/Regular_Curved_Boolean_Operations.md`, `docs/Curved_Modeling_Closure.md` |
 | Freeform construction | Interpolation/fitting, exact curve matching, clamped spline-grid surfaces with corner twists, rational sweep/spin surfaces, certified parallel-profile solid sweeps/lofts and complete-edge sewing | `docs/Freeform_Modeling.md` |
-| Local operations | Convex/analytic offsets and hollows, independent or uniform-all-edge convex fillets/chamfers, cylinder rim operations; regular constant-radius convex/concave Plane/NURBS and NURBS/NURBS single-edge solid fillets | `docs/Local_Operations.md`, `docs/Regular_Freeform_Solid_Fillets.md` |
+| Local operations | Convex/analytic offsets and hollows, convex fillets/chamfers and cylinder rims; regular constant-radius freeform and existing-Blend solid fillets, smooth subdivision/support-partition chains, equal-radius trivalent corners and defined band-extinction events | `docs/Local_Operations.md`, `docs/Regular_Freeform_Solid_Fillets.md`, `docs/Trivalent_Corner_Blends.md` |
 | Interchange | Fresh runtime-derived XT output, preserved opaque documents for unsupported import graphs, schema and corpus tooling | `docs/project_gm_kernel_xt_library.md`, `docs/xt_all_versions_support_status.md` |
 | Visualization | Real PK faceting and line rendering, PKToy viewer buffers, exact mapping to independent face/edge identifiers, native and managed integration | `docs/Display_Bridge.md` |
 

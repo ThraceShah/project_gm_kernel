@@ -35,6 +35,8 @@
 | 全边圆角/倒角 | 每个顶点恰好有三个支持面的凸平面实体，所有边使用同种、同尺寸定义，内缩后的支持面布局不改变拓扑。圆角包含全部圆柱边面与球面角点；倒角包含边平面与三角角点平面。 |
 | 圆柱端缘圆角/倒角 | 一个或两个完整圆形端缘。圆角构造环面，倒角构造圆锥面，保留无顶点圆边。 |
 | 规则自由曲面单边圆角 | Plane/NURBS、NURBS/NURBS，凸/凹单边，两个平面端部，真实 BlendSF 与 BLEND_BOUND 接触 ICurve；M2 还支持与既有有限障碍分离的布尔新生凸曲边再次圆角。详细合同见 `docs/Regular_Freeform_Solid_Fillets.md`、`docs/Mixed_Curved_Boolean_Operations.md`。 |
+| 光顺链与已有 Blend 支持 | 同载体拓扑分段链、同一支持面真实分区的切换与接触 seam 传输；有限 Plane/Blend 锐边再次圆角。保留真实 procedural 支撑及各自区间，详见 `docs/Smooth_Support_Chain_Acceptance.md` 和 `docs/Intersection_Local_Modeling_Architecture.md`。 |
+| 等半径三价角点 | 实际三边凸 star、Plane/BSurface 三支持的共同偏置根、真实圆柱/Blend bands 和共享球角片；明确的一至三条零 band 及对应支持面消退。详见 `docs/Trivalent_Corner_Blends.md`，不推广为任意高价或混合凸凹角点。 |
 
 全边圆角通过支持面向内偏置后形成的中心多面体构造。每个原面沿自己的法向平移中心多边形，每条中心棱生成圆柱面，每个中心顶点生成球面片。面与圆柱之间、圆柱与球面之间共享精确接触边。全边倒角沿用相同的接触拓扑，使用平面替代圆柱、球面片。
 

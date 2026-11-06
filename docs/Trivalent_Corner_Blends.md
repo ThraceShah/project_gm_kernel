@@ -107,6 +107,18 @@ faces are not passed to the face-handle preservation operation.
 The producer, oracle and tests use the public `set_blend_constant` /
 `fix_blends` protocol after that dispatch hook is installed.
 
+Final integration additionally verifies the three reverse-order permutations
+on base, skew-plane and band-extinction inputs from both authors (18 cases),
+bringing the producer/order total to 84. All six supplied edge permutations
+retain their complete structural and mass gates. The base consumer then
+reloads the real corner body, cuts through Sphere/Blend interfaces, performs a
+second finite notch cut and fillets its newborn NURBS/Plane curved edge.
+Both author families pass the entire chain. Finite cap growth is certified by
+the shared rolling reach/contact-domain path rather than a new corner fixture
+constructor. Full integration evidence and the unaccepted extra extended
+lifecycle diagnostic remain explicit in
+`docs/reviews/advanced-modeling/m3-m4-m5-2026-11-06.md`.
+
 ```sh
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/TrivalentBlendCornerOracle.cs -c Release -p:UseSharedCompilation=false -p:BuildInParallel=false
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/TrivalentBlendCornerOracle.cs -c Release -p:UseSharedCompilation=false -- base --lifecycle

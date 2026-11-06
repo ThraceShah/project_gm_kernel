@@ -160,4 +160,38 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/BlendChainPerformanceOra
 
 日志在 `temp_docs/modeling-performance/` 和
 `temp_docs/mixed-curved-boolean-oracle/profile-*/`；fresh XT 也保存在相应目录。
-依赖 SDK 不进入仓库。角点 → Boolean 组合输入仍需使用同样方法新增记录。
+依赖 SDK 不进入仓库。
+
+## 最终集成源码的完整链复测
+
+源码 `88cf31b`，同一 `chain-3-base-pk-source`，固定两轮新建输入，先串行关闭缓存，
+再串行开启；其余建模 agent、测试和 oracle 均已停止。两模式都保留 spline jet
+复用、完整接触/间隙证明和相同 PK 硬门。所有四条链均通过首次圆角、fresh XT
+对照、重载后切削、再次 fresh XT 对照及所有权清理。
+
+| 完整 API / 工作量 | 缓存关闭 cold/warm | 缓存开启 cold/warm |
+| --- | ---: | ---: |
+| 三段链 FixBlends | 2.109 / 1.633s | 2.112 / 1.594s |
+| 重载后 Boolean | 12.678 / 12.343s | 10.057 / 9.720s |
+| Boolean procedural Bound 执行 | 9858 / 9858 | 5055 / 5044 |
+| Boolean bound 请求 | 16499 / 16499 | 16499 / 16499 |
+
+本机完整 Boolean 降时约 20.7%/21.2%；本组 FixBlends 没有明显冷次收益。
+两模式的 54 pair、150 SSI cells、5601 root cells、77 根候选、179 winding、
+0 budget failures 完全相同。相较历史快照，M3 求交和接触证明工作已经变化，
+不能直接用历史调用计数作为当前版本的分母。
+
+原始记录在 `temp_docs/m345-performance-final-uncached.log` 与
+`temp_docs/m345-performance-final-cached.log`，筛选记录及源文件指纹收录于
+`docs/reviews/advanced-modeling/m3-m4-m5-validation.txt`。复现无需临时补丁：
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/BlendChainOracle.cs -c Release -p:UseSharedCompilation=false -p:BuildInParallel=false -- chain-3-base-pk-source --profile --repeat 2 --no-bound-cache
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/BlendChainOracle.cs -c Release -p:UseSharedCompilation=false -p:BuildInParallel=false -- chain-3-base-pk-source --profile --repeat 2
+```
+
+新的角点 → 重载 → Sphere/Blend 切削 → 第二刀 → 新生边圆角，在
+`scripts/TrivalentBlendCornerOracle.cs -- base --consumer --refillet` 中由两种输入
+来源分别严格通过；这组正确性运行并行过其它 oracle，未将其 wall time 充作
+独占性能测量。新增完整 contact 证明也使嵌套再次圆角仍有数十秒输入，这项
+成本与重型 Boolean 的分钟级输入都保留为后续优化对象。
