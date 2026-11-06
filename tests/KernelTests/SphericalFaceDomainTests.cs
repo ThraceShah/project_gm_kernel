@@ -11,6 +11,27 @@ public unsafe class SphericalFaceDomainTests:IDisposable
     public void Dispose(){KernelRuntime.SessionStop();}
 
     [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void RationalBezierOctantBoundariesUseTheCompleteFiniteSphericalDomain(bool reversed)
+    {
+        var sf=new PK_SPHERE_sf_s{radius=1};sf.basis_set.axis.coord[2]=1;sf.basis_set.ref_direction.coord[0]=1;int sphere;Assert.Equal(0,KernelRuntime.SphereCreate(&sf,&sphere));
+        Span<KernelRuntime.ModelingEdge> edges=stackalloc KernelRuntime.ModelingEdge[3];Span<KernelRuntime.ModelingCoedge> coedges=stackalloc KernelRuntime.ModelingCoedge[3];
+        double* poles=stackalloc double[12];double* knots=stackalloc double[2]{0,1};int* multiplicities=stackalloc int[2]{3,3};var w=Math.Sqrt(.5);
+        for(var side=0;side<3;side++)
+        {
+            new Span<double>(poles,12).Clear();poles[side]=1;poles[3]=poles[11]=1;poles[8+(side+1)%3]=1;
+            poles[4+side]=w;poles[4+(side+1)%3]=w;poles[7]=w;
+            var definition=new PK_BCURVE_sf_s{degree=2,n_vertices=3,vertex_dim=4,is_rational=1,vertex=poles,n_knots=2,knot=knots,knot_mult=multiplicities,
+                form=ParasolidConstants.PK_BCURVE_form_arbitrary_c,knot_type=ParasolidConstants.PK_knot_bezier_ends_c,self_intersecting=ParasolidConstants.PK_self_intersect_unset_c};int curve;
+            Assert.Equal(0,KernelRuntime.BCurveCreate(&definition,&curve));edges[side]=new(){Curve=curve,Start=0,End=1,StartVertex=side,EndVertex=(side+1)%3};
+            coedges[side]=new(){Edge=reversed?2-side:side,Forward=reversed?(byte)0:(byte)1};
+        }
+        var uv=new PK_UV_s();uv.param[0]=Math.PI*.25;uv.param[1]=Math.Asin(1/Math.Sqrt(3));
+        Assert.Equal(0,KernelRuntime.TestSphericalCycle(sphere,edges,coedges,uv,out var winding,out var positive));Assert.Equal(reversed?-1:1,winding);Assert.Equal(reversed?0:1,positive);
+        uv.param[0]=Math.PI*.75;Assert.Equal(0,KernelRuntime.TestSphericalCycle(sphere,edges,coedges,uv,out winding,out positive));Assert.Equal(0,winding);Assert.Equal(reversed?0:1,positive);
+    }
+
+    [Theory]
     [InlineData(0,false)] [InlineData(1,false)] [InlineData(2,false)]
     [InlineData(0,true)] [InlineData(1,true)] [InlineData(2,true)]
     public void CertifiedSphericalOctantUsesNoNativeSeamOrPole(int frame,bool reversed)

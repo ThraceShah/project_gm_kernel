@@ -23,8 +23,8 @@ finite-domain building block for spherical fillet corners; it does not claim
 general singular SSI or global spherical region arrangements.
 
 ```sh
-MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests --filter FullyQualifiedName~SphericalFaceDomainTests
-MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/SphericalFaceDomainOracle.cs -p:UseSharedCompilation=false -p:BuildInParallel=false
+MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests -c Release --filter FullyQualifiedName~SphericalFaceDomainTests
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache -c Release scripts/SphericalFaceDomainOracle.cs -p:UseSharedCompilation=false -p:BuildInParallel=false
 ```
 
 Manufactured octant tests vary the native frame and loop sense, including a
@@ -35,6 +35,15 @@ kernel inputs, checks the fresh self XT with real PK, runs complete BODY_check
 on both results and requires topology, region/shell, type, sense, tolerance,
 missing-entity and mass-property agreement.
 
-Checkpoint verification: 9 spherical-domain unit cases and the 16 mixed
-analytic Boolean regressions pass. Both independent Parasolid imprint cases
-pass all structural checks, including the pole-containing parameterization.
+Rational quadratic BCurve boundaries now use a position/derivative-sized
+evaluation buffer when selecting the local frame. Positive and reversed exact
+octant loops exercise these boundaries directly. The independent public API
+oracle also replaces each circular sheet edge by its exact rational quadratic
+arc before imprinting, aligning its parameter direction with the edge rather
+than inheriting the source circle's sense.
+
+Checkpoint verification: 11 spherical-domain unit cases pass. All four
+independent Parasolid imprint cases pass the complete structural checks:
+circular and rational BCurve boundaries, each in its native and pole-containing
+parameterization. The original 16 mixed analytic Boolean regressions were also
+checked at the finite-domain introduction checkpoint.

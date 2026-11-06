@@ -10,6 +10,15 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+#if KERNEL_TEST_HOOKS
+    internal static int TestSphericalCycle(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
+        PK_UV_s uv,out BufferCount winding,out byte positive)
+    {
+        var owns=EnsureCommandScratch();positive=0;
+        try{var error=SphericalLoopWinding(surface,edges,loop,uv,out winding);return error!=0?error:SphericalCycleWitness(surface,edges,loop,out _,out positive);}
+        finally{if(owns)ReleaseCommandScratch(State.Session);}
+    }
+#endif
     private static int ValidateSphericalFaceDomain(FaceSlot face)
     {
         var record=Faces[face];if(record.LoopCount==0)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -35,7 +44,7 @@ internal static unsafe partial class KernelRuntime
         out AnalyticSurface sphere,out KernelVector3 normal,out KernelVector3 x,out KernelVector3 y)
     {
         normal=x=y=default;if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(surface)],out sphere))return ParasolidConstants.PK_ERROR_not_implemented;
-        Span<KernelVector3> point=stackalloc KernelVector3[1];
+        Span<KernelVector3> point=stackalloc KernelVector3[2];
         // These evaluations choose a chart only. Every point of every edge
         // must subsequently pass the positive-hemisphere interval proof.
         foreach(ref readonly var coedge in loop)

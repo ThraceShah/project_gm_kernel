@@ -18,7 +18,7 @@ using(host)unsafe
     try
     {
         var passed=0;var failed=0;
-        foreach(var kind in new[]{"native-frame","pole-frame"})
+        foreach(var kind in new[]{"native-frame","pole-frame","rational-native-frame","rational-pole-frame"})
         {
             var name=kind;if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
             try
@@ -45,7 +45,7 @@ static unsafe int Produce(bool own,string kind)
     var box=new M.PK_UVBOX_s();box.param[0]=.15;box.param[1]=.2;box.param[2]=1.15;box.param[3]=.9;int target;
     Check(own?KernelRuntime.SurfMakeSheetBody(surface,box,&target):PK_SURF_make_sheet_body(surface,*(PK_UVBOX_t*)&box,&target),"finite sphere sheet");
     if(own)Check(KernelRuntime.EntityDelete(1,&surface),"delete original orphan sphere");
-    if(kind=="pole-frame")
+    if(kind.EndsWith("pole-frame",StringComparison.Ordinal))
     {
         sf.basis_set.axis=new(Math.Cos(.55)*Math.Cos(.65),Math.Cos(.55)*Math.Sin(.65),Math.Sin(.55));sf.basis_set.ref_direction=new(-Math.Sin(.65),Math.Cos(.65),0);
         Check(own?KernelRuntime.SphereCreate((M.PK_SPHERE_sf_s*)&sf,&surface):PK_SPHERE_create(&sf,&surface),"equivalent sphere frame");
@@ -55,11 +55,48 @@ static unsafe int Produce(bool own,string kind)
         Check(own?KernelRuntime.FaceAttachSurfaces(1,&face,&surface,(byte*)&positive):PK_FACE_attach_surfs(1,&face,&surface,&positive),"attach equivalent pole frame");
         if(own)Check(KernelRuntime.EntityDelete(1,&old),"delete detached sphere");
     }
+    if(kind.StartsWith("rational-",StringComparison.Ordinal))AttachRationalCircleArcs(own,target);
     var plane=new PK_PLANE_sf_t{basis_set=new(){location=new(.65,0,0),axis=new(1,0,0),ref_direction=new(0,1,0)}};int cutter;
     Check(own?KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&plane,&cutter):PK_PLANE_create(&plane,&cutter),"plane cutter");int count;int* edges;
     Check(own?KernelRuntime.BodyImprintPlane(target,cutter,1e-8,&count,&edges):PK_BODY_imprint_plane(target,cutter,1e-8,&count,&edges),"imprint finite sphere");
     Console.WriteLine($"{kind} {(own?"self":"native")} imprint returned edges={count}");
     Require(count>0,"complete new arcs");if(edges!=null)Check(own?KernelRuntime.MemoryFree(edges):PK_MEMORY_free(edges),"imprint edge buffer");return target;
+}
+
+static unsafe void AttachRationalCircleArcs(bool own,int body)
+{
+    int count;int* edges;Check(own?KernelRuntime.BodyAskEdges(body,&count,&edges):PK_BODY_ask_edges(body,&count,&edges),"rational boundary edges");
+    double* poles=stackalloc double[12];double* knots=stackalloc double[2];int* multiplicities=stackalloc int[2]{3,3};PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
+    try
+    {
+        for(var e=0;e<count;e++)
+        {
+            int curve,kind;PK_INTERVAL_t range;PK_LOGICAL_t sense;var reverse=false;
+            if(own)
+            {
+                Check(KernelRuntime.EdgeAskCurve(edges[e],&curve),"source circle");Check(KernelRuntime.EntityAskClass(curve,&kind),"source boundary class");
+                var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edges[e]).Slot];Require(edge.HasParameterRange!=0,"finite source interval");range.value[0]=edge.ParameterStart;range.value[1]=edge.ParameterEnd;
+                reverse=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(curve)].Sense==PK_TOPOL_sense_negative_c;
+            }
+            else{Check(PK_EDGE_ask_geometry(edges[e],PK_LOGICAL_true,&curve,&kind,ends,&range,&sense),"native finite circle");reverse=sense==PK_LOGICAL_false;}
+            Require(kind==PK_CLASS_circle,"exact circular source boundary");var sf=new PK_CIRCLE_sf_t();Check(own?KernelRuntime.CircleAsk(curve,(M.PK_CIRCLE_sf_s*)&sf):PK_CIRCLE_ask(curve,&sf),"circle definition");
+            var first=range.value[0];var last=range.value[1];var middle=(first+last)*.5;var weight=Math.Cos((last-first)*.5);Require(last>first&&weight>0,"positive rational arc");knots[0]=first;knots[1]=last;
+            var x=sf.basis_set.ref_direction;var axis=sf.basis_set.axis;var y=new PK_VECTOR_t(axis.coord[1]*x.coord[2]-axis.coord[2]*x.coord[1],axis.coord[2]*x.coord[0]-axis.coord[0]*x.coord[2],axis.coord[0]*x.coord[1]-axis.coord[1]*x.coord[0]);
+            for(var i=0;i<3;i++)
+            {
+                var angle=i==0?first:i==1?middle:last;var w=i==1?weight:1;
+                for(var d=0;d<3;d++)poles[4*i+d]=w*sf.basis_set.location.coord[d]+sf.radius*(Math.Cos(angle)*x.coord[d]+Math.Sin(angle)*y.coord[d]);poles[4*i+3]=w;
+            }
+            if(reverse)for(var d=0;d<4;d++)(poles[d],poles[8+d])=(poles[8+d],poles[d]);
+            var definition=new PK_BCURVE_sf_t{degree=2,n_vertices=3,vertex_dim=4,is_rational=PK_LOGICAL_true,vertex=poles,n_knots=2,knot=knots,knot_mult=multiplicities,
+                form=PK_BCURVE_form_arbitrary_c,knot_type=PK_knot_bezier_ends_c,self_intersecting=PK_self_intersect_unset_c};int rational;
+            Check(own?KernelRuntime.BCurveCreate((M.PK_BCURVE_sf_s*)&definition,&rational):PK_BCURVE_create(&definition,&rational),"exact rational circle arc");
+            Check(own?KernelRuntime.TopologyDetachGeometry(edges[e]):PK_TOPOL_detach_geom(edges[e]),"detach circular boundary");
+            Check(own?KernelRuntime.EdgeAttachCurves(1,edges+e,&rational):PK_EDGE_attach_curves(1,edges+e,&rational),"attach rational boundary");
+            if(own)Check(KernelRuntime.EntityDelete(1,&curve),"release detached source circle");
+        }
+    }
+    finally{if(edges!=null)Check(own?KernelRuntime.MemoryFree(edges):PK_MEMORY_free(edges),"source edge buffer");}
 }
 static unsafe byte[] Transmit(int body)
 {
