@@ -1,5 +1,7 @@
 # 嵌套 Blend 四项扩展验收
 
+本页保留本轮四项扩展的阶段记录。后续公共兴趣区域语义修正、规则求交搜索改进和 Blend sheet 连续裁剪闭环见 `docs/Curved_Modeling_Closure.md`；下文关于 UVbox 裁剪和空间 box 不支持的说明属于修正前的范围。
+
 日期：2026-11-06。本轮扩展 `docs/Nested_Blend_Acceptance.md` 的常半径数值路径。四项目标按下面的支持范围分别验收；变半径仍按用户要求暂不实现。
 
 ## 四项目标与边界

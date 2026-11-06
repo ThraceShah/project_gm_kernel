@@ -23,6 +23,7 @@ internal static unsafe partial class KernelRuntime
         {
             var support=GetSurfaceSlotByTag(Faces[source].SurfTag);
             if(support<0)return ParasolidConstants.PK_ERROR_missing_geom;
+            if(Surfaces[support].Class==SurfaceClass.BlendSurface)continue;
             if(Surfaces[support].Class!=SurfaceClass.BSurface)return ParasolidConstants.PK_ERROR_not_implemented;
             var data=BSurfaceDataStore[Surfaces[support].DataIndex];
             if(data.IsUClosed!=0||data.IsVClosed!=0)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -51,17 +52,19 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<ns;i++)changed|=sourceEdges[i].Count>1;
             var boundaryCount=model.NE;
             Span<SheetCutCurve> cuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];
+            SurfTag preparedSurface=0;BufferCount preparedCount=0;
             source=Bodies[body].FirstFaceBody;
             for(var i=0;i<Bodies[body].FaceCountBody;i++,source=Faces[source].NextInBody)
             {
-                error=PrepareSheetCutCurves(Faces[source].SurfTag,plane,cuts,out var nc);if(error!=0)return error;
-                error=ArrangeSheetFace(source,plane,sourceEdges[..ns],cuts[..nc],ref model,halfedges,cycleCoedges,cycles);if(error!=0)return error;
-                for(var c=0;c<nc;c++)
+                if(Faces[source].SurfTag!=preparedSurface)
                 {
-                    var used=false;for(var e=0;e<model.NE;e++)if(model.Edges[e].Curve==cuts[c].Curve)used=true;
-                    if(!used){var curve=cuts[c].Curve;error=EntityDelete(1,&curve);if(error!=0)return error;}
+                    error=ReleaseUnusedSheetCuts(cuts[..preparedCount],ref model);if(error!=0)return error;
+                    preparedSurface=Faces[source].SurfTag;
+                    error=PrepareSheetCutCurves(preparedSurface,plane,cuts,out preparedCount);if(error!=0)return error;
                 }
+                error=ArrangeSheetFace(source,plane,sourceEdges[..ns],cuts[..preparedCount],ref model,halfedges,cycleCoedges,cycles);if(error!=0)return error;
             }
+            error=ReleaseUnusedSheetCuts(cuts[..preparedCount],ref model);if(error!=0)return error;
             changed|=model.NE>boundaryCount||model.NF!=Bodies[body].FaceCountBody;
             if(model.NF>products.Length||model.NF>sourceFaces.Length||model.NF>sides.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             LastSheetPartitionStage=SheetPartitionStage.TopologyBuild;
@@ -74,6 +77,16 @@ internal static unsafe partial class KernelRuntime
             return 0;
         }
         finally{scratch.Return(memory);}
+    }
+
+    private static int ReleaseUnusedSheetCuts(ReadOnlySpan<SheetCutCurve> cuts,ref SheetArrangement model)
+    {
+        foreach(ref readonly var cut in cuts)
+        {
+            var used=false;for(var e=0;e<model.NE;e++)if(model.Edges[e].Curve==cut.Curve)used=true;
+            if(!used){var curve=cut.Curve;var error=EntityDelete(1,&curve);if(error!=0)return error;}
+        }
+        return 0;
     }
 
     private static int ImprintGeneralSheet(BodySlot body,SurfTag plane,double tolerance,int* count,EntityTag** returned)

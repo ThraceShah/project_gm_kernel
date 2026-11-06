@@ -27,6 +27,14 @@ internal static unsafe partial class KernelRuntime
         if (status == AlgorithmStatus.Unsupported)
         {
             var options = new PK_SURF_intersect_surf_o_s { o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_pline_c };
+            // Unlike public interest boxes, these are actual finite modeling
+            // domains. Result arcs are subsequently clipped to the face loops.
+            if(Surfaces[a].Class==SurfaceClass.BlendSurface)
+            {
+                var support=Surfaces[a];options.have_uvbox_1=1;
+                options.uvbox_1.param[0]=support.UMin;options.uvbox_1.param[1]=support.VMin;
+                options.uvbox_1.param[2]=support.UMax;options.uvbox_1.param[3]=support.VMax;
+            }
             int* curves = null; PK_INTERVAL_s* intervals = null; int* kinds = null;
             var error = GeneralSurfIntersectSurf(a,b,-1,&options,&nc,&curves,&intervals,&kinds);
             try
@@ -59,6 +67,7 @@ internal static unsafe partial class KernelRuntime
     {
         count=0;var slot=GetCurveSlotByTag(curve);if(slot<0)return AlgorithmStatus.InvalidInput;
         if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(plane)],out var cutting))return AlgorithmStatus.Unsupported;
+        if(Curves[slot].Class==CurveClass.SPCurve)return IntersectBlendIsoparamPlane(slot,first,last,cutting,output,out count);
         if(Curves[slot].Class!=CurveClass.ICurve)
         {
             var interval=new PK_INTERVAL_s();interval.value[0]=first;interval.value[1]=last;
@@ -70,6 +79,19 @@ internal static unsafe partial class KernelRuntime
         }
         var data=ICurveDataPool[Curves[slot].DataIndex];
         var a=Surfaces[GetSurfaceSlotByTag(data.Surface0Tag)];var b=Surfaces[GetSurfaceSlotByTag(data.Surface1Tag)];
+        if(a.Class==SurfaceClass.BlendSurface||b.Class==SurfaceClass.BlendSurface)
+        {
+            var other=a.Class==SurfaceClass.BlendSurface?b:a;
+            if(TryPrepareSurface(other,out var flat)&&flat.Kind==SurfaceClass.Plane&&OperationIntersection.Norm(ProfileCross(flat.Axis,cutting.Axis))==0)
+            {
+                if(Dot(Sub(flat.Origin,cutting.Origin),cutting.Axis)!=0)return AlgorithmStatus.Success;
+                Span<KernelVector3> p=stackalloc KernelVector3[1];var evaluated=EvaluateCurveCore(in Curves[slot],first,0,false,p,out _);if(evaluated!=AlgorithmStatus.Success)return evaluated;
+                OperationIntersection.AddPoint(output,ref count,p[0],first,0,IntersectionVectorKind.Start);
+                evaluated=EvaluateCurveCore(in Curves[slot],last,0,false,p,out _);if(evaluated!=AlgorithmStatus.Success)return evaluated;
+                return OperationIntersection.AddPoint(output,ref count,p[0],last,0,IntersectionVectorKind.End)?AlgorithmStatus.Success:AlgorithmStatus.OutputTooSmall;
+            }
+            return IntersectProceduralICurvePlane(slot,first,last,cutting,output,out count);
+        }
         if(a.Class!=SurfaceClass.BSurface)(a,b)=(b,a);
         if(a.Class!=SurfaceClass.BSurface)return AlgorithmStatus.Unsupported;
         var analytic=TryPrepareSurface(b,out var support);

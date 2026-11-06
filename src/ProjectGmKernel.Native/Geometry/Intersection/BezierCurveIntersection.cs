@@ -12,18 +12,23 @@ internal static class BezierCurveIntersection
     internal static AlgorithmStatus Find(in BezierSurfacePatch first, in BezierSurfacePatch second,
         double firstLo, double firstHi, double secondLo, double secondHi,
         Span<OperationIntersectionPoint> output, ref BufferCount count)
+        =>Find(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),firstLo,firstHi,secondLo,secondHi,output,ref count);
+
+    internal static AlgorithmStatus Find(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
+        double firstLo,double firstHi,double secondLo,double secondHi,
+        Span<OperationIntersectionPoint> output,ref BufferCount count)
     {
         Span<ParameterCell> pending = stackalloc ParameterCell[128];
         pending[0] = new() { Lower = new() { U = firstLo, S = secondLo }, Upper = new() { U = firstHi, S = secondHi } };
         var n = 1; var visited = 0;
         Span<IntervalNumber> a = stackalloc IntervalNumber[9]; Span<IntervalNumber> b = stackalloc IntervalNumber[9];
-        Span<IntervalNumber> swept = stackalloc IntervalNumber[8 * 17]; Span<SurfaceIntersectionNode> roots = stackalloc SurfaceIntersectionNode[64];
+        Span<SurfaceIntersectionNode> roots = stackalloc SurfaceIntersectionNode[64];
         while (n > 0)
         {
             if (++visited > 100000) return AlgorithmStatus.NotConverged;
             var cell = pending[--n];
-            var status = BezierSurfaceBounds.Bound(first, cell.First, a); if (status != AlgorithmStatus.Success) return status;
-            status = BezierSurfaceBounds.Bound(second, cell.Second, b); if (status != AlgorithmStatus.Success) return status;
+            var status = first.Bound(cell.First, a); if(status==AlgorithmStatus.NotConverged)goto Subdivide;if (status != AlgorithmStatus.Success) return status;
+            status = second.Bound(cell.Second, b); if(status==AlgorithmStatus.NotConverged)goto Subdivide;if (status != AlgorithmStatus.Success) return status;
             var empty = false; for (var d = 0; d < 3; d++) if (!(a[d] - b[d]).ContainsZero) empty = true;
             if (empty) continue;
             var axis = -1; var best = 0.0;
@@ -37,14 +42,7 @@ internal static class BezierCurveIntersection
             {
                 var height = 1.0;
                 for (var d = 0; d < 3; d++) height = Math.Max(height, Math.Max(a[d].Upper, b[d].Upper) - Math.Min(a[d].Lower, b[d].Lower));
-                for (var i = 0; i <= first.UDegree; i++) for (var v = 0; v < 2; v++) for (var d = 0; d < 4; d++)
-                {
-                    var value = first.Poles[4 * i + d];
-                    if (d == axis) value += (v == 0 ? -height : height) * first.Poles[4 * i + 3];
-                    swept[4 * (2 * i + v) + d] = value;
-                }
-                var surface = new BezierSurfacePatch(swept[..(8 * (first.UDegree + 1))], first.UDegree, 1,
-                    new(first.Domain.U0, first.Domain.U1, -height, height));
+                var surface = new SurfaceIntersectionPatch(first,axis,height);
                 cell.Lower.V = -height; cell.Upper.V = height;
                 status = ParametricSurfaceIntersection.Isolate(surface, second, cell, 3, roots, out var nr);
                 if (status != AlgorithmStatus.Success) return status;
@@ -56,6 +54,7 @@ internal static class BezierCurveIntersection
                 }
                 continue;
             }
+            Subdivide:
             if (cell.Depth >= 48 || n + 2 > pending.Length) return AlgorithmStatus.NotConverged;
             var alongFirst = cell.Width(0) / (firstHi - firstLo) >= cell.Width(2) / (secondHi - secondLo);
             var split = alongFirst ? 0 : 2; var middle = cell.Lower.Parameter(split) + cell.Width(split) * .4931471805599453;

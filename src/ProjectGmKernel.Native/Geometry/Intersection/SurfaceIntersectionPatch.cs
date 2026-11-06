@@ -19,6 +19,8 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly BlendSurfaceIndex surface;
     private readonly bool isBlend;
     private readonly bool isSpine;
+    private readonly byte isoAxis, sweepAxis;
+    private readonly double isoParameter;
     private readonly Span<SurfaceBoundCacheEntry> cache;
     internal SurfaceParameterBox Domain{get;}
     internal bool IsProcedural=>isBlend;
@@ -30,7 +32,11 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSurfaceIndex root,SurfaceParameterBox domain){bezier=default;blend=program;surface=root;isBlend=true;isSpine=false;Domain=domain;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,double lower,double upper){bezier=default;blend=program;surface=spine;isBlend=isSpine=true;Domain=new(lower,upper,0,1);}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries)
-    {bezier=source.bezier;blend=source.blend;surface=source.surface;isBlend=source.isBlend;isSpine=source.isSpine;Domain=source.Domain;cache=entries;}
+    {this=source;cache=entries;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,bool constantU,double parameter,double lower,double upper)
+    {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch curve,BufferOffset axis,double height)
+    {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;}
     internal AlgorithmStatus Bound(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         if(cache.IsEmpty)return BoundCore(box,output);
@@ -41,13 +47,30 @@ internal readonly ref struct SurfaceIntersectionPatch
         var status=BoundCore(box,output);entry.Box=box;entry.Status=status;if(status==AlgorithmStatus.Success)output[..9].CopyTo(entry.Values);return status;
     }
     private AlgorithmStatus BoundCore(in SurfaceParameterBox box,Span<IntervalNumber> output)
-        =>isSpine?JointNestedBlendEvaluation.BoundSpine(blend,surface,box,output):isBlend?JointNestedBlendEvaluation.Bound(blend,surface,box,output):BezierSurfaceBounds.Bound(bezier,box,output);
+    {
+        var mapped=isoAxis==1?new SurfaceParameterBox(isoParameter,isoParameter,box.U0,box.U1)
+            :isoAxis==2?new(box.U0,box.U1,isoParameter,isoParameter):sweepAxis!=0?new(box.U0,box.U1,0,0):box;
+        var status=isSpine?JointNestedBlendEvaluation.BoundSpine(blend,surface,mapped,output)
+            :isBlend?JointNestedBlendEvaluation.Bound(blend,surface,mapped,output):BezierSurfaceBounds.Bound(bezier,mapped,output);
+        if(status!=AlgorithmStatus.Success)return status;
+        if(isoAxis!=0)
+        {
+            if(isoAxis==1)output.Slice(6,3).CopyTo(output[3..]);
+            output[6]=output[7]=output[8]=0;
+        }
+        if(sweepAxis!=0)
+        {
+            var axis=sweepAxis-1;output[axis]+=new IntervalNumber(box.V0,box.V1);
+            output[6]=output[7]=output[8]=0;output[6+axis]=1;
+        }
+        return status;
+    }
 
     // Estimates only guide local optimization. Accepted upper bounds are
     // recomputed with Bound; estimates never reject a search cell.
     internal AlgorithmStatus Estimate(double u,double v,Span<IntervalNumber> output)
     {
-        if(!isBlend)return Bound(new(u,u,v,v),output);
+        if(!isBlend||isoAxis!=0||sweepAxis!=0)return Bound(new(u,u,v,v),output);
         Span<KernelVector3> jets=stackalloc KernelVector3[4];SurfaceDerivativeLayout.TryCreate(1,1,out var layout);
         var status=isSpine?JointNestedBlendEvaluation.EvaluateSpine(blend,surface,u,1,jets):JointNestedBlendEvaluation.Evaluate(blend,surface,u,v,layout,jets);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<3;i++){var p=i==0?jets[0]:i==1?jets[isSpine?1:2]:isSpine?default:jets[1];output[3*i]=p.X;output[3*i+1]=p.Y;output[3*i+2]=p.Z;}return AlgorithmStatus.Success;
@@ -56,6 +79,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal AlgorithmStatus SupportRange(in SurfaceParameterBox box,in KernelVector3 direction,ReadOnlySpan<IntervalNumber> bounds,out IntervalNumber range)
     {
         range=default;
+        if(isoAxis!=0||sweepAxis!=0){range=bounds[0]*direction.X+bounds[1]*direction.Y+bounds[2]*direction.Z;return AlgorithmStatus.Success;}
         if(!isBlend)
         {
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];var status=BezierSurfaceBounds.Restrict(bezier,box,poles);if(status!=AlgorithmStatus.Success)return status;

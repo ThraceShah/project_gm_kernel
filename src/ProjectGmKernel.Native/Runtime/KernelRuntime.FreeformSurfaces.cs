@@ -226,6 +226,7 @@ internal static unsafe partial class KernelRuntime
         Span<ModelingLoop> loops = stackalloc ModelingLoop[1];
         Span<ModelingFace> faces = stackalloc ModelingFace[1];
         Span<KernelVector3> jet = stackalloc KernelVector3[4]; SurfaceDerivativeLayout.TryCreate(1, 1, out var layout);
+        var cloneError = TryCloneEntityCore(surface, out var clone); if (cloneError != 0) return cloneError;
         for (var i = 0; i < 4; i++)
         {
             var u = i is 1 or 2 ? u1 : u0; var v = i >= 2 ? v1 : v0;
@@ -239,13 +240,12 @@ internal static unsafe partial class KernelRuntime
         {
             var constantU = (i & 1) != 0; var fixedValue = i == 0 ? v0 : i == 1 ? u1 : i == 2 ? v1 : u0;
             var start = constantU ? v0 : u0; var end = constantU ? v1 : u1;
-            var error = FreeformIsoparam(surface, constantU, fixedValue, start, end, out var curve, out var a, out var b);
+            var error = FreeformIsoparam(clone, constantU, fixedValue, start, end, out var curve, out var a, out var b);
             if (error != 0) return error;
             Curves[GetCurveSlotByTag(curve)].Sense = i < 2 ? ParasolidConstants.PK_TOPOL_sense_positive_c : ParasolidConstants.PK_TOPOL_sense_negative_c;
             edges[i] = new ModelingEdge { Curve = curve, StartVertex = i, EndVertex = (i + 1) % 4, Start = a, End = b };
             coedges[i] = new ModelingCoedge { Edge = i, Forward = 1 };
         }
-        var cloneError = TryCloneEntityCore(surface, out var clone); if (cloneError != 0) return cloneError;
         loops[0] = new ModelingLoop { FirstCoedge = 0, CoedgeCount = 4 };
         faces[0] = new ModelingFace { Surface = clone, Sense = ParasolidConstants.PK_TOPOL_sense_positive_c, FirstLoop = 0, LoopCount = 1 };
         var finish = BuildModelingBrep(points, edges, coedges, loops, faces, false, out var result);

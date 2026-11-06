@@ -52,6 +52,13 @@ internal static class ParametricSurfaceIntersection
     internal static AlgorithmStatus FindProcedural(scoped in SurfaceIntersectionPatch firstSource,scoped in SurfaceIntersectionPatch secondSource,
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount)
     {
+        BufferCount remaining=MaxCells;
+        return FindProcedural(firstSource,secondSource,nodes,ref nodeCount,segments,ref segmentCount,ref remaining);
+    }
+
+    internal static AlgorithmStatus FindProcedural(scoped in SurfaceIntersectionPatch firstSource,scoped in SurfaceIntersectionPatch secondSource,
+        Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining)
+    {
         Span<SurfaceBoundCacheEntry> firstCache=stackalloc SurfaceBoundCacheEntry[256],secondCache=stackalloc SurfaceBoundCacheEntry[256];firstCache.Clear();secondCache.Clear();
         var first=new SurfaceIntersectionPatch(firstSource,firstCache);var second=new SurfaceIntersectionPatch(secondSource,secondCache);
         Span<ParameterCell> pending = stackalloc ParameterCell[256];
@@ -64,14 +71,18 @@ internal static class ParametricSurfaceIntersection
         Span<double> inverse = stackalloc double[9];Span<IntervalNumber> check=stackalloc IntervalNumber[9];
         while (count > 0)
         {
-            if (++visited > MaxCells) return AlgorithmStatus.NotConverged;
+            if (++visited > MaxCells||remaining--<=0) return AlgorithmStatus.NotConverged;
             var cell = pending[--count]; var savedNodes = nodeCount; var savedSegments = segmentCount;
             var status = Bounds(first, second, cell, f, jac);if(status!=AlgorithmStatus.Success&&status!=AlgorithmStatus.NotConverged)return status;
             var bounded=status==AlgorithmStatus.Success;
             if (bounded&&(!f[0].ContainsZero || !f[1].ContainsZero || !f[2].ContainsZero)) continue;
             var free = bounded?SelectGraphAxis(jac, cell, inverse):-1; var size = 0.0;
             for (var d = 0; d < 4; d++) size = Math.Max(size, cell.Width(d) / initial.Width(d));
-            var accepted = free >= 0 && size <= .14;
+            // Procedural patches already follow individual spine charts. The
+            // contracting graph proof and complete boundary isolation decide
+            // admission; subdividing unrelated affine support coordinates to
+            // a fixed fraction adds no completeness guarantee.
+            var accepted = free >= 0 && (first.IsProcedural||second.IsProcedural||size <= .14);
             var nr = 0;
             if (accepted)
             {
@@ -146,7 +157,7 @@ internal static class ParametricSurfaceIntersection
         in ParameterCell cell, Span<IntervalNumber> residual, Span<IntervalNumber> jacobian)
         =>Bounds(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),cell,residual,jacobian);
 
-    private static AlgorithmStatus Bounds(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
+    internal static AlgorithmStatus Bounds(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
         in ParameterCell cell,Span<IntervalNumber> residual,Span<IntervalNumber> jacobian)
     {
         Span<IntervalNumber> a = stackalloc IntervalNumber[9]; Span<IntervalNumber> b = stackalloc IntervalNumber[9];
@@ -176,7 +187,7 @@ internal static class ParametricSurfaceIntersection
         in ParameterCell domain, BufferOffset fixedAxis, Span<SurfaceIntersectionNode> roots, out BufferCount rootCount)
         =>Isolate(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),domain,fixedAxis,roots,out rootCount);
 
-    private static AlgorithmStatus Isolate(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
+    internal static AlgorithmStatus Isolate(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
         in ParameterCell domain,BufferOffset fixedAxis,Span<SurfaceIntersectionNode> roots,out BufferCount rootCount)
     {
         rootCount = 0;

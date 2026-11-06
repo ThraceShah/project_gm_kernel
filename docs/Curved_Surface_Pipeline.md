@@ -1,5 +1,11 @@
 # Regular surface intersection, sheet partition and trimming
 
+The regular Blend-sheet extension and corrected public interest-region
+semantics are tracked in `docs/Curved_Modeling_Closure.md`. Blend sheet
+boundaries retain exact circles and surface parameter curves; subsequent
+plane cuts also split procedural ICURVE edges. Sheet operations still use
+plane cutters; this extension does not implement general curved-solid Booleans.
+
 Updated 2026-11-05. The pipeline connects bounded surface intersection,
 parameter-space arrangement, plane-side classification and shared B-rep
 construction. It retains the earlier exact intersection paths and adds a

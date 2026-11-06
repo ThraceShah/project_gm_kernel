@@ -12,7 +12,13 @@ internal static class SurfacePairPlaneRoots
 {
     internal static AlgorithmStatus Find(in BezierSurfacePatch first, in BezierSurfacePatch second, in AnalyticSurface plane,
         Span<SurfaceIntersectionNode> roots, out BufferCount count)
+        =>Find(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),plane,roots,out count);
+
+    internal static AlgorithmStatus Find(in SurfaceIntersectionPatch firstSource,in SurfaceIntersectionPatch secondSource,in AnalyticSurface plane,
+        Span<SurfaceIntersectionNode> roots,out BufferCount count)
     {
+        Span<SurfaceBoundCacheEntry> firstCache=stackalloc SurfaceBoundCacheEntry[256],secondCache=stackalloc SurfaceBoundCacheEntry[256];firstCache.Clear();secondCache.Clear();
+        var first=new SurfaceIntersectionPatch(firstSource,firstCache);var second=new SurfaceIntersectionPatch(secondSource,secondCache);
         count = 0;
         var domain = new ParameterCell { Lower = new() { U=first.Domain.U0,V=first.Domain.V0,S=second.Domain.U0,T=second.Domain.V0 },
             Upper = new() { U=first.Domain.U1,V=first.Domain.V1,S=second.Domain.U1,T=second.Domain.V1 } };
@@ -23,14 +29,14 @@ internal static class SurfacePairPlaneRoots
         while (n > 0)
         {
             if (++visited > 100000) return AlgorithmStatus.NotConverged;
-            var cell = pending[--n]; var status = Bounds(first,second,plane,cell,f,jac); if (status != AlgorithmStatus.Success) return status;
+            var cell = pending[--n]; var status = Bounds(first,second,plane,cell,f,jac);if(status==AlgorithmStatus.NotConverged)goto Subdivide; if (status != AlgorithmStatus.Success) return status;
             var empty = false; for (var r=0;r<4;r++) if (!f[r].ContainsZero) empty=true; if (empty) continue;
             var point = cell.Center;
             if (Invert(jac,inverse) && Contraction(jac,inverse,cell)<.8)
             {
                 for (var iteration=0;iteration<14;iteration++)
                 {
-                    status=Bounds(first,second,plane,new(){Lower=point,Upper=point},cf,cj); if(status!=AlgorithmStatus.Success)return status;
+                    status=Bounds(first,second,plane,new(){Lower=point,Upper=point},cf,cj);if(status==AlgorithmStatus.NotConverged)goto Subdivide; if(status!=AlgorithmStatus.Success)return status;
                     if(!Invert(cj,inverse))break;var change=0.0;
                     for(var r=0;r<4;r++)
                     {
@@ -41,14 +47,14 @@ internal static class SurfacePairPlaneRoots
                     if(change<1e-14)break;
                 }
                 var singleton=new ParameterCell{Lower=point,Upper=point};
-                status=Bounds(first,second,plane,singleton,cf,cj);if(status!=AlgorithmStatus.Success)return status;
+                status=Bounds(first,second,plane,singleton,cf,cj);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
                 var extended=cell;
                 for(var d=0;d<4;d++)
                 {
                     var pad=Math.Max(cell.Width(d)*.05,1e-11*domain.Width(d));
                     extended.Lower.SetParameter(d,cell.Lower.Parameter(d)-pad);extended.Upper.SetParameter(d,cell.Upper.Parameter(d)+pad);
                 }
-                status=Bounds(first,second,plane,extended,f,jac);if(status!=AlgorithmStatus.Success)return status;
+                status=Bounds(first,second,plane,extended,f,jac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
                 var unique=Invert(cj,inverse);empty=false;
                 for(var r=0;r<4&&unique;r++)
                 {
@@ -66,7 +72,7 @@ internal static class SurfacePairPlaneRoots
                 var residual=0.0;for(var r=0;r<4;r++)residual=Math.Max(residual,cf[r].Magnitude);
                 if(unique&&residual<1e-9)
                 {
-                    status=BezierSurfaceBounds.Bound(first,singleton.First,position);if(status!=AlgorithmStatus.Success)return status;
+                    status=first.Bound(singleton.First,position);if(status!=AlgorithmStatus.Success)return status;
                     point.Point=new(){X=position[0].Midpoint,Y=position[1].Midpoint,Z=position[2].Midpoint};
                     var duplicate=false;
                     for(var i=0;i<count;i++)
@@ -78,6 +84,7 @@ internal static class SurfacePairPlaneRoots
                     continue;
                 }
             }
+            Subdivide:
             if(cell.Depth>=52||n+2>pending.Length)return AlgorithmStatus.NotConverged;
             var split=0;var widest=0.0;
             for(var d=0;d<4;d++)if(cell.Width(d)/domain.Width(d)>widest){widest=cell.Width(d)/domain.Width(d);split=d;}
@@ -88,11 +95,11 @@ internal static class SurfacePairPlaneRoots
         return AlgorithmStatus.Success;
     }
 
-    private static AlgorithmStatus Bounds(in BezierSurfacePatch first,in BezierSurfacePatch second,in AnalyticSurface plane,
+    private static AlgorithmStatus Bounds(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,in AnalyticSurface plane,
         in ParameterCell cell,Span<IntervalNumber> f,Span<IntervalNumber> jac)
     {
         var status=ParametricSurfaceIntersection.Bounds(first,second,cell,f,jac);if(status!=AlgorithmStatus.Success)return status;
-        Span<IntervalNumber> a=stackalloc IntervalNumber[9];status=BezierSurfaceBounds.Bound(first,cell.First,a);if(status!=AlgorithmStatus.Success)return status;
+        Span<IntervalNumber> a=stackalloc IntervalNumber[9];status=first.Bound(cell.First,a);if(status!=AlgorithmStatus.Success)return status;
         f[3]=(a[0]-plane.Origin.X)*plane.Axis.X+(a[1]-plane.Origin.Y)*plane.Axis.Y+(a[2]-plane.Origin.Z)*plane.Axis.Z;
         jac[12]=a[3]*plane.Axis.X+a[4]*plane.Axis.Y+a[5]*plane.Axis.Z;
         jac[13]=a[6]*plane.Axis.X+a[7]*plane.Axis.Y+a[8]*plane.Axis.Z;jac[14]=jac[15]=0;

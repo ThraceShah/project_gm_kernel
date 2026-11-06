@@ -11,7 +11,18 @@ internal static unsafe partial class KernelRuntime
     private static bool SameSheetSupport(SurfTag first, SurfTag second)
     {
         if(first==second)return true;
-        var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);if(a<0||b<0||Surfaces[a].Class!=SurfaceClass.BSurface||Surfaces[b].Class!=SurfaceClass.BSurface)return false;
+        var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);if(a<0||b<0||Surfaces[a].Class!=Surfaces[b].Class)return false;
+        if(Surfaces[a].Class==SurfaceClass.BlendSurface)
+        {
+            var x=BlendedEdgeDataPool[Surfaces[a].DataIndex];var y=BlendedEdgeDataPool[Surfaces[b].DataIndex];
+            var xp=GetNestedBlendProgram(x);var yp=GetNestedBlendProgram(y);
+            return x.ProgramRoot==y.ProgramRoot
+                &&System.Runtime.InteropServices.MemoryMarshal.AsBytes(xp.Surfaces).SequenceEqual(System.Runtime.InteropServices.MemoryMarshal.AsBytes(yp.Surfaces))
+                &&System.Runtime.InteropServices.MemoryMarshal.AsBytes(xp.Spines).SequenceEqual(System.Runtime.InteropServices.MemoryMarshal.AsBytes(yp.Spines))
+                &&System.Runtime.InteropServices.MemoryMarshal.AsBytes(xp.Charts).SequenceEqual(System.Runtime.InteropServices.MemoryMarshal.AsBytes(yp.Charts))
+                &&xp.Scalars.SequenceEqual(yp.Scalars);
+        }
+        if(Surfaces[a].Class!=SurfaceClass.BSurface)return false;
         var av=GetBSurfaceView(BSurfaceDataStore[Surfaces[a].DataIndex]);var bv=GetBSurfaceView(BSurfaceDataStore[Surfaces[b].DataIndex]);
         return av.UDegree==bv.UDegree&&av.VDegree==bv.VDegree&&av.Dimension==bv.Dimension&&av.Rational==bv.Rational
             &&av.UKnots.SequenceEqual(bv.UKnots)&&av.VKnots.SequenceEqual(bv.VKnots)&&av.Vertices.SequenceEqual(bv.Vertices);
@@ -50,36 +61,70 @@ internal static unsafe partial class KernelRuntime
     private static int SheetLoopWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
         PK_UV_s query,out BufferCount winding)
     {
+        var vertical=BlendWindingPrefersVertical(surface,edges,loop,query);
+        var error=SheetLoopWindingRay(surface,edges,loop,query,vertical,out winding);
+        return error is ParasolidConstants.PK_ERROR_cant_do_intersect or ParasolidConstants.PK_ERROR_eval_failure
+            ?SheetLoopWindingRay(surface,edges,loop,query,!vertical,out winding):error;
+    }
+
+    // A local jet chooses a promising ray direction only. Root isolation and
+    // winding still certify the result over the complete boundary intervals.
+    private static bool BlendWindingPrefersVertical(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,
+        ReadOnlySpan<ModelingCoedge> loop,PK_UV_s query)
+    {
+        var slot=GetSurfaceSlotByTag(surface);if(Surfaces[slot].Class!=SurfaceClass.BlendSurface)return false;
+        SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> jet=stackalloc KernelVector3[4];
+        if(EvaluateSurfaceCore(in Surfaces[slot],query.param[0],query.param[1],in layout,jet,0)!=AlgorithmStatus.Success)return false;
+        foreach(ref readonly var coedge in loop)
+        {
+            var curve=Curves[GetCurveSlotByTag(edges[coedge.Edge].Curve)];if(curve.Class!=CurveClass.ICurve)continue;
+            var data=ICurveDataPool[curve.DataIndex];var other=SameSheetSupport(surface,data.Surface0Tag)?data.Surface1Tag
+                :SameSheetSupport(surface,data.Surface1Tag)?data.Surface0Tag:0;
+            var otherSlot=GetSurfaceSlotByTag(other);if(otherSlot<0||!TryPrepareSurface(Surfaces[otherSlot],out var plane)||plane.Kind!=SurfaceClass.Plane)continue;
+            if(Math.Abs(Dot(Sub(jet[0],plane.Origin),plane.Axis))>1e-8)continue;
+            if(Math.Abs(Dot(jet[layout.GetIndex(0,1)],plane.Axis))>4*Math.Abs(Dot(jet[layout.GetIndex(1,0)],plane.Axis)))return true;
+        }
+        return false;
+    }
+
+    private static int SheetLoopWindingRay(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
+        PK_UV_s query,bool constantU,out BufferCount winding)
+    {
         winding=0;var record=Surfaces[GetSurfaceSlotByTag(surface)];
-        if(query.param[1]<record.VMin||query.param[1]>record.VMax)return 0;
-        CurveTag iso=0;var error=BSurfMakeBCurveIsoparamCore(surface,query.param[1],false,&iso);if(error!=0)return error;
+        var fixedParameter=query.param[constantU?0:1];var parameter=query.param[constantU?1:0];
+        if(fixedParameter<(constantU?record.UMin:record.VMin)||fixedParameter>(constantU?record.UMax:record.VMax))return 0;
+        var procedural=record.Class==SurfaceClass.BlendSurface;
+        CurveTag iso=0;var error=procedural?0:BSurfMakeBCurveIsoparamCore(surface,fixedParameter,constantU,&iso);if(error!=0)return error;
         try
         {
-            var range=new PK_INTERVAL_s();range.value[0]=record.UMin;range.value[1]=record.UMax;
-            error=ResolveIntersectionCurve(iso,range,out var ray);if(error!=0)return error;
+            var range=new PK_INTERVAL_s();range.value[0]=constantU?record.VMin:record.UMin;range.value[1]=constantU?record.VMax:record.UMax;
+            IntersectionCurveSpan ray=default;
+            if(!procedural){error=ResolveIntersectionCurve(iso,range,out ray);if(error!=0)return error;}
             Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
             foreach(ref readonly var coedge in loop)
             {
                 ref readonly var edge=ref edges[coedge.Edge];
                 LastSheetPartitionStage=SheetPartitionStage.RayIntersections;
-                var status=IntersectSheetBoundaryRay(surface,edge,ray,roots,out var count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                var status=procedural?IntersectBlendBoundaryRay(surface,fixedParameter,edge,roots,out var count,constantU)
+                    :IntersectSheetBoundaryRay(surface,edge,ray,roots,out count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 for(var i=0;i<count;i++)
                 {
                     var root=roots[i];if(root.Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_eval_failure;
-                    if(root.First<query.param[0]-1e-10)continue;
-                    if(Math.Abs(root.First-query.param[0])<1e-10)return ParasolidConstants.PK_ERROR_eval_failure;
+                    if(root.First<parameter-1e-10)continue;
+                    if(Math.Abs(root.First-parameter)<1e-10)return ParasolidConstants.PK_ERROR_eval_failure;
                     var duplicate=false;for(var j=0;j<i;j++)if(Math.Abs(roots[j].First-root.First)<1e-10)duplicate=true;if(duplicate)continue;
                     var epsilon=1e-10*Math.Max(1,edge.End-edge.Start);
                     if(edge.StartVertex>=0&&(Math.Abs(root.Second-edge.Start)<epsilon||Math.Abs(root.Second-edge.End)<epsilon))
                         {LastSheetPartitionStage=SheetPartitionStage.RayEndpoint;return ParasolidConstants.PK_ERROR_eval_failure;}
                     error=SheetCurveUV(surface,edge.Curve,root.Second,coedge.Forward!=0,out _,out var tangent,out _);if(error!=0)return error;
-                    if(Math.Abs(tangent.param[1])<1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1]))){LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
-                    winding+=tangent.param[1]>0?1:-1;
+                    var crossing=constantU?-tangent.param[0]:tangent.param[1];
+                    if(Math.Abs(crossing)<1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1]))){LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
+                    winding+=crossing>0?1:-1;
                 }
             }
             return 0;
         }
-        finally { EntityDelete(1,&iso); }
+        finally { if(iso!=0)EntityDelete(1,&iso); }
     }
 
     private static AlgorithmStatus IntersectSheetBoundaryRay(SurfTag surface,in ModelingEdge edge,in IntersectionCurveSpan ray,

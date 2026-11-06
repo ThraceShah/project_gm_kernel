@@ -18,7 +18,7 @@ internal static class AnalyticBezierPatches
         => surface.Kind != SurfaceClass.Cone || (surface.Radius + surface.Secondary * Project(bounds, surface.Origin, surface.Axis)).Upper >= 0;
 
     internal static AlgorithmStatus Create(in AnalyticSurface surface, in IntervalBox3 bounds, BufferOffset index,
-        Span<IntervalNumber> poles, out SplineDegree p, out SplineDegree q, out SurfaceParameterBox domain)
+        Span<IntervalNumber> poles, out SplineDegree p, out SplineDegree q, out SurfaceParameterBox domain,double minimumMargin=1)
     {
         p = surface.Kind == SurfaceClass.Plane ? 1 : 2;
         q = surface.Kind is SurfaceClass.Sphere or SurfaceClass.Torus ? 2 : 1;
@@ -26,7 +26,7 @@ internal static class AnalyticBezierPatches
         if (index < 0 || index >= Count(surface) || poles.Length < 4 * (p + 1) * (q + 1)) return AlgorithmStatus.InvalidInput;
         var xBounds = Project(bounds, surface.Origin, surface.X); var yBounds = Project(bounds, surface.Origin, surface.Y);
         var zBounds = Project(bounds, surface.Origin, surface.Axis);
-        var margin = Math.Max(1, Math.Max(xBounds.Upper - xBounds.Lower, Math.Max(yBounds.Upper - yBounds.Lower, zBounds.Upper - zBounds.Lower)) * .1);
+        var margin = Math.Max(minimumMargin, Math.Max(xBounds.Upper - xBounds.Lower, Math.Max(yBounds.Upper - yBounds.Lower, zBounds.Upper - zBounds.Lower)) * .1);
         var uPart = surface.Kind == SurfaceClass.Plane ? 0 : index % 4;
         var vPart = surface.Kind == SurfaceClass.Plane ? 0 : index / 4;
         if (surface.Kind != SurfaceClass.Plane) domain = new(uPart, uPart + 1, vPart, vPart + 1);

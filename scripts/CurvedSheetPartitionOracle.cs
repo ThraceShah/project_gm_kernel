@@ -25,16 +25,20 @@ try
         try
         {
             var failures = 0; var passed = 0;
-            foreach (var kind in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 })
+            foreach (var kind in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
             foreach (var operation in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
             {
                 if(kind<8&&operation>=6)continue;
-                var name = (kind>=8?(kind==9?"rational":"polynomial")+"-closed-loop":kind == 6 ? "isoparametric-line" : kind == 7 ? "tensor-isoparametric" : (kind % 2 == 1 ? "rational" : "polynomial") + (kind < 2 ? "-bilinear" : kind < 4 ? "-cubic" : "-multispan-cubic"))
+                if(kind==10&&operation>8)continue;
+                var name = (kind==10?"open-nurbs-blend":kind>=8?(kind==9?"rational":"polynomial")+"-closed-loop":kind == 6 ? "isoparametric-line" : kind == 7 ? "tensor-isoparametric" : (kind % 2 == 1 ? "rational" : "polynomial") + (kind < 2 ? "-bilinear" : kind <4 ? "-cubic" : "-multispan-cubic"))
                     + "-" + new[] { "imprint", "trim-keep", "trim-remove", "section-front", "section-back", "section-both", "second-plane", "repeat-plane", "annulus-front", "annulus-back", "annulus-both" }[operation];
+                if(kind==10&&operation>=7)name="open-nurbs-blend-"+(operation==7?"trim-second-plane":"repeat-second-plane");
                 if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
                 try
                 {
-                    var ours = Produce(true, kind, operation); var reference = Produce(false, kind, operation);
+                    int[] ours,reference;
+                    if(kind==10)(ours,reference)=ProduceBlendPair(operation);
+                    else {ours=Produce(true,kind,operation);reference=Produce(false,kind,operation);}
                     Require(ours.Length == reference.Length, name + " result count");
                     for(var j=0;j<reference.Length;j++)File.WriteAllBytes(Path.Combine(directory,name+"-"+j+"-reference.x_t"),TransmitReference(reference[j]));
                     var matched = new bool[reference.Length];
@@ -179,6 +183,99 @@ static unsafe int[] Produce(bool self, int kind, int operation)
         return [body];
     }
     finally { Check(self ? KernelRuntime.MemoryFree(edges) : PK_MEMORY_free(edges), "free imprint"); }
+}
+
+static unsafe (int[],int[]) ProduceBlendPair(int operation)
+{
+    double* poles=stackalloc double[18];for(var i=0;i<3;i++)for(var j=0;j<2;j++){var at=3*(2*i+j);poles[at]=i-1;poles[at+1]=2*j-1;poles[at+2]=(i==1?-.3:.3)+.1*(i-1)*(2*j-1);}
+    double* knots=stackalloc double[2]{-1,1};int* um=stackalloc int[2]{3,3};int* vm=stackalloc int[2]{2,2};
+    var sf=new PK_BSURF_sf_t{u_degree=2,v_degree=1,n_u_vertices=3,n_v_vertices=2,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=um,v_knot_mult=vm,form=PK_BSURF_form_arbitrary_c,u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};
+    int ownSource,nativeSource;Check(KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&ownSource),"own Blend support");Check(PK_BSURF_create(&sf,&nativeSource),"native Blend support");
+    var wall=new PK_PLANE_sf_t();wall.basis_set.axis=new(0,1,0);wall.basis_set.ref_direction=new(1,0,0);int ownWall,nativeWall;
+    Check(KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&wall,&ownWall),"own Blend wall");Check(PK_PLANE_create(&wall,&nativeWall),"native Blend wall");
+    var options=new PK_SURF_create_blend_o_t();var a=new PK_VECTOR_t(.5,0,.075);var b=new PK_VECTOR_t(-.5,0,.075);int own,native;
+    Check(KernelRuntime.SurfCreateBlend(ownSource,.1,ownWall,.1,*(M.PK_VECTOR_s*)&a,*(M.PK_VECTOR_s*)&b,(M.PK_SURF_create_blend_o_s*)&options,&own),"own independent Blend");
+    Check(PK_SURF_create_blend(nativeSource,.1,nativeWall,.1,a,b,&options,&native),"native independent Blend");
+    var ownDefinition=new M.PK_BLENDSF_sf_s();var nativeDefinition=new PK_BLENDSF_sf_t();
+    Check(KernelRuntime.BlendSfAsk(own,&ownDefinition),"own spine");Check(PK_BLENDSF_ask(native,&nativeDefinition),"native spine");
+    var ownBox=new M.PK_UVBOX_s();Check(KernelRuntime.SurfAskUvbox(own,&ownBox),"own Blend domain");
+    var lower=ownBox.param[0];var width=ownBox.param[2]-lower;ownBox.param[0]=lower+.4*width;ownBox.param[2]=lower+.6*width;ownBox.param[1]=.15;ownBox.param[3]=.85;
+    var nativeBox=new PK_UVBOX_t();nativeBox.param[1]=.15;nativeBox.param[3]=.85;
+    for(var end=0;end<2;end++)
+    {
+        var p=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(ownDefinition.spine,ownBox.param[end==0?0:2],0,&p),"own endpoint spine");double t;
+        Check(PK_CURVE_parameterise_vector(nativeDefinition.spine,*(PK_VECTOR_t*)&p,&t),"native endpoint correspondence");nativeBox.param[end==0?0:2]=t;
+    }
+    if(nativeBox.param[0]>nativeBox.param[2])(nativeBox.param[0],nativeBox.param[2])=(nativeBox.param[2],nativeBox.param[0]);
+    int ownBody,nativeBody;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&ownBody),"own Blend sheet");Check(PK_SURF_make_sheet_body(native,nativeBox,&nativeBody),"native Blend sheet");
+    Check(KernelRuntime.EntityDelete(1,&own),"own source deletion");
+    var uv=new M.PK_UV_s();uv.param[0]=(ownBox.param[0]+ownBox.param[2])*.5;uv.param[1]=.5;var point=new M.PK_VECTOR_s();
+    Require(KernelRuntime.TryResolveBodySlot(ownBody,out var ownSlot),"own sheet slot");
+    Check(KernelRuntime.SurfEval(KernelRuntime.Faces[KernelRuntime.Bodies[ownSlot].FirstFaceBody].SurfTag,uv,0,0,0,&point),"Blend cutter witness");
+    var first=new PK_PLANE_sf_t();first.basis_set.location=*(PK_VECTOR_t*)&point;first.basis_set.axis=new(1,0,0);first.basis_set.ref_direction=new(0,1,0);
+    var second=first;second.basis_set.axis=new(0,1,0);second.basis_set.ref_direction=new(1,0,0);
+    return (BlendOperations(true,ownBody,first,second,operation),BlendOperations(false,nativeBody,first,second,operation));
+}
+
+static unsafe int[] BlendOperations(bool self,int body,PK_PLANE_sf_t first,PK_PLANE_sf_t second,int operation)
+{
+    int plane;Check(self?KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&first,&plane):PK_PLANE_create(&first,&plane),"Blend first plane");
+    if(operation is >=3 and <=5)
+    {
+        var options=new PK_BODY_section_o_t{fence=operation==3?PK_section_fence_front_c:operation==4?PK_section_fence_back_c:PK_section_fence_both_c,default_tol=1e-8};PK_section_r_t result;
+        Check(self?KernelRuntime.BodySectionWithSurf(body,plane,(M.PK_BODY_section_o_s*)&options,(M.PK_section_r_s*)&result):PK_BODY_section_with_surf(body,plane,&options,&result),"Blend section");
+        try
+        {
+            var bodies=new int[result.front_bodies.length+result.back_bodies.length];
+            for(var i=0;i<result.front_bodies.length;i++)bodies[i]=result.front_bodies.array[i];for(var i=0;i<result.back_bodies.length;i++)bodies[result.front_bodies.length+i]=result.back_bodies.array[i];return bodies;
+        }
+        finally{Check(self?KernelRuntime.SectionResultFree((M.PK_section_r_s*)&result):PK_section_r_f(&result),"Blend section buffers");}
+    }
+    int n;int* edges;Check(self?KernelRuntime.BodyImprintPlane(body,plane,1e-8,&n,&edges):PK_BODY_imprint_plane(body,plane,1e-8,&n,&edges),"Blend first imprint");
+    Console.WriteLine($"Blend operation={operation} self={self} first imprint complete");
+    try
+    {
+        Require(n==1,"Blend first barrier");
+        if(operation is 1 or 2 or 7)
+        {
+            int nf;int* faces;Check(self?KernelRuntime.BodyAskFaces(body,&nf,&faces):PK_BODY_ask_faces(body,&nf,&faces),"Blend seed faces");int seed=0;
+            try
+            {
+                int* vertices=stackalloc int[2];
+                for(var f=0;f<nf;f++)
+                {
+                    int ne;int* boundary;Check(self?KernelRuntime.FaceAskEdges(faces[f],&ne,&boundary):PK_FACE_ask_edges(faces[f],&ne,&boundary),"Blend face edges");
+                    try
+                    {
+                        for(var e=0;e<ne;e++)
+                        {
+                            Check(self?KernelRuntime.EdgeAskVertices(boundary[e],vertices):PK_EDGE_ask_vertices(boundary[e],vertices),"Blend edge vertices");
+                            for(var v=0;v<2;v++)
+                            {
+                                int tag;PK_POINT_sf_t p;Check(self?KernelRuntime.VertexAskPoint(vertices[v],&tag):PK_VERTEX_ask_point(vertices[v],&tag),"Blend seed point");
+                                Check(self?KernelRuntime.PointAsk(tag,(M.PK_POINT_sf_s*)&p):PK_POINT_ask(tag,&p),"Blend seed position");if(p.position.coord[0]>first.basis_set.location.coord[0]+.01)seed=faces[f];
+                            }
+                        }
+                    }
+                    finally{Check(self?KernelRuntime.MemoryFree(boundary):PK_MEMORY_free(boundary),"Blend boundary buffer");}
+                }
+            }
+            finally{Check(self?KernelRuntime.MemoryFree(faces):PK_MEMORY_free(faces),"Blend face buffer");}
+            Require(seed!=0,"Blend seed found");Check(self?KernelRuntime.BodyTrim(body,n,edges,1,&seed,operation==2?PK_LOGICAL_false:PK_LOGICAL_true):PK_BODY_trim(body,n,edges,1,&seed,operation==2?PK_LOGICAL_false:PK_LOGICAL_true),"Blend trim");
+        }
+    }
+    finally{Check(self?KernelRuntime.MemoryFree(edges):PK_MEMORY_free(edges),"Blend first barriers");}
+    if(operation>=6)
+    {
+        Check(self?KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&second,&plane):PK_PLANE_create(&second,&plane),"Blend second plane");
+        for(var repeat=0;repeat<(operation==8?2:1);repeat++)
+        {
+            Console.WriteLine($"Blend operation={operation} self={self} second imprint start repeat={repeat}");
+            Check(self?KernelRuntime.BodyImprintPlane(body,plane,1e-8,&n,&edges):PK_BODY_imprint_plane(body,plane,1e-8,&n,&edges),"Blend second imprint");
+            try{Require(n==(operation==7?1:2),"Blend second barriers");}finally{Check(self?KernelRuntime.MemoryFree(edges):PK_MEMORY_free(edges),"Blend second barriers buffer");}
+        }
+    }
+    return [body];
 }
 
 static unsafe byte[] Transmit(int body)

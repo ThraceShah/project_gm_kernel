@@ -29,7 +29,16 @@ using(session)unsafe
         Check(PK_PLANE_create(&planeSf,&plane),"native cutter plane");Check(KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&planeSf,&ownPlane),"own cutter plane");
         var options=new PK_SURF_intersect_surf_o_t();
         Intersect(native,own,plane,ownPlane,options,"blend-plane");
-        Projection(native,own,box);PairDistance(native,own,box);
+        var interest=options;interest.have_uvbox_1=interest.have_uvbox_2=PK_LOGICAL_true;interest.uvbox_1=box;
+        interest.uvbox_1.param[0]+=.4*(box.param[2]-box.param[0]);interest.uvbox_1.param[2]-=.4*(box.param[2]-box.param[0]);
+        interest.uvbox_1.param[1]=.4;interest.uvbox_1.param[3]=.6;
+        interest.uvbox_2.param[0]=interest.uvbox_2.param[1]=-.01;interest.uvbox_2.param[2]=interest.uvbox_2.param[3]=.01;
+        Intersect(native,own,plane,ownPlane,interest,"blend-plane-uv-interest");
+        interest=options;interest.have_box=PK_LOGICAL_true;
+        for(var d=0;d<3;d++){interest.box.coord[d]=jet[0].coord[d]-.01;interest.box.coord[d+3]=jet[0].coord[d]+.01;}
+        Intersect(native,own,plane,ownPlane,interest,"blend-plane-space-interest");
+        if(args.Contains("--interest-only"))return 0;
+        if(!args.Contains("--intersections-only")){Projection(native,own,box);PairDistance(native,own,box);}
         double* poles=stackalloc double[12];var secondAxis=Cross(axis,reference);
         for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var d=0;d<3;d++)poles[3*(2*i+j)+d]=jet[0].coord[d]+(i==0?-2:2)*reference.coord[d]+(j==0?-2:2)*secondAxis.coord[d];
         double* knots=stackalloc double[2]{-2,2};int* mult=stackalloc int[2]{2,2};var nurbsSf=new PK_BSURF_sf_t{u_degree=1,v_degree=1,n_u_vertices=2,n_v_vertices=2,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=mult,v_knot_mult=mult,form=PK_BSURF_form_arbitrary_c,u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};

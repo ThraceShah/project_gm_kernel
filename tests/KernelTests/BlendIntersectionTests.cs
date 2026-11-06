@@ -34,6 +34,63 @@ public unsafe class BlendIntersectionTests:IDisposable
         finally{if(points!=null)KernelRuntime.MemoryFree(points);if(curves!=null)KernelRuntime.MemoryFree(curves);if(intervals!=null)KernelRuntime.MemoryFree(intervals);if(kinds!=null)KernelRuntime.MemoryFree(kinds);}
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void InterestBoxesPreserveWholeBranchesBeyondTheRequestedRegion(bool reverse)
+    {
+        var blend=CreateBlend();var definition=new PK_PLANE_sf_s();definition.basis_set.location.coord[1]=.5;
+        definition.basis_set.axis.coord[1]=1;definition.basis_set.ref_direction.coord[0]=1;int plane;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));
+        var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_both_c,have_uvbox_1=1,have_uvbox_2=1,have_box=1};
+        options.uvbox_1.param[0]=options.uvbox_1.param[1]=.4;options.uvbox_1.param[2]=options.uvbox_1.param[3]=.6;
+        options.uvbox_2=options.uvbox_1;
+        for(var d=0;d<3;d++){options.box.coord[d]=-1;options.box.coord[d+3]=1;}
+        int np,nc;PK_VECTOR_s* points;int* curves;PK_INTERVAL_s* intervals;int* kinds;
+        Assert.Equal(0,KernelRuntime.SurfIntersectSurf(reverse?plane:blend,reverse?blend:plane,&options,&np,&points,&nc,&curves,&intervals,&kinds));
+        try
+        {
+            Assert.Equal(0,np);Assert.Equal(1,nc);var first=new PK_VECTOR_s();var last=new PK_VECTOR_s();
+            Assert.Equal(0,KernelRuntime.CurveEval(curves[0],intervals[0].value[0],0,&first));
+            Assert.Equal(0,KernelRuntime.CurveEval(curves[0],intervals[0].value[1],0,&last));
+            Assert.InRange(Math.Min(Math.Abs(first.coord[0]),Math.Abs(last.coord[0])),0,1e-8);
+            Assert.InRange(Math.Max(Math.Abs(first.coord[0]),Math.Abs(last.coord[0])),.2-1e-8,.2+1e-8);
+        }
+        finally{if(points!=null)KernelRuntime.MemoryFree(points);if(curves!=null)KernelRuntime.MemoryFree(curves);if(intervals!=null)KernelRuntime.MemoryFree(intervals);if(kinds!=null)KernelRuntime.MemoryFree(kinds);}
+    }
+
+    [Fact]
+    public void AnInterestBoxCannotTurnAnArtificialSpineLimitIntoAGeometryBoundary()
+    {
+        var blend=CreateBlend(artificial:true);var definition=new PK_PLANE_sf_s();definition.basis_set.axis.coord[0]=1;
+        definition.basis_set.ref_direction.coord[1]=1;definition.basis_set.location.coord[0]=-.1;int plane;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));
+        var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_both_c,have_uvbox_1=1};options.uvbox_1.param[2]=options.uvbox_1.param[3]=1;
+        int np,nc;PK_VECTOR_s* points;int* curves;PK_INTERVAL_s* intervals;int* kinds;
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.SurfIntersectSurf(blend,plane,&options,&np,&points,&nc,&curves,&intervals,&kinds));
+        Assert.Equal(0,np);Assert.Equal(0,nc);Assert.True(points==null&&curves==null&&intervals==null&&kinds==null);
+    }
+
+    [Theory]
+    [InlineData(double.NaN)] [InlineData(double.PositiveInfinity)] [InlineData(-1)]
+    public void InvalidInterestDomainsFailWithoutPublishingGeometry(double upper)
+    {
+        var blend=CreateBlend();var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_both_c,have_uvbox_1=1};
+        options.uvbox_1.param[2]=upper;options.uvbox_1.param[3]=1;var surfaces=KernelRuntime.Surfaces.AliveCount;var curvesBefore=KernelRuntime.Curves.AliveCount;
+        int np,nc;PK_VECTOR_s* points;int* curves;PK_INTERVAL_s* intervals;int* kinds;
+        Assert.Equal(ParasolidConstants.PK_ERROR_bad_parameter,KernelRuntime.SurfIntersectSurf(blend,blend,&options,&np,&points,&nc,&curves,&intervals,&kinds));
+        Assert.Equal(0,np);Assert.Equal(0,nc);Assert.True(points==null&&curves==null&&intervals==null&&kinds==null);
+        Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);Assert.Equal(curvesBefore,KernelRuntime.Curves.AliveCount);
+    }
+
+    [Fact]
+    public void DegenerateInterestRegionsAreExplicitlyUnsupported()
+    {
+        var blend=CreateBlend();var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_both_c,have_uvbox_1=1};
+        int np,nc;PK_VECTOR_s* points;int* curves;PK_INTERVAL_s* intervals;int* kinds;
+        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.SurfIntersectSurf(blend,blend,&options,&np,&points,&nc,&curves,&intervals,&kinds));
+        Assert.Equal(0,np);Assert.Equal(0,nc);Assert.True(points==null&&curves==null&&intervals==null&&kinds==null);
+    }
+
     [Fact]
     public void IntervalGraphDiscoveryWorksDirectlyOnTheExactBlendDefinition()
     {

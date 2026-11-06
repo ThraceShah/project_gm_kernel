@@ -370,6 +370,18 @@ internal static unsafe partial class KernelRuntime
         if(options->have_uvbox_1>1||options->have_uvbox_2>1||options->have_vector>1||!double.IsFinite(options->tolerance)||options->tolerance<=0
             ||options->mixed_curve_category<ParasolidConstants.PK_mixed_intersection_pline_c||options->mixed_curve_category>ParasolidConstants.PK_mixed_intersection_both_c)
             return ParasolidConstants.PK_ERROR_bad_parameter;
+        if(options->have_uvbox_1!=0&&!ValidIntersectionUVBox(options->uvbox_1)
+            ||options->have_uvbox_2!=0&&!ValidIntersectionUVBox(options->uvbox_2))return ParasolidConstants.PK_ERROR_bad_parameter;
+        if(options->have_uvbox_1!=0&&(options->uvbox_1.param[2]==options->uvbox_1.param[0]||options->uvbox_1.param[3]==options->uvbox_1.param[1])
+            ||options->have_uvbox_2!=0&&(options->uvbox_2.param[2]==options->uvbox_2.param[0]||options->uvbox_2.param[3]==options->uvbox_2.param[1]))
+            return ParasolidConstants.PK_ERROR_not_implemented;
+        // These are regions of interest, not trimming bounds. Searching the
+        // complete supported surface domain is permitted and preserves whole
+        // branches, including portions outside either interest region. Private
+        // modeling callers may supply actual finite face domains separately.
+        var discoveryOptions=*options;
+        discoveryOptions.have_box=discoveryOptions.have_uvbox_1=discoveryOptions.have_uvbox_2=0;
+        options=&discoveryOptions;
         var sa=GetSurfaceSlotByTag(first);var sb=GetSurfaceSlotByTag(second);if(sa<0||sb<0)return ParasolidConstants.PK_ERROR_bad_class;
         if(Surfaces[sa].Header.Partition!=CurrentPartition||Surfaces[sb].Header.Partition!=CurrentPartition)return ParasolidConstants.PK_ERROR_not_in_same_partition;
         error=IntersectionGeometryBody(first,sa,out var ba);if(error!=0)return error;
@@ -422,6 +434,10 @@ internal static unsafe partial class KernelRuntime
         {State.Session->Returns.TryFree(vectors);State.Session->Returns.TryFree(tags);State.Session->Returns.TryFree(ranges);State.Session->Returns.TryFree(types);return error;}
         *points=vectors;*pointCount=np;*curves=tags;*intervals=ranges;*kinds=types;*curveCount=nc;return 0;
     }
+
+    private static bool ValidIntersectionUVBox(PK_UVBOX_s box)
+        =>double.IsFinite(box.param[0])&&double.IsFinite(box.param[1])&&double.IsFinite(box.param[2])&&double.IsFinite(box.param[3])
+            &&box.param[2]>=box.param[0]&&box.param[3]>=box.param[1];
 
     // Modeling callers intersect supports across bodies; public ownership checks
     // stay in SurfIntersectSurfCore. Discovery itself never publishes geometry.
