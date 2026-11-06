@@ -24,6 +24,12 @@ as only one remote plane. It requires its own region-separation proof. The
 constructor does not claim general singular continuation or all reentering
 branches of the underlying unbounded supports.
 
+Contact ICurve charts retain the actual unwrapped spline-foot UV coordinates
+from the same joint spine solve. A bounded inverse cannot recover an extended
+foot and must not clamp it back to the original knot rectangle. Both chart
+construction and finite contact UV tangents use this shared parameter mapping;
+the original support geometry and public bounded inverse remain unchanged.
+
 Manufactured tests use degree-four/degree-two NURBS roofs with a planar support,
 three roof-curvature/radius combinations and the actual two endpoint cap
 planes. Both ends extend beyond the original knot interval and the original

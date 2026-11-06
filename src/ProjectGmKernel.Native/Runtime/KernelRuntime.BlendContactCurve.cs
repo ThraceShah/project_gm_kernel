@@ -20,7 +20,15 @@ internal static unsafe partial class KernelRuntime
     private static Span<double> BlendContactMap(in ICurveData data)
         =>new(DereferenceBlock(data.ContactChartBlock),6*data.ChartCount-4);
 
-    private static int CreateBlendContactCurve(SurfTag blend,BufferOffset side,out CurveTag curve)
+    internal static int CreateBlendContactCurve(SurfTag blend,BufferOffset side,out CurveTag curve)
+    {
+        curve=0;if(!Dispatcher.IsExecuting)return ParasolidConstants.PK_ERROR_bad_parameter;
+        var owns=EnsureCommandScratch();
+        try{return CreateBlendContactCurveCore(blend,side,out curve);}
+        finally{if(owns)ReleaseCommandScratch(State.Session);}
+    }
+
+    private static int CreateBlendContactCurveCore(SurfTag blend,BufferOffset side,out CurveTag curve)
     {
         curve=0;var data=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(blend)].DataIndex];var program=GetNestedBlendProgram(data);
         var definition=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
@@ -73,7 +81,15 @@ internal static unsafe partial class KernelRuntime
             if(ProfileDistance(jet[0],positions[i])>1e-8)return ParasolidConstants.PK_ERROR_not_on_curve;
             tangents[i]=Scale(Unit(jet[1]),direction);
             chart[3*i]=positions[i].X;chart[3*i+1]=positions[i].Y;chart[3*i+2]=positions[i].Z;
-            status=IntersectionSurfaceParameters(support,positions[i],out var uv);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            var uv=new PK_UV_s();
+            if(support.Class==SurfaceClass.BSurface)
+            {
+                status=JointNestedBlendEvaluation.SplineContactParameters(program,blendData.ProgramRoot,u[i],side,out var su,out var sv);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                uv.param[0]=su;uv.param[1]=sv;
+                SurfaceDerivativeLayout.TryCreate(0,0,out var pointLayout);status=EvaluateSurfaceCore(in support,su,sv,pointLayout,jet,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                if(ProfileDistance(jet[0],positions[i])>1e-8)return ParasolidConstants.PK_ERROR_not_on_surface;
+            }
+            else{status=IntersectionSurfaceParameters(support,positions[i],out uv);if(status!=AlgorithmStatus.Success)return IntersectionError(status);}
             uvs[2*i]=uv.param[0];uvs[2*i+1]=uv.param[1];
         }
         Span<double> prepared=stackalloc double[6*n-4];u.CopyTo(prepared);

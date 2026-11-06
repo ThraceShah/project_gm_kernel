@@ -35,10 +35,18 @@ internal static unsafe partial class KernelRuntime
         var slot=GetCurveSlotByTag(curve);if(slot<0)return ParasolidConstants.PK_ERROR_missing_geom;
         LastSheetPartitionStage=SheetPartitionStage.CurveEvaluation;
         LastSheetCurve=curve;LastSheetParameter=parameter;
-        Span<KernelVector3> jet=stackalloc KernelVector3[2];var status=EvaluateCurveCore(in Curves[slot],parameter,1,false,jet,out _);
+        var contact=Curves[slot].Class==CurveClass.ICurve?ICurveDataPool[Curves[slot].DataIndex]:default;
+        var splineContact=contact.IsBlendContact!=0&&Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface&&SameSheetSupport(surface,contact.Surface0Tag);
+        double station=0;Span<KernelVector3> jet=stackalloc KernelVector3[2];var status=splineContact?EvaluateBlendContact(contact,parameter,1,jet,out station):EvaluateCurveCore(in Curves[slot],parameter,1,false,jet,out _);
         LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return EvaluationError(status);point=jet[0];
         LastSheetPartitionStage=SheetPartitionStage.SurfaceInverse;
-        status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+        if(splineContact)
+        {
+            var blend=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(contact.Surface1Tag)].DataIndex];var program=GetNestedBlendProgram(blend);
+            status=JointNestedBlendEvaluation.SplineContactParameters(program,blend.ProgramRoot,station,contact.BlendContactSide,out var su,out var sv);uv.param[0]=su;uv.param[1]=sv;
+        }
+        else status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
+        if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> support=stackalloc KernelVector3[4];
         status=EvaluateSurfaceCore(in Surfaces[GetSurfaceSlotByTag(surface)],uv.param[0],uv.param[1],in layout,support,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
         var du=support[layout.GetIndex(1,0)];var dv=support[layout.GetIndex(0,1)];var aa=Dot(du,du);var ab=Dot(du,dv);var bb=Dot(dv,dv);var det=aa*bb-ab*ab;

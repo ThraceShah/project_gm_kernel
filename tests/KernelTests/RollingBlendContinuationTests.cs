@@ -1,4 +1,5 @@
 global using SurfTag=System.Int32;
+global using CurveTag=System.Int32;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
 using ProjectGmKernel.Native.Geometry.Evaluation;
@@ -16,12 +17,15 @@ public unsafe class RollingBlendContinuationTests:IDisposable
     {
         internal SurfTag First,Second;
         internal SurfTag* Result;
+        internal CurveTag* Contact;
         internal double Radius;
         public int Execute()
         {
             var options=new PK_SURF_create_blend_o_s{o_t_version=1,have_help=1};options.help.coord[1]=.5;options.help.coord[2]=1;
             Span<AnalyticSurface> planes=stackalloc AnalyticSurface[2];planes[0]=new(SurfaceClass.Plane,default,Vector(0,-1,0),Vector(1,0,0));planes[1]=new(SurfaceClass.Plane,Vector(0,1,0),Vector(0,1,0),Vector(1,0,0));
-            return KernelRuntime.CreateFiniteRollingBlend(First,-Radius,Second,-Radius,Vector(0,0,1),Vector(0,1,1),&options,Result,planes);
+            var error=KernelRuntime.CreateFiniteRollingBlend(First,-Radius,Second,-Radius,Vector(0,0,1),Vector(0,1,1),&options,Result,planes);if(error!=0)return error;
+            if(Contact!=null){error=KernelRuntime.CreateBlendContactCurve(*Result,0,out var curve);if(error!=0)return error;*Contact=curve;}
+            return 0;
         }
     }
 
@@ -29,15 +33,18 @@ public unsafe class RollingBlendContinuationTests:IDisposable
     [InlineData(.2,.05)] [InlineData(.4,.1)] [InlineData(.8,.15)]
     public void FiniteCapDomainExtendsTheRollingBranchPastNaturalSplineEnds(double bulge,double radius)
     {
-        var body=RegularSolidBlendTests.Roof(bulge);Supports(body,out var roof,out var wall);int blend=0;
-        var command=new ContinuationCommand{First=roof,Second=wall,Result=&blend,Radius=radius};
+        var body=RegularSolidBlendTests.Roof(bulge);Supports(body,out var roof,out var wall);int blend=0,contact=0;
+        var command=new ContinuationCommand{First=roof,Second=wall,Result=&blend,Radius=radius,Contact=&contact};
         Assert.Equal(0,KernelRuntime.Dispatch(ApiId.SurfCreateBlend,ConcurrencyKind.Local,AccessKind.GlobalWrite,ref command,roof));
         var data=KernelRuntime.BlendedEdgeDataPool[KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(blend)].DataIndex];var program=KernelRuntime.GetNestedBlendProgram(data);
         var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
         Assert.True(Math.Min(charts[0].Position.Y,charts[^1].Position.Y)<-radius);Assert.True(Math.Max(charts[0].Position.Y,charts[^1].Position.Y)>1+radius);
         Assert.Contains(charts.ToArray(),c=>c.FirstV>1||c.FirstV<0);
+        var contactData=KernelRuntime.ICurveDataPool[KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(contact)].DataIndex];
+        var uvValues=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(contactData.UvValueBlock),contactData.UvValueCount);var outside=false;
+        for(var i=1;i<uvValues.Length;i+=2)outside|=uvValues[i]<0||uvValues[i]>1;Assert.True(outside);
         var original=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(roof)];Assert.Equal(0,original.VMin);Assert.Equal(1,original.VMax);
-        Assert.Equal(0,KernelRuntime.EntityDelete(1,&blend));Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&contact));if(KernelRuntime.IsValidTag(blend))Assert.Equal(0,KernelRuntime.EntityDelete(1,&blend));Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);
     }
 
     private static void Supports(int body,out int roof,out int wall)
