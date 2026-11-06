@@ -16,6 +16,7 @@ internal static unsafe partial class KernelRuntime
         Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
     {
         made=0;if(selected.Length<2||faces.Length+selected.Length>products.Length||selected.Length>64)return ParasolidConstants.PK_ERROR_not_implemented;
+        if(!CommonBlendChainFaces(selected))return BuildRegularSupportChain(body,faces,selected,descriptions,products,out made);
         Span<EdgeSlot> ordered=stackalloc EdgeSlot[selected.Length];selected.CopyTo(ordered);
         Span<double> lower=stackalloc double[selected.Length],upper=stackalloc double[selected.Length];
         var first=Edges[selected[0]];var curve=first.CurveTag;

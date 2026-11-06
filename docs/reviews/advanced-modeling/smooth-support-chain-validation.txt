@@ -1,0 +1,595 @@
+Smooth support-face chain strict PK validation, 2026-11-06
+Base f9ba50e plus support-chain new partial, single entry hook, tests and oracle.
+Full chains=8/8; full PK BODY_check=32/32 zero faults; max mass residual=2.7098861280923035E-09
+5a6177df31a643df17f0ef10d4ae938b0f946c37db56bdd3b759645e1e3498ab  src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendSupportChain.cs
+e6ea4e812638e0c054f337159b831574b888b7ec936b1cd0e9f52397e45c2ae3  src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendChain.cs
+21176e957fd5b226224cd3c4c330b511347c9b7841e13bde32468a3b58d4e0c4  scripts/SupportBlendChainOracle.cs
+a9e66f1fddd486fc29cb6df5203fad1746fcee7453d3a8442f782b20109d5b9a  tests/KernelTests/Fixtures/smooth-support-chain.x_t
+
+SOURCE temp_docs/support-chain-f9-production-build.log
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Function catalog: 175 implemented dispatch descriptors verified.
+  allocation IL guard: checked 2337 methods
+  allocation IL guard: CLEAN
+
+Build succeeded.
+
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:47.65
+
+SOURCE temp_docs/support-chain-f9-oracle-eight.log
+TIME FixBlends own=True seconds=2.772402 error=0 faces=3
+TIME FixBlends own=False seconds=0.005487 error=0 faces=3
+asymmetric43-base native full BODY_check: 0 faults
+asymmetric43-base received full BODY_check: 0 faults
+asymmetric43-base topology 0: native=2 own=2
+asymmetric43-base topology 1: native=2 own=2
+asymmetric43-base topology 2: native=13 own=13
+asymmetric43-base topology 3: native=28 own=28
+asymmetric43-base topology 4: native=17 own=17
+asymmetric43-base material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric43-base compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=276/490, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=304/492, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=299/493, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=332/496, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=321/501, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=316/502, class=500/500, int=2/27, value=0/0
+CHART face=4, diff=21949, entity=332/496, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=321/501, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=299/493, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=316/502, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=304/492, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=276/490, class=500/500, int=3/27, value=0/0
+asymmetric43-base PK mass: volume=1.0250977821450686/1.0250977822771132, area=5.977972241927273/5.977972242708399, max normalized residual=1.1194172858416629E-10
+TIME Boolean own=True seconds=10.142220
+TIME Boolean own=False seconds=0.001659
+asymmetric43-base cut native full BODY_check: 0 faults
+asymmetric43-base cut received full BODY_check: 0 faults
+asymmetric43-base cut topology 0: native=2 own=2
+asymmetric43-base cut topology 1: native=2 own=2
+asymmetric43-base cut topology 2: native=13 own=13
+asymmetric43-base cut topology 3: native=28 own=28
+asymmetric43-base cut topology 4: native=17 own=17
+asymmetric43-base cut material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric43-base cut compare=21921/21930, face_pairs=8
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=276/990, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=304/992, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=299/993, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=692/997, class=500/500, int=4/33, value=0/0
+CHART face=2, diff=21949, entity=332/996, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=321/1001, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=316/1002, class=500/500, int=2/27, value=0/0
+CHART face=4, diff=21949, entity=671/1007, class=500/500, int=5/9, value=0/0
+CHART face=4, diff=21949, entity=332/996, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=321/1001, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=299/993, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=316/1002, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=304/992, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=276/990, class=500/500, int=3/27, value=0/0
+CHART face=7, diff=21949, entity=692/997, class=500/500, int=4/33, value=0/0
+CHART face=7, diff=21949, entity=671/1007, class=500/500, int=5/9, value=0/0
+asymmetric43-base cut PK mass: volume=0.564975903092338/0.5649759031808433, area=4.2364924258334336/4.236492425335182, max normalized residual=5.119009892103578E-10
+PASS asymmetric43-base
+TIME FixBlends own=True seconds=5.609232 error=0 faces=3
+TIME FixBlends own=False seconds=0.005589 error=0 faces=3
+asymmetric43-reflected native full BODY_check: 0 faults
+asymmetric43-reflected received full BODY_check: 0 faults
+asymmetric43-reflected topology 0: native=2 own=2
+asymmetric43-reflected topology 1: native=2 own=2
+asymmetric43-reflected topology 2: native=13 own=13
+asymmetric43-reflected topology 3: native=28 own=28
+asymmetric43-reflected topology 4: native=17 own=17
+asymmetric43-reflected material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric43-reflected compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1333/1519, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=1306/1524, class=500/500, int=2/27, value=0/0
+CHART face=1, diff=21949, entity=1311/1521, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=1344/1527, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=1361/1529, class=500/500, int=2/27, value=0/0
+CHART face=3, diff=21949, entity=1356/1530, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=1356/1530, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=1344/1527, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=1361/1529, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=1306/1524, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=1333/1519, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=1311/1521, class=500/500, int=3/27, value=0/0
+asymmetric43-reflected PK mass: volume=5.036305403714121/5.036305405873003, area=17.276339833019886/17.27633984044611, max normalized residual=1.2509210940643715E-09
+PLANE target index=0 surface=1735 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=1 surface=1736 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=2 surface=1737 origin=0.507521756234871/-0.707373117170218/0.2 normal=0.361615431964962/-0.932327345606034/0
+PLANE target index=5 surface=1737 origin=0.507521756234871/-0.707373117170218/0.2 normal=0.361615431964962/-0.932327345606034/0
+PLANE target index=6 surface=1739 origin=0.992626882829782/0.3924782437651295/0.2 normal=0.932327345606034/0.361615431964962/0
+PLANE target index=7 surface=1736 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=8 surface=1735 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=9 surface=1740 origin=-0.592329604700476/-0.222267990575306/0.2 normal=-0.932327345606034/-0.361615431964962/0
+PLANE tool index=0 surface=1982 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0/0/-1
+PLANE tool index=1 surface=1983 origin=0.7356470490285754/-1.5305886726523688/3.43 normal=0/0/1
+PLANE tool index=2 surface=1984 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0.361615431964962/-0.9323273456060345/-0
+PLANE tool index=3 surface=1985 origin=-0.8493094385016831/-2.145334906992804/0.03 normal=-0.9323273456060345/-0.361615431964962/0
+PLANE tool index=4 surface=1986 origin=-2.0788019071825543/1.0245780680677128/0.03 normal=-0.361615431964962/0.9323273456060345/0
+PLANE tool index=5 surface=1987 origin=-0.49384541965229545/1.6393243024081485/0.03 normal=0.9323273456060345/0.361615431964962/-0
+TIME Boolean own=True seconds=23.863026
+TIME Boolean own=False seconds=0.001594
+asymmetric43-reflected cut native full BODY_check: 0 faults
+asymmetric43-reflected cut received full BODY_check: 0 faults
+asymmetric43-reflected cut topology 0: native=2 own=2
+asymmetric43-reflected cut topology 1: native=2 own=2
+asymmetric43-reflected cut topology 2: native=13 own=13
+asymmetric43-reflected cut topology 3: native=28 own=28
+asymmetric43-reflected cut topology 4: native=17 own=17
+asymmetric43-reflected cut material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric43-reflected cut compare=21921/21930, face_pairs=8
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1333/2020, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=1306/2024, class=500/500, int=2/27, value=0/0
+CHART face=1, diff=21949, entity=1311/2025, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=1722/2027, class=500/500, int=4/12, value=0/0
+CHART face=2, diff=21949, entity=1344/2028, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=1361/2030, class=500/500, int=2/27, value=0/0
+CHART face=3, diff=21949, entity=1356/2031, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=1701/2039, class=500/500, int=5/9, value=0/0
+CHART face=4, diff=21949, entity=1356/2031, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=1344/2028, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=1361/2030, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=1306/2024, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=1333/2020, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=1311/2025, class=500/500, int=3/27, value=0/0
+CHART face=7, diff=21949, entity=1701/2039, class=500/500, int=5/9, value=0/0
+CHART face=7, diff=21949, entity=1722/2027, class=500/500, int=4/12, value=0/0
+asymmetric43-reflected cut PK mass: volume=2.775726611697629/2.7757266106259366, area=12.24346311623987/12.243463090081928, max normalized residual=2.1738140308527553E-09
+PASS asymmetric43-reflected
+TIME FixBlends own=True seconds=2.384791 error=0 faces=3
+TIME FixBlends own=False seconds=0.005309 error=0 faces=3
+asymmetric61-base native full BODY_check: 0 faults
+asymmetric61-base received full BODY_check: 0 faults
+asymmetric61-base topology 0: native=2 own=2
+asymmetric61-base topology 1: native=2 own=2
+asymmetric61-base topology 2: native=13 own=13
+asymmetric61-base topology 3: native=28 own=28
+asymmetric61-base topology 4: native=17 own=17
+asymmetric61-base material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric61-base compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=2335/2548, class=500/500, int=2/27, value=0/0
+CHART face=0, diff=21949, entity=2340/2549, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=2362/2551, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=2390/2554, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=2385/2555, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=2373/2560, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=2385/2555, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=2373/2560, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=2390/2554, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=2335/2548, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=2362/2551, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=2340/2549, class=500/500, int=3/27, value=0/0
+asymmetric61-base PK mass: volume=1.025097782014627/1.025097782056716, area=5.977972240313598/5.977972240639111, max normalized residual=4.6648645009996266E-11
+TIME Boolean own=True seconds=9.605346
+TIME Boolean own=False seconds=0.001627
+asymmetric61-base cut native full BODY_check: 0 faults
+asymmetric61-base cut received full BODY_check: 0 faults
+asymmetric61-base cut topology 0: native=2 own=2
+asymmetric61-base cut topology 1: native=2 own=2
+asymmetric61-base cut topology 2: native=7 own=7
+asymmetric61-base cut topology 3: native=15 own=15
+asymmetric61-base cut topology 4: native=10 own=10
+asymmetric61-base cut material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric61-base cut compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=15/15
+global diff=21944, entities=0/0
+global diff=21946, entities=10/10
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=2340/2990, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=2744/2993, class=500/500, int=4/33, value=0/0
+CHART face=1, diff=21949, entity=2362/2992, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=2729/2996, class=500/500, int=5/9, value=0/0
+CHART face=2, diff=21949, entity=2362/2992, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=2340/2990, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=2744/2993, class=500/500, int=4/33, value=0/0
+CHART face=3, diff=21949, entity=2729/2996, class=500/500, int=5/9, value=0/0
+asymmetric61-base cut PK mass: volume=0.5649759029976972/0.5649759030811567, area=4.236492422499353/4.236492418736311, max normalized residual=7.642609598201773E-10
+PASS asymmetric61-base
+TIME FixBlends own=True seconds=4.929065 error=0 faces=3
+TIME FixBlends own=False seconds=0.005764 error=0 faces=3
+asymmetric61-reflected native full BODY_check: 0 faults
+asymmetric61-reflected received full BODY_check: 0 faults
+asymmetric61-reflected topology 0: native=2 own=2
+asymmetric61-reflected topology 1: native=2 own=2
+asymmetric61-reflected topology 2: native=13 own=13
+asymmetric61-reflected topology 3: native=28 own=28
+asymmetric61-reflected topology 4: native=17 own=17
+asymmetric61-reflected material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric61-reflected compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=3287/3473, class=500/500, int=3/27, value=0/0
+CHART face=0, diff=21949, entity=3282/3474, class=500/500, int=2/27, value=0/0
+CHART face=1, diff=21949, entity=3259/3478, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=3304/3482, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=3299/3479, class=500/500, int=2/27, value=0/0
+CHART face=3, diff=21949, entity=3315/3484, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=3315/3484, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=3304/3482, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=3282/3474, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=3299/3479, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=3287/3473, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=3259/3478, class=500/500, int=3/27, value=0/0
+asymmetric61-reflected PK mass: volume=5.036305401618842/5.036305400509256, area=17.276339812411052/17.276339808977003, max normalized residual=8.755408264654665E-10
+PLANE target index=0 surface=3933 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=1 surface=3934 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=2 surface=3935 origin=0.507521756234871/-0.707373117170218/0.2 normal=0.361615431964962/-0.932327345606034/0
+PLANE target index=5 surface=3935 origin=0.507521756234871/-0.707373117170218/0.2 normal=0.361615431964962/-0.932327345606034/0
+PLANE target index=6 surface=3937 origin=0.992626882829782/0.3924782437651295/0.2 normal=0.932327345606034/0.361615431964962/0
+PLANE target index=7 surface=3934 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=8 surface=3933 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=9 surface=3938 origin=-0.592329604700476/-0.222267990575306/0.2 normal=-0.932327345606034/-0.361615431964962/0
+PLANE tool index=0 surface=4180 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0/0/-1
+PLANE tool index=1 surface=4181 origin=0.7356470490285754/-1.5305886726523688/3.43 normal=0/0/1
+PLANE tool index=2 surface=4182 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0.361615431964962/-0.9323273456060345/-0
+PLANE tool index=3 surface=4183 origin=-0.8493094385016831/-2.145334906992804/0.03 normal=-0.9323273456060345/-0.361615431964962/0
+PLANE tool index=4 surface=4184 origin=-2.0788019071825543/1.0245780680677128/0.03 normal=-0.361615431964962/0.9323273456060345/0
+PLANE tool index=5 surface=4185 origin=-0.49384541965229545/1.6393243024081485/0.03 normal=0.9323273456060345/0.361615431964962/-0
+TIME Boolean own=True seconds=21.076105
+TIME Boolean own=False seconds=0.001769
+asymmetric61-reflected cut native full BODY_check: 0 faults
+asymmetric61-reflected cut received full BODY_check: 0 faults
+asymmetric61-reflected cut topology 0: native=2 own=2
+asymmetric61-reflected cut topology 1: native=2 own=2
+asymmetric61-reflected cut topology 2: native=7 own=7
+asymmetric61-reflected cut topology 3: native=15 own=15
+asymmetric61-reflected cut topology 4: native=10 own=10
+asymmetric61-reflected cut material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric61-reflected cut compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=15/15
+global diff=21944, entities=0/0
+global diff=21946, entities=10/10
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=3287/3916, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=3670/3918, class=500/500, int=4/12, value=0/0
+CHART face=1, diff=21949, entity=3259/3919, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=3655/3922, class=500/500, int=5/9, value=0/0
+CHART face=2, diff=21949, entity=3287/3916, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=3259/3919, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=3655/3922, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=3670/3918, class=500/500, int=4/12, value=0/0
+asymmetric61-reflected cut PK mass: volume=2.775726611148594/2.775726611456185, area=12.243463101054894/12.243463099382744, max normalized residual=1.4864960903524202E-09
+PASS asymmetric61-reflected
+TIME FixBlends own=True seconds=2.354995 error=0 faces=3
+TIME FixBlends own=False seconds=0.004307 error=0 faces=3
+oblique43-base native full BODY_check: 0 faults
+oblique43-base received full BODY_check: 0 faults
+oblique43-base topology 0: native=2 own=2
+oblique43-base topology 1: native=2 own=2
+oblique43-base topology 2: native=13 own=13
+oblique43-base topology 3: native=28 own=28
+oblique43-base topology 4: native=17 own=17
+oblique43-base material regions: native=0:1,1:1, own=0:1,1:1
+oblique43-base compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=4185/4398, class=500/500, int=2/27, value=0/0
+CHART face=0, diff=21949, entity=4190/4399, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=4212/4401, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=4240/4404, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=4235/4405, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=4223/4410, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=4235/4405, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=4223/4410, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=4240/4404, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=4185/4398, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=4212/4401, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=4190/4399, class=500/500, int=3/27, value=0/0
+oblique43-base PK mass: volume=1.0250977812342077/1.0250977813727344, area=5.977972249855187/5.977972251506805, max normalized residual=2.3669030750825667E-10
+TIME Boolean own=True seconds=10.223652
+TIME Boolean own=False seconds=0.001582
+oblique43-base cut native full BODY_check: 0 faults
+oblique43-base cut received full BODY_check: 0 faults
+oblique43-base cut topology 0: native=2 own=2
+oblique43-base cut topology 1: native=2 own=2
+oblique43-base cut topology 2: native=13 own=13
+oblique43-base cut topology 3: native=28 own=28
+oblique43-base cut topology 4: native=17 own=17
+oblique43-base cut material regions: native=0:1,1:1, own=0:1,1:1
+oblique43-base cut compare=21921/21930, face_pairs=8
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=4185/4898, class=500/500, int=2/27, value=0/0
+CHART face=0, diff=21949, entity=4190/4899, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=4212/4901, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=4600/4906, class=500/500, int=4/33, value=0/0
+CHART face=2, diff=21949, entity=4240/4904, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=4235/4905, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=4223/4910, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=4579/4915, class=500/500, int=5/9, value=0/0
+CHART face=4, diff=21949, entity=4235/4905, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=4223/4910, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=4240/4904, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=4185/4898, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=4212/4901, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=4190/4899, class=500/500, int=3/27, value=0/0
+CHART face=7, diff=21949, entity=4600/4906, class=500/500, int=4/33, value=0/0
+CHART face=7, diff=21949, entity=4579/4915, class=500/500, int=5/9, value=0/0
+oblique43-base cut PK mass: volume=0.5649759029136734/0.5649759030535834, area=4.236492420880841/4.236492418653599, max normalized residual=4.921627531283872E-10
+PASS oblique43-base
+TIME FixBlends own=True seconds=5.021132 error=0 faces=3
+TIME FixBlends own=False seconds=0.005613 error=0 faces=3
+oblique43-reflected native full BODY_check: 0 faults
+oblique43-reflected received full BODY_check: 0 faults
+oblique43-reflected topology 0: native=2 own=2
+oblique43-reflected topology 1: native=2 own=2
+oblique43-reflected topology 2: native=13 own=13
+oblique43-reflected topology 3: native=28 own=28
+oblique43-reflected topology 4: native=17 own=17
+oblique43-reflected material regions: native=0:1,1:1, own=0:1,1:1
+oblique43-reflected compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=5241/5427, class=500/500, int=3/27, value=0/0
+CHART face=0, diff=21949, entity=5236/5428, class=500/500, int=2/27, value=0/0
+CHART face=1, diff=21949, entity=5213/5432, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=5258/5436, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=5253/5433, class=500/500, int=2/27, value=0/0
+CHART face=3, diff=21949, entity=5269/5438, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=5269/5438, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=5258/5436, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=5236/5428, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=5253/5433, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=5241/5427, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=5213/5432, class=500/500, int=3/27, value=0/0
+oblique43-reflected PK mass: volume=5.036305402033105/5.036305403460299, area=17.27633982164491/17.27633982624143, max normalized residual=1.1818765359625988E-09
+PLANE target index=0 surface=6131 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=1 surface=6132 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=2 surface=6133 origin=0.507521756234871/-0.707373117170218/0.2 normal=0.361615431964962/-0.932327345606034/0
+PLANE target index=5 surface=6133 origin=0.507521756234871/-0.707373117170218/0.2 normal=0.361615431964962/-0.932327345606034/0
+PLANE target index=6 surface=6135 origin=0.992626882829782/0.3924782437651295/0.2 normal=0.932327345606034/0.361615431964962/0
+PLANE target index=7 surface=6132 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=8 surface=6131 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=9 surface=6136 origin=-0.592329604700476/-0.222267990575306/0.2 normal=-0.932327345606034/-0.361615431964962/0
+PLANE tool index=0 surface=6378 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0/0/-1
+PLANE tool index=1 surface=6379 origin=0.7356470490285754/-1.5305886726523688/3.43 normal=0/0/1
+PLANE tool index=2 surface=6380 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0.361615431964962/-0.9323273456060345/-0
+PLANE tool index=3 surface=6381 origin=-0.8493094385016831/-2.145334906992804/0.03 normal=-0.9323273456060345/-0.361615431964962/0
+PLANE tool index=4 surface=6382 origin=-2.0788019071825543/1.0245780680677128/0.03 normal=-0.361615431964962/0.9323273456060345/0
+PLANE tool index=5 surface=6383 origin=-0.49384541965229545/1.6393243024081485/0.03 normal=0.9323273456060345/0.361615431964962/-0
+TIME Boolean own=True seconds=21.299466
+TIME Boolean own=False seconds=0.001554
+oblique43-reflected cut native full BODY_check: 0 faults
+oblique43-reflected cut received full BODY_check: 0 faults
+oblique43-reflected cut topology 0: native=2 own=2
+oblique43-reflected cut topology 1: native=2 own=2
+oblique43-reflected cut topology 2: native=13 own=13
+oblique43-reflected cut topology 3: native=28 own=28
+oblique43-reflected cut topology 4: native=17 own=17
+oblique43-reflected cut material regions: native=0:1,1:1, own=0:1,1:1
+oblique43-reflected cut compare=21921/21930, face_pairs=8
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=5241/5928, class=500/500, int=3/27, value=0/0
+CHART face=0, diff=21949, entity=5236/5929, class=500/500, int=2/27, value=0/0
+CHART face=1, diff=21949, entity=5213/5932, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=5630/5935, class=500/500, int=4/12, value=0/0
+CHART face=2, diff=21949, entity=5258/5936, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=5253/5937, class=500/500, int=2/27, value=0/0
+CHART face=3, diff=21949, entity=5269/5939, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=5609/5947, class=500/500, int=5/9, value=0/0
+CHART face=4, diff=21949, entity=5269/5939, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=5258/5936, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=5236/5929, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=5253/5937, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=5241/5928, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=5213/5932, class=500/500, int=3/27, value=0/0
+CHART face=7, diff=21949, entity=5609/5947, class=500/500, int=5/9, value=0/0
+CHART face=7, diff=21949, entity=5630/5935, class=500/500, int=4/12, value=0/0
+oblique43-reflected cut PK mass: volume=2.7757266109805268/2.775726611422593, area=12.243463103498332/12.243463103368535, max normalized residual=1.7064249314601785E-09
+PASS oblique43-reflected
+TIME FixBlends own=True seconds=7.417995 error=0 faces=3
+TIME FixBlends own=False seconds=0.010758 error=0 faces=3
+nurbs43-base native full BODY_check: 0 faults
+nurbs43-base received full BODY_check: 0 faults
+nurbs43-base topology 0: native=2 own=2
+nurbs43-base topology 1: native=2 own=2
+nurbs43-base topology 2: native=13 own=13
+nurbs43-base topology 3: native=28 own=28
+nurbs43-base topology 4: native=17 own=17
+nurbs43-base material regions: native=0:1,1:1, own=0:1,1:1
+nurbs43-base compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=6245/6459, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=6273/6461, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=6268/6462, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=6301/6465, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=6290/6470, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=6285/6471, class=500/500, int=2/27, value=0/0
+CHART face=4, diff=21949, entity=6301/6465, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=6290/6470, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=6268/6462, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=6285/6471, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=6273/6461, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=6245/6459, class=500/500, int=3/27, value=0/0
+nurbs43-base PK mass: volume=1.0454221193325481/1.0454221199155247, area=5.99201438626182/5.99201439014701, max normalized residual=5.556610345614733E-10
+TIME Boolean own=True seconds=31.402082
+TIME Boolean own=False seconds=0.001968
+nurbs43-base cut native full BODY_check: 0 faults
+nurbs43-base cut received full BODY_check: 0 faults
+nurbs43-base cut topology 0: native=2 own=2
+nurbs43-base cut topology 1: native=2 own=2
+nurbs43-base cut topology 2: native=13 own=13
+nurbs43-base cut topology 3: native=28 own=28
+nurbs43-base cut topology 4: native=17 own=17
+nurbs43-base cut material regions: native=0:1,1:1, own=0:1,1:1
+nurbs43-base cut compare=21921/21930, face_pairs=8
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=6245/6961, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=6273/6963, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=6268/6964, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=6663/6968, class=500/500, int=4/33, value=0/0
+CHART face=2, diff=21949, entity=6301/6967, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=6657/6971, class=500/500, int=4/33, value=0/0
+CHART face=3, diff=21949, entity=6290/6972, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=6285/6973, class=500/500, int=2/27, value=0/0
+CHART face=4, diff=21949, entity=6642/6978, class=500/500, int=5/9, value=0/0
+CHART face=4, diff=21949, entity=6301/6967, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=6290/6972, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=6268/6964, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=6285/6973, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=6273/6963, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=6245/6961, class=500/500, int=3/27, value=0/0
+CHART face=7, diff=21949, entity=6663/6968, class=500/500, int=4/33, value=0/0
+CHART face=7, diff=21949, entity=6642/6978, class=500/500, int=5/9, value=0/0
+CHART face=7, diff=21949, entity=6657/6971, class=500/500, int=4/33, value=0/0
+nurbs43-base cut PK mass: volume=0.577025406505888/0.5770254070884756, area=4.281677608808836/4.281677613137977, max normalized residual=8.196525653772111E-10
+PASS nurbs43-base
+TIME FixBlends own=True seconds=13.777127 error=0 faces=3
+TIME FixBlends own=False seconds=0.011932 error=0 faces=3
+nurbs43-reflected native full BODY_check: 0 faults
+nurbs43-reflected received full BODY_check: 0 faults
+nurbs43-reflected topology 0: native=2 own=2
+nurbs43-reflected topology 1: native=2 own=2
+nurbs43-reflected topology 2: native=13 own=13
+nurbs43-reflected topology 3: native=28 own=28
+nurbs43-reflected topology 4: native=17 own=17
+nurbs43-reflected material regions: native=0:1,1:1, own=0:1,1:1
+nurbs43-reflected compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=7311/7497, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=7284/7502, class=500/500, int=2/27, value=0/0
+CHART face=1, diff=21949, entity=7289/7499, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=7322/7505, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=7339/7506, class=500/500, int=2/27, value=0/0
+CHART face=3, diff=21949, entity=7334/7507, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=7334/7507, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=7322/7505, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=7339/7506, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=7284/7502, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=7311/7497, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=7289/7499, class=500/500, int=3/27, value=0/0
+nurbs43-reflected PK mass: volume=5.136158871724883/5.1361588754960135, area=17.316921623571304/17.316921637275687, max normalized residual=2.0238187598895486E-09
+PLANE target index=0 surface=8445 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=1 surface=8446 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=6 surface=8449 origin=0.992626882829782/0.3924782437651295/0.2 normal=0.932327345606034/0.361615431964962/0
+PLANE target index=7 surface=8446 origin=-0.1072244781055646/0.877583370360041/0.2 normal=-0.361615431964962/0.932327345606034/0
+PLANE target index=8 surface=8445 origin=0.200148639064653/0.0851051265949116/0.2 normal=0/0/-1
+PLANE target index=9 surface=8450 origin=-0.592329604700476/-0.222267990575306/0.2 normal=-0.932327345606034/-0.361615431964962/0
+PLANE tool index=0 surface=8694 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0/0/-1
+PLANE tool index=1 surface=8695 origin=0.7356470490285754/-1.5305886726523688/3.43 normal=0/0/1
+PLANE tool index=2 surface=8696 origin=0.7356470490285754/-1.5305886726523688/0.03 normal=0.361615431964962/-0.9323273456060345/-0
+PLANE tool index=3 surface=8697 origin=-0.8493094385016831/-2.145334906992804/0.03 normal=-0.9323273456060345/-0.361615431964962/0
+PLANE tool index=4 surface=8698 origin=-2.0788019071825543/1.0245780680677128/0.03 normal=-0.361615431964962/0.9323273456060345/0
+PLANE tool index=5 surface=8699 origin=-0.49384541965229545/1.6393243024081485/0.03 normal=0.9323273456060345/0.361615431964962/-0
+TIME Boolean own=True seconds=44.038048
+TIME Boolean own=False seconds=0.007016
+nurbs43-reflected cut native full BODY_check: 0 faults
+nurbs43-reflected cut received full BODY_check: 0 faults
+nurbs43-reflected cut topology 0: native=2 own=2
+nurbs43-reflected cut topology 1: native=2 own=2
+nurbs43-reflected cut topology 2: native=13 own=13
+nurbs43-reflected cut topology 3: native=28 own=28
+nurbs43-reflected cut topology 4: native=17 own=17
+nurbs43-reflected cut material regions: native=0:1,1:1, own=0:1,1:1
+nurbs43-reflected cut compare=21921/21930, face_pairs=8
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=7311/7999, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=7284/8004, class=500/500, int=2/27, value=0/0
+CHART face=1, diff=21949, entity=7289/8005, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=7702/8007, class=500/500, int=4/12, value=0/0
+CHART face=2, diff=21949, entity=7322/8008, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=7696/8011, class=500/500, int=4/14, value=0/0
+CHART face=3, diff=21949, entity=7339/8009, class=500/500, int=2/27, value=0/0
+CHART face=3, diff=21949, entity=7334/8010, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=7681/8019, class=500/500, int=5/9, value=0/0
+CHART face=4, diff=21949, entity=7334/8010, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=7322/8008, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=7339/8009, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=7284/8004, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=7311/7999, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=7289/8005, class=500/500, int=3/27, value=0/0
+CHART face=7, diff=21949, entity=7696/8011, class=500/500, int=4/14, value=0/0
+CHART face=7, diff=21949, entity=7681/8019, class=500/500, int=5/9, value=0/0
+CHART face=7, diff=21949, entity=7702/8007, class=500/500, int=4/12, value=0/0
+nurbs43-reflected cut PK mass: volume=2.8349258199983938/2.834925823874972, area=12.374048280875357/12.374048296288638, max normalized residual=2.7098861280923035E-09
+PASS nurbs43-reflected
+
+SOURCE temp_docs/support-chain-f9-related-tests.log
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Function catalog: 175 implemented dispatch descriptors verified.
+  allocation IL guard: checked 2345 methods
+  allocation IL guard: CLEAN
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    45, Skipped:     0, Total:    45, Duration: 1 m 6 s - KernelTests.dll (net10.0)
