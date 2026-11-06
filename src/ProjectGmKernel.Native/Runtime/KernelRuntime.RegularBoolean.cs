@@ -48,6 +48,7 @@ internal static unsafe partial class KernelRuntime
             for(var a=0;a<nf;a++)for(var b=a+1;b<nf;b++)
             {
                 if(owners[a]==owners[b])continue;ModelingPerformance.Pair();LastRegularBooleanStage=RegularBooleanStage.Cuts;ModelingPerformance.Stage(RegularBooleanStage.Cuts);LastRegularBooleanFace=a;LastRegularBooleanOtherFace=b;
+                if(RegularPlaneFacesSeparated(input,a,b,model.Tolerance))continue;
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
                 if(family<0)
