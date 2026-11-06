@@ -47,9 +47,37 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<view.UVertexCount;i++)for(var j=0;j<view.VVertexCount;j++)
         {
             var at=ProfileEuclideanPole(p,3,i*view.VVertexCount+j);var u=i*view.VDegree;var v=j*view.UDegree;
-            if(at.X*pq!=origin.X*pq+uDelta.X*u+vDelta.X*v||at.Y*pq!=origin.Y*pq+uDelta.Y*u+vDelta.Y*v||at.Z*pq!=origin.Z*pq+uDelta.Z*u+vDelta.Z*v)return false;
+            if(!ExactAffineCoordinate(at.X,origin.X,uEnd.X,vEnd.X,pq,u,v)||!ExactAffineCoordinate(at.Y,origin.Y,uEnd.Y,vEnd.Y,pq,u,v)
+                ||!ExactAffineCoordinate(at.Z,origin.Z,uEnd.Z,vEnd.Z,pq,u,v))return false;
         }
         du=Scale(uDelta,1/(view.UEnd-view.UStart));dv=Scale(vDelta,1/(view.VEnd-view.VStart));var reference=uDelta;ProfileNormalize(ref reference);
         plane=new(SurfaceClass.Plane,origin,normal,reference);return true;
+    }
+
+    private static bool ExactAffineCoordinate(double value,double origin,double uEnd,double vEnd,double weight,double u,double v)
+    {
+        // Bernstein's first-moment identity, evaluated as an error-free
+        // expansion. Subtracting an endpoint and adding it back can round
+        // (for example 1.2 -> .2); that is not evidence of a nonlinear map.
+        Span<double> values=stackalloc double[4]{value,origin,uEnd,vEnd};
+        Span<double> weights=stackalloc double[4]{weight,u+v-weight,-u,-v};
+        Span<double> expansion=stackalloc double[8];var count=0;
+        for(var term=0;term<4;term++)
+        {
+            var high=values[term]*weights[term];if(!double.IsFinite(high))return false;
+            var low=Math.FusedMultiplyAdd(values[term],weights[term],-high);
+            for(var part=0;part<2;part++)
+            {
+                var q=part==0?low:high;var written=0;
+                for(var i=0;i<count;i++)
+                {
+                    var sum=q+expansion[i];if(!double.IsFinite(sum))return false;
+                    var virtualB=sum-q;var remainder=(q-(sum-virtualB))+(expansion[i]-virtualB);
+                    if(remainder!=0)expansion[written++]=remainder;q=sum;
+                }
+                if(q!=0)expansion[written++]=q;count=written;
+            }
+        }
+        return count==0;
     }
 }
