@@ -130,21 +130,29 @@ internal static unsafe partial class KernelRuntime
             {
                 LastRegularBooleanFace=f;var sourceIndex=sources[..nf].IndexOf(model.Sources[f]);if(sourceIndex<0)return ParasolidConstants.PK_ERROR_bad_loop;
                 var owner=owners[sourceIndex];var uv=model.Witnesses[f];var surface=GetSurfaceSlotByTag(model.Faces[f].Surface);
-                var status=EvaluateSurfaceCore(in Surfaces[surface],uv.param[0],uv.param[1],in layout,point,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                var outward=Geometry.Evaluation.EvaluationMath.Scale(ProfileCross(point[layout.GetIndex(1,0)],point[layout.GetIndex(0,1)]),LocalSenseSign(model.Faces[f].Sense)*LocalSenseSign(Surfaces[surface].Sense));
                 var canonicalOwner=owner;
-                for(var b=0;b<inputs.Length;b++)
+                for(var attempt=0;attempt<2;attempt++)
                 {
-                    if(b==owner){minus[b]=true;plus[b]=false;continue;}
-                    if(coincident)
+                    var status=EvaluateSurfaceCore(in Surfaces[surface],uv.param[0],uv.param[1],in layout,point,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                    var outward=Geometry.Evaluation.EvaluationMath.Scale(ProfileCross(point[layout.GetIndex(1,0)],point[layout.GetIndex(0,1)]),LocalSenseSign(model.Faces[f].Sense)*LocalSenseSign(Surfaces[surface].Sense));
+                    canonicalOwner=owner;error=0;
+                    for(var b=0;b<inputs.Length;b++)
                     {
-                        error=RegularCoincidentMaterial(input,model.Faces[f].Surface,point[0],outward,offsets[b],offsets[b+1],out var on,out minus[b],out plus[b]);if(error!=0)return error;
-                        if(on){hasClash=true;if(owner==0||b==0)targetClash=true;canonicalOwner=Math.Min(canonicalOwner,b);continue;}
+                        if(b==owner){minus[b]=true;plus[b]=false;continue;}
+                        if(coincident)
+                        {
+                            error=RegularCoincidentMaterial(input,model.Faces[f].Surface,point[0],outward,offsets[b],offsets[b+1],out var on,out minus[b],out plus[b]);if(error!=0)break;
+                            if(on){hasClash=true;if(owner==0||b==0)targetClash=true;canonicalOwner=Math.Min(canonicalOwner,b);continue;}
+                        }
+                        var n=offsets[b+1]-offsets[b];for(var i=0;i<n;i++)bodyFaces[i]=offsets[b]+i;
+                        error=RegularClassify(input,bodyFaces[..n],default,point[0],out var winding,out _);if(error!=0)break;
+                        if(winding is <0 or >1)return ParasolidConstants.PK_ERROR_bad_loop;
+                        minus[b]=plus[b]=winding==1;if(winding==1){hasClash=true;if(owner==0||b==0)targetClash=true;}
                     }
-                    var n=offsets[b+1]-offsets[b];for(var i=0;i<n;i++)bodyFaces[i]=offsets[b]+i;
-                    error=RegularClassify(input,bodyFaces[..n],default,point[0],out var winding,out _);if(error!=0)return error;
-                    if(winding is <0 or >1)return ParasolidConstants.PK_ERROR_bad_loop;
-                    minus[b]=plus[b]=winding==1;if(winding==1){hasClash=true;if(owner==0||b==0)targetClash=true;}
+                    if(error==0)break;
+                    if(attempt!=0||error is not (ParasolidConstants.PK_ERROR_cant_do_intersect or ParasolidConstants.PK_ERROR_eval_failure)
+                        ||!TryRegularCellInteriorWitness(ref model,f,out uv))return error;
+                    model.Witnesses[f]=uv;
                 }
                 var inside=BooleanMaterial(minus,options->function);var outside=BooleanMaterial(plus,options->function);
                 if(inside!=outside&&canonicalOwner==owner){selected[f]=1;reversed[f]=inside?(byte)0:(byte)1;}

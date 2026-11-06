@@ -168,6 +168,13 @@ internal static unsafe partial class KernelRuntime
             status=EvaluateCurveCore(in Curves[slot],last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
             return OperationIntersection.AddPoint(output,ref count,point[0],last,0,IntersectionVectorKind.End)?AlgorithmStatus.Success:AlgorithmStatus.OutputTooSmall;
         }
+        if(analytic&&support.Kind==SurfaceClass.Plane)
+        {
+            var reduced=IntersectProceduralICurveTwoPlanes(slot,first,last,GetSurfaceSlotByTag(a.Header.Tag),support,cutting,output,out count);
+            if(reduced==AlgorithmStatus.Success)return reduced;
+            if(reduced is not (AlgorithmStatus.Unsupported or AlgorithmStatus.NotConverged))return reduced;
+            count=0;
+        }
         var av=GetBSurfaceView(BSurfaceDataStore[a.DataIndex]);var bv=b.Class==SurfaceClass.BSurface?GetBSurfaceView(BSurfaceDataStore[b.DataIndex]):default;
         if(!analytic&&b.Class!=SurfaceClass.BSurface)return AlgorithmStatus.Unsupported;
         Span<IntervalNumber> ap=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],bp=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
