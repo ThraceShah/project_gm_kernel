@@ -69,7 +69,9 @@ internal static unsafe partial class KernelRuntime
                         status=BezierSurfaceBounds.Restrict(new(poles[..(4*(bv.UDegree+1)*(bv.VDegree+1))],bv.UDegree,bv.VDegree,new(bv.UKnots[u],bv.UKnots[u+1],bv.VKnots[v],bv.VKnots[v+1])),new(lower,upper,low,high),clipped);if(status!=AlgorithmStatus.Success)return status;
                         clipped[..(4*(bv.UDegree+1)*(bv.VDegree+1))].CopyTo(poles);other=new(new BezierSurfacePatch(poles[..(4*(bv.UDegree+1)*(bv.VDegree+1))],bv.UDegree,bv.VDegree,new(lower,upper,low,high)));
                     }
-                    var ln=0;var le=0;status=ParametricSurfaceIntersection.FindProcedural(patch,other,localNodes,ref ln,localEdges,ref le,ref remaining);if(status!=AlgorithmStatus.Success)return status;
+                    var ln=0;var le=0;status=analytic&&support.Kind==SurfaceClass.Plane
+                        ?SurfacePlaneIntersection.Find(patch,support,localNodes,ref ln,localEdges,ref le)
+                        :ParametricSurfaceIntersection.FindProcedural(patch,other,localNodes,ref ln,localEdges,ref le,ref remaining);if(status!=AlgorithmStatus.Success)return status;
                     for(var k=0;k<ln;k++)
                     {
                         if(analytic){status=OperationIntersection.Parameters(support,localNodes[k].Point,out localNodes[k].S,out localNodes[k].T);if(status!=AlgorithmStatus.Success)return status;}
