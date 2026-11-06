@@ -94,6 +94,35 @@ public class SurfacePlaneIntersectionTests
         Assert.Equal(AlgorithmStatus.NotConverged,SurfacePlaneIntersection.Find(patch,Plane(),nodes,ref nn,edges,ref ne));
     }
 
+    [Fact]
+    public void ASubdivisionCornerContinuesIntoItsNeighbourCell()
+    {
+        const double cut=.4931471805599453;Span<IntervalNumber> poles=stackalloc IntervalNumber[16];
+        for(var i=0;i<2;i++)for(var j=0;j<2;j++){var at=4*(2*i+j);poles[at]=i;poles[at+1]=j;poles[at+2]=i+j-cut;poles[at+3]=1;}
+        var patch=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,1,1,new(0,1,0,1)));
+        Span<SurfaceIntersectionNode> nodes=stackalloc SurfaceIntersectionNode[64];Span<SurfaceIntersectionSegment> edges=stackalloc SurfaceIntersectionSegment[64];var nn=0;var ne=0;
+        Assert.Equal(AlgorithmStatus.Success,SurfacePlaneIntersection.Find(patch,Plane(),nodes,ref nn,edges,ref ne));
+        Assert.Equal(1,Components(nodes[..nn],edges[..ne],false));
+    }
+
+    [Fact]
+    public void AnIsolatedChartCornerIsValidatedAfterTheAdjacentChartIsMerged()
+    {
+        Span<IntervalNumber> first=stackalloc IntervalNumber[16],second=stackalloc IntervalNumber[16];
+        for(var i=0;i<2;i++)for(var j=0;j<2;j++)
+        {
+            var at=4*(2*i+j);first[at]=i*.5;first[at+1]=j;first[at+2]=i*.5+j-.5;first[at+3]=1;
+            second[at]=.5+i*.5;second[at+1]=j;second[at+2]=i*.5+j;second[at+3]=1;
+        }
+        var left=new SurfaceIntersectionPatch(new BezierSurfacePatch(first,1,1,new(0,.5,0,1)));
+        var right=new SurfaceIntersectionPatch(new BezierSurfacePatch(second,1,1,new(.5,1,0,1)));
+        Span<SurfaceIntersectionNode> nodes=stackalloc SurfaceIntersectionNode[64];Span<SurfaceIntersectionSegment> edges=stackalloc SurfaceIntersectionSegment[64];var nn=0;var ne=0;var remaining=32768;
+        Assert.Equal(AlgorithmStatus.Success,SurfacePlaneIntersection.Find(right,Plane(),nodes,ref nn,edges,ref ne,ref remaining,deferIsolatedPoints:true));
+        Assert.Equal(1,nn);Assert.Equal(0,ne);Assert.Equal(AlgorithmStatus.NotConverged,SurfacePlaneIntersection.ValidateGraph(nodes[..nn],edges[..ne]));
+        Assert.Equal(AlgorithmStatus.Success,SurfacePlaneIntersection.Find(left,Plane(),nodes,ref nn,edges,ref ne,ref remaining,deferIsolatedPoints:true));
+        Assert.Equal(AlgorithmStatus.Success,SurfacePlaneIntersection.ValidateGraph(nodes[..nn],edges[..ne]));Assert.Equal(1,Components(nodes[..nn],edges[..ne],false));
+    }
+
     private static AnalyticSurface Plane()=>new(SurfaceClass.Plane,default,new KernelVector3{Z=1},new KernelVector3{X=1});
     private static int Components(ReadOnlySpan<SurfaceIntersectionNode> nodes,ReadOnlySpan<SurfaceIntersectionSegment> edges,bool closed)
     {

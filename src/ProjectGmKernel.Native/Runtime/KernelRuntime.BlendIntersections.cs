@@ -70,7 +70,7 @@ internal static unsafe partial class KernelRuntime
                         clipped[..(4*(bv.UDegree+1)*(bv.VDegree+1))].CopyTo(poles);other=new(new BezierSurfacePatch(poles[..(4*(bv.UDegree+1)*(bv.VDegree+1))],bv.UDegree,bv.VDegree,new(lower,upper,low,high)));
                     }
                     var ln=0;var le=0;status=analytic&&support.Kind==SurfaceClass.Plane
-                        ?SurfacePlaneIntersection.Find(patch,support,localNodes,ref ln,localEdges,ref le,ref remaining)
+                        ?SurfacePlaneIntersection.Find(patch,support,localNodes,ref ln,localEdges,ref le,ref remaining,deferIsolatedPoints:true)
                         :ParametricSurfaceIntersection.FindProcedural(patch,other,localNodes,ref ln,localEdges,ref le,ref remaining);if(status!=AlgorithmStatus.Success)return status;
                     for(var k=0;k<ln;k++)
                     {
@@ -92,7 +92,7 @@ internal static unsafe partial class KernelRuntime
                     }
                 }
             }
-            return AlgorithmStatus.Success;
+            return analytic&&support.Kind==SurfaceClass.Plane?SurfacePlaneIntersection.ValidateGraph(nodes[..nn],edges[..ne]):AlgorithmStatus.Success;
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }

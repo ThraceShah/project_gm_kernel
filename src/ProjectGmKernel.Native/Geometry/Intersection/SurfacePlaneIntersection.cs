@@ -22,7 +22,7 @@ internal static class SurfacePlaneIntersection
 
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,
-        Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining)
+        Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining,bool deferIsolatedPoints=false)
     {
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];pending[0]=patch.Domain;depths[0]=0;var count=1;var visited=0;
@@ -63,9 +63,10 @@ internal static class SurfacePlaneIntersection
                 for(var r=0;r<nr;r++)
                 {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n);if(status!=AlgorithmStatus.Success)goto Retry;}
             }
-            // A lone corner contact is not an empty locus. This graph-only
-            // result has no isolated-point output, so reject it explicitly.
-            if(n==1)return AlgorithmStatus.NotConverged;
+            // A cell/chart corner can belong to an arc in its neighbour.
+            // Keep every candidate until the complete graph is assembled;
+            // only globally unconnected points are isolated contacts.
+            for(var i=0;i<n;i++){status=AddNode(boundary[i],nodes,ref nodeCount,out _);if(status!=AlgorithmStatus.Success)return status;}
             for(var i=1;i<n;i++)for(var j=i;j>0&&boundary[j].Parameter(free)<boundary[j-1].Parameter(free);j--)
                 (boundary[j],boundary[j-1])=(boundary[j-1],boundary[j]);
             for(var i=0;i+1<n;i++)
@@ -94,6 +95,16 @@ internal static class SurfacePlaneIntersection
             pending[count]=split==0?new(cell.U0,middle,cell.V0,cell.V1):new(cell.U0,cell.U1,cell.V0,middle);depths[count++]=depth+1;
             pending[count]=split==0?new(middle,cell.U1,cell.V0,cell.V1):new(cell.U0,cell.U1,middle,cell.V1);depths[count++]=depth+1;
         }
+        return deferIsolatedPoints?AlgorithmStatus.Success:ValidateGraph(nodes[..nodeCount],segments[..segmentCount]);
+    }
+
+    internal static AlgorithmStatus ValidateGraph(ReadOnlySpan<SurfaceIntersectionNode> nodes,ReadOnlySpan<SurfaceIntersectionSegment> segments)
+    {
+        for(var i=0;i<nodes.Length;i++)
+        {
+            var connected=false;foreach(var segment in segments)if(segment.Start==i||segment.End==i){connected=true;break;}
+            if(!connected)return AlgorithmStatus.NotConverged;
+        }
         return AlgorithmStatus.Success;
     }
 
@@ -118,9 +129,8 @@ internal static class SurfacePlaneIntersection
     private static AlgorithmStatus AddSegment(in SurfaceIntersectionPatch patch,in SurfaceParameterBox box,in SurfaceIntersectionNode a,in SurfaceIntersectionNode b,
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount)
     {
-        var start=-1;var end=-1;for(var i=0;i<nodeCount;i++){if(Same(nodes[i],a))start=i;if(Same(nodes[i],b))end=i;}
-        if(start<0){if(nodeCount==nodes.Length)return AlgorithmStatus.OutputTooSmall;start=nodeCount;nodes[nodeCount++]=a;}
-        if(end<0){if(nodeCount==nodes.Length)return AlgorithmStatus.OutputTooSmall;end=nodeCount;nodes[nodeCount++]=b;}
+        var added=AddNode(a,nodes,ref nodeCount,out var start);if(added!=AlgorithmStatus.Success)return added;
+        added=AddNode(b,nodes,ref nodeCount,out var end);if(added!=AlgorithmStatus.Success)return added;
         if(start==end)return AlgorithmStatus.NumericalFailure;
         for(var i=0;i<segmentCount;i++)if(segments[i].Start==start&&segments[i].End==end||segments[i].Start==end&&segments[i].End==start)return AlgorithmStatus.Success;
         if(segmentCount==segments.Length)return AlgorithmStatus.OutputTooSmall;
@@ -133,5 +143,11 @@ internal static class SurfacePlaneIntersection
             error=Math.Max(error,OperationIntersection.Norm(Sub(point,Add(a.Point,Scale(chord,t)))));
         }
         segments[segmentCount++]=new(){Start=start,End=end,ChordalError=error*(1+1e-12)+2e-12*Math.Max(1,OperationIntersection.Norm(a.Point))};return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus AddNode(in SurfaceIntersectionNode node,Span<SurfaceIntersectionNode> nodes,ref BufferCount count,out BufferOffset index)
+    {
+        for(var i=0;i<count;i++)if(Same(nodes[i],node)){index=i;return AlgorithmStatus.Success;}
+        index=count;if(count==nodes.Length)return AlgorithmStatus.OutputTooSmall;nodes[count++]=node;return AlgorithmStatus.Success;
     }
 }
