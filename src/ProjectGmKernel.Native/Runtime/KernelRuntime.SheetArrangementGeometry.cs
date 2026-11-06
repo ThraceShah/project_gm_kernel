@@ -162,6 +162,7 @@ internal static unsafe partial class KernelRuntime
         var loop=Faces[face].FirstLoop;var winding=0;
         for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
         {
+            if(RegularVertexLoop(loop,out _))continue;
             var n=Loops[loop].FinCount;if(n>edges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             var fin=Loops[loop].FirstFin;
             for(var k=0;k<n;k++,fin=Fins[fin].NextInLoop)

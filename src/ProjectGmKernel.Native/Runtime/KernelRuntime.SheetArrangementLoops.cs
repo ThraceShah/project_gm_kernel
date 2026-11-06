@@ -104,6 +104,7 @@ internal static unsafe partial class KernelRuntime
         on=false;var loop=Faces[face].FirstLoop;var vector=new PK_VECTOR_s();WriteVector(&vector,point);
         for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
         {
+            if(RegularVertexLoop(loop,out _))continue;
             var fin=Loops[loop].FirstFin;
             for(var k=0;k<Loops[loop].FinCount;k++,fin=Fins[fin].NextInLoop)
             {

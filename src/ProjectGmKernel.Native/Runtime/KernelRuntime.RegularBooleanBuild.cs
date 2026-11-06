@@ -253,7 +253,7 @@ internal static unsafe partial class KernelRuntime
             var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities);if(built!=0)return built;
             var vertex=Bodies[TagRec(body).Slot].FirstVertexBody;
             for(var i=0;i<np;i++,vertex=Vertices[vertex].NextInBody)Vertices[vertex].Tolerance=vertexPrecisions[i];
-            return 0;
+            return TransferRegularPointLoops(ref model,indices,body);
         }
         finally{scratch.Return(memory);}
     }

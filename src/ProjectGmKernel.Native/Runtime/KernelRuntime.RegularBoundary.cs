@@ -27,6 +27,8 @@ internal static unsafe partial class KernelRuntime
         for(var b=0;b<bodies.Length;b++)
         {
             offsets[b]=nf;var slot=TagRec(bodies[b]).Slot;if(Xt.IsOpaque(slot))return ParasolidConstants.PK_ERROR_not_implemented;
+            var vertex=Bodies[slot].FirstVertexBody;
+            for(var v=0;v<Bodies[slot].VertexCountBody;v++,vertex=Vertices[vertex].NextInBody){var error=ReadRegularOriginalVertex(vertex,slot,points,vertices,vertexPrecisions,tolerance,ref np,out _);if(error!=0)return error;}
             var face=Bodies[slot].FirstFaceBody;
             for(var f=0;f<Bodies[slot].FaceCountBody;f++,face=Faces[face].NextInBody)
             {
@@ -42,6 +44,7 @@ internal static unsafe partial class KernelRuntime
                 var loop=record.FirstLoop;
                 for(var l=0;l<record.LoopCount;l++,loop=Loops[loop].NextInFace)
                 {
+                    if(RegularVertexLoop(loop,out _)){faces[nf-1].LoopCount--;continue;}
                     if(nl==loops.Length||nc>coedges.Length-Loops[loop].FinCount)return ParasolidConstants.PK_ERROR_not_implemented;
                     loops[nl++]=new(){FirstCoedge=nc,CoedgeCount=Loops[loop].FinCount};var fin=Loops[loop].FirstFin;
                     for(var k=0;k<Loops[loop].FinCount;k++,fin=Fins[fin].NextInLoop)
@@ -57,15 +60,7 @@ internal static unsafe partial class KernelRuntime
                                 var oldVertex=side==0?edge.StartVertex:edge.EndVertex;var v=-1;
                                 if(oldVertex>=0)
                                 {
-                                    v=vertices[..np].IndexOf(oldVertex);
-                                    if(v<0)
-                                    {
-                                        var error=SheetOriginalVertex(oldVertex,out var p);if(error!=0)return error;
-                                        for(var candidate=0;candidate<np;candidate++)if(Vertices[vertices[candidate]].Body!=slot&&ProfileDistance(points[candidate],p)<=tolerance)
-                                        {if(v>=0)return ParasolidConstants.PK_ERROR_not_implemented;v=candidate;}
-                                        if(v<0){if(np==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;v=np;vertices[np]=oldVertex;if(!vertexPrecisions.IsEmpty)vertexPrecisions[np]=Vertices[oldVertex].Tolerance;points[np++]=p;}
-                                    }
-                                    if(!vertexPrecisions.IsEmpty)vertexPrecisions[v]=Math.Max(vertexPrecisions[v],Vertices[oldVertex].Tolerance);
+                                    var error=ReadRegularOriginalVertex(oldVertex,slot,points,vertices,vertexPrecisions,tolerance,ref np,out v);if(error!=0)return error;
                                 }
                                 if(side==0)start=v;else end=v;
                             }

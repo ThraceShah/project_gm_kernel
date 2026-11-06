@@ -8,13 +8,38 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private struct RegularCutFamily{internal SurfTag First,Second;internal BufferOffset Start;internal BufferCount Count;internal SurfacePairRelation Relation;}
+    private struct RegularCutFamily{internal SurfTag First,Second;internal BufferOffset Start,PointStart;internal BufferCount Count,PointCount;internal SurfacePairRelation Relation;}
     private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;}
+
+    private static int ClipRegularContactPoints(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
+        ReadOnlySpan<SurfaceIntersectionNode> points,Span<SurfaceIntersectionNode> accepted,out BufferCount count)
+    {
+        count=0;
+        foreach(ref readonly var point in points)
+        {
+            var both=true;
+            for(var side=0;side<2;side++)
+            {
+                var face=side==0?first:second;var uv=new PK_UV_s();uv.param[0]=side==0?point.U:point.S;uv.param[1]=side==0?point.V:point.T;
+                var error=RegularFiniteFaceContains(input,face,uv,point.Point,out var inside,out _);if(error!=0)return error;
+                error=RegularPointOnFiniteBoundary(input,face,point.Point,out var boundary);if(error!=0)return error;
+                if(boundary)return ParasolidConstants.PK_ERROR_not_implemented;
+                both&=inside;
+            }
+            if(both){if(count==accepted.Length)return ParasolidConstants.PK_ERROR_not_implemented;accepted[count++]=point;}
+        }
+        return 0;
+    }
 
     private static int PrepareRegularSupportCuts(SurfTag first,SurfTag second,Span<SheetCutCurve> cuts,out BufferCount count)
     {
         count=0;var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);
         if(!RegularPlanarSupport(a,out var av,out var errorA)||!RegularPlanarSupport(b,out var bv,out var errorB))return PrepareSheetCutCurves(first,second,cuts,out count);
+        // Geometrically planar NURBS need not have an affine parameter map.
+        // Preserve their real intersection support instead of replacing the
+        // resulting native ICurve by a line on two surrogate planes.
+        if(Surfaces[a].Class==SurfaceClass.BSurface&&!TryAffinePlanarSurface(a,out _,out _,out _)
+            ||Surfaces[b].Class==SurfaceClass.BSurface&&!TryAffinePlanarSurface(b,out _,out _,out _))return PrepareSheetCutCurves(first,second,cuts,out count);
         var sine=OperationIntersection.Norm(ProfileCross(av.Axis,bv.Axis));
         if(errorA+errorB>0&&(sine<=1e-14||(errorA+errorB)/(sine-1e-14)>1e-10))return PrepareSheetCutCurves(first,second,cuts,out count);
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[64];Span<KernelVector3> points=stackalloc KernelVector3[64];

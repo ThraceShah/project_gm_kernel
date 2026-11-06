@@ -38,6 +38,8 @@ internal static unsafe partial class KernelRuntime
             var owners=ModelSpan<BufferOffset>(bytes,ref cursor,RegularInputFaces);var offsets=ModelSpan<BufferOffset>(bytes,ref cursor,inputs.Length+1);
             var sourceEdges=ModelSpan<SheetSourceEdge>(bytes,ref cursor,RegularInputEdges);
             var families=ModelSpan<RegularCutFamily>(bytes,ref cursor,RegularInputFaces*4);
+            var contactPoints=ModelSpan<SurfaceIntersectionNode>(bytes,ref cursor,RegularCurveLimit);var contactPointCount=0;var finiteContact=false;
+            var pointLoops=ModelSpan<RegularPointContact>(bytes,ref cursor,RegularCurveLimit);var pointLoopCount=0;
             var owned=ModelSpan<SheetCutCurve>(bytes,ref cursor,RegularCurveLimit);var cuts=ModelSpan<RegularFaceCut>(bytes,ref cursor,RegularCutLimit);
             var halfedges=ModelSpan<SheetHalfedge>(bytes,ref cursor,2*SheetEdgeLimit);var cycleCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,2*SheetEdgeLimit);
             var cycles=ModelSpan<SheetCycle>(bytes,ref cursor,SheetLoopLimit);if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;
@@ -46,21 +48,39 @@ internal static unsafe partial class KernelRuntime
             model.VertexMergeCandidates[..model.NP].Clear();
             var input=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
+            Span<SurfaceIntersectionNode> supportPoints=stackalloc SurfaceIntersectionNode[64];
             for(var a=0;a<nf;a++)for(var b=a+1;b<nf;b++)
             {
                 if(owners[a]==owners[b])continue;ModelingPerformance.Pair();LastRegularBooleanStage=RegularBooleanStage.Cuts;ModelingPerformance.Stage(RegularBooleanStage.Cuts);LastRegularBooleanFace=a;LastRegularBooleanOtherFace=b;
                 if(RegularPlaneFacesSeparated(input,a,b,model.Tolerance))continue;
+                if(RegularNaturalNurbsSeparatedFromPlane(input,a,b,model.Tolerance)||RegularNaturalNurbsSeparatedFromPlane(input,b,a,model.Tolerance))continue;
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
                 if(family<0)
                 {
-                    var relation=RegularCoincidentSupports(first,second)?SurfacePairRelation.CoincidentArea:SurfacePairRelation.Unresolved;var n=0;
-                    if(relation!=SurfacePairRelation.CoincidentArea){error=PrepareRegularSupportCuts(first,second,supportCuts,out n);if(error!=0)return error;relation=n==0?SurfacePairRelation.Empty:SurfacePairRelation.RegularCurves;}
-                    if(familyCount==families.Length||ownedCount>owned.Length-n)return ParasolidConstants.PK_ERROR_not_implemented;
-                    family=familyCount;families[familyCount++]=new(){First=first,Second=second,Start=ownedCount,Count=n,Relation=relation};
+                    var relation=RegularCoincidentSupports(first,second)?SurfacePairRelation.CoincidentArea:SurfacePairRelation.Unresolved;var n=0;var npContact=0;
+                    if(relation!=SurfacePairRelation.CoincidentArea)
+                    {
+                        error=TryPrepareRegularContactSupportCuts(first,second,supportCuts,out n,supportPoints,out npContact,out relation,out var handled);if(error!=0)return error;
+                        if(!handled){error=PrepareRegularSupportCuts(first,second,supportCuts,out n);if(error!=0)return error;relation=n==0?SurfacePairRelation.Empty:SurfacePairRelation.RegularCurves;}
+                    }
+                    if(familyCount==families.Length||ownedCount>owned.Length-n||contactPointCount>contactPoints.Length-npContact)return ParasolidConstants.PK_ERROR_not_implemented;
+                    family=familyCount;families[familyCount++]=new(){First=first,Second=second,Start=ownedCount,Count=n,PointStart=contactPointCount,PointCount=npContact,Relation=relation};
+                    supportPoints[..npContact].CopyTo(contactPoints[contactPointCount..]);contactPointCount+=npContact;
                     supportCuts[..n].CopyTo(owned[ownedCount..]);ownedCount+=n;
                 }
                 var data=families[family];
+                if(data.Relation==SurfacePairRelation.PointContact)
+                {
+                    error=ClipRegularContactPoints(input,a,b,contactPoints.Slice(data.PointStart,data.PointCount),supportPoints,out var accepted);if(error!=0)return error;
+                    finiteContact|=accepted!=0;
+                    if(owners[a]==0||owners[b]==0)for(var p=0;p<accepted;p++)
+                    {
+                        if(pointLoopCount==pointLoops.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+                        pointLoops[pointLoopCount++]=new(){Face=sources[owners[a]==0?a:b],Point=supportPoints[p].Point};
+                    }
+                    continue;
+                }
                 if(data.Relation==SurfacePairRelation.CoincidentArea)
                 {
                     error=ArrangeRegularCoincidentDomains(input,a,b,cuts,ref cutCount,ref model);if(error!=0)return error;
@@ -129,8 +149,14 @@ internal static unsafe partial class KernelRuntime
                 var inside=BooleanMaterial(minus,options->function);var outside=BooleanMaterial(plus,options->function);
                 if(inside!=outside&&canonicalOwner==owner){selected[f]=1;reversed[f]=inside?(byte)0:(byte)1;}
             }
+            // An isolated exterior touch has no material volume to remove
+            // or intersect. Tangent cavity/union topology is not represented
+            // by a zero-dimensional event alone, so those cases fail closed.
+            if(finiteContact&&(hasClash||options->function==ParasolidConstants.PK_boolean_unite_c))return ParasolidConstants.PK_ERROR_not_implemented;
             if(!hasClash)
             {
+                if(options->function==ParasolidConstants.PK_boolean_subtract_c)for(var p=0;p<pointLoopCount;p++)
+                {error=AppendRegularPointLoop(pointLoops[p].Face,pointLoops[p].Point);if(error!=0)return error;}
                 var count=options->function==ParasolidConstants.PK_boolean_unite_c?inputs.Length:options->function==ParasolidConstants.PK_boolean_subtract_c?1:0;
                 var returned=count==0?null:AllocateReturnSlice(count);if(count>0&&returned==null)return ParasolidConstants.PK_ERROR_memory_full;
                 inputs[..count].CopyTo(new Span<BodyTag>(returned,count));
