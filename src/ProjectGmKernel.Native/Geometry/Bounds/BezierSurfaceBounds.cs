@@ -25,8 +25,8 @@ internal static class BezierSurfaceBounds
     internal const SplineDegree MaxDegree = 16;
     internal const BufferCount MaxScalars = 4 * 17 * 17;
 
-    // Symbolic de Boor with Bernstein-polynomial coefficients. No interpolation
-    // or sampled bounds: every coefficient operation encloses the input spline.
+    // Exact clamped Bezier nets or symbolic de Boor with Bernstein-polynomial
+    // coefficients. No interpolation or sampled bounds.
     internal static AlgorithmStatus Extract(in BSurfaceView surface, KnotIndex uSpan, KnotIndex vSpan,
         Span<IntervalNumber> poles)
     {
@@ -47,6 +47,18 @@ internal static class BezierSurfaceBounds
         }
         if (!(maxWeight > 0) || !double.IsFinite(maxWeight)) return AlgorithmStatus.InvalidInput;
         var exponent = Math.ILogB(maxWeight);
+        // A complete end-clamped single span already is its Bezier control
+        // net. Check the complete knot vectors before bypassing extraction.
+        if(surface.UVertexCount==p+1&&surface.VVertexCount==q+1
+            &&ClampedBezierKnots(surface.UKnots,p)&&ClampedBezierKnots(surface.VKnots,q))
+        {
+            for(var u=0;u<=p;u++)for(var v=0;v<=q;v++)for(var d=0;d<4;d++)
+            {
+                var value=d==3&&!surface.Rational?1:surface.Vertices[(u*(q+1)+v)*surface.Dimension+d];
+                if(!ScaleHomogeneous(value,exponent,out poles[4*(u*(q+1)+v)+d]))return AlgorithmStatus.NumericalFailure;
+            }
+            return AlgorithmStatus.Success;
+        }
         for (var v = 0; v <= q; v++)
         {
             for (var u = 0; u <= p; u++)
@@ -55,9 +67,7 @@ internal static class BezierSurfaceBounds
                 for (var d = 0; d < 4; d++)
                 {
                     var value = d == 3 && !surface.Rational ? 1 : surface.Vertices[at + d];
-                    var scaled = Math.ScaleB(value, -exponent);
-                    if (!double.IsFinite(scaled) || value != 0 && scaled == 0) return AlgorithmStatus.NumericalFailure;
-                    input[4 * u + d] = scaled;
+                    if(!ScaleHomogeneous(value,exponent,out input[4*u+d]))return AlgorithmStatus.NumericalFailure;
                 }
             }
             var status = ExtractCurve(input, p, surface.UKnots, uSpan, result);
@@ -72,6 +82,24 @@ internal static class BezierSurfaceBounds
             result[..(4 * (q + 1))].CopyTo(poles[(4 * u * (q + 1))..]);
         }
         return AlgorithmStatus.Success;
+    }
+
+    private static bool ClampedBezierKnots(ReadOnlySpan<double> knots,SplineDegree degree)
+    {
+        if(knots.Length!=2*(degree+1))return false;
+        var first=knots[0];var last=knots[^1];if(!double.IsFinite(first)||!double.IsFinite(last)||!(last>first))return false;
+        for(var i=0;i<=degree;i++)if(knots[i]!=first||knots[degree+1+i]!=last)return false;
+        return true;
+    }
+
+    private static bool ScaleHomogeneous(double value,BufferOffset exponent,out IntervalNumber scaled)
+    {
+        var result=Math.ScaleB(value,-exponent);scaled=result;
+        if(!double.IsFinite(result)||value!=0&&result==0)return false;
+        // Power-of-two scaling is exact except when nonzero subnormal
+        // rounding loses bits. Preserve an outward enclosure there too.
+        if(double.IsSubnormal(result)&&Math.ScaleB(result,exponent)!=value)scaled=new(Math.BitDecrement(result),Math.BitIncrement(result));
+        return true;
     }
 
     internal static AlgorithmStatus ExtractCurve(ReadOnlySpan<IntervalNumber> input, SplineDegree degree,
@@ -149,6 +177,9 @@ internal static class BezierSurfaceBounds
 
     /// <summary>XYZ, d/du and d/dv intervals; output layout is component-major.</summary>
     internal static AlgorithmStatus Bound(in BezierSurfacePatch patch, in SurfaceParameterBox box, Span<IntervalNumber> output)
+        =>Bound(patch,box,output,default);
+
+    private static AlgorithmStatus Bound(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output,Span<IntervalNumber> homogeneous)
     {
         if (output.Length < 9) return AlgorithmStatus.WorkspaceTooSmall;
         Span<IntervalNumber> poles = stackalloc IntervalNumber[MaxScalars];
@@ -162,6 +193,7 @@ internal static class BezierSurfaceBounds
         }
         HomogeneousDerivativeHull(patch, box, true, hu);
         HomogeneousDerivativeHull(patch, box, false, hv);
+        if(!homogeneous.IsEmpty){h.CopyTo(homogeneous);hv.CopyTo(homogeneous[4..]);hu.CopyTo(homogeneous[12..]);}
         if (!(h[3].Lower > 0)) return AlgorithmStatus.NumericalFailure;
         for (var d = 0; d < 3; d++)
         {
@@ -213,8 +245,9 @@ internal static class BezierSurfaceBounds
     internal static AlgorithmStatus BoundRectangularSecond(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         if(output.Length<27)return AlgorithmStatus.WorkspaceTooSmall;
-        Span<IntervalNumber> first=stackalloc IntervalNumber[9],homogeneous=stackalloc IntervalNumber[36];var status=Bound(patch,box,first);if(status!=AlgorithmStatus.Success)return status;
-        for(var i=0;i<=2;i++)for(var j=0;j<=2;j++)HomogeneousJetHull(patch,box,i,j,homogeneous.Slice(4*(3*i+j),4));
+        Span<IntervalNumber> first=stackalloc IntervalNumber[9],homogeneous=stackalloc IntervalNumber[36];var status=Bound(patch,box,first,homogeneous);if(status!=AlgorithmStatus.Success)return status;
+        for(var i=0;i<=2;i++)for(var j=0;j<=2;j++)
+        {if(i+j<=1)continue;HomogeneousJetHull(patch,box,i,j,homogeneous.Slice(4*(3*i+j),4));}
         var weight=homogeneous[3];if(weight.Lower<=0)return AlgorithmStatus.NumericalFailure;
         for(var i=0;i<=2;i++)for(var j=0;j<=2;j++)for(var d=0;d<3;d++)
         {
