@@ -22,15 +22,18 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly byte isoAxis, sweepAxis;
     private readonly double isoParameter;
     private readonly bool parameterLine;
+    private readonly double normalOffset;
     private readonly double lineU,lineV,lineDU,lineDV;
     private readonly Span<SurfaceBoundCacheEntry> cache;
     internal SurfaceParameterBox Domain{get;}
-    internal bool IsProcedural=>isBlend;
+    internal bool IsProcedural=>isBlend||normalOffset!=0;
     internal bool UVariable=>isBlend||bezier.UDegree>0;
     internal bool VVariable=>isBlend&&!isSpine||bezier.VDegree>0;
     internal SplineDegree UDegree=>isBlend?1:bezier.UDegree;
     internal SplineDegree VDegree=>isBlend?(isSpine?0:1):bezier.VDegree;
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch){bezier=patch;blend=default;surface=0;isBlend=isSpine=false;Domain=patch.Domain;}
+    internal SurfaceIntersectionPatch(BezierSurfacePatch patch,double offset):this(patch){normalOffset=offset;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSurfaceIndex root,SurfaceParameterBox domain){bezier=default;blend=program;surface=root;isBlend=true;isSpine=false;Domain=domain;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,double lower,double upper){bezier=default;blend=program;surface=spine;isBlend=isSpine=true;Domain=new(lower,upper,0,1);}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries)
@@ -52,6 +55,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     }
     private AlgorithmStatus BoundCore(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
+        if(normalOffset!=0&&isBlend)return AlgorithmStatus.Unsupported;
         var mapped=isoAxis==1?new SurfaceParameterBox(isoParameter,isoParameter,box.U0,box.U1)
             :isoAxis==2?new(box.U0,box.U1,isoParameter,isoParameter):sweepAxis!=0?new(box.U0,box.U1,0,0):box;
         if(parameterLine)
@@ -60,7 +64,7 @@ internal readonly ref struct SurfaceIntersectionPatch
             mapped=new(u.Lower,u.Upper,v.Lower,v.Upper);
         }
         var status=isSpine?JointNestedBlendEvaluation.BoundSpine(blend,surface,mapped,output)
-            :isBlend?JointNestedBlendEvaluation.Bound(blend,surface,mapped,output):BezierSurfaceBounds.Bound(bezier,mapped,output);
+            :isBlend?JointNestedBlendEvaluation.Bound(blend,surface,mapped,output):OffsetBezierBounds.Bound(bezier,mapped,normalOffset,output);
         if(status!=AlgorithmStatus.Success)return status;
         if(isoAxis!=0)
         {
@@ -94,7 +98,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     {
         range=default;
         if(isoAxis!=0||sweepAxis!=0||parameterLine){range=bounds[0]*direction.X+bounds[1]*direction.Y+bounds[2]*direction.Z;return AlgorithmStatus.Success;}
-        if(!isBlend)
+        if(!isBlend&&normalOffset==0)
         {
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];var status=BezierSurfaceBounds.Restrict(bezier,box,poles);if(status!=AlgorithmStatus.Success)return status;
             range=new(double.PositiveInfinity,double.NegativeInfinity);
