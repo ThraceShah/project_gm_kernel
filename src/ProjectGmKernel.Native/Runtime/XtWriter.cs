@@ -371,7 +371,9 @@ internal static unsafe partial class XtWriter
                     {
                         ref readonly var ic = ref KernelRuntime.ICurveDataPool[curve.DataIndex];
                         changed |= AddSurfaceTag(ic.Surface0Tag, tag, isCurve: true, ref map, nodes, ref graph);
-                        changed |= AddSurfaceTag(ic.Surface1Tag, tag, isCurve: true, ref map, nodes, ref graph);
+                        changed |= ic.IsBlendContact!=0
+                            ?AddBlendContactBound(tag,ic.Surface1Tag,ref map,nodes,ref graph)
+                            :AddSurfaceTag(ic.Surface1Tag, tag, isCurve: true, ref map, nodes, ref graph);
                         break;
                     }
                 }
@@ -401,6 +403,21 @@ internal static unsafe partial class XtWriter
                 }
             }
         }
+    }
+
+    private static bool AddBlendContactBound(CurveTag contact,SurfTag blend,ref NodeMap map,List<XtNode> nodes,ref TransmitGraph graph)
+    {
+        if(map.BlendContactBounds.ContainsKey(contact))return false;
+        if(!map.SurfaceTags.TryGetValue(blend,out var surface))
+        {surface=AddIndex(nodes,ref graph,ref map);map.SurfaceTags.Add(blend,surface);}
+        var boundary=AddIndex(nodes,ref graph,ref map);
+        map.BlendContactBounds.Add(contact,boundary);
+        map.BlendContactOwners.Add(contact,AddIndex(nodes,ref graph,ref map));
+        // INTERSECTION references BLEND_BOUND; BLEND_BOUND references BLENDSF.
+        // Keep the actual dependent node in the latter's geometric-owner ring.
+        RecordGeometricOwner(surface,contact,true,blend,false,ref map,nodes,ref graph);
+        map.ImplicitGeometricOwners.Add(map.PendingGeometricOwners[^1].Node,boundary);
+        return true;
     }
 
     private static bool AddCurveTag(CurveTag tag, int dependentTag, bool isCurve, ref NodeMap map, List<XtNode> nodes, ref TransmitGraph graph)
@@ -466,7 +483,8 @@ internal static unsafe partial class XtWriter
     {
         foreach (var (node, dependentTag, isCurve, sharedTag, sharedIsCurve) in map.PendingGeometricOwners)
         {
-            var dependent = isCurve ? map.CurveTags[dependentTag] : map.SurfaceTags[dependentTag];
+            var dependent = map.ImplicitGeometricOwners.TryGetValue(node,out var implicitOwner)?implicitOwner
+                :isCurve ? map.CurveTags[dependentTag] : map.SurfaceTags[dependentTag];
             var shared = sharedIsCurve ? map.CurveTags[sharedTag] : map.SurfaceTags[sharedTag];
             XtNodeIndex first=0,last=0,previous=0,next=0;
             var found=false;
@@ -564,6 +582,7 @@ internal static unsafe partial class XtWriter
         map.PersistentNodeIds[map.Body] = next++;
         AssignIds(map.ShellSlots, ref next, ref map);
         AssignIds(map.SurfaceTags, ref next, ref map);
+        AssignIds(map.BlendContactBounds, ref next, ref map);
         AssignIds(map.CurveTags, ref next, ref map);
         AssignIds(map.PointTags, ref next, ref map);
         AssignIds(map.RegionSlots, ref next, ref map);
@@ -1184,10 +1203,18 @@ internal static unsafe partial class XtWriter
         var endNode = closed ? startNode : AddIndex(nodes, ref graph, ref map);
         var dataNode = AddIndex(nodes, ref graph, ref map);
 
-        SetNode(nodes, map, chartNode, ChartNode(chartNode, in data, hvecs));
+        var transmitted=data;
+        var reversedContact=data.IsBlendContact!=0&&data.BlendContactReversed!=0;
+        if(reversedContact)
+        {
+            transmitted.UvType=IntersectionUvType.Second;
+            (transmitted.ParameterError,transmitted.ParameterError1)=(transmitted.ParameterError1,transmitted.ParameterError);
+            (transmitted.ParameterErrorProvided,transmitted.ParameterError1Provided)=(transmitted.ParameterError1Provided,transmitted.ParameterErrorProvided);
+        }
+        SetNode(nodes, map, chartNode, ChartNode(chartNode, in transmitted, hvecs));
         SetNode(nodes, map, startNode, LimitNode(startNode, in data.StartLimit, hvecs));
         if (!closed) SetNode(nodes, map, endNode, LimitNode(endNode, in data.EndLimit, hvecs));
-        SetNode(nodes, map, dataNode, IntersectionDataNode(dataNode, in data));
+        SetNode(nodes, map, dataNode, IntersectionDataNode(dataNode, in transmitted));
 
         var sense = curve.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c ? '-' : '+';
         var hasScale = data.ScaleProvided != 0;
@@ -1201,6 +1228,22 @@ internal static unsafe partial class XtWriter
         fields[6] = XtFieldValue.Char(sense);
         fields[7] = XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.Surface0Tag));
         fields[8] = XtFieldValue.Ptr(Ptr(map.SurfaceTags, data.Surface1Tag));
+        if(data.IsBlendContact!=0)
+        {
+            if(data.BlendContactSide is <0 or >1||data.UvType!=IntersectionUvType.First)
+                throw new NotSupportedException("A Blend contact requires one actual support and its implicit boundary.");
+            var blend=KernelRuntime.GetSurfaceByTag(data.Surface1Tag);
+            if(blend.Class!=SurfaceClass.BlendSurface)throw new NotSupportedException("Blend contact has no Blend support.");
+            var definition=KernelRuntime.BlendedEdgeDataPool[blend.DataIndex];
+            if(data.Surface0Tag!=(data.BlendContactSide==0?definition.Surface0Tag:definition.Surface1Tag))
+                throw new NotSupportedException("Blend contact support does not match its boundary side.");
+            var boundary=map.BlendContactBounds[tag];var owner=map.BlendContactOwners[tag];
+            SetNode(nodes,map,boundary,BlendContactBoundNode(tag,in data,map));
+            SetNode(nodes,map,owner,new XtNode{Type=(int)XtNodeTypes.GeometricOwner,Index=owner,
+                Fields=[XtFieldValue.Ptr(index),XtFieldValue.Ptr(owner),XtFieldValue.Ptr(owner),XtFieldValue.Ptr(boundary)]});
+            fields[8]=XtFieldValue.Ptr(boundary);
+            if(reversedContact)(fields[7],fields[8])=(fields[8],fields[7]);
+        }
         fields[9] = XtFieldValue.Ptr(chartNode);
         fields[10] = XtFieldValue.Ptr(startNode);
         fields[11] = XtFieldValue.Ptr(endNode);
@@ -1218,6 +1261,24 @@ internal static unsafe partial class XtWriter
             Index = index,
             Fields = fields,
         };
+    }
+
+    private static XtNode BlendContactBoundNode(CurveTag contact,in ICurveData data,NodeMap map)
+    {
+        var index=map.BlendContactBounds[contact];XtNodeIndex next=0;
+        var previous=map.SurfaceChain.Count==0?0:map.SurfaceTags[map.SurfaceChain[^1]];var found=false;
+        foreach(var pair in map.BlendContactBounds)
+        {
+            if(found){next=pair.Value;break;}
+            if(pair.Key==contact)found=true;else previous=pair.Value;
+        }
+        return new XtNode{Type=(int)XtNodeTypes.BlendBound,Index=index,Fields=
+        [
+            XtFieldValue.Int(NodeId(index,map)),XtFieldValue.Ptr(0),XtFieldValue.Ptr(map.Body),
+            XtFieldValue.Ptr(next),XtFieldValue.Ptr(previous),XtFieldValue.Ptr(map.BlendContactOwners[contact]),
+            XtFieldValue.Char('+'),
+            XtFieldValue.Int(1-data.BlendContactSide),XtFieldValue.Ptr(map.SurfaceTags[data.Surface1Tag]),
+        ]};
     }
 
     private static XtNode ChartNode(XtNodeIndex index, in ICurveData data, ReadOnlySpan<double> hvecs)
@@ -1729,7 +1790,12 @@ internal static unsafe partial class XtWriter
     }
 
     private static XtNodeIndex NextSurface(SurfTag tag, NodeMap map)
-        => ChainNeighbour(tag,map.ConstructionGeometry.Contains(tag)?map.ConstructionSurfaceChain:map.SurfaceChain,map.SurfaceTags,offset:1);
+    {
+        var next=ChainNeighbour(tag,map.ConstructionGeometry.Contains(tag)?map.ConstructionSurfaceChain:map.SurfaceChain,map.SurfaceTags,offset:1);
+        if(next!=0||map.ConstructionGeometry.Contains(tag))return next;
+        foreach(var pair in map.BlendContactBounds)return pair.Value;
+        return 0;
+    }
 
     private static XtNodeIndex PreviousSurface(SurfTag tag, NodeMap map)
         => ChainNeighbour(tag,map.ConstructionGeometry.Contains(tag)?map.ConstructionSurfaceChain:map.SurfaceChain,map.SurfaceTags,offset:-1);
@@ -1810,6 +1876,9 @@ internal static unsafe partial class XtWriter
         public Dictionary<int, XtNodeIndex> VertexSlots;
         public Dictionary<int, XtNodeIndex> SurfaceTags;
         public Dictionary<int, XtNodeIndex> CurveTags;
+        public Dictionary<CurveTag,XtNodeIndex> BlendContactBounds;
+        public Dictionary<CurveTag,XtNodeIndex> BlendContactOwners;
+        public Dictionary<XtNodeIndex,XtNodeIndex> ImplicitGeometricOwners;
         public Dictionary<int, XtNodeIndex> FinCurveOwners;
         public Dictionary<int, XtNodeIndex> PointTags;
         public List<int> SurfaceChain;
@@ -1843,6 +1912,9 @@ internal static unsafe partial class XtWriter
             VertexSlots = new Dictionary<int, XtNodeIndex>();
             SurfaceTags = new Dictionary<int, XtNodeIndex>();
             CurveTags = new Dictionary<int, XtNodeIndex>();
+            BlendContactBounds=new Dictionary<CurveTag,XtNodeIndex>();
+            BlendContactOwners=new Dictionary<CurveTag,XtNodeIndex>();
+            ImplicitGeometricOwners=new Dictionary<XtNodeIndex,XtNodeIndex>();
             FinCurveOwners = new Dictionary<int, XtNodeIndex>();
             PointTags = new Dictionary<int, XtNodeIndex>();
             SurfaceChain = [];

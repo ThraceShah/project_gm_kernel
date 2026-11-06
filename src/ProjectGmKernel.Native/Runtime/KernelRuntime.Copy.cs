@@ -167,7 +167,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var from=ICurveDataPool[data]; var next=CloneData(ref ICurveDataPool,data);
                 if(next<0) return ParasolidConstants.PK_ERROR_memory_full;
-                ref var to=ref ICurveDataPool[next]; to.HvecBlock=to.UvValueBlock=to.ProgramBlock=-1;
+                ref var to=ref ICurveDataPool[next]; to.HvecBlock=to.UvValueBlock=to.ProgramBlock=to.ContactChartBlock=-1;
                 // The copied supports are resources of the new graph. Clear
                 // inherited source tags before any fallible cloning step so
                 // rollback cannot mistake a source support for an owned copy.
@@ -183,6 +183,7 @@ internal static unsafe partial class KernelRuntime
                 Curves[GetCurveSlotByTag(clone)].DependenciesAcquired=1;
                 return CopyPayload(from.HvecBlock,(nuint)(from.HvecCount*3*8),ref to.HvecBlock)
                     && CopyPayload(from.UvValueBlock,(nuint)(from.UvValueCount*8),ref to.UvValueBlock)
+                    && (from.IsBlendContact==0||CopyPayload(from.ContactChartBlock,(nuint)((6*from.ChartCount-4)*8),ref to.ContactChartBlock))
                     && CopyPayload(from.ProgramBlock,NestedBlendProgramBytes(from.ProgramSurfaceCount,from.ProgramSpineCount,from.ProgramChartCount,from.ProgramScalarCount),ref to.ProgramBlock)?0:ParasolidConstants.PK_ERROR_memory_full;
             }
             default: return ParasolidConstants.PK_ERROR_not_implemented;

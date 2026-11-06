@@ -116,8 +116,10 @@ internal static unsafe partial class KernelRuntime
                     return AlgorithmStatus.InvalidInput;
                 var surfaceStatus = EvaluateSurfaceCore(in Surfaces[surfaceSlot], uv[0].X, uv[0].Y, in jetLayout, jet, 0);
                 if (surfaceStatus != AlgorithmStatus.Success) return surfaceStatus;
-                SpCurveEvaluation.Compose(in jetLayout, jet, uv, tangentOrder, values);
-                direction = Unit(values[1]);
+                Span<KernelVector3> composed = stackalloc KernelVector3[11];
+                SpCurveEvaluation.Compose(in jetLayout, jet, uv, tangentOrder, composed);
+                composed[..(order + 1)].CopyTo(values);
+                direction = Unit(composed[1]);
                 return IsFinite(direction) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
             }
             case CurveClass.ICurve:
@@ -149,6 +151,12 @@ internal static unsafe partial class KernelRuntime
     {
         direction = default;
         ref readonly var procedural=ref ICurveDataPool[record.DataIndex];
+        if(procedural.IsBlendContact!=0)
+        {
+            Span<KernelVector3> contact=stackalloc KernelVector3[3];var requested=tangentRequired?Math.Max(order,1):order;
+            var contactStatus=EvaluateBlendContact(procedural,t,requested,contact,out _);if(contactStatus!=AlgorithmStatus.Success)return contactStatus;
+            contact[..(order+1)].CopyTo(values);if(tangentRequired)direction=Unit(contact[1]);return AlgorithmStatus.Success;
+        }
         if(procedural.ProgramBlock>0)
         {
             var program=GetNestedBlendProgram(procedural.ProgramBlock,procedural.ProgramSurfaceCount,procedural.ProgramSpineCount,procedural.ProgramChartCount,procedural.ProgramScalarCount);

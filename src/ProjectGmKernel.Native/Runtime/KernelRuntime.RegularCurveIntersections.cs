@@ -40,6 +40,8 @@ internal static unsafe partial class KernelRuntime
         count=0;var slot=GetSurfaceSlotByTag(surface);var cs=GetCurveSlotByTag(curve);
         if(slot<0||cs<0)return AlgorithmStatus.InvalidInput;
         if(Surfaces[slot].Class==SurfaceClass.Plane)return IntersectSheetCurvePlane(curve,first,last,surface,output,out count);
+        if(Curves[cs].Class==CurveClass.ICurve&&ICurveDataPool[Curves[cs].DataIndex].IsBlendContact!=0)
+            return IntersectBlendContactSurface(slot,cs,first,last,output,out count);
         if(Curves[cs].Class==CurveClass.ICurve)return IntersectRegularICurveSurface(slot,cs,first,last,output,out count);
         if(TryBlendIsoparam(cs,out var isoSurface,out var fixedV))
         {

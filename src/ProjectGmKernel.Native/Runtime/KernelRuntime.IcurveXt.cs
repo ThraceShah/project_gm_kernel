@@ -303,7 +303,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool TryReadIntersectionDataNode(XtNode dataNode, Span<double> uvValues,
-        out IntersectionUvType uvType, out int uvCount)
+        out IntersectionUvType uvType, out int uvCount,BufferCount maxValues=MaxIcurveImportUvValues)
     {
         uvType = IntersectionUvType.None;
         uvCount = 0;
@@ -314,7 +314,7 @@ internal static unsafe partial class KernelRuntime
         uvType = (IntersectionUvType)raw;
         uvCount = dataNode.VariableLength;
         if (uvCount < 0 || dataNode.Fields.Length != 1 + uvCount) return false;
-        if (uvCount > MaxIcurveImportUvValues || uvValues.Length < uvCount) return false;
+        if (uvCount > maxValues || uvValues.Length < uvCount) return false;
         if (uvCount % 2 != 0) return false;
         for (var i = 0; i < uvCount; i++)
         {

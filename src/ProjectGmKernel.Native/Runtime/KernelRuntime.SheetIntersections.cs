@@ -25,6 +25,11 @@ internal static unsafe partial class KernelRuntime
         // first. A repeated Boolean may encounter the old planar tool first.
         if(Surfaces[a].Class==SurfaceClass.Plane&&Surfaces[b].Class!=SurfaceClass.Plane)
         { (surface,plane)=(plane,surface);(a,b)=(b,a); }
+        if(Surfaces[a].Class==SurfaceClass.BlendSurface&&Surfaces[b].Class==SurfaceClass.Plane)
+        {
+            var exact=TryPrepareBlendPlaneIsocut(surface,plane,cuts,out count,out var handled);
+            if(exact!=0||handled)return exact;
+        }
         Span<OperationIntersectionBranch> branches = stackalloc OperationIntersectionBranch[64];
         Span<KernelVector3> isolated = stackalloc KernelVector3[64];
         var status = FindSurfaceIntersections(a, b, branches, out var nc, isolated, out var np);
@@ -84,6 +89,8 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {
         count=0;var slot=GetCurveSlotByTag(curve);if(slot<0)return AlgorithmStatus.InvalidInput;
+        if(Curves[slot].Class==CurveClass.ICurve&&ICurveDataPool[Curves[slot].DataIndex].IsBlendContact!=0)
+            return IntersectBlendContactPlane(slot,first,last,cutting,output,out count);
         if(Curves[slot].Class==CurveClass.SPCurve)return IntersectBlendIsoparamPlane(slot,first,last,cutting,output,out count);
         if(Curves[slot].Class!=CurveClass.ICurve)
         {

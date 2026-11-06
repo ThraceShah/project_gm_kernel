@@ -343,7 +343,15 @@ internal static unsafe partial class KernelRuntime
                     else if(d.UvType==IntersectionUvType.Both)
                     { if(!TransformUv(d.Surface1Tag,scale,parity,ref uv[i+2],ref uv[i+3],allowNull:true))return ParasolidConstants.PK_ERROR_failed_to_transform; }
                 }
-                if(parity<0)
+                if(d.IsBlendContact!=0)
+                {
+                    if(!SnapshotPayload(d.ContactChartBlock,(nuint)((6*d.ChartCount-4)*8),curve.Header.Partition))return ParasolidConstants.PK_ERROR_memory_full;
+                    var map=BlendContactMap(d);var scales=map.Slice(2*d.ChartCount,d.ChartCount-1);
+                    var chords=MemoryMarshal.Cast<double,KernelVector3>(map[(3*d.ChartCount-1)..]);
+                    for(var i=0;i<scales.Length;i++){scales[i]/=scale;chords[i]=ProfileScale(m.TransformVector(chords[i]),1/scale);}
+                    if(parity<0){d.BlendContactSide=1-d.BlendContactSide;d.BlendContactReversed=(byte)(1-d.BlendContactReversed);}
+                }
+                if(parity<0&&d.IsBlendContact==0)
                 {
                     // Each oriented support normal follows R*n. Reflection
                     // reverses their ordered cross product, so exchange the

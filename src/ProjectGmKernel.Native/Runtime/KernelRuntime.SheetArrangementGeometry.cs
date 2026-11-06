@@ -77,7 +77,25 @@ internal static unsafe partial class KernelRuntime
     private static bool BlendWindingPrefersVertical(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,
         ReadOnlySpan<ModelingCoedge> loop,PK_UV_s query)
     {
-        var slot=GetSurfaceSlotByTag(surface);if(Surfaces[slot].Class!=SurfaceClass.BlendSurface)return false;
+        var slot=GetSurfaceSlotByTag(surface);
+        if(Surfaces[slot].Class==SurfaceClass.BSurface)
+        {
+            foreach(ref readonly var coedge in loop)
+            {
+                var edge=edges[coedge.Edge];var curve=Curves[GetCurveSlotByTag(edge.Curve)];if(curve.Class!=CurveClass.ICurve)continue;
+                var contact=ICurveDataPool[curve.DataIndex];
+                if(contact.IsBlendContact==0||contact.UvType!=IntersectionUvType.First||!SameSheetSupport(surface,contact.Surface0Tag))continue;
+                var n=contact.ChartCount;var parameters=BlendContactMap(contact).Slice(n,n);var at=(edge.Start+edge.End)*.5;var segment=0;
+                while(segment<n-2&&parameters[segment+1]<=at)segment++;
+                var uv=new ReadOnlySpan<double>(DereferenceBlock(contact.UvValueBlock),contact.UvValueCount);
+                var du=uv[2*segment+2]-uv[2*segment];var dv=uv[2*segment+3]-uv[2*segment+1];
+                // Stored UV chords choose a transverse ray only. Complete
+                // root isolation and winding still certify the result.
+                if(Math.Abs(du)>4*Math.Abs(dv))return true;
+            }
+            return false;
+        }
+        if(Surfaces[slot].Class!=SurfaceClass.BlendSurface)return false;
         SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> jet=stackalloc KernelVector3[4];
         if(EvaluateSurfaceCore(in Surfaces[slot],query.param[0],query.param[1],in layout,jet,0)!=AlgorithmStatus.Success)return false;
         foreach(ref readonly var coedge in loop)

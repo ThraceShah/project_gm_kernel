@@ -104,6 +104,12 @@ internal static unsafe partial class KernelRuntime
         else if (record.Class == CurveClass.ICurve)
         {
             ref readonly var procedural=ref ICurveDataPool[record.DataIndex];
+            if(procedural.IsBlendContact!=0)
+            {
+                var status=ParameteriseNestedSurface(Surfaces[GetSurfaceSlotByTag(procedural.Surface1Tag)],point,out var uv);if(status!=AlgorithmStatus.Success)return ParasolidConstants.PK_ERROR_not_on_curve;
+                if(Math.Abs(uv.param[1]-BlendContactV(procedural))>1e-8)return ParasolidConstants.PK_ERROR_not_on_curve;
+                var error=BlendContactParameter(procedural,point,uv.param[0],out value);if(error!=0)return error;*parameter=value;return 0;
+            }
             if(procedural.ProgramBlock>0)
                 return ParameteriseNestedSpine(procedural,point,parameter);
             var checkpoint = CommandScratch.ThreadArenaOffset;

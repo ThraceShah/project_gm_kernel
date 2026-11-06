@@ -80,7 +80,7 @@ internal static unsafe partial class KernelRuntime
         if(!double.IsFinite(options->tolerance)||options->tolerance<0)return ParasolidConstants.PK_ERROR_bad_tolerance;
         if(!LocalChoice(options->transfer,ParasolidConstants.PK_blend_transfer_topol_no_c)
             ||!LocalChoice(options->output_sheet,ParasolidConstants.PK_blend_output_sheet_no_c)
-            ||!LocalChoice(options->update,ParasolidConstants.PK_blend_edge_update_default_c)
+            ||!LocalChoice(options->update,ParasolidConstants.PK_blend_edge_update_default_c)&&options->update!=ParasolidConstants.PK_blend_edge_update_v261_c
             ||!LocalChoice(options->repair_su_X,ParasolidConstants.PK_blend_repair_su_X_no_c)
             ||!LocalChoice(options->repair_fa_X,ParasolidConstants.PK_blend_repair_fa_X_no_c)
             ||!LocalChoice(options->inside_tight,ParasolidConstants.PK_blend_inside_tight_blends_c)
@@ -110,6 +110,8 @@ internal static unsafe partial class KernelRuntime
         error=BuildAxialLocalBlends(slot,faces,selected[..count],descriptions,products,out var made);
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildPlanarLocalBlends(slot,faces,selected[..count],descriptions,products,out made);
+        if(error==ParasolidConstants.PK_ERROR_not_implemented)
+            error=BuildRegularLocalBlend(slot,faces,selected[..count],descriptions,products,out made);
         if(error!=0)
         {
             *fault=error==ParasolidConstants.PK_ERROR_not_implemented?ParasolidConstants.PK_blend_fault_type_c:ParasolidConstants.PK_blend_fault_range_c;

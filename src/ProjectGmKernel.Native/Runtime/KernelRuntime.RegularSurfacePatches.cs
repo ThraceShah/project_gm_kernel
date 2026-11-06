@@ -79,21 +79,13 @@ internal static unsafe partial class KernelRuntime
     {
         count=0;if(!TryBlendIsoparam(curve,out var surface,out var fixedV))return AlgorithmStatus.Unsupported;
         Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
-        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
-        var status=RegularSurfaceExtent(surface,out var extent);if(status!=AlgorithmStatus.Success)return status;
+        IntervalBox3 extent=default;AlgorithmStatus status;
         for(var i=0;i<RegularSurfacePatchCount(surface);i++)
         {
             status=RegularSurfacePatch(surface,i,extent,poles,out var patch);if(status!=AlgorithmStatus.Success)return status;
             var lower=Math.Max(first,patch.Domain.U0);var upper=Math.Min(last,patch.Domain.U1);if(!(upper>lower))continue;
             var iso=new SurfaceIntersectionPatch(patch,false,fixedV,lower,upper);
-            for(var j=0;j<AnalyticBezierPatches.Count(plane);j++)
-            {
-                status=AnalyticBezierPatches.Create(plane,extent,j,poles,out var p,out var q,out var domain);if(status!=AlgorithmStatus.Success)return status;
-                var cutter=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles[..(4*(p+1)*(q+1))],p,q,domain));
-                var cell=new ParameterCell{Lower=new(){U=domain.U0,V=domain.V0,S=lower},Upper=new(){U=domain.U1,V=domain.V1,S=upper}};
-                status=ParametricSurfaceIntersection.Isolate(cutter,iso,cell,3,roots,out var n);if(status!=AlgorithmStatus.Success)return status;
-                for(var k=0;k<n;k++)if(!OperationIntersection.AddPoint(output,ref count,roots[k].Point,roots[k].S,0,IntersectionVectorKind.Simple))return AlgorithmStatus.OutputTooSmall;
-            }
+            status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,output,ref count);if(status!=AlgorithmStatus.Success)return status;
         }
         OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
     }

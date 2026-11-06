@@ -524,6 +524,13 @@ internal struct ICurveData
     public BufferCount ProgramSurfaceCount,ProgramSpineCount,ProgramChartCount;
     public BlendSpineIndex ProgramSpine;
     public BufferCount ProgramScalarCount;
+    // A regular tangency boundary is original support ∩ BLEND_BOUND.
+    // Surface1Tag owns the blend defining that implicit construction surface.
+    public KernelLogical IsBlendContact;
+    public BufferOffset BlendContactSide;
+    // XT support/UV order after reflection; runtime keeps actual support first.
+    public KernelLogical BlendContactReversed;
+    public DataSlot ContactChartBlock;
 }
 
 /// <summary>

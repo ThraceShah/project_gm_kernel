@@ -18,6 +18,7 @@ internal static unsafe partial class KernelRuntime
         blocks->Free(DereferenceBlock(data.HvecBlock));
         blocks->Free(DereferenceBlock(data.UvValueBlock));
         if(data.ProgramBlock>0)blocks->Free(DereferenceBlock(data.ProgramBlock));
+        if(data.ContactChartBlock>0)blocks->Free(DereferenceBlock(data.ContactChartBlock));
         ICurveDataPool.Free(dataIndex);
         ReleaseImportedICurveSupport(owned0);
         if (owned1 != owned0) ReleaseImportedICurveSupport(owned1);

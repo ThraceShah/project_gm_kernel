@@ -13,6 +13,18 @@ The 2026-11-06 regular curved closure passed 1392 kernel tests, 12 XT tests,
 classifications. All advanced and managed public-modeling gates passed. Scope
 and reproducible evidence are in `docs/Regular_Curved_Boolean_Operations.md`.
 
+The subsequent M1 increment connects constant-radius rolling Blend geometry to
+regular independent solid-edge fillets: convex and concave Plane/NURBS and
+NURBS/NURBS supports, two simple planar ends, real contact ICurves and shared
+B-rep replacement. Five independently constructed real-PK cases passed both
+filleting and a subsequent cut through the retained Blend face. XT finite edge
+ranges now survive receive and continued modeling. The final managed Release
+run passed 1,414 kernel tests and 12 XT tests; existing sheet and curved Boolean
+oracles passed 79 and 33 cases. See `docs/Regular_Freeform_Solid_Fillets.md`,
+`docs/Complex_Surface_Solid_Modeling_Plan.md` and
+`docs/reviews/advanced-modeling/freeform-solid-fillets-2026-11-06.md` for exact
+scope, strict PK comparison options, lifecycle validation and performance limits.
+
 | Area | Implemented scope | Reference |
 | --- | --- | --- |
 | Runtime | Session and partition management, typed entity pools, generations, return memory, command dispatch, journaling and rollback for covered operations | `docs/memory_architecture.md`, `docs/API_Dispatch_Model.md` |
@@ -25,7 +37,7 @@ and reproducible evidence are in `docs/Regular_Curved_Boolean_Operations.md`.
 | Pure geometry extension | Geometry-bounded analytic SSI, certified convex plane contacts, global supported minimum-distance/projection queries, exact cylindrical/toroidal blends and seven spline edits | `docs/Geometry_Completion_Plan.md` |
 | Boolean and editing | Planar and complete-sphere Boolean; finite regular NURBS solid Boolean, cavities, multiple tools, repeated cuts and classification; regular NURBS/Blend sheet imprint, trim and section | `docs/Regular_Curved_Boolean_Operations.md`, `docs/Curved_Modeling_Closure.md`, `docs/Boolean_Operations.md`, `docs/Analytic_Boolean_Operations.md` |
 | Freeform construction | Interpolation/fitting, exact curve matching, clamped spline-grid surfaces with corner twists, rational sweep/spin surfaces, certified parallel-profile solid sweeps/lofts and complete-edge sewing | `docs/Freeform_Modeling.md` |
-| Local operations | Convex/analytic offsets and hollows, independent or uniform-all-edge convex fillets/chamfers, cylinder rim operations | `docs/Local_Operations.md` |
+| Local operations | Convex/analytic offsets and hollows, independent or uniform-all-edge convex fillets/chamfers, cylinder rim operations; regular constant-radius convex/concave Plane/NURBS and NURBS/NURBS single-edge solid fillets | `docs/Local_Operations.md`, `docs/Regular_Freeform_Solid_Fillets.md` |
 | Interchange | Fresh runtime-derived XT output, preserved opaque documents for unsupported import graphs, schema and corpus tooling | `docs/project_gm_kernel_xt_library.md`, `docs/xt_all_versions_support_status.md` |
 | Visualization | Real PK faceting and line rendering, PKToy viewer buffers, exact mapping to independent face/edge identifiers, native and managed integration | `docs/Display_Bridge.md` |
 
@@ -81,13 +93,13 @@ pkill -f '[t]esthost.dll' 2>/dev/null || true
 exit "$kernel_test_exit"
 ```
 
-The current real-SDK acceptance environment is Linux x64 with .NET 10.0.403 and Parasolid 38.0.150. Use the appropriate RID and NativeAOT toolchain on another platform. The private SDK and credentials are not stored in the repository.
+The M1 acceptance environment is Linux x64 with .NET SDK 10.0.302 and Parasolid 38.0.150. The earlier regular curved closure used SDK 10.0.403. Use the appropriate RID and NativeAOT toolchain on another platform. The private SDK and credentials are not stored in the repository.
 
 ## Remaining work
 
 1. **C — general curved topology:** singular contacts, coincident curved areas, periodic patches and broader mixed analytic/Blend solid arrangements beyond the finite regular NURBS Boolean and existing specialized paths.
 2. **D — general freeform modeling:** singular/coincident NURBS intersection, moving-frame/twisted/guided solid sweeps, arbitrary section changes, partial-edge sewing and complex repairs. Regular bounded NURBS intersection, sheet arrangements and curved-solid Boolean are implemented within their documented scope.
-3. **E — general local operations and compatibility:** freeform/variable-radius and concave blends, arbitrary corner groups, topology-changing/general NURBS offset and hollow operations, complex repair and nonmanifold models.
+3. **E — general local operations and compatibility:** broader freeform fillets beyond the regular single-edge constant-radius subset, edge chains, variable radius, arbitrary corner groups, topology-changing/general NURBS offset and hollow operations, complex repair and nonmanifold models.
 4. **Broaden A/B subsets:** general affine deformation, advanced copy options, arbitrary planar curve arrangements, face/body-bounded extrusion, axis-touching or axis-crossing revolution, and additional XT topology/geometry classes.
 
 Unsupported cases return explicit errors or remain opaque at the XT boundary. Opaque preservation is not editable B-rep support, and a structural checker is not a full geometric validity certificate.

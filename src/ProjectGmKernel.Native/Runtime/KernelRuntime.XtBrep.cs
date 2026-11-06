@@ -192,7 +192,7 @@ internal static unsafe partial class KernelRuntime
         if (curveSlot < 0 || edge.StartVertex < 0 || edge.EndVertex < 0 || edge.StartVertex == edge.EndVertex)
             return AlgorithmStatus.Success;
         var curve = Curves[curveSlot];
-        if (curve.Class is not (CurveClass.BCurve or CurveClass.ICurve or CurveClass.TRCurve)) return AlgorithmStatus.Success;
+        if (curve.Class is not (CurveClass.BCurve or CurveClass.ICurve or CurveClass.TRCurve or CurveClass.Circle or CurveClass.Ellipse)) return AlgorithmStatus.Success;
         if (curve.Class == CurveClass.BCurve)
         {
             var data = BCurveDataStore[curve.DataIndex];
@@ -221,6 +221,7 @@ internal static unsafe partial class KernelRuntime
             // natural-domain interval is installed when inversion fails.
             if (error != 0) return AlgorithmStatus.Success;
             if (curve.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c) (a, b) = (b, a);
+            if (curve.Class is CurveClass.Circle or CurveClass.Ellipse && b <= a) b += Math.Tau;
             if (!double.IsFinite(a) || !double.IsFinite(b) || !(b > a)) return AlgorithmStatus.Success;
             edge.ParameterStart = a; edge.ParameterEnd = b; edge.HasParameterRange = 1;
             return AlgorithmStatus.Success;

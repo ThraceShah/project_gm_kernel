@@ -12,6 +12,11 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {
         count=0;var surfaceSlot=GetSurfaceSlotByTag(surface);var curveSlot=GetCurveSlotByTag(edge.Curve);var record=Curves[curveSlot];
+        if(record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].IsBlendContact!=0)
+            return IntersectBlendContactRay(surface,query,du,dv,edge,output,out count);
+        if(record.Class==CurveClass.Circle&&Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface
+            &&TryBlendCircleStation(surface,record,edge.Start,edge.End,out var station))
+            return IntersectBlendCircleRay(surface,query,du,dv,edge,station,output,out count);
         if(TryBlendIsoparam(curveSlot,out var isoSurface,out var isoV)&&SameSheetSupport(surface,Surfaces[isoSurface].Header.Tag))
         {
             if(dv==0)return Math.Abs(query.param[1]-isoV)<1e-12?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;

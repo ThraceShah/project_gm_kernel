@@ -290,7 +290,31 @@ internal static unsafe partial class XtReader
                     AddGeometry(Ptr(node, 9)); Require(IsSurface(Node(Ptr(node, 9)))); break;
                 case XtNodeTypes.Intersection:
                     AddGeometry(Ptr(node,7));AddGeometry(Ptr(node,8));
-                    Require(IsSurface(Node(Ptr(node,7)))&&IsSurface(Node(Ptr(node,8))));break;
+                    var first=Node(Ptr(node,7));
+                    var second=Node(Ptr(node,8));
+                    Require(IsSurface(first)||first.Type==(int)XtNodeTypes.BlendBound);
+                    Require(IsSurface(second)||second.Type==(int)XtNodeTypes.BlendBound);
+                    var firstBound=first.Type==(int)XtNodeTypes.BlendBound;
+                    var secondBound=second.Type==(int)XtNodeTypes.BlendBound;
+                    if(firstBound&&secondBound)
+                        throw new NotSupportedException("An intersection of two implicit Blend boundaries remains opaque.");
+                    if(firstBound||secondBound)
+                    {
+                        var boundary=firstBound?first:second;var support=firstBound?second:first;
+                        var blend=Node(Ptr(boundary,8),XtNodeTypes.BlendedEdge);
+                        if(support.Index!=Ptr(blend,8+1-(int)boundary.Fields[7].Integer))
+                            throw new NotSupportedException("A non-contact Blend boundary intersection remains opaque.");
+                        var start=Node(Ptr(node,10),XtNodeTypes.Limit);var end=Node(Ptr(node,11),XtNodeTypes.Limit);
+                        // The first contact map has two distinct ends. Closed
+                        // contacts retain their complete valid source graph.
+                        if(start.Fields[0].Character=='H'||end.Fields[0].Character=='H')
+                            throw new NotSupportedException("A closed Blend contact remains opaque.");
+                    }
+                    break;
+                case XtNodeTypes.BlendBound:
+                    Require(node.Fields[7].Kind==XtFieldKind.Integer);
+                    Require(node.Fields[7].Integer is 0 or 1);
+                    AddGeometry(Ptr(node,8),XtNodeTypes.BlendedEdge);break;
                 case XtNodeTypes.BlendedEdge:
                     AddGeometry(Ptr(node,8));AddGeometry(Ptr(node,9));AddGeometry(Ptr(node,10),XtNodeTypes.Intersection);
                     Require(IsSurface(Node(Ptr(node,8)))&&IsSurface(Node(Ptr(node,9))));break;
@@ -298,7 +322,9 @@ internal static unsafe partial class XtReader
             }
             visitingGeometry.Remove(index);
             geometryIndexes.Add(index);
-            Geometry.Add(node);
+            // BLEND_BOUND has no public parametric surface entity. Its only
+            // runtime representation is the contact ICurve that references it.
+            if(node.Type!=(int)XtNodeTypes.BlendBound)Geometry.Add(node);
         }
 
         private static bool IsCurve(XtNode node) => (XtNodeTypes)node.Type is XtNodeTypes.Line or XtNodeTypes.Circle
@@ -312,7 +338,7 @@ internal static unsafe partial class XtReader
         {
             var expected = (XtNodeTypes)node.Type switch
             {
-                XtNodeTypes.Point => 6, XtNodeTypes.Line or XtNodeTypes.BCurve or XtNodeTypes.BSurface => 9,
+                XtNodeTypes.Point => 6, XtNodeTypes.Line or XtNodeTypes.BCurve or XtNodeTypes.BSurface or XtNodeTypes.BlendBound => 9,
                 XtNodeTypes.Plane or XtNodeTypes.SweptSurf => 10,
                 XtNodeTypes.Circle or XtNodeTypes.Cylinder or XtNodeTypes.Sphere or XtNodeTypes.SpCurve => 11,
                 XtNodeTypes.Ellipse or XtNodeTypes.Torus or XtNodeTypes.TrimmedCurve or XtNodeTypes.OffsetSurf => 12,

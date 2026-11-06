@@ -1,0 +1,242 @@
+using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Runtime;
+
+namespace KernelTests;
+
+[Collection("KernelTests")]
+public unsafe class RegularSolidBlendTests:IDisposable
+{
+    public RegularSolidBlendTests()
+    {
+        KernelRuntime.SessionStop();var options=new PK_SESSION_start_o_s{o_t_version=1};Assert.Equal(0,KernelRuntime.SessionStart(&options));
+    }
+    public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
+
+    [Theory]
+    [InlineData(0)] [InlineData(1)] [InlineData(3)] [InlineData(7)] [InlineData(12)] [InlineData(20)]
+    public void BlendAllocationBudgetEitherCompletesOrRestoresSourceAndPools(int budget)
+    {
+        var body=Roof();var edge=SelectedEdge(body);var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
+        Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.1,&set,&count,null));
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;var bodies=KernelRuntime.Bodies.AliveCount;var returns=KernelRuntime.ReturnOutstandingBlocks;var blocks=KernelRuntime.BlocksLiveBytes;
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;int* output;
+        KernelRuntime.InjectAllocationFailure(budget);var error=KernelRuntime.BodyFixBlends(body,&fix,&count,&output,null,null,&fault,&fe,&ft);KernelRuntime.InjectAllocationFailure(-1);
+        if(error==0)
+        {
+            Assert.Equal(1,count);BooleanOperationTests.Counts(body,7,15,10);KernelRuntime.MemoryFree(output);return;
+        }
+        Assert.Equal(0,count);Assert.True(output==null);BooleanOperationTests.Counts(body,6,12,8);
+        Assert.True(KernelRuntime.IsValidTag(edge));Assert.Equal(1,KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edge).Slot].PendingBlendKind);
+        Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);Assert.Equal(bodies,KernelRuntime.Bodies.AliveCount);Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);
+        Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);
+    }
+
+    [Fact]
+    public void ContactBandCannotCrossAnUnselectedBottomFace()
+    {
+        var body=Roof(-5);var edge=SelectedEdge(body);var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
+        Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.4,&set,&count,null));
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;int* output;
+        Assert.NotEqual(0,KernelRuntime.BodyFixBlends(body,&fix,&count,&output,null,null,&fault,&fe,&ft));
+        Assert.Equal(0,count);Assert.True(output==null);BooleanOperationTests.Counts(body,6,12,8);Assert.True(KernelRuntime.IsValidTag(edge));
+    }
+
+    [Fact]
+    public void WarmSingleBlendAllocatesNoManagedMemory()
+    {
+        var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};
+        int count,fault,fe,ft;var warm=Roof();var edge=SelectedEdge(warm);
+        Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.1,&set,&count,null));
+        Assert.Equal(0,KernelRuntime.BodyFixBlends(warm,&fix,&count,null,null,null,&fault,&fe,&ft));Assert.Equal(0,KernelRuntime.EntityDelete(1,&warm));
+        var body=Roof();edge=SelectedEdge(body);Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.1,&set,&count,null));
+        var before=GC.GetAllocatedBytesForCurrentThread();var error=KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&fe,&ft);
+        var allocated=GC.GetAllocatedBytesForCurrentThread()-before;Assert.Equal(0,error);Assert.Equal(0,allocated);Assert.Equal(1,count);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+    }
+
+    [Fact]
+    public void FilletCanBeCutThroughItsBlendAndReloadedForClassification()
+    {
+        var body=Roof();var edge=SelectedEdge(body);var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
+        Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.1,&set,&count,null));
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;
+        Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&fe,&ft));
+        var tool=BooleanOperationTests.Block(1,.5,-.1,1,2,2);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int* products;
+        Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&count,&products));
+        try{Assert.Equal(1,count);Assert.Equal(body,products[0]);BooleanOperationTests.Counts(body,7,15,10);}finally{KernelRuntime.MemoryFree(products);}
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(body),out var restored));Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        Assert.True(KernelRuntime.TryResolveBodySlot(restored,out var slot));Assert.False(KernelRuntime.Xt.IsOpaque(slot));
+        var point=new PK_VECTOR_s();point.coord[0]=.25;point.coord[1]=point.coord[2]=.5;int enclosure,topology;
+        Assert.Equal(0,KernelRuntime.BodyContainsVector(restored,point,&enclosure,&topology));Assert.Equal(ParasolidConstants.PK_enclosure_inside_c,enclosure);
+        point.coord[0]=.75;Assert.Equal(0,KernelRuntime.BodyContainsVector(restored,point,&enclosure,&topology));Assert.Equal(ParasolidConstants.PK_enclosure_outside_c,enclosure);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Bodies.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+    }
+
+    [Fact]
+    public void ContactReceiveRejectsMissingUvDataWithoutPublishingOrLeaking()
+    {
+        var body=RoundedRoof();var document=XtText.DecodeDocument(XtBrepImportTests.Transmit(body));
+        var contact=document.Nodes.First(n=>n.Type==(int)XtNodeTypes.Intersection&&document.Nodes.Any(b=>b.Index==n.Fields[8].Pointer&&b.Type==(int)XtNodeTypes.BlendBound));
+        contact.Fields[^1]=XtFieldValue.Ptr(document.Nodes.Max(n=>n.Index)+1);
+        var blocks=KernelRuntime.BlocksLiveBytes;var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        Assert.Equal(ParasolidConstants.PK_ERROR_corrupt_file,XtBrepImportTests.Receive(XtText.Encode(document),out var received));Assert.Equal(0,received);
+        Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+    }
+
+    [Fact]
+    public void ContactReceiveAllocationFailuresReleaseUnboundPayloads()
+    {
+        var body=RoundedRoof();var text=XtBrepImportTests.Transmit(body);var blocks=KernelRuntime.BlocksLiveBytes;
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        for(var budget=0;budget<=24;budget++)
+        {
+            KernelRuntime.InjectAllocationFailure(budget);int error,received;
+            try{error=XtBrepImportTests.Receive(text,out received);}finally{KernelRuntime.InjectAllocationFailure(-1);}
+            if(error==0)Assert.Equal(0,KernelRuntime.EntityDelete(1,&received));else Assert.Equal(0,received);
+            Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+        }
+    }
+
+    [Fact]
+    public void ContactReceiveAcceptsMoreThan256ActualChartAnchors()
+    {
+        const int count=257;var body=RoundedRoof();var document=XtText.DecodeDocument(XtBrepImportTests.Transmit(body));
+        var contact=document.Nodes.First(n=>n.Type==(int)XtNodeTypes.Intersection&&document.Nodes.Any(b=>b.Index==n.Fields[8].Pointer&&b.Type==(int)XtNodeTypes.BlendBound));
+        var boundary=document.Nodes.Single(n=>n.Index==contact.Fields[8].Pointer);var side=1-boundary.Fields[7].Integer;
+        KernelRuntime.TryResolveBodySlot(body,out var bodySlot);var edge=KernelRuntime.Bodies[bodySlot].FirstEdgeBody;var tag=0;
+        for(var i=0;i<KernelRuntime.Bodies[bodySlot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var record=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[edge].CurveTag)];
+            if(record.Class==CurveClass.ICurve&&KernelRuntime.ICurveDataPool[record.DataIndex].IsBlendContact!=0&&KernelRuntime.ICurveDataPool[record.DataIndex].BlendContactSide==side){tag=record.Header.Tag;break;}
+        }
+        Assert.NotEqual(0,tag);var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(tag)];var data=KernelRuntime.ICurveDataPool[curve.DataIndex];
+        var chart=document.Nodes.Single(n=>n.Index==contact.Fields[9].Pointer);var old=chart.Fields;chart.Fields=new XtFieldValue[7+count];old.AsSpan(0,7).CopyTo(chart.Fields);chart.Fields[2]=XtFieldValue.Int(count);chart.VariableLength=count;
+        var uv=document.Nodes.Single(n=>n.Index==contact.Fields[^1].Pointer);uv.Fields=new XtFieldValue[1+2*count];uv.Fields[0]=XtFieldValue.Unsigned((long)IntersectionUvType.First);uv.VariableLength=2*count;
+        for(var i=0;i<count;i++)
+        {
+            var point=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(tag,curve.TMin+(curve.TMax-curve.TMin)*i/(count-1),0,&point));
+            var value=i==0?old[7]:i==count-1?old[^1]:XtFieldValue.Vec(point.coord[0],point.coord[1],point.coord[2]);chart.Fields[7+i]=value;
+            point.coord[0]=value.Vector.X;point.coord[1]=value.Vector.Y;point.coord[2]=value.Vector.Z;var at=new PK_UV_s();
+            Assert.Equal(0,KernelRuntime.SurfParameteriseVector(data.Surface0Tag,point,&at));uv.Fields[1+2*i]=XtFieldValue.RealValue(at.param[0]);uv.Fields[2+2*i]=XtFieldValue.RealValue(at.param[1]);
+        }
+        var blocks=KernelRuntime.BlocksLiveBytes;Assert.Equal(0,XtBrepImportTests.Receive(XtText.Encode(document),out var received));
+        Assert.True(KernelRuntime.TryResolveBodySlot(received,out var slot));Assert.False(KernelRuntime.Xt.IsOpaque(slot));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&received));Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);
+    }
+
+    private static int RoundedRoof()
+    {
+        var body=Roof();var edge=SelectedEdge(body);var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
+        Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.1,&set,&count,null));
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;
+        Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&fe,&ft));return body;
+    }
+
+    [Theory]
+    [InlineData(.4,.1,false,false)]
+    [InlineData(-.2,.15,false,false)]
+    [InlineData(.4,.1,true,false)]
+    [InlineData(.4,.1,false,true)]
+    [InlineData(.4,.1,true,true)]
+    public void SingleNurbsEdgeProducesClosedSolidWithProceduralBlend(double bulge,double radius,bool curvedWall,bool concave)
+    {
+        var body=Roof(bulge,curvedWall,concave);var edge=SelectedEdge(body,concave);var original=edge;
+        var options=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
+        Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,radius,&options,&count,null));
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;int* blends;
+        var error=KernelRuntime.BodyFixBlends(body,&fix,&count,&blends,null,null,&fault,&fe,&ft);
+        Assert.True(error==0,$"fix={error}, fault={fault}, blend={KernelRuntime.LastRegularBlendStage}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}");
+        try
+        {
+            Assert.Equal(1,count);Assert.Equal(ParasolidConstants.PK_blend_fault_no_fault_c,fault);Assert.False(KernelRuntime.IsValidTag(original));
+            int surface;Assert.Equal(0,KernelRuntime.FaceAskSurf(blends[0],&surface));
+            Assert.Equal(SurfaceClass.BlendSurface,KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class);
+            BooleanOperationTests.Counts(body,concave?9:7,concave?21:15,concave?14:10);
+            KernelRuntime.TryResolveBodySlot(body,out var slot);var e=KernelRuntime.Bodies[slot].FirstEdgeBody;
+            var contacts=0;
+            for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,e=KernelRuntime.Edges[e].NextInBody)
+            {
+                Assert.Equal(2,KernelRuntime.Edges[e].FinCount);
+                Assert.NotEqual(KernelRuntime.Fins[KernelRuntime.Edges[e].FirstFinEdge].Sense,KernelRuntime.Fins[KernelRuntime.Edges[e].LastFinEdge].Sense);
+                var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[e].CurveTag)];
+                if(curve.Class==CurveClass.ICurve&&KernelRuntime.ICurveDataPool[curve.DataIndex].IsBlendContact!=0)contacts++;
+            }
+            Assert.Equal(2,contacts);
+        }
+        finally{if(blends!=null)KernelRuntime.MemoryFree(blends);}
+        if(!curvedWall&&!concave&&bulge>0)RoundTripCopyMirror(ref body);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        Assert.True(KernelRuntime.Bodies.AliveCount==0&&KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0,
+            $"remaining bodies={KernelRuntime.Bodies.AliveCount}, curves={KernelRuntime.Curves.AliveCount}, surfaces={KernelRuntime.Surfaces.AliveCount}");
+    }
+
+    internal static int Roof(double bulge=.4,bool curvedWall=false,bool concave=false)
+    {
+        var body=BooleanOperationTests.Block(.5,.5,0,1,1,1);
+        if(concave)
+        {
+            var tool=BooleanOperationTests.Block(.5,.85,.5,2,.7,1);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int n;int* result;
+            Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&n,&result));try{Assert.Equal(1,n);body=result[0];}finally{KernelRuntime.MemoryFree(result);}
+        }
+        KernelRuntime.TryResolveBodySlot(body,out var slot);var face=KernelRuntime.Bodies[slot].FirstFaceBody;var top=0;
+        var wall=0;
+        for(var i=0;i<KernelRuntime.Bodies[slot].FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var p=new PK_PLANE_sf_s();Assert.Equal(0,KernelRuntime.PlaneAsk(KernelRuntime.Faces[face].SurfTag,&p));
+            if(Math.Abs(p.basis_set.axis.coord[2])>.9&&Math.Abs(p.basis_set.location.coord[2]-(concave?.5:1))<1e-10)top=KernelRuntime.Faces[face].Header.Tag;
+            if(Math.Abs(p.basis_set.axis.coord[1])>.9&&Math.Abs(p.basis_set.location.coord[1]-(concave?.5:0))<1e-10)wall=KernelRuntime.Faces[face].Header.Tag;
+        }
+        Assert.NotEqual(0,top);double* poles=stackalloc double[45];double* knots=stackalloc double[2]{0,1};
+        int* um=stackalloc int[2]{5,5};int* vm=stackalloc int[2]{3,3};
+        for(var i=0;i<5;i++)for(var j=0;j<3;j++){var at=3*(i*3+j);poles[at]=i/4.0;poles[at+1]=(concave?.5:0)+(concave?.5:1)*j/2.0;poles[at+2]=(concave?.5:1)+(i==2&&j==1?bulge:0);}
+        var sf=new PK_BSURF_sf_s{u_degree=4,v_degree=2,n_u_vertices=5,n_v_vertices=3,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,
+            u_knot=knots,v_knot=knots,u_knot_mult=um,v_knot_mult=vm,form=ParasolidConstants.PK_BSURF_form_arbitrary_c,
+            u_knot_type=ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=ParasolidConstants.PK_knot_non_uniform_c,
+            self_intersecting=ParasolidConstants.PK_self_intersect_false_c,convexity=ParasolidConstants.PK_convexity_unset_c};
+        int surface;Assert.Equal(0,KernelRuntime.BSurfCreate(&sf,&surface));byte sense=1;
+        int old;Assert.Equal(0,KernelRuntime.FaceAskSurf(top,&old));Assert.Equal(0,KernelRuntime.TopologyDetachGeometry(top));
+        Assert.Equal(0,KernelRuntime.FaceAttachSurfaces(1,&top,&surface,&sense));Assert.Equal(0,KernelRuntime.EntityDelete(1,&old));
+        if(curvedWall)
+        {
+            for(var i=0;i<5;i++)for(var j=0;j<3;j++){var at=3*(i*3+j);poles[at]=i/4.0;poles[at+1]=(concave?.5:0)+(i==2&&j==1?(concave?-.15:-.3):0);poles[at+2]=(concave?.5:0)+(concave?.5:1)*j/2.0;}
+            sense=concave?(byte)0:(byte)1;
+            Assert.Equal(0,KernelRuntime.BSurfCreate(&sf,&surface));Assert.Equal(0,KernelRuntime.FaceAskSurf(wall,&old));Assert.Equal(0,KernelRuntime.TopologyDetachGeometry(wall));
+            Assert.Equal(0,KernelRuntime.FaceAttachSurfaces(1,&wall,&surface,&sense));Assert.Equal(0,KernelRuntime.EntityDelete(1,&old));
+        }
+        return body;
+    }
+
+    private static void RoundTripCopyMirror(ref int body)
+    {
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(body),out var received));
+        Assert.True(KernelRuntime.TryResolveBodySlot(received,out var slot));Assert.False(KernelRuntime.Xt.IsOpaque(slot));
+        var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;
+        for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[edge].CurveTag)];
+            if(curve.Class!=CurveClass.Line)Assert.NotEqual(0,KernelRuntime.Edges[edge].HasParameterRange);
+        }
+        int copy;var original=body;Assert.Equal(0,KernelRuntime.EntityCopy(received,&copy));Assert.Equal(0,KernelRuntime.EntityDelete(1,&received));Assert.Equal(0,KernelRuntime.EntityDelete(1,&original));
+        var sf=new PK_TRANSF_sf_s();sf.matrix[0]=-2;sf.matrix[5]=sf.matrix[10]=2;sf.matrix[3]=3;sf.matrix[7]=5;sf.matrix[11]=7;sf.matrix[15]=1;
+        int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&sf,&transform));int n;int* replaced;byte* exact;
+        Assert.Equal(0,KernelRuntime.BodyTransform(copy,transform,0,&n,&replaced,&exact));if(replaced!=null)KernelRuntime.MemoryFree(replaced);if(exact!=null)KernelRuntime.MemoryFree(exact);
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(copy),out received));Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));
+        Assert.True(KernelRuntime.TryResolveBodySlot(received,out slot));Assert.False(KernelRuntime.Xt.IsOpaque(slot));
+        var point=new PK_VECTOR_s();point.coord[0]=2.2;point.coord[1]=5.8;point.coord[2]=8;int enclosure,topology;
+        Assert.Equal(0,KernelRuntime.BodyContainsVector(received,point,&enclosure,&topology));Assert.Equal(ParasolidConstants.PK_enclosure_inside_c,enclosure);
+        body=received;
+    }
+
+    internal static int SelectedEdge(int body,bool concave=false)
+    {
+        KernelRuntime.TryResolveBodySlot(body,out var slot);var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;
+        for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var e=KernelRuntime.Edges[edge];var a=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[e.StartVertex].PointTag)].Position;
+            var b=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[e.EndVertex].PointTag)].Position;
+            var y=concave?.5:0;var z=concave?.5:1;
+            if(Math.Abs(a.Y-y)+Math.Abs(b.Y-y)+Math.Abs(a.Z-z)+Math.Abs(b.Z-z)<1e-10)return e.Header.Tag;
+        }
+        throw new Exception("missing roof edge");
+    }
+}
