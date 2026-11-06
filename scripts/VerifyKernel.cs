@@ -1,7 +1,7 @@
 #!/usr/bin/env dotnet run
 // Runs the project verification checks that are easy to skip by hand.
 //
-// Usage: dotnet run scripts/VerifyKernel.cs
+// Usage: dotnet run scripts/VerifyKernel.cs [-- --native-abi]
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -12,6 +12,8 @@ static string GetScriptPath([CallerFilePath] string path = "") => path;
 
 var scriptDir = Path.GetDirectoryName(GetScriptPath()) ?? ".";
 var repoRoot = Path.GetFullPath(Path.Combine(scriptDir, ".."));
+var verifyNativeAbi = args.Contains("--native-abi");
+Console.WriteLine(verifyNativeAbi ? "Verification: managed and native C ABI." : "Verification: managed builds, tests and Parasolid oracles.");
 
 // Relative P_SCHEMA/PARASOLID_SCHEMA_DIR values resolve against this script's
 // directory (same rule as GenerateXtSchema). Child processes run with different
@@ -45,13 +47,19 @@ var xtSchemaDifferencesExit = Run("dotnet", "run scripts/GenerateXtSchemaDiffere
 if (xtSchemaDifferencesExit != 0)
     return xtSchemaDifferencesExit;
 
-var publishExit = Run("dotnet", $"publish src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj -c Release -r {rid}", cleanupTesthost: false);
-if (publishExit != 0)
-    return publishExit;
+var buildArguments = verifyNativeAbi
+    ? $"publish src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj -c Release -r {rid} -m:1 -p:UseSharedCompilation=false"
+    : "build src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj -m:1 -p:UseSharedCompilation=false";
+var buildExit = Run("dotnet", buildArguments, cleanupTesthost: false);
+if (buildExit != 0)
+    return buildExit;
 
-var abiSmokeExit = Run("dotnet", "run scripts/AbiSmoke.cs", cleanupTesthost: false);
-if (abiSmokeExit != 0)
-    return abiSmokeExit;
+if (verifyNativeAbi)
+{
+    var abiSmokeExit = Run("dotnet", "run scripts/AbiSmoke.cs", cleanupTesthost: false);
+    if (abiSmokeExit != 0)
+        return abiSmokeExit;
+}
 
 var topologyDumpExit = Run("dotnet", "run scripts/TopologyDump.cs", cleanupTesthost: false);
 if (topologyDumpExit != 0)
@@ -84,7 +92,7 @@ if (xtGeometryWriterOracleExit != 0)
 foreach (var oracle in new[] { "GeometryPublicApiOracle", "GeometryTransformOracle", "BrepImportOracle", "ProfileModelingOracle", "DisplayBridgeOracle" })
 {
     var arguments = $"run scripts/{oracle}.cs -p:UseSharedCompilation=false -p:BuildInParallel=false";
-    if (oracle == "DisplayBridgeOracle") arguments += " -- --native";
+    if (verifyNativeAbi && oracle == "DisplayBridgeOracle") arguments += " -- --native";
     var publicModelingExit = Run("dotnet", arguments, cleanupTesthost: false);
     if (publicModelingExit != 0) return publicModelingExit;
     if (oracle == "ProfileModelingOracle")

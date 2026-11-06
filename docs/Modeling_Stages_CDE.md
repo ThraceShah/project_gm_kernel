@@ -41,14 +41,14 @@
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAdvancedModeling.cs
 ```
 
-需要可用的真实 Parasolid SDK 和 schema。命令按顺序运行独立 oracle、完整 A/B 回归、全量单元测试、NativeAOT 发布、ABI 和原生建模/显示验证。
+需要可用的真实 Parasolid SDK 和 schema。命令默认按顺序运行托管构建、独立 oracle、完整 A/B 回归和全量单元测试。只有涉及 C ABI 改动或用户明确要求时，才添加 `-- --native-abi`，执行 NativeAOT 发布、ABI 和原生建模/显示验证。
 日志与实际退出码保存在 `temp_docs/advanced-modeling-verification`。文件应用使用 `--no-cache`，避免在禁用项目依赖重建时复用旧生产 DLL。
 普通生产 DLL 与启用故障注入的 testhooks DLL 分开验证。
 
 受限构建环境若无法建立 .NET 10 的独立 MSBuild task-host 通信，可以显式使用：
 
 ```sh
-GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAdvancedModeling.cs
+GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAdvancedModeling.cs -- --native-abi
 ```
 
 此开关只让 NativeAOT 发布所需的同一套 SDK `ComputeManagedAssemblies` / `ILLink` 任务在当前 .NET MSBuild 进程执行；默认仍采用 SDK 的任务宿主方式。它不跳过 trim、AOT、分配检查或任何 oracle。直接 publish 时对应 `-p:GmInProcessLinkTasks=true`。
@@ -59,7 +59,7 @@ GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyAd
 ```sh
 DOTNET_GCHeapHardLimit=0x100000000 DOTNET_gcServer=0 DOTNET_PROCESSOR_COUNT=1 \
 GM_IN_PROCESS_LINK_TASKS=1 MSBUILDDISABLENODEREUSE=1 \
-dotnet run --no-cache scripts/VerifyAdvancedModeling.cs
+dotnet run --no-cache scripts/VerifyAdvancedModeling.cs -- --native-abi
 ```
 
 这是验证进程的资源配置。验收记录同时保留初始失败、干净重建以及最终完整执行的结果，见 `docs/reviews/advanced-modeling/continuation-validation-2026-11-03.txt`。
