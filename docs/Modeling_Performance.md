@@ -125,7 +125,7 @@ Boolean 完整 API elapsed 降低约 23%/22%，CPU 降低约 22%/22%；FixBlends
 包含六组全部 strict 日志及阶段计数；只删除了构建器输出中包含本机绝对路径的
 包告警，验证输出完整保留。插桩补丁为
 `docs/reviews/advanced-modeling/chain-performance-instrumentation.patch`；通过
-`patch -o temp_docs/BlendChainPerformanceOracle.cs scripts/BlendChainOracle.cs < docs/reviews/advanced-modeling/chain-performance-instrumentation.patch`
+`patch -o scripts/BlendChainPerformanceOracle.cs scripts/BlendChainOracle.cs < docs/reviews/advanced-modeling/chain-performance-instrumentation.patch`
 生成独立临时 harness，再执行下面的命令；原 oracle 保留。
 该补丁固定两轮，接受 `--no-bound-cache` 和 `--no-spline-reuse`，其余为原案例名。
 
@@ -135,8 +135,8 @@ Boolean 完整 API elapsed 降低约 23%/22%，CPU 降低约 22%/22%；FixBlends
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/ModelingPerformanceOracle.cs -c Release -- blend-subtract
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/MixedCurvedBooleanOracle.cs -c Release -- --profile --no-bound-cache --no-spline-reuse --repeat 2 refillet-new-edge
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/MixedCurvedBooleanOracle.cs -c Release -- --profile --no-bound-cache --repeat 2 refillet-new-edge
-MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache temp_docs/BlendChainPerformanceOracle.cs -c Release -- chain-3-base-pk-source --no-bound-cache
-MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache temp_docs/BlendChainPerformanceOracle.cs -c Release -- chain-3-base-pk-source
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/BlendChainPerformanceOracle.cs -c Release -- chain-3-base-pk-source --no-bound-cache
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/BlendChainPerformanceOracle.cs -c Release -- chain-3-base-pk-source
 ```
 
 日志在 `temp_docs/modeling-performance/` 和

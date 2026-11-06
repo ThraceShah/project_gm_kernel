@@ -1,5 +1,5 @@
 --- scripts/BlendChainOracle.cs
-+++ temp_docs/BlendChainPerformanceOracle.cs
++++ scripts/BlendChainPerformanceOracle.cs
 @@ -7,19 +7,25 @@
  #:property AllowUnsafeBlocks=true
  using static parasolid;
