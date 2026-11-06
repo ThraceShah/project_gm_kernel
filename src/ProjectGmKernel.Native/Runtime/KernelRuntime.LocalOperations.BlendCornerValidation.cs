@@ -20,9 +20,11 @@ internal static unsafe partial class KernelRuntime
     // monotone separating projections between every pair of neighboring bands.
     private static int ValidateTrivalentCorner(BodySlot body,ReadOnlySpan<FaceSlot> faces,ReadOnlySpan<FaceSlot> supports,
         ReadOnlySpan<FaceSlot> pairs,ReadOnlySpan<FaceSlot> caps,ReadOnlySpan<SurfTag> bands,ReadOnlySpan<CurveTag> curves,
-        ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,ReadOnlySpan<KernelVector3> contacts,in KernelVector3 center,double radius)
+        ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,ReadOnlySpan<KernelVector3> contacts,in KernelVector3 center,double radius,ReadOnlySpan<byte> vanished)
     {
-        var tolerance=1e-9*Math.Max(1,radius);var point=new PK_VECTOR_s();WriteVector(&point,center);int enclosure;EntityTag topology;var visited=0;
+        var tolerance=1e-9*Math.Max(1,radius);var point=new PK_VECTOR_s();var material=center;
+        if(vanished.Contains((byte)1)){var radial=Sub(Add(Add(contacts[0],contacts[1]),contacts[2]),Scale(center,3));if(!ProfileNormalize(ref radial))return CornerReject(BlendCornerEvent.UncertifiedClearance);material=Add(center,Scale(radial,radius*.5));}
+        WriteVector(&point,material);int enclosure;EntityTag topology;var visited=0;
         LastCornerCertificate=CornerCertificateStage.FiniteContact;var finiteError=CornerContactsInFaces(body,supports,contacts);if(finiteError!=0)return finiteError;
         LastCornerCertificate=CornerCertificateStage.CenterMaterial;
         var error=BodyContainsVectorCore(Bodies[body].Header.Tag,point,&enclosure,&topology);if(error!=0)return error;
@@ -38,7 +40,22 @@ internal static unsafe partial class KernelRuntime
             {
                 var sign=LocalSenseSign(Faces[face].Orientation)*LocalSenseSign(sf.Sense);
                 var distance=-sign*((new IntervalNumber(center.X)-plane.Origin.X)*plane.Axis.X+(new IntervalNumber(center.Y)-plane.Origin.Y)*plane.Axis.Y+(new IntervalNumber(center.Z)-plane.Origin.Z)*plane.Axis.Z);
-                if(distance.Lower<radius-tolerance||!support&&distance.Lower<=radius+tolerance)return CornerReject(BlendCornerEvent.UncertifiedClearance,ParasolidConstants.PK_ERROR_cant_do_intersect);
+                var zeroCap=false;for(var e=0;e<3;e++)if(vanished[e]!=0&&caps[e]==face)zeroCap=true;
+                if(zeroCap)
+                {
+                    // A minor spherical triangle is the normalized positive
+                    // cone of its three contact radii. Certifying all three
+                    // generators behind a center plane certifies the patch.
+                    if(Math.Abs(distance.Lower)>tolerance||Math.Abs(distance.Upper)>tolerance)return CornerReject(BlendCornerEvent.UncertifiedClearance);
+                    foreach(var contact in contacts)if(sign*Dot(Sub(contact,plane.Origin),plane.Axis)>tolerance)return CornerReject(BlendCornerEvent.UncertifiedClearance);
+                    continue;
+                }
+                if(distance.Lower<radius-tolerance||!support&&distance.Lower<=radius+tolerance)
+                {
+                    var cone=distance.Lower>=-tolerance;
+                    foreach(var contact in contacts)if(sign*Dot(Sub(contact,center),plane.Axis)>tolerance)cone=false;
+                    if(!cone)return CornerReject(BlendCornerEvent.UncertifiedClearance,ParasolidConstants.PK_ERROR_cant_do_intersect);
+                }
             }
             else if(sf.Class==SurfaceClass.BSurface)
             {
@@ -86,12 +103,14 @@ internal static unsafe partial class KernelRuntime
         Span<SurfaceParameterBox> domains=stackalloc SurfaceParameterBox[3];Span<double> directions=stackalloc double[3];Span<KernelVector3> tangents=stackalloc KernelVector3[3];
         for(var e=0;e<3;e++)
         {
+            if(vanished[e]!=0)continue;
             LastCornerCertificate=CornerCertificateStage.Domains;LastCornerCertificateBand=e;
             error=CornerBandDomain(bands[e],curves[4*e],curves[4*e+2],lower[4*e],upper[4*e],lower[4*e+2],upper[4*e+2],Faces[caps[e]].SurfTag,
                 out domains[e],out directions[e],out tangents[e]);if(error!=0)return error;
         }
         for(var e=0;e<3;e++)
         {
+            if(vanished[e]!=0)continue;
             LastCornerCertificate=CornerCertificateStage.OwnSeparation;LastCornerCertificateBand=e;
             // A band advances strictly away from its common spherical
             // section, so it cannot overlap the spherical triangle behind it.
@@ -102,10 +121,12 @@ internal static unsafe partial class KernelRuntime
             {
                 if(face==pairs[2*e]||face==pairs[2*e+1]||face==caps[e])continue;
                 LastCornerCertificate=CornerCertificateStage.OtherFace;LastCornerCertificateFace=face;
-                error=CornerBandFaceClearance(bands[e],curves[4*e+2],domains[e],face,tolerance,ref visited);if(error!=0)return error;
+                var eventBoundary=false;for(var collapsed=0;collapsed<3;collapsed++)if(vanished[collapsed]!=0&&caps[collapsed]==face)eventBoundary=true;
+                error=CornerBandFaceClearance(bands[e],curves[4*e+2],domains[e],face,tolerance,ref visited,eventBoundary);if(error!=0)return error;
             }
             for(var other=0;other<e;other++)
             {
+                if(vanished[other]!=0)continue;
                 var common=-1;for(var f=0;f<3;f++)if((supports[f]==pairs[2*e]||supports[f]==pairs[2*e+1])&&(supports[f]==pairs[2*other]||supports[f]==pairs[2*other+1]))common=f;
                 if(common<0)return CornerReject(BlendCornerEvent.UnsupportedGraph);
                 var separator=Sub(tangents[e],tangents[other]);if(!ProfileNormalize(ref separator))return CornerReject(BlendCornerEvent.OverlappingBands);
@@ -125,9 +146,8 @@ internal static unsafe partial class KernelRuntime
         if(sf.Class==SurfaceClass.Cylinder)
         {
             var data=CylinderDataPool[sf.DataIndex];tangent=new(){X=data.AxisX,Y=data.AxisY,Z=data.AxisZ};
-            TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(cap)],out var plane);var circle=CircleDataPool[Curves[GetCurveSlotByTag(section)].DataIndex];
-            Span<IntervalNumber> values=stackalloc IntervalNumber[9];CornerCylinderBounds(band,section,new(0,0,Math.Min(sectionA,sectionB),Math.Max(sectionA,sectionB)),values);
-            var projection=(plane.Origin.X-values[0])*plane.Axis.X+(plane.Origin.Y-values[1])*plane.Axis.Y+(plane.Origin.Z-values[2])*plane.Axis.Z;
+            TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(cap)],out var plane);
+            var projection=-CornerCylinderPlaneBound(band,section,new(0,0,Math.Min(sectionA,sectionB),Math.Max(sectionA,sectionB)),plane.Axis,plane.Origin);
             var denom=Dot(tangent,plane.Axis);if(Math.Abs(denom)<1e-10)return CornerReject(BlendCornerEvent.UnsupportedSupport);
             var length=projection/denom;
             if(!(length.Lower>1e-10||length.Upper< -1e-10))return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
@@ -155,9 +175,25 @@ internal static unsafe partial class KernelRuntime
         {
             var status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(Faces[supports[f]].SurfTag)],contacts[f],out var uv);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
             var index=sources[..fc].IndexOf(supports[f]);if(index<0)return CornerReject(BlendCornerEvent.UnsupportedGraph);
+            if(CornerContactOnFiniteBoundary(supports[f],contacts[f]))continue;
             error=RegularFaceContains(view,index,uv,out var inside);if(error!=0)return error;if(!inside)return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
         }
         return 0;
+    }
+
+    private static bool CornerContactOnFiniteBoundary(FaceSlot face,in KernelVector3 point)
+    {
+        var record=Faces[face];var loop=record.FirstLoop;var p=new PK_VECTOR_s();WriteVector(&p,point);Span<KernelVector3> jet=stackalloc KernelVector3[1];
+        for(var l=0;l<record.LoopCount;l++,loop=Loops[loop].NextInFace)
+        {
+            var fin=Loops[loop].FirstFin;for(var f=0;f<Loops[loop].FinCount;f++,fin=Fins[fin].NextInLoop)
+            {
+                var edge=Edges[Fins[fin].Edge];var curve=Curves[GetCurveSlotByTag(edge.CurveTag)];if(curve.Class is not (CurveClass.Line or CurveClass.Circle))continue;
+                if(!TryProfileEdgeRange(edge,out var first,out var last))continue;double parameter=0;if(CurveParameteriseVectorCore(edge.CurveTag,p,&parameter)!=0||parameter<first-1e-10||parameter>last+1e-10)continue;
+                if(EvaluateCurveCore(in curve,parameter,0,false,jet,out _)==AlgorithmStatus.Success&&OperationIntersection.Norm(Sub(jet[0],point))<1e-10)return true;
+            }
+        }
+        return false;
     }
 
     // Strict convexity of squared distance on the full natural UV rectangle
@@ -203,7 +239,7 @@ internal static unsafe partial class KernelRuntime
         }
         return 0;
     }
-    private static int CornerBandFaceClearance(SurfTag band,CurveTag section,in SurfaceParameterBox domain,FaceSlot face,double tolerance,ref BufferCount visited)
+    private static int CornerBandFaceClearance(SurfTag band,CurveTag section,in SurfaceParameterBox domain,FaceSlot face,double tolerance,ref BufferCount visited,bool eventBoundary=false)
     {
         var slot=GetSurfaceSlotByTag(Faces[face].SurfTag);var planar=RegularPlanarSupport(slot,out var plane,out var deviation);var normal=Scale(plane.Axis,LocalSenseSign(Faces[face].Orientation)*LocalSenseSign(Surfaces[slot].Sense));
         var status=RegularFiniteFaceExtent(face,out var obstacle);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
@@ -211,11 +247,17 @@ internal static unsafe partial class KernelRuntime
         while(count>0)
         {
             if(++visited>131072)return CornerReject(BlendCornerEvent.UncertifiedClearance,ParasolidConstants.PK_ERROR_cant_do_intersect);
-            var index=--count;var box=pending[index];var depth=depths[index];status=CornerBandBounds(band,section,box,values);
+            var index=--count;var box=pending[index];var depth=depths[index];
+            if(planar&&Surfaces[GetSurfaceSlotByTag(band)].Class==SurfaceClass.Cylinder)
+            {
+                var direct=CornerCylinderPlaneBound(band,section,box,normal,plane.Origin)+new IntervalNumber(-deviation,deviation);
+                if(direct.Upper< -tolerance||eventBoundary&&direct.Upper<=tolerance)continue;
+            }
+            status=CornerBandBounds(band,section,box,values);
             if(status==AlgorithmStatus.Success)
             {
                 if(values[0].Upper<obstacle.XLo-tolerance||values[0].Lower>obstacle.XHi+tolerance||values[1].Upper<obstacle.YLo-tolerance||values[1].Lower>obstacle.YHi+tolerance||values[2].Upper<obstacle.ZLo-tolerance||values[2].Lower>obstacle.ZHi+tolerance)continue;
-                if(planar){var distance=(values[0]-plane.Origin.X)*normal.X+(values[1]-plane.Origin.Y)*normal.Y+(values[2]-plane.Origin.Z)*normal.Z+new IntervalNumber(-deviation,deviation);if(distance.Upper< -tolerance)continue;}
+                if(planar){var distance=(values[0]-plane.Origin.X)*normal.X+(values[1]-plane.Origin.Y)*normal.Y+(values[2]-plane.Origin.Z)*normal.Z+new IntervalNumber(-deviation,deviation);if(distance.Upper< -tolerance||eventBoundary&&distance.Upper<=tolerance)continue;}
             }
             else if(status!=AlgorithmStatus.NotConverged)return IntersectionError(status);
             if(depth>=32||count+2>pending.Length)return CornerReject(BlendCornerEvent.UncertifiedClearance,ParasolidConstants.PK_ERROR_cant_do_intersect);
@@ -232,6 +274,18 @@ internal static unsafe partial class KernelRuntime
     {
         var record=Surfaces[GetSurfaceSlotByTag(band)];if(record.Class==SurfaceClass.Cylinder)return CornerCylinderBounds(band,section,box,output);
         var data=BlendedEdgeDataPool[record.DataIndex];return JointNestedBlendEvaluation.Bound(GetNestedBlendProgram(data),data.ProgramRoot,box,output);
+    }
+    private static IntervalNumber CornerCylinderPlaneBound(SurfTag band,CurveTag section,in SurfaceParameterBox box,in KernelVector3 normal,in KernelVector3 origin)
+    {
+        var circle=CircleDataPool[Curves[GetCurveSlotByTag(section)].DataIndex];var cylinder=CylinderDataPool[Surfaces[GetSurfaceSlotByTag(band)].DataIndex];
+        var x=new KernelVector3{X=circle.RefDirX,Y=circle.RefDirY,Z=circle.RefDirZ};var y=ProfileCross(new(){X=circle.AxisX,Y=circle.AxisY,Z=circle.AxisZ},x);
+        IntervalNumber constant=0,axial=0,cosine=0,sine=0;for(var d=0;d<3;d++)
+        {
+            var n=d==0?normal.X:d==1?normal.Y:normal.Z;
+            constant+=(new IntervalNumber(d==0?circle.CenterX:d==1?circle.CenterY:circle.CenterZ)-(d==0?origin.X:d==1?origin.Y:origin.Z))*n;
+            axial+=new IntervalNumber(d==0?cylinder.AxisX:d==1?cylinder.AxisY:cylinder.AxisZ)*n;cosine+=new IntervalNumber(d==0?x.X:d==1?x.Y:x.Z)*n;sine+=new IntervalNumber(d==0?y.X:d==1?y.Y:y.Z)*n;
+        }
+        IntervalDual.SinCos(new IntervalDual(new(box.V0,box.V1),0),out var s,out var c);return constant+axial*new IntervalNumber(box.U0,box.U1)+circle.Radius*(cosine*c.Value+sine*s.Value);
     }
     private static AlgorithmStatus CornerCylinderBounds(SurfTag band,CurveTag section,in SurfaceParameterBox box,Span<IntervalNumber> output)
     {

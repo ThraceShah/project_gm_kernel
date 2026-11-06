@@ -92,6 +92,7 @@ internal static unsafe partial class KernelRuntime
         for(var f=0;f<3;f++){error=CornerContact(supports[f],center,radius,out contacts[f],out normals[f]);if(error!=0)return error;}
         Span<SurfTag> bands=stackalloc SurfTag[3];Span<CurveTag> curves=stackalloc CurveTag[12];Span<double> lower=stackalloc double[12],upper=stackalloc double[12];
         Span<KernelVector3> distantContacts=stackalloc KernelVector3[6];bands.Clear();curves.Clear();
+        Span<byte> vanished=stackalloc byte[3];vanished.Clear();
         Span<double> stations=stackalloc double[2],farStations=stackalloc double[2];Span<AnalyticSurface> termination=stackalloc AnalyticSurface[2];
         Span<SheetCutCurve> capCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];
         for(var e=0;e<3;e++)
@@ -120,7 +121,8 @@ internal static unsafe partial class KernelRuntime
                     var at=4*e+side;var contact=contacts[side==0?a:b];
                     if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(capPlanes[e])],out var cap))return CornerReject(BlendCornerEvent.UnsupportedSupport);
                     var denom=Dot(axis,cap.Axis);if(Math.Abs(denom)<1e-10)return CornerReject(BlendCornerEvent.UnsupportedSupport);
-                    var distance=Dot(Sub(cap.Origin,contact),cap.Axis)/denom;if(!(distance>1e-9))return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
+                    var distance=Dot(Sub(cap.Origin,contact),cap.Axis)/denom;if(distance< -1e-9)return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
+                    if(Math.Abs(distance)<=1e-9)distance=0;
                     distantContacts[2*e+side]=Add(contact,Scale(axis,distance));
                     curves[at]=CreateLineCurveTag(contact.X,contact.Y,contact.Z,carrierDirection.X,carrierDirection.Y,carrierDirection.Z);if(curves[at]<=0)return ParasolidConstants.PK_ERROR_memory_full;
                     lower[at]=0;upper[at]=Dot(Sub(distantContacts[2*e+side],contact),carrierDirection);
@@ -181,10 +183,15 @@ internal static unsafe partial class KernelRuntime
                 }
                 error=CornerArcRange(curves[4*e+3],distantContacts[2*e],distantContacts[2*e+1],out lower[4*e+3],out upper[4*e+3]);if(error!=0)return error;
             }
-            for(var side=0;side<2;side++)if(Math.Abs(upper[4*e+side]-lower[4*e+side])<1e-10)return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
+            var collapsed0=Math.Abs(upper[4*e]-lower[4*e])<1e-10;var collapsed1=Math.Abs(upper[4*e+1]-lower[4*e+1])<1e-10;
+            if(collapsed0||collapsed1)
+            {
+                if(!analytic||!collapsed0||!collapsed1||!CornerZeroSection(curves[4*e+2],capPlanes[e],radius))return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
+                vanished[e]=1;
+            }
         }
         LastBlendCornerStage=BlendCornerStage.Clearance;
-        error=ValidateTrivalentCorner(body,faces,supports,pairFaces,caps,bands,curves,lower,upper,contacts,center,radius);if(error!=0)return error;
+        error=ValidateTrivalentCorner(body,faces,supports,pairFaces,caps,bands,curves,lower,upper,contacts,center,radius,vanished);if(error!=0)return error;
         var determinant=Dot(normals[0],ProfileCross(normals[1],normals[2]));if(Math.Abs(determinant)<1e-10)return CornerReject(BlendCornerEvent.UnsupportedSupport);
         var sum=Scale(Add(Add(ProfileCross(normals[1],normals[2]),ProfileCross(normals[2],normals[0])),ProfileCross(normals[0],normals[1])),1/determinant);if(!ProfileNormalize(ref sum))return CornerReject(BlendCornerEvent.UnsupportedSupport);
         var sphereAxis=ProfileCross(sum,normals[0]);if(!ProfileNormalize(ref sphereAxis))return CornerReject(BlendCornerEvent.UnsupportedSupport);
@@ -192,15 +199,15 @@ internal static unsafe partial class KernelRuntime
         if(sphere<=0)return ParasolidConstants.PK_ERROR_memory_full;
         LastBlendCornerStage=BlendCornerStage.Assemble;
         var vertexTag=Vertices[vertex].Header.Tag;
-        for(var e=0;e<3;e++)descriptions[e]=new(){Edge=oldEdges[e].Header.Tag,First=Faces[pairFaces[2*e]].Header.Tag,Second=Faces[pairFaces[2*e+1]].Header.Tag};
-        descriptions[3]=new(){Edge=oldEdges[0].Header.Tag,Vertex=vertexTag,First=Faces[supports[0]].Header.Tag,Second=Faces[supports[1]].Header.Tag,Third=Faces[supports[2]].Header.Tag};
-        error=AssembleTrivalentBlendCorner(body,faces,selected,vertex,supports,pairFaces,caps,far,bands,sphere,curves,lower,upper,contacts,distantContacts,products);if(error!=0)return error;
+        var surviving=0;for(var e=0;e<3;e++)if(vanished[e]==0)descriptions[surviving++]=new(){Edge=oldEdges[e].Header.Tag,First=Faces[pairFaces[2*e]].Header.Tag,Second=Faces[pairFaces[2*e+1]].Header.Tag};
+        descriptions[surviving]=new(){Edge=oldEdges[0].Header.Tag,Vertex=vertexTag,First=Faces[supports[0]].Header.Tag,Second=Faces[supports[1]].Header.Tag,Third=Faces[supports[2]].Header.Tag};
+        error=AssembleTrivalentBlendCorner(body,faces,selected,vertex,supports,pairFaces,caps,far,bands,sphere,curves,lower,upper,contacts,distantContacts,vanished,products);if(error!=0)return error;
         LastBlendCornerStage=BlendCornerStage.Release;
         foreach(var curve in curves)if(IsValidTag(curve)){var tag=curve;error=EntityDelete(1,&tag);if(error!=0)return error;}
         foreach(var band in bands)if(IsValidTag(band)&&GeometricOwnerCount(PoolKind.Surface,GetSurfaceSlotByTag(band))==0){var tag=band;error=EntityDelete(1,&tag);if(error!=0)return error;}
         if(IsValidTag(sphere)&&GeometricOwnerCount(PoolKind.Surface,GetSurfaceSlotByTag(sphere))==0){error=EntityDelete(1,&sphere);if(error!=0)return error;}
         for(var i=0;i<3;i++)if(ownCaps[i]!=0&&IsValidTag(capPlanes[i])){var tag=capPlanes[i];error=EntityDelete(1,&tag);if(error!=0)return error;}
-        made=4;return 0;
+        made=surviving+1;return 0;
     }
 
 }

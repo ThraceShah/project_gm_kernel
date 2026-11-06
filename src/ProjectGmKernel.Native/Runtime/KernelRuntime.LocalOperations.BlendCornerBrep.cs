@@ -8,7 +8,7 @@ internal static unsafe partial class KernelRuntime
     private static int AssembleTrivalentBlendCorner(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,ReadOnlySpan<EdgeSlot> selected,
         VertexSlot corner,ReadOnlySpan<FaceSlot> supports,ReadOnlySpan<FaceSlot> pairs,ReadOnlySpan<FaceSlot> caps,ReadOnlySpan<VertexSlot> far,
         ReadOnlySpan<SurfTag> bands,SurfTag sphere,ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,
-        ReadOnlySpan<KernelVector3> contacts,ReadOnlySpan<KernelVector3> distant,Span<FaceSlot> products)
+        ReadOnlySpan<KernelVector3> contacts,ReadOnlySpan<KernelVector3> distant,ReadOnlySpan<byte> vanished,Span<FaceSlot> products)
     {
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=sourceFaces.Length;
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne+12];Span<ModelingCoedge> inputCoedges=stackalloc ModelingCoedge[2*ne];
@@ -23,7 +23,9 @@ internal static unsafe partial class KernelRuntime
         Span<BufferOffset> nearVertices=stackalloc BufferOffset[3],farVertices=stackalloc BufferOffset[6],newEdges=stackalloc BufferOffset[12];
         for(var i=0;i<9;i++)
         {
-            var index=model.NP;model.Points[model.NP]=i<3?contacts[i]:distant[i-3];model.OriginalVertices[model.NP++]=-1;
+            var point=i<3?contacts[i]:distant[i-3];var index=-1;
+            for(var v=0;v<model.NP;v++)if(CornerPointsWithin(model.Points[v],point,1e-9)){index=v;break;}
+            if(index<0){index=model.NP;model.Points[model.NP]=point;model.OriginalVertices[model.NP++]=-1;}
             if(i<3)nearVertices[i]=index;else farVertices[i-3]=index;
         }
         for(var e=0;e<3;e++)for(var side=0;side<4;side++)
@@ -45,7 +47,8 @@ internal static unsafe partial class KernelRuntime
                 var side=pairs[2*k]==a||pairs[2*k]==b?0:pairs[2*k+1]==a||pairs[2*k+1]==b?1:-1;
                 if(side<0)return CornerReject(BlendCornerEvent.UnsupportedGraph);
                 var p=new PK_VECTOR_s();WriteVector(&p,distant[2*k+side]);double t=0;error=CurveParameteriseVectorCore(old.CurveTag,p,&t);if(error!=0)return error;
-                if(t<=edges[e].Start+1e-10||t>=edges[e].End-1e-10)return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
+                if(t<edges[e].Start-1e-10||t>edges[e].End+1e-10)return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
+                t=Math.Clamp(t,edges[e].Start,edges[e].End);
                 var atStart=old.StartVertex==far[k];if(atStart)edges[e].StartVertex=farVertices[2*k+side];else edges[e].EndVertex=farVertices[2*k+side];
                 if(atStart==(LocalSenseSign(Curves[GetCurveSlotByTag(old.CurveTag)].Sense)>0))edges[e].Start=t;else edges[e].End=t;
             }
@@ -93,14 +96,23 @@ internal static unsafe partial class KernelRuntime
             var first=bandLoops[4*e];var vertex=nearVertices[supports.IndexOf(pairs[2*e])];
             var atEnd=(first.Forward!=0?edges[first.Edge].EndVertex:edges[first.Edge].StartVertex)==vertex;
             var nearEdge=newEdges[4*e+2];var forward=atEnd?edges[nearEdge].StartVertex==vertex:edges[nearEdge].EndVertex==vertex;
-            if(Surfaces[GetSurfaceSlotByTag(bands[e])].Class==SurfaceClass.Cylinder&&!forward)
+            if(Curves[GetCurveSlotByTag(edges[nearEdge].Curve)].Class==CurveClass.Circle)
             {
-                // The analytic cylinder owns the spherical boundary's
-                // positive use; swapping both uses preserves its geometry.
-                Curves[GetCurveSlotByTag(edges[nearEdge].Curve)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
-                (edges[nearEdge].StartVertex,edges[nearEdge].EndVertex)=(edges[nearEdge].EndVertex,edges[nearEdge].StartVertex);forward=true;
+                // The first two selected bands establish the spherical
+                // patch. Its third section closes that construction
+                // in the opposite carrier sense; selection order, not world
+                // coordinates, determines the representation.
+                var sense=vanished[e]!=0
+                    ?(forward?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c)
+                    :e==2?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+                if(Curves[GetCurveSlotByTag(edges[nearEdge].Curve)].Sense!=sense)
+                {
+                    Curves[GetCurveSlotByTag(edges[nearEdge].Curve)].Sense=sense;
+                    (edges[nearEdge].StartVertex,edges[nearEdge].EndVertex)=(edges[nearEdge].EndVertex,edges[nearEdge].StartVertex);forward=!forward;
+                }
             }
             bandLoops[4*e+2]=new(){Edge=nearEdge,Forward=forward?(byte)1:(byte)0};sphereLoop[e]=new(){Edge=nearEdge,Forward=forward?(byte)0:(byte)1};
+            if(vanished[e]!=0){sphereLoop[e]=bandLoops[4*e+3];continue;}
             var band=bandLoops.Slice(4*e,4);error=OrderCornerCycle(edges,band);if(error!=0)return error;
             error=SheetCycleWitness(bands[e],edges[..model.NE],band,out _,out var positive);if(error!=0)return error;
             model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=4};band.CopyTo(model.Coedges[model.NC..]);model.NC+=4;
@@ -113,10 +125,13 @@ internal static unsafe partial class KernelRuntime
         var orientation=Dot(ProfileCross(Sub(pb,pa),Sub(pc,pa)),Sub(pa,center));if(!(orientation>0))return ParasolidConstants.PK_ERROR_bad_loop;
         model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=3};sphereLoop.CopyTo(model.Coedges[model.NC..]);model.NC+=3;
         model.Faces[model.NF++]=new(){Surface=sphere,Sense=ParasolidConstants.PK_TOPOL_sense_positive_c,FirstLoop=model.NL++,LoopCount=1};
+        Span<FaceSlot> retained=stackalloc FaceSlot[nf];var retainedCount=nf;
+        if(vanished.Contains((byte)1)){error=ReduceCornerEvent(ref model,nf,sourceFaces,retained,out retainedCount);if(error!=0)return error;}else sourceFaces.CopyTo(retained);
         Span<BufferOffset> indices=stackalloc BufferOffset[model.NF];for(var i=0;i<indices.Length;i++)indices[i]=i;
         Span<byte> reversed=stackalloc byte[model.NF],cavities=stackalloc byte[model.NF];reversed.Clear();cavities.Clear();
-        error=CloneRegularBoundaryBody(ref model,indices,reversed,cavities,out var output,products[..model.NF]);if(error!=0)return error;
-        LastBlendCornerStage=BlendCornerStage.Publish;return ReplaceLocalBody(body,output,sourceFaces,products);
+        Span<FaceSlot> built=stackalloc FaceSlot[model.NF];error=CloneRegularBoundaryBody(ref model,indices,reversed,cavities,out var output,built);if(error!=0)return error;
+        LastBlendCornerStage=BlendCornerStage.Publish;error=ReplaceLocalBody(body,output,retained[..retainedCount],built);if(error!=0)return error;
+        built[..retainedCount].CopyTo(products);built[retainedCount..].CopyTo(products[nf..]);return 0;
     }
 
     private static int OrderCornerCycle(ReadOnlySpan<ModelingEdge> edges,Span<ModelingCoedge> loop)

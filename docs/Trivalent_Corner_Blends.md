@@ -23,7 +23,8 @@ original degree-four/degree-four flat-ended family is also retained. A curved
 near termination for finite continuation is not substituted by a guessed plane.
 
 Acceptance uses complete interval evidence: positive-definite squared-distance
-Hessians and a stationary-witness lower bound certify the material rolling ball;
+Hessians and a stationary-witness lower bound certify source-support contact
+distance; finite spherical-cone certificates handle other planar boundaries;
 whole-band boxes certify clearance from other faces; monotone separating
 projections and complete circular-section bounds certify neighboring bands do
 not overlap. The strong-convexity bound is
@@ -46,20 +47,57 @@ same radius and v261 procedural-representation policy. No post-operation result
 is fed to the reference construction. Strict checks retain topology,
 region/shell, class, sense, tolerance and missing-entity gates; only internal
 CHART counts are diagnostic. Each case also checks radius/center, 27 spherical
-interface G1 samples, 54 source-contact G1 samples and 108 actual finite band
+interface position samples, G1 on each surviving band interface, up to 54
+source-contact G1 samples and up to 108 actual finite band
 boundary points against independent native geometry.
 
 The principal matrix covers natural and genuinely extended NURBS endpoints,
-rigid poses, reflection/uniform scale, independent U reversal and spatially
-inclined poses. Current limitations remain explicit: general curved termination
-faces, mixed-convexity corner repairs, unproved band separation and zero-band/
-vanishing-face events need further plans. The exploratory non-orthogonal prism
-has valid geometry and exact elliptic caps but retains a native curve-sense
-representation discrepancy; it is not included in the passing principal matrix.
+rigid poses, reflection/uniform scale, independent U reversal, independent
+non-unit translated U/V domains and spatially inclined poses. Non-orthogonal
+plane stars include exact elliptic far caps. Current limitations remain explicit: general curved termination
+faces, mixed-convexity corner repairs and unproved band separation need
+further plans.
+
+A defined band-extinction event is handled by this same topology plan. Both
+contact spans must collapse and an interval enclosure must certify the entire
+spherical section coincides with its actual planar termination within modeling
+tolerance. Its zero-width band is omitted. Shared contacts are merged, exact
+line/circle carriers are identified, opposite coedges cancel, and vanished
+support loops/faces are removed. The body replacement preserves only surviving
+original faces. One, two and three simultaneous band extinctions produce the
+independently verified 7/14/9, 5/9/6 and 4/6/4 face/edge/vertex topologies.
+Sphere/plane halfspace checks use the actual spherical triangle's positive cone
+when the complete rolling ball crosses a planar boundary. This also certifies
+positive bands arbitrarily close to the extinction station; radii .75 and
+.999999 remain positive-band cases rather than being coerced into extinction. Cylindrical
+clearance is projected directly as `a + b*u + c*cos(v) + d*sin(v)` before interval
+subdivision, retaining correlations under rotation. Arbitrary overrun past the
+zero station, partially collapsed contact spans and freeform-band extinction
+remain explicit failures; no special block or spherical-body constructor is
+used for the event.
+
+The three-section representation follows the supplied blend-definition order.
+The first two rolling bands establish the patch and the third circular section
+closes it with the opposite carrier sense. Curve sense, endpoint association
+and both coedge directions change together, preserving the physical boundary.
+`PendingBlendSequence` retains this public API order through copying and fixing;
+body storage order is not used as a substitute. Independent native probes
+cyclically permuting the same three edges demonstrate this convention for both
+analytic and NURBS/Blend bands. The oracle declares the same geometric source
+order for both kernels before applying a pose.
+
+The default matrix passes 42 independent cases, with 84 zero-fault native/full
+receive checks. Two cyclic input-order matrices add 12 cases each. Every case
+retains the complete structural gates and a mass residual threshold of `1e-7`;
+maximum observed mass residual is `5.0464e-8`. Actual finite boundaries,
+source-support contacts and live spherical interfaces are checked independently.
+Zero-band cases additionally save/reload through this kernel, delete the original
+and classify interior, removed-corner and exterior points against native PK.
 
 The final integration hook is `BuildTrivalentLocalBlendCorner`, after the axial
 and planar paths and before the regular single-edge/chain path. Its products
-follow the existing contract: original faces first, then three bands and sphere.
+follow the existing contract: original-face slots first, then surviving bands and sphere; extinct original
+faces are not passed to the face-handle preservation operation.
 The producer, oracle and tests use the public `set_blend_constant` /
 `fix_blends` protocol after that dispatch hook is installed.
 
