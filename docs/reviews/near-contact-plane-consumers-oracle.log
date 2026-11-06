@@ -1,0 +1,600 @@
+CASE height=-0.015625
+SSI own h=-0.015625 error=0 points=0 curves=0 seconds=0.040008
+SSI PK h=-0.015625 error=0 points=0 curves=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=-0.015625 op=15902 error=0 n=1 seconds=4.710952 stage=Classify faces=11/-1
+BOOLEAN PK h=-0.015625 op=15902 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h-0.015625-op15902-0 topology 0: native=2 own=2
+h-0.015625-op15902-0 topology 1: native=2 own=2
+h-0.015625-op15902-0 topology 2: native=6 own=6
+h-0.015625-op15902-0 topology 3: native=12 own=12
+h-0.015625-op15902-0 topology 4: native=8 own=8
+h-0.015625-op15902-0 material regions: native=0:1,1:1, own=0:1,1:1
+h-0.015625-op15902-0 compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+h-0.015625-op15902-0 PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+reloaded result received full BODY_check: 0 faults
+h-0.015625-op15902-0 reloaded topology 0: native=2 own=2
+h-0.015625-op15902-0 reloaded topology 1: native=2 own=2
+h-0.015625-op15902-0 reloaded topology 2: native=6 own=6
+h-0.015625-op15902-0 reloaded topology 3: native=12 own=12
+h-0.015625-op15902-0 reloaded topology 4: native=8 own=8
+h-0.015625-op15902-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h-0.015625-op15902-0 reloaded compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+h-0.015625-op15902-0 reloaded PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+PASS solid height=-0.015625 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=-0.015625 op=15901 error=0 n=0 seconds=9.667003 stage=Classify faces=11/-1
+BOOLEAN PK h=-0.015625 op=15901 error=0 n=0
+PASS solid height=-0.015625 op=15901
+CASE height=0
+SSI own h=0 error=0 points=1 curves=0 seconds=0.000111
+SSI PK h=0 error=0 points=1 curves=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=0 op=15902 error=0 n=1 seconds=11.005357 stage=Classify faces=11/-1
+BOOLEAN PK h=0 op=15902 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h0-op15902-0 topology 0: native=2 own=2
+h0-op15902-0 topology 1: native=2 own=2
+h0-op15902-0 topology 2: native=6 own=6
+h0-op15902-0 topology 3: native=12 own=12
+h0-op15902-0 topology 4: native=9 own=9
+h0-op15902-0 material regions: native=0:1,1:1, own=0:1,1:1
+h0-op15902-0 compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=9/9
+global diff=21947, entities=0/0
+h0-op15902-0 PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+reloaded result received full BODY_check: 0 faults
+h0-op15902-0 reloaded topology 0: native=2 own=2
+h0-op15902-0 reloaded topology 1: native=2 own=2
+h0-op15902-0 reloaded topology 2: native=6 own=6
+h0-op15902-0 reloaded topology 3: native=12 own=12
+h0-op15902-0 reloaded topology 4: native=9 own=9
+h0-op15902-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h0-op15902-0 reloaded compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=9/9
+global diff=21947, entities=0/0
+h0-op15902-0 reloaded PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+PASS solid height=0 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=0 op=15901 error=0 n=0 seconds=7.918605 stage=Classify faces=11/-1
+BOOLEAN PK h=0 op=15901 error=0 n=0
+PASS solid height=0 op=15901
+CASE height=0.015625
+SSI own h=0.015625 error=0 points=0 curves=1 seconds=0.052466
+SSI PK h=0.015625 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=1.5213524884316598E-14 angle=6.283185307179584 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=0.015625 op=15902 error=0 n=1 seconds=17.002706 stage=Publish faces=13/-1
+BOOLEAN PK h=0.015625 op=15902 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h0.015625-op15902-0 topology 0: native=2 own=2
+h0.015625-op15902-0 topology 1: native=2 own=2
+h0.015625-op15902-0 topology 2: native=7 own=7
+h0.015625-op15902-0 topology 3: native=13 own=13
+h0.015625-op15902-0 topology 4: native=8 own=8
+h0.015625-op15902-0 material regions: native=0:1,1:1, own=0:1,1:1
+h0.015625-op15902-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=2347/2443, class=500/500, int=20/10, value=0/0
+CHART face=1, diff=21949, entity=2347/2443, class=500/500, int=20/10, value=0/0
+h0.015625-op15902-0 PK mass: volume=1.3329498369987314/1.3329498373558641, area=6.946696749703323/6.946696751433791, max normalized residual=2.1775943737032975E-10
+reloaded result received full BODY_check: 0 faults
+h0.015625-op15902-0 reloaded topology 0: native=2 own=2
+h0.015625-op15902-0 reloaded topology 1: native=2 own=2
+h0.015625-op15902-0 reloaded topology 2: native=7 own=7
+h0.015625-op15902-0 reloaded topology 3: native=13 own=13
+h0.015625-op15902-0 reloaded topology 4: native=8 own=8
+h0.015625-op15902-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h0.015625-op15902-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=2347/2540, class=500/500, int=20/10, value=0/0
+CHART face=1, diff=21949, entity=2347/2540, class=500/500, int=20/10, value=0/0
+h0.015625-op15902-0 reloaded PK mass: volume=1.3329498369987314/1.3329498373558641, area=6.946696749703323/6.946696751433791, max normalized residual=2.1775943737032975E-10
+PASS solid height=0.015625 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=0.015625 op=15901 error=0 n=1 seconds=10.529319 stage=Publish faces=13/-1
+BOOLEAN PK h=0.015625 op=15901 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h0.015625-op15901-0 topology 0: native=2 own=2
+h0.015625-op15901-0 topology 1: native=2 own=2
+h0.015625-op15901-0 topology 2: native=2 own=2
+h0.015625-op15901-0 topology 3: native=1 own=1
+h0.015625-op15901-0 topology 4: native=0 own=0
+h0.015625-op15901-0 material regions: native=0:1,1:1, own=0:1,1:1
+h0.015625-op15901-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=2944/2986, class=500/500, int=20/10, value=0/0
+CHART face=1, diff=21949, entity=2944/2986, class=500/500, int=20/10, value=0/0
+h0.015625-op15901-0 PK mass: volume=0.00038349519468282604/0.00038349519499155147, area=0.09893395237322429/0.09893395252140574, max normalized residual=1.3484109113102175E-10
+h0.015625-op15901-0 analytic cap volume=0.0003834951969714103, relative residual native=5.967699889808387E-09, own=5.162669181046908E-09
+reloaded result received full BODY_check: 0 faults
+h0.015625-op15901-0 reloaded topology 0: native=2 own=2
+h0.015625-op15901-0 reloaded topology 1: native=2 own=2
+h0.015625-op15901-0 reloaded topology 2: native=2 own=2
+h0.015625-op15901-0 reloaded topology 3: native=1 own=1
+h0.015625-op15901-0 reloaded topology 4: native=0 own=0
+h0.015625-op15901-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h0.015625-op15901-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=2944/3003, class=500/500, int=20/10, value=0/0
+CHART face=1, diff=21949, entity=2944/3003, class=500/500, int=20/10, value=0/0
+h0.015625-op15901-0 reloaded PK mass: volume=0.00038349519468282604/0.00038349519499155147, area=0.09893395237322429/0.09893395252140574, max normalized residual=1.3484109113102175E-10
+h0.015625-op15901-0 reloaded analytic cap volume=0.0003834951969714103, relative residual native=5.967699889808387E-09, own=5.162669181046908E-09
+PASS solid height=0.015625 op=15901
+CASE height=1.52587890625E-05
+SSI own h=1.52587890625E-05 error=0 points=0 curves=1 seconds=0.006594
+SSI PK h=1.52587890625E-05 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=3.1501578824861057E-15 angle=6.283185307179584 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=1.52587890625E-05 op=15902 error=0 n=1 seconds=7.672722 stage=Publish faces=13/-1
+BOOLEAN PK h=1.52587890625E-05 op=15902 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h1.52587890625E-05-op15902-0 topology 0: native=2 own=2
+h1.52587890625E-05-op15902-0 topology 1: native=2 own=2
+h1.52587890625E-05-op15902-0 topology 2: native=7 own=7
+h1.52587890625E-05-op15902-0 topology 3: native=13 own=13
+h1.52587890625E-05-op15902-0 topology 4: native=8 own=8
+h1.52587890625E-05-op15902-0 material regions: native=0:1,1:1, own=0:1,1:1
+h1.52587890625E-05-op15902-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=3395/3491, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=3395/3491, class=500/500, int=20/6, value=0/0
+h1.52587890625E-05-op15902-0 PK mass: volume=1.3333333309455708/1.3333333312636373, area=6.947455927197666/6.947455928724722, max normalized residual=1.9214398030262666E-10
+reloaded result received full BODY_check: 0 faults
+h1.52587890625E-05-op15902-0 reloaded topology 0: native=2 own=2
+h1.52587890625E-05-op15902-0 reloaded topology 1: native=2 own=2
+h1.52587890625E-05-op15902-0 reloaded topology 2: native=7 own=7
+h1.52587890625E-05-op15902-0 reloaded topology 3: native=13 own=13
+h1.52587890625E-05-op15902-0 reloaded topology 4: native=8 own=8
+h1.52587890625E-05-op15902-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h1.52587890625E-05-op15902-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=3395/3588, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=3395/3588, class=500/500, int=20/6, value=0/0
+h1.52587890625E-05-op15902-0 reloaded PK mass: volume=1.3333333309455708/1.3333333312636373, area=6.947455927197666/6.947455928724722, max normalized residual=1.9214398030262666E-10
+PASS solid height=1.52587890625E-05 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=1.52587890625E-05 op=15901 error=0 n=1 seconds=4.472231 stage=Publish faces=13/-1
+BOOLEAN PK h=1.52587890625E-05 op=15901 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h1.52587890625E-05-op15901-0 topology 0: native=2 own=2
+h1.52587890625E-05-op15901-0 topology 1: native=2 own=2
+h1.52587890625E-05-op15901-0 topology 2: native=2 own=2
+h1.52587890625E-05-op15901-0 topology 3: native=1 own=1
+h1.52587890625E-05-op15901-0 topology 4: native=0 own=0
+h1.52587890625E-05-op15901-0 material regions: native=0:1,1:1, own=0:1,1:1
+h1.52587890625E-05-op15901-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=3992/4034, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=3992/4034, class=500/500, int=20/6, value=0/0
+h1.52587890625E-05-op15901-0 PK mass: volume=3.6572948209858973E-10/3.657294935724292E-10, area=9.587452189153845E-05/9.587452723974043E-05, max normalized residual=4.260471120445722E-10
+h1.52587890625E-05-op15901-0 analytic cap volume=3.657295198167899E-10, relative residual native=1.031314076360701E-07, own=7.175893457223026E-08
+reloaded result received full BODY_check: 0 faults
+h1.52587890625E-05-op15901-0 reloaded topology 0: native=2 own=2
+h1.52587890625E-05-op15901-0 reloaded topology 1: native=2 own=2
+h1.52587890625E-05-op15901-0 reloaded topology 2: native=2 own=2
+h1.52587890625E-05-op15901-0 reloaded topology 3: native=1 own=1
+h1.52587890625E-05-op15901-0 reloaded topology 4: native=0 own=0
+h1.52587890625E-05-op15901-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h1.52587890625E-05-op15901-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=3992/4051, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=3992/4051, class=500/500, int=20/6, value=0/0
+h1.52587890625E-05-op15901-0 reloaded PK mass: volume=3.6572948209858973E-10/3.657294935724292E-10, area=9.587452189153845E-05/9.587452723974043E-05, max normalized residual=4.260471120445722E-10
+h1.52587890625E-05-op15901-0 reloaded analytic cap volume=3.657295198167899E-10, relative residual native=1.031314076360701E-07, own=7.175893457223026E-08
+PASS solid height=1.52587890625E-05 op=15901
+CASE height=9.5367431640625E-07
+SSI own h=9.5367431640625E-07 error=0 points=0 curves=1 seconds=0.006622
+SSI PK h=9.5367431640625E-07 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=8.585485719304594E-15 angle=6.283185307179586 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=9.5367431640625E-07 op=15902 error=0 n=1 seconds=7.346695 stage=Publish faces=13/-1
+BOOLEAN PK h=9.5367431640625E-07 op=15902 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15902-0 topology 0: native=2 own=2
+h9.5367431640625E-07-op15902-0 topology 1: native=2 own=2
+h9.5367431640625E-07-op15902-0 topology 2: native=7 own=7
+h9.5367431640625E-07-op15902-0 topology 3: native=13 own=13
+h9.5367431640625E-07-op15902-0 topology 4: native=8 own=8
+h9.5367431640625E-07-op15902-0 material regions: native=0:1,1:1, own=0:1,1:1
+h9.5367431640625E-07-op15902-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=4443/4539, class=500/500, int=20/5, value=0/0
+CHART face=1, diff=21949, entity=4443/4539, class=500/500, int=20/5, value=0/0
+h9.5367431640625E-07-op15902-0 PK mass: volume=1.333333331309758/1.3333333313164122, area=6.9474559279260575/6.947455927957994, max normalized residual=4.018421961289363E-12
+reloaded result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15902-0 reloaded topology 0: native=2 own=2
+h9.5367431640625E-07-op15902-0 reloaded topology 1: native=2 own=2
+h9.5367431640625E-07-op15902-0 reloaded topology 2: native=7 own=7
+h9.5367431640625E-07-op15902-0 reloaded topology 3: native=13 own=13
+h9.5367431640625E-07-op15902-0 reloaded topology 4: native=8 own=8
+h9.5367431640625E-07-op15902-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h9.5367431640625E-07-op15902-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=4443/4636, class=500/500, int=20/5, value=0/0
+CHART face=1, diff=21949, entity=4443/4636, class=500/500, int=20/5, value=0/0
+h9.5367431640625E-07-op15902-0 reloaded PK mass: volume=1.333333331309758/1.3333333313164122, area=6.9474559279260575/6.947455927957994, max normalized residual=4.018421961289363E-12
+PASS solid height=9.5367431640625E-07 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=9.5367431640625E-07 op=15901 error=0 n=1 seconds=3.747261 stage=Publish faces=13/-1
+BOOLEAN PK h=9.5367431640625E-07 op=15901 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15901-0 topology 0: native=2 own=2
+h9.5367431640625E-07-op15901-0 topology 1: native=2 own=2
+h9.5367431640625E-07-op15901-0 topology 2: native=2 own=2
+h9.5367431640625E-07-op15901-0 topology 3: native=1 own=1
+h9.5367431640625E-07-op15901-0 topology 4: native=0 own=0
+h9.5367431640625E-07-op15901-0 material regions: native=0:1,1:1, own=0:1,1:1
+h9.5367431640625E-07-op15901-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=5040/5082, class=500/500, int=20/5, value=0/0
+CHART face=1, diff=21949, entity=5040/5082, class=500/500, int=20/5, value=0/0
+h9.5367431640625E-07-op15901-0 PK mass: volume=1.4286307841897276E-12/1.4286309003950154E-12, area=5.992114759804793E-06/5.992115207564163E-06, max normalized residual=3.914489294804773E-11
+h9.5367431640625E-07-op15901-0 analytic cap volume=1.4286309367843356E-12, relative residual native=1.0681177631255423E-07, own=2.5471463160897656E-08
+reloaded result received full BODY_check: 0 faults
+h9.5367431640625E-07-op15901-0 reloaded topology 0: native=2 own=2
+h9.5367431640625E-07-op15901-0 reloaded topology 1: native=2 own=2
+h9.5367431640625E-07-op15901-0 reloaded topology 2: native=2 own=2
+h9.5367431640625E-07-op15901-0 reloaded topology 3: native=1 own=1
+h9.5367431640625E-07-op15901-0 reloaded topology 4: native=0 own=0
+h9.5367431640625E-07-op15901-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h9.5367431640625E-07-op15901-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=5040/5099, class=500/500, int=20/5, value=0/0
+CHART face=1, diff=21949, entity=5040/5099, class=500/500, int=20/5, value=0/0
+h9.5367431640625E-07-op15901-0 reloaded PK mass: volume=1.4286307841897276E-12/1.4286309003950154E-12, area=5.992114759804793E-06/5.992115207564163E-06, max normalized residual=3.914489294804773E-11
+h9.5367431640625E-07-op15901-0 reloaded analytic cap volume=1.4286309367843356E-12, relative residual native=1.0681177631255423E-07, own=2.5471463160897656E-08
+PASS solid height=9.5367431640625E-07 op=15901
+CASE height=5.960464477539063E-08
+SSI own h=5.960464477539063E-08 error=0 points=0 curves=1 seconds=0.005694
+SSI PK h=5.960464477539063E-08 error=0 points=0 curves=1
+SSI branch=0 radius2 residual=6.145456807571766E-15 angle=6.283185307179589 endpoint-gap=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=5.960464477539063E-08 op=15902 error=0 n=1 seconds=6.424083 stage=Publish faces=13/-1
+BOOLEAN PK h=5.960464477539063E-08 op=15902 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15902-0 topology 0: native=2 own=2
+h5.960464477539063E-08-op15902-0 topology 1: native=2 own=2
+h5.960464477539063E-08-op15902-0 topology 2: native=7 own=7
+h5.960464477539063E-08-op15902-0 topology 3: native=13 own=13
+h5.960464477539063E-08-op15902-0 topology 4: native=8 own=8
+h5.960464477539063E-08-op15902-0 material regions: native=0:1,1:1, own=0:1,1:1
+h5.960464477539063E-08-op15902-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=5491/5587, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=5491/5587, class=500/500, int=20/6, value=0/0
+h5.960464477539063E-08-op15902-0 PK mass: volume=1.3333333312983726/1.3333333313054532, area=6.9474559278674475/6.947455927901435, max normalized residual=4.276579058147067E-12
+reloaded result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15902-0 reloaded topology 0: native=2 own=2
+h5.960464477539063E-08-op15902-0 reloaded topology 1: native=2 own=2
+h5.960464477539063E-08-op15902-0 reloaded topology 2: native=7 own=7
+h5.960464477539063E-08-op15902-0 reloaded topology 3: native=13 own=13
+h5.960464477539063E-08-op15902-0 reloaded topology 4: native=8 own=8
+h5.960464477539063E-08-op15902-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h5.960464477539063E-08-op15902-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=13/13
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=5491/5684, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=5491/5684, class=500/500, int=20/6, value=0/0
+h5.960464477539063E-08-op15902-0 reloaded PK mass: volume=1.3333333312983726/1.3333333313054532, area=6.9474559278674475/6.947455927901435, max normalized residual=4.276579058147067E-12
+PASS solid height=5.960464477539063E-08 op=15902
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=5.960464477539063E-08 op=15901 error=0 n=1 seconds=3.375401 stage=Publish faces=13/-1
+BOOLEAN PK h=5.960464477539063E-08 op=15901 error=0 n=1
+result native full BODY_check: 0 faults
+result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15901-0 topology 0: native=2 own=2
+h5.960464477539063E-08-op15901-0 topology 1: native=2 own=2
+h5.960464477539063E-08-op15901-0 topology 2: native=2 own=2
+h5.960464477539063E-08-op15901-0 topology 3: native=1 own=1
+h5.960464477539063E-08-op15901-0 topology 4: native=0 own=0
+h5.960464477539063E-08-op15901-0 material regions: native=0:1,1:1, own=0:1,1:1
+h5.960464477539063E-08-op15901-0 compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=6088/6130, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=6088/6130, class=500/500, int=20/6, value=0/0
+h5.960464477539063E-08-op15901-0 PK mass: volume=5.580588995429945E-15/5.580589988709498E-15, area=3.7450700505950975E-07/3.7450701225001003E-07, max normalized residual=1.4749468485478157E-11
+h5.960464477539063E-08-op15901-0 analytic cap volume=5.580589596813811E-15, relative residual native=1.077634996793364E-07, own=7.022478176743618E-08
+reloaded result received full BODY_check: 0 faults
+h5.960464477539063E-08-op15901-0 reloaded topology 0: native=2 own=2
+h5.960464477539063E-08-op15901-0 reloaded topology 1: native=2 own=2
+h5.960464477539063E-08-op15901-0 reloaded topology 2: native=2 own=2
+h5.960464477539063E-08-op15901-0 reloaded topology 3: native=1 own=1
+h5.960464477539063E-08-op15901-0 reloaded topology 4: native=0 own=0
+h5.960464477539063E-08-op15901-0 reloaded material regions: native=0:1,1:1, own=0:1,1:1
+h5.960464477539063E-08-op15901-0 reloaded compare=21921/21930, face_pairs=2
+global diff=21940, entities=1/1
+global diff=21941, entities=2/2
+global diff=21943, entities=1/1
+global diff=21944, entities=0/0
+global diff=21946, entities=0/0
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=6088/6147, class=500/500, int=20/6, value=0/0
+CHART face=1, diff=21949, entity=6088/6147, class=500/500, int=20/6, value=0/0
+h5.960464477539063E-08-op15901-0 reloaded PK mass: volume=5.580588995429945E-15/5.580589988709498E-15, area=3.7450700505950975E-07/3.7450701225001003E-07, max normalized residual=1.4749468485478157E-11
+h5.960464477539063E-08-op15901-0 reloaded analytic cap volume=5.580589596813811E-15, relative residual native=1.077634996793364E-07, own=7.022478176743618E-08
+PASS solid height=5.960464477539063E-08 op=15901
