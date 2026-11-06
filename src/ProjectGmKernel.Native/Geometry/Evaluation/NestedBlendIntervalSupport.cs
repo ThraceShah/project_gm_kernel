@@ -163,7 +163,7 @@ internal static partial class JointNestedBlendEvaluation
             // chart plane while certifying the local implicit tube; switching
             // planes inside a box would invalidate a Jacobian enclosure.
             var t=i==0?parameter:variables[node.Offset+3];var charts=Chart(program,node.Spine);var chart=charts[fixedCharts[i]];
-            residual[node.Offset+2]=IntervalVector.Dot(point-new IntervalVector(chart.Position),new IntervalVector(chart.Chord))-(t-chart.Parameter)/chart.Scale;
+            status=SpineParameterMap.Interval(spine,chart,t,point,out residual[node.Offset+2]);if(status!=AlgorithmStatus.Success)return status;
             if(i>0)residual[node.Offset+3]=IntervalVector.Dot(IntervalPoint(variables,nodes[node.Parent].Offset)-point,IntervalVector.Cross(n0,n1).Unit());
         }
         for(var i=0;i<residual.Length;i++)if(!residual[i].Finite)return AlgorithmStatus.NotConverged;

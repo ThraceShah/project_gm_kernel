@@ -33,6 +33,17 @@ internal static unsafe partial class KernelRuntime
         }
         for(var i=0;i<nc;i++)
         {
+            if(SpineParameterMap.Explicit(spines[i]))
+            {
+                ref var curve=ref spines[i].Curve;curve.Origin=matrix.TransformPoint(curve.Origin);
+                curve.First=matrix.TransformUnitDirection(curve.First,curve.Kind==CurveClass.Line?scale:1);
+                curve.Second=matrix.TransformVector(curve.Second);
+                if(curve.Kind==CurveClass.Line)
+                    for(var j=0;j<spines[i].ChartCount;j++)
+                    {
+                        ref var chart=ref charts[spines[i].ChartOffset+j];chart.Parameter*=scale;chart.Scale*=scale;
+                    }
+            }
             spines[i].ChordalError*=scale;if(parity<0)(spines[i].First,spines[i].Second)=(spines[i].Second,spines[i].First);
         }
         for(var i=0;i<nh;i++)

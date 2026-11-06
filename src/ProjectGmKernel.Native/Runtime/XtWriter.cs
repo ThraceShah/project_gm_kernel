@@ -295,7 +295,7 @@ internal static unsafe partial class XtWriter
                     node = OffsetSurfaceNode(pair.Value, pair.Key, surface, map);
                     break;
                 case SurfaceClass.BlendSurface:
-                    node=BlendedEdgeNode(pair.Value,pair.Key,surface,map);
+                    node=BlendedEdgeNode(pair.Value,pair.Key,surface,ref map,nodes,ref graph);
                     break;
                 default:
                     throw new NotSupportedException("Unsupported surface class for XT writer.");
@@ -1580,9 +1580,16 @@ internal static unsafe partial class XtWriter
         };
     }
 
-    private static XtNode BlendedEdgeNode(XtNodeIndex index,SurfTag tag,SurfaceRecord surface,NodeMap map)
+    private static XtNode BlendedEdgeNode(XtNodeIndex index,SurfTag tag,SurfaceRecord surface,ref NodeMap map,List<XtNode> nodes,ref TransmitGraph graph)
     {
         ref readonly var data=ref KernelRuntime.BlendedEdgeDataPool[surface.DataIndex];
+        XtNodeIndex start=0,end=0;
+        if(data.StartLimit.HvecCount>0)
+        {
+            var vectors=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(data.HvecBlock),data.HvecCount*3);
+            start=AddIndex(nodes,ref graph,ref map);end=AddIndex(nodes,ref graph,ref map);
+            SetNode(nodes,map,start,LimitNode(start,data.StartLimit,vectors));SetNode(nodes,map,end,LimitNode(end,data.EndLimit,vectors));
+        }
         return new()
         {
             Type=(int)XtNodeTypes.BlendedEdge,Index=index,
@@ -1592,7 +1599,7 @@ internal static unsafe partial class XtWriter
                 XtFieldValue.Ptr(NextSurface(tag,map)),XtFieldValue.Ptr(PreviousSurface(tag,map)),GeometricOwnerField(tag,map),SenseField(surface.Sense),
                 XtFieldValue.Char('R'),XtFieldValue.Ptr(Ptr(map.SurfaceTags,data.Surface0Tag)),XtFieldValue.Ptr(Ptr(map.SurfaceTags,data.Surface1Tag)),
                 XtFieldValue.Ptr(Ptr(map.CurveTags,data.SpineTag)),XtFieldValue.RealValue(data.Range0),XtFieldValue.RealValue(data.Range1),
-                XtFieldValue.RealValue(1),XtFieldValue.RealValue(1),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),
+                XtFieldValue.RealValue(1),XtFieldValue.RealValue(1),XtFieldValue.Ptr(0),XtFieldValue.Ptr(0),XtFieldValue.Ptr(start),XtFieldValue.Ptr(end),
             ],
         };
     }

@@ -214,7 +214,9 @@ internal static partial class JointNestedBlendEvaluation
             var found=Partial(program,program.Spines[nodes[root].Spine].First,nodes,root,state,out var first,out _,out _,out _);if(found!=AlgorithmStatus.Success)return found;
             found=Partial(program,program.Spines[nodes[root].Spine].Second,nodes,root,state,out var second,out _,out _,out _);if(found!=AlgorithmStatus.Success)return found;
             var charts=Chart(program,nodes[root].Spine);var segment=0;var t=state[nodes[root].Offset+3];while(segment<charts.Length-2&&charts[segment+1].Parameter<=t)segment++;
-            var orientation=Dot(Cross(first.Gradient,second.Gradient),charts[segment].Chord);
+            found=SpineParameterMap.Scalar(program.Spines[nodes[root].Spine],charts[segment],t,Point(state,nodes[root].Offset),out _,out var gauge,out _);
+            if(found!=AlgorithmStatus.Success)return found;
+            var orientation=Dot(Cross(first.Gradient,second.Gradient),gauge);
             if(!(rhs[parameterIndex]*orientation<0)||!double.IsFinite(rhs[parameterIndex]))return AlgorithmStatus.Singular;
         }
         for(var i=0;i<nodes.Length;i++)
@@ -250,8 +252,9 @@ internal static partial class JointNestedBlendEvaluation
             var t=i==0&&!nearest?parameter:state[node.Offset+3];var charts=Chart(program,node.Spine);
             if(!InChartDomain(program,node.Spine,t,i!=0||nearest))return AlgorithmStatus.InvalidInput;
             var segment=0;while(segment<charts.Length-2&&charts[segment+1].Parameter<=t)segment++;
-            var chart=charts[segment];residual[node.Offset+2]=Dot(chart.Chord,Sub(point,chart.Position))-(t-chart.Parameter)/chart.Scale;
-            AddGradient(matrix,n,node.Offset+2,node.Offset,chart.Chord);
+            var chart=charts[segment];status=SpineParameterMap.Scalar(spine,chart,t,point,out residual[node.Offset+2],out var gauge,out var dt);
+            if(status!=AlgorithmStatus.Success)return status;
+            AddGradient(matrix,n,node.Offset+2,node.Offset,gauge);
             if(i==0&&boundaryUv>=0)
             {
                 residual[2]=state[boundaryUv]-boundaryValue;
@@ -259,7 +262,7 @@ internal static partial class JointNestedBlendEvaluation
             }
             if(i!=0||nearest)
             {
-                if(!matrix.IsEmpty)matrix[(node.Offset+2)*n+node.Offset+3]=-1/chart.Scale;
+                if(!matrix.IsEmpty)matrix[(node.Offset+2)*n+node.Offset+3]=dt;
                 var tangent=Cross(a.Gradient,b.Gradient);var length=Math.Sqrt(Dot(tangent,tangent));if(!(length>1e-10))return AlgorithmStatus.Singular;
                 tangent=Scale(tangent,1/length);var q=Sub(i==0?target:Point(state,nodes[node.Parent].Offset),point);
                 var value=Dot(q,tangent);residual[node.Offset+3]=value;
@@ -353,7 +356,7 @@ internal static partial class JointNestedBlendEvaluation
             if(!InChartDomain(program,node.Spine,t[0],i!=0||nearest))return AlgorithmStatus.InvalidInput;
             var segment=0;while(segment<charts.Length-2&&charts[segment+1].Parameter<=t[0])segment++;
             var chart=charts[segment];var point=Point(variables,node.Offset);
-            residual[node.Offset+2]=TaylorVector.Dot(point-TaylorVector.Constant(chart.Position,t.Order),TaylorVector.Constant(chart.Chord,t.Order))-(t-chart.Parameter)/chart.Scale;
+            status=SpineParameterMap.Series(spine,chart,t,point,out residual[node.Offset+2]);if(status!=AlgorithmStatus.Success)return status;
             if(i!=0||nearest)
             {
                 var tangent=TaylorVector.Cross(normals0[i],normals1[i]);if(!(tangent.Norm()[0]>1e-10))return AlgorithmStatus.Singular;
@@ -393,12 +396,18 @@ internal static partial class JointNestedBlendEvaluation
     private static bool InChartDomain(in NestedBlendProgram program,BlendSpineIndex spine,double parameter,bool allowArtificialExtension)
     {
         var node=program.Spines[spine];var charts=Chart(program,spine);
+        if(SpineParameterMap.Periodic(node))return double.IsFinite(parameter);
         return double.IsFinite(parameter)&&(parameter>=charts[0].Parameter||allowArtificialExtension&&node.StartType==LimitType.Artificial)
             &&(parameter<=charts[^1].Parameter||allowArtificialExtension&&node.EndType==LimitType.Artificial);
     }
     private static bool Seed(in NestedBlendProgram program,BlendSpineIndex spine,double t,out KernelVector3 point)
     {
-        var charts=Chart(program,spine);point=default;if(t<charts[0].Parameter||t>charts[^1].Parameter)return false;
+        var charts=Chart(program,spine);point=default;
+        if(!SpineParameterMap.Periodic(program.Spines[spine])&&(t<charts[0].Parameter||t>charts[^1].Parameter))return false;
+        if(SpineParameterMap.Explicit(program.Spines[spine]))
+        {
+            var status=SpineParameterMap.Series(program.Spines[spine].Curve,new(t,0),out var exact,out _);point=exact.Value;return status==AlgorithmStatus.Success;
+        }
         var segment=0;while(segment<charts.Length-2&&charts[segment+1].Parameter<=t)segment++;
         var fraction=(t-charts[segment].Parameter)/(charts[segment+1].Parameter-charts[segment].Parameter);
         point=Add(charts[segment].Position,Scale(Sub(charts[segment+1].Position,charts[segment].Position),fraction));return true;

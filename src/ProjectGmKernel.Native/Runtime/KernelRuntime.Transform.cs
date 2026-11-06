@@ -334,14 +334,17 @@ internal static unsafe partial class KernelRuntime
                 var vectors=new Span<KernelVector3>(DereferenceBlock(d.HvecBlock),d.HvecCount);
                 for(var i=0;i<vectors.Length;i++) { vectors[i]=m.TransformPoint(vectors[i]); if(!FiniteVector(vectors[i])) return ParasolidConstants.PK_ERROR_failed_to_transform; }
                 var uv=new Span<double>(DereferenceBlock(d.UvValueBlock),d.UvValueCount);var stride=UvStrideOf(d.UvType);
+                // These are periodic chart point records. Surface extents and
+                // SP-curve control nets retain their lifted parameter maps;
+                // wrapping their individual bounds/poles would change them.
                 for(var i=0;stride>0&&i<uv.Length;i+=stride)
                 {
                     if(d.UvType is IntersectionUvType.First or IntersectionUvType.Both)
-                    { if(!TransformUv(d.Surface0Tag,scale,parity,ref uv[i],ref uv[i+1],allowNull:true))return ParasolidConstants.PK_ERROR_failed_to_transform; }
+                    { if(!TransformUv(d.Surface0Tag,scale,parity,ref uv[i],ref uv[i+1],allowNull:true,canonical:true))return ParasolidConstants.PK_ERROR_failed_to_transform; }
                     if(d.UvType==IntersectionUvType.Second)
-                    { if(!TransformUv(d.Surface1Tag,scale,parity,ref uv[i],ref uv[i+1],allowNull:true))return ParasolidConstants.PK_ERROR_failed_to_transform; }
+                    { if(!TransformUv(d.Surface1Tag,scale,parity,ref uv[i],ref uv[i+1],allowNull:true,canonical:true))return ParasolidConstants.PK_ERROR_failed_to_transform; }
                     else if(d.UvType==IntersectionUvType.Both)
-                    { if(!TransformUv(d.Surface1Tag,scale,parity,ref uv[i+2],ref uv[i+3],allowNull:true))return ParasolidConstants.PK_ERROR_failed_to_transform; }
+                    { if(!TransformUv(d.Surface1Tag,scale,parity,ref uv[i+2],ref uv[i+3],allowNull:true,canonical:true))return ParasolidConstants.PK_ERROR_failed_to_transform; }
                 }
                 if(d.IsBlendContact!=0)
                 {
@@ -373,7 +376,7 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    private static bool TransformUv(SurfTag tag,double scale,double parity,ref double u,ref double v,int depth=0,bool allowNull=false)
+    private static bool TransformUv(SurfTag tag,double scale,double parity,ref double u,ref double v,int depth=0,bool allowNull=false,bool canonical=false)
     {
         if(allowNull&&double.IsNaN(u)&&double.IsNaN(v))return true;
         if(depth>128||!double.IsFinite(u)||!double.IsFinite(v))return false;
@@ -381,14 +384,22 @@ internal static unsafe partial class KernelRuntime
         switch(s.Class)
         {
             case SurfaceClass.Plane:u*=scale;v*=scale*parity;break;
-            case SurfaceClass.Cylinder:case SurfaceClass.Cone:u*=parity;v*=scale;break;
-            case SurfaceClass.Sphere:case SurfaceClass.Torus:u*=parity;break;
-            case SurfaceClass.Offset:return TransformUv(OffsetDataPool[s.DataIndex].BaseSurfTag,scale,parity,ref u,ref v,depth+1);
+            case SurfaceClass.Cylinder:case SurfaceClass.Cone:u*=parity;v*=scale;if(canonical)CanonicalAngle(ref u);break;
+            case SurfaceClass.Sphere:case SurfaceClass.Torus:u*=parity;if(canonical)CanonicalAngle(ref u);break;
+            case SurfaceClass.Offset:return TransformUv(OffsetDataPool[s.DataIndex].BaseSurfTag,scale,parity,ref u,ref v,depth+1,canonical:canonical);
             case SurfaceClass.Swept:u*=CurveParameterScale(SweptDataPool[s.DataIndex].SectionCurveTag,scale);v*=scale;break;
             case SurfaceClass.Spun:u*=CurveParameterScale(SpunDataPool[s.DataIndex].ProfileCurveTag,scale);v*=parity;break;
-            case SurfaceClass.BlendSurface:if(parity<0)v=1-v;break;
+            case SurfaceClass.BlendSurface:
+                u*=CurveParameterScale(BlendedEdgeDataPool[s.DataIndex].SpineTag,scale);
+                if(parity<0)v=1-v;break;
         }
         return double.IsFinite(u)&&double.IsFinite(v);
+    }
+
+    private static void CanonicalAngle(ref double angle)
+    {
+        if(angle>=0&&angle<=Math.Tau)return;
+        angle%=Math.Tau;if(angle<0)angle+=Math.Tau;
     }
 
     // Offset normals are formed from Su x Sv, not the surface sense flag.
@@ -443,6 +454,12 @@ internal static unsafe partial class KernelRuntime
                 error=TransformEntity(d.Surface1Tag,m,scale,parity,ref visited,depth);if(error!=0)return error;
                 error=TransformEntity(d.SpineTag,m,scale,parity,ref visited,depth);if(error!=0)return error;
                 error=TransformNestedProgram(d.ProgramBlock,d.ProgramSurfaceCount,d.ProgramSpineCount,d.ProgramChartCount,d.ProgramScalarCount,surface.Header.Partition,m,scale,parity);if(error!=0)return error;
+                if(d.HvecCount>0)
+                {
+                    if(!SnapshotPayload(d.HvecBlock,(nuint)(d.HvecCount*3*8),surface.Header.Partition))return ParasolidConstants.PK_ERROR_memory_full;
+                    var limits=new Span<KernelVector3>(DereferenceBlock(d.HvecBlock),d.HvecCount);
+                    for(var i=0;i<limits.Length;i++)limits[i]=m.TransformPoint(limits[i]);
+                }
                 d.Range0*=scale;d.Range1*=scale;
                 if(parity<0){(d.Surface0Tag,d.Surface1Tag)=(d.Surface1Tag,d.Surface0Tag);(d.Range0,d.Range1)=(d.Range1,d.Range0);}
                 break;

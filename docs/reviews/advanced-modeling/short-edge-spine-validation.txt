@@ -1,0 +1,268 @@
+Short-edge fillet / explicit rolling spine progress, 2026-11-07
+
+STATUS: INCOMPLETE. The seed's managed two-edge FixBlends still fails with
+5000 at Supports. This report does not claim completion of the requested
+solid fillet or of the full general-spine contract.
+
+Baseline and execution
+
+  HEAD: 84cceed8eb1a0f64fb053ffa01205a211a74e733
+  Branch/upstream: main / origin/main. Initial worktree: clean.
+  .NET SDK: 10.0.302. Real independent Parasolid: 38.0.150.
+  PK session precision: 1e-8; seed product edge precision: 5e-9.
+  No push, PR, remote upload, external fixture, or other workspace was used.
+  No C ABI change; no NativeAOT compilation/publication was run.
+
+Reproduction
+
+scripts/ShortEdgeBlendOracle.cs creates the input entirely from the requested
+analytic vertices, finite directed face loops and shared topology. It uses
+PskernelSharp and ParasolidScriptHost, and calls the managed KernelRuntime
+directly. Real PK is used only as an independent constructor/oracle.
+
+PK topology creation needs the body class and reciprocal edge/fin relations.
+The solid region uses the back (negative) face use; the exterior region uses
+the front (positive) face use. Curve attachment supplies the finite intervals
+and actual senses, including the reverse-parametrised K-J ellipse. PK's
+creation result includes the success status PK_BODY_state_ok_c; it is checked
+explicitly. All generated inputs pass full BODY_check before being used.
+
+The seed input has 8 faces, 17 edges, 11 vertices, 2 regions and 2 shells.
+It is imported as editable managed B-rep, its cached source XT is dropped,
+and the fresh managed transmit passes real-PK receive/full check/strict
+comparison against the generated input.
+
+For theta=1 degree, R=0.5, default updates, local_check=true, mark tolerance
+1e-7 and fix tolerance 1e-7, independent PK creates two blend faces. The
+product has 10 faces, 23 edges, 15 vertices. The shortest edges are ICurves:
+
+  7.614758983657562e-5
+  7.614758983531458e-5
+
+The managed mark succeeds but fix returns 5000, count=0, stage=Supports.
+The default oracle command deliberately remains failing for that unmet gate.
+
+Implemented public geometry/transport repairs
+
+1. XtReader.Brep accepts a curve-valued BLENDED_EDGE spine instead of requiring
+   INTERSECTION. Its runtime compiler now implements Line/Circle/Ellipse maps.
+   Unsupported representations are not counted as new support.
+2. ParametricSpineCurve / SpineParameterMap centralise exact native-parameter
+   position, tangent, Taylor coefficients, interval equations and the station
+   gauge. The joint solver, derivative solver, interval solver and series
+   evaluator use this common map. Explicit curves are not converted to CHART
+   parameterisation. Witness subdivisions are inverse-search seeds only.
+   Complete natural periodic conics keep Help-domain periodic lifting; true
+   finite LIMITs retain their own endpoints. Nearest-foot orientation tests
+   use the live gauge gradient, including interval gradients, rather than a
+   witness tangent that can turn through an obtuse angle on an eccentric
+   ellipse within one seed interval.
+3. Complete analytic coefficient bounds certify these curves against signed
+   offset Plane/Cylinder/Sphere supports; wrong-radius/shifted same-topology
+   curves have negative tests. These certificates are not sampled clearance,
+   reach or general self-intersection proofs. Regular local tubes still use
+   the existing interval/Krawczyk machinery and deterministic failure contract.
+4. BLENDED_EDGE fields 17/18 preserve actual T LIMIT records with one hvec
+   each. Import recovers the native finite parameter interval, including a
+   periodic lift, and stores the real limit payload. Fresh writing, deep copy,
+   similarity transformation, undo and deletion maintain that payload.
+   Fields 15/16 and other LIMIT layouts remain outside this addition.
+5. Similarity transport updates the compiled explicit map. Line parameters
+   scale with spatial scale; angular parameters retain their native values.
+   Intersection UV records are transported into the canonical periodic chart.
+   Without this correction the reflected seed's fresh XT had a cylinder face
+   with PK_FACE_state_bad_loops_c, despite strict compare reporting no diffs.
+   PK's independently transformed body and its own XT roundtrip both passed.
+   After the correction all three full checks and strict compare pass.
+
+There is no filename, tag, coordinate, radius or seed-template dispatch in
+these production changes. Production does not call the real PK library or
+read the recorded product fixture.
+
+Ownership repair
+
+A new public Boolean regression uses contained spheres with construction
+offset surfaces on both input bodies. Before the fix, ReplaceProfileBody
+swapped body records without changing construction owner tags. Deleting old
+topology then unlinked the wrong body's chain repeatedly and exhausted undo
+memory (OutOfMemoryException in DeleteBodyCascade/TryGrowUndo).
+
+ReplaceProfileBody now snapshots both construction chains before mutation,
+then rebinds their owners along with the topology before deleting the old
+body. The regression verifies the surviving owner, deletion, mark restoration
+and cleanup. Seven allocation-failure budgets check atomic rollback and return
+memory. Existing construction/transform capabilities were retained.
+
+Verified matrix and numerical evidence
+
+The import-only matrix has 96 cases:
+  angles .25/.5/1/2 degrees;
+  radii .25/.5/.6;
+  fix tolerances 1e-7/1e-5, with mark tolerance always 1e-7;
+  both selected-edge orders;
+  default and v261 updates on both sides of the comparison.
+
+This is a PK-construction/managed-editable-import matrix, NOT successful
+managed fillet construction. Each generated input is checked, and each PK
+product is imported, source-cache-cleared, freshly exported and received by
+real PK. There were 384 full PK checks, all with zero faults, and 96 strict
+product comparisons. No local-result blanket ignore was added. Products retain
+the short edges, with lengths ranging approximately 2.38e-6 to 3.65e-4.
+
+For each imported product, 27 surface samples compare native positions and
+derivatives, contact/support normal agreement and radius. The samples use the
+actual native finite face UV box. Across all 96 cases:
+
+  sampled D0 maximum:                   2.220446049250313e-15
+  sampled D1 maximum:                   4.956682672368596e-15
+  D2 vs PK D1 Richardson, normalised:    1.7486137624929148e-11
+  sampled radius residual maximum:      1.1657341758564144e-15
+  sampled G1 |1-|cos(normal angle)||:    2.220446049250313e-16
+  raw PK D2 difference, diagnostic:      0.0011152798318168294
+  15 mass values maximum normalised:    3.45272781850573e-13
+
+D2 mathematical acceptance uses two step sizes applied to native D1; raw PK
+D2 remains a separate diagnostic, matching the existing project contract.
+Sample residuals do not establish arbitrary global geometric equivalence.
+Mass uses unit density, model length units, requested PK accuracy .99999999,
+and component normalisation |a-b|/(1+|a|), including the inertia cross terms.
+R0.5 volume: 121.31064762553417 / 121.31064762553422 model-units cubed;
+area: 142.80473617288536 / 142.80473617288536 model-units squared.
+The unit-magnitude floor in this seed's normalisation is explicit, not a
+scale-invariant mass tolerance policy for arbitrary units.
+
+Exact classification investigation: NOT COMPLETE
+
+short-edge-spine-probes.csv preserves 510 exact double-coordinate probes from
+the native seed's shortest edges, at endpoint/near-endpoint/midpoint stations.
+It includes all requested coordinate-axis offsets and extra probes at .5,
+.99, 1, 1.01 and 2 times the actual edge precision, on both sides.
+
+Columns compare native construction, native's own XT roundtrip, managed import
+of native construction, and real PK receiving managed fresh XT. The managed
+construction column cannot yet be supplied because that operation fails.
+Negative values in the self_import column are negated API error codes.
+The --saved-probes mode separately replays every saved coordinate verbatim,
+without using the saved edge identifiers to select topology. It reproduces
+the same 96 mismatches; native classifications at all 510 fixed coordinates
+are unchanged from the saved baseline.
+
+There are 96 disagreements involving managed import or its fresh XT and seven
+native-versus-native-roundtrip differences. Managed classification also returns
+157 (cant_do_intersect) in Faces/Ray stages. Examples retained in the CSV:
+
+  (-1.49999998, -2, 5): managed 157 at Faces.
+  (-1.5, -2.50000002, 4.5): native/native-RT/fresh outside, managed 157 at Ray.
+  (-1.5, -2.50000001, 4.5): native/native-RT/fresh outside, managed on.
+
+The classifier currently includes fixed 1e-8 boundary tests and finite-domain
+procedural winding failures. These require separate spatial-precision and
+finite-domain repairs. The seven PK roundtrip differences do not explain or
+excuse the other failures. No probe was moved, removed, or accepted by widening
+precision. Primary-normal probes, transformed/scaled probe sets, and complete
+nearest-entity distance/UV/normal/residual diagnostics remain to be implemented.
+
+Commands, outcomes and logs
+
+All build/test invocations use MSBUILDDISABLENODEREUSE=1. Test exit codes were
+saved before pkill -f '[t]esthost.dll' cleanup. No ABI publication was triggered.
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release
+    exit 134; expected current unmet gate: managed FixBlends API 5000.
+    temp_docs/short-edge-final-construction.log
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release --
+    --matrix --both-updates --import-only --geometry
+    exit 0; 96 cases, 384 full checks, strict compare/mass/geometry.
+    temp_docs/short-edge-final-import-matrix.log
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- --import-only --probes
+    exit 134; 510 probes, 96 mismatches, seven PK own-roundtrip differences.
+    temp_docs/short-edge-probes.log
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- --import-only --saved-probes
+    exit 134; exact-coordinate replay: 510 probes, 96 mismatches, zero changes
+    in independent native classification versus the recorded coordinates.
+    temp_docs/short-edge-saved-probes.log
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- --import-only --lifecycle
+    exit 134; deep-copy/reflection/fresh XT checks now pass; subsequent Boolean
+    still returns 157 at Clip. This consumer is not accepted as supported.
+    temp_docs/short-edge-lifecycle.log
+
+  dotnet test tests/KernelTests -c Release
+    exit 0; 1629 passed, zero failed/skipped, 3m48s on the final production code.
+    temp_docs/short-edge-full-tests.log
+    One subsequently added eccentric-ellipse nearest-gauge test was verified
+    in the focused run; no production code changed after that full run.
+
+  dotnet test tests/KernelTests -c Release --filter
+    'FullyQualifiedName~ExplicitSpineTests|FullyQualifiedName~ConstructionGeometryTests'
+    exit 0; 44 passed, zero failed/skipped, including the last-added nearest-gauge test.
+    temp_docs/short-edge-final-focused.log
+
+  Related nested/regular/chain/support-chain/corner/construction unit filter:
+    exit 0; 104 passed before the added explicit-spine tests.
+    temp_docs/short-edge-related.log
+
+  dotnet run scripts/GeometryTransformOracle.cs -c Release
+    exit 0; 83 passed, zero failed.
+    temp_docs/short-edge-transform-regression.log
+
+  dotnet run scripts/RegularSolidBlendOracle.cs -c Release
+    exit 0; all five freeform solid fillet and subsequent cutting cases.
+    temp_docs/short-edge-regular-regression.log
+
+  dotnet run scripts/BlendChainOracle.cs -c Release
+    exit 0; eight subdivision-chain author/pose/partition cases.
+    temp_docs/short-edge-chain-regression.log
+
+  dotnet run scripts/SupportBlendChainOracle.cs -c Release
+    exit 0; all eight actual support-face-partition chains and downstream cuts.
+    temp_docs/short-edge-support-chain-regression.log
+
+  dotnet run scripts/TrivalentBlendCornerOracle.cs -c Release -- base mirror-scale
+    exit 0; four pose/author cases, independent corner/contact geometry.
+    temp_docs/short-edge-corner-regression.log
+
+New warm imported-surface D0-D2 evaluation is checked for zero managed
+allocation. Production allocation IL guards remain CLEAN. Full successful
+FixBlends allocation/elapsed time for this seed cannot be measured yet; the
+failed 5000 path is not a successful-operation performance result. The new
+consumer Boolean also fails and is not a throughput result. Existing oracle
+TIME lines are complete API elapsed times under concurrent test load, not an
+A/B performance claim.
+
+Fixtures and output lifecycle
+
+  tests/KernelTests/Fixtures/generated-short-edge-input.x_t
+  tests/KernelTests/Fixtures/generated-short-edge-native.x_t
+
+These test fixtures were generated by this script and PK version, not supplied
+externally. Rebuild them with --import-only --record-fixtures (single default
+seed only). Recorded test fixtures trim line-end whitespace emitted by PK;
+the raw generated and fresh XT outputs retain their original text bytes.
+They test editable import; they never replace the managed target
+fillet operation. All regenerable XT products and full logs are under
+temp_docs/short-edge-blend-oracle/ and temp_docs/short-edge-*.log.
+
+Remaining acceptance work
+
+  - A genuinely reusable heterogeneous rolling-band connection/event planner
+    and finite-domain topology assembly for the seed's four-valent junction.
+    Existing same-carrier chain and trivalent code were not falsely extended
+    by merely allowing Cylinder in an enum/type check.
+  - Successful managed seed two-edge fillets, independent native comparison,
+    successful complete operation allocation/time measurement, input-before-
+    fillet transformation matrix, and downstream cutting.
+  - Explicit BCurve/NURBS, TrimmedCurve and SPCurve spine compilation/bounds/
+    continuity/lifetime contracts and their legal manufacturing oracles.
+    Existing ICurve/nested Blend support is retained, not a substitute for these.
+  - Independent new analytic/nonanalytic solid manufacturing families, support
+    radius/axis/termination changes, and all corresponding rejection paths.
+  - Precision-aware classification, all saved failure probes, and the missing
+    probe diagnostics/matrix described above.
+
+Therefore neither requested independent construction loop is fully accepted:
+the first fails at managed FixBlends; the second passes editable import/fresh
+transport/reflection but fails its downstream Boolean consumer.

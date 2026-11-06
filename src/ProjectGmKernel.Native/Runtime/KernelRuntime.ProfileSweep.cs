@@ -543,7 +543,9 @@ internal static unsafe partial class KernelRuntime
 
     private static int ReplaceProfileBody(BodySlot original,BodySlot replacement)
     {
-        if(!SnapshotProfileTopology(original)||!SnapshotProfileTopology(replacement))return ParasolidConstants.PK_ERROR_memory_full;
+        if(!SnapshotProfileTopology(original)||!SnapshotProfileTopology(replacement)
+            ||!SnapshotConstructionDeletion(PoolKind.Body,original)||!SnapshotConstructionDeletion(PoolKind.Body,replacement))
+            return ParasolidConstants.PK_ERROR_memory_full;
         var a=Bodies[original];var b=Bodies[replacement];
         Bodies[original]=b;Bodies[original].Header=a.Header;
         Bodies[original].PrevInPartition=a.PrevInPartition;Bodies[original].NextInPartition=a.NextInPartition;
@@ -566,5 +568,17 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<Bodies[body].ShellCount;i++,shell=Shells[shell].NextInBody)Shells[shell].Body=body;
         var region=Bodies[body].FirstRegion;
         for(var i=0;i<Bodies[body].RegionCount;i++,region=Regions[region].NextInBody)Regions[region].Body=body;
+        var surface=Bodies[body].FirstConstructionSurface;
+        for(var i=0;i<Bodies[body].ConstructionSurfaceCount;i++)
+        {
+            ref var geometry=ref Surfaces[surface];geometry.ConstructionBodyTag=Bodies[body].Header.Tag;
+            surface=geometry.NextConstruction==0?-1:TagRec(geometry.NextConstruction).Slot;
+        }
+        var curve=Bodies[body].FirstConstructionCurve;
+        for(var i=0;i<Bodies[body].ConstructionCurveCount;i++)
+        {
+            ref var geometry=ref Curves[curve];geometry.ConstructionBodyTag=Bodies[body].Header.Tag;
+            curve=geometry.NextConstruction==0?-1:TagRec(geometry.NextConstruction).Slot;
+        }
     }
 }

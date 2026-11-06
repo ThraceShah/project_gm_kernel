@@ -316,8 +316,10 @@ internal static unsafe partial class XtReader
                     Require(node.Fields[7].Integer is 0 or 1);
                     AddGeometry(Ptr(node,8),XtNodeTypes.BlendedEdge);break;
                 case XtNodeTypes.BlendedEdge:
-                    AddGeometry(Ptr(node,8));AddGeometry(Ptr(node,9));AddGeometry(Ptr(node,10),XtNodeTypes.Intersection);
-                    Require(IsSurface(Node(Ptr(node,8)))&&IsSurface(Node(Ptr(node,9))));break;
+                    AddGeometry(Ptr(node,8));AddGeometry(Ptr(node,9));AddGeometry(Ptr(node,10));
+                    Require(IsSurface(Node(Ptr(node,8)))&&IsSurface(Node(Ptr(node,9)))&&IsCurve(Node(Ptr(node,10))));
+                    if(Ptr(node,17)!=0)Node(Ptr(node,17),XtNodeTypes.Limit);
+                    if(Ptr(node,18)!=0)Node(Ptr(node,18),XtNodeTypes.Limit);break;
                 default: throw new NotSupportedException("Unsupported boundary geometry.");
             }
             visitingGeometry.Remove(index);

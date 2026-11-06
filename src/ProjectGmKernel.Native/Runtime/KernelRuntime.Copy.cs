@@ -232,7 +232,8 @@ internal static unsafe partial class KernelRuntime
                 error=CloneEntity(from.SpineTag,ref context,depth,out to.SpineTag);if(error!=0)return error;
                 AcquireGeometryDependency(PoolKind.Surface,GetSurfaceSlotByTag(to.Surface0Tag));AcquireGeometryDependency(PoolKind.Surface,GetSurfaceSlotByTag(to.Surface1Tag));AcquireGeometryDependency(PoolKind.Curve,GetCurveSlotByTag(to.SpineTag));
                 Surfaces[GetSurfaceSlotByTag(clone)].DependenciesAcquired=1;
-                return CopyPayload(from.ProgramBlock,NestedBlendProgramBytes(from.ProgramSurfaceCount,from.ProgramSpineCount,from.ProgramChartCount,from.ProgramScalarCount),ref to.ProgramBlock)?0:ParasolidConstants.PK_ERROR_memory_full;
+                return CopyPayload(from.ProgramBlock,NestedBlendProgramBytes(from.ProgramSurfaceCount,from.ProgramSpineCount,from.ProgramChartCount,from.ProgramScalarCount),ref to.ProgramBlock)
+                    &&CopyPayload(from.HvecBlock,(nuint)(from.HvecCount*3*8),ref to.HvecBlock)?0:ParasolidConstants.PK_ERROR_memory_full;
             }
             case SurfaceClass.Swept:
             {

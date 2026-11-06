@@ -1,0 +1,243 @@
+using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Geometry.Bounds;
+using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Runtime;
+
+namespace KernelTests;
+
+[Collection("KernelTests")]
+public unsafe class ExplicitSpineTests:IDisposable
+{
+    public ExplicitSpineTests(){KernelRuntime.SessionStop();var options=new PK_SESSION_start_o_s{o_t_version=1};Assert.Equal(0,KernelRuntime.SessionStart(&options));}
+    public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
+
+    [Fact]
+    public void NativeShortEdgeProductIsEditableAndFreshXtRetainsSpineAndTrueLimits()
+    {
+        var body=Import();BooleanOperationTests.Counts(body,10,23,15);
+        var data=Definition(body,out var surface);var program=KernelRuntime.GetNestedBlendProgram(data);var root=program.Surfaces[data.ProgramRoot];
+        var instruction=program.Spines[root.Spine];Assert.Equal(CurveClass.Ellipse,instruction.Curve.Kind);
+        Assert.Equal(LimitType.Terminator,data.StartLimit.Type);Assert.Equal(LimitType.Terminator,data.EndLimit.Type);
+        Assert.Equal(1,data.StartLimit.HvecCount);Assert.Equal(1,data.EndLimit.HvecCount);Assert.Equal(2,data.HvecCount);
+        var sf=new PK_BLENDSF_sf_s();Assert.Equal(0,KernelRuntime.BlendSfAsk(surface,&sf));
+        Assert.InRange(Math.Abs(sf.spine_extent.value[0]-Math.PI/2),0,1e-12);Assert.InRange(Math.Abs(sf.spine_extent.value[1]-3*Math.PI/2),0,1e-12);
+        CheckShortEdges(body);
+        SessionMemoryOwner.DropBodyXt(KernelRuntime.ResolveTagRecord(body).Slot);
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(body),out var fresh));
+        BooleanOperationTests.Counts(fresh,10,23,15);var copyData=Definition(fresh,out _);
+        Assert.Equal(1,copyData.StartLimit.HvecCount);Assert.Equal(1,copyData.EndLimit.HvecCount);CheckShortEdges(fresh);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.Equal(0,KernelRuntime.EntityDelete(1,&fresh));
+        Assert.Equal(0,KernelRuntime.BlendedEdgeDataPool.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+    }
+
+    [Fact]
+    public void ExactEllipseNativeParameterJetsAndCertifiedTubeAgree()
+    {
+        var body=Import();var data=Definition(body,out var surface);var program=KernelRuntime.GetNestedBlendProgram(data);var root=program.Surfaces[data.ProgramRoot];
+        Span<KernelVector3> actual=stackalloc KernelVector3[3];var expected=new PK_VECTOR_s[3];
+        for(var repeat=0;repeat<2;repeat++)for(var i=0;i<11;i++)
+        {
+            var t=2.5+.04*i;Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.EvaluateSpine(program,root.Spine,t,2,actual));
+            fixed(PK_VECTOR_s* output=expected)Assert.Equal(0,KernelRuntime.CurveEval(data.SpineTag,t,2,output));
+            for(var d=0;d<3;d++)
+            {
+                Assert.InRange(Math.Abs(actual[d].X-expected[d].coord[0]),0,2e-12);Assert.InRange(Math.Abs(actual[d].Y-expected[d].coord[1]),0,2e-12);Assert.InRange(Math.Abs(actual[d].Z-expected[d].coord[2]),0,2e-12);
+            }
+        }
+        // The independent interval equations use the exact conic gauge too.
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,root.Spine,new(2.65,2.66,0,0),bounds));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,new(2.65,2.66,.3,.4),bounds));
+        var uv=new PK_UV_s();uv.param[0]=2.655;uv.param[1]=.35;PK_VECTOR_s point;
+        Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&point));
+        for(var d=0;d<3;d++)Assert.InRange(point.coord[d],bounds[d].Lower,bounds[d].Upper);
+        var inverse=new PK_UV_s();Assert.Equal(0,KernelRuntime.SurfParameteriseVector(surface,point,&inverse));
+        Assert.InRange(Math.Abs(inverse.param[0]-uv.param[0]),0,1e-11);Assert.InRange(Math.Abs(inverse.param[1]-uv.param[1]),0,1e-11);
+    }
+
+    [Theory]
+    [InlineData(2.0)] [InlineData(-2.0)]
+    public void CopySourceDeletionSimilarityAndUndoRetainExplicitProgramAndLimitPayload(double xScale)
+    {
+        var body=Import();int copy;Assert.Equal(0,KernelRuntime.EntityCopy(body,&copy));
+        var old=Definition(body,out _);var data=Definition(copy,out var surface);
+        Assert.NotEqual(old.ProgramBlock,data.ProgramBlock);Assert.NotEqual(old.HvecBlock,data.HvecBlock);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        var uv=new PK_UV_s();uv.param[0]=2.7;uv.param[1]=.37;PK_VECTOR_s before,after;
+        Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&before));
+        var sf=new PK_TRANSF_sf_s();sf.matrix[0]=xScale;sf.matrix[5]=sf.matrix[10]=2;sf.matrix[15]=1;sf.matrix[3]=3;sf.matrix[7]=5;sf.matrix[11]=7;
+        int transform,mark;Assert.Equal(0,KernelRuntime.TransfCreate(&sf,&transform));Assert.Equal(0,KernelRuntime.MarkCreate(&mark));
+        int n;int* replaced;byte* exact;Assert.Equal(0,KernelRuntime.BodyTransform(copy,transform,0,&n,&replaced,&exact));KernelRuntime.MemoryFree(replaced);KernelRuntime.MemoryFree(exact);
+        if(xScale<0)uv.param[1]=1-uv.param[1];Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&after));
+        for(var d=0;d<3;d++)Assert.InRange(Math.Abs(after.coord[d]-before.coord[d]*(d==0?xScale:2)-(d==0?3:d==1?5:7)),0,1e-11);
+        SessionMemoryOwner.DropBodyXt(KernelRuntime.ResolveTagRecord(copy).Slot);
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(copy),out var reloaded));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&reloaded));Assert.Equal(0,KernelRuntime.MarkGoto(mark));
+        uv.param[1]=.37;Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&after));
+        for(var d=0;d<3;d++)Assert.Equal(before.coord[d],after.coord[d]);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));Assert.Equal(0,KernelRuntime.EntityDelete(1,&transform));
+        Assert.Equal(0,KernelRuntime.BlendedEdgeDataPool.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+    }
+
+    [Fact]
+    public void WarmImportedSurfaceEvaluationDoesNotAllocate()
+    {
+        var body=Import();Definition(body,out var surface);var uv=new PK_UV_s();uv.param[0]=2.7;uv.param[1]=.37;PK_VECTOR_s* jet=stackalloc PK_VECTOR_s[9];
+        for(var i=0;i<4;i++)Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,2,2,0,jet));
+        var before=GC.GetAllocatedBytesForCurrentThread();var error=0;
+        for(var i=0;i<16;i++)error|=KernelRuntime.SurfEval(surface,uv,2,2,0,jet);
+        var allocated=GC.GetAllocatedBytesForCurrentThread()-before;Assert.Equal(0,error);Assert.Equal(0,allocated);
+    }
+
+    [Theory]
+    [InlineData(0)] [InlineData(1)] [InlineData(4)] [InlineData(12)] [InlineData(40)] [InlineData(100)] [InlineData(300)]
+    public void FailedImportRestoresLimitsProgramsDependenciesAndReturnMemory(int budget)
+    {
+        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
+        var blocks=KernelRuntime.State.Session->Blocks.Statistics;var returns=KernelRuntime.ReturnOutstandingBlocks;
+        KernelRuntime.InjectAllocationFailure(budget);int error,body;
+        try{error=XtBrepImportTests.Receive(text,out body);}finally{KernelRuntime.InjectAllocationFailure(-1);}
+        if(error==0)Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));else Assert.Equal(0,body);
+        Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);Assert.Equal(0,KernelRuntime.Bodies.AliveCount);
+        Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Points.AliveCount);
+        Assert.Equal(0,KernelRuntime.BlendedEdgeDataPool.AliveCount);var after=KernelRuntime.State.Session->Blocks.Statistics;
+        Assert.Equal(blocks.LiveBlocks,after.LiveBlocks);Assert.Equal(blocks.LiveBytes,after.LiveBytes);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void CompleteCoefficientCertificateRejectsWrongSizeAndWrongCentre(bool shifted)
+    {
+        var circle=new ParametricSpineCurve{Kind=CurveClass.Circle,First=new(){X=1},Second=new(){Y=1}};
+        var cylinder=new AnalyticSurface(SurfaceClass.Cylinder,default,new(){Z=1},new(){X=1},1);
+        Assert.Equal(AlgorithmStatus.Success,SpineParameterMap.Certify(circle,cylinder,-.1,Math.Tau+.1));
+        if(shifted)circle.Origin.X=.01;else{circle.First.X=1.01;circle.Second.Y=1.01;}
+        Assert.Equal(AlgorithmStatus.InvalidInput,SpineParameterMap.Certify(circle,cylinder,-.1,Math.Tau+.1));
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void ExplicitLineAndPeriodicCircleUseExactNativeGaugeInJointAndIntervalSolves(bool circle)
+    {
+        var z=new KernelVector3{Z=1};var x=new KernelVector3{X=1};var y=new KernelVector3{Y=1};
+        var curve=new ParametricSpineCurve{Kind=circle?CurveClass.Circle:CurveClass.Line,First=circle?x:z,Second=circle?y:default};
+        var first=new AnalyticSurface(circle?SurfaceClass.Sphere:SurfaceClass.Plane,default,circle?z:x,y,circle?1:0);
+        var second=new AnalyticSurface(SurfaceClass.Plane,default,circle?z:y,x);
+        BlendSurfaceInstruction[] surfaces=[new(){Analytic=first,NormalSense=1},new(){Analytic=second,NormalSense=1}];
+        BlendSpineInstruction[] spines=[new(){Curve=curve,First=0,Second=1,ChartCount=2}];
+        var lo=circle?6.1:2.0;var hi=circle?6.5:4.0;
+        Assert.Equal(AlgorithmStatus.Success,SpineParameterMap.Series(curve,new(lo,0),out var a,out _));
+        Assert.Equal(AlgorithmStatus.Success,SpineParameterMap.Series(curve,new(hi,0),out var b,out _));
+        BlendChartInstruction[] charts=[new(){Position=a.Value,Parameter=lo,Scale=1},new(){Position=b.Value,Parameter=hi,Scale=1}];
+        var program=new NestedBlendProgram(surfaces,spines,charts);Span<KernelVector3> jet=stackalloc KernelVector3[3];
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var middle=(lo+hi)*.5;
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(middle-.001,middle+.001,0,0),bounds));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.EvaluateSpine(program,0,middle,2,jet));
+        Assert.Equal(AlgorithmStatus.Success,SpineParameterMap.Series(curve,TaylorJet.Variable(middle,2),out var exact,out _));
+        for(var d=0;d<3;d++)
+        {
+            var factor=d==2?2:1;Assert.InRange(Math.Abs(jet[d].X-factor*exact.X[d]),0,1e-12);Assert.InRange(Math.Abs(jet[d].Y-factor*exact.Y[d]),0,1e-12);Assert.InRange(Math.Abs(jet[d].Z-factor*exact.Z[d]),0,1e-12);
+        }
+        Assert.InRange(jet[0].X,bounds[0].Lower,bounds[0].Upper);Assert.InRange(jet[0].Y,bounds[1].Lower,bounds[1].Upper);Assert.InRange(jet[0].Z,bounds[2].Lower,bounds[2].Upper);
+        if(circle)
+        {
+            var full=new BlendChartInstruction[9];
+            for(var i=0;i<full.Length;i++)
+            {
+                var t=Math.Tau*i/8;SpineParameterMap.Series(curve,new(t,0),out var p,out var tangent);
+                full[i]=new(){Parameter=t,Position=p.Value,Chord=tangent.Value,Scale=1};
+            }
+            full[^1].Position=full[0].Position;spines[0].ChartCount=full.Length;spines[0].StartType=spines[0].EndType=LimitType.Help;
+            var closed=new NestedBlendProgram(surfaces,spines,full);
+            foreach(var t in new[]{-.1,Math.Tau+.1})
+            {
+                Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.EvaluateSpine(closed,0,t,2,jet));
+                Assert.InRange(Math.Abs(jet[0].X-Math.Cos(t)),0,1e-12);Assert.InRange(Math.Abs(jet[0].Y-Math.Sin(t)),0,1e-12);
+            }
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(closed,0,new(-.01,.01,0,0),bounds));
+        }
+    }
+
+    [Theory]
+    [InlineData(2.0)] [InlineData(-2.0)]
+    public void ExplicitLineSpineSimilarityScalesNativeExtentAndStation(double xScale)
+    {
+        var x=new KernelVector3{X=1};var y=new KernelVector3{Y=1};var z=new KernelVector3{Z=1};
+        var a=new PK_PLANE_sf_s();a.basis_set.location.coord[0]=-.2;a.basis_set.axis.coord[0]=1;a.basis_set.ref_direction.coord[1]=1;
+        var b=new PK_PLANE_sf_s();b.basis_set.location.coord[1]=-.2;b.basis_set.axis.coord[1]=1;b.basis_set.ref_direction.coord[2]=1;
+        int first,second,spine;Assert.Equal(0,KernelRuntime.PlaneCreate(&a,&first));Assert.Equal(0,KernelRuntime.PlaneCreate(&b,&second));
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[2]=1;Assert.Equal(0,KernelRuntime.LineCreate(&line,&spine));
+        BlendSurfaceInstruction[] surfaces=[new(){Analytic=new(SurfaceClass.Plane,default,x,y),NormalSense=1},new(){Analytic=new(SurfaceClass.Plane,default,y,z),NormalSense=1},
+            new(){Analytic=new(SurfaceClass.Plane,new(){X=-.2},x,y),NormalSense=1},new(){Analytic=new(SurfaceClass.Plane,new(){Y=-.2},y,z),NormalSense=1},
+            new(){IsBlend=true,First=2,Second=3,Spine=0,Range0=.2,Range1=.2,NormalSense=1}];
+        BlendSpineInstruction[] spines=[new(){Curve=new(){Kind=CurveClass.Line,First=z},First=0,Second=1,ChartCount=2,Sense=ParasolidConstants.PK_TOPOL_sense_positive_c}];
+        BlendChartInstruction[] charts=[new(){Parameter=2,Position=new(){Z=2},Chord=z,Scale=1},new(){Parameter=4,Position=new(){Z=4},Chord=z,Scale=1}];
+        var program=new NestedBlendProgram(surfaces,spines,charts);int surface;
+        Assert.Equal(0,KernelRuntime.BindNestedBlend(first,second,spine,program,4,&surface));
+        var uv=new PK_UV_s();uv.param[0]=3.3;uv.param[1]=.37;PK_VECTOR_s before,after;
+        Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&before));
+        var matrix=new PK_TRANSF_sf_s();matrix.matrix[0]=xScale;matrix.matrix[5]=matrix.matrix[10]=2;matrix.matrix[15]=1;matrix.matrix[3]=3;matrix.matrix[7]=5;matrix.matrix[11]=7;
+        int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&matrix,&transform));
+        var options=new PK_GEOM_transform_o_s{o_t_version=1,modify=ParasolidConstants.PK_GEOM_transform_modify_c};
+        int* inputs=stackalloc int[4]{surface,first,second,spine};
+        Assert.Equal(0,KernelRuntime.GeomTransform2(4,inputs,transform,&options,null,null));
+        var definition=new PK_BLENDSF_sf_s();Assert.Equal(0,KernelRuntime.BlendSfAsk(surface,&definition));Assert.Equal(4,definition.spine_extent.value[0]);Assert.Equal(8,definition.spine_extent.value[1]);
+        uv.param[0]*=2;if(xScale<0)uv.param[1]=1-uv.param[1];Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&after));
+        for(var d=0;d<3;d++)Assert.InRange(Math.Abs(after.coord[d]-before.coord[d]*(d==0?xScale:2)-(d==0?3:d==1?5:7)),0,1e-12);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&surface));Assert.Equal(0,KernelRuntime.EntityDelete(1,&transform));
+        Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+    }
+
+    [Fact]
+    public void NearestExplicitEllipseUsesItsLiveGaugeWhenTangentTurnsWithinOneSeedInterval()
+    {
+        var axis=new KernelVector3{X=Math.Sqrt(1-.0001),Z=.01};var z=new KernelVector3{Z=1};var y=new KernelVector3{Y=1};
+        var curve=new ParametricSpineCurve{Kind=CurveClass.Ellipse,First=new(){X=100},Second=y};
+        BlendSurfaceInstruction[] surfaces=[new(){Analytic=new(SurfaceClass.Cylinder,default,axis,y,1),NormalSense=1},new(){Analytic=new(SurfaceClass.Plane,default,z,y),NormalSense=1},
+            new(){Analytic=new(SurfaceClass.Cylinder,default,axis,y,.8),NormalSense=1},new(){Analytic=new(SurfaceClass.Plane,new(){Z=-.2},z,y),NormalSense=1},
+            new(){IsBlend=true,First=2,Second=3,Spine=0,Range0=.2,Range1=.2,NormalSense=1}];
+        BlendSpineInstruction[] spines=[new(){Curve=curve,First=0,Second=1,ChartCount=2}];
+        SpineParameterMap.Series(curve,new(-.1,0),out var first,out var tangent);SpineParameterMap.Series(curve,new(.1,0),out var last,out _);
+        BlendChartInstruction[] charts=[new(){Parameter=-.1,Position=first.Value,Chord=tangent.Value,Scale=1},new(){Parameter=.1,Position=last.Value,Scale=1}];
+        var program=new NestedBlendProgram(surfaces,spines,charts);var point=new KernelVector3{X=100*Math.Cos(.09),Y=Math.Sin(.09),Z=.3};
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Distance(program,4,TaylorVector.Constant(point,0),out var distance,out var normal));
+        Assert.InRange(Math.Abs(distance[0]-.1),0,1e-11);Assert.InRange(Math.Abs(normal.Value.Z-1),0,1e-11);
+    }
+
+    private static int Import()
+    {
+        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var body));Assert.True(KernelRuntime.TryResolveBodySlot(body,out var slot));Assert.False(KernelRuntime.Xt.IsOpaque(slot));return body;
+    }
+    private static BlendedEdgeData Definition(int body,out int surface)
+    {
+        var slot=KernelRuntime.ResolveTagRecord(body).Slot;var face=KernelRuntime.Bodies[slot].FirstFaceBody;surface=0;
+        for(var i=0;i<KernelRuntime.Bodies[slot].FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var tag=KernelRuntime.Faces[face].SurfTag;var record=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(tag)];
+            if(record.Class==SurfaceClass.BlendSurface){Assert.Equal(0,surface);surface=tag;}
+        }
+        Assert.NotEqual(0,surface);return KernelRuntime.BlendedEdgeDataPool[KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].DataIndex];
+    }
+    private static void CheckShortEdges(int body)
+    {
+        var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var shortEdges=0;
+        PK_VECTOR_s* endpoints=stackalloc PK_VECTOR_s[2];
+        for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var record=KernelRuntime.Edges[edge];
+            for(var endpoint=0;endpoint<2;endpoint++)
+            {
+                var point=new PK_POINT_sf_s();var vertex=endpoint==0?record.StartVertex:record.EndVertex;
+                Assert.Equal(0,KernelRuntime.PointAsk(KernelRuntime.Vertices[vertex].PointTag,&point));endpoints[endpoint]=point.position;
+            }
+            var sum=0.0;for(var d=0;d<3;d++){var delta=endpoints[1].coord[d]-endpoints[0].coord[d];sum+=delta*delta;}
+            if(sum>=1e-6)continue;
+            Assert.Equal(CurveClass.ICurve,KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)].Class);
+            Assert.InRange(Math.Sqrt(sum),7.6147e-5,7.6149e-5);shortEdges++;
+        }
+        Assert.Equal(2,shortEdges);
+    }
+}

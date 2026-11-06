@@ -69,7 +69,8 @@ internal static unsafe partial class KernelRuntime
                 var data=BlendedEdgeDataPool[source.DataIndex];
                 var status=Surface(data.Surface0Tag,out instruction.First);if(status!=AlgorithmStatus.Success)return status;
                 status=Surface(data.Surface1Tag,out instruction.Second);if(status!=AlgorithmStatus.Success)return status;
-                status=Spine(data.SpineTag,out instruction.Spine);if(status!=AlgorithmStatus.Success)return status;
+                status=BlendSpine(data.SpineTag,instruction.First,instruction.Second,data.Range0,data.Range1,source.UMin,source.UMax,out instruction.Spine,
+                    data.StartLimit.HvecCount==0&&data.EndLimit.HvecCount==0);if(status!=AlgorithmStatus.Success)return status;
                 instruction.IsBlend=true;instruction.Range0=data.Range0;instruction.Range1=data.Range1;
                 instruction.ReverseSection=spines[instruction.Spine].Sense==ParasolidConstants.PK_TOPOL_sense_negative_c;
                 instruction.NormalSense=GetNestedBlendProgram(data).Surfaces[data.ProgramRoot].NormalSense*SenseSign(source.Sense);
@@ -137,11 +138,56 @@ internal static unsafe partial class KernelRuntime
             return NestedSplineEvaluation.Distance(program,node,point,out distance,out normal,out u,out v);
         }
 
-        internal AlgorithmStatus Blend(SurfTag first,SurfTag second,CurveTag spine,double r0,double r1,out BlendSurfaceIndex index)
+        private AlgorithmStatus BlendSpine(CurveTag tag,BlendSurfaceIndex a,BlendSurfaceIndex b,double r0,double r1,double first,double last,out BlendSpineIndex index,bool natural=false)
+        {
+            index=-1;var slot=GetCurveSlotByTag(tag);if(slot<0)return AlgorithmStatus.InvalidInput;
+            if(Curves[slot].Class==CurveClass.ICurve)return Spine(tag,out index);
+            var source=Curves[slot];var curve=new ParametricSpineCurve{Kind=source.Class};
+            switch(source.Class)
+            {
+                case CurveClass.Line:
+                    var line=LineDataPool[source.DataIndex];curve.Origin=Vector(line.LocationX,line.LocationY,line.LocationZ);curve.First=Vector(line.AxisX,line.AxisY,line.AxisZ);break;
+                case CurveClass.Circle:
+                    var circle=CircleDataPool[source.DataIndex];curve.Origin=Vector(circle.CenterX,circle.CenterY,circle.CenterZ);
+                    curve.First=Scale(Vector(circle.RefDirX,circle.RefDirY,circle.RefDirZ),circle.Radius);
+                    curve.Second=EvaluationMath.Cross(Vector(circle.AxisX,circle.AxisY,circle.AxisZ),curve.First);break;
+                case CurveClass.Ellipse:
+                    var ellipse=EllipseDataPool[source.DataIndex];curve.Origin=Vector(ellipse.CenterX,ellipse.CenterY,ellipse.CenterZ);
+                    curve.First=Scale(Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ),ellipse.R1);
+                    curve.Second=Scale(EvaluationMath.Cross(Vector(ellipse.AxisX,ellipse.AxisY,ellipse.AxisZ),Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ)),ellipse.R2);break;
+                default:return AlgorithmStatus.Unsupported;
+            }
+            if(double.IsNaN(first))first=source.TMin;if(double.IsNaN(last))last=source.TMax;
+            if(!double.IsFinite(first)||!double.IsFinite(last)||!(last>first))return AlgorithmStatus.InvalidInput;
+            if(ns+2>surfaces.Length)return AlgorithmStatus.OutputTooSmall;
+            var left=surfaces[a];var right=surfaces[b];
+            if(left.IsBlend||left.IsBSpline||right.IsBlend||right.IsBSpline)return AlgorithmStatus.Unsupported;
+            var status=OffsetAnalyticBlendSupport(left.Analytic,r0*left.NormalSense,out var offset0);if(status!=AlgorithmStatus.Success)return status;
+            status=OffsetAnalyticBlendSupport(right.Analytic,r1*right.NormalSense,out var offset1);if(status!=AlgorithmStatus.Success)return status;
+            left.Analytic=offset0;right.Analytic=offset1;var ca=ns++;var cb=ns++;surfaces[ca]=left;surfaces[cb]=right;surfaceTags[ca]=surfaceTags[cb]=0;
+            status=SpineParameterMap.Certify(curve,offset0,first,last);if(status!=AlgorithmStatus.Success)return status;
+            status=SpineParameterMap.Certify(curve,offset1,first,last);if(status!=AlgorithmStatus.Success)return status;
+            // Witnesses only seed inverse searches. The exact parameter map
+            // and complete coefficient/interval certificates define geometry.
+            var count=curve.Kind==CurveClass.Line?2:(BufferCount)Math.Ceiling((last-first)/(Math.PI/4))+1;
+            if(count<2||nc==spines.Length||nh+count>charts.Length)return AlgorithmStatus.OutputTooSmall;
+            var closed=natural&&curve.Kind is CurveClass.Circle or CurveClass.Ellipse&&last-first==Math.Tau;
+            index=nc++;spineTags[index]=tag;spines[index]=new(){Curve=curve,First=ca,Second=cb,ChartOffset=nh,ChartCount=count,StartType=closed?LimitType.Help:LimitType.Terminator,EndType=closed?LimitType.Help:LimitType.Terminator,Sense=source.Sense};
+            var startChart=nh;
+            for(var i=0;i<count;i++)
+            {
+                var parameter=first+(last-first)*i/(count-1);status=SpineParameterMap.Series(curve,new(parameter,0),out var position,out var tangent);if(status!=AlgorithmStatus.Success)return status;
+                charts[nh++]=new(){Position=position.Value,Parameter=parameter,Chord=Unit(tangent.Value),Scale=1};
+            }
+            if(closed)charts[nh-1].Position=charts[startChart].Position;
+            return AlgorithmStatus.Success;
+        }
+
+        internal AlgorithmStatus Blend(SurfTag first,SurfTag second,CurveTag spine,double r0,double r1,out BlendSurfaceIndex index,double lower=double.NaN,double upper=double.NaN)
         {
             index=-1;var status=Surface(first,out var a);if(status!=AlgorithmStatus.Success)return status;
             status=Surface(second,out var b);if(status!=AlgorithmStatus.Success)return status;
-            status=Spine(spine,out var curve);if(status!=AlgorithmStatus.Success)return status;
+            status=BlendSpine(spine,a,b,r0,r1,lower,upper,out var curve,double.IsNaN(lower)&&double.IsNaN(upper));if(status!=AlgorithmStatus.Success)return status;
             if(ns==surfaces.Length)return AlgorithmStatus.OutputTooSmall;
             index=ns++;surfaceTags[index]=0;surfaces[index]=new(){IsBlend=true,First=a,Second=b,Spine=curve,Range0=r0,Range1=r1,NormalSense=1};
             surfaces[index].ReverseSection=spines[curve].Sense==ParasolidConstants.PK_TOPOL_sense_negative_c;
@@ -155,13 +201,13 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    private static int CompileAndBindNestedBlend(SurfTag first,SurfTag second,CurveTag spine,double r0,double r1,SurfTag* result)
+    private static int CompileAndBindNestedBlend(SurfTag first,SurfTag second,CurveTag spine,double r0,double r1,SurfTag* result,double lower=double.NaN,double upper=double.NaN)
     {
         var owns=EnsureCommandScratch();var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return ParasolidConstants.PK_ERROR_memory_full;
-            var status=compiler.Blend(first,second,spine,r0,r1,out var root);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            var status=compiler.Blend(first,second,spine,r0,r1,out var root,lower,upper);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             return BindNestedBlend(first,second,spine,compiler.View,root,result);
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;if(owns)ReleaseCommandScratch(State.Session);}

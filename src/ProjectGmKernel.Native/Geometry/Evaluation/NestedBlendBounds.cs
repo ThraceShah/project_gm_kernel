@@ -176,7 +176,9 @@ internal static partial class JointNestedBlendEvaluation
             rhs[..count].Clear();rhs[parameterIndex]=1;var status=SolveIntervals(block[..(count*count)],rhs[..count],count);if(status!=AlgorithmStatus.Success)return status;
             var spine=program.Spines[nodes[root].Spine];status=IntervalNormal(program,spine.First,nodes,root,variables,out _,out var a,cache);if(status!=AlgorithmStatus.Success)return status;
             status=IntervalNormal(program,spine.Second,nodes,root,variables,out _,out var b,cache);if(status!=AlgorithmStatus.Success)return status;
-            var orientation=IntervalVector.Dot(IntervalVector.Cross(a,b),new IntervalVector(Chart(program,nodes[root].Spine)[charts[root]].Chord)).Value;
+            status=SpineParameterMap.Gradient(program.Spines[nodes[root].Spine],Chart(program,nodes[root].Spine)[charts[root]],variables[nodes[root].Offset+3],out var gauge);
+            if(status!=AlgorithmStatus.Success)return status;
+            var orientation=IntervalVector.Dot(IntervalVector.Cross(a,b),gauge).Value;
             if((rhs[parameterIndex]*orientation).Upper>=0)return AlgorithmStatus.NotConverged;
         }
         foreach(var node in nodes)for(var side=0;side<2;side++)

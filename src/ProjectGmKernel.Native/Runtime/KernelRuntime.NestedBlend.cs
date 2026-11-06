@@ -159,6 +159,7 @@ internal static unsafe partial class KernelRuntime
     private static void FreeNestedBlendData(DataSlot slot)
     {
         var data=BlendedEdgeDataPool[slot];if(data.ProgramBlock>0)State.Session->Blocks.Free(DereferenceBlock(data.ProgramBlock));
+        if(data.HvecBlock>0)State.Session->Blocks.Free(DereferenceBlock(data.HvecBlock));
         BlendedEdgeDataPool.Free(slot);
     }
 

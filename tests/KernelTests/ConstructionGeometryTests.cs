@@ -164,6 +164,52 @@ public unsafe class ConstructionGeometryTests : IDisposable
         Assert.Equal(-1, KernelRuntime.GetConstructionBody(first)); Assert.Equal(-1, KernelRuntime.GetConstructionBody(second));
     }
 
+    [Fact]
+    public void BodyReplacementRebindsBothConstructionChainsBeforeDeletingOldTopology()
+    {
+        var target=AnalyticBooleanTests.Sphere(0,0,0,1);var tool=AnalyticBooleanTests.Sphere(.5,0,0,3);
+        var targetSlot=KernelRuntime.ResolveTagRecord(target).Slot;var toolSlot=KernelRuntime.ResolveTagRecord(tool).Slot;
+        var firstDefinition=new PK_OFFSET_sf_s{underlying_surface=KernelRuntime.Faces[KernelRuntime.Bodies[targetSlot].FirstFaceBody].SurfTag,offset_distance=.1};
+        var secondDefinition=new PK_OFFSET_sf_s{underlying_surface=KernelRuntime.Faces[KernelRuntime.Bodies[toolSlot].FirstFaceBody].SurfTag,offset_distance=.2};
+        int first,second;Assert.Equal(0,KernelRuntime.OffsetCreate(&firstDefinition,&first));Assert.Equal(0,KernelRuntime.OffsetCreate(&secondDefinition,&second));
+        int mark;Assert.Equal(0,KernelRuntime.MarkCreate(&mark));
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_unite_c);int n;int* bodies;
+        Assert.Equal(0,KernelRuntime.BodyBoolean(target,1,&tool,&options,&n,&bodies));
+        try{Assert.Equal(1,n);Assert.Equal(target,bodies[0]);}finally{KernelRuntime.MemoryFree(bodies);}
+        Assert.False(KernelRuntime.IsValidTag(first));Assert.True(KernelRuntime.IsValidTag(second));
+        Assert.Equal(targetSlot,KernelRuntime.GetConstructionBody(second));Assert.Equal(new[]{second},Members(target));
+        Assert.Equal(0,KernelRuntime.MarkGoto(mark));
+        Assert.Equal(targetSlot,KernelRuntime.GetConstructionBody(first));Assert.Equal(toolSlot,KernelRuntime.GetConstructionBody(second));
+        Assert.Equal(new[]{first},Members(target));Assert.Equal(new[]{second},Members(tool));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));Assert.Equal(0,KernelRuntime.EntityDelete(1,&tool));
+        Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Bodies.AliveCount);
+    }
+
+    [Theory]
+    [InlineData(0)] [InlineData(1)] [InlineData(4)] [InlineData(12)] [InlineData(30)] [InlineData(60)] [InlineData(120)]
+    public void ConstructionOwnerReplacementAllocationFailureIsAtomic(int budget)
+    {
+        var target=AnalyticBooleanTests.Sphere(0,0,0,1);var tool=AnalyticBooleanTests.Sphere(.5,0,0,3);
+        var targetSlot=KernelRuntime.ResolveTagRecord(target).Slot;var toolSlot=KernelRuntime.ResolveTagRecord(tool).Slot;
+        var definition=new PK_OFFSET_sf_s{underlying_surface=KernelRuntime.Faces[KernelRuntime.Bodies[targetSlot].FirstFaceBody].SurfTag,offset_distance=.1};
+        int first,second;Assert.Equal(0,KernelRuntime.OffsetCreate(&definition,&first));
+        definition.underlying_surface=KernelRuntime.Faces[KernelRuntime.Bodies[toolSlot].FirstFaceBody].SurfTag;
+        Assert.Equal(0,KernelRuntime.OffsetCreate(&definition,&second));
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_unite_c);var outstanding=KernelRuntime.ReturnOutstandingBlocks;int n;int* bodies;
+        KernelRuntime.InjectAllocationFailure(budget);int error;
+        try{error=KernelRuntime.BodyBoolean(target,1,&tool,&options,&n,&bodies);}finally{KernelRuntime.InjectAllocationFailure(-1);}
+        if(error!=0)
+        {
+            Assert.Equal(ParasolidConstants.PK_ERROR_memory_full,error);Assert.Equal(0,n);Assert.True(bodies==null);
+            Assert.Equal(targetSlot,KernelRuntime.GetConstructionBody(first));Assert.Equal(toolSlot,KernelRuntime.GetConstructionBody(second));
+            Assert.Equal(new[]{first},Members(target));Assert.Equal(new[]{second},Members(tool));Assert.Equal(4,KernelRuntime.Surfaces.AliveCount);
+        }
+        else{Assert.Equal(1,n);Assert.Equal(targetSlot,KernelRuntime.GetConstructionBody(second));Assert.Equal(0,KernelRuntime.MemoryFree(bodies));}
+        Assert.Equal(outstanding,KernelRuntime.ReturnOutstandingBlocks);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));if(KernelRuntime.IsValidTag(tool))Assert.Equal(0,KernelRuntime.EntityDelete(1,&tool));
+        Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Bodies.AliveCount);
+    }
+
     [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(4)] [InlineData(8)] [InlineData(12)]
     public void FailedDependentCreation_RestoresPartChainAndReferences(int fault)

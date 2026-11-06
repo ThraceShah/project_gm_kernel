@@ -131,11 +131,38 @@ internal static unsafe partial class KernelRuntime
             }
             case XtNodeTypes.BlendedEdge:
             {
-                if(fields[7].Character!='R'||fields[13].Real!=1||fields[14].Real!=1||fields[15].Pointer!=0||fields[16].Pointer!=0||fields[17].Pointer!=0||fields[18].Pointer!=0)
+                if(fields[7].Character!='R'||fields[13].Real!=1||fields[14].Real!=1||fields[15].Pointer!=0||fields[16].Pointer!=0)
                     return AlgorithmStatus.Unsupported;
                 if(!(Math.Abs(fields[11].Real)>0&&Math.Abs(fields[11].Real)==Math.Abs(fields[12].Real)))return AlgorithmStatus.Unsupported;
                 var a=XtMapped(geometry,tags,fields[8].Pointer,0);var b=XtMapped(geometry,tags,fields[9].Pointer,0);var curve=XtMapped(geometry,tags,fields[10].Pointer,0);
-                error=CompileAndBindNestedBlend(a,b,curve,fields[11].Real,fields[12].Real,&created);break;
+                Span<double> limits=stackalloc double[6];var firstLimit=default(LimitRecord);var lastLimit=default(LimitRecord);
+                var lower=double.NaN;var upper=double.NaN;
+                if(fields[17].Pointer!=0||fields[18].Pointer!=0)
+                {
+                    var firstNode=FindNodeByIndex(document.Nodes,fields[17].Pointer);var lastNode=FindNodeByIndex(document.Nodes,fields[18].Pointer);
+                    if(firstNode==null||lastNode==null)return AlgorithmStatus.Unsupported;
+                    if(!TryReadLimitNode(firstNode,limits[..3],out firstLimit.Type,out firstLimit.TermUse,out var n0)
+                        ||!TryReadLimitNode(lastNode,limits[3..],out lastLimit.Type,out lastLimit.TermUse,out var n1))return AlgorithmStatus.InvalidInput;
+                    if(n0!=1||n1!=1||firstLimit.Type!=LimitType.Terminator||lastLimit.Type!=LimitType.Terminator
+                        ||firstLimit.TermUse!=LimitTermUse.Unset||lastLimit.TermUse!=LimitTermUse.Unset)return AlgorithmStatus.Unsupported;
+                    firstLimit.HvecIndex=0;firstLimit.HvecCount=1;lastLimit.HvecIndex=1;lastLimit.HvecCount=1;
+                    var p=new PK_VECTOR_s();p.coord[0]=limits[0];p.coord[1]=limits[1];p.coord[2]=limits[2];
+                    if(CurveParameteriseVectorCore(curve,p,&lower)!=0)return AlgorithmStatus.InvalidInput;
+                    p.coord[0]=limits[3];p.coord[1]=limits[4];p.coord[2]=limits[5];
+                    if(CurveParameteriseVectorCore(curve,p,&upper)!=0)return AlgorithmStatus.InvalidInput;
+                    if(Curves[GetCurveSlotByTag(curve)].Class is CurveClass.Circle or CurveClass.Ellipse)
+                        while(upper<=lower)upper+=Math.Tau;
+                    if(!(upper>lower))return AlgorithmStatus.InvalidInput;
+                }
+                error=CompileAndBindNestedBlend(a,b,curve,fields[11].Real,fields[12].Real,&created,lower,upper);
+                if(error==0&&firstLimit.HvecCount!=0)
+                {
+                    ref var data=ref BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(created)].DataIndex];
+                    var payload=State.Session->Blocks.TryAllocate(6*8);if(payload==null)return AlgorithmStatus.WorkspaceTooSmall;
+                    data.HvecBlock=State.Session->Blocks.HandleOf(payload);data.HvecCount=2;limits.CopyTo(new Span<double>(payload,6));
+                    data.StartLimit=firstLimit;data.EndLimit=lastLimit;
+                }
+                break;
             }
             default: return AlgorithmStatus.Unsupported;
         }

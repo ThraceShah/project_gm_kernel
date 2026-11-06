@@ -25,12 +25,21 @@ internal struct BlendSurfaceInstruction
 
 internal struct BlendSpineInstruction
 {
+    internal ParametricSpineCurve Curve;
     internal BlendSurfaceIndex First,Second;
     internal BufferOffset ChartOffset;
     internal BufferCount ChartCount;
     internal LimitType StartType,EndType;
     internal KernelSense Sense;
     internal double ChordalError,AngularError;
+}
+
+// Explicit parameter maps and implicit CHART maps share the rolling
+// constraints without changing an explicit curve's native parameter.
+internal struct ParametricSpineCurve
+{
+    internal CurveClass Kind;
+    internal KernelVector3 Origin,First,Second;
 }
 
 internal struct BlendChartInstruction
