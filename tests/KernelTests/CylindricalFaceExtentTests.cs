@@ -47,6 +47,18 @@ public unsafe class CylindricalFaceExtentTests:IDisposable
         for(var i=0;i<KernelRuntime.Bodies[slot].VertexCountBody;i++,v=KernelRuntime.Vertices[v].NextInBody)Assert.True(KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[v].PointTag)].Position.Z<=1);
     }
 
+    [Fact]
+    public void UnboundedProceduralBoundaryCannotPublishAPartialExtent()
+    {
+        var body=Sheet(0,Math.PI*.5,0,1);var face=Face(body);var edge=KernelRuntime.Edges[TopEdge(body)];var tag=edge.Header.Tag;
+        double* poles=stackalloc double[4]{Math.PI*.5,1,0,1};double* knots=stackalloc double[2]{edge.ParameterStart,edge.ParameterEnd};int* mult=stackalloc int[2]{2,2};
+        var uv=new PK_BCURVE_sf_s{degree=1,n_vertices=2,vertex_dim=2,vertex=poles,n_knots=2,knot=knots,knot_mult=mult,form=ParasolidConstants.PK_BCURVE_form_arbitrary_c,
+            knot_type=ParasolidConstants.PK_knot_bezier_ends_c,self_intersecting=ParasolidConstants.PK_self_intersect_unset_c};int basis;Assert.Equal(0,KernelRuntime.BCurveCreate(&uv,&basis));
+        var definition=new PK_SPCURVE_sf_s{surf=KernelRuntime.Faces[face].SurfTag,curve=basis};int curve;Assert.Equal(0,KernelRuntime.SpCurveCreate(&definition,&curve));
+        Assert.Equal(0,KernelRuntime.TopologyDetachGeometry(tag));Assert.Equal(0,KernelRuntime.EdgeAttachCurves(1,&tag,&curve));
+        Assert.Equal(AlgorithmStatus.Unsupported,KernelRuntime.CertifiedCylindricalFaceExtent(face,out _));
+    }
+
     internal static int Sheet(double first,double last,double lower,double upper)
     {
         var sf=new PK_CYL_sf_s{radius=1};sf.basis_set.axis.coord[2]=1;sf.basis_set.ref_direction.coord[0]=1;int cylinder;Assert.Equal(0,KernelRuntime.CylCreate(&sf,&cylinder));
