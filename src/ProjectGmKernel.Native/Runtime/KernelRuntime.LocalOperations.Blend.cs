@@ -111,6 +111,8 @@ internal static unsafe partial class KernelRuntime
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildPlanarLocalBlends(slot,faces,selected[..count],descriptions,products,out made);
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
+            error=BuildTrivalentLocalBlendCorner(slot,faces,selected[..count],descriptions,products,out made);
+        if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildRegularLocalBlend(slot,faces,selected[..count],descriptions,products,out made);
         if(error!=0)
         {
