@@ -54,6 +54,7 @@ global using KernelSelfIntersect = int;  // PK_self_intersect_t
 global using KernelConvexity = int;      // PK_convexity_t
 global using KernelLogical = byte;       // PK_LOGICAL_t
 global using KernelBlendKind = int;     // pending local blend definition
+global using BlendMarkSequence = long; // order of pending edge definitions within a body
 
 // XT schema metadata aliases.
 global using XtNodeType = int;

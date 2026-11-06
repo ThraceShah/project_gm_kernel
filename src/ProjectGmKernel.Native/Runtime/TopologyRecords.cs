@@ -151,6 +151,7 @@ internal struct EdgeRecord
     public int FinCount;
     public CurveTag CurveTag;
     public KernelBlendKind PendingBlendKind;
+    public BlendMarkSequence PendingBlendSequence;
     public double PendingBlendFirst;
     public double PendingBlendSecond;
     public FaceTag PendingBlendFirstFace;

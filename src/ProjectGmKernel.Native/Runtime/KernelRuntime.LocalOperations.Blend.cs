@@ -61,10 +61,14 @@ internal static unsafe partial class KernelRuntime
         }
         var returns=output==null?null:(EntityTag*)State.Session->Returns.TryAllocate((nuint)(count*sizeof(int)));
         if(output!=null&&returns==null)return ParasolidConstants.PK_ERROR_memory_full;
+        BlendMarkSequence sequence=0;var pending=Bodies[body].FirstEdgeBody;
+        for(var i=0;i<Bodies[body].EdgeCountBody;i++,pending=Edges[pending].NextInBody)
+            if(Edges[pending].PendingBlendKind!=0)sequence=Math.Max(sequence,Edges[pending].PendingBlendSequence);
         for(var i=0;i<count;i++)
         {
             ref var edge=ref Edges[slots[i]];if(!State.Session->TrySnapshot(ref edge))return ParasolidConstants.PK_ERROR_memory_full;
             edge.PendingBlendKind=kind;edge.PendingBlendFirst=first;edge.PendingBlendSecond=second;edge.PendingBlendFirstFace=designated[i];
+            edge.PendingBlendSequence=++sequence;
             if(returns!=null)returns[i]=edges[i];
         }
         SessionMemoryOwner.DropBodyXt(body);
@@ -103,6 +107,10 @@ internal static unsafe partial class KernelRuntime
         var n=Bodies[slot].EdgeCountBody;if(n>LocalEdgeLimit||Bodies[slot].FaceCountBody>PlaneLimit)return ParasolidConstants.PK_ERROR_not_implemented;
         Span<EdgeSlot> selected=stackalloc EdgeSlot[n];var count=0;var edge=Bodies[slot].FirstEdgeBody;
         for(var i=0;i<n;i++,edge=Edges[edge].NextInBody)if(Edges[edge].PendingBlendKind!=0)selected[count++]=edge;
+        // The graph determines the physical construction; mark order retains
+        // the API's carrier/traversal convention for the returned products.
+        for(var i=1;i<count;i++)for(var j=i;j>0&&Edges[selected[j]].PendingBlendSequence<Edges[selected[j-1]].PendingBlendSequence;j--)
+            (selected[j],selected[j-1])=(selected[j-1],selected[j]);
         if(count==0){*fault=ParasolidConstants.PK_blend_fault_no_blend_c;return 0;}
         var faceCount=Bodies[slot].FaceCountBody;Span<FaceSlot> faces=stackalloc FaceSlot[faceCount];var face=Bodies[slot].FirstFaceBody;
         for(var i=0;i<faceCount;i++,face=Faces[face].NextInBody)faces[i]=face;

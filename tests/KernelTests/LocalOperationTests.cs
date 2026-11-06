@@ -313,7 +313,7 @@ public unsafe class LocalOperationTests:IDisposable
         for(var i=0;i<record.EdgeCountBody;i++,edge=KernelRuntime.GetEdgeRecord(edge).NextInBody)
         {
             var e=KernelRuntime.GetEdgeRecord(edge);text.Append('|').Append(e.Header.Tag).Append(',').Append(e.CurveTag).Append(',').Append(e.StartVertex).Append(',').Append(e.EndVertex)
-                .Append(',').Append(e.FirstFinEdge).Append(',').Append(e.LastFinEdge).Append(',').Append(e.PendingBlendKind).Append(',').Append(e.PendingBlendFirstFace)
+                .Append(',').Append(e.FirstFinEdge).Append(',').Append(e.LastFinEdge).Append(',').Append(e.PendingBlendKind).Append(',').Append(e.PendingBlendSequence).Append(',').Append(e.PendingBlendFirstFace)
                 .Append(',').Append(e.PendingBlendFirst.ToString("R")).Append(',').Append(e.PendingBlendSecond.ToString("R"));
         }
         var vertex=record.FirstVertexBody;
