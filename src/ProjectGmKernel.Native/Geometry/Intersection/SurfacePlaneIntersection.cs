@@ -22,7 +22,7 @@ internal static class SurfacePlaneIntersection
 
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,
-        Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining,bool deferIsolatedPoints=false)
+        Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining,bool deferIsolatedPoints=false,double tolerance=1e-10,bool strictSeparation=false)
     {
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];pending[0]=patch.Domain;depths[0]=0;var count=1;var visited=0;
@@ -36,10 +36,12 @@ internal static class SurfacePlaneIntersection
             var index=--count;var cell=pending[index];var depth=depths[index];var free=-1;
             var savedNodes=nodeCount;var savedSegments=segmentCount;
             var status=patch.Bound(cell,bounds);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
-            var distance=Distance(bounds,plane);if(distance.Lower>1e-10||distance.Upper< -1e-10)continue;
+            var distance=Distance(bounds,plane);var exclusion=strictSeparation?0:tolerance;if(distance.Lower>exclusion||distance.Upper< -exclusion)continue;
             var du=bounds[3]*plane.Axis.X+bounds[4]*plane.Axis.Y+bounds[5]*plane.Axis.Z;
             var dv=bounds[6]*plane.Axis.X+bounds[7]*plane.Axis.Y+bounds[8]*plane.Axis.Z;
-            if(!du.ContainsZero)free=1;else if(!dv.ContainsZero)free=0;
+            var uQuality=Math.Min(Math.Abs(du.Lower),Math.Abs(du.Upper))*Width(patch.Domain,0);
+            var vQuality=Math.Min(Math.Abs(dv.Lower),Math.Abs(dv.Upper))*Width(patch.Domain,1);
+            if(!du.ContainsZero&&(dv.ContainsZero||uQuality>=vQuality))free=1;else if(!dv.ContainsZero)free=0;
             if(free<0)goto Subdivide;
             // Keep enough exact CHART anchors for the following intersection
             // evaluator; the graph proof, rather than this spacing, is the
@@ -52,17 +54,17 @@ internal static class SurfacePlaneIntersection
                 var lower=axis==0?cell.V0:cell.U0;var upper=axis==0?cell.V1:cell.U1;
                 var iso=new SurfaceIntersectionPatch(patch,axis==0,at,lower,upper);
                 status=iso.Bound(new(lower,upper,0,0),bounds);if(status!=AlgorithmStatus.Success)goto Retry;
-                if(Distance(bounds,plane).Magnitude<=2e-12)
+                if(Distance(bounds,plane).Magnitude<=Math.Min(2e-12,tolerance))
                 {
                     // An entire edge is within the geometric root tolerance.
                     // Its two ends belong to the same unique regular graph.
-                    status=BoundaryNode(patch,plane,axis,at,lower,boundary,ref n);if(status!=AlgorithmStatus.Success)goto Retry;
-                    status=BoundaryNode(patch,plane,axis,at,upper,boundary,ref n);if(status!=AlgorithmStatus.Success)goto Retry;
+                    status=BoundaryNode(patch,plane,axis,at,lower,boundary,ref n,tolerance);if(status!=AlgorithmStatus.Success)goto Retry;
+                    status=BoundaryNode(patch,plane,axis,at,upper,boundary,ref n,tolerance);if(status!=AlgorithmStatus.Success)goto Retry;
                     continue;
                 }
-                var nr=0;status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr);if(status!=AlgorithmStatus.Success)goto Retry;
+                var nr=0;status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation);if(status!=AlgorithmStatus.Success)goto Retry;
                 for(var r=0;r<nr;r++)
-                {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n);if(status!=AlgorithmStatus.Success)goto Retry;}
+                {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n,tolerance);if(status!=AlgorithmStatus.Success)goto Retry;}
             }
             // A cell/chart corner can belong to an arc in its neighbour.
             // Keep every candidate until the complete graph is assembled;
@@ -80,7 +82,7 @@ internal static class SurfacePlaneIntersection
                 }
                 var lower=free==0?cell.V0:cell.U0;var upper=free==0?cell.V1:cell.U1;
                 var iso=new SurfaceIntersectionPatch(patch,free==0,at,lower,upper);var nr=0;
-                status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr);if(status!=AlgorithmStatus.Success||nr>1)goto Retry;
+                status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation);if(status!=AlgorithmStatus.Success||nr>1)goto Retry;
                 if(nr==0)continue;
                 status=AddSegment(patch,cell,boundary[i],boundary[i+1],nodes,ref nodeCount,segments,ref segmentCount);if(status!=AlgorithmStatus.Success)return status;
             }
@@ -116,11 +118,11 @@ internal static class SurfacePlaneIntersection
         =>Math.Abs(a.U-b.U)<2e-10&&Math.Abs(a.V-b.V)<2e-10&&OperationIntersection.Norm(Sub(a.Point,b.Point))<1e-8;
 
     private static AlgorithmStatus BoundaryNode(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,BufferOffset axis,double at,double parameter,
-        Span<SurfaceIntersectionNode> nodes,ref BufferCount count)
+        Span<SurfaceIntersectionNode> nodes,ref BufferCount count,double tolerance)
     {
         var u=axis==0?at:parameter;var v=axis==0?parameter:at;var node=new SurfaceIntersectionNode{U=u,V=v};
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var status=patch.Bound(new(u,u,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
-        if(Distance(bounds,plane).Magnitude>1e-10)return AlgorithmStatus.NotConverged;
+        if(Distance(bounds,plane).Magnitude>tolerance)return AlgorithmStatus.NotConverged;
         node.Point=Vector(bounds[0].Midpoint,bounds[1].Midpoint,bounds[2].Midpoint);
         status=OperationIntersection.Parameters(plane,node.Point,out node.S,out node.T);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<count;i++)if(Same(nodes[i],node))return AlgorithmStatus.Success;

@@ -37,6 +37,7 @@ internal static unsafe partial class KernelRuntime
         Span<IntervalNumber> bp = stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         var analyticCount = analytic ? AnalyticBezierPatches.Count(support) : 0;
         if (analytic && analyticCount == 0) return AlgorithmStatus.Unsupported;
+        BufferCount remaining=ParametricSurfaceIntersection.MaxCells;
         for (var u = av.UDegree; u < av.UVertexCount; u++) for (var v = av.VDegree; v < av.VVertexCount; v++)
         {
             if (!(av.UKnots[u + 1] > av.UKnots[u]) || !(av.VKnots[v + 1] > av.VKnots[v])) continue;
@@ -72,8 +73,16 @@ internal static unsafe partial class KernelRuntime
                     var localEdges = ModelSpan<SurfaceIntersectionSegment>(bytes, ref cursor, GeneralIntersectionNodeLimit);
                     var nodeMap = ModelSpan<BufferOffset>(bytes, ref cursor, GeneralIntersectionNodeLimit);
                     var ln = 0; var le = 0;
-                    status = ParametricSurfaceIntersection.Find(patch, other, localNodes, ref ln, localEdges, ref le);
+                    if(analytic&&support.Kind==SurfaceClass.Plane)
+                    {
+                        status=SurfacePlaneIntersection.Find(new(patch),support,localNodes,ref ln,localEdges,ref le,ref remaining,deferIsolatedPoints:true,tolerance:2e-14,strictSeparation:true);
+                        if(status==AlgorithmStatus.NotConverged)
+                        {ln=le=0;status=ParametricSurfaceIntersection.FindProcedural(new(patch),new(other),localNodes,ref ln,localEdges,ref le,ref remaining);}
+                    }
+                    else status = ParametricSurfaceIntersection.Find(patch, other, localNodes, ref ln, localEdges, ref le);
                     if (status != AlgorithmStatus.Success) return status;
+                    if(analytic&&support.Kind==SurfaceClass.Plane)
+                        for(var i=0;i<ln;i++){status=PolishGeneralPlaneBoundaryAnchor(av,patch,support,ref localNodes[i]);if(status!=AlgorithmStatus.Success)return status;}
                     for (var i = 0; i < ln; i++)
                     {
                         if (analytic)
@@ -100,7 +109,39 @@ internal static unsafe partial class KernelRuntime
                 finally { scratch.Return(memory); }
             }
         }
-        return AlgorithmStatus.Success;
+        return analytic&&support.Kind==SurfaceClass.Plane?SurfacePlaneIntersection.ValidateGraph(nodes[..nn],segments[..ne]):AlgorithmStatus.Success;
+    }
+
+    // Keep natural-boundary anchors on that exact boundary while reducing
+    // their plane residual. The connecting interval must stay in the same
+    // Bezier span and have a nonzero derivative; discovery owns completeness.
+    private static AlgorithmStatus PolishGeneralPlaneBoundaryAnchor(in BSurfaceView surface,in BezierSurfacePatch patch,in AnalyticSurface plane,ref SurfaceIntersectionNode node)
+    {
+        var fixedU=node.U==surface.UStart||node.U==surface.UEnd;var fixedV=node.V==surface.VStart||node.V==surface.VEnd;
+        if(fixedU==fixedV)return AlgorithmStatus.Success;
+        SurfaceDerivativeLayout.TryCreate(1,1,out var layout);
+        Span<double> workspace=stackalloc double[(BufferCount)BSurfaceEvaluation.WorkspaceSize(surface.UDegree,surface.VDegree,layout.UOrder,layout.VOrder)];
+        Span<KernelVector3> jets=stackalloc KernelVector3[4];Span<IntervalNumber> bound=stackalloc IntervalNumber[9];
+        var source=new SurfaceIntersectionPatch(patch);var coordinate=fixedU?node.V:node.U;
+        for(var iteration=0;iteration<8;iteration++)
+        {
+            var status=BSurfaceEvaluation.Evaluate(surface,node.U,node.V,layout,workspace,jets);if(status!=AlgorithmStatus.Success)return status;
+            if(!SplinePlaneResidual.TryEvaluate(surface,plane,node.U,node.V,out var residual))return AlgorithmStatus.NotConverged;
+            var derivative=Dot(plane.Axis,jets[layout.GetIndex(fixedU?0:1,fixedU?1:0)]);if(derivative==0)break;
+            var next=coordinate-residual/derivative;var lower=fixedU?patch.Domain.V0:patch.Domain.U0;var upper=fixedU?patch.Domain.V1:patch.Domain.U1;
+            if(!double.IsFinite(next)||next==coordinate||next<lower||next>upper)break;
+            var between=fixedU?new SurfaceParameterBox(node.U,node.U,Math.Min(coordinate,next),Math.Max(coordinate,next))
+                :new(Math.Min(coordinate,next),Math.Max(coordinate,next),node.V,node.V);
+            status=source.Bound(between,bound);if(status!=AlgorithmStatus.Success)return status;
+            var offset=fixedU?6:3;var slope=bound[offset]*plane.Axis.X+bound[offset+1]*plane.Axis.Y+bound[offset+2]*plane.Axis.Z;if(slope.ContainsZero)break;
+            if(!SplinePlaneResidual.TryEvaluate(surface,plane,fixedU?node.U:next,fixedU?next:node.V,out var trial)||Math.Abs(trial)>=Math.Abs(residual))break;
+            coordinate=next;if(fixedU)node.V=next;else node.U=next;
+        }
+        var final=BSurfaceEvaluation.Evaluate(surface,node.U,node.V,layout,workspace,jets);if(final!=AlgorithmStatus.Success)return final;
+        final=source.Bound(new(node.U,node.U,node.V,node.V),bound);if(final!=AlgorithmStatus.Success)return final;
+        var distance=(bound[0]-plane.Origin.X)*plane.Axis.X+(bound[1]-plane.Origin.Y)*plane.Axis.Y+(bound[2]-plane.Origin.Z)*plane.Axis.Z;
+        if(distance.Magnitude>2e-14)return AlgorithmStatus.NotConverged;
+        node.Point=jets[0];return OperationIntersection.Parameters(plane,node.Point,out node.S,out node.T);
     }
 
     private static bool GeneralSurfaceContinuity(in BSurfaceView surface)

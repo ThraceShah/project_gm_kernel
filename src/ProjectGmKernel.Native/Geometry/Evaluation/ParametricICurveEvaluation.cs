@@ -475,7 +475,7 @@ internal static class ParametricICurveEvaluation
         {
             var status = ReadSurfaceJets(in view, state, 1, ref budget, jet0, jet1, out detail);
             if (status != AlgorithmStatus.Success) return status;
-            AssembleP4(in view, t, segment, in layout, jet0, jet1, f, jacobian);
+            AssembleP4(in view, t, segment, in layout, state, jet0, jet1, f, jacobian);
             return AlgorithmStatus.Success;
         }
         var parameterFirst = view.Surface0.IsBSurface;
@@ -494,7 +494,9 @@ internal static class ParametricICurveEvaluation
         var gradient = Vector(implicitJet.Gradient.X / divisor, implicitJet.Gradient.Y / divisor, implicitJet.Gradient.Z / divisor);
         var su = parametricJet[layout.GetIndex(1, 0)];
         var sv = parametricJet[layout.GetIndex(0, 1)];
-        f[0] = implicitJet.Value / divisor;
+        var implicitValue=implicitJet.Value;
+        if(implicitSurface.Kind==SurfaceClass.Plane&&SplinePlaneResidual.TryEvaluate(support.BSpline,implicitSurface,state[offset],state[offset+1],out var stableValue))implicitValue=stableValue;
+        f[0] = implicitValue / divisor;
         f[1] = PlaneResidual(in view, segment, t, in parametricJet[0]);
         jacobian[0] = Dot(gradient, su); jacobian[1] = Dot(gradient, sv);
         jacobian[2] = Dot(view.ChartChordUnits[segment], su); jacobian[3] = Dot(view.ChartChordUnits[segment], sv);
@@ -536,9 +538,12 @@ internal static class ParametricICurveEvaluation
         }
         var status = ReadSurfaceJets(in view, state, jetOrder, ref budget, jet0, jet1, out detail);
         if (status != AlgorithmStatus.Success) return status;
+        // The stable plane numerator must not hide a Cartesian D0 that the
+        // ordinary support evaluator cannot represent within physical error.
+        if(Norm(Sub(jet0[0],jet1[0]))>tolerance)return AlgorithmStatus.NotConverged;
         Span<double> f = stackalloc double[4];
         Span<double> jacobian = stackalloc double[16];
-        AssembleP4(in view, t, segment, in layout, jet0, jet1, f, jacobian);
+        AssembleP4(in view, t, segment, in layout, state, jet0, jet1, f, jacobian);
         if (SmallLinearSolve.Norm(f[..3]) > tolerance || Math.Abs(f[3]) > tolerance)
             return AlgorithmStatus.NotConverged;
         if (!TryTangent(in view, state, jet0, jet1, jetOrder, ref budget, out tangent, out detail))
@@ -610,12 +615,18 @@ internal static class ParametricICurveEvaluation
     }
 
     private static void AssembleP4(in ICurveView view, double t, BufferOffset segment,
-        in SurfaceDerivativeLayout layout, ReadOnlySpan<KernelVector3> jet0,
+        in SurfaceDerivativeLayout layout, ReadOnlySpan<double> state, ReadOnlySpan<KernelVector3> jet0,
         ReadOnlySpan<KernelVector3> jet1, Span<double> f, Span<double> j)
     {
         var su0 = jet0[layout.GetIndex(1, 0)]; var sv0 = jet0[layout.GetIndex(0, 1)];
         var su1 = jet1[layout.GetIndex(1, 0)]; var sv1 = jet1[layout.GetIndex(0, 1)];
         f[0] = jet0[0].X - jet1[0].X; f[1] = jet0[0].Y - jet1[0].Y; f[2] = jet0[0].Z - jet1[0].Z;
+        if(view.Surface0.IsBSurface!=view.Surface1.IsBSurface)
+        {
+            var splineFirst=view.Surface0.IsBSurface;var spline=splineFirst?view.Surface0:view.Surface1;var plane=splineFirst?view.Surface1.Analytic:view.Surface0.Analytic;var offset=splineFirst?0:2;
+            if(plane.Kind==SurfaceClass.Plane&&SplinePlaneResidual.TryCorrectDifference(spline.BSpline,plane,state[offset],state[offset+1],state[2-offset],state[3-offset],splineFirst,Vector(f[0],f[1],f[2]),out var stable))
+            {f[0]=stable.X;f[1]=stable.Y;f[2]=stable.Z;}
+        }
         f[3] = PlaneResidual(in view, segment, t, in jet0[0]);
         j[0] = su0.X; j[1] = sv0.X; j[2] = -su1.X; j[3] = -sv1.X;
         j[4] = su0.Y; j[5] = sv0.Y; j[6] = -su1.Y; j[7] = -sv1.Y;

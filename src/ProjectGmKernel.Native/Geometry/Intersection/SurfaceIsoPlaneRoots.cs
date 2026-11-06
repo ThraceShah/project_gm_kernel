@@ -11,7 +11,7 @@ namespace ProjectGmKernel.Native.Geometry.Intersection;
 internal static class SurfaceIsoPlaneRoots
 {
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
-        Span<OperationIntersectionPoint> output,ref BufferCount count)
+        Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance=1e-10,bool strictSeparation=false)
     {
         Span<double> lower=stackalloc double[128],upper=stackalloc double[128];Span<BufferCount> depths=stackalloc BufferCount[128];
         lower[0]=first;upper[0]=last;depths[0]=0;var pending=1;var visited=0;
@@ -25,7 +25,8 @@ internal static class SurfaceIsoPlaneRoots
             if(status==AlgorithmStatus.Success)
             {
                 var distance=Distance(bounds,plane);
-                if(distance.Lower>1e-10||distance.Upper< -1e-10)continue;
+                var exclusion=strictSeparation?0:tolerance;
+                if(distance.Lower>exclusion||distance.Upper< -exclusion)continue;
                 var derivative=bounds[3]*plane.Axis.X+bounds[4]*plane.Axis.Y+bounds[5]*plane.Axis.Z;
                 if(!derivative.ContainsZero)
                 {
@@ -33,8 +34,8 @@ internal static class SurfaceIsoPlaneRoots
                     var left=Distance(at,plane);
                     status=curve.Bound(new(hi,hi,0,0),at);if(status!=AlgorithmStatus.Success)return status;
                     var right=Distance(at,plane);var parameter=0.0;var found=false;
-                    if(left.Magnitude<=1e-10){parameter=lo;found=true;}
-                    else if(right.Magnitude<=1e-10){parameter=hi;found=true;}
+                    if(left.Magnitude<=tolerance){parameter=lo;found=true;}
+                    else if(right.Magnitude<=tolerance){parameter=hi;found=true;}
                     else if(left.Upper<0&&right.Lower>0||left.Lower>0&&right.Upper<0)
                     {
                         var a=lo;var b=hi;var negativeLeft=left.Upper<0;
@@ -42,7 +43,7 @@ internal static class SurfaceIsoPlaneRoots
                         {
                             parameter=a+(b-a)*.5;status=curve.Bound(new(parameter,parameter,0,0),at);if(status!=AlgorithmStatus.Success)return status;
                             var value=Distance(at,plane);
-                            if(value.Magnitude<2e-12){found=true;break;}
+                            if(value.Magnitude<Math.Min(2e-12,tolerance)){found=true;break;}
                             if(value.ContainsZero)return AlgorithmStatus.NotConverged;
                             if((value.Upper<0)==negativeLeft)a=parameter;else b=parameter;
                         }

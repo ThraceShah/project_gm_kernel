@@ -234,7 +234,7 @@ internal static class BSurfaceEvaluation
         return result;
     }
 
-    private static KnotIndex KnotSpan(ReadOnlySpan<double> knots, SplineDegree degree, BufferCount vertexCount, double t)
+    internal static KnotIndex KnotSpan(ReadOnlySpan<double> knots, SplineDegree degree, BufferCount vertexCount, double t)
     {
         KnotIndex low = degree, high = vertexCount;
         while (low < high)
@@ -245,7 +245,7 @@ internal static class BSurfaceEvaluation
         return Math.Min(low, vertexCount - 1);
     }
 
-    private static double WrapPeriodic(double t, double start, double end, bool periodic)
+    internal static double WrapPeriodic(double t, double start, double end, bool periodic)
     {
         if (!periodic || (t >= start && t <= end)) return t;
         var period = end - start;
