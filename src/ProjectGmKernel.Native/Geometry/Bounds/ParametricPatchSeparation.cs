@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Intersection;
+using ProjectGmKernel.Native.Runtime;
 
 namespace ProjectGmKernel.Native.Geometry.Bounds;
 
@@ -31,6 +32,15 @@ internal static class ParametricPatchSeparation
             {
                 var separated=false;
                 for(var axis=0;axis<3;axis++)separated|=(a[axis]+clearance).Upper<b[axis].Lower||(b[axis]+clearance).Upper<a[axis].Lower;
+                if(!separated)
+                {
+                    // Candidate directions are estimates only. Acceptance
+                    // still requires outward bounds of both complete cells.
+                    var normal=new KernelVector3{X=b[4].Midpoint*b[8].Midpoint-b[5].Midpoint*b[7].Midpoint,
+                        Y=b[5].Midpoint*b[6].Midpoint-b[3].Midpoint*b[8].Midpoint,Z=b[3].Midpoint*b[7].Midpoint-b[4].Midpoint*b[6].Midpoint};
+                    separated=SeparatedProjection(first,second,cell,a,b,normal,clearance);
+                    if(!separated)separated=SeparatedProjection(first,second,cell,a,b,new(){X=a[0].Midpoint-b[0].Midpoint,Y=a[1].Midpoint-b[1].Midpoint,Z=a[2].Midpoint-b[2].Midpoint},clearance);
+                }
                 if(separated)continue;
             }
             if(cell.Depth>=48||count+2>pending.Length)return AlgorithmStatus.NotConverged;
@@ -55,5 +65,18 @@ internal static class ParametricPatchSeparation
             pending[count++]=right;pending[count++]=left;
         }
         return AlgorithmStatus.Success;
+    }
+
+    private static bool SeparatedProjection(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,in Cell cell,
+        ReadOnlySpan<IntervalNumber> a,ReadOnlySpan<IntervalNumber> b,in KernelVector3 candidate,double clearance)
+    {
+        var scale=Math.Max(Math.Abs(candidate.X),Math.Max(Math.Abs(candidate.Y),Math.Abs(candidate.Z)));if(!(scale>0)||!double.IsFinite(scale))return false;
+        var direction=new KernelVector3{X=candidate.X/scale,Y=candidate.Y/scale,Z=candidate.Z/scale};
+        if(first.SupportRange(cell.First,direction,a,out var x)!=AlgorithmStatus.Success
+            ||second.SupportRange(cell.Second,direction,b,out var y)!=AlgorithmStatus.Success)return false;
+        // L1 is a conservative upper bound on the projection direction's
+        // Euclidean norm, retaining the requested Cartesian clearance.
+        var margin=(new IntervalNumber(Math.Abs(direction.X))+Math.Abs(direction.Y)+Math.Abs(direction.Z))*clearance;
+        return(x+margin).Upper<y.Lower||(y+margin).Upper<x.Lower;
     }
 }

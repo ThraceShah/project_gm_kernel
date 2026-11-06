@@ -25,6 +25,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly double normalOffset;
     private readonly double lineU,lineV,lineDU,lineDV;
     private readonly Span<SurfaceBoundCacheEntry> cache;
+    private readonly bool pinnedCache;
     private readonly GeomTag cacheTag;
     private readonly EntityGeneration cacheGeneration;
     private readonly KernelSense cacheSense;
@@ -39,8 +40,8 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSurfaceIndex root,SurfaceParameterBox domain){bezier=default;blend=program;surface=root;isBlend=true;isSpine=false;Domain=domain;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,double lower,double upper){bezier=default;blend=program;surface=spine;isBlend=isSpine=true;Domain=new(lower,upper,0,1);}
-    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries)
-    {this=source;cache=entries;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries,bool pinned=false)
+    {this=source;cache=entries;pinnedCache=pinned;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,GeomTag tag,EntityGeneration generation,KernelSense sense)
     {this=source;cacheTag=tag;cacheGeneration=generation;cacheSense=sense;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,bool constantU,double parameter,double lower,double upper)
@@ -52,11 +53,12 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal AlgorithmStatus Bound(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         ModelingPerformance.BoundRequest();
-        if(cache.IsEmpty)return BoundCore(box,output);
+        if(cache.IsEmpty||output.Length<9)return BoundCore(box,output);
         var hash=BitConverter.DoubleToInt64Bits(box.U0)*31+BitConverter.DoubleToInt64Bits(box.U1)*997+BitConverter.DoubleToInt64Bits(box.V0)*8191+BitConverter.DoubleToInt64Bits(box.V1)*131071;
-        hash^=hash>>32;hash^=hash>>16;ref var entry=ref cache[(int)hash&(cache.Length-1)];
+        hash^=hash>>32;hash^=hash>>16;ref var entry=ref cache[pinnedCache?0:(int)hash&(cache.Length-1)];
         if(entry.Status!=AlgorithmStatus.NotRun&&entry.Box.U0==box.U0&&entry.Box.U1==box.U1&&entry.Box.V0==box.V0&&entry.Box.V1==box.V1)
         {if(entry.Status==AlgorithmStatus.Success)((ReadOnlySpan<IntervalNumber>)entry.Values).CopyTo(output);return entry.Status;}
+        if(pinnedCache)return BoundCore(box,output);
         var status=BoundCore(box,output);entry.Box=box;entry.Status=status;if(status==AlgorithmStatus.Success)output[..9].CopyTo(entry.Values);return status;
     }
     private AlgorithmStatus BoundCore(in SurfaceParameterBox box,Span<IntervalNumber> output)
@@ -110,8 +112,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal AlgorithmStatus SupportRange(in SurfaceParameterBox box,in KernelVector3 direction,ReadOnlySpan<IntervalNumber> bounds,out IntervalNumber range)
     {
         range=default;
-        if(isoAxis!=0||sweepAxis!=0||parameterLine){range=bounds[0]*direction.X+bounds[1]*direction.Y+bounds[2]*direction.Z;return AlgorithmStatus.Success;}
-        if(!isBlend&&normalOffset==0)
+        if(!isBlend&&normalOffset==0&&isoAxis==0&&sweepAxis==0&&!parameterLine)
         {
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];var status=BezierSurfaceBounds.Restrict(bezier,box,poles);if(status!=AlgorithmStatus.Success)return status;
             range=new(double.PositiveInfinity,double.NegativeInfinity);

@@ -39,6 +39,19 @@ contact 证明分别建立局部 scope；这些 scope 的工作计数汇总回�
 证明结束释放。子阶段 elapsed 不重复相加到完整 API 时间，父阶段时钟已包含它。
 不能把最后一个证明阶段的 `Last` 误标为整条圆角耗时。`BlendChainOracle.cs`
 可直接输出完整 FixBlends/Boolean 时间和这两类操作的 profile，不再需要临时插桩。
+Bound 计数指经过插桩的 procedural patch 包围请求/执行，不代替构造、求值和
+global-reach 内部全部数值工作量；完整 API elapsed 仍包含这些工作。
+
+接触分离还先用成功的子 tube 包围并合，认证整个 contact chart 的位置及一阶
+导数父包围，再用只读精确参数盒缓存复用。中心或子域查询不会踢掉这个父证据，
+iso/offset 等改变几何的 wrapper 会使它失效。叶子、失败尝试及后续配对仍消费
+同一个 32,768-cell 预算。该步骤减少对远离候选面的重复隐式细分，不能用 CHART
+采样或未认证误差代替完整 hull。
+
+配对还可尝试由导数和包围中心估计的分离方向。只有两个完整参数盒的保守投影
+区间严格分开才接受；方向的估计本身不作排空。投影 clearance 用方向 L1 范数
+作保守换算，保留请求的笛卡尔间隙。等参 wrapper 的投影也使用完整导数区间的
+mean-value 界。近接、交叠、深度或预算未解仍失败。
 
 单元测试覆盖同界逐位比较、generation/sense/root/类别/四个端点失配、跨命令清空、
 精确 iso wrapper 复用以及可选内存分配失败退回。
