@@ -39,13 +39,20 @@ internal static unsafe partial class KernelRuntime
                 if(root.Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_eval_failure;
                 var along=Dot(Sub(root.Point,cylinder.Origin),cylinder.Axis)-query.param[1];
                 if(along< -1e-10)continue;if(Math.Abs(along)<1e-10)return ParasolidConstants.PK_ERROR_eval_failure;
-                var duplicate=false;for(var j=0;j<i;j++)duplicate|=Dot(Sub(roots[j].Point,cylinder.Origin),radial)>0&&ProfileDistance(root.Point,roots[j].Point)<1e-9;
+                var duplicate=false;for(var j=0;j<i;j++)
+                {
+                    if(Dot(Sub(roots[j].Point,cylinder.Origin),radial)<=0||ProfileDistance(root.Point,roots[j].Point)>=1e-9)continue;
+                    var periodic=Curves[GetCurveSlotByTag(edge.Curve)].Class is CurveClass.Circle or CurveClass.Ellipse;
+                    if(!periodic||Math.Abs(Math.Abs(root.First-roots[j].First)-Math.Tau)>1e-10*Math.Max(1,edge.End-edge.Start))
+                        return ParasolidConstants.PK_ERROR_eval_failure;
+                    duplicate=true;
+                }
                 if(duplicate)continue;
                 var epsilon=1e-10*Math.Max(1,edge.End-edge.Start);
                 if(edge.StartVertex>=0&&(Math.Abs(root.First-edge.Start)<epsilon||Math.Abs(root.First-edge.End)<epsilon))
                     return ParasolidConstants.PK_ERROR_eval_failure;
                 var error=SheetCurveUV(surface,edge.Curve,root.First,coedge.Forward!=0,out _,out var tangent,out _);if(error!=0)return error;
-                if(Math.Abs(tangent.param[0])<1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1])))
+                if(Math.Abs(tangent.param[0])<=1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1])))
                     return ParasolidConstants.PK_ERROR_eval_failure;
                 winding+=tangent.param[0]<0?1:-1;
             }
