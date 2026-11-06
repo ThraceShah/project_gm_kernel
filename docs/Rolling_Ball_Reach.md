@@ -47,6 +47,14 @@ Affine planes have a constant positive Gram matrix and are handled directly.
 `ValidateC1NaturalDomain` is also exposed so other global distance/convexity
 proofs can enforce the same cross-span precondition.
 
+The local-modeling caller now uses `JointNestedBlendEvaluation.CertifySplineReach`
+when a new end requires extension of an incident finite edge. Each chart is
+covered in full; an interval/Krawczyk solve provides both centre and foot boxes
+before this helper is called. Spine subdivision and all support-patch work
+consume one shared 131,072-cell budget. Nested procedural supports and exterior
+foot tubes require another certificate and return explicit failure here.
+The existing corner distance certificate also checks the same C1 prerequisite.
+
 Tests cover a manufactured moving normal-sphere family under spatial rotation,
 reflection and uniform scale, C1 multi-span and positive rational supports,
 the two-foot counterexamples, unsupported exterior foot/periodic data, shared

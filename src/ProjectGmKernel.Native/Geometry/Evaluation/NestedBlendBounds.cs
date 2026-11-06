@@ -20,6 +20,33 @@ internal static partial class JointNestedBlendEvaluation
         if(!domain.Valid||output.Length<9||spine<0||spine>=program.Spines.Length)return AlgorithmStatus.InvalidInput;
         return BoundGeometry(program,-1,spine,domain,output);
     }
+
+    // A local implicit foot is not a global reach certificate. Consumers
+    // that extend incident cap edges require this stronger whole-ball proof.
+    internal static AlgorithmStatus CertifySplineReach(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last)
+    {
+        if(!(last>first)||spine<0||spine>=program.Spines.Length)return AlgorithmStatus.InvalidInput;
+        Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[64];Span<BufferCount> depth=stackalloc BufferCount[64],budget=stackalloc BufferCount[2];
+        budget[0]=0;budget[1]=131072;Span<IntervalNumber> output=stackalloc IntervalNumber[9];var charts=Chart(program,spine);var covered=first;
+        for(var chart=0;chart<charts.Length-1;chart++)
+        {
+            var lo=Math.Max(first,charts[chart].Parameter);var hi=Math.Min(last,charts[chart+1].Parameter);if(!(hi>lo))continue;
+            if(lo>covered)return AlgorithmStatus.NotConverged;covered=hi;
+            pending[0]=new(lo,hi,0,0);depth[0]=0;var count=1;
+            while(count>0)
+            {
+                if(++budget[0]>budget[1])return AlgorithmStatus.NotConverged;
+                var at=--count;var box=pending[at];var level=depth[at];
+                var status=BoundSegment(program,-1,spine,box,output,budget);if(status==AlgorithmStatus.Success)continue;
+                if(status!=AlgorithmStatus.NotConverged)return status;
+                if(level>=28||count+2>pending.Length)return AlgorithmStatus.NotConverged;
+                var middle=box.U0+(box.U1-box.U0)*.5;if(!(middle>box.U0&&middle<box.U1))return AlgorithmStatus.NotConverged;
+                pending[count]=new(box.U0,middle,0,0);depth[count++]=level+1;
+                pending[count]=new(middle,box.U1,0,0);depth[count++]=level+1;
+            }
+        }
+        return covered==last?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+    }
     private static AlgorithmStatus BoundGeometry(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output)
     {
         var charts=Chart(program,spine);var first=true;Span<IntervalNumber> local=stackalloc IntervalNumber[9];
@@ -33,7 +60,7 @@ internal static partial class JointNestedBlendEvaluation
         return first?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;
     }
 
-    private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output)
+    private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default)
     {
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
@@ -96,6 +123,24 @@ internal static partial class JointNestedBlendEvaluation
         if(!ReuseSplineContactBounds)splineCache.Clear();
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
         status=CertifyNearestBoxes(program,nodes,boxes[..n],variables[..n],intervalJacobian[..(n*n)],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+        if(!reachBudget.IsEmpty)
+        {
+            if(nodes.Length!=1)return AlgorithmStatus.Unsupported;
+            var node=nodes[0];var sources=program.Spines[node.Spine];var centers=new IntervalBox3(boxes[0].Lower,boxes[0].Upper,boxes[1].Lower,boxes[1].Upper,boxes[2].Lower,boxes[2].Upper);
+            for(var side=0;side<2;side++)
+            {
+                var source=program.Surfaces[side==0?sources.First:sources.Second];
+                if(source.IsBlend)return AlgorithmStatus.Unsupported;
+                if(source.IsBSpline)
+                {
+                    var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0)return AlgorithmStatus.Unsupported;
+                    var feet=new SurfaceParameterBox(boxes[uv].Lower,boxes[uv].Upper,boxes[uv+1].Lower,boxes[uv+1].Upper);
+                    status=RollingBallReach.CertifySpline(program.Spline(source),centers,feet,ref reachBudget[0],reachBudget[1],out _);
+                }
+                else status=RollingBallReach.CertifyPlane(source.Analytic,out _);
+                if(status!=AlgorithmStatus.Success)return status;
+            }
+        }
         status=IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;

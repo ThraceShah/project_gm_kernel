@@ -13,6 +13,7 @@ internal static unsafe partial class KernelRuntime
     {
         extent=default;var slot=GetSurfaceSlotByTag(Faces[face].SurfTag);
         if(slot<0)return AlgorithmStatus.InvalidInput;
+        if(Surfaces[slot].Class==SurfaceClass.Cylinder)return CertifiedCylindricalFaceExtent(face,out extent);
         if(Surfaces[slot].Class!=SurfaceClass.Plane)return RegularSurfaceExtent(slot,out extent);
         Span<IntervalNumber> poles=stackalloc IntervalNumber[4*17],bounds=stackalloc IntervalNumber[9];
         var first=true;var loop=Faces[face].FirstLoop;

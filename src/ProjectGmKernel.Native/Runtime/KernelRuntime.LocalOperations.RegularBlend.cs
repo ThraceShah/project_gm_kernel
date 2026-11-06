@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
@@ -8,7 +9,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RegularBlendStage:byte{None,Supports,Roll,Contacts,Ends,EndCircle,EndIntersection,EndParameters,Clearance,Trim,Loops,Build,Publish,Release}
+    internal enum RegularBlendStage:byte{None,Supports,Roll,Contacts,Ends,EndCircle,EndIntersection,EndParameters,Clearance,Reach,Trim,Loops,Build,Publish,Release}
     [ThreadStatic] internal static RegularBlendStage LastRegularBlendStage;
     // A single regular edge ending at two trivalent vertices. Contact curves
     // replace the selected edge; each end curve replaces its old cap corner.
@@ -63,8 +64,12 @@ internal static unsafe partial class KernelRuntime
         for(var cap=0;cap<2;cap++)
         {
             if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(capSurfaces[cap])],out var plane))return ParasolidConstants.PK_ERROR_not_implemented;
-            var originalSupport=Surfaces[GetSurfaceSlotByTag(Faces[caps[cap]].SurfTag)];
-            var outward=Scale(plane.Axis,LocalSenseSign(Faces[caps[cap]].Orientation)*LocalSenseSign(originalSupport.Sense));
+            // A notch end face can face into the selected interval. The
+            // tracing barrier is outward from this finite edge branch,
+            // independently of the cap's material orientation.
+            var height=Dot(Sub(jet[0],plane.Origin),plane.Axis);
+            if(Math.Abs(height)<1e-12)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            var outward=Scale(plane.Axis,height<0?1:-1);
             termination[cap]=new(SurfaceClass.Plane,plane.Origin,outward,plane.X);
         }
         error0=CreateFiniteRollingBlend(sa,direction*LocalSenseSign(Faces[fa].Orientation)*radius,
@@ -124,10 +129,16 @@ internal static unsafe partial class KernelRuntime
             }
             lo[2+cap]=a;hi[2+cap]=b;
         }
-        var firstStation=Math.Min(Math.Min(stations[0],stations[1]),Math.Min(stations[2],stations[3]));
-        var lastStation=Math.Max(Math.Max(stations[0],stations[1]),Math.Max(stations[2],stations[3]));
+        // An oblique cap can attain a spine-coordinate extremum between its
+        // two contacts. The certified two-barrier construction window contains
+        // the entire end curve; contact endpoint extrema alone do not.
+        var window=Surfaces[GetSurfaceSlotByTag(blend)];var firstStation=window.UMin;var lastStation=window.UMax;
+        error0=ValidateRegularEndSeparation(curves[2..],lo[2..],hi[2..],termination);if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Clearance;
         error0=ValidateRegularBlendDomain(body,supports,caps,blend,firstStation,lastStation,direction<0);if(error0!=0)return error0;
+        error0=ValidateRegularContactPlacement(edge,supports,curves[..2],lo[..2],hi[..2]);if(error0!=0)return error0;
+        LastRegularBlendStage=RegularBlendStage.Reach;
+        error0=ValidateRegularBlendEndExtensions(body,edge,supports,ends,contacts,blend,firstStation,lastStation);if(error0!=0)return error0;
         error0=AssembleRegularLocalBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products);
         if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Release;
@@ -154,7 +165,7 @@ internal static unsafe partial class KernelRuntime
             if(a!=first&&a!=second){if(cap>=0&&cap!=a)return ParasolidConstants.PK_ERROR_not_implemented;cap=a;}
             if(b!=first&&b!=second){if(cap>=0&&cap!=b)return ParasolidConstants.PK_ERROR_not_implemented;cap=b;}
         }
-        if(incident!=3||cap<0||Faces[cap].LoopCount!=1
+        if(incident!=3||cap<0||RegularBlendAreaLoopCount(cap)!=1
             ||!RegularPlanarSupport(GetSurfaceSlotByTag(Faces[cap].SurfTag),out _,out _))return ParasolidConstants.PK_ERROR_not_implemented;
         return 0;
     }
@@ -215,18 +226,19 @@ internal static unsafe partial class KernelRuntime
             {
                 if(!LocalEdgeFaces(originals[e],out var a,out var b))return ParasolidConstants.PK_ERROR_not_implemented;
                 var side=supports.IndexOf(a);if(side<0)side=supports.IndexOf(b);if(side<0)return ParasolidConstants.PK_ERROR_not_implemented;
-                var contact=2*side+cap;var p=new PK_VECTOR_s();WriteVector(&p,contacts[contact]);double t=0;
-                error=CurveParameteriseVectorCore(old.CurveTag,p,&t);if(error!=0)return error;
-                LiftPeriodicEdgeParameter(old.CurveTag,edges[e].Start,edges[e].End,ref t);
-                if(t<=edges[e].Start+1e-10||t>=edges[e].End-1e-10)return ParasolidConstants.PK_ERROR_bad_parameter;
+                var contact=2*side+cap;
+                error=RegularBlendTrimParameter(old,old.StartVertex==ends[cap],contacts[contact],out var t,out var lowerEnd,out _);if(error!=0)return error;
                 var atStart=old.StartVertex==ends[cap];if(atStart)edges[e].StartVertex=vertices[contact];else edges[e].EndVertex=vertices[contact];
-                if(atStart==(LocalSenseSign(Curves[GetCurveSlotByTag(old.CurveTag)].Sense)>0))edges[e].Start=t;else edges[e].End=t;
+                // Concave end corners extend one adjacent finite edge while
+                // trimming the other. The exact base-curve inverse above is
+                // still required; an artificial/full-domain copy is not used.
+                if(lowerEnd)edges[e].Start=t;else edges[e].End=t;
             }
         }
         LastRegularBlendStage=RegularBlendStage.Loops;
         for(var f=0;f<nf;f++)
         {
-            var source=sources[f];if(Faces[source].LoopCount!=1)return ParasolidConstants.PK_ERROR_not_implemented;
+            var source=sources[f];if(inputFaces[f].LoopCount!=1)return ParasolidConstants.PK_ERROR_not_implemented;
             var face=inputFaces[f];var loop=inputLoops[face.FirstLoop];var start=model.NC;var support=supports.IndexOf(source);var cap=caps.IndexOf(source);
             for(var k=0;k<loop.CoedgeCount;k++)
             {
@@ -266,12 +278,75 @@ internal static unsafe partial class KernelRuntime
         }
         error=SheetCycleWitness(blend,edges[..model.NE],blendLoop,out _,out var positive);if(error!=0)return error;
         model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=4};blendLoop.CopyTo(model.Coedges[model.NC..]);model.NC+=4;
-        model.Faces[model.NF++]=new(){Surface=blend,Sense=positive!=0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c,FirstLoop=model.NL++,LoopCount=1};
+        model.Sources[model.NF]=-1;model.Faces[model.NF++]=new(){Surface=blend,Sense=positive!=0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c,FirstLoop=model.NL++,LoopCount=1};
         Span<BufferOffset> indices=stackalloc BufferOffset[model.NF];for(var i=0;i<indices.Length;i++)indices[i]=i;
         Span<byte> reversed=stackalloc byte[model.NF],cavities=stackalloc byte[model.NF];reversed.Clear();cavities.Clear();
         LastRegularBlendStage=RegularBlendStage.Build;
         error=CloneRegularBoundaryBody(ref model,indices,reversed,cavities,out var output,products[..model.NF]);if(error!=0)return error;
         LastRegularBlendStage=RegularBlendStage.Publish;
         return ReplaceLocalBody(body,output,sourceFaces,products);
+    }
+
+    private static int RegularBlendTrimParameter(in EdgeRecord edge,bool atStart,in KernelVector3 point,
+        out double parameter,out bool lowerEnd,out bool extends)
+    {
+        parameter=0;extends=false;lowerEnd=atStart==(LocalSenseSign(Curves[GetCurveSlotByTag(edge.CurveTag)].Sense)>0);
+        if(!TryProfileEdgeRange(edge,out var first,out var last))return ParasolidConstants.PK_ERROR_not_implemented;
+        var p=new PK_VECTOR_s();WriteVector(&p,point);double t=0;
+        var error=CurveParameteriseVectorCore(edge.CurveTag,p,&t);if(error!=0)return error;
+        LiftPeriodicEdgeParameter(edge.CurveTag,first,last,ref t);
+        var periodic=Curves[GetCurveSlotByTag(edge.CurveTag)].Class is CurveClass.Circle or CurveClass.Ellipse;
+        if(periodic&&!OperationIntersection.InInterval(t,first,last))
+        {
+            // A principal inverse may be on the previous turn when the
+            // replaced end extends. Keep the closest continuation of that
+            // endpoint, without changing an already valid long-arc trim.
+            var anchor=lowerEnd?first:last;t+=Math.Tau*Math.Round((anchor-t)/Math.Tau);
+            if(Math.Abs(t-anchor)>=Math.PI)return ParasolidConstants.PK_ERROR_not_implemented;
+        }
+        if(lowerEnd?t>=last-1e-10:t<=first+1e-10)return ParasolidConstants.PK_ERROR_bad_parameter;
+        if(periodic&&(lowerEnd?last-t:t-first)>=Math.Tau)return ParasolidConstants.PK_ERROR_not_implemented;
+        parameter=t;extends=lowerEnd?t<first:t>last;return 0;
+    }
+
+    private static int ValidateRegularEndSeparation(ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> first,
+        ReadOnlySpan<double> last,ReadOnlySpan<AnalyticSurface> termination)
+    {
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];Span<KernelVector3> point=stackalloc KernelVector3[2];
+        for(var cap=0;cap<2;cap++)
+        {
+            var lo=Math.Min(first[cap],last[cap]);var hi=Math.Max(first[cap],last[cap]);var opposite=termination[1-cap];
+            var status=IntersectSheetCurvePlane(curves[cap],lo,hi,opposite,roots,out var count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            if(count!=0)return ParasolidConstants.PK_ERROR_radius_too_large;
+            status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curves[cap])],lo+(hi-lo)*.5,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            var height=(new IntervalNumber(point[0].X)-opposite.Origin.X)*opposite.Axis.X
+                +(new IntervalNumber(point[0].Y)-opposite.Origin.Y)*opposite.Axis.Y+(new IntervalNumber(point[0].Z)-opposite.Origin.Z)*opposite.Axis.Z;
+            if(!height.Finite||height.Upper>=-1e-9)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        }
+        return 0;
+    }
+
+    private static int ValidateRegularBlendEndExtensions(BodySlot body,EdgeSlot selected,ReadOnlySpan<FaceSlot> supports,
+        ReadOnlySpan<VertexSlot> ends,ReadOnlySpan<KernelVector3> contacts,SurfTag blend,double first,double last)
+    {
+        var extends=false;var edge=Bodies[body].FirstEdgeBody;
+        for(var e=0;e<Bodies[body].EdgeCountBody;e++,edge=Edges[edge].NextInBody)
+        {
+            if(edge==selected)continue;var record=Edges[edge];
+            for(var cap=0;cap<2;cap++)
+            {
+                if(record.StartVertex!=ends[cap]&&record.EndVertex!=ends[cap])continue;
+                if(!LocalEdgeFaces(edge,out var a,out var b))return ParasolidConstants.PK_ERROR_not_implemented;
+                var side=supports.IndexOf(a);if(side<0)side=supports.IndexOf(b);if(side<0)return ParasolidConstants.PK_ERROR_not_implemented;
+                var error=RegularBlendTrimParameter(record,record.StartVertex==ends[cap],contacts[2*side+cap],out _,out _,out var extension);if(error!=0)return error;
+                extends|=extension;
+            }
+        }
+        if(!extends)return 0;
+        // Growing a cap must not introduce another intersection with either
+        // incident support. Certify global reach of every rolling ball over
+        // the entire retained interval, including the finite end sections.
+        var data=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(blend)].DataIndex];var program=GetNestedBlendProgram(data);
+        return IntersectionError(JointNestedBlendEvaluation.CertifySplineReach(program,program.Surfaces[data.ProgramRoot].Spine,first,last));
     }
 }

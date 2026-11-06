@@ -50,7 +50,7 @@ using(host)unsafe
                     var ownBlend=Fillet(true,own,radius,concave);
                     if(!lifecycleOnly)
                     {
-                        try{ValidateBlend(ownBlend,nativeBlend,radius);}catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" geometry: "+ex.Message);}
+                        try{ValidateBlend(own,ownBlend,nativeBlend,radius);}catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" geometry: "+ex.Message);}
                         try{CompareFresh(own,reference,name+"-fillet",directory);}catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" structure: "+ex.Message);}
                     }
                     if(name=="plane-nurbs"&&(!roundingOnly||lifecycleOnly))
@@ -146,15 +146,16 @@ static unsafe int Fillet(bool own,int body,double radius,bool concave=false)
     finally{Free(own,blends);}
 }
 
-static unsafe void ValidateBlend(int own,int native,double radius)
+static unsafe void ValidateBlend(int body,int own,int native,double radius)
 {
     var sf=new M.PK_BLENDSF_sf_s();Check(KernelRuntime.BlendSfAsk(own,&sf),"own procedural Blend definition");
     Require(Math.Abs(Math.Abs(sf.radii[0])-radius)<1e-12&&Math.Abs(Math.Abs(sf.radii[1])-radius)<1e-12,"constant radius definition");
     M.PK_VECTOR_s* blendJet=stackalloc M.PK_VECTOR_s[4];M.PK_VECTOR_s* supportJet=stackalloc M.PK_VECTOR_s[4];
     PK_VECTOR_t* expectedJet=stackalloc PK_VECTOR_t[1];var lowSupport=0;var highSupport=0;
+    var finite=FiniteBlendRange(body,own);
     for(var i=1;i<=9;i++)
     {
-        var u=sf.spine_extent.value[0]+(sf.spine_extent.value[1]-sf.spine_extent.value[0])*i/10;var center=new M.PK_VECTOR_s();
+        var u=finite.First+(finite.Last-finite.First)*i/10;var center=new M.PK_VECTOR_s();
         Check(KernelRuntime.CurveEval(sf.spine,u,0,&center),"rolling center");var firstContactSupport=0;
         for(var side=0;side<=2;side++)
         {
@@ -184,6 +185,33 @@ static unsafe void ValidateBlend(int own,int native,double radius)
         }
     }
     Console.WriteLine("PASS 9 sections: radius, both contact positions and tangent continuity, independent native geometry");
+}
+static unsafe (double First,double Last) FiniteBlendRange(int body,int surface)
+{
+    var owner=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var face=owner.FirstFaceBody;var found=-1;
+    for(var f=0;f<owner.FaceCountBody;f++,face=KernelRuntime.Faces[face].NextInBody)if(KernelRuntime.Faces[face].SurfTag==surface)found=face;
+    Require(found>=0,"actual finite Blend face");Span<double> ranges=stackalloc double[4];var contacts=0;var loop=KernelRuntime.Faces[found].FirstLoop;
+    for(var l=0;l<KernelRuntime.Faces[found].LoopCount;l++,loop=KernelRuntime.Loops[loop].NextInFace)
+    {
+        var fin=KernelRuntime.Loops[loop].FirstFin;
+        for(var e=0;e<KernelRuntime.Loops[loop].FinCount;e++,fin=KernelRuntime.Fins[fin].NextInLoop)
+        {
+            var edgeSlot=KernelRuntime.Fins[fin].Edge;if(edgeSlot<0)continue;var edge=KernelRuntime.Edges[edgeSlot];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)];
+            if(curve.Class!=CurveClass.ICurve)continue;var data=KernelRuntime.ICurveDataPool[curve.DataIndex];
+            if(data.IsBlendContact==0)continue;
+            Require(contacts<2&&edge.HasParameterRange!=0,"two finite contact edges");
+            for(var side=0;side<2;side++)
+            {
+                M.PK_VECTOR_s point;M.PK_UV_s uv;
+                Check(KernelRuntime.CurveEval(edge.CurveTag,side==0?edge.ParameterStart:edge.ParameterEnd,0,&point),"actual finite contact endpoint");
+                Check(KernelRuntime.SurfParameteriseVector(surface,point,&uv),"finite contact on own Blend");ranges[2*contacts+side]=uv.param[0];
+            }
+            if(ranges[2*contacts]>ranges[2*contacts+1])(ranges[2*contacts],ranges[2*contacts+1])=(ranges[2*contacts+1],ranges[2*contacts]);contacts++;
+        }
+    }
+    Require(contacts==2&&Math.Abs(ranges[0]-ranges[2])<1e-8&&Math.Abs(ranges[1]-ranges[3])<1e-8,$"this fixture has constant-u finite cap sections: contacts={contacts}, intervals=[{ranges[0]:R},{ranges[1]:R}]/[{ranges[2]:R},{ranges[3]:R}]");
+    var first=Math.Max(ranges[0],ranges[2]);var last=Math.Min(ranges[1],ranges[3]);Require(last>first,"positive finite Blend extent");
+    Console.WriteLine($"FINITE Blend sampling extent=[{first:R},{last:R}] from actual contact edges");return(first,last);
 }
 static unsafe int ContactParameters(int surface,M.PK_VECTOR_s point,out M.PK_UV_s uv)
 {

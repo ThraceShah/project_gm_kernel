@@ -1,7 +1,10 @@
 # Certified finite rolling continuation
 
 `CreateFiniteRollingBlend` is an internal constructor for a local modeling
-consumer with explicit outward planar termination faces. It keeps the existing
+consumer with explicit planar barriers directed out of the selected finite
+branch. A notch cap's material normal can point into that interval; the caller
+therefore orients its tracing barrier from an interior branch witness rather
+than equating material sense with termination direction. It keeps the existing
 public `SURF_create_blend` behavior and the B-surface's original knot domain.
 The existing B-surface evaluator and interval spline bounds already implement
 the same tensor-product linear extension outside that domain. Polynomial

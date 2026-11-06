@@ -60,6 +60,7 @@ internal static unsafe partial class KernelRuntime
             else if(sf.Class==SurfaceClass.BSurface)
             {
                 var view=GetBSurfaceView(BSurfaceDataStore[sf.DataIndex]);var best=new ProjectionPoint{DistanceUpper=double.PositiveInfinity};
+                var regularity=RollingBallReach.ValidateC1NaturalDomain(view);if(regularity!=AlgorithmStatus.Success)return IntersectionError(regularity);
                 var uv=new PK_UV_s();var strength=double.PositiveInfinity;var distanceSquared=new IntervalNumber(double.NegativeInfinity,double.PositiveInfinity);var gradientSquared=distanceSquared;
                 if(support){var inverse=IntersectionSurfaceParameters(sf,contacts[supports.IndexOf(face)],out uv);if(inverse!=AlgorithmStatus.Success)return IntersectionError(inverse);}
                 var count=(view.UVertexCount-view.UDegree)*(view.VVertexCount-view.VDegree);if(count>64)return CornerReject(BlendCornerEvent.UncertifiedClearance);

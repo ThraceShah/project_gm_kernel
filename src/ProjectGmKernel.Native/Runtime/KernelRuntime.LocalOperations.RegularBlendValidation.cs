@@ -3,19 +3,22 @@ using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RegularBlendDomainStage:byte{Face,Extent,Band,Material,Complete}
+    internal enum RegularBlendDomainStage:byte{Face,Extent,Band,Material,ContactSeparation,ContactPlacement,Complete}
     [ThreadStatic] internal static RegularBlendDomainStage LastRegularBlendDomainStage;
     [ThreadStatic] internal static FaceTag LastRegularBlendDomainFace;
     [ThreadStatic] internal static BufferCount LastRegularBlendDomainCells;
     [ThreadStatic] internal static AlgorithmStatus LastRegularBlendDomainStatus;
-    // Certify whole-band clearance for four-sided supports, including both
-    // contacts. Existing finite obstacles may be separated by interval boxes;
+    [ThreadStatic] internal static BufferOffset LastRegularContactPiece,LastRegularContactOtherPiece;
+    [ThreadStatic] internal static BufferCount LastRegularContactPieces,LastRegularContactOtherPieces;
+    // Certify whole-band clearance, including both contacts. Finite support
+    // placement is checked after proving separation from all other faces;
     // interacting fillets and self-intersections still require local repair.
     private static int ValidateRegularBlendDomain(BodySlot body,ReadOnlySpan<FaceSlot> supports,
         ReadOnlySpan<FaceSlot> caps,SurfTag blend,double first,double last,bool removesMaterial)
@@ -23,9 +26,7 @@ internal static unsafe partial class KernelRuntime
         const double tolerance=1e-9;
         if(supports.Length!=2||caps.Length!=2||!double.IsFinite(first)||!double.IsFinite(last)||!(last>first))
             return ParasolidConstants.PK_ERROR_not_implemented;
-        foreach(var support in supports)
-            if(Faces[support].LoopCount!=1||Loops[Faces[support].FirstLoop].FinCount!=4)
-                return ParasolidConstants.PK_ERROR_not_implemented;
+        foreach(var support in supports)if(RegularBlendAreaLoopCount(support)!=1)return ParasolidConstants.PK_ERROR_not_implemented;
         var slot=GetSurfaceSlotByTag(blend);
         if(slot<0||Surfaces[slot].Class!=SurfaceClass.BlendSurface)return ParasolidConstants.PK_ERROR_not_implemented;
         var record=Surfaces[slot];
@@ -95,7 +96,7 @@ internal static unsafe partial class KernelRuntime
                             var distance=(bounds[0]-plane.Origin.X)*normal.X+(bounds[1]-plane.Origin.Y)*normal.Y
                                 +(bounds[2]-plane.Origin.Z)*normal.Z+new IntervalNumber(-deviation,deviation);
                             if(!distance.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                            if(distance.Upper<=tolerance)continue;
+                            if(distance.Upper< -tolerance)continue;
                             if(distance.Lower>tolerance)return ParasolidConstants.PK_ERROR_radius_too_large;
                         }
                         else if(bounds[0].Upper<obstacle.XLo-tolerance||bounds[0].Lower>obstacle.XHi+tolerance
@@ -149,5 +150,92 @@ internal static unsafe partial class KernelRuntime
             if(enclosure!=ParasolidConstants.PK_enclosure_inside_c)return ParasolidConstants.PK_ERROR_radius_too_large;
         }
         LastRegularBlendDomainStage=RegularBlendDomainStage.Complete;return 0;
+    }
+
+    private static BufferCount RegularBlendAreaLoopCount(FaceSlot face)
+    {
+        var count=0;var loop=Faces[face].FirstLoop;
+        for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)if(!RegularVertexLoop(loop,out _))count++;
+        return count;
+    }
+
+    // Local nearest-foot uniqueness does not imply global reach. Explicitly
+    // separate each complete contact from the other support before using a
+    // finite-face witness: otherwise a contact could cross their old sharp
+    // intersection while the solver followed another local nearest foot.
+    private static int ValidateRegularContactPlacement(EdgeSlot selected,ReadOnlySpan<FaceSlot> supports,
+        ReadOnlySpan<CurveTag> contacts,ReadOnlySpan<double> first,ReadOnlySpan<double> last)
+    {
+        Span<IntervalNumber> bandPoles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],supportPoles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
+        Span<IntervalNumber> contactBounds=stackalloc IntervalNumber[9];Span<SurfaceBoundCacheEntry> certified=stackalloc SurfaceBoundCacheEntry[1];
+        BufferCount visited=0;ModelingPerformance.Context profile=default;using var evidence=new ModelingPerformance.Scope(&profile,immutableGeometry:true);
+        for(var side=0;side<2;side++)
+        {
+            LastRegularBlendDomainStage=RegularBlendDomainStage.ContactSeparation;LastRegularBlendDomainCells=0;
+            var contact=ICurveDataPool[Curves[GetCurveSlotByTag(contacts[side])].DataIndex];
+            var status=BlendContactInterval(contact,Math.Min(first[side],last[side]),Math.Max(first[side],last[side]),out var lo,out var hi);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            var band=GetSurfaceSlotByTag(contact.Surface1Tag);var other=GetSurfaceSlotByTag(Faces[supports[1-side]].SurfTag);
+            LastRegularBlendDomainFace=Faces[supports[1-side]].Header.Tag;
+            status=RegularSurfaceExtent(band,out var extent);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            LastRegularContactPieces=RegularSurfacePatchCount(band);LastRegularContactOtherPieces=RegularSurfacePatchCount(other);
+            for(var p=0;p<RegularSurfacePatchCount(band);p++)
+            {
+                status=RegularSurfacePatch(band,p,extent,bandPoles,out var patch);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                var a=Math.Max(lo,patch.Domain.U0);var b=Math.Min(hi,patch.Domain.U1);if(!(b>a))continue;
+                var iso=new SurfaceIntersectionPatch(patch,false,BlendContactV(contact),a,b);
+                status=BoundRegularContactChart(iso,contactBounds,ref visited);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                var parent=new SurfaceBoundCacheEntry{Box=iso.Domain,Status=AlgorithmStatus.Success};contactBounds.CopyTo(parent.Values);
+                var bounded=new SurfaceIntersectionPatch(iso,certified,pinned:true);
+                for(var q=0;q<RegularSurfacePatchCount(other);q++)
+                {
+                    LastRegularContactPiece=p;LastRegularContactOtherPiece=q;
+                    certified[0]=parent;
+                    status=RegularSurfacePatch(other,q,extent,supportPoles,out var support);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                    if(!(support.Domain.U1>support.Domain.U0&&support.Domain.V1>support.Domain.V0))continue;
+                    status=ParametricPatchSeparation.CertifyDisjoint(bounded,support,iso.Domain,support.Domain,1e-9,ref visited,32768);
+                    LastRegularBlendDomainStatus=status;LastRegularBlendDomainCells=visited;
+                    if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                }
+            }
+            var face=supports[side];var loop=Faces[face].FirstLoop;
+            for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
+            {
+                if(RegularVertexLoop(loop,out _))continue;var fin=Loops[loop].FirstFin;
+                for(var k=0;k<Loops[loop].FinCount;k++,fin=Fins[fin].NextInLoop)
+                {
+                    var edge=Fins[fin].Edge;if(edge==selected)continue;
+                    if(!LocalEdgeFaces(edge,out var a,out var b))return ParasolidConstants.PK_ERROR_not_implemented;
+                    if(a==supports[1-side]||b==supports[1-side])return ParasolidConstants.PK_ERROR_not_implemented;
+                }
+            }
+            LastRegularBlendDomainStage=RegularBlendDomainStage.ContactPlacement;
+            var error=SheetCurveUV(Faces[face].SurfTag,contacts[side],first[side]+(last[side]-first[side])*.5,true,out var uv,out _,out _);if(error!=0)return error;
+            error=SheetSourceContains(face,uv,out var inside);if(error!=0)return error;
+            if(!inside)return ParasolidConstants.PK_ERROR_radius_too_large;
+        }
+        LastRegularBlendDomainStage=RegularBlendDomainStage.Complete;return 0;
+    }
+
+    // A nested chart may need several local implicit tubes before it has a
+    // useful bound. Certify their complete hull once, then reuse that parent
+    // bound for every other support chart; never repeat the same failed tube
+    // refinement for spatially unrelated candidate pairs.
+    private static AlgorithmStatus BoundRegularContactChart(in SurfaceIntersectionPatch contact,Span<IntervalNumber> output,ref BufferCount visited)
+    {
+        Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[64];Span<BufferCount> depths=stackalloc BufferCount[64];
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];pending[0]=contact.Domain;depths[0]=0;var count=1;var first=true;
+        while(count>0)
+        {
+            if(++visited>32768)return AlgorithmStatus.NotConverged;
+            var at=--count;var box=pending[at];var depth=depths[at];var status=contact.Bound(box,bounds);
+            if(status==AlgorithmStatus.Success)
+            {for(var d=0;d<9;d++)output[d]=first?bounds[d]:IntervalNumber.Hull(output[d],bounds[d]);first=false;continue;}
+            if(status!=AlgorithmStatus.NotConverged)return status;
+            if(depth>=32||count+2>pending.Length)return AlgorithmStatus.NotConverged;
+            var middle=box.U0+(box.U1-box.U0)*.5;if(!(middle>box.U0&&middle<box.U1))return AlgorithmStatus.NotConverged;
+            pending[count]=new(box.U0,middle,box.V0,box.V1);depths[count++]=depth+1;
+            pending[count]=new(middle,box.U1,box.V0,box.V1);depths[count++]=depth+1;
+        }
+        return first?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;
     }
 }

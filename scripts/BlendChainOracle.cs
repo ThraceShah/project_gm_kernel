@@ -93,6 +93,7 @@ static unsafe void FixChain(bool own,int body,int[] edges,double radius)
     if(own&&ModelingPerformance.Enabled)PrintProfile("FixBlends");
     if(own&&error!=0&&KernelRuntime.IsValidTag(KernelRuntime.LastRegularBlendDomainFace))
     {
+        Console.WriteLine($"contact proof pair={KernelRuntime.LastRegularContactPiece}/{KernelRuntime.LastRegularContactPieces} x {KernelRuntime.LastRegularContactOtherPiece}/{KernelRuntime.LastRegularContactOtherPieces}");
         var face=KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(KernelRuntime.LastRegularBlendDomainFace).Slot];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(face.SurfTag)];Console.WriteLine($"obstacle class={surface.Class}, orientation={face.Orientation}, surfaceSense={surface.Sense}");
         if(surface.Class==SurfaceClass.Plane){var p=new M.PK_PLANE_sf_s();Check(KernelRuntime.PlaneAsk(surface.Header.Tag,&p),"obstacle plane");Console.WriteLine($"obstacle origin={p.basis_set.location.coord[0]:R},{p.basis_set.location.coord[1]:R},{p.basis_set.location.coord[2]:R} axis={p.basis_set.axis.coord[0]:R},{p.basis_set.axis.coord[1]:R},{p.basis_set.axis.coord[2]:R}");}
     }

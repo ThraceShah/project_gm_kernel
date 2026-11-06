@@ -10,7 +10,7 @@ public unsafe class BlendMarkOrderTests:IDisposable
     public void Dispose(){KernelRuntime.SessionStop();}
 
     [Theory]
-    [InlineData(0)] [InlineData(1)] [InlineData(2)]
+    [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)]
     public void TrivalentProductOriginsFollowTheSuppliedMarkOrder(int rotation)
     {
         var body=RegularSolidBlendTests.Roof();Assert.True(KernelRuntime.TryResolveBodySlot(body,out var slot));
@@ -21,6 +21,7 @@ public unsafe class BlendMarkOrderTests:IDisposable
         for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
             if(KernelRuntime.Edges[edge].StartVertex==corner||KernelRuntime.Edges[edge].EndVertex==corner)incident[count++]=KernelRuntime.Edges[edge].Header.Tag;
         Assert.Equal(3,count);Span<int> ordered=stackalloc int[3];for(var i=0;i<3;i++)ordered[i]=incident[(i+rotation)%3];
+        if(rotation>=3)(ordered[0],ordered[1])=(ordered[1],ordered[0]);
         var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};fixed(int* p=ordered)Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(3,p,.1,&set,&count,null));
         var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;int* origins;
         Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,&origins,&fault,&fe,&ft));

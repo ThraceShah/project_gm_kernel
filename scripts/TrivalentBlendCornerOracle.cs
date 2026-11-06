@@ -19,7 +19,18 @@ unsafe
   try
   {
    var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","trivalent-corner-oracle");Directory.CreateDirectory(directory);
-   var consumer=args.Contains("--consumer");var refillet=args.Contains("--refillet");var lifecycle=args.Contains("--lifecycle");var orderText=args.FirstOrDefault(a=>a.StartsWith("--order=",StringComparison.Ordinal));var permutation=orderText==null?0:int.Parse(orderText.AsSpan(8));Require(permutation>=0&&permutation<3,"cyclic three-edge order");var filtered=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();var cases=filtered.Length==0?new[]{"base","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","uv-scaled","tilted","extended-tilted","skew-base","skew-rigid","skew-mirror-scale","skew-tilted","zero-single","zero-double","zero-all","zero-near","zero-single-mirror-scale","zero-double-tilted","zero-all-mirror-scale"}:filtered;
+   var inputAt=Array.IndexOf(args,"--refillet-input");
+   if(inputAt>=0)
+   {
+    Require(inputAt+2<args.Length&&!Path.IsPathRooted(args[inputAt+1])&&!Path.IsPathRooted(args[inputAt+2]),"two script-relative self/reference XT paths");
+    var own=ReceiveManaged(File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(ScriptPath())!,args[inputAt+1])));
+    var reference=Receive(File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(ScriptPath())!,args[inputAt+2])));
+    try{RefilletCornerCut(false,reference);RefilletCornerCut(true,own);var received=Receive(Transmit(own));try{CheckBody(received,"refillet received");CheckBody(reference,"refillet reference");Compare(reference,received,"refillet from saved inputs");}finally{Check(PK_ENTITY_delete(1,&received),"delete refillet receive");}}
+    finally{Check(KernelRuntime.EntityDelete(1,&own),"delete refillet self");Check(PK_ENTITY_delete(1,&reference),"delete refillet reference");}
+    Require(KernelRuntime.Bodies.AliveCount==0&&KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0,"refillet input geometry lifecycle");Console.WriteLine("PASS strict re-fillet from independently saved inputs");
+    return;
+   }
+   var consumer=args.Contains("--consumer");var refillet=args.Contains("--refillet");var lifecycle=args.Contains("--lifecycle");var orderText=args.FirstOrDefault(a=>a.StartsWith("--order=",StringComparison.Ordinal));var permutation=orderText==null?0:int.Parse(orderText.AsSpan(8));Require(permutation>=0&&permutation<6,"six three-edge permutations");var filtered=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();var cases=filtered.Length==0?new[]{"base","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","uv-scaled","tilted","extended-tilted","skew-base","skew-rigid","skew-mirror-scale","skew-tilted","zero-single","zero-double","zero-all","zero-near","zero-single-mirror-scale","zero-double-tilted","zero-all-mirror-scale"}:filtered;
    foreach(var name in cases)
    {
     foreach(var authorOwn in args.Contains("--native-author")?new[]{false}:args.Contains("--self-author")?new[]{true}:new[]{false,true})
@@ -58,7 +69,8 @@ static unsafe int Corner(bool own,string name,byte[] source,int permutation)
  {
   var compare=remote[j].coord[2].CompareTo(remote[i].coord[2]);if(compare==0)compare=remote[j].coord[0].CompareTo(remote[i].coord[0]);if(compare==0)compare=remote[j].coord[1].CompareTo(remote[i].coord[1]);if(compare>0){(selected[i],selected[j])=(selected[j],selected[i]);(remote[i],remote[j])=(remote[j],remote[i]);}
  }
- for(var i=0;i<permutation;i++){var first=selected[0];selected[0]=selected[1];selected[1]=selected[2];selected[2]=first;}
+ for(var i=0;i<permutation%3;i++){var first=selected[0];selected[0]=selected[1];selected[1]=selected[2];selected[2]=first;}
+ if(permutation>=3)(selected[0],selected[1])=(selected[1],selected[0]);
  Console.WriteLine($"SELECTED {(own?"self":"native")} order={permutation}: {selected[0]},{selected[1]},{selected[2]}");
 
  var scale=name.EndsWith("mirror-scale",StringComparison.Ordinal)?1.7:1.0;
@@ -140,7 +152,7 @@ static unsafe void RefilletCornerCut(bool own,int body)
  if(own){var bs=KernelRuntime.ResolveTagRecord(body).Slot;var selectedRecord=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(selected).Slot];var cv=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(selectedRecord.CurveTag)];Console.WriteLine($"REFILLET source regions={KernelRuntime.Bodies[bs].RegionCount},shells={KernelRuntime.Bodies[bs].ShellCount},edge={selected},class={cv.Class},finite={selectedRecord.HasParameterRange},range=[{selectedRecord.ParameterStart},{selectedRecord.ParameterEnd}],vertices={selectedRecord.StartVertex}/{selectedRecord.EndVertex}");}
  var mark=new PK_EDGE_set_blend_constant_o_t();mark.properties.tolerance=1e-7;int count;int* marked;Check(own?KernelRuntime.EdgeSetBlendConstant(1,&selected,.025,(M.PK_EDGE_set_blend_constant_o_s*)&mark,&count,&marked):PK_EDGE_set_blend_constant(1,&selected,.025,&mark,&count,&marked),"set generated curved edge radius");Free(own,marked);
  var options=new PK_BODY_fix_blends_o_t{update=PK_blend_edge_update_v261_c,tolerance=1e-7};int fault,edge,topol;var start=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&options,&count,null,null,null,&fault,&edge,&topol):PK_BODY_fix_blends(body,&options,&count,null,null,null,&fault,&edge,&topol);
- Console.WriteLine($"TIME {(own?"self":"native")} new curved edge r=.025 {Stopwatch.GetElapsedTime(start).TotalMilliseconds:F1}ms error={error},count={count},fault={fault},stage={KernelRuntime.LastRegularBlendStage}");Check(error,"re-fillet generated curved edge");Require(fault==PK_blend_fault_no_fault_c&&count==1,"one new real Blend without fault");
+ Console.WriteLine($"TIME {(own?"self":"native")} new curved edge r=.025 {Stopwatch.GetElapsedTime(start).TotalMilliseconds:F1}ms error={error},count={count},fault={fault},stage={KernelRuntime.LastRegularBlendStage},domain={KernelRuntime.LastRegularBlendDomainStage}/{KernelRuntime.LastRegularBlendDomainFace}/{KernelRuntime.LastRegularBlendDomainStatus}");Check(error,"re-fillet generated curved edge");Require(fault==PK_blend_fault_no_fault_c&&count==1,"one new real Blend without fault");
 }
 static unsafe int CutCorner(bool own,int target,int tool)
 {
