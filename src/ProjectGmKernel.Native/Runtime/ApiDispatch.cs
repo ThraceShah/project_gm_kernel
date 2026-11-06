@@ -156,6 +156,7 @@ internal enum ApiId : ushort
     FaceOffset2 = 226,
     BodyHollow = 227,
     BodyHollow2 = 228,
+    EdgeSplitAtParam = 229,
     GeneratedStub = 65535,
 }
 

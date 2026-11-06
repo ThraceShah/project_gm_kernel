@@ -1898,12 +1898,6 @@ internal static unsafe partial class KernelExports
         return KernelRuntime.NotImplemented();
     }
 
-    [UnmanagedCallersOnly(EntryPoint = "PK_EDGE_split_at_param")]
-    public static int PK_EDGE_split_at_param(int arg0, double arg1, int* arg2, int* arg3)
-    {
-        return KernelRuntime.NotImplemented();
-    }
-
     [UnmanagedCallersOnly(EntryPoint = "PK_ENTITY_ask_attribs")]
     public static int PK_ENTITY_ask_attribs(int arg0, int arg1, int* arg2, nint* arg3)
     {
