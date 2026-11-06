@@ -13,6 +13,10 @@ namespace ProjectGmKernel.Native.Geometry.Intersection;
 internal static class ConvexPlaneContacts
 {
     internal static AlgorithmStatus Find(in BSurfaceView surface,in AnalyticSurface plane,Span<KernelVector3> points,out BufferCount count)
+        =>Find(surface,plane,points,default,out count);
+
+    internal static AlgorithmStatus Find(in BSurfaceView surface,in AnalyticSurface plane,Span<KernelVector3> points,
+        Span<SurfaceIntersectionNode> locations,out BufferCount count)
     {
         count=0;if(plane.Kind!=SurfaceClass.Plane)return AlgorithmStatus.Unsupported;
         Span<IntervalNumber> source=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],scalar=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
@@ -63,8 +67,18 @@ internal static class ConvexPlaneContacts
             if(value[0].Magnitude!=0||uJet[0].Magnitude!=0||vJet[0].Magnitude!=0)return AlgorithmStatus.Unsupported;
             status=BezierSurfaceBounds.Bound(new(source[..size],p,q,domain),atRoot,value);if(status!=AlgorithmStatus.Success)return status;
             var point=new KernelVector3{X=value[0].Midpoint,Y=value[1].Midpoint,Z=value[2].Midpoint};
-            var duplicate=false;for(var i=0;i<count;i++)if(OperationIntersection.Norm(EvaluationMath.Sub(point,points[i]))<OperationIntersection.DistanceTolerance)duplicate=true;
-            if(!duplicate){if(count==points.Length)return AlgorithmStatus.OutputTooSmall;points[count++]=point;}
+            var duplicate=false;for(var i=0;i<count;i++)if(OperationIntersection.Norm(EvaluationMath.Sub(point,points[i]))<OperationIntersection.DistanceTolerance
+                &&(locations.IsEmpty||Math.Abs(locations[i].U-x)<2e-10&&Math.Abs(locations[i].V-y)<2e-10))duplicate=true;
+            if(!duplicate)
+            {
+                if(count==points.Length||!locations.IsEmpty&&count==locations.Length)return AlgorithmStatus.OutputTooSmall;
+                if(!locations.IsEmpty)
+                {
+                    status=OperationIntersection.Parameters(plane,point,out var s,out var t);if(status!=AlgorithmStatus.Success)return status;
+                    locations[count]=new(){Point=point,U=x,V=y,S=s,T=t};
+                }
+                points[count++]=point;
+            }
         }
         return AlgorithmStatus.Success;
     }
