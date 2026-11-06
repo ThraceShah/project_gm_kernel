@@ -17,8 +17,9 @@ using(host)unsafe
     var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"own session");
     try
     {
+        if(args.Contains("--precision-evidence",StringComparer.Ordinal)){CharacterizeImprintPrecision();return;}
         var passed=0;var failures=0;
-        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded"})
+        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
             var name=$"{kind}-{function}";if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
@@ -42,12 +43,13 @@ using(host)unsafe
     finally{Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 
-static unsafe int[] Produce(bool own,string kind,int function)
+static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1)
 {
     var target=Roof(own,0,0,0,.8);int tool;
     if(kind.StartsWith("same-domain",StringComparison.Ordinal))
     {
         tool=Roof(own,0,0,0,.8);
+        if(kind.Contains("partial",StringComparison.Ordinal)){target=TrimSource(own,target,Block(own,.1,.5,.25,.6,2,2));tool=TrimSource(own,tool,Block(own,.9,.5,.25,.6,2,2));}
         if(own&&kind.EndsWith("reloaded",StringComparison.Ordinal)){var old=tool;tool=ReceiveOwn(Transmit(tool));Check(KernelRuntime.EntityDelete(1,&old),"delete serialized same-domain source");}
     }
     else if(kind=="nurbs")tool=Roof(own,.3,.2,.05,.2);
@@ -56,7 +58,8 @@ static unsafe int[] Produce(bool own,string kind,int function)
     else if(kind=="enclosed-tool")tool=Block(own,.5,.5,.25,.2,.2,.2);
     else if(kind=="enclosed-target")tool=Block(own,.5,.5,-.25,3,3,3);
     else tool=Block(own,.25,.25,.25,1,1,1);
-    var options=new PK_BODY_boolean_o_t{function=function,default_tol=1e-5,tracking=PK_LOGICAL_false};int count;int* bodies;
+    if(scale!=1){ScaleSource(own,target,scale);ScaleSource(own,tool,scale);}
+    var options=new PK_BODY_boolean_o_t{function=function,default_tol=tolerance,tracking=PK_LOGICAL_false};int count;int* bodies;
     if(kind is "continuous" or "reloaded" or "reloaded-block")
     {
         var first=options;first.function=PK_boolean_subtract_c;
@@ -206,3 +209,65 @@ static unsafe double Distance(PK_VECTOR_t a,PK_VECTOR_t b){var sum=0.0;for(var d
 static void Check(int error,string name){if(error!=0)throw new Exception($"{name}: error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, status={KernelRuntime.LastSheetAlgorithmStatus}");}
 static void Require(bool value,string message){if(!value)throw new Exception(message);}
 static string ScriptPath([CallerFilePath]string path="")=>path;
+
+static unsafe int TrimSource(bool own,int target,int tool)
+{
+    var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-5,tracking=PK_LOGICAL_false};int n;int* products;
+    Check(own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&products):PK_BODY_boolean(target,1,&tool,&options,&n,&products),"different finite trim source");
+    try{Require(n==1,"one finite trim source");if(!own)RequireAccurateSourceVertices(products[0]);return products[0];}
+    finally{if(products!=null)Check(own?KernelRuntime.MemoryFree(products):PK_MEMORY_free(products),"finite trim source results");}
+}
+static unsafe void ScaleSource(bool own,int body,double scale)
+{
+    var form=new M.PK_TRANSF_sf_s();form.matrix[0]=form.matrix[5]=form.matrix[10]=scale;form.matrix[15]=1;
+    form.matrix[3]=.375*scale;form.matrix[7]=-.25*scale;form.matrix[11]=.5*scale;int transform;
+    Check(own?KernelRuntime.TransfCreate(&form,&transform):PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&transform),"precision source transform");
+    int n;int* replacements;PK_LOGICAL_t* exact;
+    Check(own?KernelRuntime.BodyTransform(body,transform,0,&n,&replacements,(byte**)&exact):PK_BODY_transform(body,transform,0,&n,&replacements,&exact),"scale precision source");
+    if(replacements!=null)Check(own?KernelRuntime.MemoryFree(replacements):PK_MEMORY_free(replacements),"precision replacement list");
+    if(exact!=null)Check(own?KernelRuntime.MemoryFree(exact):PK_MEMORY_free(exact),"precision exact list");
+    Check(own?KernelRuntime.EntityDelete(1,&transform):PK_ENTITY_delete(1,&transform),"precision source transform release");
+}
+static unsafe void RequireAccurateSourceVertices(int body)
+{
+    double sigma;Check(PK_SESSION_ask_precision(&sigma),"source session precision");int n;int* vertices;
+    Check(PK_BODY_ask_vertices(body,&n,&vertices),"source vertices");
+    try{for(var i=0;i<n;i++){double value;Check(PK_VERTEX_ask_precision(vertices[i],&value),"source vertex precision");Require(value<=sigma*.500000000001,"ordinary transversal source junction remains accurate");}}
+    finally{if(vertices!=null)PK_MEMORY_free(vertices);}
+}
+static unsafe void CharacterizeImprintPrecision()
+{
+    double original;Check(PK_SESSION_ask_precision(&original),"original native precision");var cases=0;
+    try
+    {
+        foreach(var requested in new[]{1e-9,1e-8,1e-7,1e-6})foreach(var tolerance in new[]{1e-9,1e-8,1e-5,1e-3})foreach(var scale in new[]{.125,1,8})
+        {
+            Check(PK_SESSION_set_precision(requested),"set characterization precision");double sigma;Check(PK_SESSION_ask_precision(&sigma),"actual characterization precision");Require(sigma==requested,"session precision readback");
+            var products=Produce(false,"same-domain-partial",PK_boolean_subtract_c,tolerance,scale);Require(products.Length==1,"one characterization solid");var body=products[0];CheckBody(body,"precision characterization");
+            int n;int* vertices;Check(PK_BODY_ask_vertices(body,&n,&vertices),"event precision vertices");var welds=0;var accurate=0;
+            var dx=scale==1?0:.375*scale;var dy=scale==1?0:-.25*scale;var dz=scale==1?0:.5*scale;
+            try
+            {
+                for(var i=0;i<n;i++)
+                {
+                    int tag;double precision;PK_POINT_sf_t point;Check(PK_VERTEX_ask_point(vertices[i],&tag),"event point");Check(PK_POINT_ask(tag,&point),"event position");Check(PK_VERTEX_ask_precision(vertices[i],&precision),"event vertex precision");
+                    var x=point.position.coord[0];var y=point.position.coord[1];var z=point.position.coord[2];var epsilon=1e-9*Math.Max(1,scale);
+                    var side=Math.Abs(y-dy)<epsilon||Math.Abs(y-dy-scale)<epsilon;
+                    var welded=side&&Math.Abs(x-dx-scale)<epsilon&&Math.Abs(z-dz-.25*scale)<epsilon;
+                    var nurbs=side&&Math.Abs(x-dx-.6*scale)<epsilon&&Math.Abs(z-dz-scale)<epsilon;
+                    if(welded){welds++;Require(Math.Abs(precision-Math.Max(1e-7,sigma*.5))<1e-18,"PK38 planar imprint metadata minimum");}
+                    if(nurbs){accurate++;Require(Math.Abs(precision-sigma*.5)<1e-18,"true NURBS junction remains accurate");}
+                }
+            }
+            finally{if(vertices!=null)PK_MEMORY_free(vertices);}
+            Require(welds==2&&accurate==2,"both manufactured imprint events and NURBS counterexamples");
+            int edges;int* list;Check(PK_BODY_ask_edges(body,&edges,&list),"event edge precisions");
+            try{for(var i=0;i<edges;i++){double precision;Check(PK_EDGE_ask_precision(list[i],&precision),"event edge precision");Require(precision<=sigma*.500000000001,"imprint vertex minimum is not inherited from tolerant edges");}}
+            finally{if(list!=null)PK_MEMORY_free(list);}
+            Console.WriteLine($"PASS precision sigma={sigma:R} default_tol={tolerance:R} scale={scale:R}: planar_welds={welds} radius={Math.Max(1e-7,sigma*.5):R}, accurate_nurbs={accurate}, accurate_incident_edges={edges}");
+            Check(PK_ENTITY_delete(1,&body),"release precision result");cases++;
+        }
+    }
+    finally{Check(PK_SESSION_set_precision(original),"restore native precision");}
+    Require(cases==48,"full precision mutation matrix");Console.WriteLine("PASS all 48 independent PK38 imprint precision mutations");
+}

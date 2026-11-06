@@ -248,7 +248,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var mapped=vertexMap[v];var original=model.OriginalVertices[v];
                 if(mapped>=0&&original>=0&&(vertexOwners[mapped]==-2||vertexOwners[mapped]!=Vertices[original].Body)&&model.VertexMergeCandidates[v]!=0)
-                    return ParasolidConstants.PK_ERROR_not_implemented; // Newly welded event precision is not yet certified.
+                    vertexPrecisions[mapped]=Math.Max(vertexPrecisions[mapped],RegularPlanarImprintMinimumPrecision);
             }
             var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities);if(built!=0)return built;
             var vertex=Bodies[TagRec(body).Slot].FirstVertexBody;

@@ -8,6 +8,11 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    // PK38 planar cross-body imprint merge metadata. This independently
+    // characterized minimum is not derived from session/default_tol or a
+    // measured geometric residual; existing larger source precision survives.
+    private const double RegularPlanarImprintMinimumPrecision=1e-7;
+
     private static bool RegularPlanarImprintJunction(in RegularBoundaryView input,BufferOffset point,BufferOffset edge)
     {
         for(var f=0;f<input.Faces.Length;f++)

@@ -10,20 +10,36 @@ public unsafe class IntersectionEventBooleanTests:IDisposable
     public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
 
     [Theory]
-    [InlineData(15903)] [InlineData(15901)] [InlineData(15902)]
-    public void UnresolvedPrecisionOfANewPlanarImprintJunctionRejectsAtomically(int function)
+    [InlineData(15903,false)] [InlineData(15901,false)] [InlineData(15902,false)]
+    [InlineData(15903,true)] [InlineData(15901,true)] [InlineData(15902,true)]
+    public void CoincidentSupportWithDifferentTrimLoopsUsesTheFullFiniteOverlay(int function,bool reload)
     {
         var target=RegularCurvedBooleanTests.RoofSolid();var tool=RegularCurvedBooleanTests.RoofSolid();
         Subtract(target,BooleanOperationTests.Block(.1,.5,.25,.6,2,2));Subtract(tool,BooleanOperationTests.Block(.9,.5,.25,.6,2,2));
-        var beforeTarget=XtBrepImportTests.Transmit(target);var beforeTool=XtBrepImportTests.Transmit(tool);
-        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        if(reload){Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(tool),out var loaded));Assert.Equal(0,KernelRuntime.EntityDelete(1,&tool));tool=loaded;}
         var options=BooleanOperationTests.Options(function);int count;int* products;
-        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&products));
-        Assert.Equal(0,count);Assert.True(products==null);
-        Assert.Equal(beforeTarget,XtBrepImportTests.Transmit(target));Assert.Equal(beforeTool,XtBrepImportTests.Transmit(tool));
-        Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
-        int* bodies=stackalloc int[2]{target,tool};Assert.Equal(0,KernelRuntime.EntityDelete(2,bodies));
-        Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+        var error=KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&products);
+        Assert.True(error==0,$"error={error}, stage={KernelRuntime.LastRegularBooleanStage}, pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}, curve={KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter}, sheet={KernelRuntime.LastSheetPartitionStage}, status={KernelRuntime.LastSheetAlgorithmStatus}, uv={KernelRuntime.LastSheetRayU}/{KernelRuntime.LastSheetRayV}");
+        try
+        {
+            Assert.Equal(1,count);CheckPoint(target,.2,.5,.5,function==15903);CheckPoint(target,.5,.5,.5,function!=15902);CheckPoint(target,.8,.5,.5,function!=15901);
+            Assert.True(KernelRuntime.TryResolveBodySlot(target,out var slot));var vertex=KernelRuntime.Bodies[slot].FirstVertexBody;var merged=0;var accurateNurbs=0;
+            for(var v=0;v<KernelRuntime.Bodies[slot].VertexCountBody;v++,vertex=KernelRuntime.Vertices[vertex].NextInBody)
+            {
+                var record=KernelRuntime.Vertices[vertex];var point=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(record.PointTag)].Position;
+                if(record.Tolerance>0){merged++;Assert.Equal(1e-7,record.Tolerance);Assert.Equal(.25,point.Z,12);Assert.True(Math.Abs(point.X)<1e-12||Math.Abs(point.X-1)<1e-12);}
+                if(Math.Abs(point.Z-1)<1e-12&&(Math.Abs(point.X-.4)<1e-12||Math.Abs(point.X-.6)<1e-12)){accurateNurbs++;Assert.Equal(0,record.Tolerance);}
+            }
+            Assert.Equal(function==15903?4:2,merged);Assert.True(accurateNurbs>=2);
+        }
+        finally{if(products!=null)KernelRuntime.MemoryFree(products);}
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);
+    }
+
+    private static void CheckPoint(int body,double x,double y,double z,bool inside)
+    {
+        var p=new PK_VECTOR_s();p.coord[0]=x;p.coord[1]=y;p.coord[2]=z;int enclosure,topology;
+        Assert.Equal(0,KernelRuntime.BodyContainsVector(body,p,&enclosure,&topology));Assert.Equal(inside?ParasolidConstants.PK_enclosure_inside_c:ParasolidConstants.PK_enclosure_outside_c,enclosure);
     }
 
     private static void Subtract(int target,int tool)
