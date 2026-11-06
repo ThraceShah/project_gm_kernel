@@ -129,8 +129,10 @@ internal static unsafe partial class KernelRuntime
             Span<IntervalNumber> values=stackalloc IntervalNumber[9];CornerCylinderBounds(band,section,new(0,0,Math.Min(sectionA,sectionB),Math.Max(sectionA,sectionB)),values);
             var projection=(plane.Origin.X-values[0])*plane.Axis.X+(plane.Origin.Y-values[1])*plane.Axis.Y+(plane.Origin.Z-values[2])*plane.Axis.Z;
             var denom=Dot(tangent,plane.Axis);if(Math.Abs(denom)<1e-10)return CornerReject(BlendCornerEvent.UnsupportedSupport);
-            var length=projection/denom;if(!(length.Lower>1e-10))return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
-            domain=new(0,length.Upper,Math.Min(sectionA,sectionB),Math.Max(sectionA,sectionB));return 0;
+            var length=projection/denom;
+            if(!(length.Lower>1e-10||length.Upper< -1e-10))return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
+            direction=length.Lower>0?1:-1;tangent=Scale(tangent,direction);
+            domain=new(Math.Min(0,length.Lower),Math.Max(0,length.Upper),Math.Min(sectionA,sectionB),Math.Max(sectionA,sectionB));return 0;
         }
         var cv=Curves[GetCurveSlotByTag(contact)];var contactData=ICurveDataPool[cv.DataIndex];Span<KernelVector3> jet=stackalloc KernelVector3[2];
         var status=EvaluateBlendContact(contactData,near,0,jet,out var u);if(status!=AlgorithmStatus.Success)return EvaluationError(status);

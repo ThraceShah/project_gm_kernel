@@ -19,7 +19,8 @@ unsafe
   try
   {
    var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","trivalent-corner-oracle");Directory.CreateDirectory(directory);
-   var cases=args.Length==0?new[]{"base","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","tilted","extended-tilted"}:args;
+   var consumer=args.Contains("--consumer",StringComparer.Ordinal);var filtered=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();
+   var cases=filtered.Length==0?new[]{"base","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","tilted","extended-tilted"}:filtered;
    foreach(var name in cases)
    {
     foreach(var authorOwn in new[]{false,true})
@@ -29,6 +30,7 @@ unsafe
     var native=Corner(false,name,source);CheckBody(native,label+" native");File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitNative(native));
     var own=Corner(true,name,source);var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,label+"-self.x_t"),bytes);var received=Receive(bytes);CheckBody(received,label+" received");Compare(native,received,label);
     ValidateCorner(own,native,name.EndsWith("mirror-scale",StringComparison.Ordinal)?.17:.1);
+    if(consumer){Require(name=="base"||name=="extended-base","untransformed corner consumer");ConsumeCorner(ref own,ref native,label,directory);}
     Check(PK_ENTITY_delete(1,&received),"delete received");Check(PK_ENTITY_delete(1,&native),"delete reference");Check(KernelRuntime.EntityDelete(1,&own),"delete self corner");
     Require(KernelRuntime.Bodies.AliveCount==0&&KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0,"corner construction geometry lifecycle");
     Console.WriteLine("PASS "+label);
@@ -72,6 +74,24 @@ static unsafe int ReceiveManaged(byte[] source)
   var block=new M.PK_MEMORY_block_s{bytes=data,n_bytes=(nuint)source.Length};var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int count;int* parts;
   Check(KernelRuntime.PartReceiveB(block,(M.PK_PART_receive_o_s*)&options,&count,&parts),"self unmodified source receive");try{Require(count==1,"one source body");return parts[0];}finally{Free(true,parts);}
  }
+}
+static unsafe void ConsumeCorner(ref int own,ref int reference,string label,string directory)
+{
+ var reloaded=ReceiveManaged(Transmit(own));var old=own;Check(KernelRuntime.EntityDelete(1,&old),"delete pre-reload corner");own=reloaded;
+ var ownTool=Block(true,-.475,.5,-.1,1.05,2,2);var referenceTool=Block(false,-.475,.5,-.1,1.05,2,2);
+ own=CutCorner(true,own,ownTool);reference=CutCorner(false,reference,referenceTool);
+ File.WriteAllBytes(Path.Combine(directory,label+"-cut-self.x_t"),Transmit(own));File.WriteAllBytes(Path.Combine(directory,label+"-cut-reference.x_t"),TransmitNative(reference));
+ var received=Receive(Transmit(own));try{CheckBody(received,label+" cut received");CheckBody(reference,label+" cut reference");Compare(reference,received,label+" sphere-band-cut");}finally{Check(PK_ENTITY_delete(1,&received),"delete cut received");}
+ var points=new[]{new PK_VECTOR_t(.5,.5,.5),new PK_VECTOR_t(.02,.5,.5),new PK_VECTOR_t(.07,.1,.95),new PK_VECTOR_t(.07,.02,.99),new PK_VECTOR_t(2,2,2)};
+ foreach(var point in points){int a,b,t;Check(KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&point,&a,&t),"self cut material classification");Check(PK_BODY_contains_vector(reference,point,&b,&t),"native cut material classification");Require(a==b,"matching finite corner material region");}
+ Console.WriteLine("PASS reloaded Sphere/Blend crossing and 5 material classifications "+label);
+}
+static unsafe int CutCorner(bool own,int target,int tool)
+{
+ var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* results;var started=Stopwatch.GetTimestamp();
+ var error=own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&results):PK_BODY_boolean(target,1,&tool,&options,&n,&results);
+ Console.WriteLine($"TIME {(own?"self":"native")} Sphere/Blend cut ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");Check(error,"cut through spherical corner and Blend bands");
+ try{Require(n==1,"one corner cut result");return results[0];}finally{Free(own,results);}
 }
 static unsafe void ValidateCorner(int own,int reference,double radius)
 {

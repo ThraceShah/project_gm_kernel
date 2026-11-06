@@ -107,7 +107,13 @@ internal static unsafe partial class KernelRuntime
                 TryProfileEdgeRange(oldEdges[e],out var carrierFirst,out var carrierLast);
                 var carrierStatus=EvaluateCurveCore(in Curves[GetCurveSlotByTag(oldEdges[e].CurveTag)],(carrierFirst+carrierLast)*.5,1,false,jet,out _);if(carrierStatus!=AlgorithmStatus.Success)return EvaluationError(carrierStatus);
                 var carrierDirection=jet[1];if(!ProfileNormalize(ref carrierDirection))return CornerReject(BlendCornerEvent.UnsupportedSupport);
-                bands[e]=CreateCylinderSurfaceTag(center.X,center.Y,center.Z,axis.X,axis.Y,axis.Z,normals[a].X,normals[a].Y,normals[a].Z,radius);
+                // The natural carrier belongs to the selected edge. Its
+                // direction is independent of advancing away from the corner;
+                // later analytic intersections must inherit the same carrier.
+                var carrierOrigin=jet[0];var sourceCurve=Curves[GetCurveSlotByTag(oldEdges[e].CurveTag)];
+                if(sourceCurve.Class==CurveClass.Line){var line=LineDataPool[sourceCurve.DataIndex];carrierOrigin=new(){X=line.LocationX,Y=line.LocationY,Z=line.LocationZ};}
+                var origin=Sub(center,Scale(carrierDirection,Dot(Sub(center,carrierOrigin),carrierDirection)));
+                bands[e]=CreateCylinderSurfaceTag(origin.X,origin.Y,origin.Z,carrierDirection.X,carrierDirection.Y,carrierDirection.Z,normals[a].X,normals[a].Y,normals[a].Z,radius);
                 if(bands[e]<=0)return ParasolidConstants.PK_ERROR_memory_full;
                 for(var side=0;side<2;side++)
                 {
