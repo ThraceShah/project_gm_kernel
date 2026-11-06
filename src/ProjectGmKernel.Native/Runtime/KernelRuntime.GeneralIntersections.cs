@@ -72,6 +72,7 @@ internal static unsafe partial class KernelRuntime
                     var localNodes = ModelSpan<SurfaceIntersectionNode>(bytes, ref cursor, GeneralIntersectionNodeLimit);
                     var localEdges = ModelSpan<SurfaceIntersectionSegment>(bytes, ref cursor, GeneralIntersectionNodeLimit);
                     var nodeMap = ModelSpan<BufferOffset>(bytes, ref cursor, GeneralIntersectionNodeLimit);
+                    var nodeMotion=ModelSpan<double>(bytes,ref cursor,GeneralIntersectionNodeLimit);
                     var ln = 0; var le = 0;
                     if(analytic&&support.Kind==SurfaceClass.Plane)
                     {
@@ -82,7 +83,13 @@ internal static unsafe partial class KernelRuntime
                     else status = ParametricSurfaceIntersection.Find(patch, other, localNodes, ref ln, localEdges, ref le);
                     if (status != AlgorithmStatus.Success) return status;
                     if(analytic&&support.Kind==SurfaceClass.Plane)
-                        for(var i=0;i<ln;i++){status=PolishGeneralPlaneBoundaryAnchor(av,patch,support,ref localNodes[i]);if(status!=AlgorithmStatus.Success)return status;}
+                        for(var i=0;i<ln;i++)
+                        {
+                            var original=localNodes[i].Point;
+                            status=PolishGeneralPlaneBoundaryAnchor(av,patch,support,ref localNodes[i]);if(status!=AlgorithmStatus.Success)return status;
+                            nodeMotion[i]=GeneralAnchorMotionUpper(original,localNodes[i].Point);
+                            if(!double.IsFinite(nodeMotion[i]))return AlgorithmStatus.NotConverged;
+                        }
                     for (var i = 0; i < ln; i++)
                     {
                         if (analytic)
@@ -94,6 +101,12 @@ internal static unsafe partial class KernelRuntime
                         var found = -1;
                         for (var j = 0; j < nn; j++) if (GeneralIntersectionSameNode(first, second, nodes[j], localNodes[i])) { found = j; break; }
                         if (found < 0) { if (nn == nodes.Length) return AlgorithmStatus.OutputTooSmall; found = nn; nodes[nn++] = localNodes[i]; }
+                        if(analytic&&support.Kind==SurfaceClass.Plane)
+                        {
+                            var mergedMotion=GeneralAnchorMotionUpper(localNodes[i].Point,nodes[found].Point);
+                            if(!double.IsFinite(mergedMotion))return AlgorithmStatus.NotConverged;
+                            if(mergedMotion>0)nodeMotion[i]=(new IntervalNumber(nodeMotion[i])+mergedMotion).Upper;
+                        }
                         nodeMap[i] = found;
                     }
                     for (var i = 0; i < le; i++)
@@ -103,13 +116,29 @@ internal static unsafe partial class KernelRuntime
                         for (var j = 0; j < ne; j++) if (segments[j].Start == start && segments[j].End == end || segments[j].Start == end && segments[j].End == start) duplicate = true;
                         if (duplicate) continue;
                         if (ne == segments.Length) return AlgorithmStatus.OutputTooSmall;
-                        segments[ne++] = new() { Start = start, End = end,ChordalError=localEdges[i].ChordalError };
+                        var error=localEdges[i].ChordalError;
+                        if(analytic&&support.Kind==SurfaceClass.Plane)
+                        {
+                            // Linear interpolation of the endpoint motions
+                            // bounds the Hausdorff distance between the chords.
+                            var motion=Math.Max(nodeMotion[localEdges[i].Start],nodeMotion[localEdges[i].End]);
+                            if(motion>0)error=(new IntervalNumber(error)+motion).Upper;
+                            if(!double.IsFinite(error))return AlgorithmStatus.NotConverged;
+                        }
+                        segments[ne++] = new() { Start = start, End = end,ChordalError=error };
                     }
                 }
                 finally { scratch.Return(memory); }
             }
         }
         return analytic&&support.Kind==SurfaceClass.Plane?SurfacePlaneIntersection.ValidateGraph(nodes[..nn],segments[..ne]):AlgorithmStatus.Success;
+    }
+
+    private static double GeneralAnchorMotionUpper(in KernelVector3 original,in KernelVector3 current)
+    {
+        var dx=new IntervalNumber(current.X)-original.X;var dy=new IntervalNumber(current.Y)-original.Y;var dz=new IntervalNumber(current.Z)-original.Z;
+        var squared=IntervalNumber.Square(dx)+IntervalNumber.Square(dy)+IntervalNumber.Square(dz);
+        return !squared.Finite?double.NaN:squared.Upper>0?Math.BitIncrement(Math.Sqrt(squared.Upper)):0;
     }
 
     // Keep natural-boundary anchors on that exact boundary while reducing
