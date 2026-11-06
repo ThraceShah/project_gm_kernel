@@ -20,7 +20,7 @@ internal static unsafe partial class KernelRuntime
                 {
                     var edge=model.Coedges[loop.FirstCoedge+k].Edge;var other=first[edge];
                     if(other<0){first[edge]=f;continue;}
-                    if(model.Sources[f]!=model.Sources[other]||reversed[f]!=reversed[other]||(model.CutEdges[edge]&2)!=0)continue;
+                    if(model.Sources[f]!=model.Sources[other]||reversed[f]!=reversed[other]||!model.CutEdges.IsEmpty&&(model.CutEdges[edge]&2)!=0)continue;
                     var from=Math.Max(labels[f],labels[other]);var to=Math.Min(labels[f],labels[other]);
                     for(var j=0;j<=f;j++)if(labels[j]==from)labels[j]=to;
                 }
@@ -114,7 +114,7 @@ internal static unsafe partial class KernelRuntime
             for(var v=0;v<model.NP;v++)
             {
                 var a=first[v];var b=second[v];if(a<0||b<0||b>=model.NE||a==b)continue;
-                if(((model.CutEdges[a]|model.CutEdges[b])&2)!=0)continue;
+                if(!model.CutEdges.IsEmpty&&((model.CutEdges[a]|model.CutEdges[b])&2)!=0)continue;
                 var ea=model.Edges[a];var eb=model.Edges[b];
                 if(ea.Curve!=eb.Curve)
                 {
