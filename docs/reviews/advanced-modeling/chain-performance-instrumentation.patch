@@ -1,0 +1,75 @@
+--- scripts/BlendChainOracle.cs
++++ temp_docs/BlendChainPerformanceOracle.cs
+@@ -7,19 +7,25 @@
+ #:property AllowUnsafeBlocks=true
+ using static parasolid;
+ using ProjectGmKernel.Native.Runtime;
++using ProjectGmKernel.Native.Geometry.Evaluation;
++using System.Diagnostics;
+ using System.Runtime.CompilerServices;
+ using M=ProjectGmKernel.Native.Generated;
+ 
+-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","blend-chain-oracle");Directory.CreateDirectory(directory);
++var noBoundCache=args.Contains("--no-bound-cache",StringComparer.Ordinal);var noSplineReuse=args.Contains("--no-spline-reuse",StringComparer.Ordinal);
++var selected=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();
++var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","blend-chain-performance-oracle",(noBoundCache?"uncached":"cached")+(noSplineReuse?"-spline-uncached":""));Directory.CreateDirectory(directory);
+ if(!ParasolidScriptHost.TryStartSession("Independent smooth blend chains",out var host,out var message))throw new Exception(message);
+ using(host)unsafe
+ {
+     var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"self session");
+     try
+     {
+-        foreach(var authored in new[]{true,false})foreach(var segments in args.Contains("nested-support",StringComparer.Ordinal)?new[]{1}:new[]{2,3})foreach(var transformed in new[]{false,true})
++        ModelingPerformance.Enabled=true;ModelingPerformance.CacheEnabled=!noBoundCache;JointNestedBlendEvaluation.ReuseSplineContactBounds=!noSplineReuse;
++        for(var repetition=0;repetition<2;repetition++)foreach(var authored in new[]{true,false})foreach(var segments in new[]{2,3})foreach(var transformed in new[]{false,true})
+         {
+-            var name=$"chain-{segments}-{(transformed?"reflected":"base")}-{(authored?"self":"pk")}-source";if(args.Any(a=>a!="diagnostics"&&a!="nested-support")&&!args.Contains(name,StringComparer.Ordinal))continue;
++            var name=$"chain-{segments}-{(transformed?"reflected":"base")}-{(authored?"self":"pk")}-source";if(selected.Length>0&&!selected.Contains(name,StringComparer.Ordinal))continue;
++            Console.WriteLine($"CASE {name} repetition={repetition} cache={!noBoundCache} spline-reuse={!noSplineReuse}");var chainStarted=Stopwatch.GetTimestamp();
+             // Both modifiers start with identical authored finite B-reps.
+             // Primitive creators choose different directed LINE carriers;
+             // PK transports chain subdivisions through an ordered contact,
+@@ -43,7 +49,7 @@
+             }
+             Check(KernelRuntime.EntityDelete(1,&own),"delete self");Check(PK_ENTITY_delete(1,&native),"delete native");
+             Require(KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0&&KernelRuntime.Points.AliveCount==0,$"chain ownership cleanup curves={KernelRuntime.Curves.AliveCount}, surfaces={KernelRuntime.Surfaces.AliveCount}, points={KernelRuntime.Points.AliveCount}");
+-            Console.WriteLine("PASS "+name);
++            Console.WriteLine($"TIME chain-complete seconds={Stopwatch.GetElapsedTime(chainStarted).TotalSeconds:F6}");Console.WriteLine("PASS "+name);
+         }
+     }
+     finally{Check(KernelRuntime.SessionStop(),"self session stop");}
+@@ -81,8 +87,9 @@
+ {
+     var set=new PK_EDGE_set_blend_constant_o_t();set.properties.tolerance=1e-7;int n;int* marked;fixed(int* input=edges)Check(own?KernelRuntime.EdgeSetBlendConstant(edges.Length,input,radius,(M.PK_EDGE_set_blend_constant_o_s*)&set,&n,&marked):PK_EDGE_set_blend_constant(edges.Length,input,radius,&set,&n,&marked),"mark chain");Free(own,marked);
+     var fix=new PK_BODY_fix_blends_o_t{tolerance=1e-7,update=PK_blend_edge_update_v261_c,local_check=PK_LOGICAL_true};int fault,fe,ft;int* output;
+-    var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&n,&output,null,null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&n,&output,null,null,&fault,&fe,&ft);
+-    Console.WriteLine($"fix own={own} error={error} stage={KernelRuntime.LastRegularBlendStage} rolling={KernelRuntime.LastRollingBuildStage} boundary={KernelRuntime.LastRollingBoundaryStatus}/{KernelRuntime.LastRollingBoundaryContact:R}/{KernelRuntime.LastRollingBoundaryParameter:R} distance={KernelRuntime.LastRollingBoundaryDistance:R} step={KernelRuntime.LastRollingBoundaryStep:R} direction={KernelRuntime.LastRollingBoundaryDirection:R} sheet={KernelRuntime.LastSheetPartitionStage}");Check(error,"fix chain");try{Require(n==edges.Length,"one face per prescribed chain segment");}finally{Free(own,output);}
++    var cpu=PerfClock.Process.TotalProcessorTime;var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&n,&output,null,null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&n,&output,null,null,&fault,&fe,&ft);
++    Console.WriteLine($"TIME fix-chain own={own} seconds={Stopwatch.GetElapsedTime(started).TotalSeconds:F6} cpu-seconds={(PerfClock.Process.TotalProcessorTime-cpu).TotalSeconds:F6}");
++    Console.WriteLine($"fix own={own} error={error} stage={KernelRuntime.LastRegularBlendStage} rolling={KernelRuntime.LastRollingBuildStage} boundary={KernelRuntime.LastRollingBoundaryStatus}/{KernelRuntime.LastRollingBoundaryContact:R}/{KernelRuntime.LastRollingBoundaryParameter:R} sheet={KernelRuntime.LastSheetPartitionStage}");Check(error,"fix chain");try{Require(n==edges.Length,"one face per prescribed chain segment");}finally{Free(own,output);}
+ }
+ static unsafe void Transform(bool own,int body)
+ {
+@@ -93,9 +100,16 @@
+ static unsafe void Cut(bool own,int target)
+ {
+     var tool=Block(own,1.05,.5,-.1,1,2,2);var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+-    Check(own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(target,1,&tool,&options,&n,&bodies),"cut reloaded chain");
++    var cpu=PerfClock.Process.TotalProcessorTime;var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(target,1,&tool,&options,&n,&bodies);
++    Console.WriteLine($"TIME cut-reloaded-chain own={own} seconds={Stopwatch.GetElapsedTime(started).TotalSeconds:F6} cpu-seconds={(PerfClock.Process.TotalProcessorTime-cpu).TotalSeconds:F6}");if(own)PrintProfile();Check(error,"cut reloaded chain");
+     try{Require(n==1&&bodies[0]==target,"one chain Boolean result");}finally{Free(own,bodies);}
+ }
++static void PrintProfile()
++{
++    var p=ModelingPerformance.Last;var milliseconds=1000.0/Stopwatch.Frequency;
++    Console.WriteLine($"PROFILE elapsed-ms={p.ElapsedTicks*milliseconds:F3}, pairs={p.SurfacePairs}, ssi-cells={p.SsiCells}, root-cells={p.RootCells}, roots={p.Roots}, budget-failures={p.BudgetFailures}, winding={p.WindingCalls}, bound-requests={p.BoundRequests}, bound-evaluations={p.BoundEvaluations}, cache-hits={p.BoundCacheHits}, bound-ms={p.BoundTicks*milliseconds:F3}");
++    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
++}
+ static unsafe void RefilletNested(bool own,int target)
+ {
+     var tool=Block(own,.5,-.46,.7,2,1,1);var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+@@ -266,3 +280,4 @@
+ static void Check(int error,string name){if(error!=0)throw new Exception($"{name}: error={error}, blend={KernelRuntime.LastRegularBlendStage}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, parameter={KernelRuntime.LastSheetParameter:R}, algorithm={KernelRuntime.LastSheetAlgorithmStatus}");}
+ static void Require(bool value,string message){if(!value)throw new Exception(message);}
+ static string ScriptPath([CallerFilePath]string path="")=>path;
++static class PerfClock{internal static readonly Process Process=Process.GetCurrentProcess();}

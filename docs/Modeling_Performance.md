@@ -83,15 +83,62 @@ scalar offset、degree/count/dimension、rational/periodic 属性。它只活在
 中间 Boolean 从 5.078/4.579s 降为 4.117/3.773s。首圆角从 .994/.585s 降为
 .960/.531s。不能把这些单边输入的收益外推为所有角点或所有建模操作的性能。
 
+## 新边链结果的保存、重载和继续切削
+
+另以 M4 的 `chain-3-base-pk-source` 进行整链实验：两套内核从同一个真实 PK
+Roof 有限 B-rep 独立分出三段光顺边链，半径 .1 分别倒圆角；自研结果保存并重载，
+随后两套内核分别执行相同方块切削。输入是 degree 4×2 的非平面 Roof，分割位置
+为 x=.21/.68。两次修改之后都使用原 chain oracle 的 fresh XT、完整 BODY_check、
+严格结构 compare、region/shell 语义及物性检查；最后检查自研几何所有权全部释放。
+本组没有放宽几何类型、sense 或其它结构条件。
+
+基线为 `3075169` 加当时未提交的 M4 边链实现快照；四个新增/变化的实现文件
+SHA-256 保留在原始日志开头，可与最终 M4 提交核对。性能插桩只在 oracle 外侧记录
+完整 `BodyFixBlends`/`BodyBoolean` 的 elapsed 和进程 CPU 时间，没有改变构造参数。
+每模式独立进程、相同会话内执行两轮全新建模，cold/warm 定义同前。
+
+正式 command-cache A/B 在三个建模 agent 都暂停 build/test/oracle 的短窗口内
+串行执行。两模式均开启栈内 jet 复用，只有 Boolean 命令缓存开关不同；四条完整
+链均严格通过。桌面其它进程未停止，因此这些数值仍是本机固定输入的观测。
+
+| 完整 API | 缓存关闭 cold/warm | 缓存开启 cold/warm |
+| --- | ---: | ---: |
+| 三段边链 FixBlends elapsed | 1.571 / 1.050s | 1.627 / 1.090s |
+| 重载后 Boolean elapsed | 11.405 / 11.034s | 8.761 / 8.575s |
+| 重载后 Boolean 进程 CPU | 11.759 / 11.172s | 9.151 / 8.714s |
+| Boolean 实际 Joint Bound | 9129 / 9129 | 4642 / 4677 |
+
+Boolean 完整 API elapsed 降低约 23%/22%，CPU 降低约 22%/22%；FixBlends
+不使用命令缓存，其时间相近。两模式的 54 pair、144 SSI cells、4787 root cells、
+67 根候选、189 winding、0 预算耗尽和 14,378 次 Bound 请求完全相同。
+缓存命中 4487/4452 次；Bound elapsed 从 5.801/5.685s 降至 3.245/3.210s。
+各次前后模型的完整 BODY_check 都为 0，切削后物性最大归一化差为 1.28e-9。
+
+此前未协调负载的三组实验也全部严格通过，并保留完整日志。其中首次 cache-on
+受到同期编译和其它 oracle 运行影响，Boolean elapsed 为 22.553/11.621s，未用作
+正式加速依据。补充 cache-on CPU 复测为 elapsed 8.777/8.457s、CPU 9.163/8.591s。
+另在 command cache 关闭时，栈内 jet 复用关闭/开启的 Boolean 为
+15.690/14.966s 和 11.348/11.479s，FixBlends 为 1.802/1.314s 和 1.611/1.046s；
+这些未协调负载数据仅作补充，不代替上表的串行实验。
+
+原始证据为 `docs/reviews/advanced-modeling/modeling-performance-chain-cache.txt`，
+包含六组全部 strict 日志及阶段计数；只删除了构建器输出中包含本机绝对路径的
+包告警，验证输出完整保留。插桩补丁为
+`docs/reviews/advanced-modeling/chain-performance-instrumentation.patch`；通过
+`patch -o temp_docs/BlendChainPerformanceOracle.cs scripts/BlendChainOracle.cs < docs/reviews/advanced-modeling/chain-performance-instrumentation.patch`
+生成独立临时 harness，再执行下面的命令；原 oracle 保留。
+该补丁固定两轮，接受 `--no-bound-cache` 和 `--no-spline-reuse`，其余为原案例名。
+
 ## 复现
 
 ```bash
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/ModelingPerformanceOracle.cs -c Release -- blend-subtract
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/MixedCurvedBooleanOracle.cs -c Release -- --profile --no-bound-cache --no-spline-reuse --repeat 2 refillet-new-edge
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/MixedCurvedBooleanOracle.cs -c Release -- --profile --no-bound-cache --repeat 2 refillet-new-edge
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache temp_docs/BlendChainPerformanceOracle.cs -c Release -- chain-3-base-pk-source --no-bound-cache
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache temp_docs/BlendChainPerformanceOracle.cs -c Release -- chain-3-base-pk-source
 ```
 
 日志在 `temp_docs/modeling-performance/` 和
 `temp_docs/mixed-curved-boolean-oracle/profile-*/`；fresh XT 也保存在相应目录。
-依赖 SDK 不进入仓库。后续边链/角点 → Boolean 组合输入使用同样方法新增记录，
-不以这些既有模型代替新支持域的完整操作验收。
+依赖 SDK 不进入仓库。角点 → Boolean 组合输入仍需使用同样方法新增记录。

@@ -1,0 +1,906 @@
+M5 chain construction -> XT reload -> Boolean strict PK A/B; 2026-11-06
+Base main 3075169 plus pending M4 snapshot. Native source checksums:
+ce6cb7f272129cf46f4508544d7d3551ae640d222ebbf849fa71388ccea688df  src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendChain.cs
+753632423ce9ded5104862f460bf6e00c8b0cd273831476fbe3af73da23158ba  src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.RegularBlend.cs
+f185e03f7c6a526fcecd22d67b5af87d45da9a9e9127c7c9b3808b8b16d13523  src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendConstruction.cs
+4654381f8c3ee99510a40639646ae5e18965ce0e0570d4a8167e11d42ddb97f5  src/ProjectGmKernel.Native/Geometry/Evaluation/JointNestedBlendEvaluation.cs
+
+SOURCE temp_docs/m5-chain-uncached-spline-uncached.log
+CASE chain-3-base-pk-source repetition=0 cache=False spline-reuse=False
+TIME fix-chain own=True seconds=1.801973
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.004276
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=15.690193
+PROFILE elapsed-ms=15665.253, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=9129, cache-hits=0, bound-ms=8014.432
+PROFILE stage=None ms=0.110
+PROFILE stage=Read ms=0.932
+PROFILE stage=Cuts ms=1509.086
+PROFILE stage=Clip ms=3797.206
+PROFILE stage=Split ms=2.335
+PROFILE stage=Arrange ms=3157.670
+PROFILE stage=Classify ms=4976.559
+PROFILE stage=Components ms=2221.354
+TIME cut-reloaded-chain own=False seconds=0.001632
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=17.953131
+PASS chain-3-base-pk-source
+CASE chain-3-base-pk-source repetition=1 cache=False spline-reuse=False
+TIME fix-chain own=True seconds=1.313507
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.003804
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=14.965637
+PROFILE elapsed-ms=14965.570, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=9129, cache-hits=0, bound-ms=7693.705
+PROFILE stage=None ms=0.000
+PROFILE stage=Read ms=0.012
+PROFILE stage=Cuts ms=1361.600
+PROFILE stage=Clip ms=3564.555
+PROFILE stage=Split ms=2.149
+PROFILE stage=Arrange ms=2979.723
+PROFILE stage=Classify ms=4902.223
+PROFILE stage=Components ms=2155.308
+TIME cut-reloaded-chain own=False seconds=0.001531
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=16.418708
+PASS chain-3-base-pk-source
+
+SOURCE temp_docs/m5-chain-uncached.log
+CASE chain-3-base-pk-source repetition=0 cache=False spline-reuse=True
+TIME fix-chain own=True seconds=1.611370
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.004126
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=11.348228
+PROFILE elapsed-ms=11324.705, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=9129, cache-hits=0, bound-ms=5798.630
+PROFILE stage=None ms=0.089
+PROFILE stage=Read ms=0.860
+PROFILE stage=Cuts ms=1013.242
+PROFILE stage=Clip ms=2796.599
+PROFILE stage=Split ms=2.319
+PROFILE stage=Arrange ms=2256.051
+PROFILE stage=Classify ms=3743.595
+PROFILE stage=Components ms=1511.949
+TIME cut-reloaded-chain own=False seconds=0.001584
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=13.397080
+PASS chain-3-base-pk-source
+CASE chain-3-base-pk-source repetition=1 cache=False spline-reuse=True
+TIME fix-chain own=True seconds=1.046378
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.003671
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=11.479137
+PROFILE elapsed-ms=11479.072, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=9129, cache-hits=0, bound-ms=5991.655
+PROFILE stage=None ms=0.000
+PROFILE stage=Read ms=0.010
+PROFILE stage=Cuts ms=1063.587
+PROFILE stage=Clip ms=2890.686
+PROFILE stage=Split ms=2.159
+PROFILE stage=Arrange ms=2252.112
+PROFILE stage=Classify ms=3709.614
+PROFILE stage=Components ms=1560.903
+TIME cut-reloaded-chain own=False seconds=0.001517
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=12.665039
+PASS chain-3-base-pk-source
+
+SOURCE temp_docs/m5-chain-cached.log
+CASE chain-3-base-pk-source repetition=0 cache=True spline-reuse=True
+TIME fix-chain own=True seconds=2.929968
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.019156
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=22.553117
+PROFILE elapsed-ms=22469.148, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=4642, cache-hits=4487, bound-ms=8447.023
+PROFILE stage=None ms=0.843
+PROFILE stage=Read ms=1.138
+PROFILE stage=Cuts ms=2111.804
+PROFILE stage=Clip ms=6446.919
+PROFILE stage=Split ms=7.132
+PROFILE stage=Arrange ms=3907.116
+PROFILE stage=Classify ms=7670.946
+PROFILE stage=Components ms=2323.249
+TIME cut-reloaded-chain own=False seconds=0.002829
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=26.492749
+PASS chain-3-base-pk-source
+CASE chain-3-base-pk-source repetition=1 cache=True spline-reuse=True
+TIME fix-chain own=True seconds=2.333708
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.009131
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=11.620618
+PROFILE elapsed-ms=11620.544, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=4677, cache-hits=4452, bound-ms=4628.768
+PROFILE stage=None ms=0.034
+PROFILE stage=Read ms=0.018
+PROFILE stage=Cuts ms=1379.791
+PROFILE stage=Clip ms=3145.324
+PROFILE stage=Split ms=2.236
+PROFILE stage=Arrange ms=1705.213
+PROFILE stage=Classify ms=3999.835
+PROFILE stage=Components ms=1388.091
+TIME cut-reloaded-chain own=False seconds=0.001618
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=14.268183
+PASS chain-3-base-pk-source
+
+SOURCE temp_docs/m5-chain-cached-cpu.log
+CASE chain-3-base-pk-source repetition=0 cache=True spline-reuse=True
+TIME fix-chain own=True seconds=1.625673 cpu-seconds=1.686029
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.004547 cpu-seconds=0.004583
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=8.776844 cpu-seconds=9.163188
+PROFILE elapsed-ms=8749.892, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=4642, cache-hits=4487, bound-ms=3231.820
+PROFILE stage=None ms=0.210
+PROFILE stage=Read ms=0.911
+PROFILE stage=Cuts ms=845.806
+PROFILE stage=Clip ms=2032.376
+PROFILE stage=Split ms=2.295
+PROFILE stage=Arrange ms=1606.968
+PROFILE stage=Classify ms=3270.871
+PROFILE stage=Components ms=990.456
+TIME cut-reloaded-chain own=False seconds=0.001570 cpu-seconds=0.001579
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=10.860594
+PASS chain-3-base-pk-source
+CASE chain-3-base-pk-source repetition=1 cache=True spline-reuse=True
+TIME fix-chain own=True seconds=1.031092 cpu-seconds=1.220343
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.003646 cpu-seconds=0.004958
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=8.456744 cpu-seconds=8.590635
+PROFILE elapsed-ms=8456.649, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=4677, cache-hits=4452, bound-ms=3176.871
+PROFILE stage=None ms=0.031
+PROFILE stage=Read ms=0.013
+PROFILE stage=Cuts ms=773.713
+PROFILE stage=Clip ms=1959.909
+PROFILE stage=Split ms=2.152
+PROFILE stage=Arrange ms=1628.484
+PROFILE stage=Classify ms=3142.556
+PROFILE stage=Components ms=949.792
+TIME cut-reloaded-chain own=False seconds=0.001454 cpu-seconds=0.001459
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=9.624089
+PASS chain-3-base-pk-source
+
+SOURCE temp_docs/m5-chain-exclusive-uncached.log
+CASE chain-3-base-pk-source repetition=0 cache=False spline-reuse=True
+TIME fix-chain own=True seconds=1.571177 cpu-seconds=1.657774
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.004527 cpu-seconds=0.004567
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=11.404923 cpu-seconds=11.758560
+PROFILE elapsed-ms=11380.518, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=9129, cache-hits=0, bound-ms=5800.860
+PROFILE stage=None ms=0.101
+PROFILE stage=Read ms=0.957
+PROFILE stage=Cuts ms=986.097
+PROFILE stage=Clip ms=2728.919
+PROFILE stage=Split ms=2.285
+PROFILE stage=Arrange ms=2309.033
+PROFILE stage=Classify ms=3826.028
+PROFILE stage=Components ms=1527.097
+TIME cut-reloaded-chain own=False seconds=0.001571 cpu-seconds=0.001580
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=13.440470
+PASS chain-3-base-pk-source
+CASE chain-3-base-pk-source repetition=1 cache=False spline-reuse=True
+TIME fix-chain own=True seconds=1.049690 cpu-seconds=1.237951
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.003804 cpu-seconds=0.006312
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=11.034045 cpu-seconds=11.172334
+PROFILE elapsed-ms=11033.974, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=9129, cache-hits=0, bound-ms=5685.228
+PROFILE stage=None ms=0.000
+PROFILE stage=Read ms=0.011
+PROFILE stage=Cuts ms=943.908
+PROFILE stage=Clip ms=2690.715
+PROFILE stage=Split ms=2.126
+PROFILE stage=Arrange ms=2182.266
+PROFILE stage=Classify ms=3693.741
+PROFILE stage=Components ms=1521.206
+TIME cut-reloaded-chain own=False seconds=0.001475 cpu-seconds=0.001482
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=12.219673
+PASS chain-3-base-pk-source
+
+SOURCE temp_docs/m5-chain-exclusive-cached.log
+CASE chain-3-base-pk-source repetition=0 cache=True spline-reuse=True
+TIME fix-chain own=True seconds=1.627293 cpu-seconds=1.708484
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.004286 cpu-seconds=0.004324
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/416, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/407, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/415, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=273/408, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=282/409, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=253/414, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=8.761442 cpu-seconds=9.150914
+PROFILE elapsed-ms=8737.130, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=4642, cache-hits=4487, bound-ms=3245.079
+PROFILE stage=None ms=0.202
+PROFILE stage=Read ms=0.871
+PROFILE stage=Cuts ms=811.679
+PROFILE stage=Clip ms=2045.538
+PROFILE stage=Split ms=2.292
+PROFILE stage=Arrange ms=1662.373
+PROFILE stage=Classify ms=3220.660
+PROFILE stage=Components ms=993.517
+TIME cut-reloaded-chain own=False seconds=0.001661 cpu-seconds=0.001663
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=248/856, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=277/850, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=273/851, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=244/855, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=605/852, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=584/867, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=10.836053
+PASS chain-3-base-pk-source
+CASE chain-3-base-pk-source repetition=1 cache=True spline-reuse=True
+TIME fix-chain own=True seconds=1.089700 cpu-seconds=1.270962
+fix own=True error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+TIME fix-chain own=False seconds=0.003702 cpu-seconds=0.005523
+fix own=False error=0 stage=Release rolling=Bind boundary=Success/0.0006311450476091714/0 sheet=RayIntersections
+chain-3-base-pk-source native full BODY_check: 0 faults
+chain-3-base-pk-source received full BODY_check: 0 faults
+chain-3-base-pk-source topology 0: native=2 own=2
+chain-3-base-pk-source topology 1: native=2 own=2
+chain-3-base-pk-source topology 2: native=9 own=9
+chain-3-base-pk-source topology 3: native=21 own=21
+chain-3-base-pk-source topology 4: native=14 own=14
+chain-3-base-pk-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=9/9
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=14/14
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1283, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1274, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1282, class=500/500, int=2/23, value=0/0
+CHART face=3, diff=21949, entity=1140/1275, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1149/1276, class=500/500, int=3/23, value=0/0
+CHART face=4, diff=21949, entity=1120/1281, class=500/500, int=3/23, value=0/0
+chain-3-base-pk-source PK mass: volume=1.0250977822811878/1.0250977817364617, area=5.977972246023245/5.977972243931135, max normalized residual=2.998162679518336E-10
+TIME cut-reloaded-chain own=True seconds=8.575204 cpu-seconds=8.713797
+PROFILE elapsed-ms=8575.128, pairs=54, ssi-cells=144, root-cells=4787, roots=67, budget-failures=0, winding=189, bound-requests=14378, bound-evaluations=4677, cache-hits=4452, bound-ms=3209.628
+PROFILE stage=None ms=0.030
+PROFILE stage=Read ms=0.013
+PROFILE stage=Cuts ms=769.863
+PROFILE stage=Clip ms=1972.354
+PROFILE stage=Split ms=2.134
+PROFILE stage=Arrange ms=1640.095
+PROFILE stage=Classify ms=3232.247
+PROFILE stage=Components ms=958.391
+TIME cut-reloaded-chain own=False seconds=0.001502 cpu-seconds=0.001511
+chain-3-base-pk-source cut native full BODY_check: 0 faults
+chain-3-base-pk-source cut received full BODY_check: 0 faults
+chain-3-base-pk-source cut topology 0: native=2 own=2
+chain-3-base-pk-source cut topology 1: native=2 own=2
+chain-3-base-pk-source cut topology 2: native=8 own=8
+chain-3-base-pk-source cut topology 3: native=18 own=18
+chain-3-base-pk-source cut topology 4: native=12 own=12
+chain-3-base-pk-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-3-base-pk-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=0, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=1, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=1, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1115/1723, class=500/500, int=3/23, value=0/0
+CHART face=2, diff=21949, entity=1144/1717, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+CHART face=3, diff=21949, entity=1140/1718, class=500/500, int=3/23, value=0/0
+CHART face=3, diff=21949, entity=1111/1722, class=500/500, int=2/23, value=0/0
+CHART face=4, diff=21949, entity=1472/1719, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=1451/1734, class=500/500, int=5/9, value=0/0
+chain-3-base-pk-source cut PK mass: volume=0.564975903105808/0.5649759027128913, area=4.236492423395728/4.23649241672113, max normalized residual=1.2746315876895243E-09
+TIME chain-complete seconds=9.803317
+PASS chain-3-base-pk-source
