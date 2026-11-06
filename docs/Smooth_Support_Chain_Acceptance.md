@@ -92,3 +92,11 @@ MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests -c Release --filter Full
 ```
 
 原输入、圆角和消费后的 XT 输出保存在 `temp_docs/support-blend-chain-oracle/`。
+
+## 综合主线的有限求解回退回归
+
+在 `c7d81bf` 加 `efe4c4e` 上重新执行了全部八个完整案例，**8/8** 通过，32 次完整 PK BODY_check 均为零故障，最大十五项归一化物性差为 **3.17e-09**。这份快照包含公共近切标量 SSI、稳定残差、自然域端点细化、弦误差扩大、有限 rolling continuation 和全局接触认证；不把较早支持链快照的结果直接视为这些共享改动后的验证。
+
+本次修复了已有 NURBS/Plane ICurve 被第三个近乎平行 Plane 切分时的降维回退：无限平面线的数值失败继续交给原有限四参数区间证明，不能直接排空或提前终止。原失败的 `asymmetric43-reflected` 与其余七例均保留完整严格比较。另有两个独立微倾斜第二闭环制造用例，与相关回归合计 **14/14** 通过。
+
+原始日志见 `docs/reviews/advanced-modeling/support-chain-finite-fallback-validation.txt`。本轮与其它建模进程并行，TIME 行只保留操作记录，不作性能 A/B 结论。

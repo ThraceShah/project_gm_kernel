@@ -45,3 +45,9 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/ConvexPlaneContactOracle
 最终六档 SSI、12/12 次布尔及全部非空结果重载比较通过。最大十五项归一化物性残差 `4.27e-10`，薄帽体积的解析相对误差自研小于 `7.18e-8`、PK 小于 `1.08e-7`。最细帽体体积约 `5.58e-15`，结果为 `2F/1E/0V`，没有退化为零体积成功。公共 SSI 的闭环残差最大 `1.53e-14`。
 
 最终 KernelTests Release 全量 `1,582/1,582` 通过，零失败、零跳过。构建及测试原始输出（路径相对化）见 `docs/reviews/near-contact-plane-consumers-tests.log`。测试期间还运行了独立 PK oracle，本轮日志的操作耗时不是独占性能基准；M5 性能结果以单独的固定源码与独占计算窗口记录为准。
+
+## 近平行第三平面的回退
+
+完整 support-face 切换链在反射、旋转后的后续切削中暴露了一个降维错误：两支撑法向只差数个 ULP，无限平面交线的计算返回 `NumericalFailure`，原快路径却没有交还原有有限求解器。现在对这一数值状态清空临时输出计数并回退完整四参数区间证明；没有按小角度将不同平面认作平行，也没有直接返回无交。
+
+`GeneralSheetPartitionTests.NearParallelSecondPlaneUsesCompleteFiniteIntersectionProof` 覆盖两种微小倾斜方向（`±2^-50`）。第一刀形成一个闭环，第二刀的无限平面交线在有限域之外，但曲面上产生第二个完整闭环；结果必须为 `3F/6E/4V`。与相关 sheet、近切求值及近可分离分支测试一起，14/14 通过。实际发现问题的 `SupportBlendChainOracle` 反射链已从相同输入独立执行自研与 PK，完整倒圆角、重载、布尔和全部结构硬门均通过。
