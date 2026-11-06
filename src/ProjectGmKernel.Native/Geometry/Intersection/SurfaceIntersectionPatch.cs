@@ -25,6 +25,9 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly double normalOffset;
     private readonly double lineU,lineV,lineDU,lineDV;
     private readonly Span<SurfaceBoundCacheEntry> cache;
+    private readonly GeomTag cacheTag;
+    private readonly EntityGeneration cacheGeneration;
+    private readonly KernelSense cacheSense;
     internal SurfaceParameterBox Domain{get;}
     internal bool IsProcedural=>isBlend||normalOffset!=0;
     internal bool UVariable=>isBlend||bezier.UDegree>0;
@@ -38,6 +41,8 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,double lower,double upper){bezier=default;blend=program;surface=spine;isBlend=isSpine=true;Domain=new(lower,upper,0,1);}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries)
     {this=source;cache=entries;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,GeomTag tag,EntityGeneration generation,KernelSense sense)
+    {this=source;cacheTag=tag;cacheGeneration=generation;cacheSense=sense;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,bool constantU,double parameter,double lower,double upper)
     {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch curve,BufferOffset axis,double height)
@@ -46,6 +51,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;}
     internal AlgorithmStatus Bound(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
+        ModelingPerformance.BoundRequest();
         if(cache.IsEmpty)return BoundCore(box,output);
         var hash=BitConverter.DoubleToInt64Bits(box.U0)*31+BitConverter.DoubleToInt64Bits(box.U1)*997+BitConverter.DoubleToInt64Bits(box.V0)*8191+BitConverter.DoubleToInt64Bits(box.V1)*131071;
         hash^=hash>>32;hash^=hash>>16;ref var entry=ref cache[(int)hash&(cache.Length-1)];
@@ -63,8 +69,15 @@ internal readonly ref struct SurfaceIntersectionPatch
             var t=new IntervalNumber(box.U0,box.U1);var u=lineU+t*lineDU;var v=lineV+t*lineDV;
             mapped=new(u.Lower,u.Upper,v.Lower,v.Upper);
         }
-        var status=isSpine?JointNestedBlendEvaluation.BoundSpine(blend,surface,mapped,output)
-            :isBlend?JointNestedBlendEvaluation.Bound(blend,surface,mapped,output):OffsetBezierBounds.Bound(bezier,mapped,normalOffset,output);
+        AlgorithmStatus status;
+        if(isBlend&&ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,isSpine,mapped,output))status=AlgorithmStatus.Success;
+        else
+        {
+            var started=isBlend?ModelingPerformance.StartBound():0;
+            status=isSpine?JointNestedBlendEvaluation.BoundSpine(blend,surface,mapped,output)
+                :isBlend?JointNestedBlendEvaluation.Bound(blend,surface,mapped,output):OffsetBezierBounds.Bound(bezier,mapped,normalOffset,output);
+            if(isBlend){ModelingPerformance.EndBound(started);if(status==AlgorithmStatus.Success)ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,isSpine,mapped,output);}
+        }
         if(status!=AlgorithmStatus.Success)return status;
         if(isoAxis!=0)
         {

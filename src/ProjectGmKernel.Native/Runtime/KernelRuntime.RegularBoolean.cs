@@ -19,6 +19,7 @@ internal static unsafe partial class KernelRuntime
         LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=LastRegularBooleanOtherFace=-1;
         if(options->merge_imprinted!=0||options->tracking!=0)return ParasolidConstants.PK_ERROR_not_implemented;
         var scratch=CommandScratch.Current;var memory=scratch.Take(180000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        ModelingPerformance.Context performance=default;using var measurement=new ModelingPerformance.Scope(&performance,immutableGeometry:true);ModelingPerformance.Stage(RegularBooleanStage.Read);
         var ownedCount=0;
         try
         {
@@ -46,7 +47,7 @@ internal static unsafe partial class KernelRuntime
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
             for(var a=0;a<nf;a++)for(var b=a+1;b<nf;b++)
             {
-                if(owners[a]==owners[b])continue;LastRegularBooleanStage=RegularBooleanStage.Cuts;LastRegularBooleanFace=a;LastRegularBooleanOtherFace=b;
+                if(owners[a]==owners[b])continue;ModelingPerformance.Pair();LastRegularBooleanStage=RegularBooleanStage.Cuts;ModelingPerformance.Stage(RegularBooleanStage.Cuts);LastRegularBooleanFace=a;LastRegularBooleanOtherFace=b;
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
                 if(family<0)
@@ -57,7 +58,7 @@ internal static unsafe partial class KernelRuntime
                     supportCuts[..n].CopyTo(owned[ownedCount..]);ownedCount+=n;
                 }
                 var data=families[family];if(data.Count==0)continue;
-                LastRegularBooleanStage=RegularBooleanStage.Clip;
+                LastRegularBooleanStage=RegularBooleanStage.Clip;ModelingPerformance.Stage(RegularBooleanStage.Clip);
                 error=ClipRegularFacePair(input,a,b,owned.Slice(data.Start,data.Count),cuts,ref cutCount,owned,ref ownedCount,ref model);if(error!=0)return error;
             }
             LastRegularBooleanOtherFace=-1;
@@ -80,16 +81,16 @@ internal static unsafe partial class KernelRuntime
                     }
                 }
             }
-            LastRegularBooleanStage=RegularBooleanStage.Split;
+            LastRegularBooleanStage=RegularBooleanStage.Split;ModelingPerformance.Stage(RegularBooleanStage.Split);
             error=SplitRegularSourceEdges(input,originalEdges[..ne],sourceEdges,owned,ref ownedCount,ref model);if(error!=0)return error;
             Span<SheetCutCurve> faceCuts=stackalloc SheetCutCurve[RegularCutLimit];
             for(var f=0;f<nf;f++)
             {
-                LastRegularBooleanStage=RegularBooleanStage.Arrange;LastRegularBooleanFace=f;var n=0;
+                LastRegularBooleanStage=RegularBooleanStage.Arrange;ModelingPerformance.Stage(RegularBooleanStage.Arrange);LastRegularBooleanFace=f;var n=0;
                 for(var c=0;c<cutCount;c++)if(cuts[c].First==f||cuts[c].Second==f)faceCuts[n++]=cuts[c].Cut;
                 error=ArrangeSheetFace(sources[f],0,sourceEdges[..ne],faceCuts[..n],ref model,halfedges,cycleCoedges,cycles,true);if(error!=0)return error;
             }
-            LastRegularBooleanStage=RegularBooleanStage.Classify;
+            LastRegularBooleanStage=RegularBooleanStage.Classify;ModelingPerformance.Stage(RegularBooleanStage.Classify);
             Span<byte> selected=stackalloc byte[model.NF],reversed=stackalloc byte[model.NF];selected.Clear();reversed.Clear();
             Span<BufferOffset> bodyFaces=stackalloc BufferOffset[RegularInputFaces];Span<bool> minus=stackalloc bool[inputs.Length],plus=stackalloc bool[inputs.Length];
             SurfaceDerivativeLayout.TryCreate(0,0,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[1];var hasClash=cutCount>0;var targetClash=false;
@@ -120,7 +121,7 @@ internal static unsafe partial class KernelRuntime
             }
             else
             {
-                LastRegularBooleanStage=RegularBooleanStage.Components;
+                LastRegularBooleanStage=RegularBooleanStage.Components;ModelingPerformance.Stage(RegularBooleanStage.Components);
                 error=MergeRegularBooleanCells(ref model,selected,reversed);if(error!=0)return error;
                 error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],options,result);if(error!=0)return error;
                 if(!targetClash)result->result=ParasolidConstants.PK_boolean_result_no_clash_c;

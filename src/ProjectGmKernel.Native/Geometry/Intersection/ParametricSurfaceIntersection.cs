@@ -71,7 +71,8 @@ internal static class ParametricSurfaceIntersection
         Span<double> inverse = stackalloc double[9];Span<IntervalNumber> check=stackalloc IntervalNumber[9];
         while (count > 0)
         {
-            if (++visited > MaxCells||remaining--<=0) return AlgorithmStatus.NotConverged;
+            ModelingPerformance.Cell(false);
+            if (++visited > MaxCells||remaining--<=0){ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var cell = pending[--count]; var savedNodes = nodeCount; var savedSegments = segmentCount;
             var status = Bounds(first, second, cell, f, jac);if(status!=AlgorithmStatus.Success&&status!=AlgorithmStatus.NotConverged)return status;
             var bounded=status==AlgorithmStatus.Success;
@@ -199,7 +200,8 @@ internal static class ParametricSurfaceIntersection
         Span<IntervalNumber> position = stackalloc IntervalNumber[9];
         while (count > 0)
         {
-            if (++visited > 12000) return AlgorithmStatus.NotConverged;
+            ModelingPerformance.Cell(true);
+            if (++visited > 12000){ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var cell = pending[--count];var bounded=false;var status = Bounds(first, second, cell, f, jac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;bounded=true;if(status!=AlgorithmStatus.Success)return status;
             if (!f[0].ContainsZero || !f[1].ContainsZero || !f[2].ContainsZero) continue;
             var point = cell.Center;
@@ -253,7 +255,7 @@ internal static class ParametricSurfaceIntersection
                     point.Point = Vector(position[0].Midpoint, position[1].Midpoint, position[2].Midpoint);
                     var duplicate = false;
                     for (var i = 0; i < rootCount; i++) if (SameParameters(roots[i], point, domain)) duplicate = true;
-                    if (!duplicate) { if (rootCount == roots.Length) return AlgorithmStatus.OutputTooSmall; roots[rootCount++] = point; }
+                    if (!duplicate) { if (rootCount == roots.Length) return AlgorithmStatus.OutputTooSmall; roots[rootCount++] = point;ModelingPerformance.Root(); }
                     continue;
                 }
             }

@@ -18,7 +18,8 @@ internal static class SurfaceIsoPlaneRoots
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9],at=stackalloc IntervalNumber[9];
         while(pending>0)
         {
-            if(++visited>32768)return AlgorithmStatus.NotConverged;
+            ModelingPerformance.Cell(true);
+            if(++visited>32768){ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var index=--pending;var lo=lower[index];var hi=upper[index];var depth=depths[index];
             var status=curve.Bound(new(lo,hi,0,0),bounds);
             if(status==AlgorithmStatus.Success)
@@ -53,6 +54,7 @@ internal static class SurfaceIsoPlaneRoots
                         status=curve.Bound(new(parameter,parameter,0,0),at);if(status!=AlgorithmStatus.Success)return status;
                         var point=new KernelVector3{X=at[0].Midpoint,Y=at[1].Midpoint,Z=at[2].Midpoint};
                         if(!OperationIntersection.AddPoint(output,ref count,point,parameter,0,IntersectionVectorKind.Simple))return AlgorithmStatus.OutputTooSmall;
+                        ModelingPerformance.Root();
                         continue;
                     }
                 }

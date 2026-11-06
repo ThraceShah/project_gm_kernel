@@ -1,0 +1,955 @@
+Command-owned certified bound cache: complete strict cold/warm API evidence
+Base: cd01bdb; .NET SDK 10.0.302; real PK 38.0.150; Linux x64; managed Release only.
+The first command-cache A/B below predates terminal spline-jet reuse. Both modes used the same binary, proof budgets and strict PK gates.
+
+Source: temp_docs/mixed-curved-boolean-oracle/profile-uncached/asymmetric-subtract.log
+CONFIG Release managed
+CASE asymmetric-subtract: M1 fillet versus x>=.55 block (general Blend/plane section)
+ITERATION 1/2, cold, bound-cache=False
+TIME PK BODY_fix_blends radius=0.1 ms=4.429, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+SUPPORT PK global=0, owner=0, face=111, surface=138, class=4006
+SUPPORT PK global=1, owner=0, face=106, surface=124, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=101, surface=123, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=96, surface=122, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=62, surface=112, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=56, surface=121, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=146, surface=170, class=4007
+SUPPORT PK global=7, owner=1, face=281, surface=299, class=4001
+ PLANE origin=(1.05,0.5,1.9) axis=(0,0,1)
+SUPPORT PK global=8, owner=1, face=276, surface=294, class=4001
+ PLANE origin=(1.05,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=271, surface=293, class=4001
+ PLANE origin=(0.55,0.5,-0.1) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=266, surface=292, class=4001
+ PLANE origin=(1.05,1.5,-0.1) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=232, surface=282, class=4001
+ PLANE origin=(1.05,0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=226, surface=291, class=4001
+ PLANE origin=(1.55,0.5,-0.1) axis=(1,0,0)
+native tool full BODY_check: 0 faults
+BEGIN PK asymmetric-subtract, function=15902, tools=1
+TIME PK asymmetric-subtract ms=3.789, error=0, stage=None, face=0, other=0, sheet=None
+asymmetric-subtract native result 0 full BODY_check: 0 faults
+NATIVE READY asymmetric-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=1239.247, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=32, surface=99, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=38, surface=104, class=4006
+SUPPORT self global=2, owner=0, face=44, surface=115, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=50, surface=125, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=56, surface=128, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=62, surface=130, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=191, surface=132, class=4007
+SUPPORT self global=7, owner=1, face=253, surface=242, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=259, surface=243, class=4001
+ PLANE origin=(0.55,-0.5,1.9) axis=(0,0,1)
+SUPPORT self global=9, owner=1, face=265, surface=244, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=271, surface=245, class=4001
+ PLANE origin=(1.55,-0.5,-0.1) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=277, surface=246, class=4001
+ PLANE origin=(1.55,1.5,-0.1) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=283, surface=247, class=4001
+ PLANE origin=(0.55,1.5,-0.1) axis=(-1,-0,-0)
+BEGIN self asymmetric-subtract, function=15902, tools=1
+PROGRESS self asymmetric-subtract, elapsed=10.0s, stage=Components, face=18, other=-1
+TIME self asymmetric-subtract ms=10348.648, error=0, stage=Publish, face=18, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=10325.601, pairs=42, ssi-cells=144, root-cells=3186, roots=66, budget-failures=0, winding=171, bound-requests=9976, bound-evaluations=6718, cache-hits=0, bound-ms=6318.019
+PROFILE stage=None ms=0.105
+PROFILE stage=Read ms=0.910
+PROFILE stage=Cuts ms=1528.466
+PROFILE stage=Clip ms=2198.705
+PROFILE stage=Split ms=2.921
+PROFILE stage=Arrange ms=3616.296
+PROFILE stage=Classify ms=1678.098
+PROFILE stage=Components ms=1300.100
+asymmetric-subtract received 0 full BODY_check: 0 faults
+asymmetric-subtract result 0 topology 0: native=2 own=2
+asymmetric-subtract result 0 topology 1: native=2 own=2
+asymmetric-subtract result 0 topology 2: native=7 own=7
+asymmetric-subtract result 0 topology 3: native=15 own=15
+asymmetric-subtract result 0 topology 4: native=10 own=10
+asymmetric-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric-subtract result 0 compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=15/15
+global diff=21944, entities=0/0
+global diff=21946, entities=10/10
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=343/580, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=210/579, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=188/584, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=322/589, class=500/500, int=5/9, value=0/0
+CHART face=2, diff=21949, entity=210/579, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=188/584, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=343/580, class=500/500, int=4/33, value=0/0
+CHART face=3, diff=21949, entity=322/589, class=500/500, int=5/9, value=0/0
+asymmetric-subtract result 0 PK mass: volume=0.5649759029276106/0.5649759014984549, area=4.236492422391758/4.236492409342414, max normalized residual=2.4920008996730295E-09
+PASS strict asymmetric-subtract iteration=1
+ITERATION 2/2, warm, bound-cache=False
+TIME PK BODY_fix_blends radius=0.1 ms=1.858, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+SUPPORT PK global=0, owner=0, face=686, surface=713, class=4006
+SUPPORT PK global=1, owner=0, face=681, surface=699, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=676, surface=698, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=671, surface=697, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=637, surface=687, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=631, surface=696, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=721, surface=745, class=4007
+SUPPORT PK global=7, owner=1, face=856, surface=874, class=4001
+ PLANE origin=(1.05,0.5,1.9) axis=(0,0,1)
+SUPPORT PK global=8, owner=1, face=851, surface=869, class=4001
+ PLANE origin=(1.05,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=846, surface=868, class=4001
+ PLANE origin=(0.55,0.5,-0.1) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=841, surface=867, class=4001
+ PLANE origin=(1.05,1.5,-0.1) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=807, surface=857, class=4001
+ PLANE origin=(1.05,0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=801, surface=866, class=4001
+ PLANE origin=(1.55,0.5,-0.1) axis=(1,0,0)
+native tool full BODY_check: 0 faults
+BEGIN PK asymmetric-subtract, function=15902, tools=1
+TIME PK asymmetric-subtract ms=1.164, error=0, stage=Publish, face=18, other=-1, sheet=RayIntersections
+asymmetric-subtract native result 0 full BODY_check: 0 faults
+NATIVE READY asymmetric-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=640.861, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=504, surface=571, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=510, surface=576, class=4006
+SUPPORT self global=2, owner=0, face=516, surface=587, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=522, surface=597, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=528, surface=600, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=534, surface=602, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=663, surface=604, class=4007
+SUPPORT self global=7, owner=1, face=725, surface=714, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=731, surface=715, class=4001
+ PLANE origin=(0.55,-0.5,1.9) axis=(0,0,1)
+SUPPORT self global=9, owner=1, face=737, surface=716, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=743, surface=717, class=4001
+ PLANE origin=(1.55,-0.5,-0.1) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=749, surface=718, class=4001
+ PLANE origin=(1.55,1.5,-0.1) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=755, surface=719, class=4001
+ PLANE origin=(0.55,1.5,-0.1) axis=(-1,-0,-0)
+BEGIN self asymmetric-subtract, function=15902, tools=1
+PROGRESS self asymmetric-subtract, elapsed=10.1s, stage=Components, face=18, other=-1
+TIME self asymmetric-subtract ms=11045.040, error=0, stage=Publish, face=18, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=11044.936, pairs=42, ssi-cells=144, root-cells=3186, roots=66, budget-failures=0, winding=171, bound-requests=9976, bound-evaluations=6718, cache-hits=0, bound-ms=6555.617
+PROFILE stage=None ms=0.000
+PROFILE stage=Read ms=0.014
+PROFILE stage=Cuts ms=1368.710
+PROFILE stage=Clip ms=2041.792
+PROFILE stage=Split ms=0.540
+PROFILE stage=Arrange ms=3021.871
+PROFILE stage=Classify ms=2093.149
+PROFILE stage=Components ms=2518.860
+asymmetric-subtract received 0 full BODY_check: 0 faults
+asymmetric-subtract result 0 topology 0: native=2 own=2
+asymmetric-subtract result 0 topology 1: native=2 own=2
+asymmetric-subtract result 0 topology 2: native=7 own=7
+asymmetric-subtract result 0 topology 3: native=15 own=15
+asymmetric-subtract result 0 topology 4: native=10 own=10
+asymmetric-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric-subtract result 0 compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=15/15
+global diff=21944, entities=0/0
+global diff=21946, entities=10/10
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=918/1155, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=785/1154, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=763/1159, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=897/1164, class=500/500, int=5/9, value=0/0
+CHART face=2, diff=21949, entity=785/1154, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=763/1159, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=918/1155, class=500/500, int=4/33, value=0/0
+CHART face=3, diff=21949, entity=897/1164, class=500/500, int=5/9, value=0/0
+asymmetric-subtract result 0 PK mass: volume=0.5649759029276106/0.5649759014984549, area=4.236492422391758/4.236492409342414, max normalized residual=2.4920008996730295E-09
+PASS strict asymmetric-subtract iteration=2
+TIME case asymmetric-subtract ms=24393.205
+
+Source: temp_docs/mixed-curved-boolean-oracle/profile-uncached/blend-subtract.log
+CONFIG Release managed
+CASE blend-subtract: second independently filleted roof translated by (.07,.03,.02), true Blend/Blend crossing
+ITERATION 1/2, cold, bound-cache=False
+TIME PK BODY_fix_blends radius=0.1 ms=2.737, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=1.815, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT PK global=0, owner=0, face=111, surface=138, class=4006
+SUPPORT PK global=1, owner=0, face=106, surface=124, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=101, surface=123, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=96, surface=122, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=62, surface=112, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=56, surface=121, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=146, surface=170, class=4007
+SUPPORT PK global=7, owner=1, face=281, surface=308, class=4006
+SUPPORT PK global=8, owner=1, face=276, surface=294, class=4001
+ PLANE origin=(0.5700000000000001,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=271, surface=293, class=4001
+ PLANE origin=(0.07,0.53,0.02) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=266, surface=292, class=4001
+ PLANE origin=(0.5700000000000001,1.03,0.02) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=232, surface=282, class=4001
+ PLANE origin=(0.5700000000000001,0.53,0.02) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=226, surface=291, class=4001
+ PLANE origin=(1.07,0.53,0.02) axis=(1,0,0)
+SUPPORT PK global=13, owner=1, face=316, surface=340, class=4007
+native tool full BODY_check: 0 faults
+BEGIN PK blend-subtract, function=15902, tools=1
+TIME PK blend-subtract ms=14.028, error=0, stage=None, face=0, other=0, sheet=None
+blend-subtract native result 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#190, edge=#186, supports=BLENDED_EDGE/BLENDED_EDGE
+NATIVE READY blend-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=1054.765, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+TIME self BODY_fix_blends radius=0.1 ms=659.953, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=32, surface=99, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=38, surface=104, class=4006
+SUPPORT self global=2, owner=0, face=44, surface=115, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=50, surface=125, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=56, surface=128, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=62, surface=130, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=191, surface=132, class=4007
+SUPPORT self global=7, owner=1, face=253, surface=320, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=259, surface=325, class=4006
+SUPPORT self global=9, owner=1, face=265, surface=336, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=271, surface=346, class=4001
+ PLANE origin=(1.07,0.03,0.02) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=277, surface=349, class=4001
+ PLANE origin=(1.07,1.03,0.02) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=283, surface=351, class=4001
+ PLANE origin=(0.07,1.03,0.02) axis=(-1,-0,-0)
+SUPPORT self global=13, owner=1, face=412, surface=353, class=4007
+BEGIN self blend-subtract, function=15902, tools=1
+PROGRESS self blend-subtract, elapsed=10.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=20.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=30.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=40.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=50.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=60.0s, stage=Clip, face=1, other=13
+PROGRESS self blend-subtract, elapsed=70.0s, stage=Clip, face=3, other=13
+PROGRESS self blend-subtract, elapsed=80.0s, stage=Cuts, face=6, other=9
+PROGRESS self blend-subtract, elapsed=90.0s, stage=Clip, face=6, other=9
+PROGRESS self blend-subtract, elapsed=100.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=110.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=120.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=130.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=140.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=150.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=160.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=170.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=180.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=190.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=200.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=210.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=220.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=230.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=240.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=250.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=260.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=270.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=280.0s, stage=Arrange, face=1, other=-1
+PROGRESS self blend-subtract, elapsed=290.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=300.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=310.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=320.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=330.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=340.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=350.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=360.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=370.0s, stage=Classify, face=0, other=-1
+PROGRESS self blend-subtract, elapsed=380.0s, stage=Classify, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=390.0s, stage=Components, face=21, other=-1
+PROGRESS self blend-subtract, elapsed=400.0s, stage=Components, face=21, other=-1
+PROGRESS self blend-subtract, elapsed=410.0s, stage=Components, face=21, other=-1
+PROGRESS self blend-subtract, elapsed=420.0s, stage=Components, face=21, other=-1
+TIME self blend-subtract ms=421776.806, error=0, stage=Publish, face=21, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=421752.869, pairs=49, ssi-cells=36017, root-cells=236851, roots=1880, budget-failures=0, winding=214, bound-requests=953971, bound-evaluations=393121, cache-hits=0, bound-ms=405798.613
+PROFILE stage=None ms=0.102
+PROFILE stage=Read ms=0.936
+PROFILE stage=Cuts ms=199924.770
+PROFILE stage=Clip ms=79371.906
+PROFILE stage=Split ms=3.199
+PROFILE stage=Arrange ms=90522.616
+PROFILE stage=Classify ms=13873.838
+PROFILE stage=Components ms=38055.501
+blend-subtract received 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#293, edge=#352, supports=BLENDED_EDGE/BLENDED_EDGE
+blend-subtract result 0 topology 0: native=2 own=2
+blend-subtract result 0 topology 1: native=2 own=2
+blend-subtract result 0 topology 2: native=11 own=11
+blend-subtract result 0 topology 3: native=27 own=27
+blend-subtract result 0 topology 4: native=18 own=18
+blend-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+blend-subtract result 0 compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=11/11
+global diff=21943, entities=27/27
+global diff=21944, entities=0/0
+global diff=21946, entities=18/18
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=450/667, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=210/666, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=188/671, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=433/676, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=412/683, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=210/666, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=188/671, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=407/682, class=500/500, int=3/244, value=0/0
+CHART face=4, diff=21949, entity=358/687, class=500/500, int=5/23, value=0/0
+CHART face=5, diff=21949, entity=450/667, class=500/500, int=4/33, value=0/0
+CHART face=5, diff=21949, entity=412/683, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=433/676, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=358/687, class=500/500, int=5/23, value=0/0
+CHART face=6, diff=21949, entity=407/682, class=500/500, int=3/244, value=0/0
+blend-subtract result 0 PK mass: volume=0.1152460292236816/0.11524602881482815, area=6.0110483330520355/6.011048317792362, max normalized residual=2.1765180897188854E-09
+PASS strict blend-subtract iteration=1
+ITERATION 2/2, warm, bound-cache=False
+TIME PK BODY_fix_blends radius=0.1 ms=1.966, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=1.752, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT PK global=0, owner=0, face=823, surface=850, class=4006
+SUPPORT PK global=1, owner=0, face=818, surface=836, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=813, surface=835, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=808, surface=834, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=774, surface=824, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=768, surface=833, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=858, surface=882, class=4007
+SUPPORT PK global=7, owner=1, face=993, surface=1020, class=4006
+SUPPORT PK global=8, owner=1, face=988, surface=1006, class=4001
+ PLANE origin=(0.5700000000000001,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=983, surface=1005, class=4001
+ PLANE origin=(0.07,0.53,0.02) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=978, surface=1004, class=4001
+ PLANE origin=(0.5700000000000001,1.03,0.02) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=944, surface=994, class=4001
+ PLANE origin=(0.5700000000000001,0.53,0.02) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=938, surface=1003, class=4001
+ PLANE origin=(1.07,0.53,0.02) axis=(1,0,0)
+SUPPORT PK global=13, owner=1, face=1028, surface=1052, class=4007
+native tool full BODY_check: 0 faults
+BEGIN PK blend-subtract, function=15902, tools=1
+TIME PK blend-subtract ms=10.768, error=0, stage=Publish, face=21, other=-1, sheet=RayIntersections
+blend-subtract native result 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#187, edge=#190, supports=BLENDED_EDGE/BLENDED_EDGE
+NATIVE READY blend-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=641.175, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+TIME self BODY_fix_blends radius=0.1 ms=634.049, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=790, surface=857, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=796, surface=862, class=4006
+SUPPORT self global=2, owner=0, face=802, surface=873, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=808, surface=883, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=814, surface=886, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=820, surface=888, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=949, surface=890, class=4007
+SUPPORT self global=7, owner=1, face=1011, surface=1078, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=1017, surface=1083, class=4006
+SUPPORT self global=9, owner=1, face=1023, surface=1094, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=1029, surface=1104, class=4001
+ PLANE origin=(1.07,0.03,0.02) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=1035, surface=1107, class=4001
+ PLANE origin=(1.07,1.03,0.02) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=1041, surface=1109, class=4001
+ PLANE origin=(0.07,1.03,0.02) axis=(-1,-0,-0)
+SUPPORT self global=13, owner=1, face=1170, surface=1111, class=4007
+BEGIN self blend-subtract, function=15902, tools=1
+PROGRESS self blend-subtract, elapsed=10.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=20.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=30.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=40.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=50.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=60.0s, stage=Clip, face=1, other=13
+PROGRESS self blend-subtract, elapsed=70.0s, stage=Clip, face=3, other=13
+PROGRESS self blend-subtract, elapsed=80.0s, stage=Cuts, face=6, other=9
+PROGRESS self blend-subtract, elapsed=90.0s, stage=Clip, face=6, other=9
+PROGRESS self blend-subtract, elapsed=100.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=110.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=120.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=130.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=140.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=150.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=160.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=170.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=180.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=190.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=200.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=210.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=220.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=230.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=240.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=250.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=260.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=270.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=280.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=290.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=300.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=310.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=320.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=330.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=340.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=350.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=360.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=370.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=380.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=390.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=400.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=410.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=420.0s, stage=Classify, face=9, other=-1
+PROGRESS self blend-subtract, elapsed=430.0s, stage=Components, face=21, other=-1
+PROGRESS self blend-subtract, elapsed=440.0s, stage=Components, face=21, other=-1
+PROGRESS self blend-subtract, elapsed=450.0s, stage=Components, face=21, other=-1
+PROGRESS self blend-subtract, elapsed=460.0s, stage=Components, face=21, other=-1
+TIME self blend-subtract ms=467100.928, error=0, stage=Publish, face=21, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=467100.831, pairs=49, ssi-cells=36017, root-cells=236851, roots=1880, budget-failures=0, winding=214, bound-requests=953971, bound-evaluations=393121, cache-hits=0, bound-ms=449731.866
+PROFILE stage=None ms=0.000
+PROFILE stage=Read ms=0.026
+PROFILE stage=Cuts ms=227608.923
+PROFILE stage=Clip ms=93051.223
+PROFILE stage=Split ms=1.195
+PROFILE stage=Arrange ms=93508.084
+PROFILE stage=Classify ms=14919.770
+PROFILE stage=Components ms=38011.609
+blend-subtract received 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#293, edge=#352, supports=BLENDED_EDGE/BLENDED_EDGE
+blend-subtract result 0 topology 0: native=2 own=2
+blend-subtract result 0 topology 1: native=2 own=2
+blend-subtract result 0 topology 2: native=11 own=11
+blend-subtract result 0 topology 3: native=27 own=27
+blend-subtract result 0 topology 4: native=18 own=18
+blend-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+blend-subtract result 0 compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=11/11
+global diff=21943, entities=27/27
+global diff=21944, entities=0/0
+global diff=21946, entities=18/18
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1162/1379, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=922/1378, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=900/1383, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=1145/1388, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=1124/1395, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=922/1378, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=900/1383, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=1119/1394, class=500/500, int=3/244, value=0/0
+CHART face=4, diff=21949, entity=1070/1399, class=500/500, int=5/23, value=0/0
+CHART face=5, diff=21949, entity=1162/1379, class=500/500, int=4/33, value=0/0
+CHART face=5, diff=21949, entity=1124/1395, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=1145/1388, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=1070/1399, class=500/500, int=5/23, value=0/0
+CHART face=6, diff=21949, entity=1119/1394, class=500/500, int=3/244, value=0/0
+blend-subtract result 0 PK mass: volume=0.1152460292236816/0.11524602881482815, area=6.0110483330520355/6.011048317792362, max normalized residual=2.1765180897188854E-09
+PASS strict blend-subtract iteration=2
+TIME case blend-subtract ms=892919.164
+
+Source: temp_docs/mixed-curved-boolean-oracle/profile-cached/asymmetric-subtract.log
+CONFIG Release managed
+CASE asymmetric-subtract: M1 fillet versus x>=.55 block (general Blend/plane section)
+ITERATION 1/2, cold, bound-cache=True
+TIME PK BODY_fix_blends radius=0.1 ms=2.817, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+SUPPORT PK global=0, owner=0, face=111, surface=138, class=4006
+SUPPORT PK global=1, owner=0, face=106, surface=124, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=101, surface=123, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=96, surface=122, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=62, surface=112, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=56, surface=121, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=146, surface=170, class=4007
+SUPPORT PK global=7, owner=1, face=281, surface=299, class=4001
+ PLANE origin=(1.05,0.5,1.9) axis=(0,0,1)
+SUPPORT PK global=8, owner=1, face=276, surface=294, class=4001
+ PLANE origin=(1.05,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=271, surface=293, class=4001
+ PLANE origin=(0.55,0.5,-0.1) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=266, surface=292, class=4001
+ PLANE origin=(1.05,1.5,-0.1) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=232, surface=282, class=4001
+ PLANE origin=(1.05,0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=226, surface=291, class=4001
+ PLANE origin=(1.55,0.5,-0.1) axis=(1,0,0)
+native tool full BODY_check: 0 faults
+BEGIN PK asymmetric-subtract, function=15902, tools=1
+TIME PK asymmetric-subtract ms=2.918, error=0, stage=None, face=0, other=0, sheet=None
+asymmetric-subtract native result 0 full BODY_check: 0 faults
+NATIVE READY asymmetric-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=1079.927, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=32, surface=99, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=38, surface=104, class=4006
+SUPPORT self global=2, owner=0, face=44, surface=115, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=50, surface=125, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=56, surface=128, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=62, surface=130, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=191, surface=132, class=4007
+SUPPORT self global=7, owner=1, face=253, surface=242, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=259, surface=243, class=4001
+ PLANE origin=(0.55,-0.5,1.9) axis=(0,0,1)
+SUPPORT self global=9, owner=1, face=265, surface=244, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=271, surface=245, class=4001
+ PLANE origin=(1.55,-0.5,-0.1) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=277, surface=246, class=4001
+ PLANE origin=(1.55,1.5,-0.1) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=283, surface=247, class=4001
+ PLANE origin=(0.55,1.5,-0.1) axis=(-1,-0,-0)
+BEGIN self asymmetric-subtract, function=15902, tools=1
+TIME self asymmetric-subtract ms=8113.772, error=0, stage=Publish, face=18, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=8087.947, pairs=42, ssi-cells=144, root-cells=3186, roots=66, budget-failures=0, winding=171, bound-requests=9976, bound-evaluations=3523, cache-hits=3195, bound-ms=3471.953
+PROFILE stage=None ms=0.206
+PROFILE stage=Read ms=0.905
+PROFILE stage=Cuts ms=1456.453
+PROFILE stage=Clip ms=1485.979
+PROFILE stage=Split ms=2.857
+PROFILE stage=Arrange ms=2125.486
+PROFILE stage=Classify ms=1665.002
+PROFILE stage=Components ms=1351.061
+asymmetric-subtract received 0 full BODY_check: 0 faults
+asymmetric-subtract result 0 topology 0: native=2 own=2
+asymmetric-subtract result 0 topology 1: native=2 own=2
+asymmetric-subtract result 0 topology 2: native=7 own=7
+asymmetric-subtract result 0 topology 3: native=15 own=15
+asymmetric-subtract result 0 topology 4: native=10 own=10
+asymmetric-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric-subtract result 0 compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=15/15
+global diff=21944, entities=0/0
+global diff=21946, entities=10/10
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=343/580, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=210/579, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=188/584, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=322/589, class=500/500, int=5/9, value=0/0
+CHART face=2, diff=21949, entity=210/579, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=188/584, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=343/580, class=500/500, int=4/33, value=0/0
+CHART face=3, diff=21949, entity=322/589, class=500/500, int=5/9, value=0/0
+asymmetric-subtract result 0 PK mass: volume=0.5649759029276106/0.5649759014984549, area=4.236492422391758/4.236492409342414, max normalized residual=2.4920008996730295E-09
+PASS strict asymmetric-subtract iteration=1
+ITERATION 2/2, warm, bound-cache=True
+TIME PK BODY_fix_blends radius=0.1 ms=2.223, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+SUPPORT PK global=0, owner=0, face=686, surface=713, class=4006
+SUPPORT PK global=1, owner=0, face=681, surface=699, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=676, surface=698, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=671, surface=697, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=637, surface=687, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=631, surface=696, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=721, surface=745, class=4007
+SUPPORT PK global=7, owner=1, face=856, surface=874, class=4001
+ PLANE origin=(1.05,0.5,1.9) axis=(0,0,1)
+SUPPORT PK global=8, owner=1, face=851, surface=869, class=4001
+ PLANE origin=(1.05,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=846, surface=868, class=4001
+ PLANE origin=(0.55,0.5,-0.1) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=841, surface=867, class=4001
+ PLANE origin=(1.05,1.5,-0.1) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=807, surface=857, class=4001
+ PLANE origin=(1.05,0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=801, surface=866, class=4001
+ PLANE origin=(1.55,0.5,-0.1) axis=(1,0,0)
+native tool full BODY_check: 0 faults
+BEGIN PK asymmetric-subtract, function=15902, tools=1
+TIME PK asymmetric-subtract ms=1.494, error=0, stage=Publish, face=18, other=-1, sheet=RayIntersections
+asymmetric-subtract native result 0 full BODY_check: 0 faults
+NATIVE READY asymmetric-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=687.347, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=504, surface=571, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=510, surface=576, class=4006
+SUPPORT self global=2, owner=0, face=516, surface=587, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=522, surface=597, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=528, surface=600, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=534, surface=602, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=663, surface=604, class=4007
+SUPPORT self global=7, owner=1, face=725, surface=714, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=731, surface=715, class=4001
+ PLANE origin=(0.55,-0.5,1.9) axis=(0,0,1)
+SUPPORT self global=9, owner=1, face=737, surface=716, class=4001
+ PLANE origin=(0.55,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=743, surface=717, class=4001
+ PLANE origin=(1.55,-0.5,-0.1) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=749, surface=718, class=4001
+ PLANE origin=(1.55,1.5,-0.1) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=755, surface=719, class=4001
+ PLANE origin=(0.55,1.5,-0.1) axis=(-1,-0,-0)
+BEGIN self asymmetric-subtract, function=15902, tools=1
+TIME self asymmetric-subtract ms=6519.914, error=0, stage=Publish, face=18, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=6519.827, pairs=42, ssi-cells=144, root-cells=3186, roots=66, budget-failures=0, winding=171, bound-requests=9976, bound-evaluations=3530, cache-hits=3188, bound-ms=2821.563
+PROFILE stage=None ms=0.033
+PROFILE stage=Read ms=0.018
+PROFILE stage=Cuts ms=1099.085
+PROFILE stage=Clip ms=1263.401
+PROFILE stage=Split ms=0.558
+PROFILE stage=Arrange ms=1982.705
+PROFILE stage=Classify ms=1382.010
+PROFILE stage=Components ms=792.017
+asymmetric-subtract received 0 full BODY_check: 0 faults
+asymmetric-subtract result 0 topology 0: native=2 own=2
+asymmetric-subtract result 0 topology 1: native=2 own=2
+asymmetric-subtract result 0 topology 2: native=7 own=7
+asymmetric-subtract result 0 topology 3: native=15 own=15
+asymmetric-subtract result 0 topology 4: native=10 own=10
+asymmetric-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric-subtract result 0 compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=15/15
+global diff=21944, entities=0/0
+global diff=21946, entities=10/10
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=918/1155, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=785/1154, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=763/1159, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=897/1164, class=500/500, int=5/9, value=0/0
+CHART face=2, diff=21949, entity=785/1154, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=763/1159, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=918/1155, class=500/500, int=4/33, value=0/0
+CHART face=3, diff=21949, entity=897/1164, class=500/500, int=5/9, value=0/0
+asymmetric-subtract result 0 PK mass: volume=0.5649759029276106/0.5649759014984549, area=4.236492422391758/4.236492409342414, max normalized residual=2.4920008996730295E-09
+PASS strict asymmetric-subtract iteration=2
+TIME case asymmetric-subtract ms=17424.450
+
+Source: temp_docs/mixed-curved-boolean-oracle/profile-cached/blend-subtract.log
+CONFIG Release managed
+CASE blend-subtract: second independently filleted roof translated by (.07,.03,.02), true Blend/Blend crossing
+ITERATION 1/2, cold, bound-cache=True
+TIME PK BODY_fix_blends radius=0.1 ms=2.440, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=1.980, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT PK global=0, owner=0, face=111, surface=138, class=4006
+SUPPORT PK global=1, owner=0, face=106, surface=124, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=101, surface=123, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=96, surface=122, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=62, surface=112, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=56, surface=121, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=146, surface=170, class=4007
+SUPPORT PK global=7, owner=1, face=281, surface=308, class=4006
+SUPPORT PK global=8, owner=1, face=276, surface=294, class=4001
+ PLANE origin=(0.5700000000000001,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=271, surface=293, class=4001
+ PLANE origin=(0.07,0.53,0.02) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=266, surface=292, class=4001
+ PLANE origin=(0.5700000000000001,1.03,0.02) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=232, surface=282, class=4001
+ PLANE origin=(0.5700000000000001,0.53,0.02) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=226, surface=291, class=4001
+ PLANE origin=(1.07,0.53,0.02) axis=(1,0,0)
+SUPPORT PK global=13, owner=1, face=316, surface=340, class=4007
+native tool full BODY_check: 0 faults
+BEGIN PK blend-subtract, function=15902, tools=1
+TIME PK blend-subtract ms=12.067, error=0, stage=None, face=0, other=0, sheet=None
+blend-subtract native result 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#190, edge=#186, supports=BLENDED_EDGE/BLENDED_EDGE
+NATIVE READY blend-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=1004.198, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+TIME self BODY_fix_blends radius=0.1 ms=636.469, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=32, surface=99, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=38, surface=104, class=4006
+SUPPORT self global=2, owner=0, face=44, surface=115, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=50, surface=125, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=56, surface=128, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=62, surface=130, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=191, surface=132, class=4007
+SUPPORT self global=7, owner=1, face=253, surface=320, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=259, surface=325, class=4006
+SUPPORT self global=9, owner=1, face=265, surface=336, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=271, surface=346, class=4001
+ PLANE origin=(1.07,0.03,0.02) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=277, surface=349, class=4001
+ PLANE origin=(1.07,1.03,0.02) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=283, surface=351, class=4001
+ PLANE origin=(0.07,1.03,0.02) axis=(-1,-0,-0)
+SUPPORT self global=13, owner=1, face=412, surface=353, class=4007
+BEGIN self blend-subtract, function=15902, tools=1
+PROGRESS self blend-subtract, elapsed=10.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=20.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=30.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=40.0s, stage=Clip, face=1, other=13
+PROGRESS self blend-subtract, elapsed=50.0s, stage=Cuts, face=6, other=9
+PROGRESS self blend-subtract, elapsed=60.0s, stage=Clip, face=6, other=12
+PROGRESS self blend-subtract, elapsed=70.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=80.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=90.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=100.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=110.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=120.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=130.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=140.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=150.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=160.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=170.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=180.0s, stage=Arrange, face=9, other=-1
+PROGRESS self blend-subtract, elapsed=190.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=200.0s, stage=Classify, face=9, other=-1
+PROGRESS self blend-subtract, elapsed=210.0s, stage=Components, face=21, other=-1
+TIME self blend-subtract ms=217664.048, error=0, stage=Publish, face=21, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=217640.253, pairs=49, ssi-cells=36017, root-cells=236851, roots=1880, budget-failures=0, winding=214, bound-requests=953971, bound-evaluations=209599, cache-hits=183522, bound-ms=201621.886
+PROFILE stage=None ms=0.213
+PROFILE stage=Read ms=0.885
+PROFILE stage=Cuts ms=138357.855
+PROFILE stage=Clip ms=26882.991
+PROFILE stage=Split ms=3.126
+PROFILE stage=Arrange ms=30190.798
+PROFILE stage=Classify ms=10138.481
+PROFILE stage=Components ms=12065.904
+blend-subtract received 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#293, edge=#352, supports=BLENDED_EDGE/BLENDED_EDGE
+blend-subtract result 0 topology 0: native=2 own=2
+blend-subtract result 0 topology 1: native=2 own=2
+blend-subtract result 0 topology 2: native=11 own=11
+blend-subtract result 0 topology 3: native=27 own=27
+blend-subtract result 0 topology 4: native=18 own=18
+blend-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+blend-subtract result 0 compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=11/11
+global diff=21943, entities=27/27
+global diff=21944, entities=0/0
+global diff=21946, entities=18/18
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=450/667, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=210/666, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=188/671, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=433/676, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=412/683, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=210/666, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=188/671, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=407/682, class=500/500, int=3/244, value=0/0
+CHART face=4, diff=21949, entity=358/687, class=500/500, int=5/23, value=0/0
+CHART face=5, diff=21949, entity=450/667, class=500/500, int=4/33, value=0/0
+CHART face=5, diff=21949, entity=412/683, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=433/676, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=358/687, class=500/500, int=5/23, value=0/0
+CHART face=6, diff=21949, entity=407/682, class=500/500, int=3/244, value=0/0
+blend-subtract result 0 PK mass: volume=0.1152460292236816/0.11524602881482815, area=6.0110483330520355/6.011048317792362, max normalized residual=2.1765180897188854E-09
+PASS strict blend-subtract iteration=1
+ITERATION 2/2, warm, bound-cache=True
+TIME PK BODY_fix_blends radius=0.1 ms=1.800, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+TIME PK BODY_fix_blends radius=0.1 ms=1.518, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT PK global=0, owner=0, face=823, surface=850, class=4006
+SUPPORT PK global=1, owner=0, face=818, surface=836, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=813, surface=835, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=808, surface=834, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=774, surface=824, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=768, surface=833, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=858, surface=882, class=4007
+SUPPORT PK global=7, owner=1, face=993, surface=1020, class=4006
+SUPPORT PK global=8, owner=1, face=988, surface=1006, class=4001
+ PLANE origin=(0.5700000000000001,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=983, surface=1005, class=4001
+ PLANE origin=(0.07,0.53,0.02) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=978, surface=1004, class=4001
+ PLANE origin=(0.5700000000000001,1.03,0.02) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=944, surface=994, class=4001
+ PLANE origin=(0.5700000000000001,0.53,0.02) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=938, surface=1003, class=4001
+ PLANE origin=(1.07,0.53,0.02) axis=(1,0,0)
+SUPPORT PK global=13, owner=1, face=1028, surface=1052, class=4007
+native tool full BODY_check: 0 faults
+BEGIN PK blend-subtract, function=15902, tools=1
+TIME PK blend-subtract ms=10.750, error=0, stage=Publish, face=21, other=-1, sheet=RayIntersections
+blend-subtract native result 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#187, edge=#190, supports=BLENDED_EDGE/BLENDED_EDGE
+NATIVE READY blend-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=631.206, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+TIME self BODY_fix_blends radius=0.1 ms=627.394, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=790, surface=857, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=796, surface=862, class=4006
+SUPPORT self global=2, owner=0, face=802, surface=873, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=808, surface=883, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=814, surface=886, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=820, surface=888, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=949, surface=890, class=4007
+SUPPORT self global=7, owner=1, face=1011, surface=1078, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=1017, surface=1083, class=4006
+SUPPORT self global=9, owner=1, face=1023, surface=1094, class=4001
+ PLANE origin=(0.07,0.03,0.02) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=1029, surface=1104, class=4001
+ PLANE origin=(1.07,0.03,0.02) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=1035, surface=1107, class=4001
+ PLANE origin=(1.07,1.03,0.02) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=1041, surface=1109, class=4001
+ PLANE origin=(0.07,1.03,0.02) axis=(-1,-0,-0)
+SUPPORT self global=13, owner=1, face=1170, surface=1111, class=4007
+BEGIN self blend-subtract, function=15902, tools=1
+PROGRESS self blend-subtract, elapsed=10.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=20.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=30.0s, stage=Cuts, face=1, other=13
+PROGRESS self blend-subtract, elapsed=40.0s, stage=Clip, face=1, other=13
+PROGRESS self blend-subtract, elapsed=50.0s, stage=Cuts, face=6, other=9
+PROGRESS self blend-subtract, elapsed=60.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=70.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=80.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=90.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=100.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=110.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=120.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=130.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=140.0s, stage=Cuts, face=6, other=13
+PROGRESS self blend-subtract, elapsed=150.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=160.0s, stage=Clip, face=6, other=13
+PROGRESS self blend-subtract, elapsed=170.0s, stage=Arrange, face=6, other=-1
+PROGRESS self blend-subtract, elapsed=180.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=190.0s, stage=Arrange, face=13, other=-1
+PROGRESS self blend-subtract, elapsed=200.0s, stage=Classify, face=10, other=-1
+PROGRESS self blend-subtract, elapsed=210.0s, stage=Components, face=21, other=-1
+TIME self blend-subtract ms=215724.259, error=0, stage=Publish, face=21, other=-1, sheet=RayIntersections
+PROFILE elapsed-ms=215724.162, pairs=49, ssi-cells=36017, root-cells=236851, roots=1880, budget-failures=0, winding=214, bound-requests=953971, bound-evaluations=209549, cache-hits=183572, bound-ms=200682.555
+PROFILE stage=None ms=0.031
+PROFILE stage=Read ms=0.028
+PROFILE stage=Cuts ms=136776.062
+PROFILE stage=Clip ms=27781.357
+PROFILE stage=Split ms=1.185
+PROFILE stage=Arrange ms=29556.145
+PROFILE stage=Classify ms=9717.502
+PROFILE stage=Components ms=11891.853
+blend-subtract received 0 full BODY_check: 0 faults
+CROSSING blend-subtract curve=#293, edge=#352, supports=BLENDED_EDGE/BLENDED_EDGE
+blend-subtract result 0 topology 0: native=2 own=2
+blend-subtract result 0 topology 1: native=2 own=2
+blend-subtract result 0 topology 2: native=11 own=11
+blend-subtract result 0 topology 3: native=27 own=27
+blend-subtract result 0 topology 4: native=18 own=18
+blend-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+blend-subtract result 0 compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=11/11
+global diff=21943, entities=27/27
+global diff=21944, entities=0/0
+global diff=21946, entities=18/18
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1162/1379, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=922/1378, class=500/500, int=5/23, value=0/0
+CHART face=1, diff=21949, entity=900/1383, class=500/500, int=5/23, value=0/0
+CHART face=2, diff=21949, entity=1145/1388, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=1124/1395, class=500/500, int=4/9, value=0/0
+CHART face=3, diff=21949, entity=922/1378, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=900/1383, class=500/500, int=5/23, value=0/0
+CHART face=3, diff=21949, entity=1119/1394, class=500/500, int=3/244, value=0/0
+CHART face=4, diff=21949, entity=1070/1399, class=500/500, int=5/23, value=0/0
+CHART face=5, diff=21949, entity=1162/1379, class=500/500, int=4/33, value=0/0
+CHART face=5, diff=21949, entity=1124/1395, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=1145/1388, class=500/500, int=4/9, value=0/0
+CHART face=6, diff=21949, entity=1070/1399, class=500/500, int=5/23, value=0/0
+CHART face=6, diff=21949, entity=1119/1394, class=500/500, int=3/244, value=0/0
+blend-subtract result 0 PK mass: volume=0.1152460292236816/0.11524602881482815, area=6.0110483330520355/6.011048317792362, max normalized residual=2.1765180897188854E-09
+PASS strict blend-subtract iteration=2
+TIME case blend-subtract ms=437316.176

@@ -61,6 +61,7 @@ internal static unsafe partial class KernelRuntime
     private static int SheetLoopWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
         PK_UV_s query,out BufferCount winding)
     {
+        ModelingPerformance.Winding();
         if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Cylinder)
             return CylindricalLoopWinding(surface,edges,loop,query,out winding);
         if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Sphere)

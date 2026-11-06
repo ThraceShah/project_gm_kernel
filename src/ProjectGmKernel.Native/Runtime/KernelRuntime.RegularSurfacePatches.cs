@@ -33,6 +33,7 @@ internal static unsafe partial class KernelRuntime
             var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);
             var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
             patch=new(program,data.ProgramRoot,new(charts[index].Parameter,charts[index+1].Parameter,record.VMin,record.VMax));
+            patch=new(patch,record.Header.Tag,record.Header.Generation,record.Sense);
             return AlgorithmStatus.Success;
         }
         if(record.Class==SurfaceClass.BSurface)

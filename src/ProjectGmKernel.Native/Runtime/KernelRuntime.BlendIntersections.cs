@@ -41,6 +41,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var lo=Math.Max(domain.U0,charts[i].Parameter);var hi=Math.Min(domain.U1,charts[i+1].Parameter);if(!(hi>lo))continue;
                 var patch=new SurfaceIntersectionPatch(program,data.ProgramRoot,new(lo,hi,domain.V0,domain.V1));
+                patch=new(patch,a.Header.Tag,a.Header.Generation,a.Sense);
                 if(analytic)
                 {
                     status=BlendExtent(program,data.ProgramRoot,patch.Domain,out extent);if(status!=AlgorithmStatus.Success)return status;
@@ -52,6 +53,7 @@ internal static unsafe partial class KernelRuntime
                     {
                         var lower=Math.Max(otherDomain.U0,otherCharts[j].Parameter);var upper=Math.Min(otherDomain.U1,otherCharts[j+1].Parameter);if(!(upper>lower))continue;
                         other=new(otherProgram,otherData.ProgramRoot,new(lower,upper,otherDomain.V0,otherDomain.V1));
+                        other=new(other,b.Header.Tag,b.Header.Generation,b.Sense);
                     }
                     else if(analytic)
                     {

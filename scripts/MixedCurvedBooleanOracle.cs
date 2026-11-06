@@ -7,6 +7,7 @@
 #:property AllowUnsafeBlocks=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using M=ProjectGmKernel.Native.Generated;
@@ -15,8 +16,10 @@ var names=new[]{"symmetric-unite","symmetric-intersect","symmetric-subtract","as
     "continuous-x-subtract","continuous-xy-subtract","continuous-asymmetric-contact-subtract","cavity-subtract","closed-loop-subtract","two-crossings-subtract",
     "two-tools-unite","two-tools-intersect","two-tools-subtract","nurbs-unite","nurbs-intersect","nurbs-subtract",
     "blend-unite","blend-intersect","blend-subtract","tilted-cylinder-subtract","refillet-new-edge"};
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","mixed-curved-boolean-oracle");Directory.CreateDirectory(directory);
-if(args.Length>0&&args[0]=="--worker")return RunWorker(args[1],args.Contains("--native-only",StringComparer.Ordinal),directory);
+var profile=args.Contains("--profile",StringComparer.Ordinal);var noBoundCache=args.Contains("--no-bound-cache",StringComparer.Ordinal);var noSplineReuse=args.Contains("--no-spline-reuse",StringComparer.Ordinal);var repeat=ReadRepeat(args);
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","mixed-curved-boolean-oracle");
+if(profile)directory=Path.Combine(directory,(noBoundCache?"profile-uncached":"profile-cached")+(noSplineReuse?"-spline-uncached":""));Directory.CreateDirectory(directory);
+if(args.Length>0&&args[0]=="--worker")return RunWorker(args[1],args.Contains("--native-only",StringComparer.Ordinal),directory,profile,noBoundCache,repeat,noSplineReuse);
 if(args.Contains("list",StringComparer.Ordinal)||args.Contains("--list",StringComparer.Ordinal))
 {
     foreach(var name in names)Console.WriteLine(name+": "+Description(name));return 0;
@@ -25,6 +28,8 @@ var seconds=600;var nativeOnly=args.Contains("--native-only",StringComparer.Ordi
 for(var i=0;i<args.Length;i++)
 {
     if(args[i]=="--native-only")continue;
+    if(args[i] is "--profile" or "--no-bound-cache" or "--no-spline-reuse")continue;
+    if(args[i]=="--repeat"){i++;continue;}
     if(args[i]=="--seconds"){Require(++i<args.Length&&int.TryParse(args[i],out seconds)&&seconds>0&&seconds<=3600,"--seconds must be in [1,3600]");continue;}
     Require(names.Contains(args[i],StringComparer.Ordinal),"unknown case "+args[i]);selected.Add(args[i]);
 }
@@ -37,6 +42,8 @@ foreach(var name in selected)
     using var writer=new StreamWriter(logPath,false){AutoFlush=true};var writeLock=new object();
     var info=new ProcessStartInfo(Environment.ProcessPath!){UseShellExecute=false,RedirectStandardOutput=true,RedirectStandardError=true};
     info.ArgumentList.Add("--worker");info.ArgumentList.Add(name);if(nativeOnly)info.ArgumentList.Add("--native-only");
+    if(profile)info.ArgumentList.Add("--profile");if(noBoundCache)info.ArgumentList.Add("--no-bound-cache");info.ArgumentList.Add("--repeat");info.ArgumentList.Add(repeat.ToString());
+    if(noSplineReuse)info.ArgumentList.Add("--no-spline-reuse");
     using var process=new Process{StartInfo=info};
     process.OutputDataReceived+=(_,e)=>{if(e.Data!=null)lock(writeLock)writer.WriteLine(e.Data);};
     process.ErrorDataReceived+=(_,e)=>{if(e.Data!=null)lock(writeLock)writer.WriteLine("STDERR "+e.Data);};
@@ -73,7 +80,13 @@ static string Description(string name)=>name switch
     _=>throw new Exception("unknown scenario "+name),
 };
 
-static unsafe int RunWorker(string name,bool nativeOnly,string directory)
+static int ReadRepeat(string[] args)
+{
+    var index=Array.IndexOf(args,"--repeat");if(index<0)return 1;
+    Require(index+1<args.Length&&int.TryParse(args[index+1],out var count)&&count is >=1 and <=3,"--repeat must be in [1,3]");return int.Parse(args[index+1]);
+}
+
+static unsafe int RunWorker(string name,bool nativeOnly,string directory,bool profile,bool noBoundCache,int repeat,bool noSplineReuse)
 {
 #if DEBUG
     Console.WriteLine("CONFIG Debug managed");
@@ -84,9 +97,14 @@ static unsafe int RunWorker(string name,bool nativeOnly,string directory)
     if(!ParasolidScriptHost.TryStartSession("Independent mixed curved Boolean "+name,out var host,out var message)){Console.WriteLine(message);return 1;}
     using(host)
     {
+        ModelingPerformance.Enabled=profile;ModelingPerformance.CacheEnabled=!noBoundCache;
+        JointNestedBlendEvaluation.ReuseSplineContactBounds=!noSplineReuse;
         var options=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&options),"self session");
         try
         {
+            for(var iteration=0;iteration<repeat;iteration++)
+            {
+            Console.WriteLine($"ITERATION {iteration+1}/{repeat}, {(iteration==0?"cold":"warm")}, bound-cache={!noBoundCache}");
             var reference=Produce(false,name,directory);Require(reference.Length>0,"manufactured scenario must produce material");for(var i=0;i<reference.Length;i++){CheckBody(reference[i],name+" native result "+i);File.WriteAllBytes(Path.Combine(directory,name+"-reference-"+i+".x_t"),TransmitNative(reference[i]));VerifyScenario(reference[i],name);}
             Console.WriteLine("NATIVE READY "+name+" results="+reference.Length);if(nativeOnly){Console.WriteLine("PASS native reference "+name);return 0;}
             var own=Produce(true,name,directory);Require(own.Length==reference.Length,name+" result body count");
@@ -103,7 +121,9 @@ static unsafe int RunWorker(string name,bool nativeOnly,string directory)
                 }
                 finally{Check(PK_ENTITY_delete(1,&received),"delete received result");}
             }
-            Console.WriteLine("PASS strict "+name);return 0;
+            Console.WriteLine("PASS strict "+name+" iteration="+(iteration+1));
+            }
+            return 0;
         }
         catch(Exception ex){Console.WriteLine("FAIL "+name+": "+ex.Message);return 1;}
         finally{Console.WriteLine($"TIME case {name} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");Check(KernelRuntime.SessionStop(),"self session stop");}
@@ -218,8 +238,16 @@ static unsafe int[] Boolean(bool own,int target,int[] tools,PK_boolean_function_
         try{fixed(int* input=tools)error=own?KernelRuntime.BodyBoolean(target,tools.Length,input,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(target,tools.Length,input,&options,&n,&bodies);}
         finally{progress.DisposeAsync().AsTask().GetAwaiter().GetResult();}
     }
-    Console.WriteLine($"TIME {(own?"self":"PK")} {label} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, other={KernelRuntime.LastRegularBooleanOtherFace}, sheet={KernelRuntime.LastSheetPartitionStage}");Check(error,label);
+    Console.WriteLine($"TIME {(own?"self":"PK")} {label} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, other={KernelRuntime.LastRegularBooleanOtherFace}, sheet={KernelRuntime.LastSheetPartitionStage}");
+    if(own&&ModelingPerformance.Enabled)PrintProfile();
+    Check(error,label);
     try{var result=new int[n];new ReadOnlySpan<int>(bodies,n).CopyTo(result);return result;}finally{Free(own,bodies);}
+}
+static void PrintProfile()
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE elapsed-ms={p.ElapsedTicks*milliseconds:F3}, pairs={p.SurfacePairs}, ssi-cells={p.SsiCells}, root-cells={p.RootCells}, roots={p.Roots}, budget-failures={p.BudgetFailures}, winding={p.WindingCalls}, bound-requests={p.BoundRequests}, bound-evaluations={p.BoundEvaluations}, cache-hits={p.BoundCacheHits}, bound-ms={p.BoundTicks*milliseconds:F3}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe void DumpSupports(bool own,int target,ReadOnlySpan<int> tools)
 {

@@ -31,7 +31,8 @@ internal static class SurfacePlaneIntersection
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[32];
         while(count>0)
         {
-            if(++visited>32768||remaining--<=0)return AlgorithmStatus.NotConverged;
+            ModelingPerformance.Cell(false);
+            if(++visited>32768||remaining--<=0){ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var index=--count;var cell=pending[index];var depth=depths[index];var free=-1;
             var savedNodes=nodeCount;var savedSegments=segmentCount;
             var status=patch.Bound(cell,bounds);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
