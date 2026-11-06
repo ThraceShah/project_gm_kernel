@@ -32,7 +32,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if(nf==faces.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                 var record=Faces[face];var sf=GetSurfaceSlotByTag(record.SurfTag);if(sf<0)return ParasolidConstants.PK_ERROR_missing_geom;
-                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
                 if(Surfaces[sf].Class==SurfaceClass.BSurface)
                 {
                     var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[sf].DataIndex]);
@@ -111,6 +111,15 @@ internal static unsafe partial class KernelRuntime
                     var denominator=Dot(direction,analytic.Axis);var distance=Dot(Sub(analytic.Origin,point),analytic.Axis);
                     if(Math.Abs(denominator)<1e-12){if(Math.Abs(distance)<1e-8)return ParasolidConstants.PK_ERROR_cant_do_intersect;continue;}
                     var t=distance/denominator;if(t< -1e-9)continue;n=1;roots[0]=new(){Point=Add(point,Scale(direction,t)),First=t,Kind=IntersectionVectorKind.Simple};
+                }
+                else if(analytic.Kind==SurfaceClass.Cylinder)
+                {
+                    var radial=Sub(point,analytic.Origin);radial=Sub(radial,Scale(analytic.Axis,Dot(radial,analytic.Axis)));
+                    var transverse=Sub(direction,Scale(analytic.Axis,Dot(direction,analytic.Axis)));var speed=OperationIntersection.Norm(transverse);
+                    if(speed<1e-12)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    var upper=(OperationIntersection.Norm(radial)+analytic.Radius)/speed;
+                    var status=OperationIntersection.AnalyticLine(analytic,point,direction,0,upper+1e-8*Math.Max(1,upper),roots,out n);
+                    if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 }
                 else
                 {

@@ -167,6 +167,7 @@ internal static unsafe partial class KernelRuntime
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[i]);double t=0;
                 var error=CurveParameteriseVectorCore(cut.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
+                LiftPeriodicEdgeParameter(cut.Curve,cut.First,cut.Last,ref t);
                 if(!OperationIntersection.InInterval(t,cut.First,cut.Last))continue;
                 var duplicate=false;for(var j=0;j<n;j++)if(Math.Abs(parameters[j]-t)<1e-10)duplicate=true;if(duplicate)continue;
                 if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=t;endpoints[n++]=i;

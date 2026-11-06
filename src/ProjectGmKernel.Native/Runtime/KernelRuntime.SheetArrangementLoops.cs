@@ -11,7 +11,7 @@ internal static unsafe partial class KernelRuntime
     {
         left=default;positive=0;var support=Surfaces[GetSurfaceSlotByTag(surface)];
         var extent=Math.Min(support.UMax-support.UMin,support.VMax-support.VMin);
-        if(support.Class==SurfaceClass.Plane)extent=PlanarLoopParameterScale(surface,edges,loop);
+        if(support.Class is SurfaceClass.Plane or SurfaceClass.Cylinder)extent=PlanarLoopParameterScale(surface,edges,loop);
         for(var attempt=0;attempt<24;attempt++)
         {
             var coedge=loop[attempt%loop.Length];var fraction=.2931471805599453+(attempt%5)*.071;
@@ -111,6 +111,7 @@ internal static unsafe partial class KernelRuntime
                 if(!coincident)continue;double parameter=0;var error=CurveParameteriseVectorCore(Edges[edge].CurveTag,vector,&parameter);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 if(!TryProfileEdgeRange(Edges[edge],out var first,out var last))return ParasolidConstants.PK_ERROR_not_implemented;
+                LiftPeriodicEdgeParameter(Edges[edge].CurveTag,first,last,ref parameter);
                 if(parameter>=first-1e-10&&parameter<=last+1e-10){on=true;return 0;}
             }
         }

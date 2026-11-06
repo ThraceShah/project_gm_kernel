@@ -14,7 +14,7 @@ internal static unsafe partial class KernelRuntime
         var f=Bodies[body].FirstFaceBody;var curved=false;
         for(var i=0;i<Bodies[body].FaceCountBody;i++,f=Faces[f].NextInBody)
         {
-            var slot=GetSurfaceSlotByTag(Faces[f].SurfTag);if(slot<0||Surfaces[slot].Class is not (SurfaceClass.Plane or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+            var slot=GetSurfaceSlotByTag(Faces[f].SurfTag);if(slot<0||Surfaces[slot].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
             curved|=Surfaces[slot].Class!=SurfaceClass.Plane;
         }
         if(!curved)return ParasolidConstants.PK_ERROR_not_implemented;handled=true;
@@ -35,6 +35,7 @@ internal static unsafe partial class KernelRuntime
             for(var e=0;e<ne;e++)
             {
                 double t=0;error=CurveParameteriseVectorCore(edges[e].Curve,vector,&t);if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
+                LiftPeriodicEdgeParameter(edges[e].Curve,edges[e].Start,edges[e].End,ref t);
                 if(t>=edges[e].Start-1e-10&&t<=edges[e].End+1e-10){*enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Edges[sourceEdges[e]].Header.Tag;return 0;}
             }
             var view=new RegularBoundaryView(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]);

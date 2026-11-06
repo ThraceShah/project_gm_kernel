@@ -20,7 +20,12 @@ internal static unsafe partial class KernelRuntime
     private static int PrepareSheetCutCurves(SurfTag surface, SurfTag plane, Span<SheetCutCurve> cuts, out BufferCount count)
     {
         count = 0;
+        var orderedFirst=surface;var orderedSecond=plane;
         var a = GetSurfaceSlotByTag(surface); var b = GetSurfaceSlotByTag(plane);
+        if(Surfaces[a].Class==SurfaceClass.Cylinder&&Surfaces[b].Class==SurfaceClass.Cylinder
+            &&TryPrepareSurface(Surfaces[a],out var firstCylinder)&&TryPrepareSurface(Surfaces[b],out var secondCylinder)
+            &&OperationIntersection.Norm(ProfileCross(firstCylinder.Axis,secondCylinder.Axis))>0)
+            return ParasolidConstants.PK_ERROR_not_implemented;
         // Exact ruled/iso construction below expects the parametric support
         // first. A repeated Boolean may encounter the old planar tool first.
         if(Surfaces[a].Class==SurfaceClass.Plane&&Surfaces[b].Class!=SurfaceClass.Plane)
@@ -64,6 +69,31 @@ internal static unsafe partial class KernelRuntime
         if (status != AlgorithmStatus.Success) return IntersectionError(status);
         if (np!=0||nc>cuts.Length) return ParasolidConstants.PK_ERROR_not_implemented;
         if (nc==0) return 0;
+        if(TryPrepareSurface(Surfaces[a],out _)&&TryPrepareSurface(Surfaces[b],out _))
+        {
+            // Keep exact analytic SSI curves as their native classes. Their
+            // finite intervals are subsequently clipped to both face loops.
+            TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(orderedFirst)],out var firstSupport);
+            TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(orderedSecond)],out var secondSupport);
+            var firstSense=LocalSenseSign(Surfaces[GetSurfaceSlotByTag(orderedFirst)].Sense);
+            var secondSense=LocalSenseSign(Surfaces[GetSurfaceSlotByTag(orderedSecond)].Sense);
+            Span<KernelVector3> jet=stackalloc KernelVector3[2];
+            for(var i=0;i<nc;i++)
+            {
+                if(branches[i].Kind!=IntersectionCurveKind.Simple)return ParasolidConstants.PK_ERROR_not_implemented;
+                CurveTag curve=0;var error=CreateIntersectionBranch(branches[i],&curve);if(error!=0)return error;
+                var slot=GetCurveSlotByTag(curve);var at=branches[i].Start+(branches[i].End-branches[i].Start)*.5;
+                status=EvaluateCurveCore(in Curves[slot],at,1,false,jet,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                status=AnalyticImplicitEvaluation.Evaluate(firstSupport,jet[0],1,out var firstJet);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                status=AnalyticImplicitEvaluation.Evaluate(secondSupport,jet[0],1,out var secondJet);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                var turn=Dot(ProfileCross(firstJet.Gradient,secondJet.Gradient),jet[1])*firstSense*secondSense;
+                if(turn==0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                Curves[slot].Sense=turn<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+                cuts[i]=new(){Curve=curve,First=branches[i].Start,Last=branches[i].End,
+                    Closed=branches[i].Class is CurveClass.Circle or CurveClass.Ellipse&&branches[i].End-branches[i].Start>=Math.Tau-1e-10?(byte)1:(byte)0};
+            }
+            count=nc;return 0;
+        }
         var clone=TryCloneEntityCore(surface,out var first);if(clone!=0)return clone;
         clone=TryCloneEntityCore(plane,out var second);if(clone!=0)return clone;
         for (var i=0;i<nc;i++)

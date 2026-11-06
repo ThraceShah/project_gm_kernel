@@ -96,6 +96,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var p=new PK_VECTOR_s();WriteVector(&p,roots[i]);double t=0;error=CurveParameteriseVectorCore(curve.Curve,p,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
+                LiftPeriodicEdgeParameter(curve.Curve,curve.First,curve.Last,ref t);
                 if(!OperationIntersection.InInterval(t,curve.First,curve.Last))continue;
                 var duplicate=false;for(var j=0;j<n;j++)duplicate|=Math.Abs(parameters[j]-t)<1e-10;
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n++]=Math.Clamp(t,curve.First,curve.Last);}
@@ -150,6 +151,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);double t=0;var error=CurveParameteriseVectorCore(edge.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
+                LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
                 if(!OperationIntersection.InInterval(t,edge.Start,edge.End))continue;
                 var duplicate=false;for(var k=0;k<n;k++)duplicate|=Math.Abs(parameters[k]-t)<1e-10||vertices[k]==p;
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=Math.Clamp(t,edge.Start,edge.End);vertices[n++]=p;}
