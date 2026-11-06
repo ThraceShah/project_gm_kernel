@@ -78,8 +78,7 @@ budgets including live payload bytes, zero managed allocation after warmup,
 classification directly on a wrapped ellipse edge and continued modeling after
 two XT reloads. This changes no C ABI and is verified without NativeAOT.
 
-Validation on this increment: all 18 independent Parasolid oracle cases pass;
-the 16 new unit cases and the existing almost-coaxial rejection regression pass.
-The first full suite run passed 1,429 of 1,430 tests; its sole failure was the
-almost-coaxial case, subsequently fixed by the explicit skew-pair gate and
-verified again. The allocation IL guard checks 2,275 methods and reports CLEAN.
+Validation on this increment: the full kernel suite passes all 1,430 tests;
+all 18 independent Parasolid oracle cases pass. The 16 new unit cases and the
+existing almost-coaxial rejection regression also pass in a focused run. The
+allocation IL guard checks 2,275 methods and reports CLEAN.
