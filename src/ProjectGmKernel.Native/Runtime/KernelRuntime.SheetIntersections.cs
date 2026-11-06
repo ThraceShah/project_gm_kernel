@@ -21,6 +21,10 @@ internal static unsafe partial class KernelRuntime
     {
         count = 0;
         var a = GetSurfaceSlotByTag(surface); var b = GetSurfaceSlotByTag(plane);
+        // Exact ruled/iso construction below expects the parametric support
+        // first. A repeated Boolean may encounter the old planar tool first.
+        if(Surfaces[a].Class==SurfaceClass.Plane&&Surfaces[b].Class!=SurfaceClass.Plane)
+        { (surface,plane)=(plane,surface);(a,b)=(b,a); }
         Span<OperationIntersectionBranch> branches = stackalloc OperationIntersectionBranch[64];
         Span<KernelVector3> isolated = stackalloc KernelVector3[64];
         var status = FindSurfaceIntersections(a, b, branches, out var nc, isolated, out var np);
@@ -34,6 +38,12 @@ internal static unsafe partial class KernelRuntime
                 var support=Surfaces[a];options.have_uvbox_1=1;
                 options.uvbox_1.param[0]=support.UMin;options.uvbox_1.param[1]=support.VMin;
                 options.uvbox_1.param[2]=support.UMax;options.uvbox_1.param[3]=support.VMax;
+            }
+            if(Surfaces[b].Class==SurfaceClass.BlendSurface)
+            {
+                var support=Surfaces[b];options.have_uvbox_2=1;
+                options.uvbox_2.param[0]=support.UMin;options.uvbox_2.param[1]=support.VMin;
+                options.uvbox_2.param[2]=support.UMax;options.uvbox_2.param[3]=support.VMax;
             }
             int* curves = null; PK_INTERVAL_s* intervals = null; int* kinds = null;
             var error = GeneralSurfIntersectSurf(a,b,-1,&options,&nc,&curves,&intervals,&kinds);
@@ -65,8 +75,15 @@ internal static unsafe partial class KernelRuntime
     private static AlgorithmStatus IntersectSheetCurvePlane(CurveTag curve, double first, double last,
         SurfTag plane, Span<OperationIntersectionPoint> output, out BufferCount count)
     {
-        count=0;var slot=GetCurveSlotByTag(curve);if(slot<0)return AlgorithmStatus.InvalidInput;
+        count=0;
         if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(plane)],out var cutting))return AlgorithmStatus.Unsupported;
+        return IntersectSheetCurvePlane(curve,first,last,cutting,output,out count);
+    }
+
+    private static AlgorithmStatus IntersectSheetCurvePlane(CurveTag curve,double first,double last,in AnalyticSurface cutting,
+        Span<OperationIntersectionPoint> output,out BufferCount count)
+    {
+        count=0;var slot=GetCurveSlotByTag(curve);if(slot<0)return AlgorithmStatus.InvalidInput;
         if(Curves[slot].Class==CurveClass.SPCurve)return IntersectBlendIsoparamPlane(slot,first,last,cutting,output,out count);
         if(Curves[slot].Class!=CurveClass.ICurve)
         {

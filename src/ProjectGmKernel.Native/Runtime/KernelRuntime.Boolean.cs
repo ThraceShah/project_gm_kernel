@@ -131,7 +131,12 @@ internal static unsafe partial class KernelRuntime
             var outputPoints = ModelSpan<KernelVector3>(bytes, ref cursor, PlanarPointCapacity);
             if (cursor > bytes.Length) return ParasolidConstants.PK_ERROR_memory_full;
             var error = ReadPlanarModel(inputs, faces, loops, points, out var nf, out var nl, out var np, out var tolerance);
-            if (error != 0) return error;
+            if (error != 0)
+            {
+                if(error!=ParasolidConstants.PK_ERROR_not_implemented)return error;
+                scratch.Return(memory);memory=default;
+                return RegularCurvedBoolean(inputs,options,tracking,result);
+            }
             faces = faces[..nf]; loops = loops[..nl]; points = points[..np];
             var outputCount = 0; var outputPointCount = 0; var hasClash = false;
             Span<bool> minus = stackalloc bool[inputs.Length]; Span<bool> plus = stackalloc bool[inputs.Length];

@@ -60,6 +60,8 @@ internal static unsafe partial class KernelRuntime
                     if (handled) return curved;
                     curved = TryClassifyRotationalBody(slot, in point, enclosure, topology, out handled);
                     if (handled) return curved;
+                    curved = TryClassifyRegularBody(slot,in point,enclosure,topology,out handled);
+                    if(handled)return curved;
                 }
                 return error;
             }

@@ -1,0 +1,136 @@
+using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Bounds;
+using ProjectGmKernel.Native.Geometry.Intersection;
+
+namespace ProjectGmKernel.Native.Runtime;
+
+internal static unsafe partial class KernelRuntime
+{
+    private static AlgorithmStatus IntersectRegularRay(SurfaceSlot surface,in KernelVector3 origin,in KernelVector3 direction,double upper,
+        Span<OperationIntersectionPoint> output,out BufferCount count)
+    {
+        count=0;var status=RegularSurfaceExtent(surface,out var extent);if(status!=AlgorithmStatus.Success)return status;
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],line=stackalloc IntervalNumber[8];
+        line[0]=origin.X;line[1]=origin.Y;line[2]=origin.Z;line[3]=line[7]=1;
+        line[4]=new IntervalNumber(origin.X)+new IntervalNumber(direction.X)*upper;
+        line[5]=new IntervalNumber(origin.Y)+new IntervalNumber(direction.Y)*upper;
+        line[6]=new IntervalNumber(origin.Z)+new IntervalNumber(direction.Z)*upper;
+        var ray=new SurfaceIntersectionPatch(new BezierSurfacePatch(line,1,0,new(0,upper,0,1)));
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
+        for(var i=0;i<RegularSurfacePatchCount(surface);i++)
+        {
+            status=RegularSurfacePatch(surface,i,extent,poles,out var patch);if(status!=AlgorithmStatus.Success)return status;
+            var box=patch.Domain;if(box.U1<=box.U0||box.V1<=box.V0)continue;
+            var domain=new ParameterCell{Lower=new(){U=box.U0,V=box.V0},Upper=new(){U=box.U1,V=box.V1,S=upper}};
+            status=ParametricSurfaceIntersection.Isolate(patch,ray,domain,3,roots,out var n);if(status!=AlgorithmStatus.Success)return status;
+            for(var r=0;r<n;r++)
+            {
+                if(!OperationIntersection.AddPoint(output,ref count,roots[r].Point,roots[r].S,0,IntersectionVectorKind.Simple))return AlgorithmStatus.OutputTooSmall;
+                for(var k=0;k<count;k++)if(Math.Abs(output[k].First-roots[r].S)<1e-10){output[k].U=roots[r].U;output[k].V=roots[r].V;}
+            }
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus IntersectRegularSurfaceCurve(SurfTag surface,CurveTag curve,double first,double last,
+        Span<OperationIntersectionPoint> output,out BufferCount count)
+    {
+        count=0;var slot=GetSurfaceSlotByTag(surface);var cs=GetCurveSlotByTag(curve);
+        if(slot<0||cs<0)return AlgorithmStatus.InvalidInput;
+        if(Surfaces[slot].Class==SurfaceClass.Plane)return IntersectSheetCurvePlane(curve,first,last,surface,output,out count);
+        if(Curves[cs].Class==CurveClass.ICurve)return IntersectRegularICurveSurface(slot,cs,first,last,output,out count);
+        if(TryBlendIsoparam(cs,out var isoSurface,out var fixedV))
+        {
+            var status=RegularSurfaceExtent(isoSurface,out var extent);if(status!=AlgorithmStatus.Success)return status;
+            Span<IntervalNumber> ap=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],bp=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
+            Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
+            for(var i=0;i<RegularSurfacePatchCount(isoSurface);i++)
+            {
+                status=RegularSurfacePatch(isoSurface,i,extent,ap,out var basis);if(status!=AlgorithmStatus.Success)return status;
+                var lo=Math.Max(first,basis.Domain.U0);var hi=Math.Min(last,basis.Domain.U1);if(!(hi>lo))continue;
+                var iso=new SurfaceIntersectionPatch(basis,false,fixedV,lo,hi);
+                for(var j=0;j<RegularSurfacePatchCount(slot);j++)
+                {
+                    status=RegularSurfacePatch(slot,j,extent,bp,out var target);if(status!=AlgorithmStatus.Success)return status;
+                    var box=target.Domain;if(box.U1<=box.U0||box.V1<=box.V0)continue;
+                    var domain=new ParameterCell{Lower=new(){U=box.U0,V=box.V0,S=lo},Upper=new(){U=box.U1,V=box.V1,S=hi}};
+                    status=ParametricSurfaceIntersection.Isolate(target,iso,domain,3,roots,out var n);if(status!=AlgorithmStatus.Success)return status;
+                    for(var k=0;k<n;k++)if(!OperationIntersection.AddPoint(output,ref count,roots[k].Point,roots[k].S,0,IntersectionVectorKind.Simple))return AlgorithmStatus.OutputTooSmall;
+                }
+            }
+            OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
+        }
+        var interval=new PK_INTERVAL_s();interval.value[0]=first;interval.value[1]=last;
+        if(ResolveIntersectionCurve(curve,interval,out var span)!=0)return AlgorithmStatus.Unsupported;
+        AlgorithmStatus found;
+        if(TryPrepareSurface(Surfaces[slot],out var analytic))found=IntersectSurfaceCurve(analytic,span,output,out count);
+        else if(Surfaces[slot].Class==SurfaceClass.BSurface)found=IntersectBSurfaceCurve(slot,span,output,out count);
+        else found=IntersectBlendPrimitiveCurve(slot,span,output,out count);
+        if(found!=AlgorithmStatus.Success)return found;
+        for(var i=0;i<count;i++)output[i].First=(output[i].First-span.Offset)/span.Scale;
+        OperationIntersection.Sort(output[..count]);return found;
+    }
+
+    private static AlgorithmStatus IntersectBlendPrimitiveCurve(SurfaceSlot surface,in IntersectionCurveSpan span,
+        Span<OperationIntersectionPoint> output,out BufferCount count)
+    {
+        count=0;if(Surfaces[surface].Class!=SurfaceClass.BlendSurface)return AlgorithmStatus.Unsupported;
+        var pieces=GeneralCurvePieceCount(span);if(pieces<=0)return AlgorithmStatus.Unsupported;
+        var status=RegularSurfaceExtent(surface,out var extent);if(status!=AlgorithmStatus.Success)return status;
+        Span<IntervalNumber> ap=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],bp=stackalloc IntervalNumber[4*17];
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
+        for(var i=0;i<RegularSurfacePatchCount(surface);i++)
+        {
+            status=RegularSurfacePatch(surface,i,extent,ap,out var patch);if(status!=AlgorithmStatus.Success)return status;
+            for(var j=0;j<pieces;j++)
+            {
+                status=GeneralCurvePiece(span,j,bp,out var degree,out var box,out var lo,out var hi);if(status!=AlgorithmStatus.Success)return status;if(!(hi>lo))continue;
+                var piece=new SurfaceIntersectionPatch(new BezierSurfacePatch(bp[..(4*(degree+1))],degree,0,box));
+                var domain=new ParameterCell{Lower=new(){U=patch.Domain.U0,V=patch.Domain.V0,S=lo},Upper=new(){U=patch.Domain.U1,V=patch.Domain.V1,S=hi}};
+                status=ParametricSurfaceIntersection.Isolate(patch,piece,domain,3,roots,out var n);if(status!=AlgorithmStatus.Success)return status;
+                for(var k=0;k<n;k++)
+                {
+                    if(!GeneralCurveNativeParameter(span,roots[k].Point,roots[k].S,out var parameter))return AlgorithmStatus.NumericalFailure;
+                    if(!OperationIntersection.AddPoint(output,ref count,roots[k].Point,parameter,0,IntersectionVectorKind.Simple))return AlgorithmStatus.OutputTooSmall;
+                }
+            }
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus IntersectRegularICurveSurface(SurfaceSlot surface,CurveSlot curve,double first,double last,
+        Span<OperationIntersectionPoint> output,out BufferCount count)
+    {
+        count=0;var data=ICurveDataPool[Curves[curve].DataIndex];var a=GetSurfaceSlotByTag(data.Surface0Tag);var b=GetSurfaceSlotByTag(data.Surface1Tag);
+        var status=RegularSurfaceExtent(surface,out var extent);
+        if(status!=AlgorithmStatus.Success){status=RegularSurfaceExtent(a,out extent);if(status!=AlgorithmStatus.Success)status=RegularSurfaceExtent(b,out extent);}
+        if(status!=AlgorithmStatus.Success)return status;
+        Span<IntervalNumber> ap=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],bp=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],cp=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
+        for(var i=0;i<RegularSurfacePatchCount(a);i++)
+        {
+            status=RegularSurfacePatch(a,i,extent,ap,out var firstPatch);if(status!=AlgorithmStatus.Success)return status;
+            if(firstPatch.Domain.U1<=firstPatch.Domain.U0||firstPatch.Domain.V1<=firstPatch.Domain.V0)continue;
+            for(var j=0;j<RegularSurfacePatchCount(b);j++)
+            {
+                status=RegularSurfacePatch(b,j,extent,bp,out var secondPatch);if(status!=AlgorithmStatus.Success)return status;
+                if(secondPatch.Domain.U1<=secondPatch.Domain.U0||secondPatch.Domain.V1<=secondPatch.Domain.V0)continue;
+                for(var k=0;k<RegularSurfacePatchCount(surface);k++)
+                {
+                    status=RegularSurfacePatch(surface,k,extent,cp,out var thirdPatch);if(status!=AlgorithmStatus.Success)return status;
+                    if(thirdPatch.Domain.U1<=thirdPatch.Domain.U0||thirdPatch.Domain.V1<=thirdPatch.Domain.V0)continue;
+                    status=SurfaceTripleRoots.Find(firstPatch,secondPatch,thirdPatch,roots,out var n);if(status!=AlgorithmStatus.Success)return status;
+                    for(var r=0;r<n;r++)
+                    {
+                        var vector=new PK_VECTOR_s();WriteVector(&vector,roots[r].Point);double parameter=0;var error=CurveParameteriseVectorCore(Curves[curve].Header.Tag,vector,&parameter);
+                        if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return AlgorithmStatus.NotConverged;
+                        if(OperationIntersection.InInterval(parameter,first,last)&&!OperationIntersection.AddPoint(output,ref count,roots[r].Point,parameter,0,IntersectionVectorKind.Simple))return AlgorithmStatus.OutputTooSmall;
+                    }
+                }
+            }
+        }
+        OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
+    }
+}

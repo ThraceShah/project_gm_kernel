@@ -1,12 +1,17 @@
 # Project Status
 
-Updated: 2026-11-05
+Updated: 2026-11-06
 
 ## Current State
 
 The project is an independent .NET 10 geometric kernel with NativeAOT C exports. It has working geometry evaluation, a pool-backed B-rep runtime, public profile modeling, XT interchange for an explicit geometry/topology subset, and a separate real-Parasolid display bridge. It is not a complete Parasolid replacement.
 
 The A/B baseline and its acceptance evidence are documented in `docs/Public_Modeling_Stages_AB.md`. The new bounded C/D/E modeling scope, verification entry point and remaining general algorithms are documented in `docs/Modeling_Stages_CDE.md`. Generated `PK_*` stubs continue to return `PK_ERROR_not_implemented`; the presence of an export is not a capability claim.
+
+The 2026-11-06 regular curved closure passed 1392 kernel tests, 12 XT tests,
+79 NURBS/Blend sheet cases and 27 curved solid Boolean cases with 3381 point
+classifications. All advanced and managed public-modeling gates passed. Scope
+and reproducible evidence are in `docs/Regular_Curved_Boolean_Operations.md`.
 
 | Area | Implemented scope | Reference |
 | --- | --- | --- |
@@ -18,7 +23,7 @@ The A/B baseline and its acceptance evidence are documented in `docs/Public_Mode
 | Profile modeling | Bounded wires and planar faces, polygonal holes, distance-bounded straight/oblique extrusion, signed partial/full revolution | `docs/Profile_Modeling.md` |
 | Intersection operations | Exact analytic paths plus bounded regular NURBS/NURBS and analytic/NURBS discovery, closed branches, paired UV, boundary intersections and inverse parameters | `docs/Intersection_Operations.md`, `docs/Curved_Surface_Pipeline.md` |
 | Pure geometry extension | Geometry-bounded analytic SSI, certified convex plane contacts, global supported minimum-distance/projection queries, exact cylindrical/toroidal blends and seven spline edits | `docs/Geometry_Completion_Plan.md` |
-| Boolean and editing | Planar solid Boolean, complete-sphere scope; NURBS sheet imprint, closed-loop/holed trimming, repeated plane cuts and connected front/back section | `docs/Boolean_Operations.md`, `docs/Curved_Surface_Pipeline.md`, `docs/Analytic_Boolean_Operations.md` |
+| Boolean and editing | Planar and complete-sphere Boolean; finite regular NURBS solid Boolean, cavities, multiple tools, repeated cuts and classification; regular NURBS/Blend sheet imprint, trim and section | `docs/Regular_Curved_Boolean_Operations.md`, `docs/Curved_Modeling_Closure.md`, `docs/Boolean_Operations.md`, `docs/Analytic_Boolean_Operations.md` |
 | Freeform construction | Interpolation/fitting, exact curve matching, clamped spline-grid surfaces with corner twists, rational sweep/spin surfaces, certified parallel-profile solid sweeps/lofts and complete-edge sewing | `docs/Freeform_Modeling.md` |
 | Local operations | Convex/analytic offsets and hollows, independent or uniform-all-edge convex fillets/chamfers, cylinder rim operations | `docs/Local_Operations.md` |
 | Interchange | Fresh runtime-derived XT output, preserved opaque documents for unsupported import graphs, schema and corpus tooling | `docs/project_gm_kernel_xt_library.md`, `docs/xt_all_versions_support_status.md` |
@@ -55,7 +60,7 @@ The A/B acceptance command is:
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyPublicModeling.cs
 ```
 
-It runs kernel and XT tests, independent real-PK geometry/transform/import/modeling oracles, import/copy round trips of both kernels' modeled outputs, the display bridge, NativeAOT publication, ABI smoke, and C-export modeling/display checks. Per-step logs and the actual exit status are recorded under `temp_docs/public-modeling-verification`.
+It runs kernel and XT tests, independent real-PK geometry/transform/import/modeling oracles, import/copy round trips of both kernels' modeled outputs and the managed display bridge. NativeAOT publication, ABI smoke and C-export checks require `-- --native-abi`, used only for C ABI changes or an explicit request. Per-step logs and actual exit statuses are recorded under `temp_docs/public-modeling-verification`.
 
 The earlier A/B baseline run on 2026-11-03 passed all 14 steps with exit code 0: 910 kernel tests, 12 XT tests, 83 transform cases, 33 independent modeling cases, 79 import cases, public geometry contracts, the managed display bridge, NativeAOT publication, ABI smoke, and the native modeling/display/picking pipeline. Persistent evidence and the exact scope are in `docs/reviews/public-modeling/stages-ab-validation-2026-11-03.txt` and `docs/Public_Modeling_Stages_AB.md`.
 
@@ -65,7 +70,7 @@ The broader project verification entry point remains:
 MSBUILDDISABLENODEREUSE=1 dotnet run scripts/VerifyKernel.cs
 ```
 
-That command includes additional schema/corpus and allocation checks. Passing A/B acceptance does not by itself claim that every broader project gate or all generated API stubs work. In particular, the separately documented raw parametric ICurve D2 convention difference remains visible in its own oracle report.
+That command includes additional schema/corpus and allocation checks. It also defaults to managed verification; native publication and ABI/display checks require `-- --native-abi`. Passing A/B acceptance does not by itself claim that every broader project gate or all generated API stubs work. In particular, the separately documented raw parametric ICurve D2 convention difference remains visible in its own oracle report.
 
 For local unit tests, preserve the test exit status when cleaning up worker processes:
 
@@ -80,8 +85,8 @@ The current real-SDK acceptance environment is Linux x64 with .NET 10.0.403 and 
 
 ## Remaining work
 
-1. **C — general curved topology:** arbitrary curved branch/face arrangements, singular contacts, repeated mixed-surface Boolean operations, and broader analytic pairs beyond the implemented planar and complete-sphere paths.
-2. **D — general freeform modeling:** singular/coincident NURBS intersection, curved-solid Boolean construction, moving-frame/twisted/guided solid sweeps, arbitrary section changes, partial-edge sewing and complex repairs. Regular bounded NURBS intersection and sheet arrangements are implemented; they do not imply these general capabilities.
+1. **C — general curved topology:** singular contacts, coincident curved areas, periodic patches and broader mixed analytic/Blend solid arrangements beyond the finite regular NURBS Boolean and existing specialized paths.
+2. **D — general freeform modeling:** singular/coincident NURBS intersection, moving-frame/twisted/guided solid sweeps, arbitrary section changes, partial-edge sewing and complex repairs. Regular bounded NURBS intersection, sheet arrangements and curved-solid Boolean are implemented within their documented scope.
 3. **E — general local operations and compatibility:** freeform/variable-radius and concave blends, arbitrary corner groups, topology-changing/general NURBS offset and hollow operations, complex repair and nonmanifold models.
 4. **Broaden A/B subsets:** general affine deformation, advanced copy options, arbitrary planar curve arrangements, face/body-bounded extrusion, axis-touching or axis-crossing revolution, and additional XT topology/geometry classes.
 

@@ -8,16 +8,17 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private static AlgorithmStatus IntersectBlendBoundaryRay(SurfTag surface,double fixedParameter,in ModelingEdge edge,
-        Span<OperationIntersectionPoint> output,out BufferCount count,bool constantU=false)
+    private static AlgorithmStatus IntersectParametricBoundaryRay(SurfTag surface,PK_UV_s query,double du,double dv,in ModelingEdge edge,
+        Span<OperationIntersectionPoint> output,out BufferCount count)
     {
         count=0;var surfaceSlot=GetSurfaceSlotByTag(surface);var curveSlot=GetCurveSlotByTag(edge.Curve);var record=Curves[curveSlot];
         if(TryBlendIsoparam(curveSlot,out var isoSurface,out var isoV)&&SameSheetSupport(surface,Surfaces[isoSurface].Header.Tag))
         {
-            if(!constantU)return Math.Abs(fixedParameter-isoV)<1e-12?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;
-            if(!OperationIntersection.InInterval(fixedParameter,edge.Start,edge.End))return AlgorithmStatus.Success;
-            Span<KernelVector3> point=stackalloc KernelVector3[1];var evaluated=EvaluateCurveCore(in record,fixedParameter,0,false,point,out _);if(evaluated!=AlgorithmStatus.Success)return evaluated;
-            return OperationIntersection.AddPoint(output,ref count,point[0],isoV,fixedParameter,IntersectionVectorKind.Simple)?AlgorithmStatus.Success:AlgorithmStatus.OutputTooSmall;
+            if(dv==0)return Math.Abs(query.param[1]-isoV)<1e-12?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;
+            var along=(isoV-query.param[1])/dv;var parameter=query.param[0]+du*along;
+            if(along< -1e-10||!OperationIntersection.InInterval(parameter,edge.Start,edge.End))return AlgorithmStatus.Success;
+            Span<KernelVector3> point=stackalloc KernelVector3[1];var evaluated=EvaluateCurveCore(in record,parameter,0,false,point,out _);if(evaluated!=AlgorithmStatus.Success)return evaluated;
+            return OperationIntersection.AddPoint(output,ref count,point[0],along,parameter,IntersectionVectorKind.Simple)?AlgorithmStatus.Success:AlgorithmStatus.OutputTooSmall;
         }
         var status=RegularSurfaceExtent(surfaceSlot,out var extent);if(status!=AlgorithmStatus.Success)return status;
         SurfaceSlot other=-1;IntersectionCurveSpan span=default;var pieces=0;
@@ -40,8 +41,11 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<RegularSurfacePatchCount(surfaceSlot);i++)
         {
             status=RegularSurfacePatch(surfaceSlot,i,extent,ap,out var source);if(status!=AlgorithmStatus.Success)return status;
-            if(constantU&&(fixedParameter<source.Domain.U0||fixedParameter>source.Domain.U1))continue;
-            var ray=new SurfaceIntersectionPatch(source,constantU,fixedParameter,constantU?source.Domain.V0:source.Domain.U0,constantU?source.Domain.V1:source.Domain.U1);
+            if(source.Domain.U1<=source.Domain.U0||source.Domain.V1<=source.Domain.V0)continue;
+            var lo=0.0;var hi=double.PositiveInfinity;
+            if(!ClipParameterRay(query.param[0],du,source.Domain.U0,source.Domain.U1,ref lo,ref hi)
+                ||!ClipParameterRay(query.param[1],dv,source.Domain.V0,source.Domain.V1,ref lo,ref hi)||!(hi>lo)||!double.IsFinite(hi))continue;
+            var ray=new SurfaceIntersectionPatch(source,query.param[0],query.param[1],du,dv,lo,hi);
             for(var j=0;j<pieces;j++)
             {
                 var nr=0;
@@ -75,5 +79,12 @@ internal static unsafe partial class KernelRuntime
             }
         }
         OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
+    }
+
+    private static bool ClipParameterRay(double origin,double direction,double lower,double upper,ref double start,ref double end)
+    {
+        if(direction==0)return origin>=lower&&origin<=upper;
+        var a=(new IntervalNumber(lower)-origin)/direction;var b=(new IntervalNumber(upper)-origin)/direction;if(direction<0)(a,b)=(b,a);
+        start=Math.Max(start,a.Lower);end=Math.Min(end,b.Upper);return end>=start;
     }
 }

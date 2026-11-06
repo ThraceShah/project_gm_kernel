@@ -11,6 +11,7 @@ internal static unsafe partial class KernelRuntime
     {
         left=default;positive=0;var support=Surfaces[GetSurfaceSlotByTag(surface)];
         var extent=Math.Min(support.UMax-support.UMin,support.VMax-support.VMin);
+        if(support.Class==SurfaceClass.Plane)extent=PlanarLoopParameterScale(surface,edges,loop);
         for(var attempt=0;attempt<24;attempt++)
         {
             var coedge=loop[attempt%loop.Length];var fraction=.2931471805599453+(attempt%5)*.071;
@@ -29,7 +30,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int PublishSheetCycles(FaceSlot source,SurfTag plane,bool reverse,ref SheetArrangement model,
-        ReadOnlySpan<ModelingCoedge> coedges,Span<SheetCycle> cycles)
+        ReadOnlySpan<ModelingCoedge> coedges,Span<SheetCycle> cycles,bool borrowGeometry=false)
     {
         var surface=Faces[source].SurfTag;
         for(var i=0;i<cycles.Length;i++)if(cycles[i].Positive!=0)
@@ -52,8 +53,10 @@ internal static unsafe partial class KernelRuntime
             }
             if(parent<0)return ParasolidConstants.PK_ERROR_bad_loop;cycles[i].Parent=parent;
         }
-        var cloneError=TryCloneEntityCore(surface,out var ownedSurface);if(cloneError!=0)return cloneError;
-        TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(plane)],out var cutter);
+        var ownedSurface=surface;
+        if(!borrowGeometry){var cloneError=TryCloneEntityCore(surface,out ownedSurface);if(cloneError!=0)return cloneError;}
+        Geometry.Evaluation.AnalyticSurface cutter=default;
+        if(!borrowGeometry)TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(plane)],out cutter);
         SurfaceDerivativeLayout.TryCreate(0,0,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[1];
         for(var i=0;i<cycles.Length;i++)if(cycles[i].Positive!=0)
         {
@@ -74,9 +77,10 @@ internal static unsafe partial class KernelRuntime
             if(!valid)return ParasolidConstants.PK_ERROR_eval_failure;
             var status=EvaluateSurfaceCore(in Surfaces[GetSurfaceSlotByTag(surface)],uv.param[0],uv.param[1],in layout,point,0);
             if(status!=Computation.AlgorithmStatus.Success)return EvaluationError(status);
-            var distance=Dot(Sub(point[0],cutter.Origin),cutter.Axis)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(plane)].Sense);
+            var distance=borrowGeometry?1:Dot(Sub(point[0],cutter.Origin),cutter.Axis)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(plane)].Sense);
             if(Math.Abs(distance)<=model.Tolerance)return ParasolidConstants.PK_ERROR_eval_failure;
             model.Sources[model.NF]=source;model.Sides[model.NF]=distance>0?(sbyte)1:(sbyte)-1;
+            if(!model.Witnesses.IsEmpty)model.Witnesses[model.NF]=uv;
             model.Faces[model.NF++]=new(){Surface=ownedSurface,Sense=NormalizeLocalSense(Faces[source].Orientation),FirstLoop=firstLoop,LoopCount=model.NL-firstLoop};
         }
         return 0;

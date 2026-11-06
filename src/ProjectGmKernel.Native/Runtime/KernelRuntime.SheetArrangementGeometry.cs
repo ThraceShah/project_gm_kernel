@@ -61,10 +61,15 @@ internal static unsafe partial class KernelRuntime
     private static int SheetLoopWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
         PK_UV_s query,out BufferCount winding)
     {
-        var vertical=BlendWindingPrefersVertical(surface,edges,loop,query);
-        var error=SheetLoopWindingRay(surface,edges,loop,query,vertical,out winding);
-        return error is ParasolidConstants.PK_ERROR_cant_do_intersect or ParasolidConstants.PK_ERROR_eval_failure
-            ?SheetLoopWindingRay(surface,edges,loop,query,!vertical,out winding):error;
+        var vertical=BlendWindingPrefersVertical(surface,edges,loop,query);var error=0;winding=0;
+        for(var attempt=0;attempt<6;attempt++)
+        {
+            var du=attempt switch{0=>vertical?0:1,1=>vertical?1:0,4=>.4142135623730951,5=>-.7320508075688772,_=>1};
+            var dv=attempt switch{0=>vertical?1:0,1=>vertical?0:1,2=>.3819660112501051,3=>-.6180339887498949,_=>1};
+            error=SheetLoopWindingRay(surface,edges,loop,query,du,dv,out winding);
+            if(error==0||error is not (ParasolidConstants.PK_ERROR_cant_do_intersect or ParasolidConstants.PK_ERROR_eval_failure))return error;
+        }
+        return error;
     }
 
     // A local jet chooses a promising ray direction only. Root isolation and
@@ -88,77 +93,33 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int SheetLoopWindingRay(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
-        PK_UV_s query,bool constantU,out BufferCount winding)
+        PK_UV_s query,double du,double dv,out BufferCount winding)
     {
         winding=0;var record=Surfaces[GetSurfaceSlotByTag(surface)];
-        var fixedParameter=query.param[constantU?0:1];var parameter=query.param[constantU?1:0];
-        if(fixedParameter<(constantU?record.UMin:record.VMin)||fixedParameter>(constantU?record.UMax:record.VMax))return 0;
-        var procedural=record.Class==SurfaceClass.BlendSurface;
-        CurveTag iso=0;var error=procedural?0:BSurfMakeBCurveIsoparamCore(surface,fixedParameter,constantU,&iso);if(error!=0)return error;
-        try
+        if(record.Class==SurfaceClass.Plane)return PlanarLoopWinding(surface,edges,loop,query,du,dv,out winding);
+        if(query.param[0]<record.UMin||query.param[0]>record.UMax||query.param[1]<record.VMin||query.param[1]>record.VMax)return 0;
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
+        foreach(ref readonly var coedge in loop)
         {
-            var range=new PK_INTERVAL_s();range.value[0]=constantU?record.VMin:record.UMin;range.value[1]=constantU?record.VMax:record.UMax;
-            IntersectionCurveSpan ray=default;
-            if(!procedural){error=ResolveIntersectionCurve(iso,range,out ray);if(error!=0)return error;}
-            Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-            foreach(ref readonly var coedge in loop)
+            ref readonly var edge=ref edges[coedge.Edge];
+            LastSheetPartitionStage=SheetPartitionStage.RayIntersections;
+            var status=IntersectParametricBoundaryRay(surface,query,du,dv,edge,roots,out var count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            for(var i=0;i<count;i++)
             {
-                ref readonly var edge=ref edges[coedge.Edge];
-                LastSheetPartitionStage=SheetPartitionStage.RayIntersections;
-                var status=procedural?IntersectBlendBoundaryRay(surface,fixedParameter,edge,roots,out var count,constantU)
-                    :IntersectSheetBoundaryRay(surface,edge,ray,roots,out count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-                for(var i=0;i<count;i++)
-                {
-                    var root=roots[i];if(root.Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_eval_failure;
-                    if(root.First<parameter-1e-10)continue;
-                    if(Math.Abs(root.First-parameter)<1e-10)return ParasolidConstants.PK_ERROR_eval_failure;
-                    var duplicate=false;for(var j=0;j<i;j++)if(Math.Abs(roots[j].First-root.First)<1e-10)duplicate=true;if(duplicate)continue;
-                    var epsilon=1e-10*Math.Max(1,edge.End-edge.Start);
-                    if(edge.StartVertex>=0&&(Math.Abs(root.Second-edge.Start)<epsilon||Math.Abs(root.Second-edge.End)<epsilon))
-                        {LastSheetPartitionStage=SheetPartitionStage.RayEndpoint;return ParasolidConstants.PK_ERROR_eval_failure;}
-                    error=SheetCurveUV(surface,edge.Curve,root.Second,coedge.Forward!=0,out _,out var tangent,out _);if(error!=0)return error;
-                    var crossing=constantU?-tangent.param[0]:tangent.param[1];
-                    if(Math.Abs(crossing)<1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1]))){LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
-                    winding+=crossing>0?1:-1;
-                }
+                var root=roots[i];if(root.Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_eval_failure;
+                if(root.First< -1e-10)continue;
+                if(Math.Abs(root.First)<1e-10)return ParasolidConstants.PK_ERROR_eval_failure;
+                var duplicate=false;for(var j=0;j<i;j++)if(Math.Abs(roots[j].First-root.First)<1e-10)duplicate=true;if(duplicate)continue;
+                var epsilon=1e-10*Math.Max(1,edge.End-edge.Start);
+                if(edge.StartVertex>=0&&(Math.Abs(root.Second-edge.Start)<epsilon||Math.Abs(root.Second-edge.End)<epsilon))
+                    {LastSheetPartitionStage=SheetPartitionStage.RayEndpoint;return ParasolidConstants.PK_ERROR_eval_failure;}
+                var error=SheetCurveUV(surface,edge.Curve,root.Second,coedge.Forward!=0,out _,out var tangent,out _);if(error!=0)return error;
+                var crossing=tangent.param[1]*du-tangent.param[0]*dv;
+                if(Math.Abs(crossing)<1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1]))){LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
+                winding+=crossing>0?1:-1;
             }
-            return 0;
         }
-        finally { if(iso!=0)EntityDelete(1,&iso); }
-    }
-
-    private static AlgorithmStatus IntersectSheetBoundaryRay(SurfTag surface,in ModelingEdge edge,in IntersectionCurveSpan ray,
-        Span<OperationIntersectionPoint> roots,out BufferCount count)
-    {
-        count=0;var record=Curves[GetCurveSlotByTag(edge.Curve)];
-        if(record.Class!=CurveClass.ICurve)
-        {
-            var range=new PK_INTERVAL_s();range.value[0]=edge.Start;range.value[1]=edge.End;
-            var error=ResolveIntersectionCurve(edge.Curve,range,out var boundary);if(error!=0)return AlgorithmStatus.Unsupported;
-            var status=IntersectCurveSpans(ray,boundary,roots,out count);
-            if(status!=AlgorithmStatus.Success)return status;
-            for(var i=0;i<count;i++)roots[i].Second=(roots[i].Second-boundary.Offset)/boundary.Scale;
-            return AlgorithmStatus.Success;
-        }
-        var data=ICurveDataPool[record.DataIndex];
-        var other=SameSheetSupport(surface,data.Surface0Tag)?data.Surface1Tag:data.Surface0Tag;
-        var slot=GetSurfaceSlotByTag(other);if(slot<0)return AlgorithmStatus.InvalidInput;
-        AlgorithmStatus found;
-        if(TryPrepareSurface(Surfaces[slot],out var analytic))found=IntersectSurfaceCurve(analytic,ray,roots,out count);
-        else if(Surfaces[slot].Class==SurfaceClass.BSurface)found=IntersectBSurfaceCurve(slot,ray,roots,out count);
-        else return AlgorithmStatus.Unsupported;
-        if(found!=AlgorithmStatus.Success)return found;
-        var kept=0;
-        for(var i=0;i<count;i++)
-        {
-            var root=roots[i];var vector=new PK_VECTOR_s();WriteVector(&vector,root.Point);double parameter=0;
-            var error=CurveParameteriseVectorCore(edge.Curve,vector,&parameter);
-            if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;
-            if(error!=0)return AlgorithmStatus.NotConverged;
-            if(!OperationIntersection.InInterval(parameter,edge.Start,edge.End))continue;
-            root.Second=parameter;roots[kept++]=root;
-        }
-        count=kept;return AlgorithmStatus.Success;
+        return 0;
     }
 
     private static int SheetSourceContains(FaceSlot face,PK_UV_s query,out bool inside)

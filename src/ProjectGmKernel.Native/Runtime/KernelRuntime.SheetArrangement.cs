@@ -41,6 +41,7 @@ internal static unsafe partial class KernelRuntime
         internal Span<ModelingFace> Faces;
         internal Span<FaceSlot> Sources;
         internal Span<sbyte> Sides;
+        internal Span<PK_UV_s> Witnesses;
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
 
@@ -138,7 +139,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int ArrangeSheetFace(FaceSlot face,SurfTag plane,ReadOnlySpan<SheetSourceEdge> sources,ReadOnlySpan<SheetCutCurve> cuts,
-        ref SheetArrangement model,Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles)
+        ref SheetArrangement model,Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles,bool borrowGeometry=false)
     {
         var surface=Faces[face].SurfTag;var support=Surfaces[GetSurfaceSlotByTag(surface)];
         var reverse=LocalSenseSign(Faces[face].Orientation)*LocalSenseSign(support.Sense)<0;
@@ -166,6 +167,7 @@ internal static unsafe partial class KernelRuntime
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[i]);double t=0;
                 var error=CurveParameteriseVectorCore(cut.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
+                if(!OperationIntersection.InInterval(t,cut.First,cut.Last))continue;
                 var duplicate=false;for(var j=0;j<n;j++)if(Math.Abs(parameters[j]-t)<1e-10)duplicate=true;if(duplicate)continue;
                 if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=t;endpoints[n++]=i;
             }
@@ -245,6 +247,6 @@ internal static unsafe partial class KernelRuntime
             var error=SheetCycleWitness(surface,model.Edges[..model.NE],cycleCoedges.Slice(first,cycle.Count),out cycle.Left,out cycle.Positive);if(error!=0)return error;
             cycles[cycleCount++]=cycle;
         }
-        return PublishSheetCycles(face,plane,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount]);
+        return PublishSheetCycles(face,plane,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],borrowGeometry);
     }
 }

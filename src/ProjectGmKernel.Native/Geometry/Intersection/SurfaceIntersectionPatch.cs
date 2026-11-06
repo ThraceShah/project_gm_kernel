@@ -21,6 +21,8 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly bool isSpine;
     private readonly byte isoAxis, sweepAxis;
     private readonly double isoParameter;
+    private readonly bool parameterLine;
+    private readonly double lineU,lineV,lineDU,lineDV;
     private readonly Span<SurfaceBoundCacheEntry> cache;
     internal SurfaceParameterBox Domain{get;}
     internal bool IsProcedural=>isBlend;
@@ -37,6 +39,8 @@ internal readonly ref struct SurfaceIntersectionPatch
     {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch curve,BufferOffset axis,double height)
     {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double u,double v,double du,double dv,double lower,double upper)
+    {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;}
     internal AlgorithmStatus Bound(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         if(cache.IsEmpty)return BoundCore(box,output);
@@ -50,12 +54,22 @@ internal readonly ref struct SurfaceIntersectionPatch
     {
         var mapped=isoAxis==1?new SurfaceParameterBox(isoParameter,isoParameter,box.U0,box.U1)
             :isoAxis==2?new(box.U0,box.U1,isoParameter,isoParameter):sweepAxis!=0?new(box.U0,box.U1,0,0):box;
+        if(parameterLine)
+        {
+            var t=new IntervalNumber(box.U0,box.U1);var u=lineU+t*lineDU;var v=lineV+t*lineDV;
+            mapped=new(u.Lower,u.Upper,v.Lower,v.Upper);
+        }
         var status=isSpine?JointNestedBlendEvaluation.BoundSpine(blend,surface,mapped,output)
             :isBlend?JointNestedBlendEvaluation.Bound(blend,surface,mapped,output):BezierSurfaceBounds.Bound(bezier,mapped,output);
         if(status!=AlgorithmStatus.Success)return status;
         if(isoAxis!=0)
         {
             if(isoAxis==1)output.Slice(6,3).CopyTo(output[3..]);
+            output[6]=output[7]=output[8]=0;
+        }
+        if(parameterLine)
+        {
+            for(var d=0;d<3;d++)output[3+d]=output[3+d]*lineDU+output[6+d]*lineDV;
             output[6]=output[7]=output[8]=0;
         }
         if(sweepAxis!=0)
@@ -70,7 +84,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     // recomputed with Bound; estimates never reject a search cell.
     internal AlgorithmStatus Estimate(double u,double v,Span<IntervalNumber> output)
     {
-        if(!isBlend||isoAxis!=0||sweepAxis!=0)return Bound(new(u,u,v,v),output);
+        if(!isBlend||isoAxis!=0||sweepAxis!=0||parameterLine)return Bound(new(u,u,v,v),output);
         Span<KernelVector3> jets=stackalloc KernelVector3[4];SurfaceDerivativeLayout.TryCreate(1,1,out var layout);
         var status=isSpine?JointNestedBlendEvaluation.EvaluateSpine(blend,surface,u,1,jets):JointNestedBlendEvaluation.Evaluate(blend,surface,u,v,layout,jets);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<3;i++){var p=i==0?jets[0]:i==1?jets[isSpine?1:2]:isSpine?default:jets[1];output[3*i]=p.X;output[3*i+1]=p.Y;output[3*i+2]=p.Z;}return AlgorithmStatus.Success;
@@ -79,7 +93,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal AlgorithmStatus SupportRange(in SurfaceParameterBox box,in KernelVector3 direction,ReadOnlySpan<IntervalNumber> bounds,out IntervalNumber range)
     {
         range=default;
-        if(isoAxis!=0||sweepAxis!=0){range=bounds[0]*direction.X+bounds[1]*direction.Y+bounds[2]*direction.Z;return AlgorithmStatus.Success;}
+        if(isoAxis!=0||sweepAxis!=0||parameterLine){range=bounds[0]*direction.X+bounds[1]*direction.Y+bounds[2]*direction.Z;return AlgorithmStatus.Success;}
         if(!isBlend)
         {
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];var status=BezierSurfaceBounds.Restrict(bezier,box,poles);if(status!=AlgorithmStatus.Success)return status;

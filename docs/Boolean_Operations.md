@@ -3,7 +3,9 @@
 The public operations in this document run in the independent kernel. Real
 Parasolid supplies the independent oracle and display tessellation, not the
 production modeling implementation. Analytic sphere operations are documented
-separately in `docs/Analytic_Boolean_Operations.md`.
+separately in `docs/Analytic_Boolean_Operations.md`. The finite regular NURBS
+solid fallback and its option limits are documented in
+`docs/Regular_Curved_Boolean_Operations.md`.
 
 ## Public API and supported geometry
 

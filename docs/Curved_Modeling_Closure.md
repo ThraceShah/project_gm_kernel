@@ -27,8 +27,9 @@ fail atomically when unresolved. Variable-radius blends remain deferred.
   `PK_DEBUG_BODY_compare` agreement with independently constructed references.
 - Exercise repeated operations, trimming, source deletion, geometry ownership,
   failed-operation rollback and return-buffer cleanup.
-- Run relevant existing regressions, allocation checks, NativeAOT publication
-  and native ABI smoke checks before committing and pushing each milestone.
+- Run relevant managed regressions, allocation checks and real Parasolid
+  oracles before committing and pushing each milestone. NativeAOT publication
+  and native ABI smoke checks apply only to C ABI changes or explicit requests.
 - Record public intersection and distance timings separately from evaluation
   throughput. Optimization must preserve certified exclusion and completeness.
 
@@ -65,9 +66,9 @@ The existing plane-imprint, seed-trim and plane-section entry points now accept
 regular finite Blend sheets. Exact isoparametric circles and SPCURVEs remain
 exact. Procedural bounds also support isoparametric rays and auxiliary ruled
 surfaces, allowing certified UV winding without a sampled polygon boundary.
-Winding can use either parameter direction. Local jets only select a promising
-direction; complete interval root isolation decides crossings. A failed or
-coincident ray is retried in the other direction, including queries on the
+Winding can use both parameter axes and four diagonal parameter rays. Local
+jets only select a promising direction; complete interval root isolation
+decides crossings. A failed or coincident ray is retried, including queries on the
 extension of an existing trimming edge outside its finite interval.
 Existing Blend ICURVEs are split against a second plane using their actual
 support surfaces and certified root isolation.
@@ -128,9 +129,9 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/VerifyAdvancedModeling.c
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/BlendOperationOracle.cs -- --intersections-only
 ```
 
-Stage 3 starts after milestones 1/2 are committed and pushed. General curved
-cutters, general curved-solid classification and Boolean assembly are not
-implemented by these plane-cut sheet increments.
+Stage 3 adds regular curved-solid classification and Boolean assembly on top
+of these committed sheet operations. Its exact scope, algorithms and acceptance
+are documented in `docs/Regular_Curved_Boolean_Operations.md`.
 
 Verification now follows the updated `AGENTS.md`: ordinary invocations of
 `scripts/VerifyPublicModeling.cs` and `scripts/VerifyAdvancedModeling.cs` run

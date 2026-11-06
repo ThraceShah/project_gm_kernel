@@ -15,7 +15,7 @@ var steps=new List<(string Name,string[] Arguments)>
 {
     ("production-build",["build","src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj","-m:1","-p:UseSharedCompilation=false"]),
 };
-foreach(var oracle in new[]{"IntersectionOperationOracle","BCurveAnalyticIntersectionOracle","BooleanOperationOracle","PlanarTrackingOracle","AnalyticBooleanOracle","AnalyticSectionOracle","RotationalModelingOracle","FreeformModelingOracle","CurvedSheetPartitionOracle","LocalOperationOracle","LocalTopologyChangeOracle"})
+foreach(var oracle in new[]{"IntersectionOperationOracle","BCurveAnalyticIntersectionOracle","BooleanOperationOracle","PlanarTrackingOracle","AnalyticBooleanOracle","AnalyticSectionOracle","RotationalModelingOracle","FreeformModelingOracle","CurvedSheetPartitionOracle","RegularCurvedBooleanOracle","LocalOperationOracle","LocalTopologyChangeOracle"})
     steps.Add((oracle,["run","--no-cache",$"scripts/{oracle}.cs","-p:UseSharedCompilation=false","-p:BuildInParallel=false","-p:BuildProjectReferences=false"]));
 // This child preserves the actual test exit before cleanup, checks all kernel
 // and XT tests, replays the A/B oracles and exercises managed display. Native
