@@ -25,6 +25,19 @@ oracles passed 79 and 33 cases. See `docs/Regular_Freeform_Solid_Fillets.md`,
 `docs/reviews/advanced-modeling/freeform-solid-fillets-2026-11-06.md` for exact
 scope, strict PK comparison options, lifecycle validation and performance limits.
 
+M2 subsequently passed 23 independent mixed-solid cases and 18 finite-analytic
+cases: real M1 Blend solids in union/intersection/subtraction, Blend/NURBS and
+Blend/Blend finite intersection edges, closed interior loops, cavities,
+overlapping tools, repeated cuts, oblique-cylinder holes and newborn curved-edge
+fillets retaining the original Blend. The common finite-domain path now accepts
+Cylinder with exact analytic curves and periodic arc intervals. Final integrated
+Release validation passed 1,452 kernel tests, 12 XT tests, 79 sheet oracles and
+33 existing curved Boolean oracles; the production allocation guard checked
+2,283 methods and was clean. Exact scope, iterative oracle provenance and the
+remaining multi-minute Blend/Blend cost are recorded in
+`docs/Mixed_Curved_Boolean_Operations.md` and
+`docs/reviews/advanced-modeling/mixed-curved-modeling-2026-11-06.md`.
+
 | Area | Implemented scope | Reference |
 | --- | --- | --- |
 | Runtime | Session and partition management, typed entity pools, generations, return memory, command dispatch, journaling and rollback for covered operations | `docs/memory_architecture.md`, `docs/API_Dispatch_Model.md` |
@@ -35,7 +48,7 @@ scope, strict PK comparison options, lifecycle validation and performance limits
 | Profile modeling | Bounded wires and planar faces, polygonal holes, distance-bounded straight/oblique extrusion, signed partial/full revolution | `docs/Profile_Modeling.md` |
 | Intersection operations | Exact analytic paths plus bounded regular NURBS/NURBS and analytic/NURBS discovery, closed branches, paired UV, boundary intersections and inverse parameters | `docs/Intersection_Operations.md`, `docs/Curved_Surface_Pipeline.md` |
 | Pure geometry extension | Geometry-bounded analytic SSI, certified convex plane contacts, global supported minimum-distance/projection queries, exact cylindrical/toroidal blends and seven spline edits | `docs/Geometry_Completion_Plan.md` |
-| Boolean and editing | Planar and complete-sphere Boolean; finite regular NURBS solid Boolean, cavities, multiple tools, repeated cuts and classification; regular NURBS/Blend sheet imprint, trim and section | `docs/Regular_Curved_Boolean_Operations.md`, `docs/Curved_Modeling_Closure.md`, `docs/Boolean_Operations.md`, `docs/Analytic_Boolean_Operations.md` |
+| Boolean and editing | Planar and complete-sphere Boolean; finite regular Plane/Cylinder/NURBS/Blend mixed-solid Boolean within the documented pair contracts, cavities, multiple tools, repeated cuts and classification; regular NURBS/Blend sheet imprint, trim and section | `docs/Mixed_Curved_Boolean_Operations.md`, `docs/Regular_Curved_Boolean_Operations.md`, `docs/Curved_Modeling_Closure.md` |
 | Freeform construction | Interpolation/fitting, exact curve matching, clamped spline-grid surfaces with corner twists, rational sweep/spin surfaces, certified parallel-profile solid sweeps/lofts and complete-edge sewing | `docs/Freeform_Modeling.md` |
 | Local operations | Convex/analytic offsets and hollows, independent or uniform-all-edge convex fillets/chamfers, cylinder rim operations; regular constant-radius convex/concave Plane/NURBS and NURBS/NURBS single-edge solid fillets | `docs/Local_Operations.md`, `docs/Regular_Freeform_Solid_Fillets.md` |
 | Interchange | Fresh runtime-derived XT output, preserved opaque documents for unsupported import graphs, schema and corpus tooling | `docs/project_gm_kernel_xt_library.md`, `docs/xt_all_versions_support_status.md` |
@@ -97,7 +110,7 @@ The M1 acceptance environment is Linux x64 with .NET SDK 10.0.302 and Parasolid 
 
 ## Remaining work
 
-1. **C — general curved topology:** singular contacts, coincident curved areas, periodic patches and broader mixed analytic/Blend solid arrangements beyond the finite regular NURBS Boolean and existing specialized paths.
+1. **C — general curved topology:** singular contacts, coincident curved areas, periodic patches and broader mixed analytic/Blend arrangements beyond the M2 finite regular contracts, including skew Cylinder/Cylinder and general pole handling.
 2. **D — general freeform modeling:** singular/coincident NURBS intersection, moving-frame/twisted/guided solid sweeps, arbitrary section changes, partial-edge sewing and complex repairs. Regular bounded NURBS intersection, sheet arrangements and curved-solid Boolean are implemented within their documented scope.
 3. **E — general local operations and compatibility:** broader freeform fillets beyond the regular single-edge constant-radius subset, edge chains, variable radius, arbitrary corner groups, topology-changing/general NURBS offset and hollow operations, complex repair and nonmanifold models.
 4. **Broaden A/B subsets:** general affine deformation, advanced copy options, arbitrary planar curve arrangements, face/body-bounded extrusion, axis-touching or axis-crossing revolution, and additional XT topology/geometry classes.

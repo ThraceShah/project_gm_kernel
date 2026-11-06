@@ -1,5 +1,10 @@
 # Regular curved solid Boolean operations
 
+This document records the original regular NURBS increment and its oracle.
+The subsequent finite Cylinder and actual Blend solid extension, continuous
+mixed operations and newborn-edge filleting are documented in
+`docs/Mixed_Curved_Boolean_Operations.md` and `docs/Mixed_Analytic_Face_Domains.md`.
+
 ## Supported contract
 
 `PK_BODY_boolean` and `PK_BODY_boolean_2` now have an internal regular curved

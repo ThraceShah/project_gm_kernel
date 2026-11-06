@@ -1,0 +1,263 @@
+{
+  "cases": 23,
+  "note": "Evidence combines independently named successful runs. It is not a claim that all cases were rerun in one process or on the final build. Failed, stopped, and budget-exhausted exploratory logs are retained separately.",
+  "results": [
+    {
+      "name": "symmetric-unite",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/symmetric-unite.log",
+      "aggregateLog": "temp_docs/m2-integrated-regression-representatives.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 4.895150640281627E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "symmetric-intersect",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/symmetric-intersect.log",
+      "aggregateLog": "temp_docs/m2-fast-mixed-matrix.log",
+      "buildContext": "earlier production Release; shared algorithms have later representative regression coverage",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 5.357547757544206E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "symmetric-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/symmetric-subtract.log",
+      "aggregateLog": "temp_docs/m2-first-self-probes.log",
+      "buildContext": "earlier production Release; shared algorithms have later representative regression coverage",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 1.9753403113319207E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "asymmetric-unite",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/asymmetric-unite.log",
+      "aggregateLog": "temp_docs/m2-corner-fixed-regression.log",
+      "buildContext": "98b2062 final production Release",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 6.818042921348092E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "asymmetric-intersect",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/asymmetric-intersect.log",
+      "aggregateLog": "temp_docs/m2-corner-fixed-regression.log",
+      "buildContext": "98b2062 final production Release",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 6.226095568432498E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "asymmetric-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/asymmetric-subtract.log",
+      "aggregateLog": "temp_docs/m2-corner-fixed-regression.log",
+      "buildContext": "98b2062 final production Release",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 2.4920008996730295E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "continuous-x-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/continuous-x-subtract.log",
+      "aggregateLog": "temp_docs/m2-final-corner-build-consumers.log",
+      "buildContext": "98b2062 final production Release",
+      "fullBodyChecks": 5,
+      "comparisons": 1,
+      "maxMassResidual": 3.8819677680566795E-09,
+      "selfReloadQueries": 6
+    },
+    {
+      "name": "continuous-xy-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/continuous-xy-subtract.log",
+      "aggregateLog": "temp_docs/m2-final-corner-build-consumers.log",
+      "buildContext": "98b2062 final production Release",
+      "fullBodyChecks": 5,
+      "comparisons": 1,
+      "maxMassResidual": 1.2902072330008763E-09,
+      "selfReloadQueries": 6
+    },
+    {
+      "name": "continuous-asymmetric-contact-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/continuous-asymmetric-contact-subtract.log",
+      "aggregateLog": "temp_docs/m2-corner-fixed-regression.log",
+      "buildContext": "98b2062 final production Release",
+      "fullBodyChecks": 5,
+      "comparisons": 1,
+      "maxMassResidual": 1.1146436786727577E-09,
+      "selfReloadQueries": 6
+    },
+    {
+      "name": "cavity-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/cavity-subtract.log",
+      "aggregateLog": "temp_docs/m2-integrated-regression-representatives.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 1.5326362625113277E-09,
+      "selfReloadQueries": 6
+    },
+    {
+      "name": "closed-loop-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/closed-loop-subtract.log",
+      "aggregateLog": "temp_docs/m2-integrated-regression-representatives.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 1.4788105995684224E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "two-crossings-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/two-crossings-subtract.log",
+      "aggregateLog": "temp_docs/m2-integrated-regression-representatives.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 8.4172536684933E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "two-tools-unite",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/two-tools-unite.log",
+      "aggregateLog": "temp_docs/m2-fast-mixed-matrix.log",
+      "buildContext": "earlier production Release; shared algorithms have later representative regression coverage",
+      "fullBodyChecks": 5,
+      "comparisons": 1,
+      "maxMassResidual": 2.425633938319088E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "two-tools-intersect",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/two-tools-intersect.log",
+      "aggregateLog": "temp_docs/m2-fast-mixed-matrix.log",
+      "buildContext": "earlier production Release; shared algorithms have later representative regression coverage",
+      "fullBodyChecks": 5,
+      "comparisons": 1,
+      "maxMassResidual": 7.363339647758117E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "two-tools-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/two-tools-subtract.log",
+      "aggregateLog": "temp_docs/m2-integrated-regression-representatives.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 5,
+      "comparisons": 1,
+      "maxMassResidual": 1.2116864973691505E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "nurbs-unite",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/nurbs-unite.log",
+      "aggregateLog": "temp_docs/m2-remaining-strict-matrix.log",
+      "buildContext": "earlier production Release; shared algorithms have later representative regression coverage",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 4.008401130753525E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "nurbs-intersect",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/nurbs-intersect.log",
+      "aggregateLog": "temp_docs/m2-integrated-regression-representatives.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 2.797017201363702E-10,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "nurbs-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/nurbs-subtract.log",
+      "aggregateLog": "temp_docs/m2-extended-self-probes.log",
+      "buildContext": "earlier production Release; shared algorithms have later representative regression coverage",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 8.699640310539899E-11,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "blend-unite",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/blend-unite.log",
+      "aggregateLog": "temp_docs/m2-integrated-final-missing.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 1.176735159385768E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "blend-intersect",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/blend-intersect.log",
+      "aggregateLog": "temp_docs/m2-integrated-final-missing.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 1.239472901129377E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "blend-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/blend-subtract.log",
+      "aggregateLog": "temp_docs/m2-final-corner-build-consumers.log",
+      "buildContext": "98b2062 final production Release",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 2.1765180897188854E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "tilted-cylinder-subtract",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/tilted-cylinder-subtract.log",
+      "aggregateLog": "temp_docs/m2-integrated-final-missing.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 4,
+      "comparisons": 1,
+      "maxMassResidual": 1.5293029758583025E-09,
+      "selfReloadQueries": 0
+    },
+    {
+      "name": "refillet-new-edge",
+      "strictPass": true,
+      "log": "temp_docs/mixed-curved-boolean-oracle/refillet-new-edge.log",
+      "aggregateLog": "temp_docs/m2-integrated-regression-representatives.log",
+      "buildContext": "integrated candidate production Release before scalar corner fix",
+      "fullBodyChecks": 5,
+      "comparisons": 1,
+      "maxMassResidual": 1.7189188761746268E-09,
+      "selfReloadQueries": 6
+    }
+  ],
+  "strictPassed": 23,
+  "fullBodyChecks": 99,
+  "comparisons": 23,
+  "maxMassResidual": 3.8819677680566795E-09
+}

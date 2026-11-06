@@ -113,7 +113,7 @@ internal static unsafe partial class KernelRuntime
         }
         var firstStation=Math.Min(Math.Min(stations[0],stations[1]),Math.Min(stations[2],stations[3]));
         var lastStation=Math.Max(Math.Max(stations[0],stations[1]),Math.Max(stations[2],stations[3]));
-        error0=ValidateRegularBlendDomain(body,supports,caps,blend,firstStation,lastStation);if(error0!=0)return error0;
+        error0=ValidateRegularBlendDomain(body,supports,caps,blend,firstStation,lastStation,direction<0);if(error0!=0)return error0;
         error0=AssembleRegularLocalBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products);
         if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Release;

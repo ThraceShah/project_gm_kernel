@@ -11,11 +11,12 @@ internal static unsafe partial class KernelRuntime
     internal enum RegularBooleanStage:byte{None,Read,Cuts,Clip,Split,Arrange,Classify,Components,Assemble,Publish}
     [ThreadStatic] internal static RegularBooleanStage LastRegularBooleanStage;
     [ThreadStatic] internal static BufferOffset LastRegularBooleanFace;
+    [ThreadStatic] internal static BufferOffset LastRegularBooleanOtherFace;
     private const BufferCount RegularInputFaces=128,RegularInputEdges=1024,RegularInputLoops=512,RegularInputCoedges=4096,RegularCurveLimit=1024,RegularCutLimit=2048;
 
     private static int RegularCurvedBoolean(ReadOnlySpan<BodyTag> inputs,PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
     {
-        LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=-1;
+        LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=LastRegularBooleanOtherFace=-1;
         if(options->merge_imprinted!=0||options->tracking!=0)return ParasolidConstants.PK_ERROR_not_implemented;
         var scratch=CommandScratch.Current;var memory=scratch.Take(180000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         var ownedCount=0;
@@ -45,7 +46,7 @@ internal static unsafe partial class KernelRuntime
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
             for(var a=0;a<nf;a++)for(var b=a+1;b<nf;b++)
             {
-                if(owners[a]==owners[b])continue;LastRegularBooleanStage=RegularBooleanStage.Cuts;LastRegularBooleanFace=a;
+                if(owners[a]==owners[b])continue;LastRegularBooleanStage=RegularBooleanStage.Cuts;LastRegularBooleanFace=a;LastRegularBooleanOtherFace=b;
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
                 if(family<0)
@@ -59,6 +60,7 @@ internal static unsafe partial class KernelRuntime
                 LastRegularBooleanStage=RegularBooleanStage.Clip;
                 error=ClipRegularFacePair(input,a,b,owned.Slice(data.Start,data.Count),cuts,ref cutCount,owned,ref ownedCount,ref model);if(error!=0)return error;
             }
+            LastRegularBooleanOtherFace=-1;
             // With several tools, intersections of three different bodies
             // also split the curves on the target. The final classification
             // applies BooleanMaterial to the union of all tools.

@@ -95,6 +95,10 @@ internal static unsafe partial class KernelRuntime
     {
         count=0;var data=ICurveDataPool[Curves[curve].DataIndex];var a=GetSurfaceSlotByTag(data.Surface0Tag);var b=GetSurfaceSlotByTag(data.Surface1Tag);
         if(Surfaces[a].Class!=SurfaceClass.BlendSurface)(a,b)=(b,a);
+        // Two planes define an exact line. Isolating that line against the
+        // Blend removes two redundant plane parameters from the root system.
+        if(TryPrepareSurface(Surfaces[b],out var support)&&support.Kind==SurfaceClass.Plane)
+            return IntersectProceduralICurveTwoPlanes(curve,first,last,a,support,plane,output,out count);
         var status=RegularSurfaceExtent(a,out var extent);if(status!=AlgorithmStatus.Success)return status;
         Span<IntervalNumber> ap=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],bp=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];

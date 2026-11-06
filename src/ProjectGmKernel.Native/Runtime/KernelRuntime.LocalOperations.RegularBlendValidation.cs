@@ -9,11 +9,11 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    // This first domain admits four-sided supports inside planar obstacles.
-    // It certifies obstacle clearance over the whole rolling band, including
-    // both contacts; it does not repair self-intersecting fillets or faces.
+    // Certify whole-band clearance for four-sided supports, including both
+    // contacts. Existing finite obstacles may be separated by interval boxes;
+    // interacting fillets and self-intersections still require local repair.
     private static int ValidateRegularBlendDomain(BodySlot body,ReadOnlySpan<FaceSlot> supports,
-        ReadOnlySpan<FaceSlot> caps,SurfTag blend,double first,double last)
+        ReadOnlySpan<FaceSlot> caps,SurfTag blend,double first,double last,bool removesMaterial)
     {
         const double tolerance=1e-9;
         if(supports.Length!=2||caps.Length!=2||!double.IsFinite(first)||!double.IsFinite(last)||!(last>first))
@@ -32,13 +32,13 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_not_implemented;
         Span<SurfaceParameterBox> cells=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
-        var visited=0;var capCount=0;var face=Bodies[body].FirstFaceBody;
+        var visited=0;var capCount=0;var finiteObstacles=false;var face=Bodies[body].FirstFaceBody;
         for(var f=0;f<Bodies[body].FaceCountBody;f++,face=Faces[face].NextInBody)
         {
             if(supports.Contains(face))continue;
             var surface=GetSurfaceSlotByTag(Faces[face].SurfTag);
             if(surface<0)return ParasolidConstants.PK_ERROR_missing_geom;
-            if(!RegularPlanarSupport(surface,out var plane,out var deviation))return ParasolidConstants.PK_ERROR_not_implemented;
+            var planar=RegularPlanarSupport(surface,out var plane,out var deviation);var halfspace=planar;
             var normal=Scale(plane.Axis,LocalSenseSign(Faces[face].Orientation)*LocalSenseSign(Surfaces[surface].Sense));
             var vertex=Bodies[body].FirstVertexBody;
             for(var v=0;v<Bodies[body].VertexCountBody;v++,vertex=Vertices[vertex].NextInBody)
@@ -49,9 +49,19 @@ internal static unsafe partial class KernelRuntime
                 var distance=(new IntervalNumber(point.X)-plane.Origin.X)*normal.X
                     +(new IntervalNumber(point.Y)-plane.Origin.Y)*normal.Y+(new IntervalNumber(point.Z)-plane.Origin.Z)*normal.Z
                     +new IntervalNumber(-deviation,deviation);
-                if(!distance.Finite||distance.Upper>tolerance)return ParasolidConstants.PK_ERROR_not_implemented;
+                if(!distance.Finite||distance.Upper>tolerance)halfspace=false;
             }
             if(caps.Contains(face)){capCount++;continue;}
+            IntervalBox3 obstacle=default;
+            if(!halfspace)
+            {
+                // A previously cut or blended body need not lie in every
+                // face's infinite halfspace. Certify separation from that
+                // finite face instead, then check the material component.
+                if(!removesMaterial)return ParasolidConstants.PK_ERROR_not_implemented;
+                var status=RegularFiniteFaceExtent(face,out obstacle);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                finiteObstacles=true;
+            }
             var covered=first;
             for(var chart=0;chart<charts.Length-1;chart++)
             {
@@ -66,11 +76,17 @@ internal static unsafe partial class KernelRuntime
                     var status=JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,cell,bounds);
                     if(status==AlgorithmStatus.Success)
                     {
-                        var distance=(bounds[0]-plane.Origin.X)*normal.X+(bounds[1]-plane.Origin.Y)*normal.Y
-                            +(bounds[2]-plane.Origin.Z)*normal.Z+new IntervalNumber(-deviation,deviation);
-                        if(!distance.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                        if(distance.Upper<=tolerance)continue;
-                        if(distance.Lower>tolerance)return ParasolidConstants.PK_ERROR_radius_too_large;
+                        if(halfspace)
+                        {
+                            var distance=(bounds[0]-plane.Origin.X)*normal.X+(bounds[1]-plane.Origin.Y)*normal.Y
+                                +(bounds[2]-plane.Origin.Z)*normal.Z+new IntervalNumber(-deviation,deviation);
+                            if(!distance.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                            if(distance.Upper<=tolerance)continue;
+                            if(distance.Lower>tolerance)return ParasolidConstants.PK_ERROR_radius_too_large;
+                        }
+                        else if(bounds[0].Upper<obstacle.XLo-tolerance||bounds[0].Lower>obstacle.XHi+tolerance
+                            ||bounds[1].Upper<obstacle.YLo-tolerance||bounds[1].Lower>obstacle.YHi+tolerance
+                            ||bounds[2].Upper<obstacle.ZLo-tolerance||bounds[2].Lower>obstacle.ZHi+tolerance)continue;
                     }
                     else if(status!=AlgorithmStatus.NotConverged)return IntersectionError(status);
                     if(depth>=32||pending+2>cells.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
@@ -88,6 +104,15 @@ internal static unsafe partial class KernelRuntime
             }
             if(covered<last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
-        return capCount==2?0:ParasolidConstants.PK_ERROR_not_implemented;
+        if(capCount!=2)return ParasolidConstants.PK_ERROR_not_implemented;
+        if(finiteObstacles)
+        {
+            SurfaceDerivativeLayout.TryCreate(0,0,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[1];
+            var status=JointNestedBlendEvaluation.Evaluate(program,data.ProgramRoot,first+(last-first)*.5,.5,layout,point);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            var vector=new PK_VECTOR_s();WriteVector(&vector,point[0]);int enclosure;EntityTag topology;
+            var error=BodyContainsVectorCore(Bodies[body].Header.Tag,vector,&enclosure,&topology);if(error!=0)return error;
+            if(enclosure!=ParasolidConstants.PK_enclosure_inside_c)return ParasolidConstants.PK_ERROR_radius_too_large;
+        }
+        return 0;
     }
 }
