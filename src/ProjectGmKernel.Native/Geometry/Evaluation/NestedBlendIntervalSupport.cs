@@ -9,7 +9,30 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 internal static partial class JointNestedBlendEvaluation
 {
     [InlineArray(18)] private struct IntervalSplineValues{private IntervalNumber value;}
-    private struct IntervalSplineContact{internal bool Ready;internal IntervalSplineValues Values;}
+    private struct IntervalSplineContact
+    {
+        internal bool Ready;
+        internal BufferOffset ScalarOffset;
+        internal SplineDegree UDegree,VDegree;
+        internal BufferCount UCount,VCount,Dimension;
+        internal bool Rational,UPeriodic,VPeriodic;
+        internal IntervalNumber U,V;
+        internal IntervalSplineValues Values;
+    }
+
+    private static bool SplineContactMatches(in IntervalSplineContact contact,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v)
+        =>contact.Ready&&contact.U.Lower==u.Lower&&contact.U.Upper==u.Upper&&contact.V.Lower==v.Lower&&contact.V.Upper==v.Upper
+            &&contact.ScalarOffset==source.ScalarOffset&&contact.UDegree==source.UDegree&&contact.VDegree==source.VDegree
+            &&contact.UCount==source.UCount&&contact.VCount==source.VCount&&contact.Dimension==source.Dimension
+            &&contact.Rational==source.Rational&&contact.UPeriodic==source.UPeriodic&&contact.VPeriodic==source.VPeriodic;
+
+    private static AlgorithmStatus CacheSplineContact(in NestedBlendProgram program,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v,ref IntervalSplineContact contact)
+    {
+        var status=IntervalSplineBounds(program,source,u,v,contact.Values);if(status!=AlgorithmStatus.Success)return status;
+        contact.U=u;contact.V=v;contact.ScalarOffset=source.ScalarOffset;contact.UDegree=source.UDegree;contact.VDegree=source.VDegree;
+        contact.UCount=source.UCount;contact.VCount=source.VCount;contact.Dimension=source.Dimension;contact.Rational=source.Rational;
+        contact.UPeriodic=source.UPeriodic;contact.VPeriodic=source.VPeriodic;contact.Ready=true;return AlgorithmStatus.Success;
+    }
 
     private static AlgorithmStatus IntervalNormal(in NestedBlendProgram program,BlendSurfaceIndex surface,ReadOnlySpan<Occurrence> nodes,
         BufferOffset occurrence,ReadOnlySpan<IntervalDual> variables,out IntervalDual distance,out IntervalVector normal,ReadOnlySpan<IntervalSplineContact> cache=default)
@@ -61,11 +84,23 @@ internal static partial class JointNestedBlendEvaluation
         out IntervalVector point,out IntervalVector du,out IntervalVector dv,ReadOnlySpan<IntervalSplineContact> cache=default,BufferOffset cacheIndex=-1)
     {
         point=du=dv=default;Span<IntervalNumber> local=stackalloc IntervalNumber[18];scoped ReadOnlySpan<IntervalNumber> hull;
-        if(cacheIndex>=0&&!cache.IsEmpty&&cache[cacheIndex].Ready)hull=cache[cacheIndex].Values;
+        if(cacheIndex>=0&&!cache.IsEmpty&&SplineContactMatches(cache[cacheIndex],node,u.Value,v.Value))hull=cache[cacheIndex].Values;
         else{var status=IntervalSplineBounds(program,node,u.Value,v.Value,local);if(status!=AlgorithmStatus.Success)return status;hull=local;}
         point=IntervalSplineVector(hull,0,3,6,u,v);du=IntervalSplineVector(hull,3,9,12,u,v);dv=IntervalSplineVector(hull,6,12,15,u,v);
         return point.Finite&&du.Finite&&dv.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
+
+#if KERNEL_TEST_HOOKS
+    internal static AlgorithmStatus TestSplineContactReuse(in NestedBlendProgram program,in BlendSurfaceInstruction cachedSource,in BlendSurfaceInstruction source,
+        IntervalNumber cachedU,IntervalNumber cachedV,IntervalDual u,IntervalDual v,bool reuse,
+        out IntervalVector point,out IntervalVector du,out IntervalVector dv,out bool hit)
+    {
+        Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[1];cache.Clear();point=du=dv=default;hit=false;
+        var status=CacheSplineContact(program,cachedSource,cachedU,cachedV,ref cache[0]);if(status!=AlgorithmStatus.Success)return status;
+        hit=reuse&&SplineContactMatches(cache[0],source,u.Value,v.Value);if(!reuse)cache.Clear();
+        return IntervalSpline(program,source,u,v,out point,out du,out dv,cache,0);
+    }
+#endif
 
     internal static AlgorithmStatus IntervalSplineBounds(in NestedBlendProgram program,in BlendSurfaceInstruction node,IntervalNumber u,IntervalNumber v,Span<IntervalNumber> hull)
     {

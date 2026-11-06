@@ -7,6 +7,7 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
 internal static partial class JointNestedBlendEvaluation
 {
+    internal static bool ReuseSplineContactBounds=true;
     /// <summary>Certified local implicit tube, followed by interval analytic
     /// differentiation. Chart error estimates and sampled jets are not bounds.</summary>
     internal static AlgorithmStatus Bound(in NestedBlendProgram program,BlendSurfaceIndex surface,in SurfaceParameterBox domain,Span<IntervalNumber> output)
@@ -56,6 +57,7 @@ internal static partial class JointNestedBlendEvaluation
         Span<IntervalNumber> boxes=stackalloc IntervalNumber[MaxVariables],image=stackalloc IntervalNumber[MaxVariables],centerF=stackalloc IntervalNumber[MaxVariables];
         Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[MaxVariables*MaxVariables],remainder=stackalloc IntervalNumber[MaxVariables*MaxVariables];
         Span<IntervalDual> variables=stackalloc IntervalDual[MaxVariables],equations=stackalloc IntervalDual[MaxVariables];
+        Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[MaxVariables];
         for(var i=0;i<n;i++)variables[i]=new(state[i],0);
         status=IntervalResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)centerF[i]=equations[i].Value;
@@ -68,7 +70,7 @@ internal static partial class JointNestedBlendEvaluation
                 var radius=factor*(2*Math.Max(Math.Abs(snapshot[i][1]),.1*derivativeScale)*Math.Max(Math.Abs(domain.U1-u),Math.Abs(domain.U0-u))+1e-10*(1+Math.Abs(state[i])));
                 boxes[i]=new(Math.BitDecrement(state[i]-radius),Math.BitIncrement(state[i]+radius));
             }
-            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts);if(status!=AlgorithmStatus.Success)continue;
+            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)continue;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             certified=true;
             for(var row=0;row<n;row++)
@@ -83,7 +85,7 @@ internal static partial class JointNestedBlendEvaluation
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
-            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts);if(status!=AlgorithmStatus.Success)return status;
+            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             for(var row=0;row<n;row++)
             {
@@ -91,9 +93,10 @@ internal static partial class JointNestedBlendEvaluation
                 for(var k=0;k<n;k++)value+=remainder[row*n+k]*(boxes[k]-state[k]);image[row]=value;
             }
         }
+        if(!ReuseSplineContactBounds)splineCache.Clear();
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        status=CertifyNearestBoxes(program,nodes,boxes[..n],variables[..n],intervalJacobian[..(n*n)],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
-        status=IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
+        status=CertifyNearestBoxes(program,nodes,boxes[..n],variables[..n],intervalJacobian[..(n*n)],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+        status=IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
         if(surface<0)
@@ -102,15 +105,15 @@ internal static partial class JointNestedBlendEvaluation
         }
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
         var v=new IntervalNumber(domain.V0,domain.V1);
-        status=IntervalFrame(program,surface,nodes,variables[..n],v,out var frame);if(status!=AlgorithmStatus.Success)return status;
+        status=IntervalFrame(program,surface,nodes,variables[..n],v,out var frame,splineCache);if(status!=AlgorithmStatus.Success)return status;
         output[0]=frame.X.Value;output[1]=frame.Y.Value;output[2]=frame.Z.Value;output[3]=frame.X.Derivative;output[4]=frame.Y.Derivative;output[5]=frame.Z.Derivative;
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        status=IntervalFrame(program,surface,nodes,variables[..n],new(v,1),out frame);if(status!=AlgorithmStatus.Success)return status;
+        status=IntervalFrame(program,surface,nodes,variables[..n],new(v,1),out frame,splineCache);if(status!=AlgorithmStatus.Success)return status;
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus CertifyNearestBoxes(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
-        ReadOnlySpan<IntervalDual> variables,ReadOnlySpan<IntervalNumber> jacobian,ReadOnlySpan<BufferOffset> charts)
+        ReadOnlySpan<IntervalDual> variables,ReadOnlySpan<IntervalNumber> jacobian,ReadOnlySpan<BufferOffset> charts,ReadOnlySpan<IntervalSplineContact> cache)
     {
         Span<BufferOffset> map=stackalloc BufferOffset[MaxVariables];Span<bool> selected=stackalloc bool[MaxOccurrences];Span<IntervalNumber> block=stackalloc IntervalNumber[MaxVariables*MaxVariables],rhs=stackalloc IntervalNumber[MaxVariables];
         var n=boxes.Length;
@@ -126,19 +129,19 @@ internal static partial class JointNestedBlendEvaluation
             }
             for(var i=0;i<count;i++)for(var j=0;j<count;j++)block[i*count+j]=jacobian[map[i]*n+map[j]];
             rhs[..count].Clear();rhs[parameterIndex]=1;var status=SolveIntervals(block[..(count*count)],rhs[..count],count);if(status!=AlgorithmStatus.Success)return status;
-            var spine=program.Spines[nodes[root].Spine];status=IntervalNormal(program,spine.First,nodes,root,variables,out _,out var a);if(status!=AlgorithmStatus.Success)return status;
-            status=IntervalNormal(program,spine.Second,nodes,root,variables,out _,out var b);if(status!=AlgorithmStatus.Success)return status;
+            var spine=program.Spines[nodes[root].Spine];status=IntervalNormal(program,spine.First,nodes,root,variables,out _,out var a,cache);if(status!=AlgorithmStatus.Success)return status;
+            status=IntervalNormal(program,spine.Second,nodes,root,variables,out _,out var b,cache);if(status!=AlgorithmStatus.Success)return status;
             var orientation=IntervalVector.Dot(IntervalVector.Cross(a,b),new IntervalVector(Chart(program,nodes[root].Spine)[charts[root]].Chord)).Value;
             if((rhs[parameterIndex]*orientation).Upper>=0)return AlgorithmStatus.NotConverged;
         }
         foreach(var node in nodes)for(var side=0;side<2;side++)
         {
             var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0||side==1&&uv==node.FirstUv)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
-            var status=IntervalSpline(program,source,new(boxes[uv],1),new(boxes[uv+1],0),out var foot,out var su,out var sv);if(status!=AlgorithmStatus.Success)return status;
+            var status=IntervalSpline(program,source,new(boxes[uv],1),new(boxes[uv+1],0),out var foot,out var su,out var sv,cache,uv);if(status!=AlgorithmStatus.Success)return status;
             var delta=IntervalPoint(variables,node.Offset)-foot;
             var a=IntervalDual.Square(su.X).Value+IntervalDual.Square(su.Y).Value+IntervalDual.Square(su.Z).Value-(delta.X.Value*su.X.Derivative+delta.Y.Value*su.Y.Derivative+delta.Z.Value*su.Z.Derivative);
             var b=IntervalVector.Dot(su,sv).Value-(delta.X.Value*sv.X.Derivative+delta.Y.Value*sv.Y.Derivative+delta.Z.Value*sv.Z.Derivative);
-            status=IntervalSpline(program,source,new(boxes[uv],0),new(boxes[uv+1],1),out _,out _,out var vv);if(status!=AlgorithmStatus.Success)return status;
+            status=IntervalSpline(program,source,new(boxes[uv],0),new(boxes[uv+1],1),out _,out _,out var vv,cache,uv);if(status!=AlgorithmStatus.Success)return status;
             var d=IntervalDual.Square(sv.X).Value+IntervalDual.Square(sv.Y).Value+IntervalDual.Square(sv.Z).Value-(delta.X.Value*vv.X.Derivative+delta.Y.Value*vv.Y.Derivative+delta.Z.Value*vv.Z.Derivative);
             if(a.Lower<=0||d.Lower<=0||(a*d-IntervalNumber.Square(b)).Lower<=0)return AlgorithmStatus.NotConverged;
         }
@@ -146,14 +149,15 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     private static AlgorithmStatus IntervalJacobian(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
-        IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts)
+        IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache)
     {
         var n=boxes.Length;for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[MaxVariables];cache.Clear();
+        cache.Clear();
         foreach(var node in nodes)for(var side=0;side<2;side++)
         {
-            var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0||cache[uv].Ready)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
-            var status=IntervalSplineBounds(program,source,boxes[uv],boxes[uv+1],cache[uv].Values);if(status!=AlgorithmStatus.Success)return status;cache[uv].Ready=true;
+            var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
+            if(SplineContactMatches(cache[uv],source,boxes[uv],boxes[uv+1]))continue;
+            var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success)return status;
         }
         for(var column=0;column<n;column++)
         {
@@ -180,10 +184,10 @@ internal static partial class JointNestedBlendEvaluation
         return AlgorithmStatus.Success;
     }
     private static AlgorithmStatus IntervalFrame(in NestedBlendProgram program,BlendSurfaceIndex surface,ReadOnlySpan<Occurrence> nodes,
-        ReadOnlySpan<IntervalDual> variables,IntervalDual v,out IntervalVector point)
+        ReadOnlySpan<IntervalDual> variables,IntervalDual v,out IntervalVector point,ReadOnlySpan<IntervalSplineContact> cache=default)
     {
-        point=default;var root=program.Surfaces[surface];var status=IntervalNormal(program,root.First,nodes,0,variables,out _,out var n0);if(status!=AlgorithmStatus.Success)return status;
-        status=IntervalNormal(program,root.Second,nodes,0,variables,out _,out var n1);if(status!=AlgorithmStatus.Success)return status;
+        point=default;var root=program.Surfaces[surface];var status=IntervalNormal(program,root.First,nodes,0,variables,out _,out var n0,cache);if(status!=AlgorithmStatus.Success)return status;
+        status=IntervalNormal(program,root.Second,nodes,0,variables,out _,out var n1,cache);if(status!=AlgorithmStatus.Success)return status;
         var radius=Math.Abs(root.Range0);var x=n1*(-root.Range1/radius);var end=n0*(-root.Range0/radius);if(root.ReverseSection)(x,end)=(end,x);
         var cosine=IntervalVector.Dot(x,end);var transverse=end-x*cosine;var sine=transverse.Norm();var y=transverse/sine;var arc=IntervalDual.Atan2(sine,cosine);
         IntervalDual.SinCos(arc*v,out var sin,out var cos);point=IntervalPoint(variables,0)+(x*cos+y*sin)*radius;return point.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
