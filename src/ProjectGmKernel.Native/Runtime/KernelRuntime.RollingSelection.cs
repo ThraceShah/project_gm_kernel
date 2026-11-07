@@ -6,7 +6,8 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private static int SelectRollingReplacement(BodySlot body,ReadOnlySpan<FaceSlot> originals,ReadOnlySpan<RollingBandCandidate> bands,
+    private static int SelectRollingReplacement(BodySlot body,ReadOnlySpan<FaceSlot> originals,ReadOnlySpan<EdgeSlot> selected,
+        ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingSubdivision> subdivisions,
         in RegularBoundaryView input,ReadOnlySpan<SheetSourceEdge> fragments,ref SheetArrangement model,
         Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
     {
@@ -35,10 +36,9 @@ internal static unsafe partial class KernelRuntime
                     if(first<0)first=f;else components[RollingComponent(components,f)]=RollingComponent(components,first);
                 }
             }
-        foreach(var band in bands)
-            foreach(var source in fragments)if(source.Source==band.Source)
-                for(var e=source.First;e<source.First+source.Count;e++)
-                    for(var c=heads[e];c>=0;c=next[c])if(model.Sources[owners[c]]>=0)removed[RollingComponent(components,owners[c])]=1;
+        foreach(var source in fragments)if(source.Source>=0&&selected.Contains(source.Source))
+            for(var e=source.First;e<source.First+source.Count;e++)
+                for(var c=heads[e];c>=0;c=next[c])if(model.Sources[owners[c]]>=0)removed[RollingComponent(components,owners[c])]=1;
         Span<sbyte> state=stackalloc sbyte[model.NF];state.Fill(-1);
         for(var f=0;f<model.NF;f++)if(model.Sources[f]>=0)state[f]=removed[RollingComponent(components,f)]!=0?(sbyte)0:(sbyte)1;
         Span<BufferOffset> trail=stackalloc BufferOffset[model.NF];var trailCount=0;
@@ -79,16 +79,32 @@ internal static unsafe partial class KernelRuntime
         Span<byte> reversed=stackalloc byte[model.NF],cavities=stackalloc byte[model.NF];reversed.Clear();cavities.Clear();
         LastRollingNetworkStage=RollingNetworkStage.Build;
         var errorBuild=CloneRegularBoundaryBody(ref model,indices[..count],reversed,cavities,out var output,products[..count]);if(errorBuild!=0)return errorBuild;
-        foreach(var band in bands)
-            for(var i=0;i<count;i++)if(model.Faces[indices[i]].Surface==band.Surface)
+        for(var band=0;band<bands.Length;band++)
+            for(var i=0;i<count;i++)if(model.Faces[indices[i]].Surface==bands[band].Surface)
             {
                 if(made==descriptions.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-                descriptions[made++]=new(){Edge=Edges[band.Source].Header.Tag,Sequence=Edges[band.Source].PendingBlendSequence,First=Faces[band.FirstSupport].Header.Tag,Second=Faces[band.SecondSupport].Header.Tag,Result=Faces[products[i]].Header.Tag};
+                var source=RollingCellSource(bands[band].Source,band,subdivisions,model.Witnesses[indices[i]].param[1]);
+                if(source<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                descriptions[made++]=new(){Edge=Edges[source].Header.Tag,Sequence=Edges[source].PendingBlendSequence,
+                    First=Faces[bands[band].FirstSupport].Header.Tag,Second=Faces[bands[band].SecondSupport].Header.Tag,Result=Faces[products[i]].Header.Tag};
             }
         for(var i=1;i<made;i++)for(var j=i;j>0&&descriptions[j].Sequence<descriptions[j-1].Sequence;j--)
             (descriptions[j],descriptions[j-1])=(descriptions[j-1],descriptions[j]);
         LastRollingNetworkStage=RollingNetworkStage.Publish;
         return ReplaceLocalBody(body,output,preserved[..keepCount],products[..count]);
+    }
+
+    private static EdgeSlot RollingCellSource(EdgeSlot representative,BufferOffset band,ReadOnlySpan<RollingSubdivision> subdivisions,double station)
+    {
+        EdgeSlot before=-1,after=-1;var lo=double.NegativeInfinity;var hi=double.PositiveInfinity;
+        foreach(ref readonly var split in subdivisions)if(split.Band==band)
+        {
+            if(station==split.Parameter)return -1;
+            if(station>split.Parameter&&split.Parameter>lo){lo=split.Parameter;after=split.After;}
+            if(station<split.Parameter&&split.Parameter<hi){hi=split.Parameter;before=split.Before;}
+        }
+        if(before>=0&&after>=0&&before!=after)return -1;
+        return before>=0?before:after>=0?after:representative;
     }
 
     private static BufferOffset RollingComponent(Span<BufferOffset> components,BufferOffset face)

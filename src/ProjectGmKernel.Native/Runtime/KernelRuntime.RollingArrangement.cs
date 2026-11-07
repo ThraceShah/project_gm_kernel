@@ -5,8 +5,9 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private static int BuildRollingArrangement(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingPointContact> contacts,
-        ReadOnlySpan<RollingCutFamily> families,ReadOnlySpan<SheetCutCurve> curves,Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
+    private static int BuildRollingArrangement(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,ReadOnlySpan<EdgeSlot> selected,ReadOnlySpan<RollingBandCandidate> bands,
+        ReadOnlySpan<RollingSubdivision> subdivisions,ReadOnlySpan<RollingPointContact> contacts,ReadOnlySpan<RollingCutFamily> families,
+        ReadOnlySpan<SheetCutCurve> curves,Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
     {
         made=0;
         // Existing geometry stays immutable through clipping/arrangement;
@@ -67,6 +68,11 @@ internal static unsafe partial class KernelRuntime
             }
             LastRollingNetworkStage=RollingNetworkStage.BoundaryIncidence;
             error=ReadRollingThirdSurfaceEvents(sourceFaces,bands,families,curves,ref model);if(error!=0)return error;
+            if(!subdivisions.IsEmpty)
+            {
+                LastRollingNetworkStage=RollingNetworkStage.Subdivision;
+                error=ImprintRollingSubdivisions(sourceFaces.Length,bands,subdivisions,cuts,ref cutCount,owned,ref ownedCount,ref model);if(error!=0)return error;
+            }
             LastRollingNetworkStage=RollingNetworkStage.Split;
             error=SplitRegularSourceEdges(view,originalEdges[..ne],fragments,owned,ref ownedCount,ref model);if(error!=0)return error;
             Span<SheetCutCurve> faceCuts=stackalloc SheetCutCurve[RegularCutLimit];
@@ -80,7 +86,7 @@ internal static unsafe partial class KernelRuntime
             // Cell selection must establish a unique oriented manifold and
             // material replacement before any B-rep can be published.
             LastRollingNetworkStage=RollingNetworkStage.Select;
-            error=SelectRollingReplacement(body,sourceFaces,bands,view,fragments[..ne],ref model,descriptions,products,out made);if(error!=0)return error;
+            error=SelectRollingReplacement(body,sourceFaces,selected,bands,subdivisions,view,fragments[..ne],ref model,descriptions,products,out made);if(error!=0)return error;
             foreach(var curve in curves){error=ReleaseRollingCurve(curve.Curve);if(error!=0)return error;}
             foreach(var curve in owned[..ownedCount]){error=ReleaseRollingCurve(curve.Curve);if(error!=0)return error;}
             for(var e=0;e<ne;e++)if(originalEdges[e]<0){error=ReleaseRollingCurve(inputEdges[e].Curve);if(error!=0)return error;}

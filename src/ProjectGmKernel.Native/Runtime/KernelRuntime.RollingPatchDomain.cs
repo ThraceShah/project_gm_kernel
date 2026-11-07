@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;
@@ -79,6 +80,47 @@ internal static unsafe partial class KernelRuntime
         if(model.NP==model.Points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
         vertex=model.NP;model.Points[model.NP]=point;model.OriginalVertices[model.NP]=original;
         if(!model.VertexPrecisions.IsEmpty)model.VertexPrecisions[model.NP]=original>=0?Vertices[original].Tolerance:0;model.NP++;return 0;
+    }
+
+    private static int ImprintRollingSubdivisions(BufferCount sourceFaces,ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingSubdivision> subdivisions,
+        Span<RegularFaceCut> cuts,ref BufferCount cutCount,Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model)
+    {
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
+        Span<KernelVector3> point=stackalloc KernelVector3[1];
+        foreach(ref readonly var split in subdivisions)
+        {
+            var band=bands[split.Band];var at=split.Parameter;var face=sourceFaces+split.Band;
+            if(!(at>band.First&&at<band.Last)||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(band.Surface)],out var cylinder)
+                ||cylinder.Kind!=SurfaceClass.Cylinder)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            var center=Add(cylinder.Origin,Scale(cylinder.Axis,at));
+            var plane=new AnalyticSurface(SurfaceClass.Plane,center,cylinder.Axis,cylinder.X);
+            foreach(ref readonly var accepted in cuts[..cutCount])
+            {
+                if(accepted.First!=face&&accepted.Second!=face)continue;
+                var cut=accepted.Cut;if(cut.Curve==band.FirstContact||cut.Curve==band.SecondContact)continue;
+                var status=IntersectSheetCurvePlane(cut.Curve,cut.First,cut.Last,plane,roots,out var count);
+                if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                if(count!=0)return ParasolidConstants.PK_ERROR_not_implemented;
+            }
+            if(cutCount==cuts.Length||ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+            var section=CreateCircleCurveTag(center.X,center.Y,center.Z,cylinder.Axis.X,cylinder.Axis.Y,cylinder.Axis.Z,
+                cylinder.X.X,cylinder.X.Y,cylinder.X.Z,cylinder.Radius);
+            if(section<=0)return ParasolidConstants.PK_ERROR_memory_full;
+            var imprint=new SheetCutCurve{Curve=section,First=band.FirstSection,Last=band.LastSection};
+            cuts[cutCount++]=new(){First=face,Second=-1,Cut=imprint};owned[ownedCount++]=imprint;
+            var error=AssociateBoundaryCarrierSurface(ref model,section,band.Surface);if(error!=0)return error;
+            for(var side=0;side<2;side++)
+            {
+                var contact=side==0?band.FirstContact:band.SecondContact;
+                var angle=side==0?0:band.FirstSection==0?band.LastSection:band.FirstSection;
+                var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(contact)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                error=model.AddPoint(point[0],-1,out var endpoint);if(error!=0)return error;
+                error=model.AssociateParameter(endpoint,contact,at);if(error!=0)return error;
+                error=model.AssociateParameter(endpoint,section,angle);if(error!=0)return error;
+            }
+            TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.Subdivision,Source=split.Before,Surface=band.Surface,Curve=section,Vertex=split.Vertex,First=at,Last=at,Relation=SurfacePairRelation.CurveContact});
+        }
+        return 0;
     }
 
     private static int AppendRollingDomainEdge(CurveTag curve,double first,double last,BufferOffset start,BufferOffset end,

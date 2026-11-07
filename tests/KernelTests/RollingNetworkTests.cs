@@ -69,6 +69,45 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
+    [Fact]
+    public void SubdividedSelectedGeneratorRetainsTheSharedSectionAndProductProvenance()
+    {
+        var body=Seed();Span<EdgeTag> selected=stackalloc EdgeTag[3];Selection(body,selected[..2]);
+        var line=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(selected[1]).Slot];
+        var lo=line.ParameterStart;var hi=line.ParameterEnd;
+        if(line.HasParameterRange==0)
+        {
+            var p=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[line.StartVertex].PointTag)].Position;
+            var q=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[line.EndVertex].PointTag)].Position;
+            var length=EvaluationMath.Sub(p,q);hi=Math.Sqrt(EvaluationMath.Dot(length,length));
+        }
+        EntityTag vertex;EdgeTag tail;Assert.Equal(0,KernelRuntime.EdgeSplitAtParam(selected[1],lo+(hi-lo)*.5,&vertex,&tail));selected[2]=tail;
+        selected.Reverse();Mark(selected);
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;EntityTag* products;EntityTag* replaced;
+        Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,&products,null,&replaced,&fault,&edgeFault,&topolFault));
+        try
+        {
+            Assert.Equal(3,count);
+            for(var i=0;i<count;i++)Assert.Equal(selected[i],replaced[i]);
+            var a=KernelRuntime.ResolveTagRecord(products[0]).Slot;var b=KernelRuntime.ResolveTagRecord(products[1]).Slot;
+            var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var sections=0;
+            for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+            {
+                var record=KernelRuntime.Edges[edge];var first=record.FirstFinEdge;var second=KernelRuntime.Fins[first].Other;
+                var x=KernelRuntime.Loops[KernelRuntime.Fins[first].Loop].Face;var y=KernelRuntime.Loops[KernelRuntime.Fins[second].Loop].Face;
+                if(!(a==x&&b==y||a==y&&b==x))continue;
+                sections++;Assert.Equal(CurveClass.Circle,KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)].Class);
+                Assert.True(record.ParameterEnd>record.ParameterStart);Assert.NotEqual(KernelRuntime.Fins[first].Sense,KernelRuntime.Fins[second].Sense);
+            }
+            Assert.Equal(1,sections);
+        }
+        finally{KernelRuntime.MemoryFree(products);KernelRuntime.MemoryFree(replaced);}
+        BooleanOperationTests.Counts(body,11,26,17);ShortIntervals(body);
+        var bytes=Transmit(body);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        Assert.Equal(0,XtBrepImportTests.Receive(bytes,out var restored));BooleanOperationTests.Counts(restored,11,26,17);ShortIntervals(restored);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+    }
+
     [Theory]
     [InlineData(0)] [InlineData(10)] [InlineData(50)] [InlineData(200)]
     public void NetworkAllocationFailureRestoresPendingIncidenceGenerationsAndGeometry(int budget)
@@ -193,7 +232,7 @@ public unsafe class RollingNetworkTests:IDisposable
     {
         var options=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};options.properties.tolerance=1e-7;int count;
         fixed(EdgeTag* edges=selected)Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(selected.Length,edges,radius,&options,&count,null));
-        Assert.Equal(2,count);
+        Assert.Equal(selected.Length,count);
     }
     private static void ShortIntervals(int body)
     {

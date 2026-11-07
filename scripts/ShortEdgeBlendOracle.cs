@@ -15,6 +15,8 @@ using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
+using FaceSlot=System.Int32;
+using VertexSlot=System.Int32;
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceRollingNetwork=trace=>
@@ -64,9 +66,10 @@ var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs",re
 var floor=NumberOption(args,"--seed-floor=",0);
 var phase=NumberOption(args,"--support-phase=",0);
 var splitRemote=args.Contains("--split-remote-edge");
+var splitSelected=args.Contains("--split-selected-edge");
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
-Require(floor==0&&phase==0&&!splitRemote||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
+Require(floor==0&&phase==0&&!splitRemote&&!splitSelected||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
 M.PK_TRANSF_sf_s inputTransform;double inputScale;bool mappedInput;
 unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
@@ -96,6 +99,7 @@ using(host)unsafe
             var name=$"a{angle:R}-r{radius:R}-t{tolerance:R}-reverse{reverse}-"+(procedural?"v261":"default");
             if(floor!=0)name+=$"-floor{floor:R}";
             if(splitRemote)name+="-split-remote";
+            if(splitSelected)name+="-split-selected";
             if(phase!=0)name+=$"-support-phase{phase:R}";
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
                 if(researchPrecision!=0)name+=$"-pk-precision{researchPrecision:R}";
@@ -114,7 +118,7 @@ using(host)unsafe
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-before-fix");
                 if(researchPrecision!=0)Check(PK_SESSION_set_precision(researchPrecision),"set research precision");
                 int nativeError;
-                try{nativeError=Fillet(false,reference,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale);}
+                try{nativeError=Fillet(false,reference,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected);}
                 finally{if(researchPrecision!=0)Check(PK_SESSION_set_precision(precision),"restore default precision");}
                 Check(nativeError,"native fix");CheckBody(reference,"native fillet");
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-after-fix");
@@ -163,22 +167,22 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
                 {
-                    Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale),"managed fix");
+                    Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected),"managed fix");
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
                     if(args.Contains("--diagnostics")){ProductEdges(reference,"reference");ProductEdges(received,"self-constructed-product");}
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
-                    CompareFiniteIntersections(reference,received,"independent fillet");
+                    CompareFiniteIntersections(reference,received,"independent fillet",inputScale);
                     if(args.Contains("--geometry"))SelfGeometry(own,reference);
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -239,7 +243,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input=null)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -252,12 +256,12 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         var original=source;Check(KernelRuntime.EntityDelete(1,&original),"delete fillet source before copy modelling");source=0;
         Console.WriteLine($"LIFECYCLE {name} source_deleted=True copy={own}");
         Move(true,own,selfTransform);Move(false,native,pkTransform);
-        failures+=CompareFresh(own,native,output,name+"-copy-reflected");
+        failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale);
         var toolAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(3,0,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));int ownTool,pkTool;
         Check(KernelRuntime.BodyCreateSolidBlock(2,10,10,(M.PK_AXIS2_sf_s*)&toolAxis,&ownTool),"self cutter");Check(PK_BODY_create_solid_block(2,10,10,&toolAxis,&pkTool),"PK cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
-        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut");
+        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale);
         var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=0;own=Receive(true,reload);
         Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),name+" reload must be editable");
         Console.WriteLine($"LIFECYCLE {name} managed_reload=True body={own}");
@@ -265,7 +269,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
-        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut");
+        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale);
     }
     finally
     {
@@ -309,7 +313,7 @@ static unsafe int Cut(bool own,int body,int tool)
     Check(error,"cut fillet product");
     try{Require(n==1,"one cut result");return bodies[0];}finally{Free(own,bodies);}
 }
-static unsafe int CompareFresh(int own,int reference,string directory,string name)
+static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale)
 {
     var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),fresh);var received=Receive(false,fresh);
     var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,name+"-native.x_t"),referenceBytes);
@@ -320,7 +324,7 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         CheckBody(referenceReload,name+" native own roundtrip");
         try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);}catch(Exception ex){Console.WriteLine("COMPARE DIAGNOSTIC "+ex.Message);throw;}
         CheckBody(received,name);
-        CompareFiniteIntersections(reference,received,name);
+        CompareFiniteIntersections(reference,received,name,unitScale);
         try{Mass(reference,received,name);return 0;}
         catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);return 1;}
     }
@@ -396,6 +400,7 @@ static unsafe void SelfGeometry(int own,int reference)
         {
             var source=KernelRuntime.Faces[face];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(source.SurfTag)];
             if(surface.Class is not (SurfaceClass.BlendSurface or SurfaceClass.Cylinder))continue;
+            var vertices=ManagedFaceVertices(face);
             var matched=0;var matchedFace=0;double shiftU=0,scaleU=0,shiftV=0,scaleV=0;
             for(var n=0;n<count;n++)
             {
@@ -405,6 +410,7 @@ static unsafe void SelfGeometry(int own,int reference)
                     if(type!=PK_CLASS_cyl)continue;var a=new M.PK_CYL_sf_s();var b=new PK_CYL_sf_t();
                     Check(KernelRuntime.CylAsk(source.SurfTag,&a),"self cylinder definition");Check(PK_CYL_ask(candidate,&b),"native cylinder definition");
                     if(!CylinderMap(*(PK_CYL_sf_t*)&a,b,out var su,out var du,out var sv,out var dv))continue;
+                    if(!SameFiniteFaceVertices(vertices,nativeFaces[n]))continue;
                     Require(matched==0,"unique complete cylinder support correspondence");matched=candidate;matchedFace=nativeFaces[n];shiftU=su;scaleU=du;shiftV=sv;scaleV=dv;
                 }
                 else
@@ -422,6 +428,7 @@ static unsafe void SelfGeometry(int own,int reference)
                     var direct=CylinderMap(*(PK_CYL_sf_t*)&own0,pk0,out _,out _,out _,out _)&&CylinderMap(*(PK_CYL_sf_t*)&own1,pk1,out _,out _,out _,out _);
                     var swapped=CylinderMap(*(PK_CYL_sf_t*)&own0,pk1,out _,out _,out _,out _)&&CylinderMap(*(PK_CYL_sf_t*)&own1,pk0,out _,out _,out _,out _);
                     if(!direct&&!swapped)continue;
+                    if(!SameFiniteFaceVertices(vertices,nativeFaces[n]))continue;
                     phase+=Math.Tau*Math.Round((surface.UMin+(surface.UMax-surface.UMin)*.5-phase-sign*(definition.spine_extent.value[0]+definition.spine_extent.value[1])*.5)/Math.Tau);
                     var box=new PK_UVBOX_t();Check(PK_FACE_find_uvbox(nativeFaces[n],&box),"native rolling finite box");
                     var test=new PK_UV_t();test.param[0]=(box.param[0]+box.param[2])*.5;test.param[1]=.25;
@@ -444,8 +451,9 @@ static unsafe void SelfGeometry(int own,int reference)
                 var uv=new PK_UV_t();uv.param[0]=bounds.param[0]+(bounds.param[2]-bounds.param[0])*i/10;uv.param[1]=bounds.param[1]+(bounds.param[3]-bounds.param[1])*(.1+side*.4);
                 var ownUv=new M.PK_UV_s();ownUv.param[0]=shiftU+scaleU*uv.param[0];ownUv.param[1]=shiftV+scaleV*uv.param[1];
                 if(surface.Class==SurfaceClass.Cylinder)LiftUv(ref ownUv,surface);
-                var containment=KernelRuntime.SheetSourceContains(face,ownUv,out var inside);Check(containment,"self finite face geometry membership");if(!inside)continue;
-                int on;var contains=new PK_FACE_contains_vectors_o_t{n_uvs=1,uvs=&uv};Check(PK_FACE_contains_vectors(matchedFace,&contains,&on),"native finite face membership");if(on==0)continue;
+                var containment=KernelRuntime.SheetSourceContains(face,ownUv,out var inside);Check(containment,"self finite face geometry membership");
+                int on;var contains=new PK_FACE_contains_vectors_o_t{n_uvs=1,uvs=&uv};Check(PK_FACE_contains_vectors(matchedFace,&contains,&on),"native finite face membership");
+                Require(inside==(on!=0),"finite face memberships agree under the certified map");if(!inside)continue;
                 Check(PK_SURF_eval(matched,uv,2,2,PK_LOGICAL_false,native),"native mapped geometry jet");Check(KernelRuntime.SurfEval(source.SurfTag,ownUv,2,2,0,(M.PK_VECTOR_s*)actual),"self mapped geometry jet");samples++;
                 d0=Math.Max(d0,Distance(native[0],actual[0]));d1=Math.Max(d1,Math.Max(Distance(native[3],ScaleVector(actual[3],scaleU)),Distance(native[1],ScaleVector(actual[1],scaleV))));
                 if(side!=1)continue;
@@ -470,6 +478,45 @@ static unsafe void SelfGeometry(int own,int reference)
         Require(checkedFaces>0,"self curved geometry was checked");
     }
     finally{if(checkpoint)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);Free(false,nativeFaces);}
+}
+static unsafe List<PK_VECTOR_t> ManagedFaceVertices(FaceSlot face)
+{
+    var result=new List<PK_VECTOR_t>();var seen=new HashSet<VertexSlot>();var source=KernelRuntime.Faces[face];var loop=source.FirstLoop;
+    for(var l=0;l<source.LoopCount;l++,loop=KernelRuntime.Loops[loop].NextInFace)
+    {
+        var fin=KernelRuntime.Loops[loop].FirstFin;
+        for(var k=0;k<KernelRuntime.Loops[loop].FinCount;k++,fin=KernelRuntime.Fins[fin].NextInLoop)
+        {
+            var vertex=KernelRuntime.Fins[fin].Vertex;if(vertex<0||!seen.Add(vertex))continue;
+            M.PK_POINT_sf_s point;Check(KernelRuntime.PointAsk(KernelRuntime.Vertices[vertex].PointTag,&point),"self face boundary vertex");
+            result.Add(*(PK_VECTOR_t*)&point.position);
+        }
+    }
+    return result;
+}
+static unsafe bool SameFiniteFaceVertices(List<PK_VECTOR_t> vertices,PK_FACE_t face)
+{
+    int count;PK_VERTEX_t* tags;Check(PK_FACE_ask_vertices(face,&count,&tags),"native face boundary vertices");
+    try
+    {
+        if(count!=vertices.Count)return false;
+        Span<byte> used=stackalloc byte[count];used.Clear();
+        for(var i=0;i<count;i++)
+        {
+            var position=NativeVertexPosition(tags[i]);var match=-1;
+            for(var j=0;j<vertices.Count;j++)if(used[j]==0&&Distance(position,vertices[j])<1e-8)
+            {if(match>=0)return false;match=j;}
+            if(match<0)return false;used[match]=1;
+        }
+        return true;
+    }
+    finally{Free(false,tags);}
+}
+static unsafe PK_VECTOR_t NativeVertexPosition(PK_VERTEX_t vertex)
+{
+    PK_POINT_t point;PK_POINT_sf_t definition;
+    Check(PK_VERTEX_ask_point(vertex,&point),"native vertex point");
+    Check(PK_POINT_ask(point,&definition),"native vertex position");return definition.position;
 }
 static unsafe KernelVector3 Vector(PK_VECTOR_t value)=>new(){X=value.coord[0],Y=value.coord[1],Z=value.coord[2]};
 static unsafe PK_VECTOR_t ScaleVector(PK_VECTOR_t value,double scale)=>new(value.coord[0]*scale,value.coord[1]*scale,value.coord[2]*scale);
@@ -718,7 +765,7 @@ static unsafe void ProductEdges(int body,string label)
     finally{Free(false,edges);}
 }
 
-static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actual,string label)
+static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actual,string label,double unitScale)
 {
     var expected=IntersectionEdges(reference);var found=IntersectionEdges(actual);
     Require(expected.Count==found.Count,label+" finite ICurve count");
@@ -737,10 +784,15 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
         var other=found[match];found.RemoveAt(match);
         var endpoint=Math.Max(Distance(edge.Low,reversed?other.High:other.Low),Distance(edge.High,reversed?other.Low:other.High));
         var length=Math.Abs(edge.Length-other.Length);
-        Require(endpoint<=1e-8&&length<=2e-8,label+$" finite ICurve edge={edge.Edge}/{other.Edge} endpoint={endpoint:R} length={length:R}");
+        // Arc length has units of length; compare the nominal quadrature
+        // estimates in the seed's units after an explicit similarity. The
+        // oriented endpoint/model precision and strict body gates stay in
+        // product coordinates.
+        Require(endpoint<=1e-8&&length/unitScale<=2e-8,
+            label+$" finite ICurve edge={edge.Edge}/{other.Edge} endpoint={endpoint:R} length={length:R} scale={unitScale:R}");
         maxEndpoint=Math.Max(maxEndpoint,endpoint);maxLength=Math.Max(maxLength,length);
     }
-    Console.WriteLine($"FINITE ICurve {label} count={expected.Count} endpoint_max={maxEndpoint:R} length_delta_max={maxLength:R}");
+    Console.WriteLine($"FINITE ICurve {label} count={expected.Count} endpoint_max={maxEndpoint:R} length_delta_max={maxLength:R} length_delta_seed_max={maxLength/unitScale:R}");
 
     static List<(PK_EDGE_t Edge,PK_VECTOR_t Start,PK_VECTOR_t End,PK_VECTOR_t Low,PK_VECTOR_t High,double Length)> IntersectionEdges(PK_BODY_t body)
     {
@@ -761,8 +813,8 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
                 Check(PK_CURVE_eval(curve,range.value[1],0,&high),"finite ICurve upper limit");
                 Check(PK_CURVE_find_length(curve,range,&length,&used),"finite ICurve length");
                 Check(PK_EDGE_ask_vertices(edges[e],vertices),"finite ICurve vertices");
-                var start=vertices[0]!=0?Position(vertices[0]):ends[0];
-                var end=vertices[1]!=0?Position(vertices[1]):ends[1];
+                var start=vertices[0]!=0?NativeVertexPosition(vertices[0]):ends[0];
+                var end=vertices[1]!=0?NativeVertexPosition(vertices[1]):ends[1];
                 if(sense!=PK_LOGICAL_true)(low,high)=(high,low);
                 var error=Math.Max(Distance(low,start),Distance(high,end));
                 Require(length>0&&error<=1e-8,$"ICurve finite oriented endpoints edge={edges[e]} t=[{range.value[0]:R},{range.value[1]:R}] error={error:R}");
@@ -772,19 +824,13 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
         finally{Free(false,edges);}
         return result;
 
-        static PK_VECTOR_t Position(PK_VERTEX_t vertex)
-        {
-            PK_POINT_t point;PK_POINT_sf_t definition;
-            Check(PK_VERTEX_ask_point(vertex,&point),"finite ICurve vertex point");
-            Check(PK_POINT_ask(point,&definition),"finite ICurve vertex position");return definition.position;
-        }
     }
 }
 
-static unsafe int Fillet(bool own,int body,double angle,double radius,double tolerance,bool reverse,bool procedural,M.PK_TRANSF_sf_s* input=null,double unitScale=1)
+static unsafe int Fillet(bool own,int body,double angle,double radius,double tolerance,bool reverse,bool procedural,M.PK_TRANSF_sf_s* input,double unitScale,bool splitSelected)
 {
     int n;int* edges;Check(own?KernelRuntime.BodyAskEdges(body,&n,&edges):PK_BODY_ask_edges(body,&n,&edges),"edges");
-    var selected=new int[2];PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
+    var selected=new int[splitSelected?3:2];PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];var lineMidpoint=double.NaN;
     try
     {
         var t=Math.Tan(angle*Math.PI/180);var j=new PK_VECTOR_t(-1.5,-2.5,5);var k=new PK_VECTOR_t(-2.5,-1.5,4);var i=new PK_VECTOR_t(2.5,-2.5+4*t,5-4*t);
@@ -819,13 +865,22 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
                 if(input!=null)middle=MapPoint(input,middle,true);
                 Require(s==0?Math.Abs(middle.coord[1]+middle.coord[2]-2.5)<1e-8:Math.Abs(middle.coord[1]+2.5-t*(middle.coord[0]+1.5))<1e-8,"selection midpoint geometry");
                 Require(selected[s]==0,"unique edge selection");selected[s]=edges[e];
+                if(s==1)lineMidpoint=u;
             }
         }
     }
     finally{Free(own,edges);}
-    Require(selected.All(x=>x!=0),"both selected edges found");if(reverse)Array.Reverse(selected);
+    Require(selected[0]!=0&&selected[1]!=0,"both selected edges found");
+    if(splitSelected)
+    {
+        PK_VERTEX_t vertex;PK_EDGE_t fragment;
+        Check(own?KernelRuntime.EdgeSplitAtParam(selected[1],lineMidpoint,&vertex,&fragment):PK_EDGE_split_at_param(selected[1],lineMidpoint,&vertex,&fragment),"split selected native carrier");
+        selected[2]=fragment;
+        Console.WriteLine($"SELECTED SPLIT {(own?"self":"PK")} edge={selected[1]} fragment={fragment} vertex={vertex} t={lineMidpoint:R}");
+    }
+    if(reverse)Array.Reverse(selected);
     var mark=new PK_EDGE_set_blend_constant_o_t();mark.properties.tolerance=1e-7*unitScale;int count;int* marked;
-    fixed(int* selection=selected)Check(own?KernelRuntime.EdgeSetBlendConstant(2,selection,radius,(M.PK_EDGE_set_blend_constant_o_s*)&mark,&count,&marked):PK_EDGE_set_blend_constant(2,selection,radius,&mark,&count,&marked),"set blend");Free(own,marked);
+    fixed(int* selection=selected)Check(own?KernelRuntime.EdgeSetBlendConstant(selected.Length,selection,radius,(M.PK_EDGE_set_blend_constant_o_s*)&mark,&count,&marked):PK_EDGE_set_blend_constant(selected.Length,selection,radius,&mark,&count,&marked),"set blend");Free(own,marked);
     var fix=new PK_BODY_fix_blends_o_t{local_check=PK_LOGICAL_true,tolerance=tolerance};if(procedural)fix.update=PK_blend_edge_update_v261_c;
     int* made;int fault,edgeFault,topolFault;var started=Stopwatch.GetTimestamp();
     var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&made,null,null,&fault,&edgeFault,&topolFault):PK_BODY_fix_blends(body,&fix,&count,&made,null,null,&fault,&edgeFault,&topolFault);

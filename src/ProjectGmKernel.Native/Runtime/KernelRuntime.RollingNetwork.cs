@@ -6,7 +6,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish,PatchDomain,SourceAssociations,BoundaryProofs}
+    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish,PatchDomain,SourceAssociations,BoundaryProofs,Subdivision}
     [ThreadStatic] internal static RollingNetworkStage LastRollingNetworkStage;
     [ThreadStatic] internal static BufferOffset LastRollingFirstFace,LastRollingSecondFace;
     internal struct RollingNetworkTrace
@@ -29,6 +29,13 @@ internal static unsafe partial class KernelRuntime
         internal BufferOffset FirstFace,SecondFace,FirstCurve;
         internal BufferCount Count;
         internal byte SecondIsBoundary;
+    }
+    private struct RollingSubdivision
+    {
+        internal BufferOffset Band;
+        internal EdgeSlot Before,After;
+        internal VertexSlot Vertex;
+        internal double Parameter;
     }
 
     private static bool CanBuildAnalyticRollingNetwork(ReadOnlySpan<EdgeSlot> selected)
@@ -62,7 +69,7 @@ internal static unsafe partial class KernelRuntime
         var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
         var families=ModelSpan<RollingCutFamily>(bytes,ref cursor,RegularCutLimit);var allCuts=ModelSpan<SheetCutCurve>(bytes,ref cursor,RegularCurveLimit);
         if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;var familyCount=0;var curveCount=0;
-        Span<RollingBandCandidate> bands=stackalloc RollingBandCandidate[selected.Length];
+        Span<RollingBandCandidate> candidates=stackalloc RollingBandCandidate[selected.Length];
         Span<EdgeSlot> networkEdges=stackalloc EdgeSlot[selected.Length];var orderedCount=0;var sourceEdge=Bodies[body].FirstEdgeBody;
         for(var e=0;e<Bodies[body].EdgeCountBody;e++,sourceEdge=Edges[sourceEdge].NextInBody)if(selected.Contains(sourceEdge))networkEdges[orderedCount++]=sourceEdge;
         if(orderedCount!=selected.Length)return ParasolidConstants.PK_ERROR_bad_parameter;
@@ -72,12 +79,26 @@ internal static unsafe partial class KernelRuntime
             &&Curves[GetCurveSlotByTag(Edges[networkEdges[j-1]].CurveTag)].Class==CurveClass.Line
             &&Curves[GetCurveSlotByTag(Edges[networkEdges[j]].CurveTag)].Class!=CurveClass.Line;j--)
             (networkEdges[j-1],networkEdges[j])=(networkEdges[j],networkEdges[j-1]);
-        LastRollingNetworkStage=RollingNetworkStage.Bands;
-        for(var i=0;i<selected.Length;i++)
+        Span<RollingSubdivision> subdivisions=stackalloc RollingSubdivision[selected.Length-1];var subdivisionCount=0;
+        Span<BufferOffset> groups=stackalloc BufferOffset[selected.Length],bandForGroup=stackalloc BufferOffset[selected.Length];
+        for(var i=0;i<groups.Length;i++)groups[i]=i;
+        for(var i=0;i<networkEdges.Length;i++)for(var j=i+1;j<networkEdges.Length;j++)
         {
-            var error=CreateAnalyticRollingCandidate(body,networkEdges[i],out bands[i]);if(error!=0)return error;
-            var band=bands[i];TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=band.Source,FirstSupport=band.FirstSupport,SecondSupport=band.SecondSupport,Surface=band.Surface,First=band.First,Last=band.Last});
+            if(!TryRollingLineSubdivision(networkEdges[i],networkEdges[j],out var join))continue;
+            var a=RollingComponent(groups,i);var b=RollingComponent(groups,j);
+            if(a==b||subdivisionCount==subdivisions.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            groups[Math.Max(a,b)]=Math.Min(a,b);subdivisions[subdivisionCount++]=join;
         }
+        LastRollingNetworkStage=RollingNetworkStage.Bands;
+        var bandCount=0;
+        for(var i=0;i<selected.Length;i++)if(RollingComponent(groups,i)==i)
+        {
+            var error=CreateAnalyticRollingCandidate(body,networkEdges[i],out var band);if(error!=0)return error;
+            bandForGroup[i]=bandCount;candidates[bandCount++]=band;
+            TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=band.Source,FirstSupport=band.FirstSupport,SecondSupport=band.SecondSupport,Surface=band.Surface,First=band.First,Last=band.Last});
+        }
+        var bands=candidates[..bandCount];
+        for(var i=0;i<subdivisionCount;i++)subdivisions[i].Band=bandForGroup[RollingComponent(groups,networkEdges.IndexOf(subdivisions[i].Before))];
         Span<SheetCutCurve> cuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];
         Span<RollingPointContact> points=stackalloc RollingPointContact[128];var pointCount=0;
         Span<BufferCount> interactions=stackalloc BufferCount[bands.Length];interactions.Clear();
@@ -125,7 +146,7 @@ internal static unsafe partial class KernelRuntime
             }
         }
         LastRollingNetworkStage=RollingNetworkStage.BoundaryIncidence;
-        return BuildRollingArrangement(body,faces,bands,points[..pointCount],families[..familyCount],allCuts[..curveCount],descriptions,products,out made);
+        return BuildRollingArrangement(body,faces,selected,bands,subdivisions[..subdivisionCount],points[..pointCount],families[..familyCount],allCuts[..curveCount],descriptions,products,out made);
         }
         finally{scratch.Return(memory);}
     }
@@ -155,12 +176,32 @@ internal static unsafe partial class KernelRuntime
         {
             var a=Edges[selected[i]];var b=Edges[selected[j]];
             if(a.StartVertex!=b.StartVertex&&a.StartVertex!=b.EndVertex&&a.EndVertex!=b.StartVertex&&a.EndVertex!=b.EndVertex)continue;
+            if(TryRollingLineSubdivision(selected[i],selected[j],out _))continue;
             if(!LocalEdgeFaces(selected[i],out var a0,out var a1)||!LocalEdgeFaces(selected[j],out var b0,out var b1))continue;
             if(a0!=b0&&a0!=b1&&a1!=b0&&a1!=b1)continue;
             if(Surfaces[GetSurfaceSlotByTag(Faces[a0].SurfTag)].Class==SurfaceClass.Plane&&Surfaces[GetSurfaceSlotByTag(Faces[a1].SurfTag)].Class==SurfaceClass.Plane
                 &&Surfaces[GetSurfaceSlotByTag(Faces[b0].SurfTag)].Class==SurfaceClass.Plane&&Surfaces[GetSurfaceSlotByTag(Faces[b1].SurfTag)].Class==SurfaceClass.Plane)return true;
         }
         return false;
+    }
+
+    private static bool TryRollingLineSubdivision(EdgeSlot first,EdgeSlot second,out RollingSubdivision join)
+    {
+        join=default;var a=Edges[first];var b=Edges[second];
+        if(a.CurveTag!=b.CurveTag||a.PendingBlendKind!=1||b.PendingBlendKind!=1||a.PendingBlendFirst!=b.PendingBlendFirst
+            ||!LocalEdgeFaces(first,out var a0,out var a1)||!LocalEdgeFaces(second,out var b0,out var b1)
+            ||!(a0==b0&&a1==b1||a0==b1&&a1==b0)||!TryProfileEdgeRange(a,out var lo,out var hi)||!TryProfileEdgeRange(b,out var nextLo,out var nextHi))return false;
+        var curve=Curves[GetCurveSlotByTag(a.CurveTag)];if(curve.Class!=CurveClass.Line)return false;
+        var forward=LocalSenseSign(curve.Sense)>0;
+        if(nextHi==lo){(first,second)=(second,first);(a,b)=(b,a);hi=lo;}
+        else if(hi!=nextLo)return false;
+        var vertex=forward?a.EndVertex:a.StartVertex;
+        if(vertex<0||vertex!=(forward?b.StartVertex:b.EndVertex))return false;
+        var degree=0;var edge=Bodies[a.Body].FirstEdgeBody;
+        for(var i=0;i<Bodies[a.Body].EdgeCountBody;i++,edge=Edges[edge].NextInBody)
+            if(Edges[edge].StartVertex==vertex||Edges[edge].EndVertex==vertex)degree++;
+        if(degree!=2)return false;
+        join=new(){Before=first,After=second,Vertex=vertex,Parameter=hi};return true;
     }
 
     private static int RollingContactRange(in RollingBandCandidate band,CurveTag curve,out double first,out double last)
