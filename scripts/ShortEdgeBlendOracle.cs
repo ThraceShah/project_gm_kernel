@@ -60,13 +60,39 @@ using(host)unsafe
                 {
                     var imported=Receive(true,result);
                     Require(KernelRuntime.TryResolveBodySlot(imported,out var importedSlot)&&!KernelRuntime.Xt.IsOpaque(importedSlot),"editable native fillet");
+                    if(args.Contains("--diagnostics"))
+                    {
+                        var face=KernelRuntime.Bodies[importedSlot].FirstFaceBody;
+                        for(var i=0;i<KernelRuntime.Bodies[importedSlot].FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+                        {
+                            var record=KernelRuntime.Faces[face];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(record.SurfTag)];
+                            Console.WriteLine($"EDITABLE face={record.Header.Tag} surface={record.SurfTag} class={surface.Class} domain=({surface.UMin:R},{surface.UMax:R},{surface.VMin:R},{surface.VMax:R})");
+                        }
+                        var edge=KernelRuntime.Bodies[importedSlot].FirstEdgeBody;
+                        for(var i=0;i<KernelRuntime.Bodies[importedSlot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+                        {
+                            var record=KernelRuntime.Edges[edge];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)];
+                            Console.WriteLine($"EDITABLE edge={record.Header.Tag} curve={record.CurveTag} class={curve.Class}");
+                            if(curve.Class==CurveClass.ICurve)
+                            {
+                                var definition=KernelRuntime.ICurveDataPool[curve.DataIndex];
+                                var owns=KernelRuntime.EnsureCommandScratch();
+                                try
+                                {
+                                    var status=KernelRuntime.CertifiedIntersectionCurveExtent(record.CurveTag,record.ParameterStart,record.ParameterEnd,out var extent);
+                                    Console.WriteLine($"CURVE TUBE curve={record.CurveTag} charts={definition.ChartCount} limits={definition.StartLimit.Type}/{definition.EndLimit.Type} status={status} extent=({extent.XLo:R},{extent.XHi:R},{extent.YLo:R},{extent.YHi:R},{extent.ZLo:R},{extent.ZHi:R})");
+                                }
+                                finally{if(owns)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);}
+                            }
+                        }
+                    }
                     var reexport=Transmit(true,imported);File.WriteAllBytes(Path.Combine(output,name+"-native-fresh.x_t"),reexport);
                     var reloaded=Receive(false,reexport);CheckBody(reloaded,"native via managed");
                     ParasolidBodyCompare.AssertEquivalent(reference,reloaded,"native via managed");
                     Mass(reference,reloaded,"native via managed");
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
-                    if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result);
+                    if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
                     if(args.Contains("--lifecycle"))Lifecycle(imported,reference,output,name);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
@@ -231,10 +257,11 @@ static unsafe void Geometry(int imported,int reference)
     Console.WriteLine($"GEOMETRY samples=27 D0={d0:R} D1={d1:R} raw_PK_D2_diagnostic={d2:R} D2_Richardson_normalized={d2Math:R} radius={radiusError:R} G1={g1:R} ms={Stopwatch.GetElapsedTime(timer).TotalMilliseconds:F3}");
     Require(d0<1e-10&&d1<1e-8&&d2Math<1e-6&&radiusError<1e-10&&g1<1e-10,"geometry correspondence");
 }
-static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativeBytes)
+static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativeBytes,bool diagnostics)
 {
     var path=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","docs","reviews","advanced-modeling","short-edge-spine-probes.csv");
     var rows=File.ReadAllLines(path);var nativeReload=Receive(false,nativeBytes);var failures=0;var changedNative=0;
+    var evidence=diagnostics?new List<(PK_VECTOR_t Point,int Row)>():null;
     int* results=stackalloc int[4];int* topols=stackalloc int[4];
     try
     {
@@ -250,12 +277,59 @@ static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativ
             if(results[0]!=int.Parse(fields[8],System.Globalization.CultureInfo.InvariantCulture))changedNative++;
             if(results[0]!=results[1]||results[0]!=results[2]||results[0]!=results[3])
             {
-                failures++;Console.WriteLine($"SAVED PROBE DIFF row={i} p=({p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R}) native/roundtrip/self/fresh={results[0]}/{results[1]}/{results[2]}/{results[3]} error={error}");
+                failures++;Console.WriteLine($"SAVED PROBE DIFF row={i} p=({p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R}) native/roundtrip/self/fresh={results[0]}/{results[1]}/{results[2]}/{results[3]} error={error} stage={KernelRuntime.LastRegularClassificationStage} entity={KernelRuntime.LastRegularClassificationEntity} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+                evidence?.Add((p,i));
             }
         }
+        // Finish every classification before range/projection diagnostics:
+        // warming a PK projection cache can change its exact-threshold path.
+        if(evidence!=null)foreach(var item in evidence)
+        {NativeProbeEvidence(reference,item.Point,$"row{item.Row}-native");NativeProbeEvidence(nativeReload,item.Point,$"row{item.Row}-native-roundtrip");NativeProbeEvidence(fresh,item.Point,$"row{item.Row}-self-fresh");}
     }
     finally{Check(PK_ENTITY_delete(1,&nativeReload),"delete saved native roundtrip");}
     Console.WriteLine($"SAVED PROBES total={rows.Length-1} mismatches={failures} native_class_changed={changedNative}");Require(failures==0,"saved exact classification regression failed");
+}
+
+static unsafe void NativeProbeEvidence(int body,PK_VECTOR_t query,string label)
+{
+    PK_VECTOR_t* jets=stackalloc PK_VECTOR_t[4];
+    foreach(var kind in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
+    {
+        int count;int* entities;var error=kind==PK_CLASS_face?PK_BODY_ask_faces(body,&count,&entities):kind==PK_CLASS_edge?PK_BODY_ask_edges(body,&count,&entities):PK_BODY_ask_vertices(body,&count,&entities);
+        Check(error,"probe nearest entities");var closest=new PK_range_1_r_t{distance=double.PositiveInfinity};var found=0;var spatialDistance=double.PositiveInfinity;
+        try
+        {
+            var options=new PK_TOPOL_range_vector_o_t{opt_level=PK_range_opt_accuracy_c};
+            for(var i=0;i<count;i++)
+            {
+                PK_range_result_t result;PK_range_1_r_t range;error=PK_TOPOL_range_vector(entities[i],query,&options,&result,&range);
+                if(error!=0||result!=PK_range_result_found_c)continue;
+                var distance=Distance(query,range.end.vector);
+                if(distance<spatialDistance){closest=range;found=entities[i];spatialDistance=distance;}
+            }
+        }
+        finally{Check(PK_MEMORY_free(entities),"free probe nearest entities");}
+        if(found==0){Console.WriteLine($"PROBE EVIDENCE {label} class={kind} unresolved");continue;}
+        double precision=double.NaN;if(kind==PK_CLASS_edge)Check(PK_EDGE_ask_precision(found,&precision),"nearest edge precision");
+        if(kind==PK_CLASS_vertex)Check(PK_VERTEX_ask_precision(found,&precision),"nearest vertex precision");
+        var uv=new PK_UV_t();var normal=new PK_VECTOR_t();var signed=double.NaN;var inverseError=0;var evalError=0;
+        if(kind==PK_CLASS_face)
+        {
+            int surface;PK_LOGICAL_t orientation;Check(PK_FACE_ask_oriented_surf(found,&surface,&orientation),"nearest oriented face");
+            inverseError=PK_SURF_parameterise_vector(surface,closest.end.vector,&uv);
+            if(inverseError==0)
+            {
+                evalError=PK_SURF_eval(surface,uv,1,1,PK_LOGICAL_false,jets);
+                if(evalError==0)
+                {
+                    normal=Cross(jets[1],jets[2]);
+                    var length=Math.Sqrt(normal.coord[0]*normal.coord[0]+normal.coord[1]*normal.coord[1]+normal.coord[2]*normal.coord[2]);
+                    if(length>0){signed=0;for(var d=0;d<3;d++){normal.coord[d]*=(orientation==PK_LOGICAL_true?1:-1)/length;signed+=(query.coord[d]-closest.end.vector.coord[d])*normal.coord[d];}}
+                }
+            }
+        }
+        Console.WriteLine($"PROBE EVIDENCE {label} class={kind} entity={found} PK_distance={closest.distance:R} spatial_distance={spatialDistance:R} precision={precision:R} closest=({closest.end.vector.coord[0]:R},{closest.end.vector.coord[1]:R},{closest.end.vector.coord[2]:R}) uv=({uv.param[0]:R},{uv.param[1]:R}) face_normal=({normal.coord[0]:R},{normal.coord[1]:R},{normal.coord[2]:R}) signed={signed:R} inverse_error={inverseError} eval_error={evalError}");
+    }
 }
 
 // Finite face loops define the solid. Each undirected pair is one shared edge.

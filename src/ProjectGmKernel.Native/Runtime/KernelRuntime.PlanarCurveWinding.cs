@@ -18,7 +18,8 @@ internal static unsafe partial class KernelRuntime
             Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
             foreach(ref readonly var coedge in loop)
             {
-                var edge=edges[coedge.Edge];var status=IntersectSheetCurvePlane(edge.Curve,edge.Start,edge.End,cutter,roots,out var n);
+                var edge=edges[coedge.Edge];LastSheetCurve=edge.Curve;LastSheetPartitionStage=SheetPartitionStage.RayIntersections;
+                var status=IntersectSheetCurvePlane(edge.Curve,edge.Start,edge.End,cutter,roots,out var n);LastSheetAlgorithmStatus=status;
                 if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 for(var i=0;i<n;i++)
                 {

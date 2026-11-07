@@ -150,6 +150,14 @@ internal static partial class JointNestedBlendEvaluation
         for(var i=nodes.Length-1;i>=0;i--)
         {
             var node=nodes[i];var spine=program.Spines[node.Spine];var point=IntervalPoint(variables,node.Offset);
+            if(SpineParameterMap.Explicit(spine))
+            {
+                var explicitParameter=i==0?parameter:variables[node.Offset+3];
+                var found=SpineParameterMap.Interval(spine.Curve,explicitParameter,out var exact,out var tangent);if(found!=AlgorithmStatus.Success)return found;
+                var delta=point-exact;residual[node.Offset]=delta.X;residual[node.Offset+1]=delta.Y;residual[node.Offset+2]=delta.Z;
+                if(i>0)residual[node.Offset+3]=IntervalVector.Dot(IntervalPoint(variables,nodes[node.Parent].Offset)-point,tangent);
+                continue;
+            }
             var status=IntervalNormal(program,spine.First,nodes,i,variables,out var a,out var n0,cache);if(status!=AlgorithmStatus.Success)return status;
             status=IntervalNormal(program,spine.Second,nodes,i,variables,out var b,out var n1,cache);if(status!=AlgorithmStatus.Success)return status;
             residual[node.Offset]=a;residual[node.Offset+1]=b;

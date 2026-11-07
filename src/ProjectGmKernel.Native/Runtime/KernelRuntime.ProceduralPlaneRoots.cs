@@ -16,7 +16,8 @@ internal static unsafe partial class KernelRuntime
         count=0;Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[1];Span<KernelVector3> isolated=stackalloc KernelVector3[1];
         var status=OperationIntersection.Surfaces(support,cutter,branches,out var nc,isolated,out var np);if(status!=AlgorithmStatus.Success)return status;
         if(np!=0||nc!=1||branches[0].Class!=CurveClass.Line)return AlgorithmStatus.Unsupported;
-        status=RegularSurfaceExtent(surface,out var extent);if(status!=AlgorithmStatus.Success)return status;
+        status=CertifiedIntersectionCurveExtent(Curves[curve].Header.Tag,first,last,out var extent);
+        if(status!=AlgorithmStatus.Success){status=RegularSurfaceExtent(surface,out extent);if(status!=AlgorithmStatus.Success)return status;}
         var line=branches[0];var direction=line.Axis;var origin=line.Origin;
         var parameter=(new IntervalNumber(extent.XLo,extent.XHi)-origin.X)*direction.X
             +(new IntervalNumber(extent.YLo,extent.YHi)-origin.Y)*direction.Y+(new IntervalNumber(extent.ZLo,extent.ZHi)-origin.Z)*direction.Z;

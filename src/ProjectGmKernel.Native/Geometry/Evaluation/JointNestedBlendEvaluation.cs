@@ -22,6 +22,7 @@ internal static partial class JointNestedBlendEvaluation
         double u,double v,in SurfaceDerivativeLayout layout,Span<KernelVector3> output)
     {
         var root=program.Surfaces[surface];if(!root.IsBlend)return AlgorithmStatus.Unsupported;
+        if(SpineParameterMap.Explicit(program.Spines[root.Spine]))return NestedBlendSeriesEvaluation.Evaluate(program,surface,u,v,layout,output);
         return EvaluateCore(program,root.Spine,surface,u,v,layout,output,false,default,out _,out _);
     }
 
@@ -29,6 +30,14 @@ internal static partial class JointNestedBlendEvaluation
         double parameter,DerivativeOrder order,Span<KernelVector3> output)
     {
         if(!SurfaceDerivativeLayout.TryCreate(order,0,out var layout))return AlgorithmStatus.InvalidInput;
+        if(SpineParameterMap.Explicit(program.Spines[spine]))
+        {
+            if(order>2||output.Length<=order)return AlgorithmStatus.Unsupported;
+            if(!double.IsFinite(parameter))return AlgorithmStatus.InvalidInput;
+            var status=NestedBlendSeriesEvaluation.Spine(program,spine,parameter,order,0,out var exact);if(status!=AlgorithmStatus.Success)return status;
+            double factor=1;for(var i=0;i<=order;i++){if(i>0)factor*=i;output[i]=new(){X=exact.X[i]*factor,Y=exact.Y[i]*factor,Z=exact.Z[i]*factor};}
+            return AlgorithmStatus.Success;
+        }
         return EvaluateCore(program,spine,-1,parameter,0,layout,output,false,default,out _,out _);
     }
 
@@ -78,6 +87,7 @@ internal static partial class JointNestedBlendEvaluation
         for(var i=0;i<count;i++)
         {
             var spine=program.Spines[occurrences[i].Spine];
+            if(SpineParameterMap.Explicit(spine))continue;
             for(var side=0;side<2;side++)
             {
                 var support=program.Surfaces[side==0?spine.First:spine.Second];
@@ -211,6 +221,8 @@ internal static partial class JointNestedBlendEvaluation
             for(var i=0;i<count;i++)for(var j=0;j<count;j++)block[i*count+j]=matrix[map[i]*n+map[j]];
             var status=SmallLinearSolve.LuFactorize(block[..(count*count)],count,pivots);if(status!=AlgorithmStatus.Success)return status;
             rhs[..count].Clear();rhs[parameterIndex]=1;status=SmallLinearSolve.LuSolveInPlace(block,count,pivots,rhs[..count]);if(status!=AlgorithmStatus.Success)return status;
+            if(SpineParameterMap.Explicit(program.Spines[nodes[root].Spine]))
+            {if(!(rhs[parameterIndex]<0)||!double.IsFinite(rhs[parameterIndex]))return AlgorithmStatus.Singular;continue;}
             var found=Partial(program,program.Spines[nodes[root].Spine].First,nodes,root,state,out var first,out _,out _,out _);if(found!=AlgorithmStatus.Success)return found;
             found=Partial(program,program.Spines[nodes[root].Spine].Second,nodes,root,state,out var second,out _,out _,out _);if(found!=AlgorithmStatus.Success)return found;
             var charts=Chart(program,nodes[root].Spine);var segment=0;var t=state[nodes[root].Offset+3];while(segment<charts.Length-2&&charts[segment+1].Parameter<=t)segment++;
@@ -241,6 +253,13 @@ internal static partial class JointNestedBlendEvaluation
         for(var i=nodes.Length-1;i>=0;i--)
         {
             var node=nodes[i];var spine=program.Spines[node.Spine];var point=Point(state,node.Offset);
+            if(SpineParameterMap.Explicit(spine))
+            {
+                var parameterValue=i==0&&!nearest?parameter:state[node.Offset+3];
+                if(!InChartDomain(program,node.Spine,parameterValue,i!=0||nearest))return AlgorithmStatus.InvalidInput;
+                var found=AssembleExplicit(spine.Curve,node,parameterValue,state,residual,matrix,i!=0||nearest,i==0?target:Point(state,nodes[node.Parent].Offset),i==0?-1:nodes[node.Parent].Offset);
+                if(found!=AlgorithmStatus.Success)return found;continue;
+            }
             var status=Partial(program,spine.First,nodes,i,state,out var a,out var firstChild,out var uv0,out var contact0);if(status!=AlgorithmStatus.Success)return status;
             status=Partial(program,spine.Second,nodes,i,state,out var b,out var secondChild,out var uv1,out var contact1);if(status!=AlgorithmStatus.Success)return status;
             residual[node.Offset]=a.Distance;residual[node.Offset+1]=b.Distance;
@@ -316,7 +335,7 @@ internal static partial class JointNestedBlendEvaluation
     private static void AddGradient(Span<double> matrix,BufferCount n,BufferOffset row,BufferOffset column,in KernelVector3 value)
     {if(matrix.IsEmpty)return;matrix[row*n+column]+=value.X;matrix[row*n+column+1]+=value.Y;matrix[row*n+column+2]+=value.Z;}
     private static double Maximum(ReadOnlySpan<double> residual){var result=0.0;foreach(var value in residual)result=Math.Max(result,Math.Abs(value));return result;}
-    private static double ResidualAccuracy(in NestedBlendProgram program,BlendSpineIndex spine,in KernelVector3 point)
+    internal static double ResidualAccuracy(in NestedBlendProgram program,BlendSpineIndex spine,in KernelVector3 point)
     {
         var scale=MaximumCoordinate(point);var charts=Chart(program,spine);scale=Math.Max(scale,Math.Max(MaximumCoordinate(charts[0].Position),MaximumCoordinate(charts[^1].Position)));
         foreach(var node in program.Surfaces)
@@ -340,6 +359,15 @@ internal static partial class JointNestedBlendEvaluation
         for(var i=nodes.Length-1;i>=0;i--)
         {
             var node=nodes[i];var spine=program.Spines[node.Spine];
+            if(SpineParameterMap.Explicit(spine))
+            {
+                var parameterValue=i==0&&!nearest?parameter:variables[node.Offset+3];
+                if(!InChartDomain(program,node.Spine,parameterValue[0],i!=0||nearest))return AlgorithmStatus.InvalidInput;
+                var found=SpineParameterMap.Series(spine.Curve,parameterValue,out var exact,out var tangent);if(found!=AlgorithmStatus.Success)return found;
+                var delta=Point(variables,node.Offset)-exact;residual[node.Offset]=delta.X;residual[node.Offset+1]=delta.Y;residual[node.Offset+2]=delta.Z;
+                if(i!=0||nearest)residual[node.Offset+3]=TaylorVector.Dot((i==0?target:Point(variables,nodes[node.Parent].Offset))-Point(variables,node.Offset),tangent);
+                continue;
+            }
             var status=Normal(program,spine.First,nodes,i,variables,out var d0,out normals0[i]);if(status!=AlgorithmStatus.Success)return status;
             status=Normal(program,spine.Second,nodes,i,variables,out var d1,out normals1[i]);if(status!=AlgorithmStatus.Success)return status;
             residual[node.Offset]=d0;residual[node.Offset+1]=d1;

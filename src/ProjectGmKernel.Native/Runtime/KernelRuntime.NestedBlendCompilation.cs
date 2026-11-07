@@ -142,21 +142,7 @@ internal static unsafe partial class KernelRuntime
         {
             index=-1;var slot=GetCurveSlotByTag(tag);if(slot<0)return AlgorithmStatus.InvalidInput;
             if(Curves[slot].Class==CurveClass.ICurve)return Spine(tag,out index);
-            var source=Curves[slot];var curve=new ParametricSpineCurve{Kind=source.Class};
-            switch(source.Class)
-            {
-                case CurveClass.Line:
-                    var line=LineDataPool[source.DataIndex];curve.Origin=Vector(line.LocationX,line.LocationY,line.LocationZ);curve.First=Vector(line.AxisX,line.AxisY,line.AxisZ);break;
-                case CurveClass.Circle:
-                    var circle=CircleDataPool[source.DataIndex];curve.Origin=Vector(circle.CenterX,circle.CenterY,circle.CenterZ);
-                    curve.First=Scale(Vector(circle.RefDirX,circle.RefDirY,circle.RefDirZ),circle.Radius);
-                    curve.Second=EvaluationMath.Cross(Vector(circle.AxisX,circle.AxisY,circle.AxisZ),curve.First);break;
-                case CurveClass.Ellipse:
-                    var ellipse=EllipseDataPool[source.DataIndex];curve.Origin=Vector(ellipse.CenterX,ellipse.CenterY,ellipse.CenterZ);
-                    curve.First=Scale(Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ),ellipse.R1);
-                    curve.Second=Scale(EvaluationMath.Cross(Vector(ellipse.AxisX,ellipse.AxisY,ellipse.AxisZ),Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ)),ellipse.R2);break;
-                default:return AlgorithmStatus.Unsupported;
-            }
+            var source=Curves[slot];if(!TryReadExplicitSpineCurve(source,out var curve))return AlgorithmStatus.Unsupported;
             if(double.IsNaN(first))first=source.TMin;if(double.IsNaN(last))last=source.TMax;
             if(!double.IsFinite(first)||!double.IsFinite(last)||!(last>first))return AlgorithmStatus.InvalidInput;
             if(ns+2>surfaces.Length)return AlgorithmStatus.OutputTooSmall;

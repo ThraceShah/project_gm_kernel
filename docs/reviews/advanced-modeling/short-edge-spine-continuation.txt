@@ -1,0 +1,169 @@
+Short-edge spine continuation, 2026-11-07
+
+STATUS: INCOMPLETE. This is a verified local checkpoint, not final acceptance
+of the requested heterogeneous two-edge solid fillet. No remote operation,
+push, PR, upload, NativeAOT compilation or C ABI modification was performed.
+
+Reproducible baseline
+
+The initial task baseline remains 84cceed8eb1a0f64fb053ffa01205a211a74e733,
+main with origin/main at that commit and an initially clean working tree.
+This continuation starts from the local checkpoint
+9ff270645f4521c14193e0b57c552cd3faae916d. The original findings, generator,
+matrix options and remaining representation limitations are documented in
+docs/reviews/advanced-modeling/short-edge-spine-validation.txt.
+The oracle remains real Parasolid 38.0.150, session precision 1e-8;
+the generated short edges and vertices report precision 5e-9.
+
+Public numerical fixes
+
+1. A rolling section with coincident contacts has a removable zero-angle
+   limit. Previously normalising the transverse contact vector rejected that
+   limit. RollingSectionEvaluation now evaluates spherical interpolation
+   through its analytic power series near that limit, including rectangular
+   mixed D2 derivatives. Its independent interval recurrence bounds the
+   complete remaining tail and its derivative. It also encloses small
+   extension boxes needed for endpoint root certificates. No polyline or
+   fixed spatial sample set supplies the certificate.
+
+2. An explicit spine occurrence now imposes P=E(t) in the joint scalar,
+   Taylor and interval systems. It does not reconstruct E from two offset
+   gradients that can become dependent at a legitimate terminator. Its exact
+   tangent defines the nearest-station equation. Scalar and interval Schur
+   tests retain the local distance-minimum test. This does not establish
+   global reach for arbitrary new representations. Exact explicit root
+   evaluation and bounds use the same native curve descriptor. Real T limits
+   remain in public evaluation, finite patch domains, XT and ownership data;
+   internal bounds also enclose mathematical extensions for root proofs.
+
+3. AnalyticSpineContact describes the exact affine image of a conic/line
+   spine on a plane, sphere or cylinder. Recognition compares full curve
+   coefficients, with finite parameter scaling for lines. It supports phase
+   changes and reversal. Boundary rays can use the resulting contact station
+   rather than rediscovering an already known contact. Runtime descriptor
+   extraction is shared with the existing compiler.
+
+4. A finite ICurve can be compiled with its original CHART map and support
+   dependencies, and bounded by the existing implicit interval tube. Both
+   short seed ICurves obtain finite certificates. Plane intersections can
+   reuse the existing scalar interval root solver on that actual finite
+   curve. Failed certification retains the prior surface-intersection path;
+   it is never reported as proven empty. In particular the long blend seam
+   still has unresolved certification boxes.
+
+Production selection depends on geometry representations and certified
+relations, not filenames, identifiers, coordinates, radii, edge counts or
+seed topology. These changes do not implement a new B-rep assembly system.
+No seed-specific construction or fast-path template was added.
+
+Observable regressions
+
+tests/KernelTests/RollingSectionLimitTests.cs manufactures
+P(u,v)=(r cos(uv),r sin(uv),u), including u=0, signed small u and all mixed
+D2 derivatives. Interval tests include v outside [0,1] for numerical
+extension certificates. tests/KernelTests/ExplicitSpineTests.cs checks the
+real native terminator, exact nearest-distance D2 laws, both finite short
+ICurve tubes and seven fixed native-on coordinates that previously failed
+classification. The complete saved probe set remains unchanged; these seven
+tests do not replace it. Analytic contact tests include wrong-size,
+wrong-origin, phase, reversal and long-trim negative controls.
+
+Verification commands and evidence
+
+All dotnet commands below were run with MSBUILDDISABLENODEREUSE=1. Testhost
+cleanup followed tests and preserved their exit codes. Scripts invoke managed
+KernelRuntime and independent real PK through PskernelSharp/ParasolidScriptHost.
+
+  dotnet test tests/KernelTests -c Release
+    exit 0; 1655 passed, 0 failed, 0 skipped; 5m49s.
+    temp_docs/short-edge-current-full-tests.log
+    Allocation IL guard: 2458 methods, CLEAN. Existing warmed full FixBlends
+    allocation tests and hot evaluation tests are part of this suite.
+
+  Final focused rerun of RollingSectionLimitTests, ExplicitSpineTests,
+    AnalyticSpineContactTests, RegularSolidBlendTests, BlendSupportChainTests
+    and BlendChainTests using dotnet test --filter with those class names:
+    exit 0; 86 passed, 0 failed, 0 skipped; 1m16s.
+    temp_docs/short-edge-current-final-focused.log
+    Includes the final finite-line coefficient-range negative control.
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release --
+    --matrix --both-updates --import-only --geometry
+    exit 0; 96 cases; 384 complete PK checks, all zero faults.
+    Strict structure/geometry compare, fresh export and mass checks passed.
+    temp_docs/short-edge-current-import-matrix.log
+    Maximum sampled position error: 2.220446049250313e-15.
+    Maximum sampled D1 error: 2.1241630525245506e-15.
+    D2 Richardson normalised diagnostic: 1.7486158013860763e-11.
+    Sampled radius error: 1.1657341758564144e-15; G1: 2.220446049250313e-16.
+    Maximum normalised 15-component mass residual: 3.45272781850573e-13.
+    Unit density/model units; denominator 1+abs(native component), as in the
+    earlier report. Raw PK D2 differences remain separate diagnostics.
+    This matrix verifies native-product import, not managed fillet construction.
+
+  dotnet run scripts/RegularSolidBlendOracle.cs -c Release
+    exit 0; all five independent solid fillet and subsequent cutting cases.
+    temp_docs/short-edge-current-regular-oracle.log
+
+  dotnet run scripts/TrivalentBlendCornerOracle.cs -c Release -- base mirror-scale
+    exit 0; both poses and both authoring routes, four cases.
+    temp_docs/short-edge-current-trivalent.log
+
+  dotnet run scripts/SupportBlendChainOracle.cs -c Release
+    exit 0; all eight support-partition, curved-wall and reflected cases,
+    including their subsequent cuts and independent PK comparisons.
+    temp_docs/short-edge-current-support-chain.log
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release --
+    --import-only --saved-probes --diagnostics
+    exit 134, intentionally FAILING: all 510 immutable coordinates replayed;
+    39 differences remain, compared with the original checkpoint's 96.
+    23 are unresolved error 157; 16 are classification/representation
+    differences without a managed API error. Native baseline changes: 0.
+    temp_docs/short-edge-current-nearest-probes.log
+
+  dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- --geometry --lifecycle
+    exit 134, intentionally FAILING: managed FixBlends still returns 5000,
+    stage Supports, zero new faces. Imported-product copy/reflection/fresh
+    export pass; subsequent cutting now reaches Arrange but returns 157.
+    temp_docs/short-edge-current-target.log
+
+Precision evidence and performance boundaries
+
+The diagnostics finish every classification before issuing additional range
+and projection queries. Interleaving these diagnostics caused one PK
+exact-threshold result to change, so that run is not the replay baseline.
+For each remaining failure the final log includes the exact input coordinate,
+nearest PK face/edge/vertex for each native representation, closest vector,
+UV, oriented face normal, signed local residual and actual edge/vertex
+precision. The original CSV is not rewritten.
+
+PK_TOPOL_range_vector can report distance zero for a point whose returned
+closest vector is spatially separated. Therefore diagnostics retain both
+PK_distance and the recomputed spatial_distance; they do not treat the
+toleranced zero as mathematical equality. For example saved row 50 has
+point (-1.5,-2,5.00000001), spatial distance 9.99999993922529e-9 and
+edge/vertex precision 5e-9. PK original, native roundtrip and managed-fresh
+PK result classify outside; managed import classifies on. No precision was
+increased and this mismatch is still a failure. Its full policy cause is
+not yet established.
+
+The existing five-case oracle separately records full FixBlends and Boolean
+times. This run's managed FixBlends range was 0.542--5.592 seconds, Boolean
+2.464--45.153 seconds. Other verification jobs ran concurrently, so these
+are observations, not an isolated performance comparison or speed claim.
+The seed's failing FixBlends took 40.857ms; its failing subsequent Boolean
+took 12.109s and progressed farther than before. Neither is a successful
+modeling performance acceptance result. Hot D2 zero-allocation checks do
+not substitute for those complete operations.
+
+Still required
+
+The heterogeneous Cylinder/Cylinder--Plane/Plane four-valent rolling network
+and finite event assembly are not implemented. The seed's own public fillet
+therefore remains the principal unmet requirement. General BCurve/NURBS,
+trimmed and SPCurve spine compilation, representative independently authored
+solid construction oracles, pre-fillet transform invariance, the remaining
+classification discrepancies and imported-product cutting acceptance also
+remain open. The representation and local regularity fixes above must not be
+advertised as completion of those capabilities.

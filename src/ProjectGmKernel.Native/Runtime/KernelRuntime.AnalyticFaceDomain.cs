@@ -31,7 +31,8 @@ internal static unsafe partial class KernelRuntime
         for(var c=0;c<loop.Length;c++)
         {
             var coedge=loop[c];var edge=edges[coedge.Edge];
-            var status=IntersectSheetCurvePlane(edge.Curve,edge.Start,edge.End,cutter,roots,out var count);
+            LastSheetCurve=edge.Curve;LastSheetPartitionStage=SheetPartitionStage.RayIntersections;
+            var status=IntersectSheetCurvePlane(edge.Curve,edge.Start,edge.End,cutter,roots,out var count);LastSheetAlgorithmStatus=status;
             if(status!=AlgorithmStatus.Success)return IntersectionError(status);
             for(var i=0;i<count;i++)
             {

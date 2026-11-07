@@ -82,6 +82,29 @@ public unsafe class ExplicitSpineTests:IDisposable
     }
 
     [Fact]
+    public void NativeTerminatorPointHasAContinuousRollingSectionAndConservativeBounds()
+    {
+        var body=Import();var data=Definition(body,out var surface);var record=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)];
+        var program=KernelRuntime.GetNestedBlendProgram(data);var spine=program.Surfaces[data.ProgramRoot].Spine;
+        var target=TaylorVector.Constant(new(){X=-2.5,Y=-1.5,Z=4},0);
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Distance(program,data.ProgramRoot,target,out var distance,out var normal));
+        Assert.InRange(Math.Abs(distance[0]),0,1e-12);Assert.True(normal.Finite);
+        var uv=new PK_UV_s();uv.param[0]=record.UMin;PK_VECTOR_s point;
+        for(var i=0;i<=4;i++)
+        {
+            uv.param[1]=i/4.0;Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&point));
+            Assert.InRange(Math.Abs(point.coord[0]+2.5),0,1e-12);Assert.InRange(Math.Abs(point.coord[1]+1.5),0,1e-12);Assert.InRange(Math.Abs(point.coord[2]-4),0,1e-12);
+        }
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,spine,new(record.UMin,record.UMin+.01,0,0),bounds));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,new(record.UMin,record.UMin+.01,0,1),bounds));
+        for(var d=0;d<3;d++)Assert.True(bounds[d].Finite);
+        uv.param[0]=record.UMin-.01;
+        Assert.NotEqual(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&point));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,new(record.UMin-.01,record.UMin+.01,-.01,1.01),bounds));
+    }
+
+    [Fact]
     public void WarmImportedSurfaceEvaluationDoesNotAllocate()
     {
         var body=Import();Definition(body,out var surface);var uv=new PK_UV_s();uv.param[0]=2.7;uv.param[1]=.37;PK_VECTOR_s* jet=stackalloc PK_VECTOR_s[9];
@@ -89,6 +112,42 @@ public unsafe class ExplicitSpineTests:IDisposable
         var before=GC.GetAllocatedBytesForCurrentThread();var error=0;
         for(var i=0;i<16;i++)error|=KernelRuntime.SurfEval(surface,uv,2,2,0,jet);
         var allocated=GC.GetAllocatedBytesForCurrentThread()-before;Assert.Equal(0,error);Assert.Equal(0,allocated);
+    }
+
+    [Theory]
+    [InlineData(-1.49999998,-2,5)] [InlineData(-1.4999999,-2,5)]
+    [InlineData(-1.4999998969520074,-2.000038073674117,4.999999998550392)]
+    [InlineData(-1.4999998169520075,-2.000038073674117,4.999999998550392)]
+    [InlineData(-1.4999999069520076,-2.000038073674117,4.999999998550392)]
+    [InlineData(-1.49999998,-2.5,4.5)] [InlineData(-1.4999999,-2.5,4.5)]
+    public void NativeOnProbesUseTheFiniteIntersectionCurveBranch(double x,double y,double z)
+    {
+        // Exact coordinates from the independent native classification CSV;
+        // the complete 510-point oracle still retains every unresolved row.
+        var body=Import();var vector=new PK_VECTOR_s();vector.coord[0]=x;vector.coord[1]=y;vector.coord[2]=z;
+        int enclosure,topology;Assert.Equal(0,KernelRuntime.BodyContainsVector(body,vector,&enclosure,&topology));
+        Assert.Equal(ParasolidConstants.PK_enclosure_on_c,enclosure);Assert.True(topology>0);
+    }
+
+    [Fact]
+    public void BothNativeShortIntersectionCurvesHaveCertifiedFiniteTubes()
+    {
+        var body=Import();var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var count=0;
+        var owns=KernelRuntime.EnsureCommandScratch();
+        try
+        {
+            for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+            {
+                var record=KernelRuntime.Edges[edge];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)];if(curve.Class!=CurveClass.ICurve)continue;
+                PK_VECTOR_s a,b,point;Assert.Equal(0,KernelRuntime.CurveEval(record.CurveTag,record.ParameterStart,0,&a));Assert.Equal(0,KernelRuntime.CurveEval(record.CurveTag,record.ParameterEnd,0,&b));
+                var dx=a.coord[0]-b.coord[0];var dy=a.coord[1]-b.coord[1];var dz=a.coord[2]-b.coord[2];if(dx*dx+dy*dy+dz*dz>1e-6)continue;
+                count++;Assert.Equal(AlgorithmStatus.Success,KernelRuntime.CertifiedIntersectionCurveExtent(record.CurveTag,record.ParameterStart,record.ParameterEnd,out var extent));
+                Assert.Equal(0,KernelRuntime.CurveEval(record.CurveTag,(record.ParameterStart+record.ParameterEnd)*.5,0,&point));
+                Assert.InRange(point.coord[0],extent.XLo,extent.XHi);Assert.InRange(point.coord[1],extent.YLo,extent.YHi);Assert.InRange(point.coord[2],extent.ZLo,extent.ZHi);
+            }
+            Assert.Equal(2,count);
+        }
+        finally{if(owns)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);}
     }
 
     [Theory]
@@ -204,6 +263,33 @@ public unsafe class ExplicitSpineTests:IDisposable
         var program=new NestedBlendProgram(surfaces,spines,charts);var point=new KernelVector3{X=100*Math.Cos(.09),Y=Math.Sin(.09),Z=.3};
         Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Distance(program,4,TaylorVector.Constant(point,0),out var distance,out var normal));
         Assert.InRange(Math.Abs(distance[0]-.1),0,1e-11);Assert.InRange(Math.Abs(normal.Value.Z-1),0,1e-11);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void ExplicitNearestDistanceD2UsesTheNativeCurveConstraints(bool circle)
+    {
+        var x=new KernelVector3{X=1};var y=new KernelVector3{Y=1};var z=new KernelVector3{Z=1};
+        var curve=new ParametricSpineCurve{Kind=circle?CurveClass.Circle:CurveClass.Line,First=circle?x:z,Second=circle?y:default};
+        BlendSurfaceInstruction[] surfaces=[new(){Analytic=new(circle?SurfaceClass.Sphere:SurfaceClass.Plane,default,circle?z:x,y,circle?1:0),NormalSense=1},
+            new(){Analytic=new(SurfaceClass.Plane,default,circle?z:y,x),NormalSense=1},
+            new(){Analytic=new(circle?SurfaceClass.Sphere:SurfaceClass.Plane,circle?default:new(){X=-.2},circle?z:x,y,circle?.8:0),NormalSense=1},
+            new(){Analytic=new(SurfaceClass.Plane,circle?new(){Z=-.2}:new(){Y=-.2},circle?z:y,x),NormalSense=1},
+            new(){IsBlend=true,First=2,Second=3,Spine=0,Range0=.2,Range1=.2,NormalSense=1}];
+        BlendSpineInstruction[] spines=[new(){Curve=curve,First=0,Second=1,ChartCount=9,StartType=circle?LimitType.Help:LimitType.Terminator,EndType=circle?LimitType.Help:LimitType.Terminator}];
+        var charts=new BlendChartInstruction[9];
+        for(var i=0;i<charts.Length;i++)
+        {
+            var t=(circle?Math.Tau:4)*i/8;SpineParameterMap.Series(curve,new(t,0),out var p,out var tangent);
+            charts[i]=new(){Parameter=t,Position=p.Value,Chord=tangent.Value,Scale=1};
+        }
+        if(circle)charts[^1].Position=charts[0].Position;
+        var program=new NestedBlendProgram(surfaces,spines,charts);var u=TaylorJet.Variable(circle?.7:-.1,2);
+        var path=new TaylorVector(u,new(circle?.1:-.1,2),new(circle?-.2:2.3,2));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Distance(program,4,path,out var actual,out var normal));
+        var rho=TaylorJet.Sqrt(u*u+.01);var expected=circle?TaylorJet.Sqrt((rho-1)*(rho-1)+.04)-.2:rho-.2;
+        for(var order=0;order<=2;order++)Assert.InRange(Math.Abs(actual[order]-expected[order]),0,2e-12);
+        Assert.True(normal.Finite);
     }
 
     private static int Import()

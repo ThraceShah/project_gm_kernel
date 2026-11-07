@@ -54,10 +54,38 @@ internal static partial class JointNestedBlendEvaluation
         {
             var lo=i==0?domain.U0:Math.Max(domain.U0,charts[i].Parameter);var hi=i==charts.Length-2?domain.U1:Math.Min(domain.U1,charts[i+1].Parameter);
             if(lo>hi)continue;if(lo==hi&&domain.U0!=domain.U1)continue;
-            var status=BoundSegment(program,surface,spine,new(lo,hi,domain.V0,domain.V1),local);if(status!=AlgorithmStatus.Success)return status;
+            var cell=new SurfaceParameterBox(lo,hi,domain.V0,domain.V1);
+            var status=SpineParameterMap.Explicit(program.Spines[spine])?BoundExplicit(program,surface,spine,cell,local):BoundSegment(program,surface,spine,cell,local);
+            if(status!=AlgorithmStatus.Success)return status;
             for(var k=0;k<9;k++)output[k]=first?local[k]:IntervalNumber.Hull(output[k],local[k]);first=false;
         }
         return first?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus BoundExplicit(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,
+        in SurfaceParameterBox domain,Span<IntervalNumber> output)
+    {
+        var definition=program.Spines[spine];
+        // Like the implicit tube bound, this encloses the mathematical
+        // extension used by boundary-root existence certificates. Finite T
+        // limits remain in the patch domain and public evaluation contract.
+        var status=SpineParameterMap.Interval(definition.Curve,new(new(domain.U0,domain.U1),1),out var center,out _);if(status!=AlgorithmStatus.Success)return status;
+        if(surface<0)
+        {
+            output[0]=center.X.Value;output[1]=center.Y.Value;output[2]=center.Z.Value;
+            output[3]=center.X.Derivative;output[4]=center.Y.Derivative;output[5]=center.Z.Derivative;output.Slice(6,3).Clear();return AlgorithmStatus.Success;
+        }
+        // Explicit curves already carry their native branch and certified
+        // support identity. Their position/derivatives do not require an
+        // implicit-offset Jacobian to remain invertible at a real T limit.
+        Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=spine,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,FirstUv=-1,SecondUv=-1};
+        Span<IntervalDual> variables=stackalloc IntervalDual[3]{center.X,center.Y,center.Z};
+        status=IntervalFrame(program,surface,nodes,variables,new IntervalNumber(domain.V0,domain.V1),out var frame);if(status!=AlgorithmStatus.Success)return status;
+        output[0]=frame.X.Value;output[1]=frame.Y.Value;output[2]=frame.Z.Value;
+        output[3]=frame.X.Derivative;output[4]=frame.Y.Derivative;output[5]=frame.Z.Derivative;
+        variables[0]=center.X.Value;variables[1]=center.Y.Value;variables[2]=center.Z.Value;
+        status=IntervalFrame(program,surface,nodes,variables,new(new(domain.V0,domain.V1),1),out frame);if(status!=AlgorithmStatus.Success)return status;
+        output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default)
@@ -174,7 +202,9 @@ internal static partial class JointNestedBlendEvaluation
             }
             for(var i=0;i<count;i++)for(var j=0;j<count;j++)block[i*count+j]=jacobian[map[i]*n+map[j]];
             rhs[..count].Clear();rhs[parameterIndex]=1;var status=SolveIntervals(block[..(count*count)],rhs[..count],count);if(status!=AlgorithmStatus.Success)return status;
-            var spine=program.Spines[nodes[root].Spine];status=IntervalNormal(program,spine.First,nodes,root,variables,out _,out var a,cache);if(status!=AlgorithmStatus.Success)return status;
+            var spine=program.Spines[nodes[root].Spine];
+            if(SpineParameterMap.Explicit(spine)){if(rhs[parameterIndex].Upper>=0)return AlgorithmStatus.NotConverged;continue;}
+            status=IntervalNormal(program,spine.First,nodes,root,variables,out _,out var a,cache);if(status!=AlgorithmStatus.Success)return status;
             status=IntervalNormal(program,spine.Second,nodes,root,variables,out _,out var b,cache);if(status!=AlgorithmStatus.Success)return status;
             status=SpineParameterMap.Gradient(program.Spines[nodes[root].Spine],Chart(program,nodes[root].Spine)[charts[root]],variables[nodes[root].Offset+3],out var gauge);
             if(status!=AlgorithmStatus.Success)return status;
@@ -236,7 +266,7 @@ internal static partial class JointNestedBlendEvaluation
         point=default;var root=program.Surfaces[surface];var status=IntervalNormal(program,root.First,nodes,0,variables,out _,out var n0,cache);if(status!=AlgorithmStatus.Success)return status;
         status=IntervalNormal(program,root.Second,nodes,0,variables,out _,out var n1,cache);if(status!=AlgorithmStatus.Success)return status;
         var radius=Math.Abs(root.Range0);var x=n1*(-root.Range1/radius);var end=n0*(-root.Range0/radius);if(root.ReverseSection)(x,end)=(end,x);
-        var cosine=IntervalVector.Dot(x,end);var transverse=end-x*cosine;var sine=transverse.Norm();var y=transverse/sine;var arc=IntervalDual.Atan2(sine,cosine);
-        IntervalDual.SinCos(arc*v,out var sin,out var cos);point=IntervalPoint(variables,0)+(x*cos+y*sin)*radius;return point.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+        status=RollingSectionEvaluation.Bound(x,end,v,out var radial);if(status!=AlgorithmStatus.Success)return status;
+        point=IntervalPoint(variables,0)+radial*radius;return point.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 }

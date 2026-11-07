@@ -97,6 +97,8 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {
         count=0;var data=ICurveDataPool[Curves[curve].DataIndex];var a=GetSurfaceSlotByTag(data.Surface0Tag);var b=GetSurfaceSlotByTag(data.Surface1Tag);
+        var finite=IntersectFiniteIntersectionCurvePlane(Curves[curve].Header.Tag,first,last,plane,output,out count);
+        if(finite==AlgorithmStatus.Success)return finite;count=0;
         if(Surfaces[a].Class!=SurfaceClass.BlendSurface)(a,b)=(b,a);
         // Two planes define an exact line. Isolating that line against the
         // Blend removes two redundant plane parameters from the root system.

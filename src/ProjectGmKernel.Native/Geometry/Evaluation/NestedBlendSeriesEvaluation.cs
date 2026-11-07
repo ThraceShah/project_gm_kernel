@@ -31,12 +31,8 @@ internal static class NestedBlendSeriesEvaluation
     {
         var radius=Math.Abs(node.Range0);var x=n1*(-node.Range1/radius);var end=n0*(-node.Range0/radius);
         if(node.ReverseSection)(x,end)=(end,x);
-        var cosine=TaylorVector.Dot(x,end);var transverse=end-x*cosine;var sine=transverse.Norm();
-        if(!(sine[0]>1e-7))return AlgorithmStatus.Singular;
-        var y=transverse/sine;var arc=TaylorJet.Atan2(sine,cosine);var theta=arc*v;
-        TaylorJet.SinCos(theta,out var sin,out var cos);
-        var radial=x*cos+y*sin;var tangent=y*cos-x*sin;
-        var point=center+radial*radius;var dv=tangent*(arc*radius);var dvv=radial*(arc*arc*(-radius));
+        var status=RollingSectionEvaluation.Series(x,end,v,out var radial,out var sectionV,out var sectionVV);if(status!=AlgorithmStatus.Success)return status;
+        var point=center+radial*radius;var dv=sectionV*radius;var dvv=sectionVV*radius;
         double factorial=1;
         for(var i=0;i<=layout.UOrder;i++)
         {
