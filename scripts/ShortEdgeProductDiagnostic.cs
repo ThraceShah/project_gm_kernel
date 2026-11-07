@@ -39,7 +39,12 @@ using(host)unsafe
         return;
     }
     var nativeGauge=args.Contains("--native-rigid-gauge");
-    var reference=Read(prefix+"-native.x_t");var actual=nativeGauge?Read(prefix+"-native.x_t"):Read(prefix+"-self.x_t");
+    var nativePartition=args.Contains("--native-partition-only");var selfPartition=args.Contains("--self-partition-only");
+    var partitionControl=nativePartition||selfPartition;
+    if(nativePartition&&selfPartition||nativeGauge&&partitionControl||partitionControl&&!args.Any(x=>x.StartsWith("--imprint-",StringComparison.Ordinal)))
+        throw new ArgumentException("partition control needs one source, one or more imprints and no coordinate transform");
+    var source=selfPartition?"self":"native";
+    var reference=Read(prefix+"-"+source+".x_t");var actual=Read(prefix+"-"+(nativeGauge||partitionControl?source:"self")+".x_t");
     try
     {
         if(args.Contains("--edges")||args.Contains("--lengths")){EdgeEndpoints(reference,actual,args.Contains("--lengths"));return;}
@@ -53,8 +58,10 @@ using(host)unsafe
             if(nativeGauge||scale!=1)throw new ArgumentException("the common imprint uses the original product coordinates");
             if(imprint.Length<13||imprint[10] is <'x' or >'z'||imprint[11]!='=')throw new ArgumentException("expected --imprint-x=, --imprint-y=, or --imprint-z=");
             var axis=imprint[10]-'x';var value=double.Parse(imprint[12..],System.Globalization.CultureInfo.InvariantCulture);
-            ImprintPlane(reference,axis,value,"reference");ImprintPlane(actual,axis,value,"actual");
+            if(!partitionControl)ImprintPlane(reference,axis,value,"reference");
+            ImprintPlane(actual,axis,value,"actual");
         }
+        if(partitionControl)Console.WriteLine($"NATIVE PARTITION CONTROL: identical {source} XT on both sides, only the second received body is imprinted");
         var singleShell=args.Contains("--single-shell");
         var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c,single=singleShell?PK_LOGICAL_true:PK_LOGICAL_false};
         double* a=stackalloc double[20];double* b=stackalloc double[20];
