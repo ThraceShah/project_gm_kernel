@@ -19,6 +19,7 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag TangentSupport;
         internal SurfTag ContactSurface,ContactSupport,CuttingSurface;
         internal FiniteCurveSurfaceRoot Root;
+        internal BufferOffset InputCoedge;
         internal byte Certified;
     }
 
@@ -102,7 +103,7 @@ internal static unsafe partial class KernelRuntime
             var loop=input.Loops[record.FirstLoop+l];
             for(var k=0;k<loop.CoedgeCount;k++)
             {
-                var inputEdge=input.Coedges[loop.FirstCoedge+k].Edge;var edge=input.Edges[inputEdge];
+                var inputCoedge=loop.FirstCoedge+k;var inputEdge=input.Coedges[inputCoedge].Edge;var edge=input.Edges[inputEdge];
                 LastSheetPartitionStage=SheetPartitionStage.BoundaryIntersections;LastSheetCurve=edge.Curve;LastSheetParameter=edge.Start;
                 var n=0;var known=false;FiniteCurveSurfaceResult proof=default;
                 foreach(var certificate in certificates)
@@ -125,7 +126,11 @@ internal static unsafe partial class KernelRuntime
                 for(var r=0;r<n;r++)
                 {
                     if(roots[r].Kind is not (IntersectionVectorKind.Simple or IntersectionVectorKind.Start or IntersectionVectorKind.End or IntersectionVectorKind.Tangent))return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                    var duplicate=false;for(var i=0;i<count;i++)duplicate|=points[i].Curve==edge.Curve&&points[i].Root.Parameter==roots[r].First;
+                    // Repeated chart discoveries on this coedge may be the
+                    // same root. A different use of the carrier retains its
+                    // own support and provenance even when the event joins.
+                    var duplicate=false;for(var i=count-1;i>=0&&points[i].InputCoedge==inputCoedge;i--)
+                        duplicate|=points[i].Root.Parameter==roots[r].First;
                     if(!duplicate)
                     {
                         if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -138,7 +143,7 @@ internal static unsafe partial class KernelRuntime
                         {
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
-                        points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
+                        points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
                             Certified=nativeProof?NativePlaneCertificate:known?(byte)1:(byte)0,Root=witness};
                     }
                 }
@@ -392,7 +397,7 @@ internal static unsafe partial class KernelRuntime
                                     Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,StartEvent=endpoint,EndEvent=endpoint,
                                     First=cutLocator.Lower,Last=cutLocator.Upper,SpatialError=root.Root.SpatialError});
                             TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CertifiedRoot,Curve=root.Curve,ProductCurve=cut.Curve,
-                                Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,StartEvent=endpoint,EndEvent=endpoint,
+                                Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,InputCoedge=root.InputCoedge,StartEvent=endpoint,EndEvent=endpoint,
                                 Source=-1,Face=-1,Product=-1,
                                 Generation=Curves[GetCurveSlotByTag(root.Curve)].Header.Generation,
                                 First=root.Root.Lower,Last=root.Root.Upper,SpatialError=root.Root.SpatialError});

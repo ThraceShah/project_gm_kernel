@@ -56,7 +56,7 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
         {
             var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];
-            Console.WriteLine($"BOUNDARY CertifiedRoot event={trace.StartEvent} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{carrier.Class} supports={trace.Surface}/{trace.OtherSurface} cut={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R}");return;
+            Console.WriteLine($"BOUNDARY CertifiedRoot event={trace.StartEvent} edge={trace.Edge} coedge={trace.InputCoedge} carrier={trace.Curve}/{trace.Generation}/{carrier.Class} supports={trace.Surface}/{trace.OtherSurface} cut={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R}");return;
         }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface}/{surface.Class} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
         if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.BoundaryTraceStage.Input)

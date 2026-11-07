@@ -80,7 +80,7 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag Surface,OtherSurface;
         internal CurveTag Curve,ProductCurve;
         internal EntityGeneration Generation,SurfaceGeneration;
-        internal BufferOffset Edge,Face,NextEdge;
+        internal BufferOffset Edge,Face,NextEdge,InputCoedge;
         internal BoundaryEventId StartEvent,EndEvent;
         internal double First,Last,StartAngle,EndAngle,SpatialError;
         internal KernelVector3 StartPoint,EndPoint;
