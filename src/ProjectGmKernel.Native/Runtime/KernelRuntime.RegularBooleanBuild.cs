@@ -191,9 +191,10 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int CloneRegularBoundaryBody(scoped ref SheetArrangement model,scoped ReadOnlySpan<BufferOffset> indices,scoped ReadOnlySpan<byte> reversed,
-        scoped ReadOnlySpan<byte> cavityFaces,out BodyTag body,scoped Span<FaceSlot> products)
+        scoped ReadOnlySpan<byte> cavityFaces,out BodyTag body,scoped Span<FaceSlot> products,scoped Span<EdgeSlot> edgeProducts=default)
     {
-        body=0;var scratch=CommandScratch.Current;var memory=scratch.Take(70000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        body=0;if(!edgeProducts.IsEmpty&&edgeProducts.Length<model.NE)return ParasolidConstants.PK_ERROR_bad_parameter;
+        var scratch=CommandScratch.Current;var memory=scratch.Take(70000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -257,7 +258,10 @@ internal static unsafe partial class KernelRuntime
                 if(mapped>=0&&original>=0&&(vertexOwners[mapped]==-2||vertexOwners[mapped]!=Vertices[original].Body)&&model.VertexMergeCandidates[v]!=0)
                     vertexPrecisions[mapped]=Math.Max(vertexPrecisions[mapped],RegularPlanarImprintMinimumPrecision);
             }
-            var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities);if(built!=0)return built;
+            Span<EdgeSlot> builtEdges=edgeProducts.IsEmpty?default:stackalloc EdgeSlot[ne];
+            var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities,builtEdges);if(built!=0)return built;
+            if(!edgeProducts.IsEmpty)
+                for(var i=0;i<edgeMap.Length;i++)edgeProducts[i]=edgeMap[i]<0?-1:builtEdges[edgeMap[i]];
             if(TraceFiniteBoundary!=null)
                 for(var i=0;i<indices.Length;i++)
                 {

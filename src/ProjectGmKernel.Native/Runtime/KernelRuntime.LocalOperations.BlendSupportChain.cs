@@ -204,12 +204,13 @@ internal static unsafe partial class KernelRuntime
         Span<FaceSlot> products,Span<FaceSlot> workingSources,out BufferCount count)
     {
         output=0;merged=-1;count=0;var ne=Bodies[body].EdgeCountBody;var nv=Bodies[body].VertexCountBody;var nf=originals.Length;
+        var loopCapacity=0;foreach(var face in originals)loopCapacity+=Faces[face].LoopCount;
+        if(loopCapacity>SheetLoopLimit)return ParasolidConstants.PK_ERROR_not_implemented;
         var model=new SheetArrangement{Points=stackalloc KernelVector3[nv],OriginalVertices=stackalloc VertexSlot[nv],Edges=stackalloc ModelingEdge[ne],
-            Coedges=stackalloc ModelingCoedge[2*ne],Loops=stackalloc ModelingLoop[nf],Faces=stackalloc ModelingFace[nf],Sources=stackalloc FaceSlot[nf],Witnesses=stackalloc PK_UV_s[nf]};
+            Coedges=stackalloc ModelingCoedge[2*ne],Loops=stackalloc ModelingLoop[loopCapacity],Faces=stackalloc ModelingFace[nf],Sources=stackalloc FaceSlot[nf],Witnesses=stackalloc PK_UV_s[nf]};
         Span<EdgeSlot> edges=stackalloc EdgeSlot[ne];Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];Span<BodyTag> input=stackalloc BodyTag[1]{Bodies[body].Header.Tag};
         var error=ReadRegularBoundaries(input,model.Points,model.OriginalVertices,model.Edges,edges,model.Coedges,model.Loops,model.Faces,model.Sources,owners,offsets,
             out model.NP,out model.NE,out model.NC,out model.NL,out model.NF);if(error!=0)return error;
-        if(model.NL!=nf)return ParasolidConstants.PK_ERROR_not_implemented;
         for(var e=0;e<ne;e++)
         {
             if(!LocalEdgeFaces(edges[e],out var a,out var b))return ParasolidConstants.PK_ERROR_not_implemented;
@@ -220,17 +221,20 @@ internal static unsafe partial class KernelRuntime
         Span<byte> keep=stackalloc byte[nf],reverse=stackalloc byte[nf],cavity=stackalloc byte[nf];keep.Fill(1);reverse.Clear();cavity.Clear();
         error=MergeRegularBooleanCells(ref model,keep,reverse);if(error!=0)return error;
         Span<BufferOffset> order=stackalloc BufferOffset[model.NF];for(var f=0;f<model.NF;f++)order[f]=f;
-        error=CloneRegularBoundaryBody(ref model,order,reverse,cavity,out output,products[..model.NF]);if(error!=0)return error;count=model.NF;
+        Span<EdgeSlot> edgeProducts=stackalloc EdgeSlot[model.NE];
+        error=CloneRegularBoundaryBody(ref model,order,reverse,cavity,out output,products[..model.NF],edgeProducts);if(error!=0)return error;count=model.NF;
         model.Sources[..model.NF].CopyTo(workingSources);
-        var positive=LocalSenseSign(Curves[GetCurveSlotByTag(Edges[selected[0]].CurveTag)].Sense)>0;
-        var va=positive?Edges[selected[0]].StartVertex:Edges[selected[0]].EndVertex;var vb=positive?Edges[selected[^1]].EndVertex:Edges[selected[^1]].StartVertex;
-        error=SheetOriginalVertex(va,out var start);if(error!=0)return error;error=SheetOriginalVertex(vb,out var end);if(error!=0)return error;
-        var bodySlot=TagRec(output).Slot;var edge=Bodies[bodySlot].FirstEdgeBody;
-        for(var e=0;e<Bodies[bodySlot].EdgeCountBody;e++,edge=Edges[edge].NextInBody)
+        var first=Edges[selected[0]];var last=Edges[selected[^1]];
+        var positive=LocalSenseSign(Curves[GetCurveSlotByTag(first.CurveTag)].Sense)>0;
+        var start=positive?first.StartVertex:last.StartVertex;var end=positive?last.EndVertex:first.EndVertex;
+        if(!TryProfileEdgeRange(first,out var lower,out _)||!TryProfileEdgeRange(last,out _,out var upper))
+            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        for(var e=0;e<edgeProducts.Length;e++)
         {
-            error=SheetOriginalVertex(Edges[edge].StartVertex,out var a);if(error!=0)return error;error=SheetOriginalVertex(Edges[edge].EndVertex,out var b);if(error!=0)return error;
-            if(!(ProfileDistance(a,start)<1e-8&&ProfileDistance(b,end)<1e-8||ProfileDistance(a,end)<1e-8&&ProfileDistance(b,start)<1e-8))continue;
-            if(merged>=0)return ParasolidConstants.PK_ERROR_not_implemented;merged=edge;
+            var edge=model.Edges[e];
+            if(edgeProducts[e]<0||edge.Curve!=first.CurveTag||edge.Start!=lower||edge.End!=upper||edge.StartVertex<0||edge.EndVertex<0
+                ||model.OriginalVertices[edge.StartVertex]!=start||model.OriginalVertices[edge.EndVertex]!=end)continue;
+            if(merged>=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;merged=edgeProducts[e];
         }
         return merged>=0?0:ParasolidConstants.PK_ERROR_cant_do_intersect;
     }
@@ -262,11 +266,14 @@ internal static unsafe partial class KernelRuntime
     {
         output=0;var body=TagRec(input).Slot;var ne=Bodies[body].EdgeCountBody;var nv=Bodies[body].VertexCountBody;var nf=Bodies[body].FaceCountBody;
         var capacity=ne+4*(seams.Length+sections.Length);var faceCapacity=originals.Length+sections.Length+1;
+        var sourceLoopCapacity=Faces[blendFace].LoopCount;foreach(var face in workingFaces)sourceLoopCapacity+=Faces[face].LoopCount;
+        var loopCapacity=sourceLoopCapacity+seams.Length+sections.Length;
+        if(loopCapacity>SheetLoopLimit)return ParasolidConstants.PK_ERROR_not_implemented;
         var model=new SheetArrangement{Points=stackalloc KernelVector3[nv+4*(seams.Length+sections.Length)],OriginalVertices=stackalloc VertexSlot[nv+4*(seams.Length+sections.Length)],
-            Edges=stackalloc ModelingEdge[capacity],CutEdges=stackalloc byte[capacity],Coedges=stackalloc ModelingCoedge[2*capacity],Loops=stackalloc ModelingLoop[faceCapacity],
+            Edges=stackalloc ModelingEdge[capacity],CutEdges=stackalloc byte[capacity],Coedges=stackalloc ModelingCoedge[2*capacity],Loops=stackalloc ModelingLoop[loopCapacity],
             Faces=stackalloc ModelingFace[faceCapacity],Sources=stackalloc FaceSlot[faceCapacity],Sides=stackalloc sbyte[faceCapacity],Witnesses=stackalloc PK_UV_s[faceCapacity],Tolerance=1e-9};
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne];Span<EdgeSlot> sourceEdges=stackalloc EdgeSlot[ne];Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[2*ne];
-        Span<ModelingLoop> loops=stackalloc ModelingLoop[nf];Span<ModelingFace> faces=stackalloc ModelingFace[nf];Span<FaceSlot> sources=stackalloc FaceSlot[nf];
+        Span<ModelingLoop> loops=stackalloc ModelingLoop[sourceLoopCapacity];Span<ModelingFace> faces=stackalloc ModelingFace[nf];Span<FaceSlot> sources=stackalloc FaceSlot[nf];
         Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];Span<BodyTag> bodies=stackalloc BodyTag[1]{input};
         var error=ReadRegularBoundaries(bodies,model.Points,model.OriginalVertices,edges,sourceEdges,coedges,loops,faces,sources,owners,offsets,out model.NP,out var nEdges,out var nc,out var nl,out var nFaces);if(error!=0)return error;
         Span<KernelVector3> p=stackalloc KernelVector3[1];
@@ -283,7 +290,7 @@ internal static unsafe partial class KernelRuntime
         var view=new RegularBoundaryView(edges[..nEdges],coedges[..nc],loops[..nl],faces[..nFaces]);Span<SheetSourceEdge> fragments=stackalloc SheetSourceEdge[ne];
         Span<SheetCutCurve> owned=stackalloc SheetCutCurve[ne];var ownedCount=0;
         error=SplitRegularSourceEdges(view,sourceEdges,fragments,owned,ref ownedCount,ref model);if(error!=0)return error;if(ownedCount!=0)return ParasolidConstants.PK_ERROR_not_implemented;
-        Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[2*capacity];Span<ModelingCoedge> cycles=stackalloc ModelingCoedge[2*capacity];Span<SheetCycle> cycleData=stackalloc SheetCycle[faceCapacity];
+        Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[2*capacity];Span<ModelingCoedge> cycles=stackalloc ModelingCoedge[2*capacity];Span<SheetCycle> cycleData=stackalloc SheetCycle[loopCapacity];
         Span<SheetCutCurve> cuts=stackalloc SheetCutCurve[seams.Length];
         foreach(var face in sources)
         {

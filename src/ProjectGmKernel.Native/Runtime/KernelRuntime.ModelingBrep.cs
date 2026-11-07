@@ -47,11 +47,12 @@ internal static unsafe partial class KernelRuntime
         ReadOnlySpan<ModelingEdge> edges, ReadOnlySpan<ModelingCoedge> coedges,
         ReadOnlySpan<ModelingLoop> loops, ReadOnlySpan<ModelingFace> faces,
         bool solid, out EntityTag result, Span<FaceSlot> faceProducts = default,
-        ReadOnlySpan<byte> cavityFaces = default)
+        ReadOnlySpan<byte> cavityFaces = default,Span<EdgeSlot> edgeProducts=default)
     {
         result = 0;
         if (faces.IsEmpty || faces.Length > 4096 || points.Length > 8192 || edges.Length > 16384
             || (!faceProducts.IsEmpty && faceProducts.Length < faces.Length)
+            || (!edgeProducts.IsEmpty && edgeProducts.Length < edges.Length)
             || (!cavityFaces.IsEmpty && cavityFaces.Length != faces.Length))
             return ParasolidConstants.PK_ERROR_bad_parameter;
         var scratch = CommandScratch.Current;
@@ -305,6 +306,7 @@ internal static unsafe partial class KernelRuntime
             if (error != 0) return error;
             if (!solid && !PublishProfileDummyFins(body)) return ParasolidConstants.PK_ERROR_memory_full;
             if (!faceProducts.IsEmpty) products.CopyTo(faceProducts);
+            if (!edgeProducts.IsEmpty) edgeSlots.CopyTo(edgeProducts);
             result = completed;
             return 0;
         }

@@ -11,6 +11,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using M=ProjectGmKernel.Native.Generated;
 
+KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
+var remoteBore=args.Contains("--remote-bore",StringComparer.Ordinal);
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","support-blend-chain-oracle");Directory.CreateDirectory(directory);
 if(!ParasolidScriptHost.TryStartSession("Independent smooth chain support transitions",out var host,out var message))throw new Exception(message);
 using(host)unsafe
@@ -21,33 +23,77 @@ using(host)unsafe
         foreach(var fixture in new[]{(Name:"asymmetric43",Location:.43,Slope:0.0,CurvedWall:false),(Name:"asymmetric61",Location:.61,Slope:0.0,CurvedWall:false),(Name:"oblique43",Location:.43,Slope:.2,CurvedWall:false),(Name:"nurbs43",Location:.43,Slope:0.0,CurvedWall:true)})foreach(var reflected in new[]{false,true})
         {
             var name=$"{fixture.Name}-{(reflected?"reflected":"base")}";if(args.Any(a=>!a.StartsWith("--",StringComparison.Ordinal))&&!args.Contains(name,StringComparer.Ordinal))continue;
+            if(remoteBore){Require(!fixture.CurvedWall,"the bore fixture requires a planar wall");name+="-remote-bore";}
             // Author a genuine partition seam in PK, then both modifiers
             // consume the identical finite input, independently of their
             // primitive creators' LINE parameterization conventions.
-            var native=Roof(false,fixture.CurvedWall);var scale=1/Math.Sqrt(1+fixture.Slope*fixture.Slope);
+            var native=Roof(false,fixture.CurvedWall);if(remoteBore)BoreNative(native);
+            var scale=1/Math.Sqrt(1+fixture.Slope*fixture.Slope);
             var planeDefinition=new PK_PLANE_sf_t{basis_set=new(){location=new(fixture.Location,0,0),axis=new(scale,fixture.Slope*scale,0),ref_direction=new(0,0,1)}};int plane;
             Check(PK_PLANE_create(&planeDefinition,&plane),"seam plane");int n;int* imprinted;
             Check(PK_BODY_imprint_plane(native,plane,1e-8,&n,&imprinted),"author finite input seam");Free(false,imprinted);
             if(reflected)Transform(false,native);
             var input=TransmitNative(native);File.WriteAllBytes(Path.Combine(directory,name+"-input.x_t"),input);var own=ReceiveSelf(input);
             var a=Select(true,own,reflected);var b=Select(false,native,reflected);Require(a.Length==2&&b.Length==2,"two selected segments across real face seam");
+            var boredFace=0;
+            if(remoteBore)foreach(var edge in a)
+            {
+                var fin=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edge).Slot].FirstFinEdge;
+                for(var side=0;side<2;side++,fin=KernelRuntime.Fins[fin].Other)
+                {
+                    var face=KernelRuntime.Faces[KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face];
+                    if(face.LoopCount==2)boredFace=face.Header.Tag;
+                }
+            }
+            Require(!remoteBore||boredFace!=0,"bore belongs to an actually selected support");
             if(args.Contains("--separate-support",StringComparer.Ordinal)){SeparateSupport(true,a[0]);SeparateSupport(false,b[0]);}
             Check(KernelRuntime.BodyAskFaces(own,&n,&imprinted),"original self faces");int[] retained;
-            try{retained=new ReadOnlySpan<int>(imprinted,n).ToArray();}finally{Free(true,imprinted);}Require(retained.Length==10,"ten source faces");
+            try{retained=new ReadOnlySpan<int>(imprinted,n).ToArray();}finally{Free(true,imprinted);}Require(retained.Length==(remoteBore?11:10),"source faces include the bore wall");
             var radius=reflected?.17:.1;var selfMade=Fix(true,own,a,radius);var nativeMade=Fix(false,native,b,radius);
             Require(selfMade==nativeMade&&selfMade==3,"two independent seam transports create three Blend faces");
             foreach(var face in retained)Require(KernelRuntime.IsValidTag(face),"surviving source face identity");
+            if(remoteBore)Require(KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(boredFace).Slot].LoopCount==2,"modified selected support retains its bore loop");
             var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-result.x_t"),bytes);var received=Receive(bytes);
-            try{CheckBody(native,name+" native");CheckBody(received,name+" received");Compare(native,received,name);}finally{Check(PK_ENTITY_delete(1,&received),"delete receive");}
+            try
+            {
+                CheckBody(native,name+" native");CheckBody(received,name+" received");Compare(native,received,name);
+                if(remoteBore)ParasolidBodyCompare.AssertEquivalent(native,received,name);
+            }
+            finally{Check(PK_ENTITY_delete(1,&received),"delete receive");}
             var restored=ReceiveSelf(bytes);Check(KernelRuntime.EntityDelete(1,&own),"delete before reload");own=restored;
             Cut(true,own,reflected);Cut(false,native,reflected);bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-cut.x_t"),bytes);received=Receive(bytes);
-            try{CheckBody(native,name+" cut native");CheckBody(received,name+" cut received");Compare(native,received,name+" cut");}finally{Check(PK_ENTITY_delete(1,&received),"delete cut receive");}
+            if(remoteBore)
+            {
+                var body=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(own).Slot];var f=body.FirstFaceBody;var innerRings=0;
+                for(var i=0;i<body.FaceCountBody;i++,f=KernelRuntime.Faces[f].NextInBody)
+                {
+                    var face=KernelRuntime.Faces[f];
+                    if(face.LoopCount==2&&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(face.SurfTag)].Class==SurfaceClass.Plane)innerRings++;
+                }
+                Require(innerRings==2,"both finite bore rings survive the reloaded cut");
+            }
+            try
+            {
+                CheckBody(native,name+" cut native");CheckBody(received,name+" cut received");Compare(native,received,name+" cut");
+                if(remoteBore)ParasolidBodyCompare.AssertEquivalent(native,received,name+" cut");
+            }
+            finally{Check(PK_ENTITY_delete(1,&received),"delete cut receive");}
             Check(KernelRuntime.EntityDelete(1,&own),"delete self");Check(PK_ENTITY_delete(1,&native),"delete native");
             Require(KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0&&KernelRuntime.Points.AliveCount==0,"complete self geometry ownership cleanup");
             Console.WriteLine("PASS "+name);
         }
     }
     finally{Check(KernelRuntime.SessionStop(),"self session stop");}
+}
+
+static unsafe void BoreNative(int body)
+{
+    var basis=new PK_AXIS2_sf_t{location=new(.3,-1,.35),axis=new(0,1,0),ref_direction=new(1,0,0)};int tool,n;int* bodies;
+    Check(PK_BODY_create_solid_cyl(.06,3,&basis,&tool),"author remote bore cutter");
+    var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};
+    Check(PK_BODY_boolean(body,1,&tool,&options,&n,&bodies),"author remote bore on the selected support");
+    try{Require(n==1&&bodies[0]==body,"one bored seed");}finally{Free(false,bodies);}
+    CheckBody(body,"bored seed");
 }
 
 static unsafe void SeparateSupport(bool own,int edge)
@@ -65,13 +111,14 @@ static unsafe void SeparateSupport(bool own,int edge)
     }
     foreach(var faceTag in faces)
     {
-        int surface;Check(own?KernelRuntime.FaceAskSurf(faceTag,&surface):PK_FACE_ask_surf(faceTag,&surface),"separate support geometry");
+        int surface;byte sense;
+        Check(own?KernelRuntime.FaceAskOrientedSurf(faceTag,&surface,&sense):PK_FACE_ask_oriented_surf(faceTag,&surface,(PK_LOGICAL_t*)&sense),"separate support geometry");
         var spline=own?KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface:false;
         if(!own){int type;Check(PK_ENTITY_ask_class(surface,&type),"support class");spline=type==PK_CLASS_bsurf;}
         if(!spline)continue;
         int copy;Check(own?KernelRuntime.EntityCopy(surface,&copy):PK_ENTITY_copy(surface,&copy),"independent support record copy");
-        var face=faceTag;Check(own?KernelRuntime.TopologyDetachGeometry(face):PK_TOPOL_detach_geom(face),"detach support record");byte same=1;
-        Check(own?KernelRuntime.FaceAttachSurfaces(1,&face,&copy,&same):PK_FACE_attach_surfs(1,&face,&copy,(PK_LOGICAL_t*)&same),"attach equivalent support record");
+        var face=faceTag;Check(own?KernelRuntime.TopologyDetachGeometry(face):PK_TOPOL_detach_geom(face),"detach support record");
+        Check(own?KernelRuntime.FaceAttachSurfaces(1,&face,&copy,&sense):PK_FACE_attach_surfs(1,&face,&copy,(PK_LOGICAL_t*)&sense),"attach equivalent support record");
         Console.WriteLine($"SUPPORT CERTIFICATE own={own} face={face} source={surface} copy={copy} map=identity");return;
     }
     throw new Exception("selected edge has no spline support to copy");
@@ -80,7 +127,7 @@ static unsafe void SeparateSupport(bool own,int edge)
 static unsafe int[] Select(bool own,int body,bool reflected)
 {
     int n;int* edges;Check(own?KernelRuntime.BodyAskEdges(body,&n,&edges):PK_BODY_ask_edges(body,&n,&edges),"select edges");var selected=new List<int>();int* vertices=stackalloc int[2];
-    try{for(var i=0;i<n;i++){Check(own?KernelRuntime.EdgeAskVertices(edges[i],vertices):PK_EDGE_ask_vertices(edges[i],vertices),"select vertices");var candidate=true;for(var j=0;j<2;j++){int point;PK_POINT_sf_t p;Check(own?KernelRuntime.VertexAskPoint(vertices[j],&point):PK_VERTEX_ask_point(vertices[j],&point),"select point");Check(own?KernelRuntime.PointAsk(point,(M.PK_POINT_sf_s*)&p):PK_POINT_ask(point,&p),"select position");var q=OriginalFrame(p.position,reflected);candidate&=Math.Abs(q.coord[1])<1e-8&&Math.Abs(q.coord[2]-1)<1e-8;}if(candidate)selected.Add(edges[i]);}}finally{Free(own,edges);}return selected.ToArray();
+    try{for(var i=0;i<n;i++){Check(own?KernelRuntime.EdgeAskVertices(edges[i],vertices):PK_EDGE_ask_vertices(edges[i],vertices),"select vertices");if(vertices[0]==0||vertices[1]==0)continue;var candidate=true;for(var j=0;j<2;j++){int point;PK_POINT_sf_t p;Check(own?KernelRuntime.VertexAskPoint(vertices[j],&point):PK_VERTEX_ask_point(vertices[j],&point),"select point");Check(own?KernelRuntime.PointAsk(point,(M.PK_POINT_sf_s*)&p):PK_POINT_ask(point,&p),"select position");var q=OriginalFrame(p.position,reflected);candidate&=Math.Abs(q.coord[1])<1e-8&&Math.Abs(q.coord[2]-1)<1e-8;}if(candidate)selected.Add(edges[i]);}}finally{Free(own,edges);}return selected.ToArray();
 }
 static unsafe int Fix(bool own,int body,int[] edges,double radius)
 {
