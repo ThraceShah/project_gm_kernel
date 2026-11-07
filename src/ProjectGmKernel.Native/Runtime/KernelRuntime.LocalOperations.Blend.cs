@@ -9,7 +9,8 @@ internal static unsafe partial class KernelRuntime
     private struct LocalBlendProduct
     {
         internal EntityTag Edge,Vertex;
-        internal FaceTag First,Second,Third;
+        internal FaceTag First,Second,Third,Result;
+        internal BlendMarkSequence Sequence;
     }
 
     private static bool LocalEdgeFaces(EdgeSlot edge,out FaceSlot first,out FaceSlot second)
@@ -116,13 +117,19 @@ internal static unsafe partial class KernelRuntime
         var faceCount=Bodies[slot].FaceCountBody;Span<FaceSlot> faces=stackalloc FaceSlot[faceCount];var face=Bodies[slot].FirstFaceBody;
         for(var i=0;i<faceCount;i++,face=Faces[face].NextInBody)faces[i]=face;
         Span<LocalBlendProduct> descriptions=stackalloc LocalBlendProduct[LocalFaceLimit];Span<FaceSlot> products=stackalloc FaceSlot[LocalFaceLimit];
-        error=BuildAxialLocalBlends(slot,faces,selected[..count],descriptions,products,out var made);
+        BufferCount made;
+        if(CanBuildAnalyticRollingNetwork(selected[..count]))
+            error=BuildInteractingRollingBlends(slot,faces,selected[..count],descriptions,products,out made);
+        else
+        {
+        error=BuildAxialLocalBlends(slot,faces,selected[..count],descriptions,products,out made);
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildPlanarLocalBlends(slot,faces,selected[..count],descriptions,products,out made);
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildTrivalentLocalBlendCorner(slot,faces,selected[..count],descriptions,products,out made);
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildRegularLocalBlend(slot,faces,selected[..count],descriptions,products,out made);
+        }
         if(error!=0)
         {
             *fault=error==ParasolidConstants.PK_ERROR_not_implemented?ParasolidConstants.PK_blend_fault_type_c:ParasolidConstants.PK_blend_fault_range_c;
@@ -134,7 +141,7 @@ internal static unsafe partial class KernelRuntime
         if(output!=null&&result==null||topols!=null&&replaced==null||unders!=null&&underlying==null)return ParasolidConstants.PK_ERROR_memory_full;
         for(var i=0;i<made;i++)
         {
-            var desc=descriptions[i];if(result!=null)result[i]=Faces[products[faceCount+i]].Header.Tag;
+            var desc=descriptions[i];if(result!=null)result[i]=desc.Result!=0?desc.Result:Faces[products[faceCount+i]].Header.Tag;
             if(replaced!=null)replaced[i]=options->vx_twin!=0&&desc.Vertex!=0?desc.Vertex:desc.Edge;
             if(underlying!=null)
             {

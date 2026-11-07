@@ -27,7 +27,7 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     internal static AlgorithmStatus EvaluateSpine(in NestedBlendProgram program,BlendSpineIndex spine,
-        double parameter,DerivativeOrder order,Span<KernelVector3> output)
+        double parameter,DerivativeOrder order,Span<KernelVector3> output,Span<double> contacts=default)
     {
         if(!SurfaceDerivativeLayout.TryCreate(order,0,out var layout))return AlgorithmStatus.InvalidInput;
         if(SpineParameterMap.Explicit(program.Spines[spine]))
@@ -38,7 +38,7 @@ internal static partial class JointNestedBlendEvaluation
             double factor=1;for(var i=0;i<=order;i++){if(i>0)factor*=i;output[i]=new(){X=exact.X[i]*factor,Y=exact.Y[i]*factor,Z=exact.Z[i]*factor};}
             return AlgorithmStatus.Success;
         }
-        return EvaluateCore(program,spine,-1,parameter,0,layout,output,false,default,out _,out _);
+        return EvaluateCore(program,spine,-1,parameter,0,layout,output,false,default,out _,out _,contacts);
     }
 
     internal static AlgorithmStatus Project(in NestedBlendProgram program,BlendSpineIndex spine,Span<KernelVector3> output,Span<double> contacts)
@@ -157,12 +157,16 @@ internal static partial class JointNestedBlendEvaluation
             if(!accepted)return AlgorithmStatus.NotConverged;
         }
         if(!converged)return AlgorithmStatus.NotConverged;
-        if(contacts.Length>=4)
-        {
-            var node=nodes[0];contacts[0]=node.FirstUv>=0?state[node.FirstUv]:0;contacts[1]=node.FirstUv>=0?state[node.FirstUv+1]:0;
-            contacts[2]=node.SecondUv>=0?state[node.SecondUv]:0;contacts[3]=node.SecondUv>=0?state[node.SecondUv+1]:0;
-        }
         Initialize(state,layout.UOrder,variables);var parameterJet=TaylorJet.Variable(u,layout.UOrder);
+        if(!contacts.IsEmpty)
+        {
+            if(contacts.Length<4)return AlgorithmStatus.OutputTooSmall;
+            for(var side=0;side<2;side++)
+            {
+                var located=SpineSupportParameters(program,nodes,variables,side,u,out var su,out var sv);if(located!=AlgorithmStatus.Success)return located;
+                contacts[2*side]=su;contacts[2*side+1]=sv;
+            }
+        }
         for(var order=1;order<=layout.UOrder;order++)
         {
             var status=Residual(program,nodes,variables[..n],parameterJet,residual[..n],nearest,path);if(status!=AlgorithmStatus.Success)return status;
@@ -186,6 +190,37 @@ internal static partial class JointNestedBlendEvaluation
         var found=Normal(program,root.First,nodes,0,variables,out _,out var normal0);if(found!=AlgorithmStatus.Success)return found;
         found=Normal(program,root.Second,nodes,0,variables,out _,out var normal1);if(found!=AlgorithmStatus.Success)return found;
         return NestedBlendSeriesEvaluation.FromFrame(root,center,normal0,normal1,v,layout,output);
+    }
+
+    private static AlgorithmStatus SpineSupportParameters(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
+        ReadOnlySpan<TaylorJet> variables,BufferOffset side,double parameter,out double u,out double v)
+    {
+        u=v=0;var root=nodes[0];var spine=program.Spines[root.Spine];var support=program.Surfaces[side==0?spine.First:spine.Second];
+        var splineUv=side==0?root.FirstUv:root.SecondUv;
+        if(splineUv>=0){u=variables[splineUv][0];v=variables[splineUv+1][0];return AlgorithmStatus.Success;}
+        var point=Point(variables,root.Offset).Value;
+        if(!support.IsBlend)
+        {
+            var status=Geometry.Intersection.OperationIntersection.Parameters(support.Analytic,point,out u,out v);if(status!=AlgorithmStatus.Success)return status;
+            if(support.Analytic.Kind is SurfaceClass.Cylinder or SurfaceClass.Sphere or SurfaceClass.Cone or SurfaceClass.Torus)
+            {
+                var charts=Chart(program,root.Spine);var segment=0;while(segment<charts.Length-2&&charts[segment+1].Parameter<=parameter)segment++;
+                var f=(parameter-charts[segment].Parameter)/(charts[segment+1].Parameter-charts[segment].Parameter);
+                var a=side==0?charts[segment].FirstU:charts[segment].SecondU;var b=side==0?charts[segment+1].FirstU:charts[segment+1].SecondU;
+                b-=Math.Tau*Math.Round((b-a)/Math.Tau);u+=Math.Tau*Math.Round((a+(b-a)*f-u)/Math.Tau);
+            }
+            return AlgorithmStatus.Success;
+        }
+        var child=side==0?root.FirstChild:root.SecondChild;if(child<0)return AlgorithmStatus.Unsupported;
+        u=variables[nodes[child].Offset+3][0];var center=Point(variables,nodes[child].Offset).Value;
+        var found=Normal(program,support.First,nodes,child,variables,out _,out var n0);if(found!=AlgorithmStatus.Success)return found;
+        found=Normal(program,support.Second,nodes,child,variables,out _,out var n1);if(found!=AlgorithmStatus.Success)return found;
+        var radius=Math.Abs(support.Range0);var start=Scale(n1.Value,-support.Range1/radius);var end=Scale(n0.Value,-support.Range0/radius);
+        if(support.ReverseSection)(start,end)=(end,start);
+        var cosine=Dot(start,end);var transverse=Sub(end,Scale(start,cosine));var sine=Math.Sqrt(Dot(transverse,transverse));
+        if(!(sine>0))return AlgorithmStatus.Singular;var offset=Sub(point,center);
+        v=Math.Atan2(Dot(offset,Scale(transverse,1/sine)),Dot(offset,start))/Math.Atan2(sine,cosine);
+        return double.IsFinite(u)&&double.IsFinite(v)?AlgorithmStatus.Success:AlgorithmStatus.NumericalFailure;
     }
 
     private static void WrapClosedParameters(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,Span<double> state,bool nearest)

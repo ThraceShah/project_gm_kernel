@@ -103,13 +103,14 @@ public unsafe class RotationalBooleanTests : IDisposable
     }
 
     [Fact]
-    public void AlmostCoaxialThinWideCylinderIsRejectedWithoutRotatingItsGeometry()
+    public void AlmostCoaxialThinWideCylinderRemainsUnresolvedWithoutRotatingItsGeometry()
     {
         var a = Cylinder(20, 0, .01); var basis = new PK_AXIS2_sf_s(); basis.axis.coord[0] = 1e-8;
         basis.axis.coord[2] = Math.Sqrt(1 - 1e-16); basis.ref_direction.coord[0] = basis.axis.coord[2]; basis.ref_direction.coord[2] = -1e-8;
         int b = 0; Assert.Equal(0, KernelRuntime.BodyCreateSolidCyl(20, .01, &basis, &b));
         var o = BooleanOperationTests.Options(15901); int n = 5; int* result = (int*)1;
-        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented, KernelRuntime.BodyBoolean(a, 1, &b, &o, &n, &result));
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect, KernelRuntime.BodyBoolean(a, 1, &b, &o, &n, &result));
+        Assert.Equal(ProjectGmKernel.Native.Computation.AlgorithmStatus.NotConverged,KernelRuntime.LastGeneralIntersectionStatus);
         Assert.Equal(0, n); Assert.True(result == null); BooleanOperationTests.Counts(a, 3, 2, 0); BooleanOperationTests.Counts(b, 3, 2, 0);
     }
 

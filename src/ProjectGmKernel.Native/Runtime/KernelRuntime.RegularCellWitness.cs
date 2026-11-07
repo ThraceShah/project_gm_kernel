@@ -17,6 +17,8 @@ internal static unsafe partial class KernelRuntime
             for(var sample=0;sample<4;sample++)
             {
                 var error=SheetCoedgePoint(face.Surface,model.Edges[coedge.Edge],coedge.Forward,(sample+.375)/4,out var point,out _,out _);if(error!=0)return false;
+                if(Surfaces[GetSurfaceSlotByTag(face.Surface)].Class==SurfaceClass.Cylinder&&!model.Witnesses.IsEmpty)
+                    point.param[0]+=Math.Tau*Math.Round((model.Witnesses[cell].param[0]-point.param[0])/Math.Tau);
                 count++;uv.param[0]+=(point.param[0]-uv.param[0])/count;uv.param[1]+=(point.param[1]-uv.param[1])/count;
             }
         }

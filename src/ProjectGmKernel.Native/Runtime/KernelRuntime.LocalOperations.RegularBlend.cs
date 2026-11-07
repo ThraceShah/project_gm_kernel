@@ -9,7 +9,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RegularBlendStage:byte{None,Supports,Roll,Contacts,Ends,EndCircle,EndIntersection,EndParameters,Clearance,Reach,Trim,Loops,Build,Publish,Release}
+    internal enum RegularBlendStage:byte{None,Supports,Roll,Contacts,Ends,EndCircle,EndIntersection,EndParameters,Clearance,Reach,Trim,Loops,Build,Publish,Release,Network}
     [ThreadStatic] internal static RegularBlendStage LastRegularBlendStage;
     // A single regular edge ending at two trivalent vertices. Contact curves
     // replace the selected edge; each end curve replaces its old cap corner.
@@ -17,7 +17,12 @@ internal static unsafe partial class KernelRuntime
         Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
     {
         made=0;LastRegularBlendStage=RegularBlendStage.Supports;
-        if(selected.Length>1)return BuildRegularBlendChain(body,faces,selected,descriptions,products,out made);
+        if(selected.Length>1)
+        {
+            var sameCarrier=true;foreach(var candidate in selected)sameCarrier&=Edges[candidate].CurveTag==Edges[selected[0]].CurveTag;
+            if(!sameCarrier&&!CommonBlendChainFaces(selected))return ParasolidConstants.PK_ERROR_not_implemented;
+            return BuildRegularBlendChain(body,faces,selected,descriptions,products,out made);
+        }
         if(selected.Length!=1||Bodies[body].RegionCount!=2||Bodies[body].ShellCount!=2)return ParasolidConstants.PK_ERROR_not_implemented;
         var edge=selected[0];var original=Edges[edge];
         if(original.PendingBlendKind!=1||original.StartVertex<0||original.EndVertex<0

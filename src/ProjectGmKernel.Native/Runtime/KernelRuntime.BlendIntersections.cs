@@ -26,6 +26,7 @@ internal static unsafe partial class KernelRuntime
             var data=BlendedEdgeDataPool[a.DataIndex];var program=GetNestedBlendProgram(data);var definition=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
             var status=AlgorithmStatus.Success;IntervalBox3 extent=default;
             var analytic=TryPrepareSurface(b,out var support);var otherBlend=b.Class==SurfaceClass.BlendSurface;
+            var implicitAnalytic=analytic&&AnalyticLevelSet.Supported(support);
             if(!analytic&&!otherBlend&&b.Class!=SurfaceClass.BSurface)return AlgorithmStatus.Unsupported;
             var otherDomain=BlendIntersectionDomain(b,options,reverse);var boundedOther=otherBlend||b.Class==SurfaceClass.BSurface;
             if(boundedOther&&(!otherDomain.Valid||otherDomain.U1<=otherDomain.U0||otherDomain.V1<=otherDomain.V0))return AlgorithmStatus.InvalidInput;
@@ -34,7 +35,7 @@ internal static unsafe partial class KernelRuntime
             if(b.Class==SurfaceClass.BSurface&&(!GeneralSurfaceContinuity(bv)||bv.UDegree>16||bv.VDegree>16))return AlgorithmStatus.Unsupported;
             var otherData=otherBlend?BlendedEdgeDataPool[b.DataIndex]:default;var otherProgram=otherBlend?GetNestedBlendProgram(otherData):default;
             var otherCharts=otherBlend?otherProgram.Charts.Slice(otherProgram.Spines[otherProgram.Surfaces[otherData.ProgramRoot].Spine].ChartOffset,otherProgram.Spines[otherProgram.Surfaces[otherData.ProgramRoot].Spine].ChartCount):default;
-            var count=analytic?AnalyticBezierPatches.Count(support):otherBlend?otherCharts.Length-1:(bv.UVertexCount-bv.UDegree)*(bv.VVertexCount-bv.VDegree);
+            var count=implicitAnalytic?1:analytic?AnalyticBezierPatches.Count(support):otherBlend?otherCharts.Length-1:(bv.UVertexCount-bv.UDegree)*(bv.VVertexCount-bv.VDegree);
             BufferCount remaining=ParametricSurfaceIntersection.MaxCells;
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],clipped=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
             for(var i=0;i<charts.Length-1;i++)
@@ -42,7 +43,7 @@ internal static unsafe partial class KernelRuntime
                 var lo=Math.Max(domain.U0,charts[i].Parameter);var hi=Math.Min(domain.U1,charts[i+1].Parameter);if(!(hi>lo))continue;
                 var patch=new SurfaceIntersectionPatch(program,data.ProgramRoot,new(lo,hi,domain.V0,domain.V1));
                 patch=new(patch,a.Header.Tag,a.Header.Generation,a.Sense);
-                if(analytic)
+                if(analytic&&!implicitAnalytic)
                 {
                     status=BlendExtent(program,data.ProgramRoot,patch.Domain,out extent);if(status!=AlgorithmStatus.Success)return status;
                 }
@@ -55,6 +56,7 @@ internal static unsafe partial class KernelRuntime
                         other=new(otherProgram,otherData.ProgramRoot,new(lower,upper,otherDomain.V0,otherDomain.V1));
                         other=new(other,b.Header.Tag,b.Header.Generation,b.Sense);
                     }
+                    else if(implicitAnalytic)other=default;
                     else if(analytic)
                     {
                         var scale=Math.Max(1,Math.Max(Math.Max(Math.Abs(extent.XLo),Math.Abs(extent.XHi)),Math.Max(Math.Max(Math.Abs(extent.YLo),Math.Abs(extent.YHi)),Math.Max(Math.Abs(extent.ZLo),Math.Abs(extent.ZHi)))));
@@ -71,8 +73,9 @@ internal static unsafe partial class KernelRuntime
                         status=BezierSurfaceBounds.Restrict(new(poles[..(4*(bv.UDegree+1)*(bv.VDegree+1))],bv.UDegree,bv.VDegree,new(bv.UKnots[u],bv.UKnots[u+1],bv.VKnots[v],bv.VKnots[v+1])),new(lower,upper,low,high),clipped);if(status!=AlgorithmStatus.Success)return status;
                         clipped[..(4*(bv.UDegree+1)*(bv.VDegree+1))].CopyTo(poles);other=new(new BezierSurfacePatch(poles[..(4*(bv.UDegree+1)*(bv.VDegree+1))],bv.UDegree,bv.VDegree,new(lower,upper,low,high)));
                     }
-                    var ln=0;var le=0;status=analytic&&support.Kind==SurfaceClass.Plane
-                        ?SurfacePlaneIntersection.Find(patch,support,localNodes,ref ln,localEdges,ref le,ref remaining,deferIsolatedPoints:true)
+                    var ln=0;var le=0;status=implicitAnalytic
+                        ?SurfacePlaneIntersection.Find(patch,support,localNodes,ref ln,localEdges,ref le,ref remaining,deferIsolatedPoints:true,
+                            tolerance:support.Kind==SurfaceClass.Plane?1e-10:ICurveEvaluation.ResidualTolerance,strictSeparation:support.Kind!=SurfaceClass.Plane)
                         :ParametricSurfaceIntersection.FindProcedural(patch,other,localNodes,ref ln,localEdges,ref le,ref remaining);if(status!=AlgorithmStatus.Success)return status;
                     for(var k=0;k<ln;k++)
                     {
@@ -94,7 +97,7 @@ internal static unsafe partial class KernelRuntime
                     }
                 }
             }
-            return analytic&&support.Kind==SurfaceClass.Plane?SurfacePlaneIntersection.ValidateGraph(nodes[..nn],edges[..ne]):AlgorithmStatus.Success;
+            return implicitAnalytic?SurfacePlaneIntersection.ValidateGraph(nodes[..nn],edges[..ne]):AlgorithmStatus.Success;
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }

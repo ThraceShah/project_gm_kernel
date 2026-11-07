@@ -24,6 +24,8 @@ internal static unsafe partial class KernelRuntime
         LastBlendPlaneFirstRoots=LastBlendPlaneSecondRoots=0;
         var slot=GetSurfaceSlotByTag(surface);var record=Surfaces[slot];
         TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(planeTag)],out var plane);
+        if(CertifyExplicitRollingBallPlaneSeparation(record,plane))
+        {handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Empty;return 0;}
         // Procedural patches carry their own certified parameter boxes; they
         // do not need a single global tube bound before chart subdivision.
         AlgorithmStatus status;
@@ -50,6 +52,18 @@ internal static unsafe partial class KernelRuntime
         // arrangement maps its endpoints/coedges through that use sense.
         Curves[GetCurveSlotByTag(circle)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
         cuts[0]=new(){Curve=circle,First=lower,Last=upper};count=1;handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Ready;return 0;
+    }
+
+    private static bool CertifyExplicitRollingBallPlaneSeparation(in SurfaceRecord surface,in AnalyticSurface plane)
+    {
+        var data=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(data);var root=program.Surfaces[data.ProgramRoot];var spine=program.Spines[root.Spine];
+        if(!SpineParameterMap.Explicit(spine))return false;
+        var status=SpineParameterMap.Interval(spine.Curve,new IntervalDual(new IntervalNumber(surface.UMin,surface.UMax),1),out var centers,out _);
+        if(status!=AlgorithmStatus.Success)return false;
+        var normal=new IntervalVector(plane.Axis);var height=IntervalVector.Dot(centers-new IntervalVector(plane.Origin),normal).Value;
+        var radius=normal.Norm().Value*Math.Abs(root.Range0);
+        var envelope=height+new IntervalNumber(-radius.Upper,radius.Upper);
+        return envelope.Finite&&(envelope.Lower>0||envelope.Upper<0);
     }
 
     // Called only after a complete strip certificate proved strict u

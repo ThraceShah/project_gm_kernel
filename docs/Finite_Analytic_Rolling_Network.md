@@ -1,0 +1,57 @@
+# Finite analytic rolling candidates and interaction assembly
+
+Status: implementation in progress. Candidate geometry is not a completed solid fillet. The heterogeneous target still fails; current logs and accepted increments are recorded in `docs/reviews/advanced-modeling/topology-event-framework-acceptance.md`.
+
+## Exact candidate providers
+
+`CreateAnalyticRollingCandidate` reads the selected finite carrier, its two actual support occurrences, radius and oriented material normals. The same signed turn used by the regular provider determines the offset side. It does not dispatch by body size, coordinates or test identity.
+
+For two planes with unit normals n0/n1, signed offsets d0/d1 and c = dot(n0,n1), the line spine is the original intersection line translated by
+
+`n0 * (d0-c*d1)/(1-c*c) + n1 * (d1-c*d0)/(1-c*c)`.
+
+Unknowns are the two normal displacements; the nonsingular 2x2 Gram matrix gives the unique transverse translation. Parallel or unresolved normals fail. The finite line window is obtained by interval-projecting the complete finite bounds of every original face onto the spine axis and extending both bounds by one rolling radius. Thus its artificial end planes lie beyond the original body, including the rolling-ball envelope. This window is a mathematical construction domain, not a claim that all of it belongs to a finite source face.
+
+For equal-radius cylinders with an elliptic selected carrier and equal signed offset radii, homothety of the carrier about its centre by `offsetRadius/originalRadius` gives the candidate offset conic. This formula is accepted only after `NestedProgramCompiler.BlendSpine` independently certifies the full conic coefficients against **both** offset-cylinder equations. Skew axes, wrong centres, unequal offsets and unsupported carriers do not become approximate successes.
+
+The two cylinder normals coincide at the candidate points in the positive/negative direction perpendicular to both axes. Their exact conic parameters bound a half-turn branch containing the selected positive-length interval. These are collapsing rolling-section events. They are not deleted short edges or invented four-support sphere vertices. Parallel axes, a selected interval spanning more than one such branch, or a failed parameter/certificate check are unresolved/unsupported.
+
+The existing explicit-spine evaluator and compiler consume the generated line/ellipse. Contacts are exact affine images from `AnalyticSpineContact.Curve`. Principal-axis conversion diagonalizes their two trigonometric coefficient vectors; it does not fit samples. Their phase/reversal map is recovered by the complete coefficient certificate used by arrangement.
+
+`CertifyExplicitRollingBallPlaneSeparation` encloses the complete finite explicit spine in outward intervals and expands its plane projection by the full rolling-ball radius times the plane-normal norm. A strict signed gap proves empty intersection. Overlap or failure of this coarse enclosure is not an intersection result and falls through to the existing certified strip/SSI algorithms. This bound avoids demanding a regular surface inverse at collapsed endpoints just to exclude a remote plane.
+
+## Current network consumer
+
+Different-carrier, different-support selections enter `BuildInteractingRollingBlends`; same-carrier chains keep their existing normalized provider. The consumer creates all candidates before changing B-rep and requests support/band interactions through `PrepareSheetCutCurves`. Diagnostic traces identify the actual source occurrences, candidate surfaces, finite spine domains and intersection carriers. An incomplete interaction set is an operation failure with command rollback; it cannot publish a body.
+
+The consumer now clips interactions on `RegularBoundaryView`, splits original and candidate boundary occurrences, and sends both to the same `ArrangeFaceCutGraph` used by Boolean. This is implemented code under verification, not short-edge acceptance. Source cells are grouped across unchanged original-edge fragments; selected-edge incidence seeds the removed boundary. Candidate cells undergo original-solid classification and a bounded finite incidence search requiring a unique assignment with zero uses or exactly two opposite uses per edge. Ambiguous assignments or exhausted search budgets fail without publication. Product descriptions carry their actual result tags rather than relying on the original face count.
+
+`FixLocalBlendsCore` recognizes the supported finite analytic network before trying topology-writing fast paths. Once that provider starts, an unresolved result rolls back; it does not silently retry a legacy assembler. Same-carrier/common-support chains retain their existing normalized providers. A meeting of planar generator bands across three supports requires a separate corner provider and is rejected before construction by this consumer; the existing complete three-selected-edge corner algorithm still runs on its declared inputs. Nonadjacent components are not applied independently: all candidate pairs are intersected before any arrangement or publication.
+
+Plane-pair rolling uses its exact cylinder carrier with a finite angular sector and an artificial axial window. Cylinder-pair rolling uses its exact procedural canal and analytic conic contacts. Current network providers accept inward convex rolling only; existing other providers retain their previous domains.
+
+## Finite contacts and tangent branch ordering
+
+`FiniteCurveSurfaceResult` distinguishes complete, proved empty, unsupported, unresolved and exhausted results. A certificate retains carrier/surface generations, the exact native trim, source vertex identity, a parameter isolation interval and spatial error. On a plane/cylinder support the rolling ball meets that support only on its exact contact locus. Reducing boundary/surface roots to boundary/contact-curve roots avoids a rank-deficient tangent solve. A common cylinder-tangent plane has only an isolated point contact when its two tangent generators are nonparallel; interval coefficient identities and an actual source vertex certify that event.
+
+The scalar SSI provider uses the exact plane or length-scaled cylinder/sphere level set. A centred mean-value enclosure intersects the Cartesian interval bound; discovery still requires a regular monotone graph and completely isolated finite boundary roots. A nonconverged or singular graph is not empty. The manufactured scalar tests include disconnected generators, a closed circle and an isolated unresolved tangency.
+
+The joint procedural ICurve evaluator now exposes both support coordinates from the same occurrence solve, including nested rolling station/section coordinates. Clipping and boundary evaluation consume that association. A principal XYZ inverse previously moved negative conic stations onto another turn and incorrectly rejected real interaction segments.
+
+At a certified multi-participant event, a rolling surface's exact contact with a support transfers tangency to their intersection curves on a third transverse face. `ExtractSheetCycles` orders the resulting curve germs by tangent direction and separated signed geodesic-curvature intervals. For implicit curves, the existing certified occurrence tube supplies interval position, velocity, normals and normal derivatives. With unit tangent T, the acceleration satisfies `n.a = -T.Hn.T`, `m.a = -T.Hm.T`, `T.a = 0`; the two-normal solve encloses the required curvature. Overlapping curvature intervals remain unresolved. The bound applies to the actual analytic, spline or nested support evaluators; it does not replace an ICurve by a fitted curve.
+
+Collapsed endpoints can identify one physical vertex with two distinct V coordinates. Winding closes that parameter chart using the exact contact maps and domain endpoint, without adding a physical edge. A graph walk whose every exact edge use cancels against its reverse is a zero boundary chain and bounds no cell, irrespective of its spatial length.
+
+Finite explicit spines also persist their native terminators in `BlendedEdgeData`. The start/end records follow the spine's orientation; receive converts those oriented ends back to an increasing native interval before resolving the periodic lift. A command-only program window is insufficient: omitting native limits lets reload use an entire periodic carrier, changing the admissible rolling branch and its signed normals. The builder releases construction roots after cloning the selected cell closure; copied/reloaded results own their complete geometry without the source body.
+
+## Next assembly work
+
+Reuse `RegularBoundaryView`, `ClipRegularFacePair`, source-edge splitting, finite boundary association and common `SheetArrangement` rather than adding a fillet-only polygonizer:
+
+1. Describe each mathematical candidate patch using its contact carriers and finite domain. Collapsed sections identify physical endpoint events while retaining the distinct UV uses; no zero-length physical cap edge is required. Artificial line-window boundaries must remain outside the original material.
+2. Intersect original faces/candidate patches and candidate pairs, retaining native t/UV and branch evidence. Clip on both finite domains; certify common multi-participant events before sharing vertex identity.
+3. Arrange source faces and candidate patches into cells. Original selected-edge incidence seeds the removed boundary cells; propagation across original boundary fragments stops at certified candidate cuts.
+4. Select candidate cells with original-material classification and oriented shared-edge incidence. Every retained manifold edge needs exactly two opposite uses. Multiple unresolved cell solutions fail; closure alone is not a material-equivalence proof.
+5. Publish a provenance-aware replacement plan through the existing builder/journal, then run the self-constructed fresh-XT/PK/lifecycle/Boolean gates.
+
+This is an implementation direction, not proof that these later steps already work. In particular, unrelated candidate components still need a certified separation or a solved geometric interaction before they may be applied independently.

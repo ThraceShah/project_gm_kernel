@@ -13,6 +13,11 @@ internal static unsafe partial class KernelRuntime
 {
     private const BufferCount GeneralIntersectionNodeLimit = 8192;
     private const BufferCount GeneralIntersectionBranchLimit = 64;
+    internal enum GeneralIntersectionStage:byte{Discovery,Order,Limits,Bind}
+    [ThreadStatic] internal static SurfaceIntersectionNode LastGeneralLimitFirst,LastGeneralLimitLast;
+    [ThreadStatic] internal static GeneralIntersectionStage LastGeneralIntersectionStage;
+    [ThreadStatic] internal static AlgorithmStatus LastGeneralIntersectionStatus;
+    [ThreadStatic] internal static BufferCount LastGeneralIntersectionNodes,LastGeneralIntersectionSegments;
 
     private static AlgorithmStatus DiscoverGeneralSurfaceIntersections(SurfaceSlot first, SurfaceSlot second,
         Span<SurfaceIntersectionNode> nodes, out BufferCount nn, Span<SurfaceIntersectionSegment> segments, out BufferCount ne,PK_SURF_intersect_surf_o_s* options=null)
@@ -289,19 +294,24 @@ internal static unsafe partial class KernelRuntime
             var edges = ModelSpan<SurfaceIntersectionSegment>(bytes, ref cursor, GeneralIntersectionNodeLimit);
             var ordered = ModelSpan<SurfaceIntersectionNode>(bytes, ref cursor, GeneralIntersectionNodeLimit + GeneralIntersectionBranchLimit);
             var branches = ModelSpan<GeneralIntersectionBranch>(bytes, ref cursor, GeneralIntersectionBranchLimit);
+            LastGeneralIntersectionStage=GeneralIntersectionStage.Discovery;
             var status = DiscoverGeneralSurfaceIntersections(first, second, nodes, out var nn, edges, out var ne,options);
+            LastGeneralIntersectionStatus=status;LastGeneralIntersectionNodes=nn;LastGeneralIntersectionSegments=ne;
             if (status != AlgorithmStatus.Success)return IntersectionError(status);
             // L limits describe an artificial chart extent. An open pair
             // cannot certify completeness of the continuation beyond it.
             var unboundedBlendPair=Surfaces[first].Class==SurfaceClass.BlendSurface&&Surfaces[second].Class==SurfaceClass.BlendSurface
                 &&(options->have_uvbox_1==0||options->have_uvbox_2==0)&&(BlendHasArtificialLimit(first)||BlendHasArtificialLimit(second));
             if (ne == 0) return unboundedBlendPair?ParasolidConstants.PK_ERROR_cant_do_intersect:0;
-            status = OrderGeneralIntersectionGraph(nodes[..nn], edges[..ne], ordered, branches, out var nb);
+            LastGeneralIntersectionStage=GeneralIntersectionStage.Order;
+            status = OrderGeneralIntersectionGraph(nodes[..nn], edges[..ne], ordered, branches, out var nb);LastGeneralIntersectionStatus=status;
             if (status != AlgorithmStatus.Success)return IntersectionError(status);
+            LastGeneralIntersectionStage=GeneralIntersectionStage.Limits;
             for (var i = 0; i < nb; i++)
             {
                 ref readonly var branch = ref branches[i];
                 if (branch.Closed != 0) continue;
+                LastGeneralLimitFirst=ordered[branch.First];LastGeneralLimitLast=ordered[branch.First+branch.Count-1];
                 if(unboundedBlendPair)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 if (!GeneralIntersectionBoundary(first, second, ordered[branch.First],options)
                     || !GeneralIntersectionBoundary(first, second, ordered[branch.First + branch.Count - 1],options))
@@ -330,6 +340,7 @@ internal static unsafe partial class KernelRuntime
                 if (selected < 0) return ParasolidConstants.PK_ERROR_not_on_curve;
                 branches[0] = branches[selected]; nb = 1;
             }
+            LastGeneralIntersectionStage=GeneralIntersectionStage.Bind;
             var error = TryCloneEntityCore(Surfaces[first].Header.Tag, out var a); if (error != 0) return error;
             error = TryCloneEntityCore(Surfaces[second].Header.Tag, out var b); if (error != 0) return error;
             var tags = AllocateReturnSlice(nb);

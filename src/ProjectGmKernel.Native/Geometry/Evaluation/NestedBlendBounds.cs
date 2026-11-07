@@ -21,6 +21,14 @@ internal static partial class JointNestedBlendEvaluation
         return BoundGeometry(program,-1,spine,domain,output);
     }
 
+    internal static AlgorithmStatus BoundSpineCurvature(in NestedBlendProgram program,BlendSpineIndex spine,double parameter,BufferOffset side,out IntervalNumber curvature)
+    {
+        curvature=default;if(side is <0 or >1||SpineParameterMap.Explicit(program.Spines[spine]))return AlgorithmStatus.Unsupported;
+        Span<IntervalNumber> output=stackalloc IntervalNumber[9],result=stackalloc IntervalNumber[1];
+        var found=BoundSegment(program,-1,spine,new(parameter,parameter,0,0),output,curvature:result,curvatureSide:side);
+        if(found==AlgorithmStatus.Success)curvature=result[0];return found;
+    }
+
     // A local implicit foot is not a global reach certificate. Consumers
     // that extend incident cap edges require this stronger whole-ball proof.
     internal static AlgorithmStatus CertifySplineReach(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last)
@@ -88,7 +96,8 @@ internal static partial class JointNestedBlendEvaluation
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
-    private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default)
+    private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
+        Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0)
     {
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
@@ -172,6 +181,25 @@ internal static partial class JointNestedBlendEvaluation
         status=IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
+        if(!curvature.IsEmpty)
+        {
+            for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
+            var root=program.Spines[spine];var first=curvatureSide==0?root.First:root.Second;var second=curvatureSide==0?root.Second:root.First;
+            status=IntervalNormal(program,first,nodes,0,variables[..n],out _,out var firstNormal,splineCache);if(status!=AlgorithmStatus.Success)return status;
+            status=IntervalNormal(program,second,nodes,0,variables[..n],out _,out var secondNormal,splineCache);if(status!=AlgorithmStatus.Success)return status;
+            var a=new IntervalVector(firstNormal.X.Value,firstNormal.Y.Value,firstNormal.Z.Value);
+            var b=new IntervalVector(secondNormal.X.Value,secondNormal.Y.Value,secondNormal.Z.Value);
+            var da=new IntervalVector(firstNormal.X.Derivative,firstNormal.Y.Derivative,firstNormal.Z.Derivative);
+            var db=new IntervalVector(secondNormal.X.Derivative,secondNormal.Y.Derivative,secondNormal.Z.Derivative);
+            var velocity=new IntervalVector(image[0],image[1],image[2]);var speed=velocity.Norm().Value;
+            if(speed.Lower<=0)return AlgorithmStatus.NotConverged;var tangent=velocity/speed;
+            var ha=-IntervalVector.Dot(da,velocity).Value/(speed*speed);var hb=-IntervalVector.Dot(db,velocity).Value/(speed*speed);
+            var aa=IntervalVector.Dot(a,a).Value;var denominator=IntervalVector.Dot(b,IntervalVector.Cross(a,tangent)).Value;
+            if(aa.Lower<=0||denominator.ContainsZero)return AlgorithmStatus.NotConverged;
+            var alpha=ha/aa;
+            curvature[0]=(hb-alpha*IntervalVector.Dot(b,a).Value)/denominator*a.Norm().Value;
+            return curvature[0].Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+        }
         if(surface<0)
         {
             for(var i=0;i<3;i++){output[i]=boxes[i];output[3+i]=image[i];output[6+i]=0;}return AlgorithmStatus.Success;

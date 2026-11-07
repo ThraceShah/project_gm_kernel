@@ -20,6 +20,7 @@ internal static unsafe partial class KernelRuntime
             var status = MaterializeXtBrepGeometry(document, geometry[i], geometry, tags, out var tag);
             if (status != AlgorithmStatus.Success)
             {
+                if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"XT geometry node={geometry[i].Index} type={geometry[i].Type} status={status}");
                 // Unsupported geometry takes the opaque path in the same
                 // successful receive transaction, so its temporary entities
                 // must be explicitly retired rather than relying on rollback.

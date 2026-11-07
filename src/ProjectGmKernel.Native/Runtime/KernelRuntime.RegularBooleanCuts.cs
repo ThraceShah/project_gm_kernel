@@ -9,7 +9,15 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     private struct RegularCutFamily{internal SurfTag First,Second;internal BufferOffset Start,PointStart;internal BufferCount Count,PointCount;internal SurfacePairRelation Relation;}
-    private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;}
+    private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;internal byte SecondIsBoundary;}
+    private struct RegularBoundaryRoot
+    {
+        internal CurveTag Curve;
+        internal SurfTag TangentSupport;
+        internal SurfTag ContactSurface,ContactSupport;
+        internal FiniteCurveSurfaceRoot Root;
+        internal byte Certified;
+    }
 
     private static int ClipRegularContactPoints(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
         ReadOnlySpan<SurfaceIntersectionNode> points,Span<SurfaceIntersectionNode> accepted,out BufferCount count)
@@ -81,7 +89,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int RegularBoundarySurfaceRoots(in RegularBoundaryView input,BufferOffset face,SurfTag surface,
-        Span<KernelVector3> points,ref BufferCount count)
+        Span<RegularBoundaryRoot> points,ref BufferCount count,ReadOnlySpan<FiniteCurveSurfaceResult> certificates=default)
     {
         var record=input.Faces[face];Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
         for(var l=0;l<record.LoopCount;l++)
@@ -89,14 +97,33 @@ internal static unsafe partial class KernelRuntime
             var loop=input.Loops[record.FirstLoop+l];
             for(var k=0;k<loop.CoedgeCount;k++)
             {
-                var edge=input.Edges[input.Coedges[loop.FirstCoedge+k].Edge];
+                var inputEdge=input.Coedges[loop.FirstCoedge+k].Edge;var edge=input.Edges[inputEdge];
                 LastSheetPartitionStage=SheetPartitionStage.BoundaryIntersections;LastSheetCurve=edge.Curve;LastSheetParameter=edge.Start;
-                var status=IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out var n);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                var n=0;var known=false;FiniteCurveSurfaceResult proof=default;
+                foreach(var certificate in certificates)
+                {
+                    if(certificate.InputEdge!=inputEdge||certificate.Surface!=surface||certificate.Curve!=edge.Curve)continue;
+                    if(certificate.CurveGeneration!=Curves[GetCurveSlotByTag(edge.Curve)].Header.Generation||certificate.SurfaceGeneration!=Surfaces[GetSurfaceSlotByTag(surface)].Header.Generation
+                        ||certificate.First!=edge.Start||certificate.Last!=edge.End)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    if(certificate.State is not (FiniteIntersectionState.Complete or FiniteIntersectionState.Empty))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    known=true;proof=certificate;n=certificate.Count;
+                    for(var r=0;r<n;r++){var root=r==0?certificate.FirstRoot:certificate.SecondRoot;roots[r]=new(){Point=root.Point,First=root.Parameter,Kind=root.Kind};}
+                    break;
+                }
+                var status=known?AlgorithmStatus.Success:IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out n);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 for(var r=0;r<n;r++)
                 {
                     if(roots[r].Kind is not (IntersectionVectorKind.Simple or IntersectionVectorKind.Start or IntersectionVectorKind.End or IntersectionVectorKind.Tangent))return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                    var duplicate=false;for(var i=0;i<count;i++)duplicate|=ProfileDistance(points[i],roots[r].Point)<1e-8;
-                    if(!duplicate){if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;points[count++]=roots[r].Point;}
+                    var duplicate=false;for(var i=0;i<count;i++)duplicate|=points[i].Curve==edge.Curve&&points[i].Root.Parameter==roots[r].First;
+                    if(!duplicate)
+                    {
+                        if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+                        SurfTag contactSupport=0;
+                        foreach(var certificate in certificates)if(certificate.InputEdge==inputEdge&&certificate.TangentBoundary!=0)
+                        {contactSupport=certificate.Surface;break;}
+                        points[count++]=new(){Curve=edge.Curve,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,Certified=known?(byte)1:(byte)0,
+                            Root=known?(r==0?proof.FirstRoot:proof.SecondRoot):new(){Point=roots[r].Point,Vertex=-1,Parameter=roots[r].First,Kind=roots[r].Kind}};
+                    }
                 }
             }
         }
@@ -105,13 +132,13 @@ internal static unsafe partial class KernelRuntime
 
     private static int ClipRegularFacePair(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
         ReadOnlySpan<SheetCutCurve> curves,Span<RegularFaceCut> cuts,ref BufferCount cutCount,
-        Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model)
+        Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model,ReadOnlySpan<FiniteCurveSurfaceResult> certificates=default)
     {
-        Span<KernelVector3> roots=stackalloc KernelVector3[SheetPointLimit];var nRoots=0;
-        var error=RegularBoundarySurfaceRoots(input,first,input.Faces[second].Surface,roots,ref nRoots);if(error!=0)return error;
-        error=RegularBoundarySurfaceRoots(input,second,input.Faces[first].Surface,roots,ref nRoots);if(error!=0)return error;
+        Span<RegularBoundaryRoot> roots=stackalloc RegularBoundaryRoot[SheetPointLimit];var nRoots=0;
+        var error=RegularBoundarySurfaceRoots(input,first,input.Faces[second].Surface,roots,ref nRoots,certificates);if(error!=0)return error;
+        error=RegularBoundarySurfaceRoots(input,second,input.Faces[first].Surface,roots,ref nRoots,certificates);if(error!=0)return error;
         LastSheetPartitionStage=SheetPartitionStage.CutClip;
-        Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<KernelVector3> point=stackalloc KernelVector3[1];
+        Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<double> rootParameters=stackalloc double[SheetPointLimit];Span<KernelVector3> point=stackalloc KernelVector3[1];
         foreach(ref readonly var curve in curves)
         {
             var n=0;
@@ -121,10 +148,13 @@ internal static unsafe partial class KernelRuntime
             if(curve.Closed==0&&Curves[GetCurveSlotByTag(curve.Curve)].Class!=CurveClass.Line){parameters[n++]=curve.First;parameters[n++]=curve.Last;}
             for(var i=0;i<nRoots;i++)
             {
-                var p=new PK_VECTOR_s();WriteVector(&p,roots[i]);double t=0;error=CurveParameteriseVectorCore(curve.Curve,p,&t);
+                rootParameters[i]=double.NaN;
+                var p=new PK_VECTOR_s();WriteVector(&p,roots[i].Root.Point);double t=roots[i].Root.Parameter;
+                error=roots[i].Curve==curve.Curve?0:CurveParameteriseVectorCore(curve.Curve,p,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(curve.Curve,curve.First,curve.Last,ref t);
                 if(!OperationIntersection.InInterval(t,curve.First,curve.Last))continue;
+                rootParameters[i]=Math.Clamp(t,curve.First,curve.Last);
                 var duplicate=false;for(var j=0;j<n;j++)duplicate|=Math.Abs(parameters[j]-t)<1e-10;
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n++]=Math.Clamp(t,curve.First,curve.Last);}
             }
@@ -137,10 +167,10 @@ internal static unsafe partial class KernelRuntime
                 var at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;
                 var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
-                status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(input.Faces[first].Surface)],point[0],out var a);
-                if(status==AlgorithmStatus.InvalidInput)continue;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-                status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(input.Faces[second].Surface)],point[0],out var b);
-                if(status==AlgorithmStatus.InvalidInput)continue;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve.Curve,at,point[0],out var a);
+                if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
+                error=FiniteBoundarySurfaceParameters(input.Faces[second].Surface,curve.Curve,at,point[0],out var b);
+                if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
                 error=RegularFiniteFaceContains(input,first,a,point[0],out var insideA,out var boundaryA);if(error!=0)return error;if(!insideA)continue;
                 error=RegularFiniteFaceContains(input,second,b,point[0],out var insideB,out var boundaryB);if(error!=0)return error;if(!insideB)continue;
                 if(boundaryA&&boundaryB)continue;
@@ -156,10 +186,37 @@ internal static unsafe partial class KernelRuntime
                     status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                     error=model.AddPoint(point[0],-1,out var endpoint);if(error!=0)return error;
                     error=model.AssociateParameter(endpoint,cut.Curve,end==0?cut.First:cut.Last);if(error!=0)return error;
+                    var sourceParameter=end==0?lo:hi;
+                    for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter)
+                    {
+                        var root=roots[r];
+                        if(root.Certified!=0&&root.Root.Vertex>=0)
+                        {
+                            error=model.AddPoint(root.Root.Point,root.Root.Vertex,out var original);if(error!=0)return error;
+                            if(original!=endpoint)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        }
+                        if(root.Certified!=0)
+                        {error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,root.Root.Lower,root.Root.Upper);if(error!=0)return error;}
+                        if(root.Certified!=0&&root.Root.Kind==IntersectionVectorKind.Tangent&&root.TangentSupport!=0
+                            &&input.Faces[first].Surface!=root.TangentSupport&&input.Faces[second].Surface!=root.TangentSupport)
+                        {error=model.AssociateTangency(endpoint,root.Curve,cut.Curve);if(error!=0)return error;}
+                        if(root.ContactSupport!=0)
+                        {error=model.AssociateSurfaceContact(endpoint,root.ContactSurface,root.ContactSupport);if(error!=0)return error;}
+                    }
                 }
             }
         }
         return 0;
+    }
+
+    private static int FiniteBoundarySurfaceParameters(SurfTag surface,CurveTag curve,double parameter,in KernelVector3 point,out PK_UV_s uv)
+    {
+        var record=Curves[GetCurveSlotByTag(curve)];
+        if(TryAnalyticBlendContactMap(surface,record,record.TMin,record.TMax,out _,out _,out _)
+            ||record.Class==CurveClass.ICurve&&(SameSheetSupport(surface,ICurveDataPool[record.DataIndex].Surface0Tag)||SameSheetSupport(surface,ICurveDataPool[record.DataIndex].Surface1Tag)))
+            return SheetCurveUV(surface,curve,parameter,true,out uv,out _,out _);
+        var found=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
+        return found==AlgorithmStatus.InvalidInput?ParasolidConstants.PK_ERROR_not_on_surface:IntersectionError(found);
     }
 
     private static bool RegularPointOutsideSupport(SurfTag surface,in KernelVector3 point)
@@ -206,7 +263,7 @@ internal static unsafe partial class KernelRuntime
                 }
                 var add=model.AddEdge(curve,lo,hi,positive?vertices[i]:vertices[next],positive?vertices[next]:vertices[i],false,out _);if(add!=0)return add;
             }
-            sources[e]=new(){Source=original[e],First=start,Count=model.NE-start};
+            sources[e]=new(){Source=original[e],InputEdge=e,First=start,Count=model.NE-start};
         }
         return 0;
     }

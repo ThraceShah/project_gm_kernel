@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
@@ -13,6 +14,7 @@ internal static unsafe partial class KernelRuntime
     private struct SheetSourceEdge
     {
         internal EdgeSlot Source;
+        internal BufferOffset InputEdge;
         internal BufferOffset First;
         internal BufferCount Count;
         internal byte InPlane;
@@ -46,22 +48,31 @@ internal static unsafe partial class KernelRuntime
         internal Span<sbyte> Sides;
         internal Span<PK_UV_s> Witnesses;
         internal Span<BoundaryParameter> Parameters;
+        internal Span<BoundaryTangency> Tangencies;
+        internal BufferCount TangencyCount;
+        internal Span<BoundarySurfaceContact> SurfaceContacts;
+        internal BufferCount SurfaceContactCount;
         internal BufferCount ParameterCount;
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
 
-        internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter)
+        internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN)
         {
             if(Parameters.IsEmpty)return 0;
+            if(double.IsNaN(lower)){lower=parameter;upper=parameter;}
             var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
             for(var i=0;i<ParameterCount;i++)
             {
-                var known=Parameters[i];
+                ref var known=ref Parameters[i];
                 if(known.Event==endpoint&&known.Carrier==curve&&known.Generation==generation)
-                    return known.Parameter==parameter?0:ParasolidConstants.PK_ERROR_cant_do_intersect;
+                {
+                    if(upper<known.Lower||lower>known.Upper)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    known.Lower=Math.Max(lower,known.Lower);known.Upper=Math.Min(upper,known.Upper);
+                    known.Parameter=Math.Clamp(known.Parameter,known.Lower,known.Upper);return 0;
+                }
             }
             if(ParameterCount==Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Parameter=parameter};return 0;
+            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Parameter=parameter,Lower=lower,Upper=upper};return 0;
         }
 
         internal bool KnownParameter(BoundaryEventId endpoint,CurveTag curve,out double parameter)
@@ -72,6 +83,32 @@ internal static unsafe partial class KernelRuntime
                 var known=Parameters[i];if(known.Event!=endpoint||known.Carrier!=curve||known.Generation!=generation)continue;
                 parameter=known.Parameter;return true;
             }
+            return false;
+        }
+
+        internal int AssociateTangency(BoundaryEventId endpoint,CurveTag first,CurveTag second)
+        {
+            if(Tangencies.IsEmpty||first==second)return 0;
+            if(KnownTangency(endpoint,first,second))return 0;
+            if(TangencyCount==Tangencies.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+            Tangencies[TangencyCount++]=new(){Event=endpoint,First=first,Second=second};return 0;
+        }
+
+        internal int AssociateSurfaceContact(BoundaryEventId endpoint,SurfTag first,SurfTag second)
+        {
+            foreach(var contact in SurfaceContacts[..SurfaceContactCount])if(contact.Event==endpoint
+                &&(contact.First==first&&contact.Second==second||contact.First==second&&contact.Second==first))return 0;
+            if(SurfaceContactCount==SurfaceContacts.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+            SurfaceContacts[SurfaceContactCount++]=new(){Event=endpoint,First=first,Second=second};return 0;
+        }
+
+        internal bool KnownTangency(BoundaryEventId endpoint,CurveTag first,CurveTag second,SurfTag surface=0)
+        {
+            foreach(var contact in Tangencies[..TangencyCount])
+                if(contact.Event==endpoint&&(contact.First==first&&contact.Second==second||contact.First==second&&contact.Second==first))return true;
+            if(surface!=0&&OtherBoundarySupport(surface,first,out var a)&&OtherBoundarySupport(surface,second,out var b))
+                foreach(var contact in SurfaceContacts[..SurfaceContactCount])if(contact.Event==endpoint
+                    &&(SameSheetSupport(a,contact.First)&&SameSheetSupport(b,contact.Second)||SameSheetSupport(a,contact.Second)&&SameSheetSupport(b,contact.First)))return true;
             return false;
         }
 
@@ -207,6 +244,35 @@ internal static unsafe partial class KernelRuntime
                 }
             }
         }
+        return ArrangeFaceCutGraph(face,surface,NormalizeLocalSense(Faces[face].Orientation),plane,reverse,sources,cuts,ref model,halfedges,nh,cycleCoedges,cycles,borrowGeometry,checkAllBoundaries,default,-1);
+    }
+
+    private static int ArrangeFiniteInputFace(in RegularBoundaryView input,BufferOffset face,FaceSlot source,
+        ReadOnlySpan<SheetSourceEdge> sources,ReadOnlySpan<SheetCutCurve> cuts,ref SheetArrangement model,
+        Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles)
+    {
+        var record=input.Faces[face];var reverse=LocalSenseSign(record.Sense)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(record.Surface)].Sense)<0;var count=0;
+        for(var l=0;l<record.LoopCount;l++)
+        {
+            var loop=input.Loops[record.FirstLoop+l];
+            foreach(var coedge in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+            {
+                var found=-1;for(var e=0;e<sources.Length;e++)if(sources[e].InputEdge==coedge.Edge){found=e;break;}
+                if(found<0)return ParasolidConstants.PK_ERROR_bad_loop;var fragments=sources[found];
+                for(var i=0;i<fragments.Count;i++)
+                {
+                    var error=AddSheetHalfedge(record.Surface,ref model,fragments.First+i,(byte)(coedge.Forward^(reverse?1:0)),halfedges,ref count,source);if(error!=0)return error;
+                }
+            }
+        }
+        return ArrangeFaceCutGraph(source,record.Surface,record.Sense,0,reverse,sources,cuts,ref model,halfedges,count,cycleCoedges,cycles,true,false,input,face);
+    }
+
+    private static int ArrangeFaceCutGraph(FaceSlot face,SurfTag surface,KernelSense sense,SurfTag plane,bool reverse,
+        ReadOnlySpan<SheetSourceEdge> sources,ReadOnlySpan<SheetCutCurve> cuts,ref SheetArrangement model,Span<SheetHalfedge> halfedges,
+        BufferCount nh,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles,bool borrowGeometry,bool checkAllBoundaries,
+        in RegularBoundaryView domain,BufferOffset domainFace)
+    {
         Span<double> parameters=stackalloc double[SheetPointLimit];Span<BufferOffset> endpoints=stackalloc BufferOffset[SheetPointLimit];
         Span<OperationIntersectionPoint> coincidenceRoots=stackalloc OperationIntersectionPoint[checkAllBoundaries?IntersectionPointCapacity:0];
         for(var c=0;c<cuts.Length;c++)
@@ -241,9 +307,10 @@ internal static unsafe partial class KernelRuntime
                 {
                     var fraction=.3819660112501051+attempt*.037;var t=first+span*fraction;if(t>cut.Last)t=cut.First+t-cut.Last;
                     var error=SheetCurveUV(surface,cut.Curve,t,true,out var uv,out _,out var point);if(error!=0)return error;
-                    error=SheetPointOnCoincidentBoundary(face,sources,point,out var coincident,checkAllBoundaries);if(error!=0)return error;
+                    var coincident=false;
+                    if(face>=0){error=SheetPointOnCoincidentBoundary(face,sources,point,out coincident,checkAllBoundaries);if(error!=0)return error;}
                     if(coincident){inside=false;located=true;break;}
-                    error=SheetSourceContains(face,uv,out inside);
+                    error=domainFace>=0?RegularFaceContains(domain,domainFace,uv,out inside):SheetSourceContains(face,uv,out inside);
                     if(error==ParasolidConstants.PK_ERROR_eval_failure)continue;if(error!=0)return error;located=true;break;
                 }
                 if(!located)return ParasolidConstants.PK_ERROR_eval_failure;if(!inside)continue;
@@ -286,7 +353,7 @@ internal static unsafe partial class KernelRuntime
         }
         var arrangementError=ExtractSheetCycles(surface,ref model,halfedges[..nh],cycleCoedges,cycles,out var cycleCount,out var coedgeCount);
         if(arrangementError!=0)return arrangementError;
-        return PublishSheetCycles(face,plane,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],borrowGeometry);
+        return PublishFiniteSheetCycles(surface,sense,face,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],plane,borrowGeometry);
     }
 
     private static int ExtractSheetCycles(SurfTag surface,ref SheetArrangement model,Span<SheetHalfedge> halfedges,
@@ -297,7 +364,9 @@ internal static unsafe partial class KernelRuntime
         // on the left, including intersections at existing vertices.
         for(var i=0;i<nh;i++)
         {
+            LastSheetPartitionStage=SheetPartitionStage.CycleTrace;
             ref var h=ref halfedges[i];ref readonly var edge=ref model.Edges[h.Edge];
+            LastSheetCurve=edge.Curve;LastSheetParameter=i;
             var end=h.EndEvent;
             if(end<0){h.Next=i;continue;}
             var best=double.PositiveInfinity;var next=-1;
@@ -306,9 +375,38 @@ internal static unsafe partial class KernelRuntime
                 ref readonly var candidate=ref halfedges[j];ref readonly var ce=ref model.Edges[candidate.Edge];
                 var start=candidate.StartEvent;if(start!=end)continue;
                 var angle=h.EndAngle+Math.PI-candidate.StartAngle;angle-=Math.Tau*Math.Floor(angle/Math.Tau);if(angle<1e-12)angle=Math.Tau;
-                if(angle<best){best=angle;next=j;}
+                var tangentPair=edge.Curve==ce.Curve||model.KnownTangency(end,edge.Curve,ce.Curve,surface);
+                if(tangentPair)
+                {
+                    if(Math.Cos(h.EndAngle+Math.PI-candidate.StartAngle)<0)angle=Math.PI;
+                    else if(h.Edge==candidate.Edge&&h.Forward!=candidate.Forward)angle=Math.Tau;
+                    else
+                    {
+                        if(!TryBoundaryCurvature(surface,edge,h.Forward,true,out var incoming)
+                            ||!TryBoundaryCurvature(surface,ce,candidate.Forward,false,out var outgoing))return ParasolidConstants.PK_ERROR_not_implemented;
+                        var turn=-incoming-outgoing;
+                        if(turn.Lower>0)angle=0;else if(turn.Upper<0)angle=Math.Tau;
+                        else return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    }
+                }
+                var choose=angle<best;
+                if(next>=0)
+                {
+                    ref readonly var previous=ref halfedges[next];var previousEdge=model.Edges[previous.Edge];
+                    if(Math.Abs(angle-best)<Math.PI&&model.KnownTangency(end,ce.Curve,previousEdge.Curve,surface)&&Math.Cos(candidate.StartAngle-previous.StartAngle)>0)
+                    {
+                        if(!TryBoundaryCurvature(surface,ce,candidate.Forward,false,out var currentCurvature)
+                            ||!TryBoundaryCurvature(surface,previousEdge,previous.Forward,false,out var previousCurvature))return ParasolidConstants.PK_ERROR_not_implemented;
+                        var order=currentCurvature-previousCurvature;
+                        if(order.Lower>0)choose=true;else if(order.Upper<0)choose=false;
+                        else return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    }
+                }
+                if(choose){best=angle;next=j;}
             }
             if(next<0)return ParasolidConstants.PK_ERROR_bad_loop;h.Next=next;
+            TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.Successor,Surface=surface,Curve=edge.Curve,Edge=h.Edge,NextEdge=halfedges[next].Edge,
+                StartEvent=h.StartEvent,EndEvent=h.EndEvent,Forward=h.Forward,StartAngle=h.StartAngle,EndAngle=h.EndAngle});
         }
         for(var seed=0;seed<nh;seed++)
         {
@@ -316,13 +414,116 @@ internal static unsafe partial class KernelRuntime
             var first=coedgeCount;var current=seed;
             do
             {
+                LastSheetPartitionStage=SheetPartitionStage.CycleTrace;
+                LastSheetCurve=model.Edges[halfedges[current].Edge].Curve;LastSheetParameter=current;
                 ref var h=ref halfedges[current];if(h.Used!=0||coedgeCount==cycleCoedges.Length)return ParasolidConstants.PK_ERROR_bad_loop;
                 h.Used=1;cycleCoedges[coedgeCount++]=new(){Edge=h.Edge,Forward=h.Forward};current=h.Next;
             }while(current!=seed);
             var cycle=new SheetCycle{First=first,Count=coedgeCount-first,Parent=-1};
+            if(NullSheetBoundary(cycleCoedges.Slice(first,cycle.Count))){coedgeCount=first;continue;}
+            LastSheetPartitionStage=SheetPartitionStage.CycleWitness;
             var error=SheetCycleWitness(surface,model.Edges[..model.NE],cycleCoedges.Slice(first,cycle.Count),out cycle.Left,out cycle.Positive);if(error!=0)return error;
             cycles[cycleCount++]=cycle;
         }
         return 0;
+    }
+
+    // A finite cut can end in the interior of the other occurrence's
+    // mathematical domain. Traversing its exact edge uses in both directions
+    // is a zero 1-chain, hence bounds no cell; spatial size is irrelevant.
+    private static bool NullSheetBoundary(ReadOnlySpan<ModelingCoedge> boundary)
+    {
+        foreach(var edge in boundary)
+        {
+            var balance=0;
+            foreach(var other in boundary)if(other.Edge==edge.Edge)balance+=other.Forward!=0?1:-1;
+            if(balance!=0)return false;
+        }
+        return true;
+    }
+
+    // Certified tangency supplies the common first-order ray. The first
+    // separated normal-curvature coefficient orders its two germs; a finite
+    // offset sample cannot distinguish a true contact from a short crossing.
+    private static bool TryBoundaryCurvature(SurfTag surface,in ModelingEdge edge,byte forward,bool atEnd,out IntervalNumber curvature)
+    {
+        curvature=default;var support=Surfaces[GetSurfaceSlotByTag(surface)];
+        var record=Curves[GetCurveSlotByTag(edge.Curve)];
+        var positive=(forward!=0)==(LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0);
+        var parameter=positive!=atEnd?edge.Start:edge.End;
+        if(!TryReadExplicitSpineCurve(record,out var curve))return TryImplicitBoundaryCurvature(surface,record,parameter,positive,out curvature);
+        if(!TryPrepareSurface(support,out var analytic))return false;
+        if(curve.Kind==CurveClass.Line)return true;
+        var status=SpineParameterMap.Interval(curve,new IntervalDual(parameter,1),out var point,out var tangent);
+        if(status!=AlgorithmStatus.Success)return false;
+        var d1=new IntervalVector(tangent.X.Value,tangent.Y.Value,tangent.Z.Value);
+        var d2=new IntervalVector(tangent.X.Derivative,tangent.Y.Derivative,tangent.Z.Derivative);
+        var length=d1.Norm().Value;if(length.Lower<=0)return false;
+        var normal=new IntervalVector(analytic.Axis);
+        if(analytic.Kind==SurfaceClass.Cylinder)
+        {
+            var delta=new IntervalVector(point.X.Value,point.Y.Value,point.Z.Value)-new IntervalVector(analytic.Origin);
+            normal=(delta-normal*IntervalVector.Dot(delta,normal)).Unit();
+        }
+        else if(analytic.Kind!=SurfaceClass.Plane)return false;
+        curvature=IntervalVector.Dot(normal,IntervalVector.Cross(d1,d2)).Value/(length*length*length);
+        if(!positive)curvature=-curvature;return curvature.Finite;
+    }
+
+    private static bool OtherBoundarySupport(SurfTag surface,CurveTag curve,out SurfTag other)
+    {
+        other=0;var record=Curves[GetCurveSlotByTag(curve)];if(record.Class!=CurveClass.ICurve)return false;
+        var data=ICurveDataPool[record.DataIndex];
+        if(SameSheetSupport(surface,data.Surface0Tag))other=data.Surface1Tag;
+        else if(SameSheetSupport(surface,data.Surface1Tag))other=data.Surface0Tag;
+        return other!=0;
+    }
+
+    private static bool TryImplicitBoundaryCurvature(SurfTag surface,in CurveRecord record,double parameter,bool positive,out IntervalNumber curvature)
+    {
+        curvature=default;if(record.Class!=CurveClass.ICurve)return false;
+        var data=ICurveDataPool[record.DataIndex];var a=data.Surface0Tag;var b=data.Surface1Tag;
+        if(data.ProgramBlock>0)
+        {
+            var side=SameSheetSupport(surface,a)?0:SameSheetSupport(surface,b)?1:-1;if(side<0)return false;
+            var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+            var status=JointNestedBlendEvaluation.BoundSpineCurvature(program,data.ProgramSpine,parameter,side,out curvature);
+            curvature*=LocalSenseSign(Surfaces[GetSurfaceSlotByTag(surface)].Sense);
+            if(!positive)curvature=-curvature;return status==AlgorithmStatus.Success;
+        }
+        if(SameSheetSupport(surface,b))(a,b)=(b,a);else if(!SameSheetSupport(surface,a))return false;
+        if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(a)],out var first)||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(b)],out var second))return false;
+        var found=CertifiedIntersectionCurveExtent(record.Header.Tag,Math.BitDecrement(parameter),Math.BitIncrement(parameter),out var box);
+        if(found!=AlgorithmStatus.Success)return false;
+        var point=new IntervalVector(new IntervalNumber(box.XLo,box.XHi),new IntervalNumber(box.YLo,box.YHi),new IntervalNumber(box.ZLo,box.ZHi));
+        if(!TryQuadricGradient(first,point,out var n)||!TryQuadricGradient(second,point,out var m))return false;
+        var cross=IntervalVector.Cross(n,m);var length=cross.Norm().Value;if(length.Lower<=0)return false;var tangent=cross/length;
+        Span<KernelVector3> jet=stackalloc KernelVector3[2];
+        if(EvaluateCurveCore(in record,parameter,1,false,jet,out _)!=AlgorithmStatus.Success)return false;
+        var alignment=IntervalVector.Dot(tangent,new IntervalVector(jet[1])).Value;
+        if(alignment.ContainsZero)return false;if((alignment.Lower>0)!=positive)tangent=tangent*-1;
+        var h=QuadricSecond(first,tangent);var k=QuadricSecond(second,tangent);
+        var nn=IntervalVector.Dot(n,n).Value;var lateral=IntervalVector.Cross(n,tangent);var denominator=IntervalVector.Dot(m,lateral).Value;
+        if(nn.Lower<=0||denominator.ContainsZero)return false;
+        var alpha=-h/nn;
+        curvature=(-k-alpha*IntervalVector.Dot(m,n).Value)/denominator*n.Norm().Value;return curvature.Finite;
+    }
+
+    private static bool TryQuadricGradient(in AnalyticSurface surface,in IntervalVector point,out IntervalVector normal)
+    {
+        normal=new(surface.Axis);if(surface.Kind==SurfaceClass.Plane)return true;
+        var delta=point-new IntervalVector(surface.Origin);
+        if(surface.Kind==SurfaceClass.Sphere){normal=delta;return true;}
+        if(surface.Kind!=SurfaceClass.Cylinder)return false;
+        normal=delta-normal*IntervalVector.Dot(delta,normal);return true;
+    }
+
+    private static IntervalNumber QuadricSecond(in AnalyticSurface surface,in IntervalVector tangent)
+    {
+        if(surface.Kind==SurfaceClass.Plane)return 0;
+        var result=IntervalVector.Dot(tangent,tangent).Value;
+        if(surface.Kind==SurfaceClass.Cylinder)
+        {var axial=IntervalVector.Dot(new IntervalVector(surface.Axis),tangent).Value;result-=axial*axial;}
+        return result;
     }
 }

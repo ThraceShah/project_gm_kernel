@@ -9,6 +9,24 @@ namespace KernelTests;
 
 public class NestedBlendBoundsTests
 {
+    [Theory]
+    [InlineData(1)] [InlineData(-1)]
+    public void ImplicitCircleCurvatureRetainsTheSignedSupportingNormal(double normalSense)
+    {
+        var z=new KernelVector3{Z=1};var x=new KernelVector3{X=1};
+        BlendSurfaceInstruction[] surfaces=[new(){Analytic=new(SurfaceClass.Plane,default,z,x),NormalSense=normalSense},new(){Analytic=new(SurfaceClass.Sphere,default,z,x,1),NormalSense=1}];
+        Span<KernelVector3> positions=stackalloc KernelVector3[3],tangents=stackalloc KernelVector3[3],chords=stackalloc KernelVector3[2];
+        Span<double> parameters=stackalloc double[3],scales=stackalloc double[2];
+        for(var i=0;i<3;i++){var angle=(i-1)*.3;positions[i]=new(){X=Math.Cos(angle),Y=Math.Sin(angle)};tangents[i]=new(){X=-Math.Sin(angle),Y=Math.Cos(angle)};}
+        Assert.Equal(AlgorithmStatus.Success,OriginalChartParameterMap.Build(positions,tangents,0,1,parameters,scales,chords,out _,out _));
+        var charts=new BlendChartInstruction[3];
+        for(var i=0;i<3;i++)charts[i]=new(){Position=positions[i],Parameter=parameters[i],Chord=i<2?chords[i]:default,Scale=i<2?scales[i]:1};
+        BlendSpineInstruction[] spines=[new(){First=0,Second=1,ChartCount=3,StartType=LimitType.Artificial,EndType=LimitType.Artificial}];
+        var program=new NestedBlendProgram(surfaces,spines,charts);
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineCurvature(program,0,(parameters[1]+parameters[2])*.5,0,out var curvature));
+        Assert.InRange(normalSense,curvature.Lower,curvature.Upper);Assert.InRange(curvature.Upper-curvature.Lower,0,1e-8);
+    }
+
     [Fact]
     public void CertifiedTubeEnclosesPositionsAndFirstDerivativesThroughoutAParameterCell()
     {

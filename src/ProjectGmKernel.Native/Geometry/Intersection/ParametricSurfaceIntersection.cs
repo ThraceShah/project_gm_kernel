@@ -41,6 +41,10 @@ internal struct ParameterCell
 /// </summary>
 internal static class ParametricSurfaceIntersection
 {
+    internal enum GraphFailure:byte{None,Budget,SubdivisionLimit}
+    [ThreadStatic] internal static GraphFailure LastGraphFailure;
+    [ThreadStatic] internal static ParameterCell LastUnresolvedCell;
+    [ThreadStatic] internal static BufferOffset LastGraphAxis;
     internal const BufferCount MaxCells = 200000;
     private const double ParameterTolerance = 2e-10;
 
@@ -59,6 +63,7 @@ internal static class ParametricSurfaceIntersection
     internal static AlgorithmStatus FindProcedural(scoped in SurfaceIntersectionPatch firstSource,scoped in SurfaceIntersectionPatch secondSource,
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining)
     {
+        LastGraphFailure=GraphFailure.None;
         Span<SurfaceBoundCacheEntry> firstCache=stackalloc SurfaceBoundCacheEntry[256],secondCache=stackalloc SurfaceBoundCacheEntry[256];firstCache.Clear();secondCache.Clear();
         var first=new SurfaceIntersectionPatch(firstSource,firstCache);var second=new SurfaceIntersectionPatch(secondSource,secondCache);
         Span<ParameterCell> pending = stackalloc ParameterCell[256];
@@ -72,7 +77,7 @@ internal static class ParametricSurfaceIntersection
         while (count > 0)
         {
             ModelingPerformance.Cell(false);
-            if (++visited > MaxCells||remaining--<=0){ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
+            if (++visited > MaxCells||remaining--<=0){LastGraphFailure=GraphFailure.Budget;LastUnresolvedCell=pending[count-1];ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var cell = pending[--count]; var savedNodes = nodeCount; var savedSegments = segmentCount;
             var status = Bounds(first, second, cell, f, jac);if(status!=AlgorithmStatus.Success&&status!=AlgorithmStatus.NotConverged)return status;
             var bounded=status==AlgorithmStatus.Success;
@@ -142,7 +147,8 @@ internal static class ParametricSurfaceIntersection
             // Admission above can only fail while isolating a later gap; use
             // a checkpoint for both result buffers.
             nodeCount = savedNodes; segmentCount = savedSegments;
-            if (cell.Depth >= 48 || count + 2 > pending.Length) return AlgorithmStatus.NotConverged;
+            if (cell.Depth >= 48 || count + 2 > pending.Length)
+            {LastGraphFailure=GraphFailure.SubdivisionLimit;LastUnresolvedCell=cell;LastGraphAxis=free;return AlgorithmStatus.NotConverged;}
             var split = 0; var widest = 0.0;
             for (var d = 0; d < 4; d++) if (cell.Width(d) / initial.Width(d) > widest) { split = d; widest = cell.Width(d) / initial.Width(d); }
             if(!bounded){if(first.IsProcedural&&first.Bound(cell.First,check)==AlgorithmStatus.NotConverged)split=0;else if(second.IsProcedural&&second.Bound(cell.Second,check)==AlgorithmStatus.NotConverged)split=2;}

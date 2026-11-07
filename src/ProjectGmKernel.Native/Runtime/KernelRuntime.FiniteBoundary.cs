@@ -9,7 +9,17 @@ internal static unsafe partial class KernelRuntime
         internal BoundaryEventId Event;
         internal CurveTag Carrier;
         internal EntityGeneration Generation;
-        internal double Parameter;
+        internal double Parameter,Lower,Upper;
+    }
+    private struct BoundaryTangency
+    {
+        internal BoundaryEventId Event;
+        internal CurveTag First,Second;
+    }
+    private struct BoundarySurfaceContact
+    {
+        internal BoundaryEventId Event;
+        internal SurfTag First,Second;
     }
     // Endpoint identities belong to one command's explicit incidence graph.
     // A positive-length interval is retained regardless of its spatial length.
@@ -31,7 +41,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
-    internal enum BoundaryTraceStage:byte{Input,Arrangement,Product}
+    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product}
     internal struct BoundaryTrace
     {
         internal BoundaryTraceStage Stage;
@@ -39,9 +49,9 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag Surface;
         internal CurveTag Curve,ProductCurve;
         internal EntityGeneration Generation;
-        internal BufferOffset Edge,Face;
+        internal BufferOffset Edge,Face,NextEdge;
         internal BoundaryEventId StartEvent,EndEvent;
-        internal double First,Last;
+        internal double First,Last,StartAngle,EndAngle;
         internal byte Forward;
     }
     [ThreadStatic] internal static Action<BoundaryTrace>? TraceFiniteBoundary;

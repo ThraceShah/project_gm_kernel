@@ -102,6 +102,16 @@ internal static unsafe partial class KernelRuntime
             surface.Class=SurfaceClass.BlendSurface;surface.DataIndex=dataSlot;surface.OwnerFace=-1;
             surface.Sense=ParasolidConstants.PK_TOPOL_sense_positive_c;
             var source=program.Spines[root.Spine];var domain=program.Charts.Slice(source.ChartOffset,source.ChartCount);
+            if(SpineParameterMap.Explicit(source)&&source.StartType==LimitType.Terminator&&source.EndType==LimitType.Terminator)
+            {
+                var limits=(KernelVector3*)State.Session->Blocks.TryAllocate(2*(nuint)sizeof(KernelVector3));
+                if(limits==null){FreeNestedBlendData(dataSlot);KernelRuntime.Surfaces.Free(slot);return ParasolidConstants.PK_ERROR_memory_full;}
+                data.HvecBlock=State.Session->Blocks.HandleOf(limits);data.HvecCount=2;
+                var reverse=source.Sense==ParasolidConstants.PK_TOPOL_sense_negative_c;
+                limits[0]=domain[reverse?^1:0].Position;limits[1]=domain[reverse?0:^1].Position;
+                data.StartLimit=new(){Type=LimitType.Terminator,TermUse=LimitTermUse.Unset,HvecCount=1,HvecIndex=0};
+                data.EndLimit=new(){Type=LimitType.Terminator,TermUse=LimitTermUse.Unset,HvecCount=1,HvecIndex=1};
+            }
             surface.UMin=domain[0].Parameter;surface.UMax=domain[^1].Parameter;surface.VMin=0;surface.VMax=1;
             var tag=AllocateTag(EntityClass.Surface,PoolKind.Surface,slot,surface.Header.Generation);
             if(tag<=0){FreeNestedBlendData(dataSlot);KernelRuntime.Surfaces.Free(slot);return ParasolidConstants.PK_ERROR_memory_full;}

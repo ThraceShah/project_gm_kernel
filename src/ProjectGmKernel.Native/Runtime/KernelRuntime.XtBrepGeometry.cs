@@ -150,6 +150,7 @@ internal static unsafe partial class KernelRuntime
                     if(CurveParameteriseVectorCore(curve,p,&lower)!=0)return AlgorithmStatus.InvalidInput;
                     p.coord[0]=limits[3];p.coord[1]=limits[4];p.coord[2]=limits[5];
                     if(CurveParameteriseVectorCore(curve,p,&upper)!=0)return AlgorithmStatus.InvalidInput;
+                    if(LocalSenseSign(Curves[GetCurveSlotByTag(curve)].Sense)<0)(lower,upper)=(upper,lower);
                     if(Curves[GetCurveSlotByTag(curve)].Class is CurveClass.Circle or CurveClass.Ellipse)
                         while(upper<=lower)upper+=Math.Tau;
                     if(!(upper>lower))return AlgorithmStatus.InvalidInput;
@@ -158,7 +159,7 @@ internal static unsafe partial class KernelRuntime
                 if(error==0&&firstLimit.HvecCount!=0)
                 {
                     ref var data=ref BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(created)].DataIndex];
-                    var payload=State.Session->Blocks.TryAllocate(6*8);if(payload==null)return AlgorithmStatus.WorkspaceTooSmall;
+                    var payload=data.HvecBlock>0&&data.HvecCount==2?DereferenceBlock(data.HvecBlock):State.Session->Blocks.TryAllocate(6*8);if(payload==null)return AlgorithmStatus.WorkspaceTooSmall;
                     data.HvecBlock=State.Session->Blocks.HandleOf(payload);data.HvecCount=2;limits.CopyTo(new Span<double>(payload,6));
                     data.StartLimit=firstLimit;data.EndLimit=lastLimit;
                 }

@@ -77,7 +77,8 @@ internal static unsafe partial class KernelRuntime
         nodeCount = segmentCount = 0;
         if (!TryPrepareSurface(Surfaces[first], out var a) || !TryPrepareSurface(Surfaces[second], out var b)) return AlgorithmStatus.Unsupported;
         var status = AnalyticIntersectionBounds(a, b, out var bounds); if (status != AlgorithmStatus.Success) return status;
-        var ac = AnalyticBezierPatches.Count(a); var bc = AnalyticBezierPatches.Count(b);
+        var implicitSecond=AnalyticLevelSet.Supported(b);
+        var ac = AnalyticBezierPatches.Count(a); var bc = implicitSecond?1:AnalyticBezierPatches.Count(b);
         if (ac == 0 || bc == 0) return AlgorithmStatus.Unsupported;
         if (!AnalyticBezierPatches.HasDomain(a, bounds) || !AnalyticBezierPatches.HasDomain(b, bounds)) return AlgorithmStatus.Success;
         Span<IntervalNumber> ap = stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
@@ -90,6 +91,7 @@ internal static unsafe partial class KernelRuntime
             var localNodes = ModelSpan<SurfaceIntersectionNode>(bytes, ref cursor, GeneralIntersectionNodeLimit);
             var localEdges = ModelSpan<SurfaceIntersectionSegment>(bytes, ref cursor, GeneralIntersectionNodeLimit);
             var map = ModelSpan<BufferOffset>(bytes, ref cursor, GeneralIntersectionNodeLimit);
+            BufferCount remaining=ParametricSurfaceIntersection.MaxCells;
             for (var i = 0; i < ac; i++)
             {
                 status = AnalyticBezierPatches.Create(a, bounds, i, ap, out var p, out var q, out var domain);
@@ -97,11 +99,16 @@ internal static unsafe partial class KernelRuntime
                 var patch = new BezierSurfacePatch(ap[..(4*(p+1)*(q+1))],p,q,domain);
                 for (var j = 0; j < bc; j++)
                 {
-                    status = AnalyticBezierPatches.Create(b, bounds, j, bp, out var r, out var s, out var otherDomain);
-                    if (status != AlgorithmStatus.Success) return status;
-                    var other = new BezierSurfacePatch(bp[..(4*(r+1)*(s+1))],r,s,otherDomain);
                     var nn = 0; var ne = 0;
-                    status = ParametricSurfaceIntersection.Find(patch,other,localNodes,ref nn,localEdges,ref ne);
+                    if(implicitSecond)
+                        status=SurfacePlaneIntersection.Find(new(patch),b,localNodes,ref nn,localEdges,ref ne,ref remaining,deferIsolatedPoints:true,tolerance:ICurveEvaluation.ResidualTolerance,strictSeparation:true);
+                    else
+                    {
+                        status = AnalyticBezierPatches.Create(b, bounds, j, bp, out var r, out var s, out var otherDomain);
+                        if (status != AlgorithmStatus.Success) return status;
+                        var other = new BezierSurfacePatch(bp[..(4*(r+1)*(s+1))],r,s,otherDomain);
+                        status = ParametricSurfaceIntersection.Find(patch,other,localNodes,ref nn,localEdges,ref ne);
+                    }
                     if (status != AlgorithmStatus.Success) return status;
                     for (var n = 0; n < nn; n++)
                     {
@@ -123,7 +130,7 @@ internal static unsafe partial class KernelRuntime
                     }
                 }
             }
-            return AlgorithmStatus.Success;
+            return implicitSecond?SurfacePlaneIntersection.ValidateGraph(nodes[..nodeCount],segments[..segmentCount]):AlgorithmStatus.Success;
         }
         finally { scratch.Return(memory); }
     }

@@ -5,7 +5,7 @@ using ProjectGmKernel.Native.Runtime;
 
 namespace ProjectGmKernel.Native.Geometry.Intersection;
 
-// Intersect a bounded surface isoparametric curve with a plane as a scalar
+// Intersect a bounded surface isoparametric curve with an analytic level set as a scalar
 // equation. Monotone interval derivatives certify root uniqueness, including
 // roots at a natural domain endpoint; unresolved cells never mean "no hit".
 internal static class SurfaceIsoPlaneRoots
@@ -13,6 +13,7 @@ internal static class SurfaceIsoPlaneRoots
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
         Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance=1e-10,bool strictSeparation=false)
     {
+        if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
         Span<double> lower=stackalloc double[128],upper=stackalloc double[128];Span<BufferCount> depths=stackalloc BufferCount[128];
         lower[0]=first;upper[0]=last;depths[0]=0;var pending=1;var visited=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9],at=stackalloc IntervalNumber[9];
@@ -25,9 +26,16 @@ internal static class SurfaceIsoPlaneRoots
             if(status==AlgorithmStatus.Success)
             {
                 var distance=Distance(bounds,plane);
+                var derivative=AnalyticLevelSet.Derivative(bounds,plane,3);
+                if(plane.Kind!=SurfaceClass.Plane)
+                {
+                    var middle=lo+(hi-lo)*.5;status=curve.Bound(new(middle,middle,0,0),at);if(status!=AlgorithmStatus.Success)return status;
+                    var centered=Distance(at,plane)+derivative*(new IntervalNumber(lo,hi)-middle);
+                    distance=new(Math.Max(distance.Lower,centered.Lower),Math.Min(distance.Upper,centered.Upper));
+                    if(!distance.Finite)return AlgorithmStatus.NotConverged;
+                }
                 var exclusion=strictSeparation?0:tolerance;
                 if(distance.Lower>exclusion||distance.Upper< -exclusion)continue;
-                var derivative=bounds[3]*plane.Axis.X+bounds[4]*plane.Axis.Y+bounds[5]*plane.Axis.Z;
                 if(!derivative.ContainsZero)
                 {
                     status=curve.Bound(new(lo,lo,0,0),at);if(status!=AlgorithmStatus.Success)return status;
@@ -70,5 +78,5 @@ internal static class SurfaceIsoPlaneRoots
     }
 
     private static IntervalNumber Distance(ReadOnlySpan<IntervalNumber> bounds,in AnalyticSurface plane)
-        =>(bounds[0]-plane.Origin.X)*plane.Axis.X+(bounds[1]-plane.Origin.Y)*plane.Axis.Y+(bounds[2]-plane.Origin.Z)*plane.Axis.Z;
+        =>AnalyticLevelSet.Value(bounds,plane);
 }

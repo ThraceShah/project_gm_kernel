@@ -23,10 +23,6 @@ internal static unsafe partial class KernelRuntime
         count = 0;
         var orderedFirst=surface;var orderedSecond=plane;
         var a = GetSurfaceSlotByTag(surface); var b = GetSurfaceSlotByTag(plane);
-        if(Surfaces[a].Class==SurfaceClass.Cylinder&&Surfaces[b].Class==SurfaceClass.Cylinder
-            &&TryPrepareSurface(Surfaces[a],out var firstCylinder)&&TryPrepareSurface(Surfaces[b],out var secondCylinder)
-            &&OperationIntersection.Norm(ProfileCross(firstCylinder.Axis,secondCylinder.Axis))>0)
-            return ParasolidConstants.PK_ERROR_not_implemented;
         // Exact ruled/iso construction below expects the parametric support
         // first. A repeated Boolean may encounter the old planar tool first.
         if(Surfaces[a].Class==SurfaceClass.Plane&&Surfaces[b].Class!=SurfaceClass.Plane)
@@ -155,6 +151,9 @@ internal static unsafe partial class KernelRuntime
             }
             return IntersectProceduralICurvePlane(slot,first,last,cutting,output,out count);
         }
+        if(a.Class!=SurfaceClass.BSurface&&b.Class!=SurfaceClass.BSurface
+            &&TryPrepareSurface(a,out _)&&TryPrepareSurface(b,out _))
+            return IntersectFiniteIntersectionCurvePlane(curve,first,last,cutting,output,out count);
         if(a.Class!=SurfaceClass.BSurface)(a,b)=(b,a);
         if(a.Class!=SurfaceClass.BSurface)return AlgorithmStatus.Unsupported;
         var analytic=TryPrepareSurface(b,out var support);

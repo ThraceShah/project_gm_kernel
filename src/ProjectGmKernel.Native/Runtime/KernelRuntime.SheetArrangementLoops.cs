@@ -58,7 +58,7 @@ internal static unsafe partial class KernelRuntime
                 var outer=cycles[j];var error=SheetLoopWinding(surface,model.Edges[..model.NE],coedges.Slice(outer.First,outer.Count),cycles[i].Left,out var winding);if(error!=0)return error;
                 if(winding!=0&&outer.Depth>depth){depth=outer.Depth;parent=j;}
             }
-            if(parent<0)return ParasolidConstants.PK_ERROR_bad_loop;cycles[i].Parent=parent;
+            if(parent<0){LastSheetPartitionStage=SheetPartitionStage.CycleNesting;LastSheetParameter=i;return ParasolidConstants.PK_ERROR_bad_loop;}cycles[i].Parent=parent;
         }
         var ownedSurface=surface;
         if(!borrowGeometry){var cloneError=TryCloneEntityCore(surface,out ownedSurface);if(cloneError!=0)return cloneError;}

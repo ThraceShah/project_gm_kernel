@@ -23,10 +23,15 @@ internal static unsafe partial class KernelRuntime
             if(startCount!=1||endCount!=1||startTerm!=LimitTermUse.Unset||endTerm!=LimitTermUse.Unset)return AlgorithmStatus.Unsupported;
             if(!startBuffer[..3].SequenceEqual(chartBuffer[..3])||!endBuffer[..3].SequenceEqual(chartBuffer.Slice(3*(count-1),3)))return AlgorithmStatus.Unsupported;
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return AlgorithmStatus.WorkspaceTooSmall;
-            var status=compiler.Surface(first,out var a);if(status!=AlgorithmStatus.Success)return status;
-            status=compiler.Surface(second,out var b);if(status!=AlgorithmStatus.Success)return status;
-            status=compiler.ChartSpine(a,b,MemoryMarshal.Cast<double,KernelVector3>(chartBuffer[..(count*3)]),baseParameter,baseScale,ctol,atol,startType,endType,out var root,XtSense(fields[6].Character));if(status!=AlgorithmStatus.Success)return status;
-            CurveTag result=0;var error=BindNestedBlendSpine(first,second,compiler.View,root,&result);if(error!=0)return error==Generated.ParasolidConstants.PK_ERROR_memory_full?AlgorithmStatus.WorkspaceTooSmall:AlgorithmStatus.InvalidInput;
+            var status=compiler.Surface(first,out var a);if(status!=AlgorithmStatus.Success)
+            {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"XT ICurve node={node.Index} first={first} compile={status}");return status;}
+            status=compiler.Surface(second,out var b);if(status!=AlgorithmStatus.Success)
+            {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"XT ICurve node={node.Index} second={second} compile={status}");return status;}
+            status=compiler.ChartSpine(a,b,MemoryMarshal.Cast<double,KernelVector3>(chartBuffer[..(count*3)]),baseParameter,baseScale,ctol,atol,startType,endType,out var root,XtSense(fields[6].Character));if(status!=AlgorithmStatus.Success)
+            {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"XT ICurve node={node.Index} ChartSpine={status} charts={count} supports={first}/{second}");return status;}
+            CurveTag result=0;var error=BindNestedBlendSpine(first,second,compiler.View,root,&result);
+            if(error!=0)
+            {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"XT nested ICurve node={node.Index} supports={first}/{second} bind={error}");return error==Generated.ParasolidConstants.PK_ERROR_memory_full?AlgorithmStatus.WorkspaceTooSmall:AlgorithmStatus.InvalidInput;}
             ref var data=ref ICurveDataPool[Curves[GetCurveSlotByTag(result)].DataIndex];
             data.ParameterError=error0;data.ParameterErrorProvided=hasError0;data.ParameterError1=error1;data.ParameterError1Provided=hasError1;data.SourceSchema=document.Schema.SchemaNumber;
             if(fields.Length==14&&fields[12].Kind==XtFieldKind.Real){data.Scale=fields[12].Real;data.ScaleProvided=1;}
@@ -35,7 +40,8 @@ internal static unsafe partial class KernelRuntime
             {
                 var uvBuffer=NestedWorkspace<double>(dataNode.VariableLength);
                 if(!TryReadIntersectionDataNode(dataNode,uvBuffer,out var uvType,out var uvCount))return AlgorithmStatus.Unsupported;
-                if(uvCount!=ExpectedUvValueCount(uvType,count,0))return AlgorithmStatus.InvalidInput;
+                if(uvCount!=ExpectedUvValueCount(uvType,count,0))
+                {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"XT nested ICurve node={node.Index} UV={uvType}/{uvCount} charts={count} expected={ExpectedUvValueCount(uvType,count,0)}");return AlgorithmStatus.InvalidInput;}
                 data.UvType=uvType;data.UvValueCount=uvCount;
                 if(uvCount>0)
                 {

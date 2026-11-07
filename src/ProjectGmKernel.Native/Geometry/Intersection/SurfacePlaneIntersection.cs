@@ -7,11 +7,15 @@ using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Geometry.Intersection;
 
-// A plane contributes one scalar equation in the actual surface parameters.
+// Plane/cylinder/sphere supports contribute one scalar equation in the actual surface parameters.
 // A nonzero interval partial proves each admitted cell is a regular graph;
 // complete boundary and transverse-section isolation decide its connectivity.
 internal static class SurfacePlaneIntersection
 {
+    [ThreadStatic] internal static SurfaceParameterBox LastUnresolvedBox;
+    [ThreadStatic] internal static BufferCount LastUnresolvedDepth;
+    [ThreadStatic] internal static BufferOffset LastUnresolvedFreeAxis;
+    [ThreadStatic] internal static bool LastUnresolvedBudget;
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,
         Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount)
@@ -24,21 +28,37 @@ internal static class SurfacePlaneIntersection
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,
         Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining,bool deferIsolatedPoints=false,double tolerance=1e-10,bool strictSeparation=false)
     {
+        if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
+        LastUnresolvedBudget=false;
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];pending[0]=patch.Domain;depths[0]=0;var count=1;var visited=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        Span<IntervalNumber> centerBounds=stackalloc IntervalNumber[9];
         Span<SurfaceIntersectionNode> boundary=stackalloc SurfaceIntersectionNode[64];
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[32];
         while(count>0)
         {
             ModelingPerformance.Cell(false);
-            if(++visited>32768||remaining--<=0){ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
+            if(++visited>32768||remaining--<=0)
+            {LastUnresolvedBudget=true;LastUnresolvedBox=pending[count-1];LastUnresolvedDepth=depths[count-1];ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var index=--count;var cell=pending[index];var depth=depths[index];var free=-1;
             var savedNodes=nodeCount;var savedSegments=segmentCount;
             var status=patch.Bound(cell,bounds);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
-            var distance=Distance(bounds,plane);var exclusion=strictSeparation?0:tolerance;if(distance.Lower>exclusion||distance.Upper< -exclusion)continue;
-            var du=bounds[3]*plane.Axis.X+bounds[4]*plane.Axis.Y+bounds[5]*plane.Axis.Z;
-            var dv=bounds[6]*plane.Axis.X+bounds[7]*plane.Axis.Y+bounds[8]*plane.Axis.Z;
+            var distance=Distance(bounds,plane);
+            var du=AnalyticLevelSet.Derivative(bounds,plane,3);
+            var dv=AnalyticLevelSet.Derivative(bounds,plane,6);
+            if(plane.Kind!=SurfaceClass.Plane)
+            {
+                // The scalar equation is composed with one parameterized
+                // patch. A mean-value enclosure preserves cancellations
+                // which the independent XYZ interval hull cannot express.
+                var cu=cell.U0+(cell.U1-cell.U0)*.5;var cv=cell.V0+(cell.V1-cell.V0)*.5;
+                status=patch.Bound(new(cu,cu,cv,cv),centerBounds);if(status!=AlgorithmStatus.Success)goto Subdivide;
+                var centered=Distance(centerBounds,plane)+du*(new IntervalNumber(cell.U0,cell.U1)-cu)+dv*(new IntervalNumber(cell.V0,cell.V1)-cv);
+                distance=new(Math.Max(distance.Lower,centered.Lower),Math.Min(distance.Upper,centered.Upper));
+                if(!distance.Finite)goto Subdivide;
+            }
+            var exclusion=strictSeparation?0:tolerance;if(distance.Lower>exclusion||distance.Upper< -exclusion)continue;
             var uQuality=Math.Min(Math.Abs(du.Lower),Math.Abs(du.Upper))*Width(patch.Domain,0);
             var vQuality=Math.Min(Math.Abs(dv.Lower),Math.Abs(dv.Upper))*Width(patch.Domain,1);
             if(!du.ContainsZero&&(dv.ContainsZero||uQuality>=vQuality))free=1;else if(!dv.ContainsZero)free=0;
@@ -91,7 +111,8 @@ internal static class SurfacePlaneIntersection
             if(status is not (AlgorithmStatus.Success or AlgorithmStatus.NotConverged))return status;
             Subdivide:
             nodeCount=savedNodes;segmentCount=savedSegments;
-            if(depth>=40||count+2>pending.Length)return AlgorithmStatus.NotConverged;
+            if(depth>=40||count+2>pending.Length)
+            {LastUnresolvedBox=cell;LastUnresolvedDepth=depth;LastUnresolvedFreeAxis=free;return AlgorithmStatus.NotConverged;}
             var split=free>=0?free:Width(cell,0)/Width(patch.Domain,0)>=Width(cell,1)/Width(patch.Domain,1)?0:1;
             var low=split==0?cell.U0:cell.V0;var high=split==0?cell.U1:cell.V1;var middle=low+(high-low)*.4931471805599453;
             if(!(middle>low&&middle<high))return AlgorithmStatus.NotConverged;
@@ -113,7 +134,7 @@ internal static class SurfacePlaneIntersection
 
     private static double Width(in SurfaceParameterBox box,BufferOffset axis)=>axis==0?box.U1-box.U0:box.V1-box.V0;
     private static IntervalNumber Distance(ReadOnlySpan<IntervalNumber> bounds,in AnalyticSurface plane)
-        =>(bounds[0]-plane.Origin.X)*plane.Axis.X+(bounds[1]-plane.Origin.Y)*plane.Axis.Y+(bounds[2]-plane.Origin.Z)*plane.Axis.Z;
+        =>AnalyticLevelSet.Value(bounds,plane);
     private static bool Same(in SurfaceIntersectionNode a,in SurfaceIntersectionNode b)
         =>Math.Abs(a.U-b.U)<2e-10&&Math.Abs(a.V-b.V)<2e-10&&OperationIntersection.Norm(Sub(a.Point,b.Point))<1e-8;
 

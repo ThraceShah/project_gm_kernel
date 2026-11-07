@@ -53,7 +53,7 @@ internal static unsafe partial class KernelRuntime
         var contact=Curves[slot].Class==CurveClass.ICurve?ICurveDataPool[Curves[slot].DataIndex]:default;
         var sourceContact=contact.IsBlendContact!=0&&Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface&&SameSheetSupport(surface,contact.Surface0Tag);
         var blendContact=contact.IsBlendContact!=0&&SameSheetSupport(surface,contact.Surface1Tag);
-        var nativeSide=Curves[slot].Class==CurveClass.ICurve&&contact.IsBlendContact==0&&contact.ProgramBlock<=0
+        var nativeSide=Curves[slot].Class==CurveClass.ICurve&&contact.IsBlendContact==0
             ?SameSheetSupport(surface,contact.Surface0Tag)?0:SameSheetSupport(surface,contact.Surface1Tag)?1:-1:-1;
         double station=0;Span<KernelVector3> jet=stackalloc KernelVector3[2];
         var status=nativeSide>=0?SheetNativeCurveParameters(Curves[slot],parameter,nativeSide,jet,out uv)
@@ -85,6 +85,14 @@ internal static unsafe partial class KernelRuntime
         uv=default;var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {
+            var data=ICurveDataPool[curve.DataIndex];
+            if(data.ProgramBlock>0)
+            {
+                var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+                Span<double> contacts=stackalloc double[4];
+                var found=JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,parameter,1,jet,contacts);
+                if(found!=AlgorithmStatus.Success)return found;uv.param[0]=contacts[2*side];uv.param[1]=contacts[2*side+1];return found;
+            }
             var status=TryPrepareICurveView(curve,out var view,out _);if(status!=AlgorithmStatus.Success)return status;
             var identity=new GeometryIdentity(curve.Header.Tag,curve.Header.Generation);
             status=EvaluateICurveThroughL3(identity,view,parameter,1,ICurveConstraintPlan.Auto,jet,out _,out var witness);
@@ -154,7 +162,9 @@ internal static unsafe partial class KernelRuntime
         if(EvaluateSurfaceCore(in Surfaces[slot],query.param[0],query.param[1],in layout,jet,0)!=AlgorithmStatus.Success)return false;
         foreach(ref readonly var coedge in loop)
         {
-            var curve=Curves[GetCurveSlotByTag(edges[coedge.Edge].Curve)];if(curve.Class!=CurveClass.ICurve)continue;
+            var boundary=edges[coedge.Edge];var curve=Curves[GetCurveSlotByTag(boundary.Curve)];
+            if(TryAnalyticBlendContactMap(surface,curve,boundary.Start,boundary.End,out _,out _,out _))return true;
+            if(curve.Class!=CurveClass.ICurve)continue;
             var data=ICurveDataPool[curve.DataIndex];var other=SameSheetSupport(surface,data.Surface0Tag)?data.Surface1Tag
                 :SameSheetSupport(surface,data.Surface1Tag)?data.Surface0Tag:0;
             var otherSlot=GetSurfaceSlotByTag(other);if(otherSlot<0||!TryPrepareSurface(Surfaces[otherSlot],out var plane)||plane.Kind!=SurfaceClass.Plane)continue;
@@ -193,10 +203,36 @@ internal static unsafe partial class KernelRuntime
                 winding+=crossing>0?1:-1;
             }
         }
+        return record.Class==SurfaceClass.BlendSurface?BlendChartClosureWinding(surface,edges,loop,query,du,dv,ref winding):0;
+    }
+
+    // Two contact occurrences can meet at one collapsed physical vertex but
+    // at different V values. Close that parameter chart explicitly; changing
+    // charts does not create an extra physical B-rep edge.
+    private static int BlendChartClosureWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
+        PK_UV_s query,double du,double dv,ref BufferCount winding)
+    {
+        if(du==0)return 0;var record=Surfaces[GetSurfaceSlotByTag(surface)];
+        for(var i=0;i<loop.Length;i++)
+        {
+            var a=loop[i];var b=loop[(i+1)%loop.Length];var first=edges[a.Edge];var second=edges[b.Edge];
+            var end=a.Forward!=0?first.EndVertex:first.StartVertex;var start=b.Forward!=0?second.StartVertex:second.EndVertex;
+            if(end<0||end!=start)continue;
+            var ca=Curves[GetCurveSlotByTag(first.Curve)];var cb=Curves[GetCurveSlotByTag(second.Curve)];
+            if(!TryAnalyticBlendContactMap(surface,ca,first.Start,first.End,out var va,out var shiftA,out var scaleA)
+                ||!TryAnalyticBlendContactMap(surface,cb,second.Start,second.End,out var vb,out var shiftB,out var scaleB)||va==vb)continue;
+            var ta=(a.Forward!=0)==(LocalSenseSign(ca.Sense)>0)?first.End:first.Start;
+            var tb=(b.Forward!=0)==(LocalSenseSign(cb.Sense)>0)?second.Start:second.End;
+            var u=shiftA+scaleA*ta;if(u!=shiftB+scaleB*tb||u!=record.UMin&&u!=record.UMax)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            var along=(u-query.param[0])/du;var v=query.param[1]+along*dv;
+            if(along<=0||v<Math.Min(va,vb)||v>Math.Max(va,vb))continue;
+            if(v==va||v==vb)return ParasolidConstants.PK_ERROR_eval_failure;
+            winding+=(vb-va)*du>0?1:-1;
+        }
         return 0;
     }
 
-    private static int SheetSourceContains(FaceSlot face,PK_UV_s query,out bool inside)
+    internal static int SheetSourceContains(FaceSlot face,PK_UV_s query,out bool inside)
     {
         inside=false;var surface=Faces[face].SurfTag;
         Span<ModelingEdge> edges=stackalloc ModelingEdge[2048];Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[2048];

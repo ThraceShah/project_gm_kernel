@@ -96,8 +96,9 @@ internal static unsafe partial class XtReader
                 result.Add(tag);
             }
         }
-        catch (FormatException)
+        catch (FormatException exception)
         {
+            if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine(exception);
             return ParasolidConstants.PK_ERROR_corrupt_file;
         }
 

@@ -111,13 +111,17 @@ internal static unsafe partial class KernelRuntime
             {
                 var point=TaylorVector.Constant(positions[i],0);
                 TaylorJet d0,d1;TaylorVector n0,n1;
-                var status=ChartSupportDistance(program,a,point,i!=0,ref u0,ref v0,out d0,out n0);if(status!=AlgorithmStatus.Success)return status;
-                status=ChartSupportDistance(program,b,point,i!=0,ref u1,ref v1,out d1,out n1);if(status!=AlgorithmStatus.Success)return status;
-                if(Math.Abs(d0[0])>1e-8||Math.Abs(d1[0])>1e-8)return AlgorithmStatus.InvalidInput;
+                var status=ChartSupportDistance(program,a,point,i!=0,ref u0,ref v0,out d0,out n0);if(status!=AlgorithmStatus.Success)
+                {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve anchor={i}/{count} first distance={status}");return status;}
+                status=ChartSupportDistance(program,b,point,i!=0,ref u1,ref v1,out d1,out n1);if(status!=AlgorithmStatus.Success)
+                {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve anchor={i}/{count} second distance={status}");return status;}
+                if(Math.Abs(d0[0])>1e-8||Math.Abs(d1[0])>1e-8)
+                {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve CHART anchor={i}/{count} supports={a}/{b} residual={d0[0]:R}/{d1[0]:R} point=({positions[i].X:R},{positions[i].Y:R},{positions[i].Z:R})");return AlgorithmStatus.InvalidInput;}
                 tangents[i]=Unit(EvaluationMath.Cross(n0.Value,n1.Value));
                 charts[nh+i]=new(){FirstU=u0,FirstV=v0,SecondU=u1,SecondV=v1};
             }
-            var built=OriginalChartParameterMap.Build(positions,tangents,baseParameter,baseScale,parameters,scales,chords,out _,out _);if(built!=AlgorithmStatus.Success)return built;
+            var built=OriginalChartParameterMap.Build(positions,tangents,baseParameter,baseScale,parameters,scales,chords,out _,out var failure);if(built!=AlgorithmStatus.Success)
+            {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve CHART map={failure} sense={sense} support_senses={surfaces[a].NormalSense}/{surfaces[b].NormalSense} first_direction={Dot(tangents[0],Sub(positions[1],positions[0])):R}");return built;}
             index=nc++;spineTags[index]=0;spines[index]=new(){First=a,Second=b,ChartOffset=nh,ChartCount=count,StartType=start,EndType=end,ChordalError=chordalError,AngularError=angularError,Sense=sense};
             for(var i=0;i<count;i++)
             {

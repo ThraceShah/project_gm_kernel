@@ -18,7 +18,8 @@ internal static unsafe partial class XtReader
             return KernelRuntime.MaterializeXtBrep(document, root, topology, new int[topology.Length],
                 geometry, new int[geometry.Length], graph.Construction.ToArray(), out body);
         }
-        catch (FormatException) { return AlgorithmStatus.InvalidInput; }
+        catch (FormatException exception)
+        {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine(exception);return AlgorithmStatus.InvalidInput;}
         catch (NotSupportedException) { return AlgorithmStatus.Unsupported; }
     }
 
