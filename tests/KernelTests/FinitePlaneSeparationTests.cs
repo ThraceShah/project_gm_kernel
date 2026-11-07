@@ -67,5 +67,16 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(0,KernelRuntime.TestFiniteLinePlaneEventIdentities(carrier,-1,1,planes,ids,out var associations,requireProof:true));
         Assert.Equal(ids[0],ids[1]);Assert.NotEqual(ids[0],ids[2]);Assert.Equal(3,associations);
     }
+
+    [Fact]
+    public void CoincidentCarrierDoesNotIdentifyDistinctSourceEdgeOccurrences()
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        Span<BufferCount> fragmentCounts=stackalloc BufferCount[2];
+        Assert.Equal(0,KernelRuntime.TestCoincidentSourceFragments(carrier,fragmentCounts,out var ambiguousCut));
+        Assert.Equal(1,fragmentCounts[0]);Assert.Equal(1,fragmentCounts[1]);
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,ambiguousCut);
+    }
     private static void Write(PK_VECTOR_s* target,KernelVector3 value){target->coord[0]=value.X;target->coord[1]=value.Y;target->coord[2]=value.Z;}
 }

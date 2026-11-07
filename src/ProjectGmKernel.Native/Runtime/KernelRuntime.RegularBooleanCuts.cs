@@ -237,6 +237,23 @@ internal static unsafe partial class KernelRuntime
         }
         associations=model.ParameterCount;return 0;
     }
+
+    internal static int TestCoincidentSourceFragments(CurveTag carrier,Span<BufferCount> counts,out int ambiguousCut)
+    {
+        ambiguousCut=0;
+        var finite=new ModelingEdge{Curve=carrier,Start=0,End=1,StartVertex=0,EndVertex=1};
+        Span<ModelingEdge> input=stackalloc ModelingEdge[2]{finite,finite};
+        Span<EdgeSlot> original=stackalloc EdgeSlot[2]{-1,-1};
+        Span<SheetSourceEdge> fragments=stackalloc SheetSourceEdge[2];
+        var graph=new SheetArrangement{Edges=stackalloc ModelingEdge[2],CutEdges=stackalloc byte[2],
+            Points=stackalloc KernelVector3[2]{default,Vector(1,0,0)},NP=2,RequireBoundaryAssociations=true};
+        var ownedCount=0;
+        var error=SplitRegularSourceEdges(new(input,default,default,default),original,fragments,default,ref ownedCount,ref graph);
+        if(error!=0)return error;
+        counts[0]=fragments[0].Count;counts[1]=fragments[1].Count;
+        ambiguousCut=graph.AddEdge(carrier,0,1,0,1,true,out _,exact:true);
+        return 0;
+    }
 #endif
 
     private static int ClipRegularFacePair(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
@@ -513,7 +530,10 @@ internal static unsafe partial class KernelRuntime
             }
             for(var i=1;i<n;i++)for(var j=i;j>0&&parameters[j]<parameters[j-1];j--){(parameters[j],parameters[j-1])=(parameters[j-1],parameters[j]);(vertices[j],vertices[j-1])=(vertices[j-1],vertices[j]);}
             var start=model.NE;
-            if(ring&&n==0){var error=model.AddEdge(edge.Curve,edge.Start,edge.End,-1,-1,false,out _);if(error!=0)return error;}
+            // Every original edge has its own contiguous fragment range.
+            // Its coedges share that range; a different original edge must
+            // not lose its occurrence to geometric carrier deduplication.
+            if(ring&&n==0){var error=model.AppendEdge(edge.Curve,edge.Start,edge.End,-1,-1,false,out _);if(error!=0)return error;}
             else for(var i=0;i<(ring?n:n-1);i++)
             {
                 var next=(i+1)%n;var wrap=ring&&next==0;var curve=edge.Curve;var lo=parameters[i];var hi=parameters[next];
@@ -522,7 +542,7 @@ internal static unsafe partial class KernelRuntime
                     var error=CloneSheetCurveArc(edge.Curve,lo,hi,true,out curve,out lo,out hi);if(error!=0)return error;
                     if(ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;owned[ownedCount++]=new(){Curve=curve};
                 }
-                var add=model.AddEdge(curve,lo,hi,positive?vertices[i]:vertices[next],positive?vertices[next]:vertices[i],false,out _);if(add!=0)return add;
+                var add=model.AppendEdge(curve,lo,hi,positive?vertices[i]:vertices[next],positive?vertices[next]:vertices[i],false,out _);if(add!=0)return add;
             }
             sources[e]=new(){Source=original[e],InputEdge=e,First=start,Count=model.NE-start};
         }

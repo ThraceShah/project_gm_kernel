@@ -187,7 +187,17 @@ internal static unsafe partial class KernelRuntime
             index=-1;
             for(var i=0;i<NE;i++)if(Edges[i].Curve==curve&&Edges[i].StartVertex==start&&Edges[i].EndVertex==end
                 &&(exact?Edges[i].Start==first&&Edges[i].End==last:Math.Abs(Edges[i].Start-first)<1e-12&&Math.Abs(Edges[i].End-last)<1e-12))
-            {index=i;return 0;}
+            {
+                if(index>=0){LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;return ParasolidConstants.PK_ERROR_cant_do_intersect;}
+                index=i;
+            }
+            if(index>=0)return 0;
+            return AppendEdge(curve,first,last,start,end,cut,out index);
+        }
+
+        internal int AppendEdge(CurveTag curve,double first,double last,BufferOffset start,BufferOffset end,bool cut,out BufferOffset index)
+        {
+            index=-1;
             if(NE==Edges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             index=NE;CutEdges[NE]=cut?(byte)1:(byte)0;
             Edges[NE++]=new(){Curve=curve,Start=first,End=last,StartVertex=start,EndVertex=end};return 0;
