@@ -51,10 +51,8 @@ internal static unsafe partial class KernelRuntime
             if(!exact||!ExactIntervalZero(IntervalVector.Dot(new IntervalVector(point)-new IntervalVector(plane.Origin),normal).Value)
                 ||!PointExactlyOnCylinder(left.Analytic,point)||!PointExactlyOnCylinder(right.Analytic,point))
             {
-                if(!TryReferenceMeridianContact(left.Analytic,plane,point,out var leftError)
-                    ||!TryReferenceMeridianContact(right.Analytic,plane,point,out var rightError)
-                    ||!HasSourceMeridianUse(face,band.FirstSupport,vertex,left.Analytic)
-                    ||!HasSourceMeridianUse(face,band.SecondSupport,vertex,right.Analytic))continue;
+                if(!TrySourceMeridianContact(face,band.FirstSupport,vertex,left.Analytic,plane,point,out var leftError)
+                    ||!TrySourceMeridianContact(face,band.SecondSupport,vertex,right.Analytic,plane,point,out var rightError))continue;
                 roundoff=Math.Max(leftError,rightError);
             }
             var unit=Scale(plane.Axis,1/OperationIntersection.Norm(plane.Axis));
@@ -96,19 +94,58 @@ internal static unsafe partial class KernelRuntime
         return OperationIntersection.Norm(Sub(delta,Scale(cylinder.Axis,along)))<=error;
     }
 
-    private static bool HasSourceMeridianUse(FaceSlot face,FaceSlot support,VertexSlot vertex,in AnalyticSurface cylinder)
+    private static bool TrySourceMeridianContact(FaceSlot face,FaceSlot support,VertexSlot vertex,in AnalyticSurface cylinder,
+        in AnalyticSurface plane,in KernelVector3 point,out double error)
     {
+        error=0;
+        if(!FindSourceMeridianUse(face,support,vertex,cylinder,out var opposite))return false;
+        if(TryReferenceMeridianContact(cylinder,plane,point,out error))return true;
+        if(SheetOriginalVertex(opposite,out var other)!=0)return false;
+        // A separately gauged cylinder need not use this meridian as its
+        // reference. An incident finite circular section can carry the
+        // original transported reference exactly, including after XT.
+        var loop=Faces[support].FirstLoop;
+        for(var l=0;l<Faces[support].LoopCount;l++,loop=Loops[loop].NextInFace)
+        {
+            var fin=Loops[loop].FirstFin;
+            for(var k=0;k<Loops[loop].FinCount;k++,fin=Fins[fin].NextInLoop)
+            {
+                var slot=Fins[fin].Edge;if(slot<0)continue;
+                var edge=Edges[slot];if(edge.StartVertex!=opposite&&edge.EndVertex!=opposite)continue;
+                var carrier=GetCurveSlotByTag(edge.CurveTag);if(carrier<0)continue;
+                var record=Curves[carrier];if(record.Class!=CurveClass.Circle)continue;
+                var circle=CircleDataPool[record.DataIndex];var axis=Vector(circle.AxisX,circle.AxisY,circle.AxisZ);
+                if(circle.Radius!=cylinder.Radius||!ExactVector(axis,cylinder.Axis)&&!ExactVector(axis,Scale(cylinder.Axis,-1)))continue;
+                var reference=Vector(circle.RefDirX,circle.RefDirY,circle.RefDirZ);
+                var gauged=new AnalyticSurface(SurfaceClass.Cylinder,cylinder.Origin,cylinder.Axis,reference,cylinder.Radius);
+                if(!TryReferenceMeridianContact(gauged,plane,point,out var bound)||!TryReferenceMeridianContact(gauged,plane,other,out var oppositeBound))continue;
+                var center=Vector(circle.CenterX,circle.CenterY,circle.CenterZ);var radial=Scale(reference,circle.Radius);
+                var roundoff=(new IntervalNumber(oppositeBound)+32*SmallLinearSolve.MachineEpsilon*new IntervalVector(center).Norm().Value).Upper;
+                if(Math.Min(ProfileDistance(other,Add(center,radial)),ProfileDistance(other,Sub(center,radial)))>roundoff
+                    ||OperationIntersection.Norm(ProfileCross(Sub(center,cylinder.Origin),cylinder.Axis))>roundoff)continue;
+                error=Math.Max(bound,roundoff);return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool FindSourceMeridianUse(FaceSlot face,FaceSlot support,VertexSlot vertex,in AnalyticSurface cylinder,out VertexSlot opposite)
+    {
+        opposite=-1;
         var loop=Faces[face].FirstLoop;
         for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
         {
             var fin=Loops[loop].FirstFin;
             for(var k=0;k<Loops[loop].FinCount;k++,fin=Fins[fin].NextInLoop)
             {
-                var edge=Edges[Fins[fin].Edge];if(edge.StartVertex!=vertex&&edge.EndVertex!=vertex)continue;
-                if(!LocalEdgeFaces(Fins[fin].Edge,out var a,out var b)||a!=support&&b!=support)continue;
-                var curve=Curves[GetCurveSlotByTag(edge.CurveTag)];if(curve.Class!=CurveClass.Line)continue;
+                var slot=Fins[fin].Edge;if(slot<0)continue;
+                var edge=Edges[slot];if(edge.StartVertex!=vertex&&edge.EndVertex!=vertex)continue;
+                if(!LocalEdgeFaces(slot,out var a,out var b)||a!=support&&b!=support)continue;
+                var carrier=GetCurveSlotByTag(edge.CurveTag);if(carrier<0)continue;
+                var curve=Curves[carrier];if(curve.Class!=CurveClass.Line)continue;
                 var line=LineDataPool[curve.DataIndex];var axis=Vector(line.AxisX,line.AxisY,line.AxisZ);
-                if(ExactVector(axis,cylinder.Axis)||ExactVector(axis,Scale(cylinder.Axis,-1)))return true;
+                if(ExactVector(axis,cylinder.Axis)||ExactVector(axis,Scale(cylinder.Axis,-1)))
+                {opposite=edge.StartVertex==vertex?edge.EndVertex:edge.StartVertex;return opposite>=0;}
             }
         }
         return false;
