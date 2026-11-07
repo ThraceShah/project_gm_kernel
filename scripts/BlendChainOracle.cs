@@ -13,6 +13,8 @@ using ProjectGmKernel.Native.Geometry.Evaluation;
 using M=ProjectGmKernel.Native.Generated;
 
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","blend-chain-oracle");Directory.CreateDirectory(directory);
+var remoteBore=args.Contains("--remote-bore",StringComparer.Ordinal);
+KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 ModelingPerformance.Enabled=args.Contains("--profile",StringComparer.Ordinal);ModelingPerformance.CacheEnabled=!args.Contains("--no-bound-cache",StringComparer.Ordinal);
 JointNestedBlendEvaluation.ReuseSplineContactBounds=!args.Contains("--no-spline-reuse",StringComparer.Ordinal);
 var repeat=1;var repeatAt=Array.IndexOf(args,"--repeat");if(repeatAt>=0){Require(repeatAt+1<args.Length&&int.TryParse(args[repeatAt+1],out repeat)&&repeat is >=1 and <=10,"--repeat needs 1..10");}
@@ -26,18 +28,22 @@ using(host)unsafe
         for(var round=0;round<repeat;round++)foreach(var authored in new[]{true,false})foreach(var segments in args.Contains("nested-support",StringComparer.Ordinal)?new[]{1}:new[]{2,3})foreach(var transformed in new[]{false,true})
         {
             var name=$"chain-{segments}-{(transformed?"reflected":"base")}-{(authored?"self":"pk")}-source";if(names.Length>0&&!names.Contains(name,StringComparer.Ordinal))continue;
+            if(remoteBore)name+="-remote-bore";
             Console.WriteLine($"ROUND {round+1} {name} bound-cache={ModelingPerformance.CacheEnabled} spline-reuse={JointNestedBlendEvaluation.ReuseSplineContactBounds}");
             // Both modifiers start with identical authored finite B-reps.
             // Primitive creators choose different directed LINE carriers;
             // PK transports chain subdivisions through an ordered contact,
             // so merely matching the solids' loci is insufficient input.
             var own=0;var native=0;
-            if(authored){own=Roof(true);native=Receive(Transmit(own));}
-            else{native=Roof(false);own=ReceiveSelf(TransmitNative(native));}
+            if(authored){own=Roof(true,remoteBore);native=Receive(Transmit(own));}
+            else{native=Roof(false,remoteBore);own=ReceiveSelf(TransmitNative(native));}
             var a=SplitChain(true,own,segments);var b=SplitChain(false,native,segments);
             if(transformed){Transform(true,own);Transform(false,native);}
+            var boredFace=remoteBore?BoredSupport(a[0]):0;
             if(args.Contains("diagnostics",StringComparer.Ordinal)){DumpSource(true,a[0]);DumpSource(false,b[0]);}
             var radius=transformed?.17:.1;FixChain(true,own,a,radius);FixChain(false,native,b,radius);
+            if(remoteBore)Require(KernelRuntime.IsValidTag(boredFace)&&KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(boredFace).Slot].LoopCount==2,
+                "the modified support retains its remote inner loop and face identity");
             var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),bytes);var received=Receive(bytes);
             try{CheckBody(native,name+" native");CheckBody(received,name+" received");if(args.Contains("diagnostics",StringComparer.Ordinal)){Console.WriteLine("NATIVE");Dump(native,transformed);Console.WriteLine("SELF");Dump(received,transformed);}Compare(native,received,name);}finally{Check(PK_ENTITY_delete(1,&received),"delete received");}
             if(segments==1||!transformed)
@@ -45,7 +51,9 @@ using(host)unsafe
                 // Reload before the consumer so finite ranges and shared
                 // procedural support ownership participate in the closure.
                 var restored=ReceiveSelf(bytes);Check(KernelRuntime.EntityDelete(1,&own),"delete pre-reload chain");own=restored;
-                if(segments==1){RefilletNested(true,own,transformed);RefilletNested(false,native,transformed);}else{Cut(true,own);Cut(false,native);}received=Receive(Transmit(own));
+                if(segments==1){RefilletNested(true,own,transformed);RefilletNested(false,native,transformed);}else{Cut(true,own);Cut(false,native);}
+                if(remoteBore)Require(CountPlanarInnerLoops(own)==2,"both planar bore rings survive reload and the cut");
+                received=Receive(Transmit(own));
                 try{CheckBody(native,name+" cut native");CheckBody(received,name+" cut received");Compare(native,received,name+" cut");}finally{Check(PK_ENTITY_delete(1,&received),"delete cut receive");}
             }
             Check(KernelRuntime.EntityDelete(1,&own),"delete self");Check(PK_ENTITY_delete(1,&native),"delete native");
@@ -59,7 +67,7 @@ using(host)unsafe
 static unsafe int[] SplitChain(bool own,int body,int segments)
 {
     int n;int* edges;Check(own?KernelRuntime.BodyAskEdges(body,&n,&edges):PK_BODY_ask_edges(body,&n,&edges),"source edges");var selected=0;int* vertices=stackalloc int[2];
-    try{for(var i=0;i<n;i++){Check(own?KernelRuntime.EdgeAskVertices(edges[i],vertices):PK_EDGE_ask_vertices(edges[i],vertices),"vertices");var sum=0.0;for(var j=0;j<2;j++){int point;PK_POINT_sf_t p;Check(own?KernelRuntime.VertexAskPoint(vertices[j],&point):PK_VERTEX_ask_point(vertices[j],&point),"point tag");Check(own?KernelRuntime.PointAsk(point,(M.PK_POINT_sf_s*)&p):PK_POINT_ask(point,&p),"point");sum+=Math.Abs(p.position.coord[1])+Math.Abs(p.position.coord[2]-1);}if(sum<1e-10)selected=edges[i];}}
+    try{for(var i=0;i<n;i++){Check(own?KernelRuntime.EdgeAskVertices(edges[i],vertices):PK_EDGE_ask_vertices(edges[i],vertices),"vertices");if(vertices[0]==0||vertices[1]==0)continue;var sum=0.0;for(var j=0;j<2;j++){int point;PK_POINT_sf_t p;Check(own?KernelRuntime.VertexAskPoint(vertices[j],&point):PK_VERTEX_ask_point(vertices[j],&point),"point tag");Check(own?KernelRuntime.PointAsk(point,(M.PK_POINT_sf_s*)&p):PK_POINT_ask(point,&p),"point");sum+=Math.Abs(p.position.coord[1])+Math.Abs(p.position.coord[2]-1);}if(sum<1e-10)selected=edges[i];}}
     finally{Free(own,edges);}Require(selected!=0,"selected chain source");var chain=new int[segments];chain[0]=selected;int sourceCurve;
     Check(own?KernelRuntime.EdgeAskCurve(selected,&sourceCurve):PK_EDGE_ask_curve(selected,&sourceCurve),"source curve");
     for(var i=1;i<segments;i++)
@@ -158,15 +166,47 @@ static unsafe void DumpSource(bool own,int edge)
         finally{Free(false,fins);}
     }
 }
-static unsafe int Roof(bool own)
+static int BoredSupport(int edge)
+{
+    var fin=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edge).Slot].FirstFinEdge;
+    for(var side=0;side<2;side++,fin=KernelRuntime.Fins[fin].Other)
+    {
+        var face=KernelRuntime.Faces[KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face];
+        if(face.LoopCount==2)return face.Header.Tag;
+    }
+    throw new InvalidOperationException("the bore must lie on a selected support");
+}
+
+static int CountPlanarInnerLoops(int body)
+{
+    var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var face=record.FirstFaceBody;var count=0;
+    for(var i=0;i<record.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+    {
+        var item=KernelRuntime.Faces[face];
+        if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(item.SurfTag)].Class==SurfaceClass.Plane)count+=Math.Max(0,item.LoopCount-1);
+    }
+    return count;
+}
+
+static unsafe int Roof(bool own,bool remoteBore)
 {
     var body=Block(own,.5,.5,0,1,1,1);int n;int* faces;
+    if(remoteBore)
+    {
+        var basis=new PK_AXIS2_sf_t{location=new(.3,-1,.35),axis=new(0,1,0),ref_direction=new(1,0,0)};int tool;int* bodies;
+        Check(own?KernelRuntime.BodyCreateSolidCyl(.06,3,(M.PK_AXIS2_sf_s*)&basis,&tool):PK_BODY_create_solid_cyl(.06,3,&basis,&tool),"author remote bore cutter");
+        var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};
+        Check(own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies),"author remote bore on the selected support");
+        try{Require(n==1&&bodies[0]==body,"one bored seed");}finally{Free(own,bodies);}
+    }
     Check(own?KernelRuntime.BodyAskFaces(body,&n,&faces):PK_BODY_ask_faces(body,&n,&faces),"input faces");var top=0;
     try
     {
         for(var i=0;i<n;i++)
         {
             int surface;Check(own?KernelRuntime.FaceAskSurf(faces[i],&surface):PK_FACE_ask_surf(faces[i],&surface),"face support");PK_PLANE_sf_t plane;
+            if(own){if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class!=SurfaceClass.Plane)continue;}
+            else{int type;Check(PK_ENTITY_ask_class(surface,&type),"roof candidate class");if(type!=PK_CLASS_plane)continue;}
             Check(own?KernelRuntime.PlaneAsk(surface,(M.PK_PLANE_sf_s*)&plane):PK_PLANE_ask(surface,&plane),"input plane");
             if(Math.Abs(plane.basis_set.axis.coord[2])>.9&&Math.Abs(plane.basis_set.location.coord[2]-1)<1e-10)top=faces[i];
         }
