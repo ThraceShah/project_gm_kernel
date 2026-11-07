@@ -213,10 +213,10 @@ using(host)unsafe
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
                     CompareFiniteIntersections(reference,received,"independent fillet",inputScale);
                     if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,"self-constructed-product",inputScale);
-                    if(args.Contains("--geometry"))SelfGeometry(own,reference);
+                    if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"));
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -277,7 +277,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -290,7 +290,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         var original=source;Check(KernelRuntime.EntityDelete(1,&original),"delete fillet source before copy modelling");source=0;
         Console.WriteLine($"LIFECYCLE {name} source_deleted=True copy={own}");
         Move(true,own,selfTransform);Move(false,native,pkTransform);
-        failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale,materialOwnership);
+        failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale,materialOwnership,checkNativeTrims);
         if(reloadBeforeLocalCut)ReloadEditable(ref own,name+" before local cut");
         // The local variant crosses the native short ICurve interiors. Its
         // lower cap leaves the bottom connected; it is a notch, not a slab
@@ -317,13 +317,13 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
             own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool):Cut(true,own,ownTool);
         }
         else{own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
-        failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership);
+        failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership,checkNativeTrims);
         ReloadEditable(ref own,name+" before second cut");
         var secondAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(0,2.5,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
-        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale,materialOwnership);
+        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale,materialOwnership,checkNativeTrims);
     }
     finally
     {
@@ -400,7 +400,7 @@ static unsafe int Cut(bool own,int body,int tool)
     Check(error,"cut fillet product");
     try{Require(n==1,"one cut result");return bodies[0];}finally{Free(own,bodies);}
 }
-static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale,bool materialOwnership)
+static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale,bool materialOwnership,bool checkNativeTrims)
 {
     var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),fresh);var received=Receive(false,fresh);
     var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,name+"-native.x_t"),referenceBytes);
@@ -412,11 +412,51 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);}catch(Exception ex){Console.WriteLine("COMPARE DIAGNOSTIC "+ex.Message);throw;}
         CheckBody(received,name);
         CompareFiniteIntersections(reference,received,name,unitScale);
+        if(checkNativeTrims)CheckSelfNativeTrims(own,name,unitScale);
         if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,name,unitScale);
         try{Mass(reference,received,name);return 0;}
         catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);return 1;}
     }
     finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");}
+}
+static unsafe void CheckSelfNativeTrims(int body,string label,double unitScale)
+{
+    var scratch=KernelRuntime.EnsureCommandScratch();
+    try
+    {
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var slot=record.FirstEdgeBody;
+        var count=0;var maximum=0.0;
+        for(var i=0;i<record.EdgeCountBody;i++,slot=KernelRuntime.Edges[slot].NextInBody)
+        {
+            var edge=KernelRuntime.Edges[slot];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)];
+            if(curve.Class!=CurveClass.ICurve)continue;
+            var data=KernelRuntime.ICurveDataPool[curve.DataIndex];
+            Require(data.ProgramBlock>0&&data.UvType==IntersectionUvType.Both&&data.ChartCount>=2&&data.UvValueCount>=4*data.ChartCount,
+                $"{label} ICurve {edge.Header.Tag} requires native paired CHART");
+            Require(edge.HasParameterRange!=0&&edge.ParameterStart>=curve.TMin&&edge.ParameterEnd<=curve.TMax&&edge.ParameterStart<edge.ParameterEnd,
+                $"{label} ICurve {edge.Header.Tag} finite native trim");
+            var first=edge.FirstFinEdge;var second=KernelRuntime.Fins[first].Other;
+            Require(edge.FinCount==2&&second>=0&&KernelRuntime.Fins[second].Other==first&&KernelRuntime.Fins[first].Sense!=KernelRuntime.Fins[second].Sense,
+                $"{label} ICurve {edge.Header.Tag} needs two opposite fin uses");
+            var use=new KernelRuntime.ModelingEdge{Curve=edge.CurveTag,Start=edge.ParameterStart,End=edge.ParameterEnd,StartVertex=edge.StartVertex,EndVertex=edge.EndVertex};
+            for(var side=0;side<2;side++)
+            {
+                var fin=KernelRuntime.Fins[side==0?first:second];var face=KernelRuntime.Loops[fin.Loop].Face;var surface=KernelRuntime.Faces[face].SurfTag;
+                for(var station=0;station<=4;station++)
+                {
+                    Check(KernelRuntime.SheetCoedgePoint(surface,use,fin.Sense=='+'?(byte)1:(byte)0,station*.25,out var uv,out _,out var point),"native coedge UV");
+                    M.PK_VECTOR_s evaluated;Check(KernelRuntime.SurfEval(surface,uv,0,0,0,&evaluated),"evaluate actual supporting face");
+                    var dx=evaluated.coord[0]-point.X;var dy=evaluated.coord[1]-point.Y;var dz=evaluated.coord[2]-point.Z;
+                    var distance=Math.Sqrt(dx*dx+dy*dy+dz*dz);maximum=Math.Max(maximum,distance);
+                    Require(distance<=Math.Max(edge.Tolerance,5e-9*unitScale),$"{label} edge={edge.Header.Tag} side={side} station={station} XYZ/UV={distance:R}");
+                }
+            }
+            count++;
+        }
+        Require(count>0,label+" native finite ICurve checks");
+        Console.WriteLine($"FINITE SELF UV {label} native_ICurves={count} paired_checks={10*count} max={maximum:R}");
+    }
+    finally{if(scratch)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);}
 }
 static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,string label,double unitScale)
 {
@@ -531,6 +571,7 @@ static unsafe void Probes(int reference,int imported,int fresh,byte[] nativeByte
 }
 static unsafe void SelfGeometry(int own,int reference)
 {
+    var started=Stopwatch.GetTimestamp();
     int count;int* nativeFaces;Check(PK_BODY_ask_faces(reference,&count,&nativeFaces),"self geometry native faces");
     var body=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(own).Slot];var face=body.FirstFaceBody;var checkedFaces=0;
     PK_VECTOR_t* native=stackalloc PK_VECTOR_t[9];PK_VECTOR_t* actual=stackalloc PK_VECTOR_t[9];
@@ -539,6 +580,10 @@ static unsafe void SelfGeometry(int own,int reference)
     var checkpoint=KernelRuntime.EnsureCommandScratch();
     try
     {
+        // The finite membership stations share this immutable B-rep. Reuse
+        // exact interval bounds for the same native CHART cells; each ray
+        // still isolates its own roots and performs the full winding test.
+        ModelingPerformance.Context proof=default;using var scope=new ModelingPerformance.Scope(&proof,immutableGeometry:true);
         for(var f=0;f<body.FaceCountBody;f++,face=KernelRuntime.Faces[face].NextInBody)
         {
             var source=KernelRuntime.Faces[face];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(source.SurfTag)];
@@ -619,6 +664,7 @@ static unsafe void SelfGeometry(int own,int reference)
             Require(samples>0&&d0<1e-10&&d1<1e-8&&d2<1e-6,"self finite geometry under certified parameter map");checkedFaces++;
         }
         Require(checkedFaces>0,"self curved geometry was checked");
+        Console.WriteLine($"TIME SELF GEOMETRY ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
     }
     finally{if(checkpoint)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);Free(false,nativeFaces);}
 }
