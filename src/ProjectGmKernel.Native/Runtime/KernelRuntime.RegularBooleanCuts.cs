@@ -154,7 +154,8 @@ internal static unsafe partial class KernelRuntime
                 if(cut.Closed==0)for(var end=0;end<2;end++)
                 {
                     status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                    error=model.AddPoint(point[0],-1,out _);if(error!=0)return error;
+                    error=model.AddPoint(point[0],-1,out var endpoint);if(error!=0)return error;
+                    error=model.AssociateParameter(endpoint,cut.Curve,end==0?cut.First:cut.Last);if(error!=0)return error;
                 }
             }
         }
@@ -177,7 +178,7 @@ internal static unsafe partial class KernelRuntime
             if(!ring){parameters[n]=edge.Start;vertices[n++]=positive?edge.StartVertex:edge.EndVertex;parameters[n]=edge.End;vertices[n++]=positive?edge.EndVertex:edge.StartVertex;}
             for(var p=0;p<model.NP;p++)
             {
-                var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);double t=0;var error=CurveParameteriseVectorCore(edge.Curve,vector,&t);
+                var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);double t=0;var error=model.KnownParameter(p,edge.Curve,out t)?0:CurveParameteriseVectorCore(edge.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
                 if(!OperationIntersection.InInterval(t,edge.Start,edge.End))continue;

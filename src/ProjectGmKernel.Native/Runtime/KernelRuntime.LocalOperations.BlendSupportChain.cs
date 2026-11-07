@@ -144,7 +144,8 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool SameSupportChainFace(FaceSlot a,FaceSlot b)
-        =>Faces[a].SurfTag==Faces[b].SurfTag&&Faces[a].Orientation==Faces[b].Orientation;
+        =>TryCertifyIdentitySupport(Faces[a].SurfTag,Faces[b].SurfTag,out var certificate)
+            &&LocalSenseSign(Faces[a].Orientation)*LocalSenseSign(Faces[b].Orientation)*certificate.NormalRelation>0;
 
     private static int SupportChainSeamPlane(EdgeSlot edge,in KernelVector3 chainTangent,out AnalyticSurface plane)
     {

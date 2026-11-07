@@ -258,6 +258,20 @@ internal static unsafe partial class KernelRuntime
                     vertexPrecisions[mapped]=Math.Max(vertexPrecisions[mapped],RegularPlanarImprintMinimumPrecision);
             }
             var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities);if(built!=0)return built;
+            if(TraceFiniteBoundary!=null)
+                for(var i=0;i<indices.Length;i++)
+                {
+                    var index=indices[i];var face=model.Faces[index];
+                    for(var l=0;l<face.LoopCount;l++)
+                    {
+                        var loop=model.Loops[face.FirstLoop+l];
+                        foreach(var coedge in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+                        {
+                            var use=FiniteBoundaryUse.Create(face.Surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,model.Sources[index]);
+                            TraceBoundary(BoundaryTraceStage.Product,use,index,products[i],edges[edgeMap[coedge.Edge]].Curve);
+                        }
+                    }
+                }
             var vertex=Bodies[TagRec(body).Slot].FirstVertexBody;
             for(var i=0;i<np;i++,vertex=Vertices[vertex].NextInBody)Vertices[vertex].Tolerance=vertexPrecisions[i];
             return TransferRegularPointLoops(ref model,indices,body);

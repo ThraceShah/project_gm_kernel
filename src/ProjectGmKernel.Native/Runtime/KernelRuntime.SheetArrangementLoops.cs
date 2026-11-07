@@ -34,6 +34,12 @@ internal static unsafe partial class KernelRuntime
         ReadOnlySpan<ModelingCoedge> coedges,Span<SheetCycle> cycles,bool borrowGeometry=false)
     {
         var surface=Faces[source].SurfTag;
+        return PublishFiniteSheetCycles(surface,NormalizeLocalSense(Faces[source].Orientation),source,reverse,ref model,coedges,cycles,plane,borrowGeometry);
+    }
+
+    private static int PublishFiniteSheetCycles(SurfTag surface,KernelSense sense,FaceSlot source,bool reverse,ref SheetArrangement model,
+        ReadOnlySpan<ModelingCoedge> coedges,Span<SheetCycle> cycles,SurfTag plane=0,bool borrowGeometry=true)
+    {
         for(var i=0;i<cycles.Length;i++)if(cycles[i].Positive!=0)
         {
             var depth=0;
@@ -80,9 +86,19 @@ internal static unsafe partial class KernelRuntime
             if(status!=Computation.AlgorithmStatus.Success)return EvaluationError(status);
             var distance=borrowGeometry?1:Dot(Sub(point[0],cutter.Origin),cutter.Axis)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(plane)].Sense);
             if(Math.Abs(distance)<=model.Tolerance)return ParasolidConstants.PK_ERROR_eval_failure;
-            model.Sources[model.NF]=source;model.Sides[model.NF]=distance>0?(sbyte)1:(sbyte)-1;
+            model.Sources[model.NF]=source;if(!model.Sides.IsEmpty)model.Sides[model.NF]=distance>0?(sbyte)1:(sbyte)-1;
             if(!model.Witnesses.IsEmpty)model.Witnesses[model.NF]=uv;
-            model.Faces[model.NF++]=new(){Surface=ownedSurface,Sense=NormalizeLocalSense(Faces[source].Orientation),FirstLoop=firstLoop,LoopCount=model.NL-firstLoop};
+            if(TraceFiniteBoundary!=null)
+                for(var l=firstLoop;l<model.NL;l++)
+                {
+                    var loop=model.Loops[l];
+                    foreach(var coedge in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+                    {
+                        var use=FiniteBoundaryUse.Create(surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,source);
+                        TraceBoundary(BoundaryTraceStage.Arrangement,use,model.NF);
+                    }
+                }
+            model.Faces[model.NF++]=new(){Surface=ownedSurface,Sense=sense,FirstLoop=firstLoop,LoopCount=model.NL-firstLoop};
         }
         return 0;
     }

@@ -11,6 +11,9 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using M=ProjectGmKernel.Native.Generated;
 
+KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
+if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
+    KernelRuntime.TraceFiniteBoundary=trace=>Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle");Directory.CreateDirectory(directory);
 var oracleStarted=Stopwatch.GetTimestamp();
 #if DEBUG
@@ -46,6 +49,7 @@ using(host)unsafe
                 try
                 {
                     var own=Roof(true,bulge,wall,concave);var reference=Roof(false,bulge,wall,concave);CheckBody(reference,name+" reference input");
+                    if(args.Contains("--remote-bore",StringComparer.Ordinal)){own=Bore(true,own);reference=Bore(false,reference);CheckBody(reference,name+" bored reference input");}
                     var nativeBlend=Fillet(false,reference,radius,concave);CheckBody(reference,name+" reference fillet");
                     var ownBlend=Fillet(true,own,radius,concave);
                     if(!lifecycleOnly)
@@ -117,6 +121,7 @@ static unsafe int Fillet(bool own,int body,double radius,bool concave=false)
         for(var e=0;e<n;e++)
         {
             Check(own?KernelRuntime.EdgeAskVertices(edges[e],vertices):PK_EDGE_ask_vertices(edges[e],vertices),"edge vertices");
+            if(vertices[0]==0||vertices[1]==0)continue;
             for(var v=0;v<2;v++)
             {
                 int point;Check(own?KernelRuntime.VertexAskPoint(vertices[v],&point):PK_VERTEX_ask_point(vertices[v],&point),"vertex point");PK_POINT_sf_t sf;
@@ -231,6 +236,15 @@ static unsafe int ContactParameters(int surface,M.PK_VECTOR_s point,out M.PK_UV_
     return Distance(*(PK_VECTOR_t*)&point,*(PK_VECTOR_t*)&evaluated)<1e-8?0:PK_ERROR_not_on_surface;
 }
 
+static unsafe int Bore(bool own,int body)
+{
+    var basis=new PK_AXIS2_sf_t{location=new(.3,-1,.35),axis=new(0,1,0),ref_direction=new(1,0,0)};int tool;
+    Check(own?KernelRuntime.BodyCreateSolidCyl(.06,3,(M.PK_AXIS2_sf_s*)&basis,&tool):PK_BODY_create_solid_cyl(.06,3,&basis,&tool),"remote bore tool");
+    var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+    Check(own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies),"remote support bore");
+    try{Require(n==1,"one bored input");return bodies[0];}finally{Free(own,bodies);}
+}
+
 static unsafe int Cut(bool own,int body)
 {
     // The manufacturing section x=.5 crosses the procedural Blend at the
@@ -281,7 +295,10 @@ static unsafe void CheckLifecycle(int own,int reference,string directory)
         for(var i=0;i<KernelRuntime.Bodies[body].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
         {
             var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[edge].CurveTag)];
-            if(curve.Class!=CurveClass.Line)Require(KernelRuntime.Edges[edge].HasParameterRange!=0,"received finite curved edge range");
+            var record=KernelRuntime.Edges[edge];
+            if(curve.Class!=CurveClass.Line&&record.HasParameterRange==0)
+                Require(record.StartVertex<0&&record.EndVertex<0&&curve.Class is CurveClass.Circle or CurveClass.Ellipse
+                    &&Math.Abs(curve.TMax-curve.TMin-Math.Tau)<1e-12,"received complete vertexless conic ring domain");
         }
         Check(KernelRuntime.EntityCopy(imported,&copy),"copy self received fillet");Check(KernelRuntime.EntityDelete(1,&imported),"delete self received source");imported=0;
         Check(PK_ENTITY_copy(reference,&referenceCopy),"copy independent PK fillet");

@@ -18,7 +18,7 @@ internal static unsafe partial class KernelRuntime
     {
         LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=LastRegularBooleanOtherFace=-1;
         if(options->merge_imprinted!=0||options->tracking!=0)return ParasolidConstants.PK_ERROR_not_implemented;
-        var scratch=CommandScratch.Current;var memory=scratch.Take(180000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        var scratch=CommandScratch.Current;var memory=scratch.Take(205000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         ModelingPerformance.Context performance=default;using var measurement=new ModelingPerformance.Scope(&performance,immutableGeometry:true);ModelingPerformance.Stage(RegularBooleanStage.Read);
         var ownedCount=0;
         try
@@ -31,6 +31,7 @@ internal static unsafe partial class KernelRuntime
                 Coedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,SheetCoedgeLimit),Loops=ModelSpan<ModelingLoop>(bytes,ref cursor,SheetLoopLimit),
                 Faces=ModelSpan<ModelingFace>(bytes,ref cursor,SheetFaceLimit),Sources=ModelSpan<FaceSlot>(bytes,ref cursor,SheetFaceLimit),
                 Sides=ModelSpan<sbyte>(bytes,ref cursor,SheetFaceLimit),Witnesses=ModelSpan<PK_UV_s>(bytes,ref cursor,SheetFaceLimit),Tolerance=Math.Min(options->default_tol,1e-8),
+                Parameters=ModelSpan<BoundaryParameter>(bytes,ref cursor,2*SheetPointLimit),
             };
             var inputEdges=ModelSpan<ModelingEdge>(bytes,ref cursor,RegularInputEdges);var originalEdges=ModelSpan<EdgeSlot>(bytes,ref cursor,RegularInputEdges);
             var inputCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,RegularInputCoedges);var inputLoops=ModelSpan<ModelingLoop>(bytes,ref cursor,RegularInputLoops);

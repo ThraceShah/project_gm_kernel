@@ -26,7 +26,10 @@ internal static unsafe partial class KernelRuntime
         const double tolerance=1e-9;
         if(supports.Length!=2||caps.Length!=2||!double.IsFinite(first)||!double.IsFinite(last)||!(last>first))
             return ParasolidConstants.PK_ERROR_not_implemented;
-        foreach(var support in supports)if(RegularBlendAreaLoopCount(support)!=1)return ParasolidConstants.PK_ERROR_not_implemented;
+        // Every inner boundary is also used by another manifold face. The
+        // whole-band finite-obstacle proof below covers those adjacent faces;
+        // contact placement uses all support loops, including holes. Caps
+        // retain their separate single-area-loop provider precondition.
         var slot=GetSurfaceSlotByTag(blend);
         if(slot<0||Surfaces[slot].Class!=SurfaceClass.BlendSurface)return ParasolidConstants.PK_ERROR_not_implemented;
         var record=Surfaces[slot];

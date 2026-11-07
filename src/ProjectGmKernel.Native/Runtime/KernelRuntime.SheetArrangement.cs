@@ -20,6 +20,7 @@ internal static unsafe partial class KernelRuntime
     private struct SheetHalfedge
     {
         internal BufferOffset Edge,Next;
+        internal BoundaryEventId StartEvent,EndEvent;
         internal byte Forward,Used;
         internal double StartAngle,EndAngle;
     }
@@ -44,8 +45,35 @@ internal static unsafe partial class KernelRuntime
         internal Span<FaceSlot> Sources;
         internal Span<sbyte> Sides;
         internal Span<PK_UV_s> Witnesses;
+        internal Span<BoundaryParameter> Parameters;
+        internal BufferCount ParameterCount;
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
+
+        internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter)
+        {
+            if(Parameters.IsEmpty)return 0;
+            var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
+            for(var i=0;i<ParameterCount;i++)
+            {
+                var known=Parameters[i];
+                if(known.Event==endpoint&&known.Carrier==curve&&known.Generation==generation)
+                    return known.Parameter==parameter?0:ParasolidConstants.PK_ERROR_cant_do_intersect;
+            }
+            if(ParameterCount==Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Parameter=parameter};return 0;
+        }
+
+        internal bool KnownParameter(BoundaryEventId endpoint,CurveTag curve,out double parameter)
+        {
+            parameter=0;var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
+            for(var i=0;i<ParameterCount;i++)
+            {
+                var known=Parameters[i];if(known.Event!=endpoint||known.Carrier!=curve||known.Generation!=generation)continue;
+                parameter=known.Parameter;return true;
+            }
+            return false;
+        }
 
         internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index)
         {
@@ -131,19 +159,31 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int AddSheetHalfedge(SurfTag surface,ref SheetArrangement model,BufferOffset edge,byte forward,
+        Span<SheetHalfedge> halfedges,ref BufferCount count,FaceSlot source=-1)
+    {
+        var use=FiniteBoundaryUse.Create(surface,model.Edges[edge],edge,forward,source);
+        return AddFiniteBoundaryHalfedge(use,ref model,halfedges,ref count);
+    }
+
+    private static int AddFiniteBoundaryHalfedge(in FiniteBoundaryUse use,ref SheetArrangement model,
         Span<SheetHalfedge> halfedges,ref BufferCount count)
     {
         if(count==halfedges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+        var surface=use.Surface;var edge=use.Edge;var forward=use.Forward;
         ref readonly var record=ref model.Edges[edge];
+        var slot=GetCurveSlotByTag(use.Carrier);
+        if(slot<0||Curves[slot].Header.Generation!=use.Generation||record.Curve!=use.Carrier
+            ||record.Start!=use.First||record.End!=use.Last)return ParasolidConstants.PK_ERROR_bad_parameter;
+        TraceBoundary(BoundaryTraceStage.Input,use);
         if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Sphere)
         {
             var sphericalError=SphericalHalfedgeAngle(surface,record,forward,false,model.Points,out var startAngle);if(sphericalError!=0)return sphericalError;
             sphericalError=SphericalHalfedgeAngle(surface,record,forward,true,model.Points,out var endAngle);if(sphericalError!=0)return sphericalError;
-            halfedges[count++]=new(){Edge=edge,Forward=forward,Next=-1,StartAngle=startAngle,EndAngle=endAngle};return 0;
+            halfedges[count++]=new(){Edge=edge,Forward=forward,StartEvent=use.StartEvent,EndEvent=use.EndEvent,Next=-1,StartAngle=startAngle,EndAngle=endAngle};return 0;
         }
         var error=SheetCoedgePoint(surface,record,forward,0,out _,out var start,out _);if(error!=0)return error;
         error=SheetCoedgePoint(surface,record,forward,1,out _,out var end,out _);if(error!=0)return error;
-        halfedges[count++]=new(){Edge=edge,Forward=forward,Next=-1,StartAngle=Math.Atan2(start.param[1],start.param[0]),EndAngle=Math.Atan2(end.param[1],end.param[0])};return 0;
+        halfedges[count++]=new(){Edge=edge,Forward=forward,StartEvent=use.StartEvent,EndEvent=use.EndEvent,Next=-1,StartAngle=Math.Atan2(start.param[1],start.param[0]),EndAngle=Math.Atan2(end.param[1],end.param[0])};return 0;
     }
 
     private static int ArrangeSheetFace(FaceSlot face,SurfTag plane,ReadOnlySpan<SheetSourceEdge> sources,ReadOnlySpan<SheetCutCurve> cuts,
@@ -163,7 +203,7 @@ internal static unsafe partial class KernelRuntime
                 ref readonly var source=ref sources[index];var forward=(Fins[fin].Sense=='+')!=reverse;
                 for(var i=0;i<source.Count;i++)
                 {
-                    var error=AddSheetHalfedge(surface,ref model,source.First+i,forward?(byte)1:(byte)0,halfedges,ref nh);if(error!=0)return error;
+                    var error=AddSheetHalfedge(surface,ref model,source.First+i,forward?(byte)1:(byte)0,halfedges,ref nh,face);if(error!=0)return error;
                 }
             }
         }
@@ -175,7 +215,7 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<model.NP;i++)
             {
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[i]);double t=0;
-                var error=CurveParameteriseVectorCore(cut.Curve,vector,&t);
+                var error=model.KnownParameter(i,cut.Curve,out t)?0:CurveParameteriseVectorCore(cut.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(cut.Curve,cut.First,cut.Last,ref t);
                 if(!OperationIntersection.InInterval(t,cut.First,cut.Last))continue;
@@ -240,28 +280,36 @@ internal static unsafe partial class KernelRuntime
                     var already=false;for(var h=0;h<nh;h++)already|=halfedges[h].Edge==edge;if(already)continue;
                     model.CutEdges[edge]|=1;
                 }
-                add=AddSheetHalfedge(surface,ref model,edge,1,halfedges,ref nh);if(add!=0)return add;
-                add=AddSheetHalfedge(surface,ref model,edge,0,halfedges,ref nh);if(add!=0)return add;
+                add=AddSheetHalfedge(surface,ref model,edge,1,halfedges,ref nh,face);if(add!=0)return add;
+                add=AddSheetHalfedge(surface,ref model,edge,0,halfedges,ref nh,face);if(add!=0)return add;
             }
         }
+        var arrangementError=ExtractSheetCycles(surface,ref model,halfedges[..nh],cycleCoedges,cycles,out var cycleCount,out var coedgeCount);
+        if(arrangementError!=0)return arrangementError;
+        return PublishSheetCycles(face,plane,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],borrowGeometry);
+    }
+
+    private static int ExtractSheetCycles(SurfTag surface,ref SheetArrangement model,Span<SheetHalfedge> halfedges,
+        Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles,out BufferCount cycleCount,out BufferCount coedgeCount)
+    {
+        cycleCount=coedgeCount=0;var nh=halfedges.Length;
         // Clockwise successor from the incoming reverse tangent walks the face
         // on the left, including intersections at existing vertices.
         for(var i=0;i<nh;i++)
         {
             ref var h=ref halfedges[i];ref readonly var edge=ref model.Edges[h.Edge];
-            var end=h.Forward!=0?edge.EndVertex:edge.StartVertex;
+            var end=h.EndEvent;
             if(end<0){h.Next=i;continue;}
             var best=double.PositiveInfinity;var next=-1;
             for(var j=0;j<nh;j++)
             {
                 ref readonly var candidate=ref halfedges[j];ref readonly var ce=ref model.Edges[candidate.Edge];
-                var start=candidate.Forward!=0?ce.StartVertex:ce.EndVertex;if(start!=end)continue;
+                var start=candidate.StartEvent;if(start!=end)continue;
                 var angle=h.EndAngle+Math.PI-candidate.StartAngle;angle-=Math.Tau*Math.Floor(angle/Math.Tau);if(angle<1e-12)angle=Math.Tau;
                 if(angle<best){best=angle;next=j;}
             }
             if(next<0)return ParasolidConstants.PK_ERROR_bad_loop;h.Next=next;
         }
-        var cycleCount=0;var coedgeCount=0;
         for(var seed=0;seed<nh;seed++)
         {
             if(halfedges[seed].Used!=0)continue;if(cycleCount==cycles.Length)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -275,6 +323,6 @@ internal static unsafe partial class KernelRuntime
             var error=SheetCycleWitness(surface,model.Edges[..model.NE],cycleCoedges.Slice(first,cycle.Count),out cycle.Left,out cycle.Positive);if(error!=0)return error;
             cycles[cycleCount++]=cycle;
         }
-        return PublishSheetCycles(face,plane,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],borrowGeometry);
+        return 0;
     }
 }

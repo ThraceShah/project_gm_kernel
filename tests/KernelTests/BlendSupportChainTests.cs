@@ -50,8 +50,10 @@ public unsafe class BlendSupportChainTests:IDisposable
         Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out after));Assert.Equal(before,after);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Empty();
     }
 
-    [Fact]
-    public void ASeparateSupportRecordRequiresItsOwnContinuityCertificate()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1e-10)]
+    public void ASeparateSupportRecordRequiresItsOwnContinuityCertificate(double displacement)
     {
         var body=Source();Span<int> edges=stackalloc int[2];Selected(body,edges);var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edges[0]).Slot];var fin=edge.FirstFinEdge;var face=0;
         for(var i=0;i<2;i++,fin=KernelRuntime.Fins[fin].Other)
@@ -59,10 +61,22 @@ public unsafe class BlendSupportChainTests:IDisposable
             var slot=KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face;var f=KernelRuntime.Faces[slot];
             if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(f.SurfTag)].Class==SurfaceClass.BSurface)face=f.Header.Tag;
         }
-        Assert.NotEqual(0,face);int original,copy;Assert.Equal(0,KernelRuntime.FaceAskSurf(face,&original));Assert.Equal(0,KernelRuntime.EntityCopy(original,&copy));
+        Assert.NotEqual(0,face);int original,copy;Assert.Equal(0,KernelRuntime.FaceAskSurf(face,&original));
+        var matrix=new PK_TRANSF_sf_s();matrix.matrix[0]=matrix.matrix[5]=matrix.matrix[10]=matrix.matrix[15]=1;matrix.matrix[11]=displacement;
+        int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&matrix,&transform));byte exact;
+        Assert.Equal(0,KernelRuntime.GeomTransform(original,transform,0,&copy,&exact));Assert.Equal(0,KernelRuntime.EntityDelete(1,&transform));
         Assert.Equal(0,KernelRuntime.TopologyDetachGeometry(face));byte sense=1;Assert.Equal(0,KernelRuntime.FaceAttachSurfaces(1,&face,&copy,&sense));
-        Mark(edges,.1);Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out var before));Assert.NotEqual(0,Fix(body,out var made));Assert.Equal(0,made);
-        Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out var after));Assert.Equal(before,after);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Empty();
+        Mark(edges,.1);Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out var before));var error=Fix(body,out var made);
+        if(displacement==0)
+        {
+            Assert.True(error==0,$"error={error} support={KernelRuntime.LastSupportChainStage} regular={KernelRuntime.LastRegularBlendStage}");Assert.Equal(3,made);
+            BooleanOperationTests.Counts(body,13,28,17);
+        }
+        else
+        {
+            Assert.NotEqual(0,error);Assert.Equal(0,made);Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out var after));Assert.Equal(before,after);
+        }
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Empty();
     }
 
     [Fact]

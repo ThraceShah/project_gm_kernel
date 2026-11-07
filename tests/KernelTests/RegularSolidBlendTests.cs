@@ -8,9 +8,34 @@ public unsafe class RegularSolidBlendTests:IDisposable
 {
     public RegularSolidBlendTests()
     {
+        KernelRuntime.ForbidLegacyRegularBlendAssembly=true;
         KernelRuntime.SessionStop();var options=new PK_SESSION_start_o_s{o_t_version=1};Assert.Equal(0,KernelRuntime.SessionStart(&options));
     }
-    public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
+    public void Dispose(){KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidLegacyRegularBlendAssembly=false;KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
+
+    [Fact]
+    public void FilletAndBooleanProductsHaveFiniteArrangementProvenanceWithLegacyAssemblyForbidden()
+    {
+        var trace=new List<KernelRuntime.BoundaryTrace>();KernelRuntime.TraceFiniteBoundary=trace.Add;
+        var body=RoundedRoof();CheckTrace();trace.Clear();
+        var tool=BooleanOperationTests.Block(1,.5,-.1,1,2,2);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int count;int* products;
+        Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&count,&products));
+        try{Assert.Equal(1,count);CheckTrace();}finally{KernelRuntime.MemoryFree(products);}
+
+        void CheckTrace()
+        {
+            var published=trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product).ToArray();Assert.NotEmpty(published);
+            foreach(var product in published)
+            {
+                Assert.True(product.Last>product.First);Assert.True(product.ProductCurve>0);
+                Assert.Contains(trace,t=>t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement&&t.Source==product.Source&&t.Edge==product.Edge
+                    &&t.Curve==product.Curve&&t.Generation==product.Generation&&t.First==product.First&&t.Last==product.Last
+                    &&t.StartEvent==product.StartEvent&&t.EndEvent==product.EndEvent);
+                Assert.Contains(trace,t=>t.Stage==KernelRuntime.BoundaryTraceStage.Input&&t.Edge==product.Edge&&t.Curve==product.Curve
+                    &&t.Generation==product.Generation&&t.First==product.First&&t.Last==product.Last);
+            }
+        }
+    }
 
     [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(3)] [InlineData(7)] [InlineData(12)] [InlineData(20)]
@@ -29,6 +54,34 @@ public unsafe class RegularSolidBlendTests:IDisposable
         Assert.True(KernelRuntime.IsValidTag(edge));Assert.Equal(1,KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edge).Slot].PendingBlendKind);
         Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);Assert.Equal(bodies,KernelRuntime.Bodies.AliveCount);Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);
         Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);
+    }
+
+    [Fact]
+    public void RemoteBoreInModifiedSupportSurvivesFilletAndSubsequentCut()
+    {
+        var body=Roof();var axis=new PK_AXIS2_sf_s();axis.location.coord[0]=.3;axis.location.coord[1]=-1;axis.location.coord[2]=.35;
+        axis.axis.coord[1]=1;axis.ref_direction.coord[0]=1;int tool;
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(.06,3,&axis,&tool));
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int count;int* output;
+        Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&count,&output));KernelRuntime.MemoryFree(output);
+        var edge=SelectedEdge(body);var slot=KernelRuntime.ResolveTagRecord(edge).Slot;var fin=KernelRuntime.Edges[slot].FirstFinEdge;var support=-1;
+        for(var i=0;i<2;i++,fin=KernelRuntime.Fins[fin].Other)
+        {
+            var face=KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face;
+            if(KernelRuntime.Faces[face].LoopCount>1)support=face;
+        }
+        Assert.True(support>=0,"the selected edge's actual support must contain the bore loop");
+        var originalLoops=KernelRuntime.Faces[support].LoopCount;var retained=KernelRuntime.Faces[support].Header.Tag;
+        var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.1,&set,&count,null));
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;
+        var error=KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&fe,&ft);
+        Assert.True(error==0,$"fix={error} stage={KernelRuntime.LastRegularBlendStage} domain={KernelRuntime.LastRegularBlendDomainStage}");
+        Assert.True(KernelRuntime.IsValidTag(retained));Assert.Equal(originalLoops,KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(retained).Slot].LoopCount);
+        tool=BooleanOperationTests.Block(1,.5,-.1,1,2,2);
+        Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&count,&output));KernelRuntime.MemoryFree(output);
+        Assert.True(KernelRuntime.IsValidTag(retained));Assert.Equal(originalLoops,KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(retained).Slot].LoopCount);
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(body),out var restored));Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
     [Fact]

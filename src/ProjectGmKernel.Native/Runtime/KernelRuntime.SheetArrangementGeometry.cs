@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Caching;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
@@ -12,6 +13,9 @@ internal static unsafe partial class KernelRuntime
     {
         if(first==second)return true;
         var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);if(a<0||b<0||Surfaces[a].Class!=Surfaces[b].Class)return false;
+        if(TryPrepareSurface(Surfaces[a],out var aa)&&TryPrepareSurface(Surfaces[b],out var bb))
+            return aa.Kind==bb.Kind&&ExactVector(aa.Origin,bb.Origin)&&ExactVector(aa.Axis,bb.Axis)&&ExactVector(aa.X,bb.X)
+                &&aa.Radius==bb.Radius&&aa.Secondary==bb.Secondary;
         if(Surfaces[a].Class==SurfaceClass.BlendSurface)
         {
             var x=BlendedEdgeDataPool[Surfaces[a].DataIndex];var y=BlendedEdgeDataPool[Surfaces[b].DataIndex];
@@ -25,8 +29,11 @@ internal static unsafe partial class KernelRuntime
         if(Surfaces[a].Class!=SurfaceClass.BSurface)return false;
         var av=GetBSurfaceView(BSurfaceDataStore[Surfaces[a].DataIndex]);var bv=GetBSurfaceView(BSurfaceDataStore[Surfaces[b].DataIndex]);
         return av.UDegree==bv.UDegree&&av.VDegree==bv.VDegree&&av.Dimension==bv.Dimension&&av.Rational==bv.Rational
+            &&av.UVertexCount==bv.UVertexCount&&av.VVertexCount==bv.VVertexCount&&av.UPeriodic==bv.UPeriodic&&av.VPeriodic==bv.VPeriodic
             &&av.UKnots.SequenceEqual(bv.UKnots)&&av.VKnots.SequenceEqual(bv.VKnots)&&av.Vertices.SequenceEqual(bv.Vertices);
     }
+
+    private static bool ExactVector(in KernelVector3 a,in KernelVector3 b)=>a.X==b.X&&a.Y==b.Y&&a.Z==b.Z;
 
     private static int SheetCurveUV(SurfTag surface, CurveTag curve, double parameter, bool forward,
         out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point)
@@ -36,16 +43,22 @@ internal static unsafe partial class KernelRuntime
         LastSheetPartitionStage=SheetPartitionStage.CurveEvaluation;
         LastSheetCurve=curve;LastSheetParameter=parameter;
         var contact=Curves[slot].Class==CurveClass.ICurve?ICurveDataPool[Curves[slot].DataIndex]:default;
-        var splineContact=contact.IsBlendContact!=0&&Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface&&SameSheetSupport(surface,contact.Surface0Tag);
-        double station=0;Span<KernelVector3> jet=stackalloc KernelVector3[2];var status=splineContact?EvaluateBlendContact(contact,parameter,1,jet,out station):EvaluateCurveCore(in Curves[slot],parameter,1,false,jet,out _);
+        var sourceContact=contact.IsBlendContact!=0&&Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface&&SameSheetSupport(surface,contact.Surface0Tag);
+        var blendContact=contact.IsBlendContact!=0&&SameSheetSupport(surface,contact.Surface1Tag);
+        var nativeSide=Curves[slot].Class==CurveClass.ICurve&&contact.IsBlendContact==0&&contact.ProgramBlock<=0
+            ?SameSheetSupport(surface,contact.Surface0Tag)?0:SameSheetSupport(surface,contact.Surface1Tag)?1:-1:-1;
+        double station=0;Span<KernelVector3> jet=stackalloc KernelVector3[2];
+        var status=nativeSide>=0?SheetNativeCurveParameters(Curves[slot],parameter,nativeSide,jet,out uv)
+            :sourceContact||blendContact?EvaluateBlendContact(contact,parameter,1,jet,out station):EvaluateCurveCore(in Curves[slot],parameter,1,false,jet,out _);
         LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return EvaluationError(status);point=jet[0];
         LastSheetPartitionStage=SheetPartitionStage.SurfaceInverse;
-        if(splineContact)
+        if(sourceContact)
         {
             var blend=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(contact.Surface1Tag)].DataIndex];var program=GetNestedBlendProgram(blend);
             status=JointNestedBlendEvaluation.SplineContactParameters(program,blend.ProgramRoot,station,contact.BlendContactSide,out var su,out var sv);uv.param[0]=su;uv.param[1]=sv;
         }
-        else status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
+        else if(blendContact){uv.param[0]=station;uv.param[1]=BlendContactV(contact);}
+        else if(nativeSide<0)status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> support=stackalloc KernelVector3[4];
         status=EvaluateSurfaceCore(in Surfaces[GetSurfaceSlotByTag(surface)],uv.param[0],uv.param[1],in layout,support,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
@@ -54,6 +67,26 @@ internal static unsafe partial class KernelRuntime
         var sign=(forward?1:-1)*LocalSenseSign(Curves[slot].Sense);var ru=Dot(jet[1],du)*sign;var rv=Dot(jet[1],dv)*sign;
         tangent.param[0]=(ru*bb-rv*ab)/det;tangent.param[1]=(rv*aa-ru*ab)/det;
         return 0;
+    }
+
+    // Consume the paired UV produced on the native CHART branch by the same
+    // solve as D0/D1. A global XYZ inverse cannot choose this branch for us.
+    private static AlgorithmStatus SheetNativeCurveParameters(in CurveRecord curve,double parameter,BufferOffset side,
+        Span<KernelVector3> jet,out PK_UV_s uv)
+    {
+        uv=default;var checkpoint=CommandScratch.ThreadArenaOffset;
+        try
+        {
+            var status=TryPrepareICurveView(curve,out var view,out _);if(status!=AlgorithmStatus.Success)return status;
+            var identity=new GeometryIdentity(curve.Header.Tag,curve.Header.Generation);
+            status=EvaluateICurveThroughL3(identity,view,parameter,1,ICurveConstraintPlan.Auto,jet,out _,out var witness);
+            if(status!=AlgorithmStatus.Success)return status;
+            var flag=side==0?SampleWitness.HasUv0:SampleWitness.HasUv1;
+            if((witness.Flags&flag)==0)return AlgorithmStatus.Unsupported;
+            uv.param[0]=side==0?witness.U0:witness.U1;uv.param[1]=side==0?witness.V0:witness.V1;
+            return AlgorithmStatus.Success;
+        }
+        finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }
 
     private static int SheetCoedgePoint(SurfTag surface,in ModelingEdge edge,byte forward,double fraction,

@@ -11,6 +11,18 @@ using System.Runtime.CompilerServices;
 using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using XtFieldKind=ProjectGmKernel.Xt.XtFieldKind;
+KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
+if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
+    KernelRuntime.TraceFiniteBoundary=trace=>
+    {
+        var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)];
+        Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface}/{surface.Class} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.Input&&surface.Class==SurfaceClass.BlendSurface)
+        {
+            var blend=KernelRuntime.BlendedEdgeDataPool[surface.DataIndex];var spine=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(blend.SpineTag)];
+            Console.WriteLine($"BOUNDARY SUPPORT blend={trace.Surface} uv=[{surface.UMin:R},{surface.UMax:R}]x[{surface.VMin:R},{surface.VMax:R}] spine={blend.SpineTag}/{spine.Class} natural=[{spine.TMin:R},{spine.TMax:R}] supports={blend.Surface0Tag}/{blend.Surface1Tag} radii={blend.Range0:R}/{blend.Range1:R}");
+        }
+    };
 
 var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","short-edge-blend-oracle");
 Directory.CreateDirectory(output);
@@ -93,7 +105,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
-                    if(args.Contains("--lifecycle"))Lifecycle(imported,reference,output,name);
+                    if(args.Contains("--lifecycle"))Lifecycle(imported,reference,output,name+"-imported-product");
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
@@ -103,6 +115,8 @@ using(host)unsafe
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
+                    Mass(reference,received,"self-constructed-product");
+                    if(args.Contains("--lifecycle"))Lifecycle(own,reference,output,name+"-self-constructed-product");
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -146,7 +160,7 @@ static unsafe int Cut(bool own,int body,int tool)
 {
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
     var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
-    Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage}");Check(error,"cut imported fillet");
+    Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage} face={KernelRuntime.LastRegularBooleanFace} other={KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");Check(error,"cut fillet product");
     try{Require(n==1,"one cut result");return bodies[0];}finally{Free(own,bodies);}
 }
 static unsafe void CompareFresh(int own,int reference,string directory,string name)

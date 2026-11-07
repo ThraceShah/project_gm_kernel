@@ -139,7 +139,7 @@ internal static unsafe partial class KernelRuntime
         error0=ValidateRegularContactPlacement(edge,supports,curves[..2],lo[..2],hi[..2]);if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Reach;
         error0=ValidateRegularBlendEndExtensions(body,edge,supports,ends,contacts,blend,firstStation,lastStation);if(error0!=0)return error0;
-        error0=AssembleRegularLocalBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products);
+        error0=AssembleFiniteRegularBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products);
         if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Release;
         descriptions[0]=new(){Edge=original.Header.Tag,First=Faces[fa].Header.Tag,Second=Faces[fb].Header.Tag};made=1;
@@ -193,6 +193,7 @@ internal static unsafe partial class KernelRuntime
         ReadOnlySpan<FaceSlot> supports,ReadOnlySpan<FaceSlot> caps,ReadOnlySpan<VertexSlot> ends,SurfTag blend,
         ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,ReadOnlySpan<KernelVector3> contacts,Span<FaceSlot> products)
     {
+        if(ForbidLegacyRegularBlendAssembly)return ParasolidConstants.PK_ERROR_not_implemented;
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=sourceFaces.Length;
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne+4];Span<ModelingCoedge> inputCoedges=stackalloc ModelingCoedge[2*ne];
         Span<ModelingLoop> inputLoops=stackalloc ModelingLoop[nf];Span<ModelingFace> inputFaces=stackalloc ModelingFace[nf];

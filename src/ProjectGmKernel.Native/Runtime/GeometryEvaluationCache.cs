@@ -321,7 +321,13 @@ internal static unsafe partial class KernelRuntime
     internal static AlgorithmStatus EvaluateICurveThroughL3(in GeometryIdentity identity, in ICurveView view,
         double t, DerivativeOrder order, ICurveConstraintPlan plan,
         Span<KernelVector3> derivatives, out ICurveEvalReport report, ChartSide side = ChartSide.Right)
+        =>EvaluateICurveThroughL3(identity,view,t,order,plan,derivatives,out report,out _,side);
+
+    internal static AlgorithmStatus EvaluateICurveThroughL3(in GeometryIdentity identity, in ICurveView view,
+        double t, DerivativeOrder order, ICurveConstraintPlan plan,
+        Span<KernelVector3> derivatives, out ICurveEvalReport report,out SampleWitness witness, ChartSide side = ChartSide.Right)
     {
+        witness=SampleWitness.None;
         if (order >= 0 && order <= ICurveEvaluation.MaxDerivativeOrder
             && derivatives.Length > order && double.IsFinite(t)
             && t >= view.ChartParameters[0] && t <= view.ChartParameters[^1])
@@ -354,6 +360,7 @@ internal static unsafe partial class KernelRuntime
                 derivatives[0] = exact.Position;
                 if (order >= 1) derivatives[1] = exact.First;
                 if (order >= 2) derivatives[2] = exact.Second;
+                witness=exact.Witness;
                 report = new ICurveEvalReport(kind, AlgorithmStatus.Success, exact.Plan,
                     side, exact.Segment, 0, exact.RawResidual, CacheHitKind.Exact,
                     nonDefiningResidual: exact.NonDefiningResidual,
@@ -373,11 +380,12 @@ internal static unsafe partial class KernelRuntime
                     double.PositiveInfinity, out var opSample,
                     plan: view.HasBSurface ? report.Plan : ICurveConstraintPlan.Auto))
             {
+                witness=opSample.Witness;
                 GeometryEvaluationCache.Publish(in identity, in opSample, separatePlans: view.HasBSurface);
             }
             else if (!view.HasBSurface)
             {
-                var witness = ICurveEvaluation.BuildSampleWitness(in view, in derivatives[0],
+                witness = ICurveEvaluation.BuildSampleWitness(in view, in derivatives[0],
                     SampleWitness.None, SampleWitness.None);
                 GeometryEvaluationCache.Publish(in identity, new CurveSample(t, derivatives[0],
                     order >= 1 ? derivatives[1] : default,

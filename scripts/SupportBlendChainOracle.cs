@@ -20,7 +20,7 @@ using(host)unsafe
     {
         foreach(var fixture in new[]{(Name:"asymmetric43",Location:.43,Slope:0.0,CurvedWall:false),(Name:"asymmetric61",Location:.61,Slope:0.0,CurvedWall:false),(Name:"oblique43",Location:.43,Slope:.2,CurvedWall:false),(Name:"nurbs43",Location:.43,Slope:0.0,CurvedWall:true)})foreach(var reflected in new[]{false,true})
         {
-            var name=$"{fixture.Name}-{(reflected?"reflected":"base")}";if(args.Length>0&&!args.Contains(name,StringComparer.Ordinal))continue;
+            var name=$"{fixture.Name}-{(reflected?"reflected":"base")}";if(args.Any(a=>!a.StartsWith("--",StringComparison.Ordinal))&&!args.Contains(name,StringComparer.Ordinal))continue;
             // Author a genuine partition seam in PK, then both modifiers
             // consume the identical finite input, independently of their
             // primitive creators' LINE parameterization conventions.
@@ -31,6 +31,7 @@ using(host)unsafe
             if(reflected)Transform(false,native);
             var input=TransmitNative(native);File.WriteAllBytes(Path.Combine(directory,name+"-input.x_t"),input);var own=ReceiveSelf(input);
             var a=Select(true,own,reflected);var b=Select(false,native,reflected);Require(a.Length==2&&b.Length==2,"two selected segments across real face seam");
+            if(args.Contains("--separate-support",StringComparer.Ordinal)){SeparateSupport(true,a[0]);SeparateSupport(false,b[0]);}
             Check(KernelRuntime.BodyAskFaces(own,&n,&imprinted),"original self faces");int[] retained;
             try{retained=new ReadOnlySpan<int>(imprinted,n).ToArray();}finally{Free(true,imprinted);}Require(retained.Length==10,"ten source faces");
             var radius=reflected?.17:.1;var selfMade=Fix(true,own,a,radius);var nativeMade=Fix(false,native,b,radius);
@@ -47,6 +48,33 @@ using(host)unsafe
         }
     }
     finally{Check(KernelRuntime.SessionStop(),"self session stop");}
+}
+
+static unsafe void SeparateSupport(bool own,int edge)
+{
+    Span<int> faces=stackalloc int[2];
+    if(own)
+    {
+        var fin=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edge).Slot].FirstFinEdge;
+        for(var i=0;i<2;i++,fin=KernelRuntime.Fins[fin].Other)faces[i]=KernelRuntime.Faces[KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face].Header.Tag;
+    }
+    else
+    {
+        int n;int* adjacent;Check(PK_EDGE_ask_faces(edge,&n,&adjacent),"separate support participants");
+        try{Require(n==2,"two support participants");new ReadOnlySpan<int>(adjacent,n).CopyTo(faces);}finally{Free(false,adjacent);}
+    }
+    foreach(var faceTag in faces)
+    {
+        int surface;Check(own?KernelRuntime.FaceAskSurf(faceTag,&surface):PK_FACE_ask_surf(faceTag,&surface),"separate support geometry");
+        var spline=own?KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface:false;
+        if(!own){int type;Check(PK_ENTITY_ask_class(surface,&type),"support class");spline=type==PK_CLASS_bsurf;}
+        if(!spline)continue;
+        int copy;Check(own?KernelRuntime.EntityCopy(surface,&copy):PK_ENTITY_copy(surface,&copy),"independent support record copy");
+        var face=faceTag;Check(own?KernelRuntime.TopologyDetachGeometry(face):PK_TOPOL_detach_geom(face),"detach support record");byte same=1;
+        Check(own?KernelRuntime.FaceAttachSurfaces(1,&face,&copy,&same):PK_FACE_attach_surfs(1,&face,&copy,(PK_LOGICAL_t*)&same),"attach equivalent support record");
+        Console.WriteLine($"SUPPORT CERTIFICATE own={own} face={face} source={surface} copy={copy} map=identity");return;
+    }
+    throw new Exception("selected edge has no spline support to copy");
 }
 
 static unsafe int[] Select(bool own,int body,bool reflected)
