@@ -86,7 +86,12 @@ internal static unsafe partial class KernelRuntime
         }
         internal int Complete(out EntityTag body,Span<FaceSlot> products)
         {
-            body=0;
+            body=0;var error=BindLinearCarriers();if(error!=0)return error;
+            return BuildModelingBrep(Points[..PointCount],Edges[..EdgeCount],Coedges[..CoedgeCount],Loops[..LoopCount],
+                Faces[..FaceCount],true,out body,products,Cavities[..FaceCount]);
+        }
+        internal int BindLinearCarriers()
+        {
             for(var i=0;i<EdgeCount;i++)
             {
                 if(Edges[i].Curve>0)continue;
@@ -95,8 +100,7 @@ internal static unsafe partial class KernelRuntime
                 if(curve<=0)return ParasolidConstants.PK_ERROR_memory_full;
                 Edges[i].Curve=curve;
             }
-            return BuildModelingBrep(Points[..PointCount],Edges[..EdgeCount],Coedges[..CoedgeCount],Loops[..LoopCount],
-                Faces[..FaceCount],true,out body,products,Cavities[..FaceCount]);
+            return 0;
         }
     }
 

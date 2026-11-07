@@ -12,7 +12,7 @@ internal static unsafe partial class KernelRuntime
         left=default;positive=0;var support=Surfaces[GetSurfaceSlotByTag(surface)];
         if(support.Class==SurfaceClass.Sphere)return SphericalCycleWitness(surface,edges,loop,out left,out positive);
         var extent=Math.Min(support.UMax-support.UMin,support.VMax-support.VMin);
-        if(support.Class is SurfaceClass.Plane or SurfaceClass.Cylinder)extent=PlanarLoopParameterScale(surface,edges,loop);
+        if(support.Class is SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone)extent=PlanarLoopParameterScale(surface,edges,loop);
         var tries=support.Class is SurfaceClass.Plane or SurfaceClass.Cylinder?36:24;
         for(var attempt=0;attempt<tries;attempt++)
         {
@@ -42,8 +42,8 @@ internal static unsafe partial class KernelRuntime
         return PublishFiniteSheetCycles(surface,NormalizeLocalSense(Faces[source].Orientation),source,reverse,ref model,coedges,cycles,plane,borrowGeometry);
     }
 
-    private static int PublishFiniteSheetCycles(SurfTag surface,KernelSense sense,FaceSlot source,bool reverse,ref SheetArrangement model,
-        ReadOnlySpan<ModelingCoedge> coedges,Span<SheetCycle> cycles,SurfTag plane=0,bool borrowGeometry=true)
+    private static int PublishFiniteSheetCycles(SurfTag surface,KernelSense sense,FaceSlot source,bool reverse,scoped ref SheetArrangement model,
+        scoped ReadOnlySpan<ModelingCoedge> coedges,scoped Span<SheetCycle> cycles,SurfTag plane=0,bool borrowGeometry=true)
     {
         for(var i=0;i<cycles.Length;i++)if(cycles[i].Positive!=0)
         {
@@ -108,7 +108,7 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
-    private static int AppendSheetCycle(in SheetCycle cycle,ReadOnlySpan<ModelingCoedge> coedges,bool reverse,ref SheetArrangement model)
+    private static int AppendSheetCycle(in SheetCycle cycle,scoped ReadOnlySpan<ModelingCoedge> coedges,bool reverse,scoped ref SheetArrangement model)
     {
         if(model.NL==model.Loops.Length||model.NC>model.Coedges.Length-cycle.Count)return ParasolidConstants.PK_ERROR_not_implemented;
         model.Loops[model.NL++]=new(){FirstCoedge=model.NC,CoedgeCount=cycle.Count};

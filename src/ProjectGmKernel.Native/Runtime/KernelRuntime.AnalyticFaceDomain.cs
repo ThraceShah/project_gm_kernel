@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
@@ -8,6 +9,55 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    // A complete coaxial circle is a constant-v boundary in the surface's
+    // native angular chart. Certify its whole plane, centre and radius;
+    // an isolated XYZ inverse cannot establish that correspondence.
+    private static bool TryCoaxialCircleChart(SurfTag surface,in CurveRecord carrier,out double phase,out double direction,out double station)
+    {
+        phase=direction=station=0;if(carrier.Class!=CurveClass.Circle||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(surface)],out var support)
+            ||support.Kind is not (SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Torus))return false;
+        var data=CircleDataPool[carrier.DataIndex];var center=Vector(data.CenterX,data.CenterY,data.CenterZ);
+        var axis=Vector(data.AxisX,data.AxisY,data.AxisZ);var reference=Vector(data.RefDirX,data.RefDirY,data.RefDirZ);
+        var a=new IntervalVector(support.Axis);var delta=new IntervalVector(center)-new IntervalVector(support.Origin);
+        var axial=IntervalVector.Dot(delta,a).Value;
+        var arithmetic=128*SmallLinearSolve.MachineEpsilon;
+        var tolerance=(arithmetic*(new IntervalVector(center).Norm().Value+new IntervalVector(support.Origin).Norm().Value
+            +support.Radius+data.Radius)).Upper;
+        if(!(tolerance>0&&tolerance<=1e-10)||IntervalVector.Cross(a,new IntervalVector(axis)).Norm().Value.Upper>arithmetic
+            ||IntervalVector.Cross(a,delta).Norm().Value.Upper>tolerance)return false;
+        var alignment=IntervalVector.Dot(a,new IntervalVector(axis)).Value;
+        if(alignment.ContainsZero)return false;direction=alignment.Lower>0?1:-1;
+        if(support.Kind==SurfaceClass.Torus)
+        {
+            var radial=new IntervalNumber(data.Radius)-support.Radius;
+            // The axial provider needs the outer meridian only. Its finite
+            // chart lies inside a half turn and does not cross the V seam.
+            if(radial.Lower< -tolerance)return false;
+            var radius=IntervalDual.Sqrt(new IntervalDual(IntervalNumber.Square(axial)+IntervalNumber.Square(radial),0)).Value;
+            if((radius-support.Secondary).Magnitude>tolerance)return false;
+            station=Math.Atan2(axial.Midpoint,radial.Midpoint);
+        }
+        else
+        {
+            var radius=support.Kind==SurfaceClass.Cone?new IntervalNumber(support.Radius)+axial*support.Secondary:new IntervalNumber(support.Radius);
+            if(!(radius.Lower>0)||(radius-data.Radius).Magnitude>tolerance)return false;
+            station=axial.Midpoint;
+        }
+        phase=Math.Atan2(Dot(reference,support.Y),Dot(reference,support.X));return true;
+    }
+
+    private static bool TryCoaxialRingWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
+        double v,out BufferCount winding,out int error)
+    {
+        winding=error=0;if(loop.Length!=1)return false;var use=loop[0];var edge=edges[use.Edge];
+        if(edge.StartVertex>=0||edge.EndVertex>=0||edge.End-edge.Start!=Math.Tau)return false;
+        var curve=Curves[GetCurveSlotByTag(edge.Curve)];if(!TryCoaxialCircleChart(surface,curve,out _,out var direction,out var station))return false;
+        var delta=station-v;
+        if(Math.Abs(delta)<=32*SmallLinearSolve.MachineEpsilon*Math.Max(1,Math.Abs(station)))error=ParasolidConstants.PK_ERROR_eval_failure;
+        else if(delta>0)winding=direction*LocalSenseSign(curve.Sense)*(use.Forward!=0?1:-1)<0?1:-1;
+        return true;
+    }
+
     // Public inverse parameterization keeps its natural principal value.
     // A finite edge can use the equivalent next turn across the periodic seam.
     private static void LiftPeriodicEdgeParameter(CurveTag curve,double first,double last,ref double parameter)

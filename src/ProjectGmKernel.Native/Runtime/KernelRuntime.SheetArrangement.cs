@@ -257,8 +257,8 @@ internal static unsafe partial class KernelRuntime
         return AddFiniteBoundaryHalfedge(use,ref model,halfedges,ref count);
     }
 
-    private static int AddFiniteBoundaryHalfedge(in FiniteBoundaryUse use,ref SheetArrangement model,
-        Span<SheetHalfedge> halfedges,ref BufferCount count)
+    private static int AddFiniteBoundaryHalfedge(in FiniteBoundaryUse use,scoped ref SheetArrangement model,
+        scoped Span<SheetHalfedge> halfedges,ref BufferCount count)
     {
         if(count==halfedges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
         var surface=use.Surface;var edge=use.Edge;var forward=use.Forward;
@@ -416,8 +416,8 @@ internal static unsafe partial class KernelRuntime
         return PublishFiniteSheetCycles(surface,sense,face,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],plane,borrowGeometry);
     }
 
-    private static int ExtractSheetCycles(SurfTag surface,ref SheetArrangement model,Span<SheetHalfedge> halfedges,
-        Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles,out BufferCount cycleCount,out BufferCount coedgeCount)
+    private static int ExtractSheetCycles(SurfTag surface,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,
+        scoped Span<ModelingCoedge> cycleCoedges,scoped Span<SheetCycle> cycles,out BufferCount cycleCount,out BufferCount coedgeCount)
     {
         cycleCount=coedgeCount=0;var nh=halfedges.Length;
         // Clockwise successor from the incoming reverse tangent walks the face

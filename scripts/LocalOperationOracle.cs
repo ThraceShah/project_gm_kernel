@@ -14,6 +14,10 @@ using static parasolid;
 
 var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","local-operation-oracle"));
 Directory.CreateDirectory(directory);var report=new StringBuilder();
+var axialArrangement=args.Contains("--axial-arrangement",StringComparer.Ordinal);
+var blendArrangement=args.Contains("--blend-arrangement",StringComparer.Ordinal);
+var trace=axialArrangement||blendArrangement?new List<KernelRuntime.BoundaryTrace>():null;
+if(trace!=null){KernelRuntime.ForbidLegacyRegularBlendAssembly=true;KernelRuntime.TraceFiniteBoundary=trace.Add;}
 void Log(string message){Console.WriteLine(message);report.AppendLine(message);}
 try
 {
@@ -48,13 +52,25 @@ try
                 ("cylinder-rim-chamfer","cylinder","chamfer",.4,"single",false),("cylinder-both-rim-chamfer","cylinder","chamfer",.4,"all",false),
                 ("cylinder-unequal-chamfer","cylinder","unequal-chamfer",.3,"single",false),
             };
-            var failures=0;
+            var failures=0;var executed=0;
             foreach(var c in cases)
             {
+                if(trace!=null&&(c.Operation is not ("fillet" or "chamfer" or "unequal-chamfer")||axialArrangement&&c.Shape!="cylinder"))continue;
+                executed++;
                 try
                 {
                     var managed=Create(true,c.Shape,c.Oriented);var reference=Create(false,c.Shape,c.Oriented);
+                    trace?.Clear();
                     var a=Apply(true,managed,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented);
+                    if(trace!=null)
+                    {
+                        var products=trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product).ToArray();
+                        Require(products.Length>0,"blend operation used the shared arrangement");
+                        foreach(var p in products)Require(trace.Any(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement&&t.Source==p.Source&&t.Edge==p.Edge
+                            &&t.Curve==p.Curve&&t.Generation==p.Generation&&t.StartEvent==p.StartEvent&&t.EndEvent==p.EndEvent
+                            &&t.First==p.First&&t.Last==p.Last),"blend product boundary provenance");
+                        Log($"{c.Name} common arrangement provenance uses={products.Length}");
+                    }
                     var b=Apply(false,reference,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented);
                     Require(a==b,c.Name+" returned topology/tracking contract differs: "+a+" / "+b);
                     var bytes=TransmitManaged(managed);File.WriteAllBytes(Path.Combine(directory,c.Name+"-managed.x_t"),bytes);
@@ -63,6 +79,7 @@ try
                     for(var kind=0;kind<5;kind++){var actual=Count(received,kind);var expected=Count(reference,kind);Require(actual==expected,$"{c.Name} topology kind {kind}: {actual}/{expected}");}
                     CheckBody(reference,c.Name+" independent",Log);CheckBody(received,c.Name+" received",Log);CompareMass(reference,received,c.Name,Log);
                     CompareMaterialSense(reference,received,c.Name);
+                    if(trace!=null&&c.Shape=="cylinder")ParasolidBodyCompare.AssertEquivalent(reference,received,c.Name+" strict");
                     if(!CompareBodies(reference,received,c.Name+" raw",Log,true))
                     {
                         var first=CanonicalCopy(reference);var second=CanonicalCopy(received);
@@ -74,9 +91,17 @@ try
                     Check(KernelRuntime.EntityDelete(1,&managed),"delete managed result");Check(PK_ENTITY_delete(1,&reference),"delete reference");Check(PK_ENTITY_delete(1,&received),"delete received");
                     Log("PASS "+c.Name);
                 }
-                catch(Exception ex){failures++;Log("FAIL "+c.Name+": "+ex.Message);}
+                catch(Exception ex)
+                {
+                    failures++;Log("FAIL "+c.Name+": "+ex.Message);
+                    if(trace!=null)
+                    {
+                        Log($"  arrangement stage={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+                        foreach(var use in trace)Log($"  boundary {use.Stage} face={use.Source} surface={use.Surface} edge={use.Edge}/{use.Curve} forward={use.Forward} t=[{use.First:R},{use.Last:R}]");
+                    }
+                }
             }
-            Log($"Local operation oracle: {cases.Length-failures} passed, {failures} failed.");Require(failures==0,"Local operation oracle failed.");
+            Log($"Local operation oracle: {executed-failures} passed, {failures} failed.");Require(failures==0,"Local operation oracle failed.");
         }
         finally{Check(KernelRuntime.SessionStop(),"managed session stop");}
     }

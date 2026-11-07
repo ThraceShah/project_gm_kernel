@@ -82,8 +82,8 @@ internal static unsafe partial class KernelRuntime
     // Retained boundaries are supplied without a loop order. The shared
     // halfedge successor and hole extraction choose their final incidence.
     private static int ArrangeFiniteReplacementFace(SurfTag surface,KernelSense sense,FaceSlot source,
-        ReadOnlySpan<ModelingCoedge> boundary,ref SheetArrangement model,Span<SheetHalfedge> halfedges,
-        Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles)
+        scoped ReadOnlySpan<ModelingCoedge> boundary,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,
+        scoped Span<ModelingCoedge> cycleCoedges,scoped Span<SheetCycle> cycles)
     {
         var reverse=LocalSenseSign(sense)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(surface)].Sense)<0;
         var count=0;
@@ -96,5 +96,25 @@ internal static unsafe partial class KernelRuntime
         var result=ExtractSheetCycles(surface,ref model,halfedges[..count],cycleCoedges,cycles,out var nc,out var ne);
         if(result!=0)return result;
         return PublishFiniteSheetCycles(surface,sense,source,reverse,ref model,cycleCoedges[..ne],cycles[..nc]);
+    }
+
+    private static int BuildArrangedLocalBody(scoped ref SheetArrangement model,out BodyTag body,Span<FaceSlot> products)
+    {
+        var error=BuildModelingBrep(model.Points[..model.NP],model.Edges[..model.NE],model.Coedges[..model.NC],model.Loops[..model.NL],
+            model.Faces[..model.NF],true,out body,products);if(error!=0)return error;
+        if(TraceFiniteBoundary!=null)for(var i=0;i<model.NF;i++)
+        {
+            var face=model.Faces[i];
+            for(var l=0;l<face.LoopCount;l++)
+            {
+                var loop=model.Loops[face.FirstLoop+l];
+                foreach(var coedge in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+                {
+                    var use=FiniteBoundaryUse.Create(face.Surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,model.Sources[i]);
+                    TraceBoundary(BoundaryTraceStage.Product,use,i,products[i],use.Carrier);
+                }
+            }
+        }
+        return 0;
     }
 }

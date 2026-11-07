@@ -43,6 +43,14 @@ internal static unsafe partial class KernelRuntime
         LastSheetPartitionStage=SheetPartitionStage.CurveEvaluation;
         LastSheetCurve=curve;LastSheetParameter=parameter;
         if(double.IsNaN(first)){first=Curves[slot].TMin;last=Curves[slot].TMax;}
+        var kind=Surfaces[GetSurfaceSlotByTag(surface)].Class;
+        if(kind is SurfaceClass.Cone or SurfaceClass.Torus&&TryCoaxialCircleChart(surface,Curves[slot],out var phase,out var direction,out var stationV))
+        {
+            Span<KernelVector3> evaluated=stackalloc KernelVector3[1];
+            var found=EvaluateCurveCore(in Curves[slot],parameter,0,false,evaluated,out _);if(found!=AlgorithmStatus.Success)return EvaluationError(found);
+            point=evaluated[0];uv.param[0]=phase+direction*parameter;uv.param[1]=stationV;
+            tangent.param[0]=direction*LocalSenseSign(Curves[slot].Sense)*(forward?1:-1);return 0;
+        }
         if(TryAnalyticBlendContactMap(surface,Curves[slot],first,last,out var section,out var shift,out var scale))
         {
             Span<KernelVector3> evaluated=stackalloc KernelVector3[1];
@@ -126,9 +134,12 @@ internal static unsafe partial class KernelRuntime
         PK_UV_s query,out BufferCount winding)
     {
         ModelingPerformance.Winding();
-        if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Cylinder)
+        var kind=Surfaces[GetSurfaceSlotByTag(surface)].Class;
+        if(kind is SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Torus
+            &&TryCoaxialRingWinding(surface,edges,loop,query.param[1],out winding,out var ringError))return ringError;
+        if(kind==SurfaceClass.Cylinder)
             return CylindricalLoopWinding(surface,edges,loop,query,out winding);
-        if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Sphere)
+        if(kind==SurfaceClass.Sphere)
             return SphericalLoopWinding(surface,edges,loop,query,out winding);
         var vertical=BlendWindingPrefersVertical(surface,edges,loop,query);var error=0;winding=0;
         for(var attempt=0;attempt<6;attempt++)

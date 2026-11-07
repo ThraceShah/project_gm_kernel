@@ -44,13 +44,15 @@ internal static unsafe partial class KernelRuntime
         Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[LocalCoedgeLimit];Span<ModelingLoop> loops=stackalloc ModelingLoop[LocalFaceLimit];
         Span<ModelingFace> modelFaces=stackalloc ModelingFace[LocalFaceLimit];Span<byte> cavity=stackalloc byte[LocalFaceLimit];
         var brep=new LocalBrep{Points=points,Edges=edges,Coedges=coedges,Loops=loops,Faces=modelFaces,Cavities=cavity};
+        Span<BufferOffset> contacts=stackalloc BufferOffset[3*vertexCount];contacts.Fill(-1);
+        Span<BufferOffset> productCells=stackalloc BufferOffset[selected.Length+vertexCount];
         Span<int> boundary=stackalloc int[VertexLimit];
         for(var f=0;f<faces.Length;f++)
         {
             var polygon=polygons[f];if(polygon.Count<3)return ParasolidConstants.PK_ERROR_radius_too_large;
             for(var i=0;i<polygon.Count;i++)
             {
-                boundary[i]=brep.AddPoint(Add(centers[indices[polygon.First+i]],Scale(planes[f].Normal,radius)));
+                var vertex=indices[polygon.First+i];boundary[i]=PlanarBlendContactVertex(ref brep,contacts,mask,vertex,f,centers[vertex],planes[f].Normal,radius);
                 if(boundary[i]<0)return ParasolidConstants.PK_ERROR_memory_full;
             }
             var error=TryCloneEntityCore(Faces[faces[f]].SurfTag,out var surface);if(error!=0)return error;
@@ -64,8 +66,8 @@ internal static unsafe partial class KernelRuntime
             for(var v=0;v<vertexCount;v++)if((mask[v]&edgeMask)==edgeMask){if(va<0)va=v;else if(vb<0)vb=v;else return ParasolidConstants.PK_ERROR_not_implemented;}
             if(va<0||vb<0)return ParasolidConstants.PK_ERROR_radius_too_large;
             var ca=centers[va];var cb=centers[vb];var axis=Unit(Sub(cb,ca));var na=planes[a].Normal;var nb=planes[b].Normal;
-            quad[0]=brep.AddPoint(Add(ca,Scale(na,radius)));quad[1]=brep.AddPoint(Add(cb,Scale(na,radius)));
-            quad[2]=brep.AddPoint(Add(cb,Scale(nb,radius)));quad[3]=brep.AddPoint(Add(ca,Scale(nb,radius)));
+            quad[0]=PlanarBlendContactVertex(ref brep,contacts,mask,va,a,ca,na,radius);quad[1]=PlanarBlendContactVertex(ref brep,contacts,mask,vb,a,cb,na,radius);
+            quad[2]=PlanarBlendContactVertex(ref brep,contacts,mask,vb,b,cb,nb,radius);quad[3]=PlanarBlendContactVertex(ref brep,contacts,mask,va,b,ca,nb,radius);
             for(var j=0;j<4;j++)if(quad[j]<0)return ParasolidConstants.PK_ERROR_memory_full;
             var outward=Add(na,nb);OrientLocalPolygon(brep.Points,quad,outward);
             SurfTag surface;
@@ -82,6 +84,7 @@ internal static unsafe partial class KernelRuntime
                         var error=AddLocalArc(ref brep,p,q,center,axis,radius);if(error!=0)return error;
                     }
                 }
+            productCells[made]=brep.FaceCount-1;
             descriptions[made++]=new(){Edge=Edges[slot].Header.Tag,First=Faces[fa].Header.Tag,Second=Faces[fb].Header.Tag};
         }
         Span<int> triangle=stackalloc int[3];Span<int> adjacent=stackalloc int[3];
@@ -91,7 +94,8 @@ internal static unsafe partial class KernelRuntime
             for(var f=0;f<planes.Length;f++)if((mask[v]&(1UL<<f))!=0)
             {
                 if(n>=3)return ParasolidConstants.PK_ERROR_not_implemented;
-                adjacent[n]=f;triangle[n++]=brep.AddPoint(Add(centers[v],Scale(planes[f].Normal,radius)));outward=Add(outward,planes[f].Normal);
+                adjacent[n]=f;triangle[n]=PlanarBlendContactVertex(ref brep,contacts,mask,v,f,centers[v],planes[f].Normal,radius);
+                if(triangle[n++]<0)return ParasolidConstants.PK_ERROR_memory_full;outward=Add(outward,planes[f].Normal);
             }
             if(n!=3)return ParasolidConstants.PK_ERROR_not_implemented;
             OrientLocalPolygon(brep.Points,triangle,outward);var center=centers[v];SurfTag surface;
@@ -109,11 +113,26 @@ internal static unsafe partial class KernelRuntime
             }
             var sourceVertex=oldVertices[v];EntityTag sourceEdge=0;
             for(var i=0;i<selected.Length;i++)if(Edges[selected[i]].StartVertex==sourceVertex||Edges[selected[i]].EndVertex==sourceVertex){sourceEdge=Edges[selected[i]].Header.Tag;break;}
+            productCells[made]=brep.FaceCount-1;
             descriptions[made++]=new(){Edge=sourceEdge,Vertex=Vertices[sourceVertex].Header.Tag,
                 First=Faces[faces[adjacent[0]]].Header.Tag,Second=Faces[faces[adjacent[1]]].Header.Tag,Third=Faces[faces[adjacent[2]]].Header.Tag};
         }
-        var finish=brep.Complete(out var product,products);if(finish!=0)return finish;
+        var finish=CompleteArrangedPlanarBlends(ref brep,faces,out var product,products);if(finish!=0)return finish;
+        for(var i=0;i<made;i++)descriptions[i].Result=Faces[products[productCells[i]]].Header.Tag;
         return ReplaceLocalBody(body,product,faces,products[..brep.FaceCount]);
+    }
+
+    private static BufferOffset PlanarBlendContactVertex(scoped ref LocalBrep draft,scoped Span<BufferOffset> contacts,
+        scoped ReadOnlySpan<ulong> masks,BufferOffset vertex,BufferOffset face,in KernelVector3 center,in KernelVector3 normal,double radius)
+    {
+        // Offset vertex and support occurrence identify one contact event.
+        // Two different contacts are not welded by coordinate distance.
+        var bit=1UL<<face;if((masks[vertex]&bit)==0)return -1;
+        var rank=System.Numerics.BitOperations.PopCount(masks[vertex]&(bit-1));
+        var key=3*vertex+rank;
+        var found=contacts[key];if(found>=0)return found;
+        if(draft.PointCount==draft.Points.Length)return -1;
+        draft.Points[draft.PointCount]=Add(center,Scale(normal,radius));return contacts[key]=draft.PointCount++;
     }
 
     private static void OrientLocalPolygon(ReadOnlySpan<KernelVector3> points,Span<int> polygon,KernelVector3 outward)
@@ -155,6 +174,9 @@ internal static unsafe partial class KernelRuntime
         Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[LocalCoedgeLimit];Span<ModelingLoop> loops=stackalloc ModelingLoop[LocalFaceLimit];
         Span<ModelingFace> modelFaces=stackalloc ModelingFace[LocalFaceLimit];Span<byte> cavity=stackalloc byte[LocalFaceLimit];
         var brep=new LocalBrep{Points=points,Edges=edges,Coedges=coedges,Loops=loops,Faces=modelFaces,Cavities=cavity};
+        Span<BufferOffset> vertexMap=stackalloc BufferOffset[vertexCount];vertexMap.Fill(-1);
+        Span<BufferOffset> boundary=stackalloc BufferOffset[VertexLimit];
+        Span<BufferOffset> productCells=stackalloc BufferOffset[selected.Length];
         for(var i=0;i<planes.Length;i++)
         {
             SurfTag surface;KernelSense sense;int error;
@@ -171,7 +193,15 @@ internal static unsafe partial class KernelRuntime
                 else error=LocalPlaneTag(planes[i].Normal,vertices[indices[polygons[i].First]],out surface);
             }
             if(error!=0)return error;
-            if(!AddLocalPolyFace(ref brep,vertices,indices,polygons[i],surface,sense))return ParasolidConstants.PK_ERROR_memory_full;
+            var polygon=polygons[i];
+            for(var v=0;v<polygon.Count;v++)
+            {
+                var index=indices[polygon.First+v];
+                if(vertexMap[index]<0){if(brep.PointCount==points.Length)return ParasolidConstants.PK_ERROR_memory_full;points[brep.PointCount]=vertices[index];vertexMap[index]=brep.PointCount++;}
+                boundary[v]=vertexMap[index];
+            }
+            if(!brep.AddFace(surface,sense,boundary[..polygon.Count]))return ParasolidConstants.PK_ERROR_memory_full;
+            if(i>=input.Length)productCells[i-input.Length]=brep.FaceCount-1;
         }
         for(var i=0;i<selected.Length;i++)if(Edges[selected[i]].PendingBlendKind==1)
         {
@@ -183,12 +213,32 @@ internal static unsafe partial class KernelRuntime
                 var capMask=mask[a]&mask[b]&((1UL<<input.Length)-1);var cap=-1;
                 for(var f=0;f<input.Length;f++)if((capMask&(1UL<<f))!=0){cap=f;break;}
                 if(cap<0)return ParasolidConstants.PK_ERROR_bad_parameter;
-                var pa=brep.AddPoint(vertices[a]);var pb=brep.AddPoint(vertices[b]);
+                var pa=vertexMap[a];var pb=vertexMap[b];
                 var error=AddLocalCylinderSection(ref brep,pa,pb,center,axis,radius,input[cap]);if(error!=0)return error;
             }
         }
-        var finish=brep.Complete(out var product,products);if(finish!=0)return finish;
+        var finish=CompleteArrangedPlanarBlends(ref brep,faces,out var product,products);if(finish!=0)return finish;
+        for(var i=0;i<selected.Length;i++)descriptions[i].Result=Faces[products[productCells[i]]].Header.Tag;
         finish=ReplaceLocalBody(body,product,faces,products[..brep.FaceCount]);if(finish==0)made=selected.Length;return finish;
+    }
+
+    private static int CompleteArrangedPlanarBlends(scoped ref LocalBrep draft,scoped ReadOnlySpan<FaceSlot> sources,out BodyTag body,Span<FaceSlot> products)
+    {
+        body=0;var error=draft.BindLinearCarriers();if(error!=0)return error;
+        var model=new SheetArrangement{Points=draft.Points[..draft.PointCount],NP=draft.PointCount,Edges=draft.Edges[..draft.EdgeCount],NE=draft.EdgeCount,
+            Coedges=stackalloc ModelingCoedge[draft.CoedgeCount],Loops=stackalloc ModelingLoop[draft.LoopCount],Faces=stackalloc ModelingFace[draft.FaceCount],
+            Sources=stackalloc FaceSlot[draft.FaceCount],Witnesses=stackalloc PK_UV_s[draft.FaceCount]};
+        Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[VertexLimit];Span<ModelingCoedge> cycleCoedges=stackalloc ModelingCoedge[VertexLimit];
+        Span<SheetCycle> cycles=stackalloc SheetCycle[VertexLimit];
+        for(var f=0;f<draft.FaceCount;f++)
+        {
+            var face=draft.Faces[f];var loop=draft.Loops[face.FirstLoop];
+            var boundary=draft.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount);boundary.Reverse();
+            var source=f<sources.Length?sources[f]:-1;var count=model.NF;
+            error=ArrangeFiniteReplacementFace(face.Surface,face.Sense,source,boundary,ref model,halfedges,cycleCoedges,cycles);if(error!=0)return error;
+            if(model.NF!=count+1)return ParasolidConstants.PK_ERROR_bad_loop;
+        }
+        return BuildArrangedLocalBody(ref model,out body,products);
     }
 
     private static int AddLocalCylinderSection(ref LocalBrep brep,int first,int second,KernelVector3 axisPoint,KernelVector3 axis,double radius,LocalPlane cap)
