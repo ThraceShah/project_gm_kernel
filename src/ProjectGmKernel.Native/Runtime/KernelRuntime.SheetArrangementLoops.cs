@@ -13,12 +13,17 @@ internal static unsafe partial class KernelRuntime
         if(support.Class==SurfaceClass.Sphere)return SphericalCycleWitness(surface,edges,loop,out left,out positive);
         var extent=Math.Min(support.UMax-support.UMin,support.VMax-support.VMin);
         if(support.Class is SurfaceClass.Plane or SurfaceClass.Cylinder)extent=PlanarLoopParameterScale(surface,edges,loop);
-        for(var attempt=0;attempt<24;attempt++)
+        var tries=support.Class is SurfaceClass.Plane or SurfaceClass.Cylinder?36:24;
+        for(var attempt=0;attempt<tries;attempt++)
         {
             var coedge=loop[attempt%loop.Length];var fraction=.2931471805599453+(attempt%5)*.071;
             var error=SheetCoedgePoint(surface,edges[coedge.Edge],coedge.Forward,fraction,out var uv,out var tangent,out _);if(error!=0)return error;
             var length=Math.Sqrt(tangent.param[0]*tangent.param[0]+tangent.param[1]*tangent.param[1]);if(!(length>0))continue;
-            var epsilon=extent*1e-5*Math.Pow(.2,attempt/6);
+            // For a small complete cell the usual probe step can already
+            // be inside the ray's boundary uncertainty. Try a larger
+            // fraction of this local chart extent; winding must still
+            // validate the two sides with the same acceptance rules.
+            var epsilon=extent*(attempt<24?1e-5*Math.Pow(.2,attempt/6):attempt<30?.001:.02);
             var a=uv;var b=uv;
             a.param[0]-=epsilon*tangent.param[1]/length;a.param[1]+=epsilon*tangent.param[0]/length;
             b.param[0]+=epsilon*tangent.param[1]/length;b.param[1]-=epsilon*tangent.param[0]/length;

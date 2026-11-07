@@ -12,6 +12,17 @@ using System.Diagnostics;
 using M=ProjectGmKernel.Native.Generated;
 unsafe
 {
+ KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
+ var cornerTrace=KernelRuntime.ForbidLegacyRegularBlendAssembly?new List<KernelRuntime.BoundaryTrace>():null;
+ if(cornerTrace!=null)
+    KernelRuntime.TraceFiniteBoundary=trace=>
+    {
+        if(trace.Stage is KernelRuntime.BoundaryTraceStage.Input or KernelRuntime.BoundaryTraceStage.Arrangement or KernelRuntime.BoundaryTraceStage.Product)
+        {
+            cornerTrace.Add(trace);
+            Console.WriteLine($"CORNER BOUNDARY {trace.Stage} source={trace.Source} surface={trace.Surface} edge={trace.Edge}/{trace.Curve}/{trace.Generation} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} product={trace.Product}");
+        }
+    };
  if(!ParasolidScriptHost.TryStartSession("trivalent equal radius corner",out var host,out var message))throw new Exception(message);
  using(host)
  {
@@ -38,7 +49,17 @@ unsafe
     var label=name+(permutation==0?"":"-order"+permutation)+(authorOwn?"-self-author":"-native-author");var author=name.StartsWith("zero-",StringComparison.Ordinal)?Block(authorOwn,.5,name.StartsWith("zero-single",StringComparison.Ordinal)?1:.5,0,1,name.StartsWith("zero-single",StringComparison.Ordinal)?2:1,name.StartsWith("zero-all",StringComparison.Ordinal)||name.StartsWith("zero-near",StringComparison.Ordinal)?1:2):name.StartsWith("skew-",StringComparison.Ordinal)?SkewPrism(authorOwn):Roof(authorOwn,name.StartsWith("extended-",StringComparison.Ordinal),name=="uv-reversed",name=="uv-scaled");var source=authorOwn?Transmit(author):TransmitNative(author);Check(authorOwn?KernelRuntime.EntityDelete(1,&author):PK_ENTITY_delete(1,&author),"delete unmodified author");
     File.WriteAllBytes(Path.Combine(directory,label+"-source.x_t"),source);
     var native=Corner(false,name,source,permutation);CheckBody(native,label+" native");File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitNative(native));
-    var own=Corner(true,name,source,permutation);var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,label+"-self.x_t"),bytes);var received=Receive(bytes);CheckBody(received,label+" received");Compare(native,received,label);
+    cornerTrace?.Clear();var own=Corner(true,name,source,permutation);
+    if(cornerTrace!=null)
+    {
+        var products=cornerTrace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product).ToArray();
+        Require(products.Length>0,"corner used the common boundary consumer");
+        foreach(var p in products)
+            Require(cornerTrace.Any(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement&&t.Source==p.Source&&t.Edge==p.Edge&&t.Curve==p.Curve
+                &&t.Generation==p.Generation&&t.StartEvent==p.StartEvent&&t.EndEvent==p.EndEvent&&t.First==p.First&&t.Last==p.Last),"corner product preserves arrangement provenance");
+        Console.WriteLine($"PASS common arrangement provenance uses={products.Length}");
+    }
+    var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,label+"-self.x_t"),bytes);var received=Receive(bytes);CheckBody(received,label+" received");Compare(native,received,label);
     ValidateCorner(own,native,(name.StartsWith("zero-near",StringComparison.Ordinal)?.999999:name.StartsWith("zero-",StringComparison.Ordinal)?1:.1)*(name.EndsWith("mirror-scale",StringComparison.Ordinal)?1.7:1));
     if(lifecycle){Require(name=="base","base lifecycle fixture");CheckCornerLifecycle(own,native,label,directory);}
     if(name is "zero-single" or "zero-double" or "zero-all")CheckExtinctionReload(ref own,native,name);

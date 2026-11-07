@@ -1,5 +1,4 @@
 using ProjectGmKernel.Native.Generated;
-using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -10,6 +9,7 @@ internal static unsafe partial class KernelRuntime
         ReadOnlySpan<SurfTag> bands,SurfTag sphere,ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,
         ReadOnlySpan<KernelVector3> contacts,ReadOnlySpan<KernelVector3> distant,ReadOnlySpan<byte> vanished,Span<FaceSlot> products)
     {
+        var collapsed=vanished.Contains((byte)1);
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=sourceFaces.Length;
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne+12];Span<ModelingCoedge> inputCoedges=stackalloc ModelingCoedge[2*ne];
         Span<ModelingLoop> inputLoops=stackalloc ModelingLoop[nf];Span<ModelingFace> inputFaces=stackalloc ModelingFace[nf];
@@ -53,11 +53,13 @@ internal static unsafe partial class KernelRuntime
                 if(atStart==(LocalSenseSign(Curves[GetCurveSlotByTag(old.CurveTag)].Sense)>0))edges[e].Start=t;else edges[e].End=t;
             }
         }
-        Span<ModelingCoedge> bandLoops=stackalloc ModelingCoedge[12],sphereLoop=stackalloc ModelingCoedge[3];Span<byte> seen=stackalloc byte[12];seen.Clear();
+        Span<ModelingCoedge> bandLoops=stackalloc ModelingCoedge[12],sphereLoop=stackalloc ModelingCoedge[3],boundary=stackalloc ModelingCoedge[2*ne+24];
+        Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[boundary.Length];Span<ModelingCoedge> arranged=stackalloc ModelingCoedge[boundary.Length];
+        Span<SheetCycle> cycles=stackalloc SheetCycle[nf+4];Span<byte> seen=stackalloc byte[12];seen.Clear();
         for(var f=0;f<nf;f++)
         {
             var source=sources[f];if(Faces[source].LoopCount!=1)return CornerReject(BlendCornerEvent.UnsupportedGraph);
-            var face=inputFaces[f];var loop=inputLoops[face.FirstLoop];var start=model.NC;
+            var face=inputFaces[f];var loop=inputLoops[face.FirstLoop];var n=0;
             for(var k=0;k<loop.CoedgeCount;k++)
             {
                 var coedge=inputCoedges[loop.FirstCoedge+k];var old=Edges[originals[coedge.Edge]];var selectedIndex=selected.IndexOf(originals[coedge.Edge]);
@@ -75,20 +77,20 @@ internal static unsafe partial class KernelRuntime
                         Curves[GetCurveSlotByTag(edges[edge].Curve)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
                         (edges[edge].StartVertex,edges[edge].EndVertex)=(edges[edge].EndVertex,edges[edge].StartVertex);replacement.Forward=1;
                     }
-                    model.Coedges[model.NC++]=replacement;bandLoops[4*e+side]=new(){Edge=edge,Forward=(byte)(replacement.Forward^1)};seen[4*e+side]++;continue;
+                    boundary[n++]=replacement;bandLoops[4*e+side]=new(){Edge=edge,Forward=(byte)(replacement.Forward^1)};seen[4*e+side]++;continue;
                 }
-                model.Coedges[model.NC++]=coedge;var oldEnd=coedge.Forward!=0?old.EndVertex:old.StartVertex;
+                boundary[n++]=coedge;var oldEnd=coedge.Forward!=0?old.EndVertex:old.StartVertex;
                 for(var e=0;e<3;e++)if(source==caps[e]&&oldEnd==far[e])
                 {
                     var next=inputCoedges[loop.FirstCoedge+(k+1)%loop.CoedgeCount];var from=coedge.Forward!=0?edges[coedge.Edge].EndVertex:edges[coedge.Edge].StartVertex;
                     var to=next.Forward!=0?edges[next.Edge].StartVertex:edges[next.Edge].EndVertex;var edge=newEdges[4*e+3];
                     var forward=edges[edge].StartVertex==from&&edges[edge].EndVertex==to;
                     if(!forward&&(edges[edge].EndVertex!=from||edges[edge].StartVertex!=to))return ParasolidConstants.PK_ERROR_bad_loop;
-                    var replacement=new ModelingCoedge{Edge=edge,Forward=forward?(byte)1:(byte)0};model.Coedges[model.NC++]=replacement;
+                    var replacement=new ModelingCoedge{Edge=edge,Forward=forward?(byte)1:(byte)0};boundary[n++]=replacement;
                     bandLoops[4*e+3]=new(){Edge=edge,Forward=(byte)(replacement.Forward^1)};seen[4*e+3]++;
                 }
             }
-            model.Loops[model.NL]=new(){FirstCoedge=start,CoedgeCount=model.NC-start};model.Faces[model.NF]=new(){Surface=face.Surface,Sense=face.Sense,FirstLoop=model.NL++,LoopCount=1};model.Sources[model.NF++]=source;
+            error=PublishCornerBoundary(face.Surface,face.Sense,source,boundary[..n],collapsed,ref model,halfedges,arranged,cycles);if(error!=0)return error;
         }
         for(var e=0;e<3;e++)
         {
@@ -113,20 +115,28 @@ internal static unsafe partial class KernelRuntime
             }
             bandLoops[4*e+2]=new(){Edge=nearEdge,Forward=forward?(byte)1:(byte)0};sphereLoop[e]=new(){Edge=nearEdge,Forward=forward?(byte)0:(byte)1};
             if(vanished[e]!=0){sphereLoop[e]=bandLoops[4*e+3];continue;}
-            var band=bandLoops.Slice(4*e,4);error=OrderCornerCycle(edges,band);if(error!=0)return error;
+            var band=bandLoops.Slice(4*e,4);
             error=SheetCycleWitness(bands[e],edges[..model.NE],band,out _,out var positive);if(error!=0)return error;
-            model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=4};band.CopyTo(model.Coedges[model.NC..]);model.NC+=4;
-            model.Faces[model.NF]=new(){Surface=bands[e],Sense=positive!=0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c,FirstLoop=model.NL++,LoopCount=1};model.Sources[model.NF++]=-1;
+            var orientation=positive!=0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c;
+            error=PublishCornerBoundary(bands[e],orientation,-1,band,collapsed,ref model,halfedges,arranged,cycles);if(error!=0)return error;
         }
-        error=OrderCornerCycle(edges,sphereLoop);if(error!=0)return error;
-        var aEdge=edges[sphereLoop[0].Edge];var bEdge=edges[sphereLoop[1].Edge];var cEdge=edges[sphereLoop[2].Edge];
-        var pa=model.Points[sphereLoop[0].Forward!=0?aEdge.StartVertex:aEdge.EndVertex];var pb=model.Points[sphereLoop[1].Forward!=0?bEdge.StartVertex:bEdge.EndVertex];var pc=model.Points[sphereLoop[2].Forward!=0?cEdge.StartVertex:cEdge.EndVertex];
-        var sphereData=SphereDataPool[Surfaces[GetSurfaceSlotByTag(sphere)].DataIndex];var center=new KernelVector3{X=sphereData.CenterX,Y=sphereData.CenterY,Z=sphereData.CenterZ};
-        var orientation=Dot(ProfileCross(Sub(pb,pa),Sub(pc,pa)),Sub(pa,center));if(!(orientation>0))return ParasolidConstants.PK_ERROR_bad_loop;
-        model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=3};sphereLoop.CopyTo(model.Coedges[model.NC..]);model.NC+=3;
-        model.Faces[model.NF]=new(){Surface=sphere,Sense=ParasolidConstants.PK_TOPOL_sense_positive_c,FirstLoop=model.NL++,LoopCount=1};model.Sources[model.NF++]=-1;
+        error=PublishCornerBoundary(sphere,ParasolidConstants.PK_TOPOL_sense_positive_c,-1,sphereLoop,collapsed,ref model,halfedges,arranged,cycles);if(error!=0)return error;
         Span<FaceSlot> retained=stackalloc FaceSlot[nf];var retainedCount=nf;
-        if(vanished.Contains((byte)1)){error=ReduceCornerEvent(ref model,nf,sourceFaces,retained,out retainedCount);if(error!=0)return error;}else sourceFaces.CopyTo(retained);
+        if(collapsed)
+        {
+            error=ReduceCornerEvent(ref model,nf,sourceFaces,retained,out retainedCount);if(error!=0)return error;
+            Span<ModelingFace> reducedFaces=stackalloc ModelingFace[model.NF];model.Faces[..model.NF].CopyTo(reducedFaces);
+            Span<ModelingLoop> reducedLoops=stackalloc ModelingLoop[model.NL];model.Loops[..model.NL].CopyTo(reducedLoops);
+            Span<FaceSlot> reducedSources=stackalloc FaceSlot[model.NF];model.Sources[..model.NF].CopyTo(reducedSources);
+            model.Coedges[..model.NC].CopyTo(boundary);model.NC=model.NL=model.NF=0;
+            for(var f=0;f<reducedFaces.Length;f++)
+            {
+                var face=reducedFaces[f];var loop=reducedLoops[face.FirstLoop];
+                error=PublishCornerBoundary(face.Surface,face.Sense,reducedSources[f],boundary.Slice(loop.FirstCoedge,loop.CoedgeCount),false,
+                    ref model,halfedges,arranged,cycles);if(error!=0)return error;
+            }
+        }
+        else sourceFaces.CopyTo(retained);
         Span<BufferOffset> indices=stackalloc BufferOffset[model.NF];for(var i=0;i<indices.Length;i++)indices[i]=i;
         Span<byte> reversed=stackalloc byte[model.NF],cavities=stackalloc byte[model.NF];reversed.Clear();cavities.Clear();
         Span<FaceSlot> built=stackalloc FaceSlot[model.NF];error=CloneRegularBoundaryBody(ref model,indices,reversed,cavities,out var output,built);if(error!=0)return error;
@@ -134,14 +144,19 @@ internal static unsafe partial class KernelRuntime
         built[..retainedCount].CopyTo(products);built[retainedCount..].CopyTo(products[nf..]);return 0;
     }
 
-    private static int OrderCornerCycle(ReadOnlySpan<ModelingEdge> edges,Span<ModelingCoedge> loop)
+    private static int PublishCornerBoundary(SurfTag surface,KernelSense sense,FaceSlot source,scoped ReadOnlySpan<ModelingCoedge> boundary,
+        bool collapsed,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,scoped Span<ModelingCoedge> arranged,scoped Span<SheetCycle> cycles)
     {
-        for(var i=1;i<loop.Length;i++)
+        if(!collapsed)
         {
-            var previous=loop[i-1];var end=previous.Forward!=0?edges[previous.Edge].EndVertex:edges[previous.Edge].StartVertex;var found=-1;
-            for(var j=i;j<loop.Length;j++)if((loop[j].Forward!=0?edges[loop[j].Edge].StartVertex:edges[loop[j].Edge].EndVertex)==end){if(found>=0)return ParasolidConstants.PK_ERROR_bad_loop;found=j;}
-            if(found<0)return ParasolidConstants.PK_ERROR_bad_loop;(loop[i],loop[found])=(loop[found],loop[i]);
+            var count=model.NF;
+            var error=ArrangeFiniteReplacementFace(surface,sense,source,boundary,ref model,halfedges,arranged,cycles);if(error!=0)return error;
+            return model.NF==count+1?0:ParasolidConstants.PK_ERROR_bad_loop;
         }
-        return (loop[^1].Forward!=0?edges[loop[^1].Edge].EndVertex:edges[loop[^1].Edge].StartVertex)==(loop[0].Forward!=0?edges[loop[0].Edge].StartVertex:edges[loop[0].Edge].EndVertex)?0:ParasolidConstants.PK_ERROR_bad_loop;
+        // Extinction first collects the oriented boundary chain so its
+        // proved coincident uses can be cancelled before arrangement.
+        model.Loops[model.NL]=new(){FirstCoedge=model.NC,CoedgeCount=boundary.Length};boundary.CopyTo(model.Coedges[model.NC..]);model.NC+=boundary.Length;
+        model.Faces[model.NF]=new(){Surface=surface,Sense=sense,FirstLoop=model.NL++,LoopCount=1};model.Sources[model.NF++]=source;return 0;
     }
+
 }

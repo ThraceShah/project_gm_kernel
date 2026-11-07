@@ -46,17 +46,15 @@ internal static unsafe partial class KernelRuntime
                 var coedge=model.Coedges[old.FirstCoedge+c];var edge=canonical[coedge.Edge];if(edge<0)continue;
                 coedge.Forward^=reversed[coedge.Edge];coedge.Edge=edge;cycle[count++]=coedge;
             }
-            var changed=true;while(changed&&count>1)
+            for(var c=0;c<count;c++)
             {
-                changed=false;for(var c=0;c<count;c++)
+                for(var next=c+1;next<count;next++)
                 {
-                    var next=(c+1)%count;if(cycle[c].Edge!=cycle[next].Edge||cycle[c].Forward==cycle[next].Forward)continue;
-                    if(next==0){cycle[1..(count-1)].CopyTo(cycle);count-=2;}else{cycle[(next+1)..count].CopyTo(cycle[c..]);count-=2;}
-                    changed=true;break;
+                    if(cycle[c].Edge!=cycle[next].Edge||cycle[c].Forward==cycle[next].Forward)continue;
+                    cycle[(c+1)..next].CopyTo(cycle[c..]);cycle[(next+1)..count].CopyTo(cycle[(next-1)..]);count-=2;c--;break;
                 }
             }
             if(count==0)continue;if(count<3)return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
-            var error=OrderCornerCycle(model.Edges,cycle[..count]);if(error!=0)return error;
             cycle[..count].CopyTo(model.Coedges[nc..]);model.Loops[nl]=new(){FirstCoedge=nc,CoedgeCount=count};nc+=count;
             face.FirstLoop=nl++;model.Faces[nf]=face;model.Sources[nf]=model.Sources[f];if(f<originalFaces)retained[retainedCount++]=sources[f];nf++;
         }
