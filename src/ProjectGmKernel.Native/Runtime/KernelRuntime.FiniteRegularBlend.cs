@@ -56,17 +56,25 @@ internal static unsafe partial class KernelRuntime
             }
         }
         Span<ModelingCoedge> boundary=stackalloc ModelingCoedge[2*ne+curves.Length],newBoundary=stackalloc ModelingCoedge[curves.Length];var newCount=0;
+        Span<FinSlot> sourceFins=stackalloc FinSlot[boundary.Length];
         Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[boundary.Length];
         Span<ModelingCoedge> cycleCoedges=stackalloc ModelingCoedge[boundary.Length];Span<SheetCycle> cycles=stackalloc SheetCycle[loopCapacity+1];
         LastRegularBlendStage=RegularBlendStage.Loops;
         for(var f=0;f<nf;f++)
         {
-            var face=inputFaces[f];var count=0;
+            var face=inputFaces[f];var count=0;var sourceLoop=Faces[sources[f]].FirstLoop;
             for(var l=0;l<face.LoopCount;l++)
             {
                 var loop=inputLoops[face.FirstLoop+l];
+                while(sourceLoop>=0&&RegularVertexLoop(sourceLoop,out _))sourceLoop=Loops[sourceLoop].NextInFace;
+                if(sourceLoop<0||Loops[sourceLoop].FinCount!=loop.CoedgeCount)return ParasolidConstants.PK_ERROR_bad_loop;
+                var fin=Loops[sourceLoop].FirstFin;sourceLoop=Loops[sourceLoop].NextInFace;
                 foreach(var coedge in inputCoedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
-                    if(originals[coedge.Edge]!=selected)boundary[count++]=coedge;
+                {
+                    if(fin<0||Fins[fin].Edge!=originals[coedge.Edge])return ParasolidConstants.PK_ERROR_bad_loop;
+                    if(originals[coedge.Edge]!=selected){sourceFins[count]=fin;boundary[count++]=coedge;}
+                    fin=Fins[fin].NextInLoop;
+                }
             }
             for(var c=0;c<candidates.Length;c++)if(participants[c]==sources[f])
             {
@@ -79,12 +87,12 @@ internal static unsafe partial class KernelRuntime
                     if((use.Forward!=0?existing.StartVertex:existing.EndVertex)==record.StartVertex)balance--;
                 }
                 if(Math.Abs(balance)!=1)return ParasolidConstants.PK_ERROR_bad_loop;
-                var forward=balance>0?(byte)1:(byte)0;boundary[count++]=new(){Edge=e,Forward=forward};
+                var forward=balance>0?(byte)1:(byte)0;sourceFins[count]=-1;boundary[count++]=new(){Edge=e,Forward=forward};
                 if(newCount==newBoundary.Length)return ParasolidConstants.PK_ERROR_bad_loop;
                 newBoundary[newCount++]=new(){Edge=e,Forward=(byte)(forward^1)};
             }
             var before=model.NF;
-            error=ArrangeFiniteReplacementFace(face.Surface,face.Sense,sources[f],boundary[..count],ref model,halfedges,cycleCoedges,cycles);if(error!=0)return error;
+            error=ArrangeFiniteReplacementFace(face.Surface,face.Sense,sources[f],boundary[..count],ref model,halfedges,cycleCoedges,cycles,sourceFins[..count]);if(error!=0)return error;
             // This provider preserves each finite support as one face. A split
             // requires an explicit product/provenance plan, never array guesses.
             if(model.NF!=before+1)return ParasolidConstants.PK_ERROR_not_implemented;

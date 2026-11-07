@@ -281,7 +281,8 @@ internal static unsafe partial class KernelRuntime
         if(slot<0||Curves[slot].Header.Generation!=use.Generation||record.Curve!=use.Carrier
             ||Curves[slot].Class!=use.Class||Curves[slot].Sense!=use.CurveSense||support<0
             ||Surfaces[support].Header.Generation!=use.SurfaceGeneration||Surfaces[support].Sense!=use.SurfaceSense
-            ||record.Start!=use.First||record.End!=use.Last)return ParasolidConstants.PK_ERROR_bad_parameter;
+            ||record.Start!=use.First||record.End!=use.Last||use.Source>=0&&(!Faces.IsAlive(use.Source)
+                ||Faces[use.Source].Header.Generation!=use.SourceFaceGeneration))return ParasolidConstants.PK_ERROR_bad_parameter;
         if(use.SourceFin>=0)
         {
             if(use.SourceEdge<0||use.Source<0||!Edges.IsAlive(use.SourceEdge)||!Fins.IsAlive(use.SourceFin)

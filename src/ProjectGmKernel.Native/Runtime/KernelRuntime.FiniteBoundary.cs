@@ -43,7 +43,7 @@ internal static unsafe partial class KernelRuntime
     private struct FiniteBoundaryUse
     {
         internal CurveTag Carrier;
-        internal EntityGeneration Generation,SurfaceGeneration,SourceEdgeGeneration,SourceFinGeneration;
+        internal EntityGeneration Generation,SurfaceGeneration,SourceFaceGeneration,SourceEdgeGeneration,SourceFinGeneration;
         internal CurveClass Class;
         internal SurfTag Surface;
         internal FaceSlot Source;
@@ -62,7 +62,8 @@ internal static unsafe partial class KernelRuntime
             return new(){Carrier=edge.Curve,Generation=carrier.Header.Generation,Class=carrier.Class,CurveSense=carrier.Sense,
                 Surface=surface,SurfaceGeneration=support.Header.Generation,SurfaceSense=support.Sense,
                 FaceSense=NormalizeLocalSense(faceSense==0&&source>=0?Faces[source].Orientation:faceSense),
-                Source=source,SourceEdge=sourceEdge,SourceFin=sourceFin,SourceEdgeGeneration=sourceEdge>=0?Edges[sourceEdge].Header.Generation:0,
+                Source=source,SourceEdge=sourceEdge,SourceFin=sourceFin,SourceFaceGeneration=source>=0?Faces[source].Header.Generation:0,
+                SourceEdgeGeneration=sourceEdge>=0?Edges[sourceEdge].Header.Generation:0,
                 SourceFinGeneration=sourceFin>=0?Fins[sourceFin].Header.Generation:0,
                 Edge=index,First=edge.Start,Last=edge.End,Forward=forward,
                 StartEvent=forward!=0?edge.StartVertex:edge.EndVertex,EndEvent=forward!=0?edge.EndVertex:edge.StartVertex};
@@ -99,14 +100,16 @@ internal static unsafe partial class KernelRuntime
     // halfedge successor and hole extraction choose their final incidence.
     private static int ArrangeFiniteReplacementFace(SurfTag surface,KernelSense sense,FaceSlot source,
         scoped ReadOnlySpan<ModelingCoedge> boundary,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,
-        scoped Span<ModelingCoedge> cycleCoedges,scoped Span<SheetCycle> cycles)
+        scoped Span<ModelingCoedge> cycleCoedges,scoped Span<SheetCycle> cycles,scoped ReadOnlySpan<FinSlot> sourceFins=default)
     {
         var reverse=LocalSenseSign(sense)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(surface)].Sense)<0;
         var count=0;
-        foreach(var coedge in boundary)
+        if(!sourceFins.IsEmpty&&sourceFins.Length!=boundary.Length)return ParasolidConstants.PK_ERROR_bad_parameter;
+        for(var i=0;i<boundary.Length;i++)
         {
+            var coedge=boundary[i];var fin=sourceFins.IsEmpty?-1:sourceFins[i];
             var forward=(byte)(coedge.Forward^(reverse?1:0));
-            var use=FiniteBoundaryUse.Create(surface,model.Edges[coedge.Edge],coedge.Edge,forward,source,faceSense:sense);
+            var use=FiniteBoundaryUse.Create(surface,model.Edges[coedge.Edge],coedge.Edge,forward,source,fin>=0?Fins[fin].Edge:-1,fin,sense);
             var error=AddFiniteBoundaryHalfedge(use,ref model,halfedges,ref count);if(error!=0)return error;
         }
         var result=ExtractSheetCycles(surface,ref model,halfedges[..count],cycleCoedges,cycles,out var nc,out var ne);

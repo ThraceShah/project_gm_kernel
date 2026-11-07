@@ -1,5 +1,8 @@
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
+using EdgeSlot=System.Int32;
+using FaceSlot=System.Int32;
+using FinSlot=System.Int32;
 
 namespace KernelTests;
 
@@ -202,7 +205,25 @@ public unsafe class RegularSolidBlendTests:IDisposable
     {
         var body=Roof(bulge,curvedWall,concave);var edge=SelectedEdge(body,concave);var original=edge;
         var boundaryTrace=bulge==0?new List<KernelRuntime.BoundaryTrace>():null;
-        if(boundaryTrace!=null)KernelRuntime.TraceFiniteBoundary=boundaryTrace.Add;
+        var retainedFins=new Dictionary<FinSlot,(FaceSlot Face,EdgeSlot Edge)>();
+        if(boundaryTrace!=null)
+        {
+            var selected=KernelRuntime.ResolveTagRecord(original).Slot;var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];
+            var f=record.FirstFaceBody;
+            for(var i=0;i<record.FaceCountBody;i++,f=KernelRuntime.Faces[f].NextInBody)
+            {
+                var loop=KernelRuntime.Faces[f].FirstLoop;
+                for(var l=0;l<KernelRuntime.Faces[f].LoopCount;l++,loop=KernelRuntime.Loops[loop].NextInFace)
+                {
+                    var fin=KernelRuntime.Loops[loop].FirstFin;
+                    for(var k=0;k<KernelRuntime.Loops[loop].FinCount;k++,fin=KernelRuntime.Fins[fin].NextInLoop)
+                    {
+                        var old=KernelRuntime.Fins[fin].Edge;if(old!=selected)retainedFins.Add(fin,(f,old));
+                    }
+                }
+            }
+            KernelRuntime.TraceFiniteBoundary=boundaryTrace.Add;
+        }
         var options=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
         Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,radius,&options,&count,null));
         var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;int* blends;
@@ -226,6 +247,14 @@ public unsafe class RegularSolidBlendTests:IDisposable
             Assert.Equal(2,contacts);
             if(boundaryTrace!=null)
             {
+                foreach(var use in boundaryTrace.Where(x=>x.Stage==KernelRuntime.BoundaryTraceStage.Input&&x.SourceFin>=0))
+                {
+                    Assert.True(retainedFins.Remove(use.SourceFin,out var occurrence));
+                    Assert.Equal(occurrence,(use.Source,use.SourceEdge));
+                    Assert.Contains(boundaryTrace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.Product&&x.Source==use.Source
+                        &&x.Edge==use.Edge&&x.Curve==use.Curve&&x.First==use.First&&x.Last==use.Last);
+                }
+                Assert.Empty(retainedFins);
                 var sections=boundaryTrace.Where(x=>x.Stage==KernelRuntime.BoundaryTraceStage.AnalyticSectionEnds).ToArray();
                 Assert.Equal(2,sections.Length);
                 foreach(var section in sections)
