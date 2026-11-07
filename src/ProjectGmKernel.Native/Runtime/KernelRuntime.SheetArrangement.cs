@@ -119,18 +119,43 @@ internal static unsafe partial class KernelRuntime
             return false;
         }
 
-        internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index)
+        internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index,scoped ReadOnlySpan<BoundaryParameter> anchors=default)
         {
-            index=-1;
+            index=-1;BoundaryEventId proven=-1;var ambiguous=false;
             for(var i=0;i<NP;i++)
             {
                 if(original>=0&&OriginalVertices[i]==original){index=i;return 0;}
-                if(original<0&&ProfileDistance(Points[i],point)<=Tolerance)
-                { if(index>=0)return ParasolidConstants.PK_ERROR_not_implemented;index=i; }
+                if(original>=0||!(ProfileDistance(Points[i],point)<=Tolerance)||ConflictingBoundaryAnchor(i,anchors,out var same))continue;
+                if(same)
+                {
+                    if(proven>=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    proven=i;continue;
+                }
+                ambiguous|=index>=0;index=i;
             }
+            if(proven>=0){index=proven;return 0;}
+            if(ambiguous)return ParasolidConstants.PK_ERROR_not_implemented;
             if(index>=0)return 0;
             if(NP==Points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             index=NP;OriginalVertices[NP]=original;if(!VertexPrecisions.IsEmpty)VertexPrecisions[NP]=original>=0?Vertices[original].Tolerance:0;if(!VertexMergeCandidates.IsEmpty)VertexMergeCandidates[NP]=0;Points[NP++]=point;return 0;
+        }
+        private bool ConflictingBoundaryAnchor(BoundaryEventId endpoint,scoped ReadOnlySpan<BoundaryParameter> anchors,out bool same)
+        {
+            same=false;
+            // A disjoint pair of certified native intervals on the same
+            // linear carrier identifies distinct events even when their
+            // positions lie inside the spatial candidate radius.
+            foreach(ref readonly var anchor in anchors)
+            foreach(ref readonly var known in Parameters[..ParameterCount])
+            {
+                if(known.Event!=endpoint||known.Carrier!=anchor.Carrier||known.Generation!=anchor.Generation)continue;
+                if(known.Upper<anchor.Lower||known.Lower>anchor.Upper)return true;
+                // A common exact parameter proves one spatial point even
+                // if the two source/plane equations used different faces.
+                // Overlap of nontrivial intervals alone does not prove it.
+                same|=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower;
+            }
+            return false;
         }
         internal int AddEdge(CurveTag curve,double first,double last,BufferOffset start,BufferOffset end,bool cut,out BufferOffset index)
         {

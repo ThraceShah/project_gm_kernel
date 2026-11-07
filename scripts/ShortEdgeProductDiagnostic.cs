@@ -38,13 +38,15 @@ using(host)unsafe
         finally{Check(KernelRuntime.SessionStop());}
         return;
     }
-    var reference=Read(prefix+"-native.x_t");var actual=Read(prefix+"-self.x_t");
+    var nativeGauge=args.Contains("--native-rigid-gauge");
+    var reference=Read(prefix+"-native.x_t");var actual=nativeGauge?Read(prefix+"-native.x_t"):Read(prefix+"-self.x_t");
     try
     {
         if(args.Contains("--edges")){EdgeEndpoints(reference,actual);return;}
         if(args.Contains("--definitions")){Definitions(reference,"reference");Definitions(actual,"actual");}
         var scaleOption=args.FirstOrDefault(x=>x.StartsWith("--scale-power=",StringComparison.Ordinal));var scale=scaleOption==null?1:Math.ScaleB(1,int.Parse(scaleOption[14..],System.Globalization.CultureInfo.InvariantCulture));
         if(scale!=1){ScaleBody(reference,scale);ScaleBody(actual,scale);}
+        if(nativeGauge)TransformBody(actual,new PK_TRANSF_sf_t{matrixI0J2=1,matrixI1J0=1,matrixI2J1=1,matrixI3J3=1});
         if(args.Contains("--tight-precision"))Check(PK_SESSION_set_precision(1e-12));
         var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c};double* a=stackalloc double[20];double* b=stackalloc double[20];
         var accuracy=args.Contains("--full-accuracy")?1:.99999999999;
@@ -53,6 +55,20 @@ using(host)unsafe
         {
             Check(PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+2,a+4,a+8,a+18));
             Check(PK_TOPOL_eval_mass_props(1,&actual,accuracy,&options,b,b+2,b+4,b+8,b+18));
+        }
+        if(nativeGauge)
+        {
+            // Both inputs are receives of the same native XT. The rotation
+            // only permutes binary64 coordinates; convert the computed
+            // centroid and tensor back by the inverse permutation.
+            Span<double> rotated=stackalloc double[12];
+            for(var row=0;row<3;row++)
+            {
+                rotated[row]=b[4+(row+1)%3];
+                for(var column=0;column<3;column++)rotated[3+row*3+column]=b[8+((row+1)%3)*3+(column+1)%3];
+            }
+            rotated[..3].CopyTo(new Span<double>(b+4,3));rotated[3..].CopyTo(new Span<double>(b+8,9));
+            Console.WriteLine("NATIVE GAUGE: two receives of identical native XT; one integrated with exact axis permutation");
         }
         if(scale!=1){UnscaleMass(a,scale);UnscaleMass(b,scale);}
         var maximum=0.0;
@@ -120,7 +136,11 @@ static unsafe void FaceMass(int body,double accuracy,PK_TOPOL_eval_mass_props_o_
 }
 static unsafe void ScaleBody(int body,double scale)
 {
-    var matrix=new PK_TRANSF_sf_t{matrixI0J0=scale,matrixI1J1=scale,matrixI2J2=scale,matrixI3J3=1};int transform;
+    TransformBody(body,new PK_TRANSF_sf_t{matrixI0J0=scale,matrixI1J1=scale,matrixI2J2=scale,matrixI3J3=1});
+}
+static unsafe void TransformBody(int body,PK_TRANSF_sf_t matrix)
+{
+    int transform;
     Check(PK_TRANSF_create(&matrix,&transform));
     try
     {int n;int* replaced;PK_LOGICAL_t* exact;Check(PK_BODY_transform(body,transform,0,&n,&replaced,&exact));if(replaced!=null)Check(PK_MEMORY_free(replaced));if(exact!=null)Check(PK_MEMORY_free(exact));}

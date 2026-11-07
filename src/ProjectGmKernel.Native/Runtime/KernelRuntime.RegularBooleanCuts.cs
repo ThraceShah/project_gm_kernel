@@ -3,6 +3,7 @@ using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -13,6 +14,7 @@ internal static unsafe partial class KernelRuntime
     private struct RegularBoundaryRoot
     {
         internal CurveTag Curve;
+        internal BufferOffset InputEdge;
         internal SurfTag TangentSupport;
         internal SurfTag ContactSurface,ContactSupport;
         internal FiniteCurveSurfaceRoot Root;
@@ -110,6 +112,11 @@ internal static unsafe partial class KernelRuntime
                     for(var r=0;r<n;r++){var root=r==0?certificate.FirstRoot:certificate.SecondRoot;roots[r]=new(){Point=root.Point,First=root.Parameter,Kind=root.Kind};}
                     break;
                 }
+                if(!known&&certificates.IsEmpty&&TryFiniteLinePlaneEvent(edge,inputEdge,surface,out proof))
+                {
+                    known=true;n=proof.Count;
+                    if(n!=0)roots[0]=new(){Point=proof.FirstRoot.Point,First=proof.FirstRoot.Parameter,Kind=proof.FirstRoot.Kind};
+                }
                 var status=known?AlgorithmStatus.Success:IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out n);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 for(var r=0;r<n;r++)
                 {
@@ -121,7 +128,7 @@ internal static unsafe partial class KernelRuntime
                         SurfTag contactSupport=0;
                         foreach(var certificate in certificates)if(certificate.InputEdge==inputEdge&&certificate.TangentBoundary!=0)
                         {contactSupport=certificate.Surface;break;}
-                        points[count++]=new(){Curve=edge.Curve,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,Certified=known?(byte)1:(byte)0,
+                        points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,Certified=known?(byte)1:(byte)0,
                             Root=known?(r==0?proof.FirstRoot:proof.SecondRoot):new(){Point=roots[r].Point,Vertex=-1,Parameter=roots[r].First,Kind=roots[r].Kind}};
                     }
                 }
@@ -129,6 +136,57 @@ internal static unsafe partial class KernelRuntime
         }
         return 0;
     }
+
+    private static bool TryFiniteLinePlaneEvent(in ModelingEdge edge,BufferOffset inputEdge,SurfTag surface,out FiniteCurveSurfaceResult result)
+    {
+        result=default;
+        var record=Curves[GetCurveSlotByTag(edge.Curve)];var planeSlot=GetSurfaceSlotByTag(surface);
+        if(record.Class!=CurveClass.Line||Surfaces[planeSlot].Class!=SurfaceClass.Plane
+            ||!TryReadExplicitSpineCurve(record,out var line)||!TryPrepareSurface(Surfaces[planeSlot],out var plane))return false;
+        var axis=new IntervalVector(line.First);var normal=new IntervalVector(plane.Axis);
+        var denominator=IntervalVector.Dot(axis,normal).Value;
+        if(!denominator.Finite||denominator.Lower<=0&&denominator.Upper>=0)return false;
+        var numerator=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(line.Origin),normal).Value;
+        var t=numerator/denominator;if(!t.Finite)return false;
+        var speed=axis.Norm().Value;
+        if(!(speed.Lower>0))return false;
+        var endpointBand=(new IntervalNumber(OperationIntersection.DistanceTolerance)/speed).Upper;
+        result=NewFiniteEventResult(edge,inputEdge,surface);
+        if(t.Upper<edge.Start-endpointBand||t.Lower>edge.End+endpointBand)
+        {result.State=FiniteIntersectionState.Empty;result.Relation=SurfacePairRelation.Empty;return true;}
+        // Endpoints with an overlapping uncertainty interval require the
+        // source-vertex association path. This provider certifies a unique
+        // interior root in the original native edge interval.
+        if(t.Lower<=edge.Start+endpointBand||t.Upper>=edge.End-endpointBand)return false;
+        var parameter=Math.Clamp(Dot(Sub(plane.Origin,line.Origin),plane.Axis)/Dot(line.First,plane.Axis),t.Lower,t.Upper);
+        var point=Add(line.Origin,Scale(line.First,parameter));
+        var enclosure=new IntervalVector(line.Origin)+axis*new IntervalDual(t,0);
+        var error=(enclosure-new IntervalVector(point)).Norm().Value.Upper;
+        if(!double.IsFinite(error))return false;
+        result.State=FiniteIntersectionState.Complete;result.Relation=SurfacePairRelation.PointContact;result.Count=1;
+        result.FirstRoot=new(){Point=point,Vertex=-1,Kind=IntersectionVectorKind.Simple,Parameter=parameter,Lower=t.Lower,Upper=t.Upper,SpatialError=error};
+        return true;
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static int TestFiniteLinePlaneEventIdentities(CurveTag line,double first,double last,ReadOnlySpan<SurfTag> planes,Span<BoundaryEventId> ids)
+    {
+        var edge=new ModelingEdge{Curve=line,Start=first,End=last};
+        var model=new SheetArrangement{Points=stackalloc KernelVector3[8],OriginalVertices=stackalloc VertexSlot[8],
+            Parameters=stackalloc BoundaryParameter[8],Tolerance=OperationIntersection.DistanceTolerance};
+        Span<BoundaryParameter> anchor=stackalloc BoundaryParameter[1];
+        var generation=Curves[GetCurveSlotByTag(line)].Header.Generation;
+        for(var i=0;i<planes.Length;i++)
+        {
+            if(!TryFiniteLinePlaneEvent(edge,0,planes[i],out var result)||result.Count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            var root=result.FirstRoot;
+            anchor[0]=new(){Carrier=line,Generation=generation,Lower=root.Lower,Upper=root.Upper};
+            var error=model.AddPoint(root.Point,-1,out ids[i],anchor);if(error!=0)return error;
+            error=model.AssociateParameter(ids[i],line,root.Parameter,root.Lower,root.Upper);if(error!=0)return error;
+        }
+        return 0;
+    }
+#endif
 
     private static int ClipRegularFacePair(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
         ReadOnlySpan<SheetCutCurve> curves,Span<RegularFaceCut> cuts,ref BufferCount cutCount,
@@ -139,6 +197,7 @@ internal static unsafe partial class KernelRuntime
         error=RegularBoundarySurfaceRoots(input,second,input.Faces[first].Surface,roots,ref nRoots,certificates);if(error!=0)return error;
         LastSheetPartitionStage=SheetPartitionStage.CutClip;
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<double> rootParameters=stackalloc double[SheetPointLimit];Span<KernelVector3> point=stackalloc KernelVector3[1];
+        Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[IntersectionPointCapacity];
         foreach(ref readonly var curve in curves)
         {
             var n=0;
@@ -198,10 +257,18 @@ internal static unsafe partial class KernelRuntime
                 error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,input.Faces[second].Surface);if(error!=0)return error;
                 if(cut.Closed==0)for(var end=0;end<2;end++)
                 {
-                    status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                    error=model.AddPoint(point[0],-1,out var endpoint);if(error!=0)return error;
-                    error=model.AssociateParameter(endpoint,cut.Curve,end==0?cut.First:cut.Last);if(error!=0)return error;
                     var sourceParameter=end==0?lo:hi;
+                    var anchorCount=0;
+                    if(!model.RequireBoundaryAssociations)for(var r=0;r<nRoots;r++)
+                    {
+                        var root=roots[r];if(root.Certified==0||rootParameters[r]!=sourceParameter)continue;
+                        var carrier=Curves[GetCurveSlotByTag(root.Curve)];if(carrier.Class!=CurveClass.Line)continue;
+                        if(anchorCount==anchors.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+                        anchors[anchorCount++]=new(){Carrier=root.Curve,Generation=carrier.Header.Generation,Lower=root.Root.Lower,Upper=root.Root.Upper};
+                    }
+                    status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                    error=model.AddPoint(point[0],-1,out var endpoint,anchors[..anchorCount]);if(error!=0)return error;
+                    error=model.AssociateParameter(endpoint,cut.Curve,end==0?cut.First:cut.Last);if(error!=0)return error;
                     for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter)
                     {
                         var root=roots[r];
@@ -211,7 +278,13 @@ internal static unsafe partial class KernelRuntime
                             if(original!=endpoint)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                         }
                         if(root.Certified!=0)
-                        {error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,root.Root.Lower,root.Root.Upper);if(error!=0)return error;}
+                        {
+                            error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,root.Root.Lower,root.Root.Upper);if(error!=0)return error;
+                            TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CertifiedRoot,Curve=root.Curve,ProductCurve=cut.Curve,
+                                Surface=root.ContactSurface,Edge=root.InputEdge,StartEvent=endpoint,EndEvent=endpoint,
+                                Generation=Curves[GetCurveSlotByTag(root.Curve)].Header.Generation,
+                                First=root.Root.Lower,Last=root.Root.Upper,SpatialError=root.Root.SpatialError});
+                        }
                         else if(model.RequireBoundaryAssociations)
                         {
                             var carrier=Curves[GetCurveSlotByTag(root.Curve)];

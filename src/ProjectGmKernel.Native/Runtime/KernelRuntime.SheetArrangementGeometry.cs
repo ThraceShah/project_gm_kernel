@@ -68,11 +68,17 @@ internal static unsafe partial class KernelRuntime
         else if(blendContact){uv.param[0]=station;uv.param[1]=BlendContactV(contact);}
         else if(nativeSide<0)status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+        return SheetUvTangent(surface,uv,jet[1],forward==(LocalSenseSign(Curves[slot].Sense)>0),out tangent);
+    }
+
+    private static int SheetUvTangent(SurfTag surface,in PK_UV_s uv,in KernelVector3 derivative,bool increasing,out PK_UV_s tangent)
+    {
+        tangent=default;
         SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> support=stackalloc KernelVector3[4];
-        status=EvaluateSurfaceCore(in Surfaces[GetSurfaceSlotByTag(surface)],uv.param[0],uv.param[1],in layout,support,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+        var status=EvaluateSurfaceCore(in Surfaces[GetSurfaceSlotByTag(surface)],uv.param[0],uv.param[1],in layout,support,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
         var du=support[layout.GetIndex(1,0)];var dv=support[layout.GetIndex(0,1)];var aa=Dot(du,du);var ab=Dot(du,dv);var bb=Dot(dv,dv);var det=aa*bb-ab*ab;
         if(!(det>1e-24*aa*bb)){LastSheetPartitionStage=SheetPartitionStage.UVTangent;return ParasolidConstants.PK_ERROR_eval_failure;}
-        var sign=(forward?1:-1)*LocalSenseSign(Curves[slot].Sense);var ru=Dot(jet[1],du)*sign;var rv=Dot(jet[1],dv)*sign;
+        var sign=increasing?1:-1;var ru=Dot(derivative,du)*sign;var rv=Dot(derivative,dv)*sign;
         tangent.param[0]=(ru*bb-rv*ab)/det;tangent.param[1]=(rv*aa-ru*ab)/det;
         return 0;
     }
@@ -182,6 +188,7 @@ internal static unsafe partial class KernelRuntime
         if(record.Class==SurfaceClass.Plane)return PlanarLoopWinding(surface,edges,loop,query,du,dv,out winding);
         if(query.param[0]<record.UMin||query.param[0]>record.UMax||query.param[1]<record.VMin||query.param[1]>record.VMax)return 0;
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
+        Span<KernelVector3> curveJet=stackalloc KernelVector3[2];
         foreach(ref readonly var coedge in loop)
         {
             ref readonly var edge=ref edges[coedge.Edge];
@@ -197,7 +204,15 @@ internal static unsafe partial class KernelRuntime
                 var epsilon=1e-10*Math.Max(1,edge.End-edge.Start);
                 if(edge.StartVertex>=0&&(Math.Abs(root.Second-edge.Start)<epsilon||Math.Abs(root.Second-edge.End)<epsilon))
                     {LastSheetPartitionStage=SheetPartitionStage.RayEndpoint;return ParasolidConstants.PK_ERROR_eval_failure;}
-                var error=SheetCurveUV(surface,edge.Curve,root.Second,coedge.Forward!=0,out _,out var tangent,out _);if(error!=0)return error;
+                // The finite ray solve supplies both locations: native
+                // carrier t and position on this UV ray. Do not invert XYZ
+                // into a second surface chart to obtain the crossing sign.
+                var hit=new PK_UV_s();
+                hit.param[0]=Math.FusedMultiplyAdd(root.First,du,query.param[0]);hit.param[1]=Math.FusedMultiplyAdd(root.First,dv,query.param[1]);
+                if(hit.param[0]<record.UMin||hit.param[0]>record.UMax||hit.param[1]<record.VMin||hit.param[1]>record.VMax)return ParasolidConstants.PK_ERROR_eval_failure;
+                var carrier=Curves[GetCurveSlotByTag(edge.Curve)];
+                status=EvaluateCurveCore(in carrier,root.Second,1,false,curveJet,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                var error=SheetUvTangent(surface,hit,curveJet[1],(coedge.Forward!=0)==(LocalSenseSign(carrier.Sense)>0),out var tangent);if(error!=0)return error;
                 var crossing=tangent.param[1]*du-tangent.param[0]*dv;
                 if(Math.Abs(crossing)<1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1]))){LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
                 winding+=crossing>0?1:-1;
