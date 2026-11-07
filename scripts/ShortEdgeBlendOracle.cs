@@ -51,6 +51,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         {Console.WriteLine($"BOUNDARY REUSE surface={trace.Surface} edge={trace.Edge} implicit={trace.Curve} source_line={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} bound={trace.SpatialError:R}");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.UnresolvedOrder)
         {Console.WriteLine($"BOUNDARY ORDER event={trace.StartEvent} surface={trace.Surface} curves={trace.Curve}/{trace.ProductCurve} angles={trace.StartAngle:R}/{trace.EndAngle:R} curvature=[{trace.First:R},{trace.Last:R}]");return;}
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator)
+        {Console.WriteLine($"BOUNDARY NATIVE LOCATOR event={trace.StartEvent} source_curve={trace.Curve} cut_curve={trace.ProductCurve} supports={trace.Surface}/{trace.OtherSurface} cut_t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R}");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
         {
             var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];
@@ -86,6 +88,7 @@ Require(rotateMarks is 0 or 1 or 2&&(rotateMarks==0||splitSelected||splitEllipse
 var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
 var materialOwnership=args.Contains("--material-ownership");
+var requireNativeCutWitness=args.Contains("--require-native-cut-witness");
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
 Require(floor==0&&phase==0&&!splitRemote&&!splitSelected&&!splitEllipse||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
@@ -97,6 +100,8 @@ Require(!args.Contains("--saved-probes")||!args.Contains("--matrix")&&!args.Cont
 Require(!args.Contains("--native-only")||!args.Any(x=>x is "--import-only" or "--probes" or "--geometry" or "--lifecycle"),"managed checks require a managed-import mode");
 Require(!materialOwnership||!args.Contains("--native-only")&&!args.Contains("--import-only"),"material ownership checks the self-constructed product");
 Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"local cutter requires lifecycle mode");
+Require(!requireNativeCutWitness||transverseCut&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only"),
+    "native cut witness requires the guarded transverse self lifecycle");
 Require(!mappedInput||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"transformed inputs cannot replace fixed fixtures or historical probe inputs");
 Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
     ||!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"parameter overrides cannot replace fixed fixtures or historical probe inputs");
@@ -208,7 +213,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))SelfGeometry(own,reference);
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -269,7 +274,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -305,7 +310,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
             native=Cut(false,native,pkTool);CheckBody(native,name+" native local cut");
             File.WriteAllBytes(Path.Combine(output,name+"-independent-local-reference.x_t"),Transmit(false,native));
             if(KernelRuntime.TraceFiniteBoundary!=null)ProductEdges(native,"native-local-cut");
-            own=Cut(true,own,ownTool);
+            own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool):Cut(true,own,ownTool);
         }
         else{own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
         failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership);
@@ -324,6 +329,28 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Check(KernelRuntime.EntityDelete(1,&selfTransform),"delete self transform");Check(PK_ENTITY_delete(1,&pkTransform),"delete PK transform");
     }
     return failures;
+}
+static int CutWithNativeWitness(int body,int tool)
+{
+    var previous=KernelRuntime.TraceFiniteBoundary;
+    var witnesses=new List<KernelRuntime.BoundaryTrace>();
+    var published=new HashSet<(int Carrier,int Event)>();
+    KernelRuntime.TraceFiniteBoundary=trace=>
+    {
+        previous?.Invoke(trace);
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator)witnesses.Add(trace);
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product)
+        {published.Add((trace.Curve,trace.StartEvent));published.Add((trace.Curve,trace.EndEvent));}
+    };
+    int result;
+    try{result=Cut(true,body,tool);}
+    finally{KernelRuntime.TraceFiniteBoundary=previous;}
+    var consumed=witnesses.Where(x=>published.Contains((x.ProductCurve,x.StartEvent))).ToArray();
+    Require(consumed.All(x=>double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0)
+        &&consumed.Select(x=>x.Curve).Distinct().Count()>=2&&consumed.Select(x=>x.StartEvent).Distinct().Count()>=2,
+        "both short ICurve witnesses must reach published cut edges");
+    Console.WriteLine($"NATIVE CUT WITNESSES published_events={consumed.Select(x=>x.StartEvent).Distinct().Count()}");
+    return result;
 }
 static unsafe void Move(bool own,int body,int transform)
 {

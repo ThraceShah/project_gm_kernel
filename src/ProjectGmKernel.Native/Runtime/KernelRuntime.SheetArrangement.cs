@@ -140,7 +140,7 @@ internal static unsafe partial class KernelRuntime
             return false;
         }
 
-        internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index,scoped ReadOnlySpan<BoundaryParameter> anchors=default)
+        internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index,scoped ReadOnlySpan<BoundaryParameter> anchors=default,bool requireProof=false)
         {
             index=-1;BoundaryEventId proven=-1;var ambiguous=false;
             for(var i=0;i<NP;i++)
@@ -152,6 +152,7 @@ internal static unsafe partial class KernelRuntime
                     if(proven>=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     proven=i;continue;
                 }
+                if(requireProof)continue;
                 ambiguous|=index>=0;index=i;
             }
             if(proven>=0){index=proven;return 0;}

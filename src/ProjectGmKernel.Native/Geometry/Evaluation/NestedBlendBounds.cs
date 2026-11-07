@@ -21,6 +21,18 @@ internal static partial class JointNestedBlendEvaluation
         return BoundGeometry(program,-1,spine,domain,output);
     }
 
+    // Shared root witnesses for an implicit intersection with analytic
+    // supports, or one analytic support and one explicit rolling spine.
+    // Both occurrences must use the same shared support equations.
+    internal static AlgorithmStatus BoundSharedSpineWitness(in NestedBlendProgram program,BlendSpineIndex spine,
+        in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<IntervalNumber> capture=default,ReadOnlySpan<IntervalNumber> require=default)
+    {
+        var charts=Chart(program,spine);var chart=0;
+        while(chart<charts.Length-2&&charts[chart+1].Parameter<=domain.U0)chart++;
+        if(!domain.Valid||domain.U0<charts[chart].Parameter||domain.U1>charts[chart+1].Parameter)return AlgorithmStatus.NotConverged;
+        return BoundSegment(program,-1,spine,domain,output,captureWitness:capture,requireWitness:require,rootChart:chart);
+    }
+
     internal static AlgorithmStatus BoundSpineCurvature(in NestedBlendProgram program,BlendSpineIndex spine,double parameter,BufferOffset side,out IntervalNumber curvature)
     {
         curvature=default;if(side is <0 or >1||SpineParameterMap.Explicit(program.Spines[spine]))return AlgorithmStatus.Unsupported;
@@ -97,7 +109,8 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
-        Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0)
+        Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
+        Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1)
     {
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
@@ -107,6 +120,7 @@ internal static partial class JointNestedBlendEvaluation
         Span<BufferOffset> fixedCharts=stackalloc BufferOffset[MaxOccurrences];
         for(var i=0;i<nodes.Length;i++)
         {
+            if(i==0&&rootChart>=0){fixedCharts[i]=rootChart;continue;}
             var chart=Chart(program,nodes[i].Spine);var parameter=i==0?u:snapshot[nodes[i].Offset+3][0];var index=0;while(index<chart.Length-2&&chart[index+1].Parameter<=parameter)index++;fixedCharts[i]=index;
         }
         Span<double> state=stackalloc double[MaxVariables],jacobian=stackalloc double[MaxVariables*MaxVariables],inverse=stackalloc double[MaxVariables*MaxVariables],rhs=stackalloc double[MaxVariables],residual=stackalloc double[MaxVariables];Span<int> pivots=stackalloc int[MaxVariables];
@@ -146,6 +160,13 @@ internal static partial class JointNestedBlendEvaluation
             }
         }
         if(!certified)return AlgorithmStatus.NotConverged;
+        if(!requireWitness.IsEmpty)
+        {
+            if(n!=requireWitness.Length)return AlgorithmStatus.Unsupported;
+            for(var i=0;i<n;i++)
+                if(!requireWitness[i].Finite||requireWitness[i].Lower<boxes[i].Lower||requireWitness[i].Upper>boxes[i].Upper)
+                    return AlgorithmStatus.NotConverged;
+        }
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
@@ -160,6 +181,11 @@ internal static partial class JointNestedBlendEvaluation
         if(!ReuseSplineContactBounds)splineCache.Clear();
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
         status=CertifyNearestBoxes(program,nodes,boxes[..n],variables[..n],intervalJacobian[..(n*n)],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+        if(!captureWitness.IsEmpty)
+        {
+            if(n!=captureWitness.Length)return AlgorithmStatus.Unsupported;
+            boxes[..n].CopyTo(captureWitness);
+        }
         var parameterIndex=-1;
         if(!supportParameter.IsEmpty)
         {

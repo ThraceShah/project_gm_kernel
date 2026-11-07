@@ -221,6 +221,7 @@ internal static unsafe partial class KernelRuntime
         error=RegularBoundarySurfaceRoots(input,second,input.Faces[first].Surface,roots,ref nRoots,certificates);if(error!=0)return error;
         LastSheetPartitionStage=SheetPartitionStage.CutClip;
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<double> rootParameters=stackalloc double[SheetPointLimit];Span<KernelVector3> point=stackalloc KernelVector3[1];
+        Span<IntervalNumber> cutLocators=stackalloc IntervalNumber[nRoots];
         Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[IntersectionPointCapacity];
         foreach(ref readonly var curve in curves)
         {
@@ -231,9 +232,14 @@ internal static unsafe partial class KernelRuntime
             if(curve.Closed==0&&Curves[GetCurveSlotByTag(curve.Curve)].Class!=CurveClass.Line){parameters[n++]=curve.First;parameters[n++]=curve.Last;}
             for(var i=0;i<nRoots;i++)
             {
-                rootParameters[i]=double.NaN;
+                rootParameters[i]=double.NaN;cutLocators[i]=new(double.NaN,double.NaN);
                 var p=new PK_VECTOR_s();WriteVector(&p,roots[i].Root.Point);double t=roots[i].Root.Parameter;
-                error=roots[i].Curve==curve.Curve?0:CurveParameteriseVectorCore(curve.Curve,p,&t);
+                if(roots[i].Curve==curve.Curve)error=0;
+                else
+                {
+                    error=LocateCertifiedNativeCut(curve,roots[i],out t,out cutLocators[i],out var handled);
+                    if(!handled)error=CurveParameteriseVectorCore(curve.Curve,p,&t);
+                }
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(curve.Curve,curve.First,curve.Last,ref t);
                 if(!OperationIntersection.InInterval(t,curve.First,curve.Last))continue;
@@ -243,6 +249,25 @@ internal static unsafe partial class KernelRuntime
                 {
                     if(Math.Abs(parameters[j]-t)>=1e-10)continue;
                     var distinct=false;
+                    if(cutLocators[i].Finite&&curve.Closed==0&&(parameters[j]==curve.First||parameters[j]==curve.Last))
+                    {
+                        if(parameters[j]<cutLocators[i].Lower||parameters[j]>cutLocators[i].Upper)continue;
+                        if(cutLocators[i].Lower!=cutLocators[i].Upper)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    }
+                    if(cutLocators[i].Finite)for(var r=0;r<i;r++)if(rootParameters[r]==parameters[j]&&cutLocators[r].Finite)
+                    {
+                        var a=cutLocators[r];var b=cutLocators[i];
+                        if(a.Upper<b.Lower||b.Upper<a.Lower)
+                        {
+                            if(!(a.Upper<b.Lower&&parameters[j]<t||b.Upper<a.Lower&&t<parameters[j]))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                            distinct=true;continue;
+                        }
+                        if(roots[r].Curve!=roots[i].Curve||roots[r].CuttingSurface!=roots[i].CuttingSurface
+                            ||roots[r].Root.Upper<roots[i].Root.Lower||roots[i].Root.Upper<roots[r].Root.Lower)
+                            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        rootParameters[i]=parameters[j];
+                    }
+                    if(distinct)continue;
                     if(roots[i].Certified!=0)for(var r=0;r<i;r++)
                     {
                         var other=roots[r];var current=roots[i];
@@ -300,7 +325,17 @@ internal static unsafe partial class KernelRuntime
                     LastSheetParameter=end==0?cut.First:cut.Last;
                     var sourceParameter=end==0?lo:hi;
                     var anchorCount=0;
-                    if(!model.RequireBoundaryAssociations)for(var r=0;r<nRoots;r++)
+                    var cutLocator=new IntervalNumber(double.NaN,double.NaN);
+                    for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter&&cutLocators[r].Finite)
+                    {
+                        var box=cutLocators[r];cutLocator=cutLocator.Finite?new(Math.Max(cutLocator.Lower,box.Lower),Math.Min(cutLocator.Upper,box.Upper)):box;
+                        if(!cutLocator.Finite||sourceParameter<cutLocator.Lower||sourceParameter>cutLocator.Upper)
+                            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    }
+                    if(cutLocator.Finite)
+                        anchors[anchorCount++]=new(){Carrier=curve.Curve,Generation=Curves[GetCurveSlotByTag(curve.Curve)].Header.Generation,
+                            Lower=cutLocator.Lower,Upper=cutLocator.Upper};
+                    if(!model.RequireBoundaryAssociations||cutLocator.Finite)for(var r=0;r<nRoots;r++)
                     {
                         var root=roots[r];if(root.Certified==0||rootParameters[r]!=sourceParameter)continue;
                         var carrier=Curves[GetCurveSlotByTag(root.Curve)];
@@ -309,8 +344,12 @@ internal static unsafe partial class KernelRuntime
                         anchors[anchorCount++]=new(){Carrier=root.Curve,Generation=carrier.Header.Generation,Surface=root.CuttingSurface,Lower=root.Root.Lower,Upper=root.Root.Upper};
                     }
                     status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                    error=model.AddPoint(point[0],-1,out var endpoint,anchors[..anchorCount]);if(error!=0)return error;
-                    error=model.AssociateParameter(endpoint,cut.Curve,end==0?cut.First:cut.Last);if(error!=0)return error;
+                    error=model.AddPoint(point[0],-1,out var endpoint,anchors[..anchorCount],requireProof:cutLocator.Finite);if(error!=0)return error;
+                    var t=end==0?cut.First:cut.Last;
+                    if(wrap&&cutLocator.Finite)
+                    {error=model.AssociateParameter(endpoint,curve.Curve,sourceParameter,cutLocator.Lower,cutLocator.Upper);if(error!=0)return error;}
+                    error=wrap||!cutLocator.Finite?model.AssociateParameter(endpoint,cut.Curve,t):model.AssociateParameter(endpoint,cut.Curve,t,cutLocator.Lower,cutLocator.Upper);
+                    if(error!=0)return error;
                     for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter)
                     {
                         var root=roots[r];
@@ -323,6 +362,10 @@ internal static unsafe partial class KernelRuntime
                         {
                             error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,root.Root.Lower,root.Root.Upper,
                                 model.RequireBoundaryAssociations?0:root.CuttingSurface);if(error!=0)return error;
+                            if(cutLocators[r].Finite)
+                                TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.NativeCutLocator,Curve=root.Curve,ProductCurve=cut.Curve,
+                                    Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,StartEvent=endpoint,EndEvent=endpoint,
+                                    First=cutLocator.Lower,Last=cutLocator.Upper,SpatialError=root.Root.SpatialError});
                             TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CertifiedRoot,Curve=root.Curve,ProductCurve=cut.Curve,
                                 Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,StartEvent=endpoint,EndEvent=endpoint,
                                 Source=-1,Face=-1,Product=-1,
