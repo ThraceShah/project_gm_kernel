@@ -29,13 +29,21 @@ internal static class AnalyticSpineContact
     }
 
     internal static bool Equivalent(in ParametricSpineCurve first,in ParametricSpineCurve second,double tolerance,double lower=0,double upper=1)
+        =>TryParameterMap(first,second,tolerance,lower,upper,out _,out _);
+
+    // first(shift + scale*t) = second(t), with the complete coefficient
+    // error bounded by tolerance over [lower,upper]. Conic scale is +/-1;
+    // shift is the native phase, before a finite occurrence's periodic lift.
+    internal static bool TryParameterMap(in ParametricSpineCurve first,in ParametricSpineCurve second,double tolerance,
+        double lower,double upper,out double shift,out double scale)
     {
+        shift=scale=0;
         if(first.Kind==CurveClass.Line||second.Kind==CurveClass.Line)
         {
             if(first.Kind!=second.Kind)return false;
             var square=Dot(first.First,first.First);if(!(square>0))return false;
             var delta=Sub(second.Origin,first.Origin);
-            var shift=Dot(delta,first.First)/square;var scale=Dot(second.First,first.First)/square;
+            shift=Dot(delta,first.First)/square;scale=Dot(second.First,first.First)/square;
             return scale!=0&&double.IsFinite(lower)&&double.IsFinite(upper)
                 &&Norm(Sub(delta,Scale(first.First,shift)))+Norm(Sub(second.First,Scale(first.First,scale)))*Math.Max(Math.Abs(lower),Math.Abs(upper))<=tolerance;
         }
@@ -51,7 +59,9 @@ internal static class AnalyticSpineContact
         // The sum of coefficient errors bounds every point on the conic,
         // regardless of phase, reversal, periodic lift or finite trim.
         var baseError=Norm(Sub(first.Origin,second.Origin))+Norm(Sub(position,second.First));
-        return baseError+Math.Min(Norm(Sub(tangent,second.Second)),Norm(Add(tangent,second.Second)))<=tolerance;
+        var positive=Norm(Sub(tangent,second.Second));var negative=Norm(Add(tangent,second.Second));
+        shift=phase;scale=positive<=negative?1:-1;
+        return baseError+Math.Min(positive,negative)<=tolerance;
     }
 
     private static double Norm(in KernelVector3 value)=>Math.Sqrt(Dot(value,value));

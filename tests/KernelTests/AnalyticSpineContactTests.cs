@@ -19,6 +19,8 @@ public class AnalyticSpineContactTests
         const double phase=.47;var c=Math.Cos(phase);var s=Math.Sin(phase);
         var reversed=contact;reversed.First=new(){X=targetRadius*c,Y=targetRadius*s};reversed.Second=new(){X=targetRadius*s,Y=-targetRadius*c};
         Assert.True(AnalyticSpineContact.Equivalent(contact,reversed,1e-12));
+        Assert.True(AnalyticSpineContact.TryParameterMap(contact,reversed,1e-12,0,Math.Tau,out var shift,out var scale));
+        Assert.InRange(Math.Abs(shift-phase),0,1e-14);Assert.Equal(-1,scale);
         reversed.Second.Y+=1e-6;Assert.False(AnalyticSpineContact.Equivalent(contact,reversed,1e-12));
         reversed=contact;reversed.Origin.X+=1e-6;Assert.False(AnalyticSpineContact.Equivalent(contact,reversed,1e-12));
     }
@@ -30,6 +32,8 @@ public class AnalyticSpineContactTests
         var spine=new ParametricSpineCurve{Kind=CurveClass.Line,Origin=new(){X=2.5},First=new(){Z=1}};
         Assert.Equal(AlgorithmStatus.Success,AnalyticSpineContact.Curve(spine,support,.5,out var contact));Assert.Equal(2,contact.Origin.X);
         var target=contact;target.Origin.Z=7;target.First.Z=-2;Assert.True(AnalyticSpineContact.Equivalent(contact,target,1e-12));
+        Assert.True(AnalyticSpineContact.TryParameterMap(contact,target,1e-12,-3,5,out var shift,out var scale));
+        Assert.Equal(7,shift);Assert.Equal(-2,scale);
         target.Origin.X+=1e-6;Assert.False(AnalyticSpineContact.Equivalent(contact,target,1e-12));
         target=contact;target.First.X=1e-13;
         Assert.False(AnalyticSpineContact.Equivalent(contact,target,1e-12,1e6,2e6));

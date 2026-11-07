@@ -36,12 +36,20 @@ internal static unsafe partial class KernelRuntime
     private static bool ExactVector(in KernelVector3 a,in KernelVector3 b)=>a.X==b.X&&a.Y==b.Y&&a.Z==b.Z;
 
     private static int SheetCurveUV(SurfTag surface, CurveTag curve, double parameter, bool forward,
-        out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point)
+        out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point,double first=double.NaN,double last=double.NaN)
     {
         uv=tangent=default;point=default;
         var slot=GetCurveSlotByTag(curve);if(slot<0)return ParasolidConstants.PK_ERROR_missing_geom;
         LastSheetPartitionStage=SheetPartitionStage.CurveEvaluation;
         LastSheetCurve=curve;LastSheetParameter=parameter;
+        if(double.IsNaN(first)){first=Curves[slot].TMin;last=Curves[slot].TMax;}
+        if(TryAnalyticBlendContactMap(surface,Curves[slot],first,last,out var section,out var shift,out var scale))
+        {
+            Span<KernelVector3> evaluated=stackalloc KernelVector3[1];
+            var contactStatus=EvaluateCurveCore(in Curves[slot],parameter,0,false,evaluated,out _);if(contactStatus!=AlgorithmStatus.Success)return EvaluationError(contactStatus);
+            point=evaluated[0];uv.param[0]=shift+scale*parameter;uv.param[1]=section;
+            tangent.param[0]=scale*(forward?1:-1)*LocalSenseSign(Curves[slot].Sense);return 0;
+        }
         var contact=Curves[slot].Class==CurveClass.ICurve?ICurveDataPool[Curves[slot].DataIndex]:default;
         var sourceContact=contact.IsBlendContact!=0&&Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface&&SameSheetSupport(surface,contact.Surface0Tag);
         var blendContact=contact.IsBlendContact!=0&&SameSheetSupport(surface,contact.Surface1Tag);
@@ -89,12 +97,12 @@ internal static unsafe partial class KernelRuntime
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }
 
-    private static int SheetCoedgePoint(SurfTag surface,in ModelingEdge edge,byte forward,double fraction,
+    internal static int SheetCoedgePoint(SurfTag surface,in ModelingEdge edge,byte forward,double fraction,
         out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point)
     {
         var positive=(forward!=0)==(LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0);
         var parameter=positive?edge.Start+(edge.End-edge.Start)*fraction:edge.End-(edge.End-edge.Start)*fraction;
-        return SheetCurveUV(surface,edge.Curve,parameter,forward!=0,out uv,out tangent,out point);
+        return SheetCurveUV(surface,edge.Curve,parameter,forward!=0,out uv,out tangent,out point,edge.Start,edge.End);
     }
 
     // Exact isoparametric rays reduce UV winding to existing bounded curve

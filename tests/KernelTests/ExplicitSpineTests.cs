@@ -57,6 +57,41 @@ public unsafe class ExplicitSpineTests:IDisposable
         Assert.InRange(Math.Abs(inverse.param[0]-uv.param[0]),0,1e-11);Assert.InRange(Math.Abs(inverse.param[1]-uv.param[1]),0,1e-11);
     }
 
+    [Fact]
+    public void FiniteEllipticContactUsesRetainUvAtCollapsedRollingEndpoints()
+    {
+        var body=Import();Definition(body,out var surface);var face=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot].FirstFaceBody;var found=0;
+        var owns=KernelRuntime.EnsureCommandScratch();
+        try
+        {
+            for(var f=0;f<KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot].FaceCountBody;f++,face=KernelRuntime.Faces[face].NextInBody)
+            {
+                if(KernelRuntime.Faces[face].SurfTag!=surface)continue;
+                var loop=KernelRuntime.Faces[face].FirstLoop;
+                for(var l=0;l<KernelRuntime.Faces[face].LoopCount;l++,loop=KernelRuntime.Loops[loop].NextInFace)
+                {
+                    var fin=KernelRuntime.Loops[loop].FirstFin;
+                    for(var k=0;k<KernelRuntime.Loops[loop].FinCount;k++,fin=KernelRuntime.Fins[fin].NextInLoop)
+                    {
+                        var edge=KernelRuntime.Edges[KernelRuntime.Fins[fin].Edge];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)];
+                        if(curve.Class!=CurveClass.Ellipse)continue;found++;
+                        var use=new KernelRuntime.ModelingEdge{Curve=edge.CurveTag,Start=edge.ParameterStart,End=edge.ParameterEnd,StartVertex=0,EndVertex=1};
+                        for(var direction=0;direction<2;direction++)for(var station=0;station<3;station++)
+                        {
+                            var error=KernelRuntime.SheetCoedgePoint(surface,use,(byte)direction,.5*station,out var uv,out var tangent,out var point);
+                            Assert.True(error==0,$"edge={edge.Header.Tag} direction={direction} station={station} error={error}");
+                            Assert.True(double.IsFinite(tangent.param[0]));Assert.Equal(0,tangent.param[1]);Assert.True(tangent.param[0]!=0);
+                            PK_VECTOR_s evaluated;Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&evaluated));
+                            Assert.InRange(Math.Abs(point.X-evaluated.coord[0])+Math.Abs(point.Y-evaluated.coord[1])+Math.Abs(point.Z-evaluated.coord[2]),0,1e-11);
+                        }
+                    }
+                }
+            }
+        }
+        finally{if(owns)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);}
+        Assert.Equal(2,found);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+    }
+
     [Theory]
     [InlineData(2.0)] [InlineData(-2.0)]
     public void CopySourceDeletionSimilarityAndUndoRetainExplicitProgramAndLimitPayload(double xScale)

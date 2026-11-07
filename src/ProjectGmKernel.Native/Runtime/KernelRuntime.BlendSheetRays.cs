@@ -14,8 +14,8 @@ internal static unsafe partial class KernelRuntime
         count=0;var surfaceSlot=GetSurfaceSlotByTag(surface);var curveSlot=GetCurveSlotByTag(edge.Curve);var record=Curves[curveSlot];
         if(record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].IsBlendContact!=0)
             return IntersectBlendContactRay(surface,query,du,dv,edge,output,out count);
-        if(TryAnalyticBlendContact(surface,record,edge.Start,edge.End,out var section))
-            return IntersectAnalyticBlendContactRay(surface,query,du,dv,edge,section,output,out count);
+        if(TryAnalyticBlendContactMap(surface,record,edge.Start,edge.End,out var section,out var shift,out var scale))
+            return IntersectAnalyticBlendContactRay(surface,query,du,dv,edge,section,shift,scale,output,out count);
         if(record.Class==CurveClass.Circle&&Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface
             &&TryBlendCircleStation(surface,record,edge.Start,edge.End,out var station))
             return IntersectBlendCircleRay(surface,query,du,dv,edge,station,output,out count);
