@@ -43,18 +43,30 @@ internal static unsafe partial class KernelRuntime
     private struct FiniteBoundaryUse
     {
         internal CurveTag Carrier;
-        internal EntityGeneration Generation;
+        internal EntityGeneration Generation,SurfaceGeneration,SourceEdgeGeneration,SourceFinGeneration;
+        internal CurveClass Class;
         internal SurfTag Surface;
         internal FaceSlot Source;
+        internal EdgeSlot SourceEdge;
+        internal FinSlot SourceFin;
         internal BufferOffset Edge;
         internal BoundaryEventId StartEvent,EndEvent;
         internal double First,Last;
+        internal KernelSense CurveSense,SurfaceSense,FaceSense;
         internal byte Forward;
 
-        internal static FiniteBoundaryUse Create(SurfTag surface,in ModelingEdge edge,BufferOffset index,byte forward,FaceSlot source=-1)
-            =>new(){Carrier=edge.Curve,Generation=Curves[GetCurveSlotByTag(edge.Curve)].Header.Generation,
-                Surface=surface,Source=source,Edge=index,First=edge.Start,Last=edge.End,Forward=forward,
+        internal static FiniteBoundaryUse Create(SurfTag surface,in ModelingEdge edge,BufferOffset index,byte forward,FaceSlot source=-1,
+            EdgeSlot sourceEdge=-1,FinSlot sourceFin=-1,KernelSense faceSense=0)
+        {
+            var carrier=Curves[GetCurveSlotByTag(edge.Curve)];var support=Surfaces[GetSurfaceSlotByTag(surface)];
+            return new(){Carrier=edge.Curve,Generation=carrier.Header.Generation,Class=carrier.Class,CurveSense=carrier.Sense,
+                Surface=surface,SurfaceGeneration=support.Header.Generation,SurfaceSense=support.Sense,
+                FaceSense=NormalizeLocalSense(faceSense==0&&source>=0?Faces[source].Orientation:faceSense),
+                Source=source,SourceEdge=sourceEdge,SourceFin=sourceFin,SourceEdgeGeneration=sourceEdge>=0?Edges[sourceEdge].Header.Generation:0,
+                SourceFinGeneration=sourceFin>=0?Fins[sourceFin].Header.Generation:0,
+                Edge=index,First=edge.Start,Last=edge.End,Forward=forward,
                 StartEvent=forward!=0?edge.StartVertex:edge.EndVertex,EndEvent=forward!=0?edge.EndVertex:edge.StartVertex};
+        }
     }
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
@@ -63,20 +75,24 @@ internal static unsafe partial class KernelRuntime
     {
         internal BoundaryTraceStage Stage;
         internal FaceSlot Source,Product;
+        internal EdgeSlot SourceEdge;
+        internal FinSlot SourceFin;
         internal SurfTag Surface,OtherSurface;
         internal CurveTag Curve,ProductCurve;
-        internal EntityGeneration Generation;
+        internal EntityGeneration Generation,SurfaceGeneration;
         internal BufferOffset Edge,Face,NextEdge;
         internal BoundaryEventId StartEvent,EndEvent;
         internal double First,Last,StartAngle,EndAngle,SpatialError;
         internal KernelVector3 StartPoint,EndPoint;
+        internal KernelSense CurveSense,SurfaceSense,FaceSense;
         internal byte Forward;
     }
     [ThreadStatic] internal static Action<BoundaryTrace>? TraceFiniteBoundary;
 
     private static void TraceBoundary(BoundaryTraceStage stage,in FiniteBoundaryUse use,BufferOffset face=-1,FaceSlot product=-1,CurveTag productCurve=0)
         =>TraceFiniteBoundary?.Invoke(new(){Stage=stage,Source=use.Source,Product=product,Surface=use.Surface,Curve=use.Carrier,
-            ProductCurve=productCurve,Generation=use.Generation,Edge=use.Edge,Face=face,StartEvent=use.StartEvent,EndEvent=use.EndEvent,
+            ProductCurve=productCurve,Generation=use.Generation,SurfaceGeneration=use.SurfaceGeneration,SourceEdge=use.SourceEdge,SourceFin=use.SourceFin,
+            CurveSense=use.CurveSense,SurfaceSense=use.SurfaceSense,FaceSense=use.FaceSense,Edge=use.Edge,Face=face,StartEvent=use.StartEvent,EndEvent=use.EndEvent,
             First=use.First,Last=use.Last,Forward=use.Forward});
 
     // Retained boundaries are supplied without a loop order. The shared
@@ -90,7 +106,7 @@ internal static unsafe partial class KernelRuntime
         foreach(var coedge in boundary)
         {
             var forward=(byte)(coedge.Forward^(reverse?1:0));
-            var use=FiniteBoundaryUse.Create(surface,model.Edges[coedge.Edge],coedge.Edge,forward,source);
+            var use=FiniteBoundaryUse.Create(surface,model.Edges[coedge.Edge],coedge.Edge,forward,source,faceSense:sense);
             var error=AddFiniteBoundaryHalfedge(use,ref model,halfedges,ref count);if(error!=0)return error;
         }
         var result=ExtractSheetCycles(surface,ref model,halfedges[..count],cycleCoedges,cycles,out var nc,out var ne);
@@ -110,7 +126,7 @@ internal static unsafe partial class KernelRuntime
                 var loop=model.Loops[face.FirstLoop+l];
                 foreach(var coedge in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
                 {
-                    var use=FiniteBoundaryUse.Create(face.Surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,model.Sources[i]);
+                    var use=FiniteBoundaryUse.Create(face.Surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,model.Sources[i],faceSense:face.Sense);
                     TraceBoundary(BoundaryTraceStage.Product,use,i,products[i],use.Carrier);
                 }
             }

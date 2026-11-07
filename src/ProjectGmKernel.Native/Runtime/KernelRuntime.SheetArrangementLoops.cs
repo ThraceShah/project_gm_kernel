@@ -99,7 +99,7 @@ internal static unsafe partial class KernelRuntime
                     var loop=model.Loops[l];
                     foreach(var coedge in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
                     {
-                        var use=FiniteBoundaryUse.Create(surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,source);
+                        var use=FiniteBoundaryUse.Create(surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,source,faceSense:sense);
                         TraceBoundary(BoundaryTraceStage.Arrangement,use,model.NF);
                     }
                 }

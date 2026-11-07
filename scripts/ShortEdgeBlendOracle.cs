@@ -58,7 +58,10 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface}/{surface.Class} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
         if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.BoundaryTraceStage.Input)
+        {
+            Console.WriteLine($"BOUNDARY OCCURRENCE source_edge={trace.SourceEdge} source_fin={trace.SourceFin} support_generation={trace.SurfaceGeneration} sense_face_surface_curve={trace.FaceSense}/{trace.SurfaceSense}/{trace.CurveSense}");
             Console.WriteLine($"BOUNDARY XYZ start=({trace.StartPoint.X:R},{trace.StartPoint.Y:R},{trace.StartPoint.Z:R}) end=({trace.EndPoint.X:R},{trace.EndPoint.Y:R},{trace.EndPoint.Z:R})");
+        }
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Input&&surface.Class==SurfaceClass.BlendSurface)
         {
             var blend=KernelRuntime.BlendedEdgeDataPool[surface.DataIndex];var spine=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(blend.SpineTag)];
@@ -82,6 +85,7 @@ var rotateMarks=NumberOption(args,"--rotate-marks=",0);
 Require(rotateMarks is 0 or 1 or 2&&(rotateMarks==0||splitSelected||splitEllipse),"mark rotation requires a split and a rotation of zero, one or two");
 var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
+var materialOwnership=args.Contains("--material-ownership");
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
 Require(floor==0&&phase==0&&!splitRemote&&!splitSelected&&!splitEllipse||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
@@ -91,6 +95,7 @@ Directory.CreateDirectory(output);
 Require(!args.Contains("--record-fixtures")||!args.Contains("--matrix")&&!args.Contains("--both-updates"),"record fixtures uses the single default seed");
 Require(!args.Contains("--saved-probes")||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
 Require(!args.Contains("--native-only")||!args.Any(x=>x is "--import-only" or "--probes" or "--geometry" or "--lifecycle"),"managed checks require a managed-import mode");
+Require(!materialOwnership||!args.Contains("--native-only")&&!args.Contains("--import-only"),"material ownership checks the self-constructed product");
 Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"local cutter requires lifecycle mode");
 Require(!mappedInput||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"transformed inputs cannot replace fixed fixtures or historical probe inputs");
 Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
@@ -199,10 +204,11 @@ using(host)unsafe
                     if(args.Contains("--diagnostics")){ProductEdges(reference,"reference");ProductEdges(received,"self-constructed-product");}
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
                     CompareFiniteIntersections(reference,received,"independent fillet",inputScale);
+                    if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,"self-constructed-product",inputScale);
                     if(args.Contains("--geometry"))SelfGeometry(own,reference);
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -263,7 +269,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -276,7 +282,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         var original=source;Check(KernelRuntime.EntityDelete(1,&original),"delete fillet source before copy modelling");source=0;
         Console.WriteLine($"LIFECYCLE {name} source_deleted=True copy={own}");
         Move(true,own,selfTransform);Move(false,native,pkTransform);
-        failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale);
+        failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale,materialOwnership);
         // The local variant crosses the native short ICurve interiors. Its
         // lower cap leaves the bottom connected; it is a notch, not a slab
         // cutting the whole solid into disconnected components.
@@ -302,7 +308,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
             own=Cut(true,own,ownTool);
         }
         else{own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
-        failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale);
+        failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership);
         var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=0;own=Receive(true,reload);
         Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),name+" reload must be editable");
         Console.WriteLine($"LIFECYCLE {name} managed_reload=True body={own}");
@@ -310,7 +316,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
-        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale);
+        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale,materialOwnership);
     }
     finally
     {
@@ -354,7 +360,7 @@ static unsafe int Cut(bool own,int body,int tool)
     Check(error,"cut fillet product");
     try{Require(n==1,"one cut result");return bodies[0];}finally{Free(own,bodies);}
 }
-static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale)
+static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale,bool materialOwnership)
 {
     var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),fresh);var received=Receive(false,fresh);
     var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,name+"-native.x_t"),referenceBytes);
@@ -366,10 +372,66 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);}catch(Exception ex){Console.WriteLine("COMPARE DIAGNOSTIC "+ex.Message);throw;}
         CheckBody(received,name);
         CompareFiniteIntersections(reference,received,name,unitScale);
+        if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,name,unitScale);
         try{Mass(reference,received,name);return 0;}
         catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);return 1;}
     }
     finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");}
+}
+static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,string label,double unitScale)
+{
+    int count;int* edges;Check(PK_BODY_ask_edges(reference,&count,&edges),"material reference edges");var tested=0;
+    PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];PK_VECTOR_t* jet=stackalloc PK_VECTOR_t[4];
+    try
+    {
+        for(var e=0;e<count;e++)
+        {
+            int curve,type;PK_INTERVAL_t range;PK_LOGICAL_t sense;
+            Check(PK_EDGE_ask_geometry(edges[e],PK_LOGICAL_true,&curve,&type,ends,&range,&sense),"material finite edge");
+            if(type!=PK_CLASS_icurve)continue;
+            var length=ParasolidBodyCompare.FiniteLength(curve,range,1).Value;
+            if(length/unitScale>=1e-3)continue;
+            double precision;Check(PK_EDGE_ask_precision(edges[e],&precision),"material edge precision");
+            var offset=Math.Min(length/32,64*Math.Max(precision,5e-9*unitScale));
+            if(!(offset>16*Math.Max(precision,5e-9*unitScale)))continue;
+            int adjacent;int* faces;Check(PK_EDGE_ask_faces(edges[e],&adjacent,&faces),"material edge face occurrences");
+            try
+            {
+                Require(adjacent==2,"material probe at a manifold edge");
+                foreach(var fraction in new[]{.25,.5,.75})
+                {
+                    PK_VECTOR_t p;Check(PK_CURVE_eval(curve,range.value[0]+fraction*(range.value[1]-range.value[0]),0,&p),"material edge witness");
+                    var n=new PK_VECTOR_t();
+                    for(var i=0;i<adjacent;i++)
+                    {
+                        int surface;PK_LOGICAL_t orientation;PK_UV_t uv;
+                        Check(PK_FACE_ask_oriented_surf(faces[i],&surface,&orientation),"material oriented support");
+                        Check(PK_SURF_parameterise_vector(surface,p,&uv),"material UV witness");
+                        Check(PK_SURF_eval(surface,uv,1,1,PK_LOGICAL_false,jet),"material support jet");
+                        var normal=Cross(jet[1],jet[2]);var norm=Math.Sqrt(Dot(normal,normal));
+                        Require(norm>0,"regular material germ");
+                        for(var axis=0;axis<3;axis++)n.coord[axis]+=(orientation==PK_LOGICAL_true?1:-1)*normal.coord[axis]/norm;
+                    }
+                    var magnitude=Math.Sqrt(Dot(n,n));Require(magnitude>0,"transverse material directions");
+                    for(var sign=-1;sign<=1;sign+=2)
+                    {
+                        var q=p;for(var axis=0;axis<3;axis++)q.coord[axis]+=sign*offset*n.coord[axis]/magnitude;
+                        int expected,actual,reloaded,entity;
+                        Check(PK_BODY_contains_vector(reference,q,&expected,&entity),"material native classification");
+                        Check(KernelRuntime.BodyContainsVector(managed,*(M.PK_VECTOR_s*)&q,&actual,&entity),"material self classification");
+                        Check(PK_BODY_contains_vector(fresh,q,&reloaded,&entity),"material fresh classification");
+                        var side=sign<0?PK_enclosure_inside_c:PK_enclosure_outside_c;
+                        Require(expected==side&&actual==side&&reloaded==side,$"{label} material edge={edges[e]} fraction={fraction:R} offset={sign*offset:R} native/self/fresh={expected}/{actual}/{reloaded} stage={KernelRuntime.LastRegularClassificationStage}");
+                        tested++;
+                    }
+                }
+            }
+            finally{Free(false,faces);}
+        }
+    }
+    finally{Free(false,edges);}
+    Require(tested>0,label+" material probes with finite separation from both endpoints");
+    Console.WriteLine($"MATERIAL {label} probes={tested} native/self/fresh agree on both sides of the short ICurves");
 }
 static unsafe void Mass(int reference,int actual,string label)
 {

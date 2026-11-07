@@ -251,9 +251,9 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int AddSheetHalfedge(SurfTag surface,ref SheetArrangement model,BufferOffset edge,byte forward,
-        Span<SheetHalfedge> halfedges,ref BufferCount count,FaceSlot source=-1)
+        Span<SheetHalfedge> halfedges,ref BufferCount count,FaceSlot source=-1,EdgeSlot sourceEdge=-1,FinSlot sourceFin=-1,KernelSense faceSense=0)
     {
-        var use=FiniteBoundaryUse.Create(surface,model.Edges[edge],edge,forward,source);
+        var use=FiniteBoundaryUse.Create(surface,model.Edges[edge],edge,forward,source,sourceEdge,sourceFin,faceSense);
         return AddFiniteBoundaryHalfedge(use,ref model,halfedges,ref count);
     }
 
@@ -263,11 +263,24 @@ internal static unsafe partial class KernelRuntime
         if(count==halfedges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
         var surface=use.Surface;var edge=use.Edge;var forward=use.Forward;
         ref readonly var record=ref model.Edges[edge];
-        var slot=GetCurveSlotByTag(use.Carrier);
+        var slot=GetCurveSlotByTag(use.Carrier);var support=GetSurfaceSlotByTag(surface);
         if(slot<0||Curves[slot].Header.Generation!=use.Generation||record.Curve!=use.Carrier
+            ||Curves[slot].Class!=use.Class||Curves[slot].Sense!=use.CurveSense||support<0
+            ||Surfaces[support].Header.Generation!=use.SurfaceGeneration||Surfaces[support].Sense!=use.SurfaceSense
             ||record.Start!=use.First||record.End!=use.Last)return ParasolidConstants.PK_ERROR_bad_parameter;
+        if(use.SourceFin>=0)
+        {
+            if(use.SourceEdge<0||use.Source<0||!Edges.IsAlive(use.SourceEdge)||!Fins.IsAlive(use.SourceFin)
+                ||Edges[use.SourceEdge].Header.Generation!=use.SourceEdgeGeneration||Fins[use.SourceFin].Header.Generation!=use.SourceFinGeneration)
+                return ParasolidConstants.PK_ERROR_bad_parameter;
+            var fin=Fins[use.SourceFin];var reversed=LocalSenseSign(use.FaceSense)*LocalSenseSign(use.SurfaceSense)<0;
+            if(fin.Edge!=use.SourceEdge||fin.Loop<0||Loops[fin.Loop].Face!=use.Source
+                ||(fin.Sense=='+')!=((forward!=0)!=reversed))return ParasolidConstants.PK_ERROR_bad_loop;
+        }
         TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.Input,Source=use.Source,Surface=use.Surface,Curve=use.Carrier,
-            Generation=use.Generation,Edge=use.Edge,Face=-1,Product=-1,StartEvent=use.StartEvent,EndEvent=use.EndEvent,First=use.First,Last=use.Last,Forward=use.Forward,
+            Generation=use.Generation,SurfaceGeneration=use.SurfaceGeneration,SourceEdge=use.SourceEdge,SourceFin=use.SourceFin,
+            CurveSense=use.CurveSense,SurfaceSense=use.SurfaceSense,FaceSense=use.FaceSense,Edge=use.Edge,Face=-1,Product=-1,
+            StartEvent=use.StartEvent,EndEvent=use.EndEvent,First=use.First,Last=use.Last,Forward=use.Forward,
             StartPoint=use.StartEvent>=0?model.Points[use.StartEvent]:default,EndPoint=use.EndEvent>=0?model.Points[use.EndEvent]:default});
         if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Sphere)
         {
@@ -297,7 +310,7 @@ internal static unsafe partial class KernelRuntime
                 ref readonly var source=ref sources[index];var forward=(Fins[fin].Sense=='+')!=reverse;
                 for(var i=0;i<source.Count;i++)
                 {
-                    var error=AddSheetHalfedge(surface,ref model,source.First+i,forward?(byte)1:(byte)0,halfedges,ref nh,face);if(error!=0)return error;
+                    var error=AddSheetHalfedge(surface,ref model,source.First+i,forward?(byte)1:(byte)0,halfedges,ref nh,face,source.Source,fin);if(error!=0)return error;
                 }
             }
         }
@@ -309,17 +322,27 @@ internal static unsafe partial class KernelRuntime
         Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles)
     {
         var record=input.Faces[face];var reverse=LocalSenseSign(record.Sense)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(record.Surface)].Sense)<0;var count=0;
+        var originalLoop=source>=0?Faces[source].FirstLoop:-1;
         for(var l=0;l<record.LoopCount;l++)
         {
-            var loop=input.Loops[record.FirstLoop+l];
+            var loop=input.Loops[record.FirstLoop+l];var originalFin=-1;
+            if(source>=0)
+            {
+                while(originalLoop>=0&&RegularVertexLoop(originalLoop,out _))originalLoop=Loops[originalLoop].NextInFace;
+                if(originalLoop<0||Loops[originalLoop].FinCount!=loop.CoedgeCount)return ParasolidConstants.PK_ERROR_bad_loop;
+                originalFin=Loops[originalLoop].FirstFin;originalLoop=Loops[originalLoop].NextInFace;
+            }
             foreach(var coedge in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
             {
                 var found=-1;for(var e=0;e<sources.Length;e++)if(sources[e].InputEdge==coedge.Edge){found=e;break;}
                 if(found<0)return ParasolidConstants.PK_ERROR_bad_loop;var fragments=sources[found];
+                if(source>=0&&(originalFin<0||Fins[originalFin].Edge!=fragments.Source))return ParasolidConstants.PK_ERROR_bad_loop;
                 for(var i=0;i<fragments.Count;i++)
                 {
-                    var error=AddSheetHalfedge(record.Surface,ref model,fragments.First+i,(byte)(coedge.Forward^(reverse?1:0)),halfedges,ref count,source);if(error!=0)return error;
+                    var error=AddSheetHalfedge(record.Surface,ref model,fragments.First+i,(byte)(coedge.Forward^(reverse?1:0)),halfedges,ref count,
+                        source,fragments.Source,originalFin,record.Sense);if(error!=0)return error;
                 }
+                if(originalFin>=0)originalFin=Fins[originalFin].NextInLoop;
             }
         }
         return ArrangeFaceCutGraph(source,record.Surface,record.Sense,0,reverse,sources,cuts,ref model,halfedges,count,cycleCoedges,cycles,true,false,input,face);
@@ -407,8 +430,8 @@ internal static unsafe partial class KernelRuntime
                     var already=false;for(var h=0;h<nh;h++)already|=halfedges[h].Edge==edge;if(already)continue;
                     model.CutEdges[edge]|=1;
                 }
-                add=AddSheetHalfedge(surface,ref model,edge,1,halfedges,ref nh,face);if(add!=0)return add;
-                add=AddSheetHalfedge(surface,ref model,edge,0,halfedges,ref nh,face);if(add!=0)return add;
+                add=AddSheetHalfedge(surface,ref model,edge,1,halfedges,ref nh,face,faceSense:sense);if(add!=0)return add;
+                add=AddSheetHalfedge(surface,ref model,edge,0,halfedges,ref nh,face,faceSense:sense);if(add!=0)return add;
             }
         }
         var arrangementError=ExtractSheetCycles(surface,ref model,halfedges[..nh],cycleCoedges,cycles,out var cycleCount,out var coedgeCount);

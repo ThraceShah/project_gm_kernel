@@ -13,7 +13,7 @@ using M=ProjectGmKernel.Native.Generated;
 
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
-    KernelRuntime.TraceFiniteBoundary=trace=>Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
+    KernelRuntime.TraceFiniteBoundary=trace=>Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle");Directory.CreateDirectory(directory);
 var oracleStarted=Stopwatch.GetTimestamp();
 #if DEBUG
