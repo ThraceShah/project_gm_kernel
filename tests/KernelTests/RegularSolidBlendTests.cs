@@ -192,6 +192,7 @@ public unsafe class RegularSolidBlendTests:IDisposable
     }
 
     [Theory]
+    [InlineData(0,.1,false,false)]
     [InlineData(.4,.1,false,false)]
     [InlineData(-.2,.15,false,false)]
     [InlineData(.4,.1,true,false)]
@@ -200,6 +201,8 @@ public unsafe class RegularSolidBlendTests:IDisposable
     public void SingleNurbsEdgeProducesClosedSolidWithProceduralBlend(double bulge,double radius,bool curvedWall,bool concave)
     {
         var body=Roof(bulge,curvedWall,concave);var edge=SelectedEdge(body,concave);var original=edge;
+        var boundaryTrace=bulge==0?new List<KernelRuntime.BoundaryTrace>():null;
+        if(boundaryTrace!=null)KernelRuntime.TraceFiniteBoundary=boundaryTrace.Add;
         var options=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
         Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,radius,&options,&count,null));
         var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;int* blends;
@@ -221,6 +224,18 @@ public unsafe class RegularSolidBlendTests:IDisposable
                 if(curve.Class==CurveClass.ICurve&&KernelRuntime.ICurveDataPool[curve.DataIndex].IsBlendContact!=0)contacts++;
             }
             Assert.Equal(2,contacts);
+            if(boundaryTrace!=null)
+            {
+                var sections=boundaryTrace.Where(x=>x.Stage==KernelRuntime.BoundaryTraceStage.AnalyticSectionEnds).ToArray();
+                Assert.Equal(2,sections.Length);
+                foreach(var section in sections)
+                {
+                    Assert.Equal(0,section.First);
+                    Assert.InRange(section.Last,Math.PI*.5-1e-12,Math.PI*.5+1e-12);
+                    Assert.Contains(boundaryTrace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.Product&&x.Curve==section.Curve
+                        &&x.Generation==section.Generation&&x.First==section.First&&x.Last==section.Last);
+                }
+            }
         }
         finally{if(blends!=null)KernelRuntime.MemoryFree(blends);}
         if(!curvedWall&&!concave&&bulge>0)RoundTripCopyMirror(ref body);

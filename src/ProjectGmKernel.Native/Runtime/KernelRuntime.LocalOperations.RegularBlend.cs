@@ -107,13 +107,35 @@ internal static unsafe partial class KernelRuntime
             if(Math.Abs(u0-u1)<1e-10)
             {
                 LastRegularBlendStage=RegularBlendStage.EndCircle;
-                error0=NestedBlendIsoparam(blend,true,(u0+u1)*.5,0,1,out var circle,out _,out _);if(error0!=0)return error0;
+                error0=NestedBlendIsoparam(blend,true,(u0+u1)*.5,0,1,out var circle,out var sectionFirst,out var sectionLast);if(error0!=0)return error0;
                 TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(capSurfaces[cap])],out var plane);
-                var data=CircleDataPool[Curves[GetCurveSlotByTag(circle)].DataIndex];
+                var circleSlot=GetCurveSlotByTag(circle);var data=CircleDataPool[Curves[circleSlot].DataIndex];
                 var axis=Vector(data.AxisX,data.AxisY,data.AxisZ);var center=Vector(data.CenterX,data.CenterY,data.CenterZ);
-                if(OperationIntersection.Norm(ProfileCross(axis,plane.Axis))<1e-12&&Math.Abs(Dot(Sub(center,plane.Origin),plane.Axis))<1e-10)
-                    curves[2+cap]=circle;
-                else {error0=EntityDelete(1,&circle);if(error0!=0)return error0;}
+                if(sectionLast>sectionFirst&&sectionLast-sectionFirst<=Math.PI+1e-9
+                    &&OperationIntersection.Norm(ProfileCross(axis,plane.Axis))<1e-12&&Math.Abs(Dot(Sub(center,plane.Origin),plane.Axis))<1e-10)
+                {
+                    // The section constructor defines t=0 at V=0 and the
+                    // other trim at V=1. The two contact uses already
+                    // identify those branches, including reversed sections.
+                    var startsOnFirst=BlendContactV(ICurveDataPool[Curves[GetCurveSlotByTag(curves[0])].DataIndex])==0;
+                    var side0Parameter=startsOnFirst?sectionFirst:sectionLast;var side1Parameter=startsOnFirst?sectionLast:sectionFirst;
+                    var found=EvaluateCurveCore(in Curves[circleSlot],side0Parameter,0,false,jet,out _);
+                    if(found!=AlgorithmStatus.Success)return EvaluationError(found);
+                    var firstError=ProfileDistance(jet[0],contacts[cap]);
+                    found=EvaluateCurveCore(in Curves[circleSlot],side1Parameter,0,false,jet,out _);if(found!=AlgorithmStatus.Success)return EvaluationError(found);
+                    var secondError=ProfileDistance(jet[0],contacts[2+cap]);
+                    if(firstError<=OperationIntersection.DistanceTolerance&&secondError<=OperationIntersection.DistanceTolerance)
+                    {
+                        LastRegularBlendStage=RegularBlendStage.EndParameters;
+                        Curves[circleSlot].Sense=direction>0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+                        TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.AnalyticSectionEnds,Surface=blend,OtherSurface=capSurfaces[cap],
+                            SourceEdge=edge,Curve=circle,Generation=Curves[circleSlot].Header.Generation,First=sectionFirst,Last=sectionLast,
+                            Source=-1,Face=-1,Product=-1,SourceFin=-1,StartEvent=-1,EndEvent=-1,
+                            Forward=startsOnFirst?(byte)1:(byte)0,SpatialError=Math.Max(firstError,secondError)});
+                        curves[2+cap]=circle;lo[2+cap]=side0Parameter;hi[2+cap]=side1Parameter;continue;
+                    }
+                }
+                error0=EntityDelete(1,&circle);if(error0!=0)return error0;
             }
             if(curves[2+cap]==0)
             {

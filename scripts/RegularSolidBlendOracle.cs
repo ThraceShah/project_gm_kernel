@@ -12,8 +12,13 @@ using System.Diagnostics;
 using M=ProjectGmKernel.Native.Generated;
 
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
+var sectionWitnesses=0;
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
-    KernelRuntime.TraceFiniteBoundary=trace=>Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
+    KernelRuntime.TraceFiniteBoundary=trace=>
+    {
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.AnalyticSectionEnds)sectionWitnesses++;
+        Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
+    };
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle");Directory.CreateDirectory(directory);
 var oracleStarted=Stopwatch.GetTimestamp();
 #if DEBUG
@@ -38,8 +43,9 @@ using(host)unsafe
         else
         {
             var failures=0;var cases=0;var roundingOnly=args.Contains("rounding-only",StringComparer.Ordinal);var lifecycleOnly=args.Contains("lifecycle-only",StringComparer.Ordinal);
-            foreach(var (name,bulge,radius,wall,concave) in new[]{("plane-nurbs",.4,.1,false,false),("depressed-roof",-.2,.15,false,false),("nurbs-nurbs",.4,.1,true,false),("concave-plane-nurbs",.4,.1,false,true),("concave-nurbs-nurbs",.4,.1,true,true)})
+            foreach(var (name,bulge,radius,wall,concave) in new[]{("affine-plane-nurbs",0.0,.1,false,false),("plane-nurbs",.4,.1,false,false),("depressed-roof",-.2,.15,false,false),("nurbs-nurbs",.4,.1,true,false),("concave-plane-nurbs",.4,.1,false,true),("concave-nurbs-nurbs",.4,.1,true,true)})
             {
+                if(name=="affine-plane-nurbs"&&!args.Contains(name,StringComparer.Ordinal))continue;
                 if(args.Length!=0&&!args.Contains(name,StringComparer.Ordinal))continue;
                 if(lifecycleOnly&&name!="plane-nurbs")continue;
                 cases++;
@@ -51,7 +57,10 @@ using(host)unsafe
                     var own=Roof(true,bulge,wall,concave);var reference=Roof(false,bulge,wall,concave);CheckBody(reference,name+" reference input");
                     if(args.Contains("--remote-bore",StringComparer.Ordinal)){own=Bore(true,own);reference=Bore(false,reference);CheckBody(reference,name+" bored reference input");}
                     var nativeBlend=Fillet(false,reference,radius,concave);CheckBody(reference,name+" reference fillet");
+                    sectionWitnesses=0;
                     var ownBlend=Fillet(true,own,radius,concave);
+                    if(name=="affine-plane-nurbs"&&KernelRuntime.ForbidLegacyRegularBlendAssembly)
+                        Require(sectionWitnesses==2,"both affine cap boundaries have known native section limits");
                     if(!lifecycleOnly)
                     {
                         try{ValidateBlend(own,ownBlend,nativeBlend,radius);}catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" geometry: "+ex.Message);}
