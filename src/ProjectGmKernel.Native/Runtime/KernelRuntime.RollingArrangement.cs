@@ -9,11 +9,15 @@ internal static unsafe partial class KernelRuntime
         ReadOnlySpan<RollingCutFamily> families,ReadOnlySpan<SheetCutCurve> curves,Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
     {
         made=0;
+        // Existing geometry stays immutable through clipping/arrangement;
+        // construction clones have fresh identities. The command-local proof
+        // cache is released before another modeling command can run.
+        ModelingPerformance.Context proof=default;using var geometryBounds=new ModelingPerformance.Scope(&proof,immutableGeometry:true);
         var oldFaces=Bodies[body].FaceCountBody;var loopCount=0;var face=Bodies[body].FirstFaceBody;
         for(var f=0;f<oldFaces;f++,face=Faces[face].NextInBody)loopCount+=Faces[face].LoopCount;
         if(oldFaces+bands.Length>RegularInputFaces||Bodies[body].EdgeCountBody+4*bands.Length>RegularInputEdges
             ||loopCount+bands.Length>RegularInputLoops||2*Bodies[body].EdgeCountBody+4*bands.Length>RegularInputCoedges)return ParasolidConstants.PK_ERROR_not_implemented;
-        var scratch=CommandScratch.Current;var memory=scratch.Take(240000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        var scratch=CommandScratch.Current;var memory=scratch.Take(249000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -21,6 +25,7 @@ internal static unsafe partial class KernelRuntime
             {
                 Points=ModelSpan<KernelVector3>(bytes,ref cursor,SheetPointLimit),OriginalVertices=ModelSpan<VertexSlot>(bytes,ref cursor,SheetPointLimit),
                 VertexPrecisions=ModelSpan<double>(bytes,ref cursor,SheetPointLimit),Parameters=ModelSpan<BoundaryParameter>(bytes,ref cursor,2*SheetPointLimit),
+                CarrierSurfaces=ModelSpan<BoundaryCarrierSurface>(bytes,ref cursor,4*RegularInputEdges),RequireBoundaryAssociations=true,
                 Tangencies=ModelSpan<BoundaryTangency>(bytes,ref cursor,2*SheetPointLimit),
                 SurfaceContacts=ModelSpan<BoundarySurfaceContact>(bytes,ref cursor,2*SheetPointLimit),
                 Edges=ModelSpan<ModelingEdge>(bytes,ref cursor,SheetEdgeLimit),CutEdges=ModelSpan<byte>(bytes,ref cursor,SheetEdgeLimit),
@@ -40,9 +45,13 @@ internal static unsafe partial class KernelRuntime
             Span<BodyTag> inputs=stackalloc BodyTag[1]{Bodies[body].Header.Tag};
             var error=ReadRegularBoundaries(inputs,model.Points,model.OriginalVertices,inputEdges,originalEdges,inputCoedges,inputLoops,inputFaces,sources,owners,offsets,
                 out model.NP,out var ne,out var nc,out var nl,out var nf,vertexPrecisions:model.VertexPrecisions);if(error!=0)return error;
+            LastRollingNetworkStage=RollingNetworkStage.PatchDomain;
             foreach(var band in bands)
             {error=AppendRollingPatchDomain(band,contacts,ref model,inputEdges,originalEdges,inputCoedges,inputLoops,inputFaces,ref ne,ref nc,ref nl,ref nf);if(error!=0)return error;}
             var view=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
+            LastRollingNetworkStage=RollingNetworkStage.SourceAssociations;
+            error=ReadRollingBoundaryAssociations(view,originalEdges[..ne],families,curves,ref model);if(error!=0)return error;
+            LastRollingNetworkStage=RollingNetworkStage.BoundaryProofs;
             error=ReadRollingFiniteEvents(view,originalEdges[..ne],model.OriginalVertices[..model.NP],bands,contacts,certificates,out var certificateCount);if(error!=0)return error;
             LastRollingNetworkStage=RollingNetworkStage.Clip;
             foreach(var family in families)
@@ -56,6 +65,8 @@ internal static unsafe partial class KernelRuntime
                 }
                 for(var c=before;c<cutCount;c++)cuts[c].SecondIsBoundary=family.SecondIsBoundary;
             }
+            LastRollingNetworkStage=RollingNetworkStage.BoundaryIncidence;
+            error=ReadRollingThirdSurfaceEvents(sourceFaces,bands,families,curves,ref model);if(error!=0)return error;
             LastRollingNetworkStage=RollingNetworkStage.Split;
             error=SplitRegularSourceEdges(view,originalEdges[..ne],fragments,owned,ref ownedCount,ref model);if(error!=0)return error;
             Span<SheetCutCurve> faceCuts=stackalloc SheetCutCurve[RegularCutLimit];

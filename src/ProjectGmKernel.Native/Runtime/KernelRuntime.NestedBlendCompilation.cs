@@ -106,7 +106,19 @@ internal static unsafe partial class KernelRuntime
                 }
             }
             status=ChartSpine(a,b,positions,data.BaseParameter,data.BaseScale,data.ChordalError,data.AngularError,data.StartLimit.Type,data.EndLimit.Type,out index,data.Sense,knownUv);
-            if(status==AlgorithmStatus.Success)spineTags[index]=tag;return status;
+            if(status!=AlgorithmStatus.Success)return status;
+            // The native evaluator owns this carrier's parameter map. A
+            // second construction from rounded support normals can change
+            // its CHART limits even though the spatial curve is identical.
+            // Keep the native gauges when adapting it to the joint solver.
+            status=TryPrepareICurveView(in Curves[slot],out var native,out _);if(status!=AlgorithmStatus.Success)return status;
+            var offset=spines[index].ChartOffset;
+            for(var chart=0;chart<native.ChartParameters.Length;chart++)
+            {
+                ref var witness=ref charts[offset+chart];witness.Parameter=native.ChartParameters[chart];
+                if(chart<native.ChartScales.Length){witness.Scale=native.ChartScales[chart];witness.Chord=native.ChartChordUnits[chart];}
+            }
+            spineTags[index]=tag;return AlgorithmStatus.Success;
         }
 
         internal AlgorithmStatus ChartSpine(BlendSurfaceIndex a,BlendSurfaceIndex b,scoped ReadOnlySpan<KernelVector3> positions,

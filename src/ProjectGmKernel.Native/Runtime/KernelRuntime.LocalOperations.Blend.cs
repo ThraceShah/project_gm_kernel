@@ -80,6 +80,7 @@ internal static unsafe partial class KernelRuntime
         EntityTag** output,PK_FACE_array_s** unders,EntityTag** topols,int* fault,EntityTag* faultEdge,EntityTag* faultTopol)
     {
         ModelingPerformance.Context profile=default;using var evidence=new ModelingPerformance.Scope(&profile);
+        LastBoundaryParameterConflict=default;
         var error=ResolveLocalBody(body,out var slot);if(error!=0)return error;
         if(options==null||outputCount==null||fault==null||faultEdge==null||faultTopol==null)return ParasolidConstants.PK_ERROR_bad_parameter;
         if(options->o_t_version!=31)return ParasolidConstants.PK_ERROR_o_t_version_incorrect;

@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Runtime;
 
 namespace KernelTests;
@@ -16,13 +17,17 @@ public unsafe class NearTangentPlaneCurveTests:IDisposable
         var height=Math.ScaleB(1,-exponent);var surface=Surface();var definition=new PK_PLANE_sf_s();definition.basis_set.location.coord[2]=.5+height;definition.basis_set.axis.coord[2]=1;definition.basis_set.ref_direction.coord[0]=1;
         int plane;Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-5,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_pline_c};
         int np,nc;PK_VECTOR_s* points;int* curves;PK_INTERVAL_s* ranges;int* kinds;
-        Assert.Equal(0,KernelRuntime.SurfIntersectSurf(surface,plane,&options,&np,&points,&nc,&curves,&ranges,&kinds));
+        var error=KernelRuntime.SurfIntersectSurf(surface,plane,&options,&np,&points,&nc,&curves,&ranges,&kinds);
+        var bounds=SurfacePlaneIntersection.LastUnresolvedBox;
+        Assert.True(error==0,$"error={error} stage={KernelRuntime.LastGeneralIntersectionStage}/{KernelRuntime.LastGeneralIntersectionStatus} boundary={SurfacePlaneIntersection.LastBoundaryFailure} iso={SurfaceIsoPlaneRoots.LastFailure} box=({bounds.U0:R},{bounds.U1:R},{bounds.V0:R},{bounds.V1:R})");
         try
         {
             Assert.Equal(0,np);Assert.Equal(1,nc);PK_VECTOR_s* jet=stackalloc PK_VECTOR_s[3];var angle=0.0;var previous=0.0;
             for(var i=0;i<=64;i++)
             {
-                var t=ranges[0].value[0]+(ranges[0].value[1]-ranges[0].value[0])*i/64;Assert.Equal(0,KernelRuntime.CurveEval(curves[0],t,2,jet));
+                var t=ranges[0].value[0]+(ranges[0].value[1]-ranges[0].value[0])*i/64;var evaluated=KernelRuntime.CurveEval(curves[0],t,2,jet);
+                var report=KernelRuntime.LastICurveEvalReport;
+                Assert.True(evaluated==0,$"sample={i} t={t:R} error={evaluated} kind={report.Kind} detail={report.Detail} residual={report.Residual:R}");
                 var x=jet[0].coord[0];var y=jet[0].coord[1];Assert.True(Math.Abs(x*x+y*y-height)<1e-12);Assert.True(Math.Abs(jet[0].coord[2]-(.5+height))<1e-12);
                 var dx=jet[1].coord[0];var dy=jet[1].coord[1];var ddx=jet[2].coord[0];var ddy=jet[2].coord[1];var speed=Math.Sqrt(dx*dx+dy*dy);
                 Assert.True(speed>0);Assert.True(Math.Abs(x*dx+y*dy)/(Math.Sqrt(height)*speed)<1e-7);

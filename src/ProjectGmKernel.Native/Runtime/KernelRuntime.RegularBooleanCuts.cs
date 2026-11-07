@@ -163,7 +163,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var closed=curve.Closed!=0&&n==0;var wrap=curve.Closed!=0&&n>0&&i==n-1;
                 var lo=closed?curve.First:parameters[i];var hi=closed?curve.Last:parameters[(i+1)%n];
-                var width=wrap?curve.Last-lo+hi-curve.First:hi-lo;if(!(width>1e-12))continue;
+                var width=wrap?curve.Last-lo+hi-curve.First:hi-lo;if(!(width>(model.RequireBoundaryAssociations?0:1e-12)))continue;
                 var at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;
                 var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
@@ -181,6 +181,8 @@ internal static unsafe partial class KernelRuntime
                     if(ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;owned[ownedCount++]=cut;
                 }
                 if(cutCount==cuts.Length)return ParasolidConstants.PK_ERROR_not_implemented;cuts[cutCount++]=new(){First=first,Second=second,Cut=cut};
+                error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,input.Faces[first].Surface);if(error!=0)return error;
+                error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,input.Faces[second].Surface);if(error!=0)return error;
                 if(cut.Closed==0)for(var end=0;end<2;end++)
                 {
                     status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
@@ -197,6 +199,20 @@ internal static unsafe partial class KernelRuntime
                         }
                         if(root.Certified!=0)
                         {error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,root.Root.Lower,root.Root.Upper);if(error!=0)return error;}
+                        else if(model.RequireBoundaryAssociations)
+                        {
+                            var carrier=Curves[GetCurveSlotByTag(root.Curve)];
+                            if(TryReadExplicitSpineCurve(carrier,out _))
+                            {
+                                // Bound the analytic locator's floating
+                                // evaluation/inversion error independently
+                                // of modeling and mark/fix tolerances.
+                                error=FiniteEndpointRoot(root.Curve,carrier.TMin,carrier.TMax,-1,-1,0,root.Root.Parameter,out var locator);if(error!=0)return error;
+                                error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,locator.Lower,locator.Upper);
+                            }
+                            else error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter);
+                            if(error!=0)return error;
+                        }
                         if(root.Certified!=0&&root.Root.Kind==IntersectionVectorKind.Tangent&&root.TangentSupport!=0
                             &&input.Faces[first].Surface!=root.TangentSupport&&input.Faces[second].Surface!=root.TangentSupport)
                         {error=model.AssociateTangency(endpoint,root.Curve,cut.Curve);if(error!=0)return error;}
@@ -235,7 +251,9 @@ internal static unsafe partial class KernelRuntime
             if(!ring){parameters[n]=edge.Start;vertices[n++]=positive?edge.StartVertex:edge.EndVertex;parameters[n]=edge.End;vertices[n++]=positive?edge.EndVertex:edge.StartVertex;}
             for(var p=0;p<model.NP;p++)
             {
-                var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);double t=0;var error=model.KnownParameter(p,edge.Curve,out t)?0:CurveParameteriseVectorCore(edge.Curve,vector,&t);
+                var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);double t=0;var known=model.KnownParameter(p,edge.Curve,out t);
+                if(!known&&model.RequireBoundaryAssociations)continue;
+                var error=known?0:CurveParameteriseVectorCore(edge.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
                 if(!OperationIntersection.InInterval(t,edge.Start,edge.End))continue;
@@ -247,7 +265,7 @@ internal static unsafe partial class KernelRuntime
                     // merge only if surviving cells use both source bodies.
                     if(RegularPlanarImprintJunction(input,p,e))model.VertexMergeCandidates[p]=1;
                 }
-                var duplicate=false;for(var k=0;k<n;k++)duplicate|=Math.Abs(parameters[k]-t)<1e-10||vertices[k]==p;
+                var duplicate=false;for(var k=0;k<n;k++)duplicate|=(model.RequireBoundaryAssociations?parameters[k]==t:Math.Abs(parameters[k]-t)<1e-10)||vertices[k]==p;
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=Math.Clamp(t,edge.Start,edge.End);vertices[n++]=p;}
             }
             for(var i=1;i<n;i++)for(var j=i;j>0&&parameters[j]<parameters[j-1];j--){(parameters[j],parameters[j-1])=(parameters[j-1],parameters[j]);(vertices[j],vertices[j-1])=(vertices[j-1],vertices[j]);}

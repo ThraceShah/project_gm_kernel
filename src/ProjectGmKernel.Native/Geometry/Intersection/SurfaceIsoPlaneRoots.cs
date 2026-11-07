@@ -20,7 +20,7 @@ internal struct ScalarRootIsolation
 // roots at a natural domain endpoint; unresolved cells never mean "no hit".
 internal static class SurfaceIsoPlaneRoots
 {
-    internal enum IsolationFailure:byte{None,CurveBound,MeanValue,NewtonEmpty,NewtonDerivative,NewtonBudget,Subdivision,CellBudget}
+    internal enum IsolationFailure:byte{None,CurveBound,MeanValue,NewtonEmpty,NewtonDerivative,NewtonBudget,Subdivision,CellBudget,DomainCoverage}
     [ThreadStatic] internal static IsolationFailure LastFailure;
     [ThreadStatic] internal static IntervalNumber LastUnresolvedInterval,LastRequestedInterval,LastLeft,LastRight,LastDerivative;
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
@@ -87,16 +87,23 @@ internal static class SurfaceIsoPlaneRoots
                     else if(right.Magnitude<=tolerance){parameter=hi;found=true;}
                     else if(left.Upper<0&&right.Lower>0||left.Lower>0&&right.Upper<0)
                     {
+                        // The sign bracket and derivative already prove the
+                        // root. Legacy CHART producers choose a representative
+                        // within that bracket at their existing spatial error;
+                        // a rounded midpoint sign must not discard the root.
                         var a=lo;var b=hi;var negativeLeft=left.Upper<0;
                         for(var iteration=0;iteration<48;iteration++)
                         {
                             parameter=a+(b-a)*.5;status=curve.Bound(new(parameter,parameter,0,0),at);if(status!=AlgorithmStatus.Success)return status;
-                            var value=Distance(at,plane);
-                            if(value.Magnitude<Math.Min(2e-12,tolerance)){found=true;break;}
-                            if(value.ContainsZero)return AlgorithmStatus.NotConverged;
+                            var value=Distance(at,plane);if(value.Magnitude<Math.Min(2e-12,tolerance)){found=true;break;}
+                            if(value.ContainsZero)break;
                             if((value.Upper<0)==negativeLeft)a=parameter;else b=parameter;
                         }
-                        if(!found)return AlgorithmStatus.NotConverged;
+                        if(!found)
+                        {
+                            status=IsolateBracket(curve,plane,a,b,derivative,out certificate);if(status!=AlgorithmStatus.Success)return status;
+                            parameter=certificate.Root.Midpoint;found=true;
+                        }
                     }
                     else if(left.Lower>0&&right.Lower>0||left.Upper<0&&right.Upper<0)continue;
                     if(found)

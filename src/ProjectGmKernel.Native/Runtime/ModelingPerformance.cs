@@ -102,28 +102,30 @@ internal static unsafe class ModelingPerformance
     {if(started!=0){current->Profile.BoundEvaluations++;current->Profile.BoundTicks+=Stopwatch.GetTimestamp()-started;}}
 
     internal static bool TryBound(GeomTag tag,EntityGeneration generation,KernelSense sense,BufferOffset root,bool spine,
-        in SurfaceParameterBox box,Span<IntervalNumber> output)
+        in SurfaceParameterBox box,Span<IntervalNumber> output,byte parameterSide=0)
     {
         if(tag<=0||current==null||current->Entries==null||output.Length<9)return false;
-        ref var entry=ref current->Entries[BoundIndex(tag,generation,sense,root,spine,box)];
-        if(entry.Tag!=tag||entry.Generation!=generation||entry.Sense!=sense||entry.Root!=root||entry.Kind!=(spine?2:1)
+        var kind=parameterSide==0?(spine?(byte)2:(byte)1):(byte)(parameterSide+2);
+        ref var entry=ref current->Entries[BoundIndex(tag,generation,sense,root,kind,box)];
+        if(entry.Tag!=tag||entry.Generation!=generation||entry.Sense!=sense||entry.Root!=root||entry.Kind!=kind
             ||entry.Box.U0!=box.U0||entry.Box.U1!=box.U1||entry.Box.V0!=box.V0||entry.Box.V1!=box.V1)return false;
         ((ReadOnlySpan<IntervalNumber>)entry.Values).CopyTo(output);
         if(current->Capture)current->Profile.BoundCacheHits++;return true;
     }
     internal static void StoreBound(GeomTag tag,EntityGeneration generation,KernelSense sense,BufferOffset root,bool spine,
-        in SurfaceParameterBox box,ReadOnlySpan<IntervalNumber> output)
+        in SurfaceParameterBox box,ReadOnlySpan<IntervalNumber> output,byte parameterSide=0)
     {
         if(tag<=0||current==null||current->Entries==null)return;
-        ref var entry=ref current->Entries[BoundIndex(tag,generation,sense,root,spine,box)];
-        entry.Tag=tag;entry.Generation=generation;entry.Sense=sense;entry.Root=root;entry.Kind=spine?(byte)2:(byte)1;entry.Box=box;
+        var kind=parameterSide==0?(spine?(byte)2:(byte)1):(byte)(parameterSide+2);
+        ref var entry=ref current->Entries[BoundIndex(tag,generation,sense,root,kind,box)];
+        entry.Tag=tag;entry.Generation=generation;entry.Sense=sense;entry.Root=root;entry.Kind=kind;entry.Box=box;
         output[..9].CopyTo(entry.Values);
     }
-    private static BufferOffset BoundIndex(GeomTag tag,EntityGeneration generation,KernelSense sense,BufferOffset root,bool spine,in SurfaceParameterBox box)
+    private static BufferOffset BoundIndex(GeomTag tag,EntityGeneration generation,KernelSense sense,BufferOffset root,byte kind,in SurfaceParameterBox box)
     {
         var hash=BitConverter.DoubleToInt64Bits(box.U0)*31+BitConverter.DoubleToInt64Bits(box.U1)*997
             +BitConverter.DoubleToInt64Bits(box.V0)*8191+BitConverter.DoubleToInt64Bits(box.V1)*131071;
-        hash^=(long)tag*2654435761+generation*65537L+sense*257L+root*17L+(spine?1:0);hash^=hash>>32;hash^=hash>>16;
+        hash^=(long)tag*2654435761+generation*65537L+sense*257L+root*17L+kind-1;hash^=hash>>32;hash^=hash>>16;
         return (BufferOffset)hash&(CacheCapacity-1);
     }
 }

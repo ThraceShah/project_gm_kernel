@@ -19,6 +19,32 @@ public unsafe class RollingNetworkTests:IDisposable
     {KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidLegacyRegularBlendAssembly=false;KernelRuntime.SessionStop();}
 
     [Theory]
+    [InlineData(1,false)] [InlineData(1,true)] [InlineData(1.7,false)] [InlineData(1.7,true)]
+    public void TransportedReferenceMeridianKeepsItsIdentityAndRejectsNearbyPlanes(double scale,bool mirror)
+    {
+        var axis=Rotate(new(){Y=1});var reference=Rotate(new(){X=-1});
+        var origin=Position(new(){X=-1.5,Z=4});var point=Position(new(){X=-2.5,Y=-1.5,Z=4});
+        var planeOrigin=Position(new(){X=-2.5});
+        var cylinder=new AnalyticSurface(SurfaceClass.Cylinder,origin,axis,reference,scale);
+        var plane=new AnalyticSurface(SurfaceClass.Plane,planeOrigin,reference,axis);
+        Assert.True(KernelRuntime.TryReferenceMeridianContact(cylinder,plane,point,out var error));Assert.InRange(error,0,1e-12);
+        var displaced=EvaluationMath.Add(planeOrigin,EvaluationMath.Scale(reference,scale*1e-10));
+        Assert.False(KernelRuntime.TryReferenceMeridianContact(cylinder,new(SurfaceClass.Plane,displaced,reference,axis),point,out _));
+        var changed=EvaluationMath.Add(reference,EvaluationMath.Scale(axis,1e-14));
+        Assert.False(KernelRuntime.TryReferenceMeridianContact(cylinder,new(SurfaceClass.Plane,planeOrigin,changed,axis),point,out _));
+        return;
+
+        KernelVector3 Position(KernelVector3 value)=>EvaluationMath.Add(EvaluationMath.Scale(Rotate(value),scale),new(){X=-.7*scale,Y=1.1*scale,Z=2.3*scale});
+        KernelVector3 Rotate(KernelVector3 value)
+        {
+            if(mirror)value.X=-value.X;
+            var x=value.X;var y=Math.Cos(.23)*value.Y-Math.Sin(.23)*value.Z;var z=Math.Sin(.23)*value.Y+Math.Cos(.23)*value.Z;
+            var u=Math.Cos(-.29)*x+Math.Sin(-.29)*z;var w=-Math.Sin(-.29)*x+Math.Cos(-.29)*z;
+            return new(){X=Math.Cos(.37)*u-Math.Sin(.37)*y,Y=Math.Sin(.37)*u+Math.Cos(.37)*y,Z=w};
+        }
+    }
+
+    [Theory]
     [InlineData(false)] [InlineData(true)]
     public void HeterogeneousBandsPublishThroughArrangementAndRetainPositiveShortIntervals(bool reverse)
     {

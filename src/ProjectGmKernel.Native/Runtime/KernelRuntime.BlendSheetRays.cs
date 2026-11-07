@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Bounds;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 
 namespace ProjectGmKernel.Native.Runtime;
@@ -16,6 +17,12 @@ internal static unsafe partial class KernelRuntime
             return IntersectBlendContactRay(surface,query,du,dv,edge,output,out count);
         if(TryAnalyticBlendContactMap(surface,record,edge.Start,edge.End,out var section,out var shift,out var scale))
             return IntersectAnalyticBlendContactRay(surface,query,du,dv,edge,section,shift,scale,output,out count);
+        if(du==0&&dv!=0&&record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].ProgramBlock>0
+            &&Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface)
+        {
+            var nativeStatus=IntersectNativeBlendVerticalRay(surface,query,dv,edge,output,out count,out var handled);
+            if(handled)return nativeStatus;
+        }
         if(record.Class==CurveClass.Circle&&Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface
             &&TryBlendCircleStation(surface,record,edge.Start,edge.End,out var station))
             return IntersectBlendCircleRay(surface,query,du,dv,edge,station,output,out count);
@@ -85,6 +92,40 @@ internal static unsafe partial class KernelRuntime
                 for(var k=0;k<nr;k++)if(!OperationIntersection.AddPoint(output,ref count,roots[k].Point,roots[k].First,roots[k].Second,IntersectionVectorKind.Simple))return AlgorithmStatus.OutputTooSmall;
             }
         }
+        OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus IntersectNativeBlendVerticalRay(SurfTag surface,PK_UV_s query,double direction,in ModelingEdge edge,
+        Span<OperationIntersectionPoint> output,out BufferCount count,out bool handled)
+    {
+        count=0;handled=true;var data=ICurveDataPool[Curves[GetCurveSlotByTag(edge.Curve)].DataIndex];
+        var side=SameSheetSupport(surface,data.Surface0Tag)?0:SameSheetSupport(surface,data.Surface1Tag)?1:-1;if(side<0)return AlgorithmStatus.Unsupported;
+        var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+        var definition=program.Spines[data.ProgramSpine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+        var support=program.Surfaces[side==0?definition.First:definition.Second];
+        if(!support.IsBlend)return AlgorithmStatus.Unsupported;
+        if(SpineParameterMap.Periodic(program.Spines[support.Spine])){handled=false;return AlgorithmStatus.Success;}
+        var level=new AnalyticSurface(SurfaceClass.Plane,new(){X=query.param[0]},new(){X=1},new(){Y=1});
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
+        Span<ScalarRootIsolation> isolated=stackalloc ScalarRootIsolation[IntersectionPointCapacity],accepted=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
+        Span<SurfaceBoundCacheEntry> cache=stackalloc SurfaceBoundCacheEntry[128];cache.Clear();
+        Span<KernelVector3> point=stackalloc KernelVector3[1];Span<double> paired=stackalloc double[4];var covered=edge.Start;
+        for(var chart=0;chart<charts.Length-1;chart++)
+        {
+            var first=Math.Max(edge.Start,charts[chart].Parameter);var last=Math.Min(edge.End,charts[chart+1].Parameter);if(!(last>first))continue;
+            if(first>covered)return AlgorithmStatus.NotConverged;covered=last;
+            var coordinate=new SurfaceIntersectionPatch(new SurfaceIntersectionPatch(program,data.ProgramSpine,side,first,last),cache);
+            var record=Curves[GetCurveSlotByTag(edge.Curve)];coordinate=new(coordinate,edge.Curve,record.Header.Generation,record.Sense);var n=0;
+            var status=SurfaceIsoPlaneRoots.Find(coordinate,level,first,last,roots,ref n,0,true,isolated);if(status!=AlgorithmStatus.Success)return status;
+            for(var root=0;root<n;root++)
+            {
+                var duplicate=false;for(var previous=0;previous<count;previous++)duplicate|=accepted[previous].SameRoot(isolated[root]);if(duplicate)continue;
+                status=JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,roots[root].First,0,point,paired);if(status!=AlgorithmStatus.Success)return status;
+                if(count==output.Length||count==accepted.Length)return AlgorithmStatus.OutputTooSmall;
+                accepted[count]=isolated[root];output[count++]=new(){Point=point[0],First=(paired[2*side+1]-query.param[1])/direction,Second=roots[root].First,Kind=IntersectionVectorKind.Simple};
+            }
+        }
+        if(covered!=edge.End)return AlgorithmStatus.NotConverged;
         OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
     }
 

@@ -45,6 +45,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)];
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Successor)
         {Console.WriteLine($"SUCCESSOR surface={trace.Surface} edge={trace.Edge} forward={trace.Forward} end={trace.EndEvent} next={trace.NextEdge} angles={trace.StartAngle:R}/{trace.EndAngle:R}");return;}
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.CarrierReuse)
+        {Console.WriteLine($"BOUNDARY REUSE surface={trace.Surface} edge={trace.Edge} implicit={trace.Curve} source_line={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} bound={trace.SpatialError:R}");return;}
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface}/{surface.Class} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
         if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.BoundaryTraceStage.Input)
             Console.WriteLine($"BOUNDARY XYZ start=({trace.StartPoint.X:R},{trace.StartPoint.Y:R},{trace.StartPoint.Z:R}) end=({trace.EndPoint.X:R},{trace.EndPoint.Y:R},{trace.EndPoint.Z:R})");
@@ -55,7 +57,10 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         }
     };
 
-var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","short-edge-blend-oracle");
+var researchPrecision=NumberOption(args,"--research-precision=",0);
+Require(researchPrecision==0||double.IsFinite(researchPrecision)&&researchPrecision>0&&args.Contains("--native-only")&&args.Contains("--diagnostics")&&!args.Contains("--record-fixtures"),
+    "research precision requires native-only diagnostics and cannot update fixtures");
+var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs",researchPrecision==0?"short-edge-blend-oracle":"short-edge-native-research");
 M.PK_TRANSF_sf_s inputTransform;double inputScale;bool mappedInput;
 unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
@@ -84,6 +89,7 @@ using(host)unsafe
         {
             var name=$"a{angle:R}-r{radius:R}-t{tolerance:R}-reverse{reverse}-"+(procedural?"v261":"default");
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
+                if(researchPrecision!=0)name+=$"-pk-precision{researchPrecision:R}";
             cases++;
             Console.WriteLine("CASE "+name);
             try
@@ -96,8 +102,13 @@ using(host)unsafe
                 var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-input-fresh.x_t"),fresh);
                 var freshBody=Receive(false,fresh);CheckBody(freshBody,"fresh input");ParasolidBodyCompare.AssertEquivalent(reference,freshBody,"fresh input");
                 Check(PK_ENTITY_delete(1,&freshBody),"delete input roundtrip");
-                var nativeError=Fillet(false,reference,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale);
+                if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-before-fix");
+                if(researchPrecision!=0)Check(PK_SESSION_set_precision(researchPrecision),"set research precision");
+                int nativeError;
+                try{nativeError=Fillet(false,reference,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale);}
+                finally{if(researchPrecision!=0)Check(PK_SESSION_set_precision(precision),"restore default precision");}
                 Check(nativeError,"native fix");CheckBody(reference,"native fillet");
+                if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-after-fix");
                 var result=Transmit(false,reference);File.WriteAllBytes(Path.Combine(output,name+"-native.x_t"),result);
                 Describe(reference);DescribeXt(result);
                 if(args.Contains("--record-fixtures"))
@@ -237,7 +248,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
         own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut");
-        var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=Receive(true,reload);
+        var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=0;own=Receive(true,reload);
         Console.WriteLine($"LIFECYCLE {name} managed_reload=True body={own}");
         var secondAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(0,2.5,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
@@ -247,7 +258,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
     }
     finally
     {
-        Check(KernelRuntime.EntityDelete(1,&own),"delete own lifecycle");Check(PK_ENTITY_delete(1,&native),"delete PK lifecycle");
+        if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete own lifecycle");Check(PK_ENTITY_delete(1,&native),"delete PK lifecycle");
         Check(KernelRuntime.EntityDelete(1,&selfTransform),"delete self transform");Check(PK_ENTITY_delete(1,&pkTransform),"delete PK transform");
     }
     return failures;
@@ -724,6 +735,8 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
         Console.WriteLine($"UNRESOLVED iso reason={SurfaceIsoPlaneRoots.LastFailure} requested=[{SurfaceIsoPlaneRoots.LastRequestedInterval.Lower:R},{SurfaceIsoPlaneRoots.LastRequestedInterval.Upper:R}] cell=[{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Lower:R},{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Upper:R}] f0=[{SurfaceIsoPlaneRoots.LastLeft.Lower:R},{SurfaceIsoPlaneRoots.LastLeft.Upper:R}] f1=[{SurfaceIsoPlaneRoots.LastRight.Lower:R},{SurfaceIsoPlaneRoots.LastRight.Upper:R}] slope=[{SurfaceIsoPlaneRoots.LastDerivative.Lower:R},{SurfaceIsoPlaneRoots.LastDerivative.Upper:R}]");
         var rootCell=ParametricSurfaceIntersection.LastRootCell;
         Console.WriteLine($"UNRESOLVED isolated reason={ParametricSurfaceIntersection.LastRootFailure} fixed={ParametricSurfaceIntersection.LastRootFixedAxis} depth={rootCell.Depth} box=[{rootCell.Lower.U:R},{rootCell.Upper.U:R}]x[{rootCell.Lower.V:R},{rootCell.Upper.V:R}]x[{rootCell.Lower.S:R},{rootCell.Upper.S:R}]x[{rootCell.Lower.T:R},{rootCell.Upper.T:R}]");
+        var conflict=KernelRuntime.LastBoundaryParameterConflict;
+        Console.WriteLine($"ASSOCIATION conflict event={conflict.Event} carrier={conflict.Carrier} previous={conflict.Previous:R}[{conflict.PreviousLower:R},{conflict.PreviousUpper:R}] incoming={conflict.Incoming:R}[{conflict.Lower:R},{conflict.Upper:R}]");
     }
     Free(own,made);return error;
 }

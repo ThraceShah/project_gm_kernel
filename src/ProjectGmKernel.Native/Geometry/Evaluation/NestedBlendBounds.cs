@@ -97,7 +97,7 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
-        Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0)
+        Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0)
     {
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
@@ -160,6 +160,13 @@ internal static partial class JointNestedBlendEvaluation
         if(!ReuseSplineContactBounds)splineCache.Clear();
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
         status=CertifyNearestBoxes(program,nodes,boxes[..n],variables[..n],intervalJacobian[..(n*n)],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+        var parameterIndex=-1;
+        if(!supportParameter.IsEmpty)
+        {
+            var child=parameterSide==0?nodes[0].FirstChild:nodes[0].SecondChild;
+            if(child<0)return AlgorithmStatus.Unsupported;
+            parameterIndex=nodes[child].Offset+3;supportParameter[0]=boxes[parameterIndex];
+        }
         if(!reachBudget.IsEmpty)
         {
             if(nodes.Length!=1)return AlgorithmStatus.Unsupported;
@@ -181,6 +188,7 @@ internal static partial class JointNestedBlendEvaluation
         status=IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
+        if(parameterIndex>=0){supportParameter[1]=image[parameterIndex];return AlgorithmStatus.Success;}
         if(!curvature.IsEmpty)
         {
             for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);

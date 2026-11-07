@@ -6,7 +6,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish}
+    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish,PatchDomain,SourceAssociations,BoundaryProofs}
     [ThreadStatic] internal static RollingNetworkStage LastRollingNetworkStage;
     [ThreadStatic] internal static BufferOffset LastRollingFirstFace,LastRollingSecondFace;
     internal struct RollingNetworkTrace
@@ -80,11 +80,16 @@ internal static unsafe partial class KernelRuntime
         }
         Span<SheetCutCurve> cuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];
         Span<RollingPointContact> points=stackalloc RollingPointContact[128];var pointCount=0;
+        Span<BufferCount> interactions=stackalloc BufferCount[bands.Length];interactions.Clear();
         LastRollingNetworkStage=RollingNetworkStage.BandEvents;
         for(var i=0;i<bands.Length;i++)for(var j=i+1;j<bands.Length;j++)
         {
             TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=bands[i].Source,Surface=bands[i].Surface,Other=bands[j].Surface,First=bands[i].First,Last=bands[i].Last});
             var error=PrepareSheetCutCurves(bands[i].Surface,bands[j].Surface,cuts,out var count);if(error!=0)return error;
+            // Three interacting bands require their own joint-event solve.
+            // Reject before editing topology; disjoint components are still
+            // processed in the same operation regardless of component count.
+            if(count>0&&(++interactions[i]>1||++interactions[j]>1))return ParasolidConstants.PK_ERROR_not_implemented;
             foreach(var cut in cuts[..count])SetRollingCurveSense(cut.Curve,Curves[GetCurveSlotByTag(Edges[bands[i].Source].CurveTag)].Sense);
             error=AppendRollingCutFamily(faces.Length+i,faces.Length+j,cuts[..count],false,families,ref familyCount,allCuts,ref curveCount);if(error!=0)return error;
             foreach(var cut in cuts[..count])TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=bands[i].Source,Surface=bands[i].Surface,Other=bands[j].Surface,Curve=cut.Curve,First=cut.First,Last=cut.Last});

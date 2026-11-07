@@ -115,6 +115,37 @@ public unsafe class BlendIntersectionTests:IDisposable
     }
 
     [Fact]
+    public void NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative()
+    {
+        var blend=CreateBlend();var plane=new PK_PLANE_sf_s();var length=Math.Sqrt(17);
+        plane.basis_set.location.coord[1]=.5;plane.basis_set.axis.coord[0]=1/length;plane.basis_set.axis.coord[1]=4/length;plane.basis_set.ref_direction.coord[2]=1;int cut;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&cut));
+        var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_both_c,have_uvbox_1=1};
+        options.uvbox_1.param[0]=options.uvbox_1.param[1]=.1;options.uvbox_1.param[2]=options.uvbox_1.param[3]=.9;
+        int np,nc;PK_VECTOR_s* points;int* curves;PK_INTERVAL_s* intervals;int* kinds;
+        Assert.Equal(0,KernelRuntime.SurfIntersectSurf(blend,cut,&options,&np,&points,&nc,&curves,&intervals,&kinds));
+        try
+        {
+            Assert.Equal(1,nc);var data=KernelRuntime.ICurveDataPool[KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(curves[0])].DataIndex];
+            var program=KernelRuntime.GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+            Span<IntervalNumber> result=stackalloc IntervalNumber[2];
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportU(program,data.ProgramSpine,intervals[0].value[0],intervals[0].value[1],0,result));
+            PK_VECTOR_s* jets=stackalloc PK_VECTOR_s[2];
+            for(var sample=0;sample<=8;sample++)
+            {
+                var parameter=intervals[0].value[0]+(intervals[0].value[1]-intervals[0].value[0])*sample/8;
+                Assert.Equal(0,KernelRuntime.CurveEval(curves[0],parameter,1,jets));
+                Assert.InRange(jets[0].coord[1],result[0].Lower,result[0].Upper);
+                Assert.InRange(jets[1].coord[1],result[1].Lower,result[1].Upper);
+                Assert.InRange(Math.Abs(jets[0].coord[1]+jets[0].coord[0]/4-.5),0,1e-12);
+                Assert.InRange(Math.Abs(jets[1].coord[1]+jets[1].coord[0]/4),0,1e-12);
+            }
+            Assert.Equal(AlgorithmStatus.Unsupported,JointNestedBlendEvaluation.BoundSpineSupportU(program,data.ProgramSpine,intervals[0].value[0],intervals[0].value[1],1,result));
+        }
+        finally{if(points!=null)KernelRuntime.MemoryFree(points);if(curves!=null)KernelRuntime.MemoryFree(curves);if(intervals!=null)KernelRuntime.MemoryFree(intervals);if(kinds!=null)KernelRuntime.MemoryFree(kinds);}
+    }
+
+    [Fact]
     public void ArtificialSpineLimitCannotBeReportedAsACompletedIntersectionEnd()
     {
         var blend=CreateBlend(artificial:true);var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[0]=1;plane.basis_set.ref_direction.coord[1]=1;plane.basis_set.location.coord[0]=-.1;int cut;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&cut));

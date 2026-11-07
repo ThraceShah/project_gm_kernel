@@ -18,8 +18,19 @@ internal static unsafe partial class KernelRuntime
             var status=compiler.Spine(curve,out var spine);if(status!=AlgorithmStatus.Success)return status;
             var program=compiler.View;var definition=program.Spines[spine];
             var tolerance=8*JointNestedBlendEvaluation.ResidualAccuracy(program,spine,program.Charts[definition.ChartOffset].Position);
-            var patch=new SurfaceIntersectionPatch(program,spine,first,last);
-            status=SurfaceIsoPlaneRoots.Find(patch,plane,first,last,output,ref count,tolerance,strictSeparation:true);
+            var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);var covered=first;
+            var record=Curves[GetCurveSlotByTag(curve)];
+            for(var chart=0;chart<charts.Length-1;chart++)
+            {
+                var lo=Math.Max(first,charts[chart].Parameter);var hi=Math.Min(last,charts[chart+1].Parameter);if(!(hi>lo))continue;
+                if(lo>covered)return AlgorithmStatus.NotConverged;covered=hi;
+                // Every native CHART interval has its own gauge. Isolate in
+                // that interval instead of repeatedly bounding a union of
+                // different parameter maps as one scalar branch.
+                var patch=new SurfaceIntersectionPatch(program,spine,lo,hi);patch=new(patch,curve,record.Header.Generation,record.Sense);
+                status=SurfaceIsoPlaneRoots.Find(patch,plane,lo,hi,output,ref count,tolerance,strictSeparation:true);if(status!=AlgorithmStatus.Success)return status;
+            }
+            if(covered!=last){SurfaceIsoPlaneRoots.LastFailure=SurfaceIsoPlaneRoots.IsolationFailure.DomainCoverage;SurfaceIsoPlaneRoots.LastUnresolvedInterval=new(covered,last);return AlgorithmStatus.NotConverged;}
             if(status==AlgorithmStatus.Success)OperationIntersection.Sort(output[..count]);return status;
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
@@ -30,7 +41,7 @@ internal static unsafe partial class KernelRuntime
     // anchors, chord errors or sampled extrema cannot substitute for it.
     internal static AlgorithmStatus CertifiedIntersectionCurveExtent(CurveTag curve,double first,double last,out IntervalBox3 extent)
     {
-        extent=default;if(!(last>first))return AlgorithmStatus.InvalidInput;
+        extent=default;if(!(last>=first))return AlgorithmStatus.InvalidInput;
         var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {

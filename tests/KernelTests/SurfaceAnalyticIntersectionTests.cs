@@ -9,6 +9,20 @@ namespace KernelTests;
 
 public class SurfaceAnalyticIntersectionTests
 {
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1e-20)]
+    public void ABracketedPlaneRootSurvivesAnIndeterminateMidpointSign(double tolerance)
+    {
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[8];poles.Clear();
+        poles[0]=-1;poles[3]=1;poles[4]=1;poles[7]=1;
+        var curve=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,1,0,new(0,1,0,1)));
+        var plane=new AnalyticSurface(SurfaceClass.Plane,default,new(){X=1},new(){Y=1});
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[4];var count=0;
+        Assert.Equal(AlgorithmStatus.Success,SurfaceIsoPlaneRoots.Find(curve,plane,0,1,roots,ref count,tolerance,true));
+        Assert.Equal(1,count);Assert.InRange(Math.Abs(roots[0].First-.5),0,2e-15);
+    }
+
     [Fact]
     public void ShallowRootRetainsAnIsolationBoxInsteadOfStoppingAtSmallResidual()
     {

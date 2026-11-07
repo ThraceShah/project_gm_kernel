@@ -63,6 +63,19 @@ public unsafe class ModelingPerformanceTests:IDisposable
     }
 
     [Fact]
+    public void ScalarSupportCoordinatesCannotAliasSpatialSpineBoundsOrTheOtherSide()
+    {
+        ModelingPerformance.Context context=default;using var scope=new ModelingPerformance.Scope(&context,immutableGeometry:true);
+        Span<IntervalNumber> values=stackalloc IntervalNumber[9],output=stackalloc IntervalNumber[9];for(var i=0;i<9;i++)values[i]=100+i;
+        var box=new SurfaceParameterBox(.2,.4,0,0);ModelingPerformance.StoreBound(200,17,1,4,true,box,values,parameterSide:1);
+        Assert.True(ModelingPerformance.TryBound(200,17,1,4,true,box,output,parameterSide:1));
+        Assert.False(ModelingPerformance.TryBound(200,17,1,4,true,box,output));
+        Assert.False(ModelingPerformance.TryBound(200,17,1,4,true,box,output,parameterSide:2));
+        Assert.False(ModelingPerformance.TryBound(200,18,1,4,true,box,output,parameterSide:1));
+        for(var i=0;i<9;i++){Assert.Equal(values[i].Lower,output[i].Lower);Assert.Equal(values[i].Upper,output[i].Upper);}
+    }
+
+    [Fact]
     public void OptionalCacheAllocationFailurePreservesProofComputation()
     {
         var program=new NestedBlendProgram(NestedBlendSeriesTests.Surfaces(),NestedBlendSeriesTests.Spines(),NestedBlendSeriesTests.Charts());

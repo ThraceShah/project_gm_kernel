@@ -48,6 +48,9 @@ internal static unsafe partial class KernelRuntime
         internal Span<sbyte> Sides;
         internal Span<PK_UV_s> Witnesses;
         internal Span<BoundaryParameter> Parameters;
+        internal Span<BoundaryCarrierSurface> CarrierSurfaces;
+        internal BufferCount CarrierSurfaceCount;
+        internal bool RequireBoundaryAssociations;
         internal Span<BoundaryTangency> Tangencies;
         internal BufferCount TangencyCount;
         internal Span<BoundarySurfaceContact> SurfaceContacts;
@@ -66,7 +69,11 @@ internal static unsafe partial class KernelRuntime
                 ref var known=ref Parameters[i];
                 if(known.Event==endpoint&&known.Carrier==curve&&known.Generation==generation)
                 {
-                    if(upper<known.Lower||lower>known.Upper)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    if(upper<known.Lower||lower>known.Upper)
+                    {
+                        LastBoundaryParameterConflict=new(){Event=endpoint,Carrier=curve,Previous=known.Parameter,PreviousLower=known.Lower,PreviousUpper=known.Upper,Incoming=parameter,Lower=lower,Upper=upper};
+                        LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=curve;LastSheetParameter=parameter;return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    }
                     known.Lower=Math.Max(lower,known.Lower);known.Upper=Math.Min(upper,known.Upper);
                     known.Parameter=Math.Clamp(known.Parameter,known.Lower,known.Upper);return 0;
                 }
@@ -283,11 +290,14 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<model.NP;i++)
             {
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[i]);double t=0;
-                var error=model.KnownParameter(i,cut.Curve,out t)?0:CurveParameteriseVectorCore(cut.Curve,vector,&t);
+                var known=model.KnownParameter(i,cut.Curve,out t);var error=0;
+                if(!known&&model.RequireBoundaryAssociations)
+                {error=AssociateCompatibleBoundaryEvent(ref model,i,cut.Curve,cut.First,cut.Last,out known);if(error!=0)return error;if(!known)continue;model.KnownParameter(i,cut.Curve,out t);}
+                else if(!known)error=CurveParameteriseVectorCore(cut.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(cut.Curve,cut.First,cut.Last,ref t);
                 if(!OperationIntersection.InInterval(t,cut.First,cut.Last))continue;
-                var duplicate=false;for(var j=0;j<n;j++)if(Math.Abs(parameters[j]-t)<1e-10)duplicate=true;if(duplicate)continue;
+                var duplicate=false;for(var j=0;j<n;j++)if(model.RequireBoundaryAssociations?endpoints[j]==i:Math.Abs(parameters[j]-t)<1e-10)duplicate=true;if(duplicate)continue;
                 if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=t;endpoints[n++]=i;
             }
             for(var i=1;i<n;i++)for(var j=i;j>0&&parameters[j]<parameters[j-1];j--)
@@ -303,7 +313,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var closed=cut.Closed!=0&&n==0;var j=n==0?0:(i+1)%n;var wrap=cut.Closed!=0&&n>0&&j==0;
                 var first=closed?cut.First:parameters[i];var last=closed?cut.Last:parameters[j];
-                var span=wrap?cut.Last-first+last-cut.First:last-first;if(!(span>1e-12))continue;
+                var span=wrap?cut.Last-first+last-cut.First:last-first;if(!(span>(model.RequireBoundaryAssociations?0:1e-12)))continue;
                 var inside=false;var located=false;
                 for(var attempt=0;attempt<7;attempt++)
                 {

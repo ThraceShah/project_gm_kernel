@@ -83,6 +83,20 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         Assert.Equal(chart[1], output[0].coord[1], 12);
         Assert.Equal(chart[2], output[0].coord[2], 12);
 
+        // A downstream finite-domain solver must use this carrier's native
+        // map through its final CHART endpoint, including a nonunit scale.
+        var owns=KernelRuntime.EnsureCommandScratch();
+        try
+        {
+            Assert.Equal(AlgorithmStatus.Success,KernelRuntime.CertifiedIntersectionCurveExtent(curveTag,
+                record.TMax-.1*(record.TMax-record.TMin),record.TMax,out var extent));
+            Assert.Equal(0,KernelRuntime.CurveEval(curveTag,record.TMax,0,output));
+            Assert.InRange(output[0].coord[0],extent.XLo,extent.XHi);
+            Assert.InRange(output[0].coord[1],extent.YLo,extent.YHi);
+            Assert.InRange(output[0].coord[2],extent.ZLo,extent.ZHi);
+        }
+        finally{if(owns)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);}
+
         // Regular interval midpoint: on both supports.
         var tMid = 0.5 * (record.TMin + record.TMax);
         Assert.Equal(0, KernelRuntime.CurveEval(curveTag, tMid, 2, output));

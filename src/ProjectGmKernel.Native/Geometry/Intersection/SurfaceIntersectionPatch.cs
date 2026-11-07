@@ -19,6 +19,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly BlendSurfaceIndex surface;
     private readonly bool isBlend;
     private readonly bool isSpine;
+    private readonly byte supportParameterSide;
     private readonly byte isoAxis, sweepAxis;
     private readonly double isoParameter;
     private readonly bool parameterLine;
@@ -40,6 +41,10 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSurfaceIndex root,SurfaceParameterBox domain){bezier=default;blend=program;surface=root;isBlend=true;isSpine=false;Domain=domain;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,double lower,double upper){bezier=default;blend=program;surface=spine;isBlend=isSpine=true;Domain=new(lower,upper,0,1);}
+    // Scalar chart-coordinate adapter, used only for native-t root isolation.
+    // Its X value is a supporting Blend's u; it is not spatial geometry.
+    internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,BufferOffset side,double lower,double upper)
+        :this(program,spine,lower,upper){supportParameterSide=(byte)(side+1);}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries,bool pinned=false)
     {this=source;cache=entries;pinnedCache=pinned;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,GeomTag tag,EntityGeneration generation,KernelSense sense)
@@ -63,6 +68,17 @@ internal readonly ref struct SurfaceIntersectionPatch
     }
     private AlgorithmStatus BoundCore(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
+        if(supportParameterSide!=0)
+        {
+            if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,supportParameterSide))return AlgorithmStatus.Success;
+            Span<IntervalNumber> parameter=stackalloc IntervalNumber[2];
+            var started=ModelingPerformance.StartBound();
+            var found=JointNestedBlendEvaluation.BoundSpineSupportU(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter);
+            ModelingPerformance.EndBound(started);
+            if(found!=AlgorithmStatus.Success)return found;
+            output[..9].Clear();output[0]=parameter[0];output[3]=parameter[1];
+            ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,supportParameterSide);return found;
+        }
         if(normalOffset!=0&&isBlend)return AlgorithmStatus.Unsupported;
         var mapped=isoAxis==1?new SurfaceParameterBox(isoParameter,isoParameter,box.U0,box.U1)
             :isoAxis==2?new(box.U0,box.U1,isoParameter,isoParameter):sweepAxis!=0?new(box.U0,box.U1,0,0):box;

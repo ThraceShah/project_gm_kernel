@@ -4,12 +4,28 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    internal struct BoundaryParameterConflict
+    {
+        internal BoundaryEventId Event;
+        internal CurveTag Carrier;
+        internal double Previous,PreviousLower,PreviousUpper,Incoming,Lower,Upper;
+    }
+    [ThreadStatic] internal static BoundaryParameterConflict LastBoundaryParameterConflict;
     private struct BoundaryParameter
     {
         internal BoundaryEventId Event;
         internal CurveTag Carrier;
         internal EntityGeneration Generation;
+        // Carrier==0 denotes a certified surface participant of this event.
+        // Otherwise this is the carrier's native parameter locator.
+        internal SurfTag Surface;
         internal double Parameter,Lower,Upper;
+    }
+    private struct BoundaryCarrierSurface
+    {
+        internal CurveTag Carrier;
+        internal SurfTag Surface;
+        internal EntityGeneration CarrierGeneration,SurfaceGeneration;
     }
     private struct BoundaryTangency
     {
@@ -41,7 +57,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
-    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product}
+    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse}
     internal struct BoundaryTrace
     {
         internal BoundaryTraceStage Stage;
@@ -51,7 +67,7 @@ internal static unsafe partial class KernelRuntime
         internal EntityGeneration Generation;
         internal BufferOffset Edge,Face,NextEdge;
         internal BoundaryEventId StartEvent,EndEvent;
-        internal double First,Last,StartAngle,EndAngle;
+        internal double First,Last,StartAngle,EndAngle,SpatialError;
         internal KernelVector3 StartPoint,EndPoint;
         internal byte Forward;
     }

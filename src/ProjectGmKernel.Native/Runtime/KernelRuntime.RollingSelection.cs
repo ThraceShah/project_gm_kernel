@@ -75,6 +75,7 @@ internal static unsafe partial class KernelRuntime
         if(count>products.Length)return ParasolidConstants.PK_ERROR_not_implemented;
         foreach(var band in bands)
         {var covered=false;foreach(var f in indices[..count])covered|=model.Faces[f].Surface==band.Surface;if(!covered)return ParasolidConstants.PK_ERROR_cant_do_intersect;}
+        ReuseRollingBoundaryCarriers(fragments,solution,heads,next,owners,ref model);
         Span<byte> reversed=stackalloc byte[model.NF],cavities=stackalloc byte[model.NF];reversed.Clear();cavities.Clear();
         LastRollingNetworkStage=RollingNetworkStage.Build;
         var errorBuild=CloneRegularBoundaryBody(ref model,indices[..count],reversed,cavities,out var output,products[..count]);if(errorBuild!=0)return errorBuild;
