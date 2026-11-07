@@ -345,6 +345,9 @@ internal static unsafe partial class KernelRuntime
                     }
                     status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                     error=model.AddPoint(point[0],-1,out var endpoint,anchors[..anchorCount],requireProof:cutLocator.Finite);if(error!=0)return error;
+                    ref var finite=ref cuts[cutCount-1].Cut;
+                    if(end==0)finite.LowerEvent=endpoint+1;else finite.UpperEvent=endpoint+1;
+                    if(cutLocator.Finite)finite.NativeLocatorEnds|=(byte)(1<<end);
                     var t=end==0?cut.First:cut.Last;
                     if(wrap&&cutLocator.Finite)
                     {error=model.AssociateParameter(endpoint,curve.Curve,sourceParameter,cutLocator.Lower,cutLocator.Upper);if(error!=0)return error;}

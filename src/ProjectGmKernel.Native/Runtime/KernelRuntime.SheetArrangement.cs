@@ -181,11 +181,12 @@ internal static unsafe partial class KernelRuntime
             }
             return false;
         }
-        internal int AddEdge(CurveTag curve,double first,double last,BufferOffset start,BufferOffset end,bool cut,out BufferOffset index)
+        internal int AddEdge(CurveTag curve,double first,double last,BufferOffset start,BufferOffset end,bool cut,out BufferOffset index,bool exact=false)
         {
             index=-1;
-            for(var i=0;i<NE;i++)if(Edges[i].Curve==curve&&Math.Abs(Edges[i].Start-first)<1e-12&&Math.Abs(Edges[i].End-last)<1e-12
-                &&Edges[i].StartVertex==start&&Edges[i].EndVertex==end){index=i;return 0;}
+            for(var i=0;i<NE;i++)if(Edges[i].Curve==curve&&Edges[i].StartVertex==start&&Edges[i].EndVertex==end
+                &&(exact?Edges[i].Start==first&&Edges[i].End==last:Math.Abs(Edges[i].Start-first)<1e-12&&Math.Abs(Edges[i].End-last)<1e-12))
+            {index=i;return 0;}
             if(NE==Edges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             index=NE;CutEdges[NE]=cut?(byte)1:(byte)0;
             Edges[NE++]=new(){Curve=curve,Start=first,End=last,StartVertex=start,EndVertex=end};return 0;
@@ -359,8 +360,20 @@ internal static unsafe partial class KernelRuntime
         for(var c=0;c<cuts.Length;c++)
         {
             ref readonly var cut=ref cuts[c];var n=0;
+            var certified=cut.NativeLocatorEnds!=0;var lowerEvent=cut.LowerEvent-1;var upperEvent=cut.UpperEvent-1;
+            if(certified)
+            {
+                LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=cut.Curve;LastSheetParameter=cut.First;
+                if(cut.Closed!=0||!HasCutEnd(ref model,cut.Curve,lowerEvent,cut.First)||!HasCutEnd(ref model,cut.Curve,upperEvent,cut.Last))
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                parameters[n]=cut.First;endpoints[n++]=lowerEvent;parameters[n]=cut.Last;endpoints[n++]=upperEvent;
+                TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.NativeCutEndpoints,Source=face,Surface=surface,Curve=cut.Curve,
+                    Face=domainFace,Generation=Curves[GetCurveSlotByTag(cut.Curve)].Header.Generation,
+                    SurfaceGeneration=Surfaces[GetSurfaceSlotByTag(surface)].Header.Generation,StartEvent=lowerEvent,EndEvent=upperEvent,First=cut.First,Last=cut.Last});
+            }
             for(var i=0;i<model.NP;i++)
             {
+                if(certified&&(i==lowerEvent||i==upperEvent))continue;
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[i]);double t=0;
                 var known=model.KnownParameter(i,cut.Curve,out t);var error=0;
                 if(!known&&model.RequireBoundaryAssociations)
@@ -369,12 +382,19 @@ internal static unsafe partial class KernelRuntime
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(cut.Curve,cut.First,cut.Last,ref t);
                 if(!OperationIntersection.InInterval(t,cut.First,cut.Last))continue;
-                var duplicate=false;for(var j=0;j<n;j++)if(model.RequireBoundaryAssociations?endpoints[j]==i:Math.Abs(parameters[j]-t)<1e-10)duplicate=true;if(duplicate)continue;
+                if(certified&&(t<cut.First||t>cut.Last))continue;
+                var duplicate=false;
+                for(var j=0;j<n;j++)
+                {
+                    if(certified&&known&&parameters[j]==t&&endpoints[j]!=i)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    if(model.RequireBoundaryAssociations||certified&&known?endpoints[j]==i:Math.Abs(parameters[j]-t)<1e-10)duplicate=true;
+                }
+                if(duplicate)continue;
                 if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=t;endpoints[n++]=i;
             }
             for(var i=1;i<n;i++)for(var j=i;j>0&&parameters[j]<parameters[j-1];j--)
             { (parameters[j],parameters[j-1])=(parameters[j-1],parameters[j]);(endpoints[j],endpoints[j-1])=(endpoints[j-1],endpoints[j]); }
-            if(cut.Closed==0)
+            if(cut.Closed==0&&!certified)
             {
                 if(n==0||Math.Abs(parameters[0]-cut.First)>1e-10)
                 { parameters[..n].CopyTo(parameters[1..]);endpoints[..n].CopyTo(endpoints[1..]);parameters[0]=cut.First;endpoints[0]=-1;n++; }
@@ -385,7 +405,8 @@ internal static unsafe partial class KernelRuntime
             {
                 var closed=cut.Closed!=0&&n==0;var j=n==0?0:(i+1)%n;var wrap=cut.Closed!=0&&n>0&&j==0;
                 var first=closed?cut.First:parameters[i];var last=closed?cut.Last:parameters[j];
-                var span=wrap?cut.Last-first+last-cut.First:last-first;if(!(span>(model.RequireBoundaryAssociations?0:1e-12)))continue;
+                var span=wrap?cut.Last-first+last-cut.First:last-first;if(!(span>(model.RequireBoundaryAssociations||certified?0:1e-12)))continue;
+                if(certified&&Math.BitIncrement(first)>=last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 var inside=false;var located=false;
                 for(var attempt=0;attempt<7;attempt++)
                 {
@@ -424,7 +445,7 @@ internal static unsafe partial class KernelRuntime
                     }
                     if(edge>=0&&curve!=cut.Curve){var unused=curve;var deleted=EntityDelete(1,&unused);if(deleted!=0)return deleted;}
                 }
-                var add=0;if(edge<0){add=model.AddEdge(curve,lower,upper,positive?a:b,positive?b:a,true,out edge);if(add!=0)return add;}
+                var add=0;if(edge<0){add=model.AddEdge(curve,lower,upper,positive?a:b,positive?b:a,true,out edge,exact:certified);if(add!=0)return add;}
                 if(checkAllBoundaries)
                 {
                     if(cut.KeepImprint!=0)model.CutEdges[edge]|=2;
@@ -438,6 +459,9 @@ internal static unsafe partial class KernelRuntime
         var arrangementError=ExtractSheetCycles(surface,ref model,halfedges[..nh],cycleCoedges,cycles,out var cycleCount,out var coedgeCount);
         if(arrangementError!=0)return arrangementError;
         return PublishFiniteSheetCycles(surface,sense,face,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],plane,borrowGeometry);
+
+        static bool HasCutEnd(ref SheetArrangement graph,CurveTag carrier,BoundaryEventId endpoint,double parameter)
+            =>endpoint>=0&&endpoint<graph.NP&&graph.KnownBoundaryParameter(endpoint,carrier,out var known)&&parameter>=known.Lower&&parameter<=known.Upper;
     }
 
     private static int ExtractSheetCycles(SurfTag surface,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,

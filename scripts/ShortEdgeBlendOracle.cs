@@ -89,6 +89,7 @@ var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
 var materialOwnership=args.Contains("--material-ownership");
 var requireNativeCutWitness=args.Contains("--require-native-cut-witness");
+var reloadBeforeLocalCut=args.Contains("--reload-before-local-cut");
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
 Require(floor==0&&phase==0&&!splitRemote&&!splitSelected&&!splitEllipse||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
@@ -102,6 +103,7 @@ Require(!materialOwnership||!args.Contains("--native-only")&&!args.Contains("--i
 Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"local cutter requires lifecycle mode");
 Require(!requireNativeCutWitness||transverseCut&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only"),
     "native cut witness requires the guarded transverse self lifecycle");
+Require(!reloadBeforeLocalCut||requireNativeCutWitness,"early XT reload requires a guarded transverse cut with native witnesses");
 Require(!mappedInput||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"transformed inputs cannot replace fixed fixtures or historical probe inputs");
 Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
     ||!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"parameter overrides cannot replace fixed fixtures or historical probe inputs");
@@ -130,6 +132,7 @@ using(host)unsafe
             if(splitFraction!=.5)name+=$"-at{splitFraction:R}";
             if(rotateMarks!=0)name+=$"-marks{rotateMarks:R}";
             if(localCut)name+=transverseCut?"-transverse-local-cut":"-local-cut";
+            if(reloadBeforeLocalCut)name+="-reload-before-cut";
             if(phase!=0)name+=$"-support-phase{phase:R}";
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
                 if(researchPrecision!=0)name+=$"-pk-precision{researchPrecision:R}";
@@ -213,7 +216,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))SelfGeometry(own,reference);
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -274,7 +277,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -288,6 +291,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Console.WriteLine($"LIFECYCLE {name} source_deleted=True copy={own}");
         Move(true,own,selfTransform);Move(false,native,pkTransform);
         failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale,materialOwnership);
+        if(reloadBeforeLocalCut)ReloadEditable(ref own,name+" before local cut");
         // The local variant crosses the native short ICurve interiors. Its
         // lower cap leaves the bottom connected; it is a notch, not a slab
         // cutting the whole solid into disconnected components.
@@ -314,9 +318,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         }
         else{own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
         failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership);
-        var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=0;own=Receive(true,reload);
-        Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),name+" reload must be editable");
-        Console.WriteLine($"LIFECYCLE {name} managed_reload=True body={own}");
+        ReloadEditable(ref own,name+" before second cut");
         var secondAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(0,2.5,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
@@ -330,22 +332,33 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
     }
     return failures;
 }
+static unsafe void ReloadEditable(ref int own,string label)
+{
+    var bytes=Transmit(true,own);var original=own;
+    Check(KernelRuntime.EntityDelete(1,&original),"delete product before managed XT reload");
+    own=0;own=Receive(true,bytes);
+    Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),label+" reload must be editable");
+    Console.WriteLine($"LIFECYCLE {label} managed_reload=True body={own}");
+}
 static int CutWithNativeWitness(int body,int tool)
 {
     var previous=KernelRuntime.TraceFiniteBoundary;
     var witnesses=new List<KernelRuntime.BoundaryTrace>();
+    var arranged=new HashSet<(int Carrier,int Event)>();
     var published=new HashSet<(int Carrier,int Event)>();
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
         previous?.Invoke(trace);
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator)witnesses.Add(trace);
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints)
+        {arranged.Add((trace.Curve,trace.StartEvent));arranged.Add((trace.Curve,trace.EndEvent));}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product)
         {published.Add((trace.Curve,trace.StartEvent));published.Add((trace.Curve,trace.EndEvent));}
     };
     int result;
     try{result=Cut(true,body,tool);}
     finally{KernelRuntime.TraceFiniteBoundary=previous;}
-    var consumed=witnesses.Where(x=>published.Contains((x.ProductCurve,x.StartEvent))).ToArray();
+    var consumed=witnesses.Where(x=>arranged.Contains((x.ProductCurve,x.StartEvent))&&published.Contains((x.ProductCurve,x.StartEvent))).ToArray();
     Require(consumed.All(x=>double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0)
         &&consumed.Select(x=>x.Curve).Distinct().Count()>=2&&consumed.Select(x=>x.StartEvent).Distinct().Count()>=2,
         "both short ICurve witnesses must reach published cut edges");

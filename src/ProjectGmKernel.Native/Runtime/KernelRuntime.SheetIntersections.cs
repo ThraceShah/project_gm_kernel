@@ -13,9 +13,14 @@ internal static unsafe partial class KernelRuntime
     private struct SheetCutCurve
     {
         internal CurveTag Curve;
+        // One-based event identities in the native increasing parameter
+        // direction. Zero leaves an untrimmed provider limit unassociated.
+        internal BoundaryEventId LowerEvent;
         internal double First, Last;
+        internal BoundaryEventId UpperEvent;
         internal byte Closed;
         internal byte KeepImprint;
+        internal byte NativeLocatorEnds;
     }
 
     private static int PrepareSheetCutCurves(SurfTag surface, SurfTag plane, Span<SheetCutCurve> cuts, out BufferCount count)
