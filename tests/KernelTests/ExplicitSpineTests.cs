@@ -33,6 +33,74 @@ public unsafe class ExplicitSpineTests:IDisposable
     }
 
     [Fact]
+    public void ReflectedFirstCutReloadsWithEveryPairedChartWitnessOnItsFiniteSupport()
+    {
+        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-small-rolling-first-cut.x_t"));
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var body));var witnesses=CheckWitnesses(body);CheckLiftedLineUses(body);
+        SessionMemoryOwner.DropBodyXt(KernelRuntime.ResolveTagRecord(body).Slot);
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(body),out var fresh));
+        Assert.Equal(witnesses,CheckWitnesses(fresh));CheckLiftedLineUses(fresh);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.Equal(0,KernelRuntime.EntityDelete(1,&fresh));
+        Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+
+        static int CheckWitnesses(int solid)
+        {
+            var slot=KernelRuntime.ResolveTagRecord(solid).Slot;Assert.False(KernelRuntime.Xt.IsOpaque(slot));
+            var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var count=0;
+            for(var e=0;e<KernelRuntime.Bodies[slot].EdgeCountBody;e++,edge=KernelRuntime.Edges[edge].NextInBody)
+            {
+                var record=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[edge].CurveTag)];
+                if(record.Class!=CurveClass.ICurve)continue;
+                var data=KernelRuntime.ICurveDataPool[record.DataIndex];if(data.ProgramBlock<=0||data.ChartCount<=128)continue;
+                Assert.Equal(IntersectionUvType.Both,data.UvType);Assert.Equal(4*data.ChartCount,data.UvValueCount);
+                var uv=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(data.UvValueBlock),data.UvValueCount);
+                var hull=new ReadOnlySpan<KernelVector3>(KernelRuntime.DereferenceBlock(data.HvecBlock),data.HvecCount);
+                for(var row=0;row<data.ChartCount;row++)for(var side=0;side<2;side++)
+                {
+                    var at=4*row+2*side;var parameter=new PK_UV_s();parameter.param[0]=uv[at];parameter.param[1]=uv[at+1];
+                    PK_VECTOR_s actual;Assert.Equal(0,KernelRuntime.SurfEval(side==0?data.Surface0Tag:data.Surface1Tag,parameter,0,0,0,&actual));
+                    var expected=hull[data.StartLimit.HvecCount+row];
+                    var distance=EvaluationMath.Sub(new KernelVector3{X=actual.coord[0],Y=actual.coord[1],Z=actual.coord[2]},expected);
+                    Assert.InRange(Math.Sqrt(EvaluationMath.Dot(distance,distance)),0,1e-8);
+                }
+                count+=data.UvValueCount;
+            }
+            Assert.True(count>512);return count;
+        }
+
+        static void CheckLiftedLineUses(int solid)
+        {
+            var slot=KernelRuntime.ResolveTagRecord(solid).Slot;var face=KernelRuntime.Bodies[slot].FirstFaceBody;var found=0;
+            for(var f=0;f<KernelRuntime.Bodies[slot].FaceCountBody;f++,face=KernelRuntime.Faces[face].NextInBody)
+            {
+                var record=KernelRuntime.Faces[face];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(record.SurfTag)];
+                if(surface.Class!=SurfaceClass.BlendSurface)continue;
+                var loop=record.FirstLoop;var fin=KernelRuntime.Loops[loop].FirstFin;
+                for(var k=0;k<KernelRuntime.Loops[loop].FinCount;k++,fin=KernelRuntime.Fins[fin].NextInLoop)
+                {
+                    var edge=KernelRuntime.Edges[KernelRuntime.Fins[fin].Edge];
+                    if(KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)].Class!=CurveClass.Line)continue;
+                    found++;
+                    var a=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[edge.StartVertex].PointTag)].Position;
+                    var b=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[edge.EndVertex].PointTag)].Position;
+                    for(var station=0;station<3;station++)
+                    {
+                        var point=new PK_VECTOR_s();var uv=new PK_UV_s();PK_VECTOR_s evaluated;
+                        var t=station*.5;
+                        point.coord[0]=(1-t)*a.X+t*b.X;point.coord[1]=(1-t)*a.Y+t*b.Y;point.coord[2]=(1-t)*a.Z+t*b.Z;
+                        Assert.Equal(0,KernelRuntime.SurfParameteriseVector(record.SurfTag,point,&uv));
+                        Assert.InRange(uv.param[0],surface.UMin,surface.UMax);Assert.InRange(uv.param[1],0,1);
+                        Assert.Equal(0,KernelRuntime.SurfEval(record.SurfTag,uv,0,0,0,&evaluated));
+                        var dx=point.coord[0]-evaluated.coord[0];var dy=point.coord[1]-evaluated.coord[1];var dz=point.coord[2]-evaluated.coord[2];
+                        Assert.InRange(Math.Sqrt(dx*dx+dy*dy+dz*dz),0,1e-8);
+                    }
+                }
+            }
+            Assert.Equal(2,found);
+        }
+    }
+
+    [Fact]
     public void ExactEllipseNativeParameterJetsAndCertifiedTubeAgree()
     {
         var body=Import();var data=Definition(body,out var surface);var program=KernelRuntime.GetNestedBlendProgram(data);var root=program.Surfaces[data.ProgramRoot];

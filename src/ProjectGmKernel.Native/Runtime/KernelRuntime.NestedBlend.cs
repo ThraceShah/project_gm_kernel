@@ -229,6 +229,9 @@ internal static unsafe partial class KernelRuntime
         if(Math.Abs(distance[0])>Geometry.Intersection.OperationIntersection.DistanceTolerance)return Computation.AlgorithmStatus.InvalidInput;
         var center=EvaluationMath.Sub(point,EvaluationMath.Scale(normal.Value,distance[0]+Math.Abs(root.Range0)*root.NormalSense));var vector=new PK_VECTOR_s();WriteVector(&vector,center);double parameter;
         var error=CurveParameteriseVectorCore(data.SpineTag,vector,&parameter);if(error!=0)return Computation.AlgorithmStatus.NotConverged;
+        // The conic inverse returns its natural chart. The normal-plane
+        // solve above used the finite blend chart, which can cross that seam.
+        LiftFiniteConicBlendParameter(surface,data.SpineTag,ref parameter);
         SurfaceDerivativeLayout.TryCreate(0,0,out var layout);Span<KernelVector3> start=stackalloc KernelVector3[1],end=stackalloc KernelVector3[1];
         status=JointNestedBlendEvaluation.Evaluate(program,data.ProgramRoot,parameter,0,layout,start);if(status!=Computation.AlgorithmStatus.Success)return status;
         status=JointNestedBlendEvaluation.Evaluate(program,data.ProgramRoot,parameter,1,layout,end);if(status!=Computation.AlgorithmStatus.Success)return status;
@@ -237,5 +240,13 @@ internal static unsafe partial class KernelRuntime
         var y=EvaluationMath.Scale(transverse,1/sine);var offset=EvaluationMath.Sub(point,center);var v=Math.Atan2(EvaluationMath.Dot(offset,y),EvaluationMath.Dot(offset,x))/Math.Atan2(sine,cosine);
         if(!double.IsFinite(v)||v< -1e-8||v>1+1e-8)return Computation.AlgorithmStatus.InvalidInput;
         uv.param[0]=parameter;uv.param[1]=Math.Clamp(v,0,1);return Computation.AlgorithmStatus.Success;
+    }
+
+    private static void LiftFiniteConicBlendParameter(in SurfaceRecord surface,CurveTag spine,ref double u)
+    {
+        if(!double.IsFinite(u)||u>=surface.UMin&&u<=surface.UMax||!(surface.UMax-surface.UMin<Math.Tau))return;
+        var slot=GetCurveSlotByTag(spine);if(slot<0||Curves[slot].Class is not (CurveClass.Circle or CurveClass.Ellipse))return;
+        var middle=surface.UMin+(surface.UMax-surface.UMin)*.5;var shifted=u+Math.Tau*Math.Round((middle-u)/Math.Tau);
+        if(shifted>=surface.UMin&&shifted<=surface.UMax)u=shifted;
     }
 }

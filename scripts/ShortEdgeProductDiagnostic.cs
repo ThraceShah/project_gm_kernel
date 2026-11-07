@@ -19,12 +19,20 @@ using(host)unsafe
         var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start));
         try
         {
-            var bytes=File.ReadAllBytes(ProductPath(prefix+"-self.x_t"));
+            var bytes=File.ReadAllBytes(ProductPath(prefix.EndsWith(".x_t",StringComparison.Ordinal)?prefix:prefix+"-self.x_t"));
             fixed(byte* p=bytes)
             {
                 var memory=new M.PK_MEMORY_block_s{bytes=p,n_bytes=(nuint)bytes.Length};var options=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};int count;int* parts;
                 var error=KernelRuntime.PartReceiveB(memory,&options,&count,&parts);Console.WriteLine($"managed self-product receive={error} parts={count}");Check(error);
-                try{for(var i=0;i<count;i++)Check(KernelRuntime.EntityDelete(1,parts+i));}finally{Check(KernelRuntime.MemoryFree(parts));}
+                try
+                {
+                    for(var i=0;i<count;i++)
+                    {
+                        var slot=KernelRuntime.ResolveTagRecord(parts[i]).Slot;Console.WriteLine($"managed self-product body={parts[i]} opaque={KernelRuntime.Xt.IsOpaque(slot)}");
+                        Check(KernelRuntime.EntityDelete(1,parts+i));
+                    }
+                }
+                finally{Check(KernelRuntime.MemoryFree(parts));}
             }
         }
         finally{Check(KernelRuntime.SessionStop());}

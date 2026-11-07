@@ -249,6 +249,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
         own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut");
         var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=0;own=Receive(true,reload);
+        Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),name+" reload must be editable");
         Console.WriteLine($"LIFECYCLE {name} managed_reload=True body={own}");
         var secondAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(0,2.5,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
