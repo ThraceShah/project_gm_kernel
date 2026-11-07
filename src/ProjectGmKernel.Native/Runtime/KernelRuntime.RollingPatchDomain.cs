@@ -86,7 +86,8 @@ internal static unsafe partial class KernelRuntime
         Span<RegularFaceCut> cuts,ref BufferCount cutCount,Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model)
     {
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-        Span<KernelVector3> point=stackalloc KernelVector3[1];
+        Span<KernelVector3> point=stackalloc KernelVector3[1],sectionPoint=stackalloc KernelVector3[1];
+        Span<BoundaryParameter> anchor=stackalloc BoundaryParameter[1];
         foreach(ref readonly var split in subdivisions)
         {
             var band=bands[split.Band];var at=split.Station;var face=sourceFaces+split.Band;
@@ -122,7 +123,6 @@ internal static unsafe partial class KernelRuntime
             }
             if(cutCount==cuts.Length||ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             var imprint=new SheetCutCurve{Curve=section,First=lower,Last=upper};
-            cuts[cutCount++]=new(){First=face,Second=-1,Cut=imprint};owned[ownedCount++]=imprint;
             var error=AssociateBoundaryCarrierSurface(ref model,section,band.Surface);if(error!=0)return error;
             for(var side=0;side<2;side++)
             {
@@ -135,10 +135,18 @@ internal static unsafe partial class KernelRuntime
                     parameter=(at-shift)/scale;angle=v==band.FirstSection?lower:upper;
                 }
                 var status=EvaluateCurveCore(in carrier,parameter,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                error=model.AddPoint(point[0],-1,out var endpoint);if(error!=0)return error;
+                status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(section)],angle,0,false,sectionPoint,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                if(ProfileDistance(point[0],sectionPoint[0])>model.Tolerance)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                anchor[0]=new(){Carrier=contact,Generation=carrier.Header.Generation,Parameter=parameter,Lower=parameter,Upper=parameter};
+                error=model.AddPoint(point[0],-1,out var endpoint,anchor,requireProof:true);if(error!=0)return error;
                 error=model.AssociateParameter(endpoint,contact,parameter);if(error!=0)return error;
                 error=model.AssociateParameter(endpoint,section,angle);if(error!=0)return error;
+                if(angle==lower&&imprint.LowerEvent==0){imprint.LowerEvent=endpoint+1;imprint.NativeLocatorEnds|=1;}
+                else if(angle==upper&&imprint.UpperEvent==0){imprint.UpperEvent=endpoint+1;imprint.NativeLocatorEnds|=2;}
+                else return ParasolidConstants.PK_ERROR_cant_do_intersect;
             }
+            if(imprint.NativeLocatorEnds!=3||imprint.LowerEvent==imprint.UpperEvent)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            cuts[cutCount++]=new(){First=face,Second=-1,Cut=imprint};owned[ownedCount++]=imprint;
             TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.Subdivision,Source=split.Before,Surface=band.Surface,Curve=section,Vertex=split.Vertex,
                 First=split.StationLower,Last=split.StationUpper,Relation=SurfacePairRelation.CurveContact});
         }

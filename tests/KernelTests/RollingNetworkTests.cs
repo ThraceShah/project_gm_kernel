@@ -85,6 +85,7 @@ public unsafe class RollingNetworkTests:IDisposable
         }
         EntityTag vertex;EdgeTag tail;Assert.Equal(0,KernelRuntime.EdgeSplitAtParam(selected[index],lo+(hi-lo)*.5,&vertex,&tail));selected[2]=tail;
         selected.Reverse();Mark(selected);
+        var trace=new List<KernelRuntime.BoundaryTrace>();KernelRuntime.TraceFiniteBoundary=trace.Add;
         var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;EntityTag* products;EntityTag* replaced;
         Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,&products,null,&replaced,&fault,&edgeFault,&topolFault));
         try
@@ -102,6 +103,10 @@ public unsafe class RollingNetworkTests:IDisposable
                 Assert.True(record.ParameterEnd>record.ParameterStart);Assert.NotEqual(KernelRuntime.Fins[first].Sense,KernelRuntime.Fins[second].Sense);
             }
             Assert.Equal(1,sections);
+            var witness=Assert.Single(trace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints);
+            Assert.True(witness.StartEvent>=0&&witness.EndEvent>=0&&witness.StartEvent!=witness.EndEvent&&witness.Last>witness.First);
+            Assert.Contains(trace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.Product&&x.Curve==witness.Curve&&x.Generation==witness.Generation
+                &&x.First==witness.First&&x.Last==witness.Last);
         }
         finally{KernelRuntime.MemoryFree(products);KernelRuntime.MemoryFree(replaced);}
         BooleanOperationTests.Counts(body,11,26,17);ShortIntervals(body);
