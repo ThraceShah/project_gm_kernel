@@ -48,6 +48,13 @@ using(host)unsafe
         if(scale!=1){ScaleBody(reference,scale);ScaleBody(actual,scale);}
         if(nativeGauge)TransformBody(actual,new PK_TRANSF_sf_t{matrixI0J2=1,matrixI1J0=1,matrixI2J1=1,matrixI3J3=1});
         if(args.Contains("--tight-precision"))Check(PK_SESSION_set_precision(1e-12));
+        var imprint=args.FirstOrDefault(x=>x.StartsWith("--imprint-x=",StringComparison.Ordinal));
+        if(imprint!=null)
+        {
+            if(nativeGauge||scale!=1)throw new ArgumentException("the common imprint uses the original product coordinates");
+            var x=double.Parse(imprint[12..],System.Globalization.CultureInfo.InvariantCulture);
+            ImprintPlane(reference,x,"reference");ImprintPlane(actual,x,"actual");
+        }
         var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c};double* a=stackalloc double[20];double* b=stackalloc double[20];
         var accuracy=args.Contains("--full-accuracy")?1:.99999999999;
         if(args.Contains("--faces")){FaceMass(reference,accuracy,options,a);FaceMass(actual,accuracy,options,b);}
@@ -133,6 +140,30 @@ static unsafe void FaceMass(int body,double accuracy,PK_TOPOL_eval_mass_props_o_
     int count;int* faces;Check(PK_BODY_ask_faces(body,&count,&faces));options.single=PK_LOGICAL_true;
     try{Check(PK_TOPOL_eval_mass_props(count,faces,accuracy,&options,output,output+2,output+4,output+8,output+18));}
     finally{Check(PK_MEMORY_free(faces));}
+}
+static unsafe void ImprintPlane(int body,double x,string label)
+{
+    var definition=new PK_PLANE_sf_t();definition.basis_set.location.coord[0]=x;
+    definition.basis_set.axis.coord[0]=1;definition.basis_set.ref_direction.coord[1]=1;
+    int plane;Check(PK_PLANE_create(&definition,&plane));
+    try
+    {
+        var options=new PK_BODY_imprint_plane_o_t();var tracking=new PK_TOPOL_track_r_t();
+        Check(PK_BODY_imprint_plane_2(body,plane,&options,&tracking));
+        try
+        {
+            var check=new PK_BODY_check_o_t{max_faults=100};int faults;PK_check_fault_t* details;
+            Check(PK_BODY_check(body,&check,&faults,&details));
+            try
+            {
+                Console.WriteLine($"NATIVE IMPRINT {label} plane_x={x:R} tracking={tracking.n_track_records} full_check_faults={faults}");
+                if(faults!=0||tracking.n_track_records==0)throw new InvalidOperationException("no valid native face subdivision");
+            }
+            finally{if(details!=null)Check(PK_MEMORY_free(details));}
+        }
+        finally{Check(PK_TOPOL_track_r_f(&tracking));}
+    }
+    finally{Check(PK_ENTITY_delete(1,&plane));}
 }
 static unsafe void ScaleBody(int body,double scale)
 {
