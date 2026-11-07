@@ -272,11 +272,13 @@ internal static unsafe partial class KernelRuntime
     {
         curve=0;lower=first;upper=last;
         if(!wrap)return TryCloneEntityCore(original,out curve);
+        LastSheetPartitionStage=SheetPartitionStage.PeriodicArc;LastSheetCurve=original;LastSheetParameter=first;
         var record=Curves[GetCurveSlotByTag(original)];
         if(record.Class is CurveClass.Circle or CurveClass.Ellipse)
         { upper=last+Math.Tau;return TryCloneEntityCore(original,out curve); }
         if(record.Class!=CurveClass.ICurve)return ParasolidConstants.PK_ERROR_not_implemented;
         var data=ICurveDataPool[record.DataIndex];
+        if(data.ProgramBlock>0)return CloneWrappedNestedIntersection(original,record,data,first,last,out curve,out lower,out upper);
         var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {

@@ -280,6 +280,8 @@ internal static unsafe partial class KernelRuntime
                 error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,input.Faces[second].Surface);if(error!=0)return error;
                 if(cut.Closed==0)for(var end=0;end<2;end++)
                 {
+                    LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=cut.Curve;
+                    LastSheetParameter=end==0?cut.First:cut.Last;
                     var sourceParameter=end==0?lo:hi;
                     var anchorCount=0;
                     if(!model.RequireBoundaryAssociations)for(var r=0;r<nRoots;r++)

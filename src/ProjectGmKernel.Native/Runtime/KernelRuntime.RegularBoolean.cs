@@ -65,7 +65,12 @@ internal static unsafe partial class KernelRuntime
                     if(relation!=SurfacePairRelation.CoincidentArea)
                     {
                         error=TryPrepareRegularContactSupportCuts(first,second,supportCuts,out n,supportPoints,out npContact,out relation,out var handled);if(error!=0)return error;
-                        if(!handled){error=PrepareRegularSupportCuts(first,second,supportCuts,out n);if(error!=0)return error;relation=n==0?SurfacePairRelation.Empty:SurfacePairRelation.RegularCurves;}
+                        if(!handled)
+                        {
+                            error=TryPrepareFiniteCylinderPlaneGenerators(inputFaces[..nf],sources[..nf],first,second,supportCuts,out n,out handled);if(error!=0)return error;
+                            if(!handled){error=PrepareRegularSupportCuts(first,second,supportCuts,out n);if(error!=0)return error;}
+                            relation=n==0?SurfacePairRelation.Empty:SurfacePairRelation.RegularCurves;
+                        }
                     }
                     if(familyCount==families.Length||ownedCount>owned.Length-n||contactPointCount>contactPoints.Length-npContact)return ParasolidConstants.PK_ERROR_not_implemented;
                     family=familyCount;families[familyCount++]=new(){First=first,Second=second,Start=ownedCount,Count=n,PointStart=contactPointCount,PointCount=npContact,Relation=relation};

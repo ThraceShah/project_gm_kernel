@@ -1,6 +1,6 @@
 # Finite analytic rolling candidates and interaction assembly
 
-Status: implementation in progress. Candidate geometry is not a completed solid fillet. The heterogeneous target still fails; current logs and accepted increments are recorded in `docs/reviews/advanced-modeling/topology-event-framework-acceptance.md`.
+Status: the heterogeneous provider publishes the short-edge solid and its independent Boolean results through the shared arrangement. The remaining acceptance gaps and exact test results are in `docs/reviews/advanced-modeling/topology-event-framework-acceptance.md`.
 
 ## Exact candidate providers
 
@@ -49,6 +49,14 @@ Finite explicit spines also persist their native terminators in `BlendedEdgeData
 For a finite procedural ICurve on a nonperiodic Blend, a vertical chart ray solves `u(t) - u_query = 0` in each original native CHART interval. The implicit tube provides the `u` and `du/dt` bounds from its supporting Blend station. The paired UV evaluator supplies `v(t)` at the isolated native root. This does not discover a new intersection on an untrimmed supporting surface. Native analytic ICurves adapted to the joint solver keep the native evaluator's original gauge as well.
 
 The replacement plan can retain a finite source-line carrier for an already selected implicit edge. This requires a surviving continuation of the same source line and a shared original face. The other finite endpoint is a previously computed event on a discarded source fragment. For the ICurve `C(t)` and original line `L(s) = O + s d`, interval bounds certify a constant nonzero sign of `C′(t)·d` over the complete trim. The normal deviation `|(C(t)−O)×d|/|d|` and the axial deviations at the paired finite ends bound both directions of coverage. The working pair-resolution is separate from stored entity precision. All surviving incident endpoints must pass the same bounded forward check before their common vertex moves. The plan retains the edge, its two opposite uses, and the source line's native limits; the solver does not collapse edges by length.
+
+### Finite near-parallel cylinder/plane cuts
+
+`TryPrepareFiniteCylinderPlaneGenerators` uses the union of the certified finite axial intervals of all occurrences that share the cylinder carrier. On that interval the plane equation is `h + d*v + r*(a*cos(u) + b*sin(u)) = 0`, where `d` is the plane-normal projection of the cylinder axis and `(a,b)` are the projections of its radial frame. Set `A = r*sqrt(a² + b²)` and `q(v) = -(h + d*v)/A`. If the entire outward interval for `q` is strictly inside `(-1,1)`, there are exactly two angular branches at every finite `v`. Their rate is bounded by `abs(d)/(A*sqrt(1-q²))`. The provider encloses both midpoint anchors and bounds their full branch displacement in space. It emits two finite generators only when both enclosures fit the binary64 frame arithmetic bound, additionally capped at one sixteenth of the existing pair resolution. A real tilt outside that bound still needs the ordinary intersection provider; a possible tangency or unresolved interval cannot be treated as two branches or as empty. The arrangement still clips against the actual loops of each occurrence. A procedural ICurve on a cylinder can supply an axial boundary enclosure from its certified native curve tube.
+
+### Closed procedural intersection arcs
+
+When an actual trim crosses the CHART seam of a closed ICurve, `CloneWrappedNestedIntersection` extracts the two contiguous windows of original cells. The seam must have a duplicate physical anchor and matching witnesses on both supports, after the recognized analytic period lifts and a native parameter roundoff check. The outgoing cell uses the original first chart's witness. Rebuilding the native recurrence must reproduce each original chord exactly. On each cell the original station equation fixes chord distance `(t − T)/scale`; the rebuilt trim therefore uses `T_new + (t_old − T_old)*scale_new/scale_old`. Adding a constant period to `t` would lose this relation when the scale changes around the closed loop. The open result owns cloned supports and paired UV; no fit, new physical seam edge, or prior command state is needed. Unrecognized seams and longer windows remain explicitly unsupported.
 
 ## Next assembly work
 

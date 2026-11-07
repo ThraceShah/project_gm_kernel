@@ -139,7 +139,7 @@ internal static unsafe partial class KernelRuntime
                 ambiguous|=index>=0;index=i;
             }
             if(proven>=0){index=proven;return 0;}
-            if(ambiguous)return ParasolidConstants.PK_ERROR_not_implemented;
+            if(ambiguous){LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;return ParasolidConstants.PK_ERROR_cant_do_intersect;}
             if(index>=0)return 0;
             if(NP==Points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             index=NP;OriginalVertices[NP]=original;if(!VertexPrecisions.IsEmpty)VertexPrecisions[NP]=original>=0?Vertices[original].Tolerance:0;if(!VertexMergeCandidates.IsEmpty)VertexMergeCandidates[NP]=0;Points[NP++]=point;return 0;

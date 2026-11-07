@@ -52,6 +52,73 @@ internal static unsafe partial class KernelRuntime
         return bound.Finite&&(bound.Lower>tolerance||bound.Upper< -tolerance);
     }
 
+    // The infinite near-parallel conic has an ill-conditioned centre. Over
+    // the finite cylinder occurrence, solve h+d*v+r*(a*cos(u)+b*sin(u))=0.
+    // A strict cosine range proves exactly two branches for every height.
+    // Use a generator carrier only when the complete branch motion and its
+    // anchor enclosure fit the arithmetic error of the input frame.
+    private static int TryPrepareFiniteCylinderPlaneGenerators(ReadOnlySpan<ModelingFace> faces,ReadOnlySpan<FaceSlot> sources,
+        SurfTag first,SurfTag second,Span<SheetCutCurve> cuts,out BufferCount count,out bool handled)
+    {
+        count=0;handled=false;var a=Surfaces[GetSurfaceSlotByTag(first)];var b=Surfaces[GetSurfaceSlotByTag(second)];
+        if(!(a.Class==SurfaceClass.Cylinder&&b.Class==SurfaceClass.Plane||a.Class==SurfaceClass.Plane&&b.Class==SurfaceClass.Cylinder))return 0;
+        if(!TryPrepareSurface(a,out var av)||!TryPrepareSurface(b,out var bv))return 0;
+        var reverse=av.Kind==SurfaceClass.Plane&&bv.Kind==SurfaceClass.Cylinder;
+        var cylinder=reverse?bv:av;var plane=reverse?av:bv;
+        if(cylinder.Kind!=SurfaceClass.Cylinder||plane.Kind!=SurfaceClass.Plane)return 0;
+        var tilt=Math.Abs(Dot(cylinder.Axis,plane.Axis));if(tilt==0||tilt>OperationIntersection.AngularTolerance)return 0;
+        var cylinderTag=reverse?second:first;IntervalNumber height=default;var haveRange=false;
+        for(var f=0;f<faces.Length;f++)if(faces[f].Surface==cylinderTag)
+        {
+            if(CertifiedCylindricalFaceAxialRange(sources[f],out _,out var local,out _)!=AlgorithmStatus.Success)return 0;
+            height=haveRange?IntervalNumber.Hull(height,local):local;haveRange=true;
+        }
+        if(!haveRange)return 0;
+        var axis=new IntervalVector(cylinder.Axis);var normal=new IntervalVector(plane.Axis);
+        var x=new IntervalVector(cylinder.X);var y=new IntervalVector(cylinder.Y);var origin=new IntervalVector(cylinder.Origin);
+        var dx=IntervalVector.Dot(x,normal).Value;var dy=IntervalVector.Dot(y,normal).Value;
+        var rho=IntervalDual.Sqrt(new IntervalDual(IntervalNumber.Square(dx)+IntervalNumber.Square(dy),0)).Value;
+        var amplitude=rho*cylinder.Radius;if(!(amplitude.Lower>0))return 0;
+        var h=IntervalVector.Dot(origin-new IntervalVector(plane.Origin),normal).Value;
+        var d=IntervalVector.Dot(axis,normal).Value;var ratio=-(h+d*height)/amplitude;
+        if(!ratio.Finite||!(ratio.Magnitude<1))return 0;
+        var gap=IntervalDual.Sqrt(new IntervalDual(1-IntervalNumber.Square(ratio),0)).Value;
+        if(!(gap.Lower>0))return 0;
+        var station=height.Midpoint;var delta=height-station;
+        var drift=(new IntervalNumber(d.Magnitude)*delta.Magnitude/(amplitude*gap)
+            *cylinder.Radius*(x.Norm().Value+y.Norm().Value)).Upper;
+        var level=-(h+d*station)/amplitude;var sine=IntervalDual.Sqrt(new IntervalDual(1-IntervalNumber.Square(level),0)).Value;
+        var center=origin+axis*new IntervalDual(station,0);
+        var roundoff=(64*SmallLinearSolve.MachineEpsilon*(origin.Norm().Value+new IntervalVector(plane.Origin).Norm().Value
+            +height.Magnitude+cylinder.Radius)).Upper;
+        var limit=Math.Min(roundoff,OperationIntersection.DistanceTolerance/16);if(!(limit>0)||!(drift<limit))return 0;
+        Span<KernelVector3> anchors=stackalloc KernelVector3[2];Span<KernelSense> senses=stackalloc KernelSense[2];
+        for(var i=0;i<2;i++)
+        {
+            var sign=i==0?1:-1;
+            var c=(level*dx-sign*sine*dy)/rho;var s=(level*dy+sign*sine*dx)/rho;
+            var anchor=center+(x*new IntervalDual(c,0)+y*new IntervalDual(s,0))*cylinder.Radius;
+            var point=new KernelVector3{X=anchor.X.Value.Midpoint,Y=anchor.Y.Value.Midpoint,Z=anchor.Z.Value.Midpoint};
+            if(((anchor-new IntervalVector(point)).Norm().Value+drift).Upper>=limit)return 0;
+            if(AnalyticImplicitEvaluation.Evaluate(av,point,1,out var ga)!=AlgorithmStatus.Success
+                ||AnalyticImplicitEvaluation.Evaluate(bv,point,1,out var gb)!=AlgorithmStatus.Success)return 0;
+            var turn=Dot(ProfileCross(ga.Gradient,gb.Gradient),cylinder.Axis)*LocalSenseSign(a.Sense)*LocalSenseSign(b.Sense);
+            if(turn==0||!double.IsFinite(turn))return 0;
+            anchors[i]=point;senses[i]=turn>0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c;
+        }
+        handled=true;if(cuts.Length<2)return ParasolidConstants.PK_ERROR_not_implemented;
+        for(var i=0;i<2;i++)
+        {
+            var p=anchors[i];var curve=CreateLineCurveTag(p.X,p.Y,p.Z,cylinder.Axis.X,cylinder.Axis.Y,cylinder.Axis.Z);
+            if(curve<=0)return ParasolidConstants.PK_ERROR_memory_full;
+            ref var record=ref Curves[GetCurveSlotByTag(curve)];record.Sense=senses[i];
+            ref var line=ref LineDataPool[record.DataIndex];
+            line.AxisX=cylinder.Axis.X;line.AxisY=cylinder.Axis.Y;line.AxisZ=cylinder.Axis.Z;
+            cuts[count++]=new(){Curve=curve,First=delta.Lower,Last=delta.Upper};
+        }
+        return 0;
+    }
+
     private static AlgorithmStatus CertifiedCylindricalFaceAxialRange(FaceSlot face,out AnalyticSurface cylinder,out IntervalNumber height,out double tolerance)
     {
         cylinder=default;height=default;tolerance=0;if(face<0||!Faces.IsAlive(face))return AlgorithmStatus.InvalidInput;
@@ -81,12 +148,25 @@ internal static unsafe partial class KernelRuntime
             {
                 var edgeSlot=Fins[fin].Edge;if(edgeSlot<0)return AlgorithmStatus.Unsupported;var edge=Edges[edgeSlot];
                 if(!TryProfileEdgeRange(edge,out var lo,out var hi))return AlgorithmStatus.Unsupported;
-                var interval=new PK_INTERVAL_s();interval.value[0]=lo;interval.value[1]=hi;
-                if(ResolveIntersectionCurve(edge.CurveTag,interval,out var curve)!=0)return AlgorithmStatus.Unsupported;
-                var count=GeneralCurvePieceCount(curve);if(count<=0)return AlgorithmStatus.Unsupported;
                 tolerance=Math.Max(tolerance,edge.Tolerance);
                 if(edge.StartVertex>=0)tolerance=Math.Max(tolerance,Vertices[edge.StartVertex].Tolerance);
                 if(edge.EndVertex>=0)tolerance=Math.Max(tolerance,Vertices[edge.EndVertex].Tolerance);
+                var carrierSlot=GetCurveSlotByTag(edge.CurveTag);if(carrierSlot<0)return AlgorithmStatus.Unsupported;
+                if(Curves[carrierSlot].Class==CurveClass.ICurve)
+                {
+                    var owns=EnsureCommandScratch();IntervalBox3 box;AlgorithmStatus certified;
+                    try{certified=CertifiedIntersectionCurveExtent(edge.CurveTag,lo,hi,out box);}
+                    finally{if(owns)ReleaseCommandScratch(State.Session);}
+                    if(certified!=AlgorithmStatus.Success)return certified;
+                    var value=((new IntervalNumber(box.XLo,box.XHi)-cylinder.Origin.X)*nx
+                        +(new IntervalNumber(box.YLo,box.YHi)-cylinder.Origin.Y)*ny
+                        +(new IntervalNumber(box.ZLo,box.ZHi)-cylinder.Origin.Z)*nz)/denominator;
+                    if(!value.Finite)return AlgorithmStatus.NotConverged;
+                    height=first?value:IntervalNumber.Hull(height,value);first=false;haveCurve=true;continue;
+                }
+                var interval=new PK_INTERVAL_s();interval.value[0]=lo;interval.value[1]=hi;
+                if(ResolveIntersectionCurve(edge.CurveTag,interval,out var curve)!=0)return AlgorithmStatus.Unsupported;
+                var count=GeneralCurvePieceCount(curve);if(count<=0)return AlgorithmStatus.Unsupported;
                 for(var piece=0;piece<count;piece++)
                 {
                     var status=GeneralCurvePiece(curve,piece,poles,out var degree,out var domain,out var a,out var b);if(status!=AlgorithmStatus.Success)return status;if(!(b>a))continue;
