@@ -3,6 +3,8 @@ using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -13,9 +15,48 @@ internal static unsafe partial class KernelRuntime
     // image is enclosed by the entire cross-sectional disk, including seams.
     internal static AlgorithmStatus CertifiedCylindricalFaceExtent(FaceSlot face,out IntervalBox3 extent)
     {
-        extent=default;if(face<0||!Faces.IsAlive(face))return AlgorithmStatus.InvalidInput;
+        extent=default;
+        var status=CertifiedCylindricalFaceAxialRange(face,out var cylinder,out var height,out var tolerance);
+        if(status!=AlgorithmStatus.Success)return status;
+        var x=cylinder.X;var y=cylinder.Y;var axis=cylinder.Axis;
+        Span<IntervalNumber> coordinates=stackalloc IntervalNumber[3];
+        for(var d=0;d<3;d++)
+        {
+            var xx=d==0?x.X:d==1?x.Y:x.Z;var yy=d==0?y.X:d==1?y.Y:y.Z;
+            var square=IntervalNumber.Square(new(xx))+IntervalNumber.Square(new(yy));
+            var radius=xx==0&&yy==0?0:Math.BitIncrement(Math.Sqrt(square.Upper));var radial=(new IntervalNumber(cylinder.Radius)*radius+tolerance).Upper;
+            var origin=d==0?cylinder.Origin.X:d==1?cylinder.Origin.Y:cylinder.Origin.Z;var direction=d==0?axis.X:d==1?axis.Y:axis.Z;
+            coordinates[d]=new IntervalNumber(origin)+height*direction+new IntervalNumber(-radial,radial);if(!coordinates[d].Finite)return AlgorithmStatus.NotConverged;
+        }
+        extent=new(coordinates[0].Lower,coordinates[0].Upper,coordinates[1].Lower,coordinates[1].Upper,coordinates[2].Lower,coordinates[2].Upper);return AlgorithmStatus.Success;
+    }
+
+    // A near-orthogonal axis can intersect the infinite plane at an
+    // arbitrarily distant station. Test the finite axial range directly;
+    // the plane normal's projection of the full radial disk is bounded.
+    internal static bool RegularCylinderFaceSeparatedFromPlane(FaceSlot face,SurfTag other,double tolerance)
+    {
+        var slot=GetSurfaceSlotByTag(Faces[face].SurfTag);var planeSlot=GetSurfaceSlotByTag(other);
+        if(slot<0||planeSlot<0)return false;
+        if(Surfaces[slot].Class!=SurfaceClass.Cylinder||Surfaces[planeSlot].Class!=SurfaceClass.Plane
+            ||!TryPrepareSurface(Surfaces[slot],out var cylinder)||!TryPrepareSurface(Surfaces[planeSlot],out var plane))return false;
+        var tilt=Math.Abs(Dot(cylinder.Axis,plane.Axis));if(tilt==0||tilt>OperationIntersection.AngularTolerance)return false;
+        if(CertifiedCylindricalFaceAxialRange(face,out cylinder,out var height,out var precision)!=AlgorithmStatus.Success)return false;
+        var n=new IntervalVector(plane.Axis);var x=IntervalVector.Dot(n,new IntervalVector(cylinder.X)).Value;
+        var y=IntervalVector.Dot(n,new IntervalVector(cylinder.Y)).Value;
+        var radial=Math.BitIncrement(Math.Sqrt((IntervalNumber.Square(x)+IntervalNumber.Square(y)).Upper));
+        var margin=(new IntervalNumber(cylinder.Radius)*radial+new IntervalNumber(precision)*n.Norm().Value).Upper;
+        var distance=IntervalVector.Dot(n,new IntervalVector(cylinder.Origin)-new IntervalVector(plane.Origin)).Value
+            +height*IntervalVector.Dot(n,new IntervalVector(cylinder.Axis)).Value;
+        var bound=distance+new IntervalNumber(-margin,margin);
+        return bound.Finite&&(bound.Lower>tolerance||bound.Upper< -tolerance);
+    }
+
+    private static AlgorithmStatus CertifiedCylindricalFaceAxialRange(FaceSlot face,out AnalyticSurface cylinder,out IntervalNumber height,out double tolerance)
+    {
+        cylinder=default;height=default;tolerance=0;if(face<0||!Faces.IsAlive(face))return AlgorithmStatus.InvalidInput;
         var slot=GetSurfaceSlotByTag(Faces[face].SurfTag);
-        if(slot<0||!TryPrepareSurface(Surfaces[slot],out var cylinder)||cylinder.Kind!=SurfaceClass.Cylinder||!double.IsFinite(cylinder.Radius)||cylinder.Radius<=0)return AlgorithmStatus.Unsupported;
+        if(slot<0||!TryPrepareSurface(Surfaces[slot],out cylinder)||cylinder.Kind!=SurfaceClass.Cylinder||!double.IsFinite(cylinder.Radius)||cylinder.Radius<=0)return AlgorithmStatus.Unsupported;
         // Use a dual of the stored radial frame rather than assuming rounded
         // axis/reference data are exactly unit and orthogonal.
         var x=cylinder.X;var y=cylinder.Y;var axis=cylinder.Axis;
@@ -25,7 +66,7 @@ internal static unsafe partial class KernelRuntime
         var denominator=nx*axis.X+ny*axis.Y+nz*axis.Z;
         if(!denominator.Finite||denominator.Lower<=0)return AlgorithmStatus.Unsupported;
         Span<IntervalNumber> poles=stackalloc IntervalNumber[4*17],restricted=stackalloc IntervalNumber[4*17];
-        IntervalNumber height=default;var first=true;var haveCurve=false;var tolerance=Math.Max(Geometry.Intersection.OperationIntersection.DistanceTolerance,Faces[face].Tolerance);
+        var first=true;var haveCurve=false;tolerance=Math.Max(OperationIntersection.DistanceTolerance,Faces[face].Tolerance);
         var loop=Faces[face].FirstLoop;
         for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
         {
@@ -64,15 +105,6 @@ internal static unsafe partial class KernelRuntime
         var normalSquare=IntervalNumber.Square(nx)+IntervalNumber.Square(ny)+IntervalNumber.Square(nz);
         var margin=new IntervalNumber(tolerance)*Math.BitIncrement(Math.Sqrt(normalSquare.Upper))/denominator;
         if(!margin.Finite)return AlgorithmStatus.NotConverged;height+=new IntervalNumber(-margin.Upper,margin.Upper);
-        Span<IntervalNumber> coordinates=stackalloc IntervalNumber[3];
-        for(var d=0;d<3;d++)
-        {
-            var xx=d==0?x.X:d==1?x.Y:x.Z;var yy=d==0?y.X:d==1?y.Y:y.Z;
-            var square=IntervalNumber.Square(new(xx))+IntervalNumber.Square(new(yy));
-            var radius=xx==0&&yy==0?0:Math.BitIncrement(Math.Sqrt(square.Upper));var radial=(new IntervalNumber(cylinder.Radius)*radius+tolerance).Upper;
-            var origin=d==0?cylinder.Origin.X:d==1?cylinder.Origin.Y:cylinder.Origin.Z;var direction=d==0?axis.X:d==1?axis.Y:axis.Z;
-            coordinates[d]=new IntervalNumber(origin)+height*direction+new IntervalNumber(-radial,radial);if(!coordinates[d].Finite)return AlgorithmStatus.NotConverged;
-        }
-        extent=new(coordinates[0].Lower,coordinates[0].Upper,coordinates[1].Lower,coordinates[1].Upper,coordinates[2].Lower,coordinates[2].Upper);return AlgorithmStatus.Success;
+        return height.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 }

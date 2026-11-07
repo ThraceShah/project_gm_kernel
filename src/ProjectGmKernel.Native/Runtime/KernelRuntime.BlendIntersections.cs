@@ -12,7 +12,7 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     private static AlgorithmStatus DiscoverBlendIntersections(SurfaceSlot first,SurfaceSlot second,PK_SURF_intersect_surf_o_s* options,
-        Span<SurfaceIntersectionNode> nodes,out BufferCount nn,Span<SurfaceIntersectionSegment> edges,out BufferCount ne)
+        Span<SurfaceIntersectionNode> nodes,out BufferCount nn,Span<SurfaceIntersectionSegment> edges,out BufferCount ne,bool singleGauge=false)
     {
         nn=ne=0;if(options!=null&&options->have_box!=0)return AlgorithmStatus.Unsupported;
         var reverse=Surfaces[first].Class!=SurfaceClass.BlendSurface;var a=Surfaces[reverse?second:first];var b=Surfaces[reverse?first:second];
@@ -38,9 +38,15 @@ internal static unsafe partial class KernelRuntime
             var count=implicitAnalytic?1:analytic?AnalyticBezierPatches.Count(support):otherBlend?otherCharts.Length-1:(bv.UVertexCount-bv.UDegree)*(bv.VVertexCount-bv.VDegree);
             BufferCount remaining=ParametricSurfaceIntersection.MaxCells;
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],clipped=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
-            for(var i=0;i<charts.Length-1;i++)
+            // An explicit spine has a single analytic gauge. Its auxiliary
+            // samples do not divide the native parameter domain. Treating a
+            // sample as an SSI boundary can turn a regular graph through a
+            // tangency to that artificial section into a rank-deficient edge
+            // root. The interval patch still encloses the complete domain.
+            var explicitPlane=implicitAnalytic&&support.Kind==SurfaceClass.Plane&&SpineParameterMap.Explicit(definition);
+            for(var i=0;i<(singleGauge?1:charts.Length-1);i++)
             {
-                var lo=Math.Max(domain.U0,charts[i].Parameter);var hi=Math.Min(domain.U1,charts[i+1].Parameter);if(!(hi>lo))continue;
+                var lo=Math.Max(domain.U0,charts[i].Parameter);var hi=Math.Min(domain.U1,charts[singleGauge?charts.Length-1:i+1].Parameter);if(!(hi>lo))continue;
                 var patch=new SurfaceIntersectionPatch(program,data.ProgramRoot,new(lo,hi,domain.V0,domain.V1));
                 patch=new(patch,a.Header.Tag,a.Header.Generation,a.Sense);
                 if(analytic&&!implicitAnalytic)
@@ -76,7 +82,16 @@ internal static unsafe partial class KernelRuntime
                     var ln=0;var le=0;status=implicitAnalytic
                         ?SurfacePlaneIntersection.Find(patch,support,localNodes,ref ln,localEdges,ref le,ref remaining,deferIsolatedPoints:true,
                             tolerance:support.Kind==SurfaceClass.Plane?1e-10:ICurveEvaluation.ResidualTolerance,strictSeparation:support.Kind!=SurfaceClass.Plane)
-                        :ParametricSurfaceIntersection.FindProcedural(patch,other,localNodes,ref ln,localEdges,ref le,ref remaining);if(status!=AlgorithmStatus.Success)return status;
+                        :ParametricSurfaceIntersection.FindProcedural(patch,other,localNodes,ref ln,localEdges,ref le,ref remaining);
+                    if(status==AlgorithmStatus.NotConverged&&explicitPlane&&!singleGauge&&charts.Length>2)
+                    {
+                        // Discard the partial discovery graph and retry the
+                        // same finite mathematical domain without the sample
+                        // partition. Nothing from the failed proof is used.
+                        CommandScratch.ThreadArenaOffset=checkpoint;
+                        return DiscoverBlendIntersections(first,second,options,nodes,out nn,edges,out ne,singleGauge:true);
+                    }
+                    if(status!=AlgorithmStatus.Success)return status;
                     for(var k=0;k<ln;k++)
                     {
                         if(analytic){status=OperationIntersection.Parameters(support,localNodes[k].Point,out localNodes[k].S,out localNodes[k].T);if(status!=AlgorithmStatus.Success)return status;}

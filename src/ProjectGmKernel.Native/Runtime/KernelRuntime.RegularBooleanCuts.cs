@@ -154,9 +154,22 @@ internal static unsafe partial class KernelRuntime
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(curve.Curve,curve.First,curve.Last,ref t);
                 if(!OperationIntersection.InInterval(t,curve.First,curve.Last))continue;
-                rootParameters[i]=Math.Clamp(t,curve.First,curve.Last);
-                var duplicate=false;for(var j=0;j<n;j++)duplicate|=Math.Abs(parameters[j]-t)<1e-10;
-                if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n++]=Math.Clamp(t,curve.First,curve.Last);}
+                t=Math.Clamp(t,curve.First,curve.Last);rootParameters[i]=t;
+                var duplicate=false;
+                for(var j=0;j<n;j++)
+                {
+                    if(Math.Abs(parameters[j]-t)>=1e-10)continue;
+                    if(model.RequireBoundaryAssociations&&roots[i].Certified!=0&&parameters[j]!=t)
+                    {
+                        if(!CertifiedRootMatchesCutAnchor(roots[i],curve.Curve,parameters[j],point))continue;
+                        // Keep the source-root proof on the retained native
+                        // anchor. Losing it leaves a rounded tangent looking
+                        // like a transverse halfedge in the arrangement.
+                        rootParameters[i]=parameters[j];
+                    }
+                    duplicate=true;break;
+                }
+                if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n++]=t;}
             }
             parameters[..n].Sort();var intervals=curve.Closed!=0?Math.Max(1,n):n-1;
             for(var i=0;i<intervals;i++)
@@ -223,6 +236,21 @@ internal static unsafe partial class KernelRuntime
             }
         }
         return 0;
+    }
+
+    private static bool CertifiedRootMatchesCutAnchor(in RegularBoundaryRoot root,CurveTag cut,double parameter,Span<KernelVector3> point)
+    {
+        if(root.Curve==cut)return parameter>=root.Root.Lower&&parameter<=root.Root.Upper;
+        if(EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut)],parameter,0,false,point,out _)!=AlgorithmStatus.Success
+            ||!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(root.Curve)],out var source))return false;
+        var p=new IntervalVector(point[0]);var q=new IntervalVector(root.Root.Point);
+        var roundoff=(32*SmallLinearSolve.MachineEpsilon*(p.Norm().Value+q.Norm().Value+new IntervalVector(source.Origin).Norm().Value
+            +new IntervalVector(source.First).Norm().Value+new IntervalVector(source.Second).Norm().Value)).Upper;
+        if((p-q).Norm().Value.Upper>roundoff)return false;
+        var vector=new PK_VECTOR_s();WriteVector(&vector,point[0]);double native;
+        if(CurveParameteriseVectorCore(root.Curve,vector,&native)!=0)return false;
+        LiftPeriodicEdgeParameter(root.Curve,root.Root.Lower,root.Root.Upper,ref native);
+        return native>=root.Root.Lower&&native<=root.Root.Upper;
     }
 
     private static int FiniteBoundarySurfaceParameters(SurfTag surface,CurveTag curve,double parameter,in KernelVector3 point,out PK_UV_s uv)

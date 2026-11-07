@@ -31,6 +31,17 @@ public unsafe class CylindricalFaceExtentTests:IDisposable
         Assert.Equal(AlgorithmStatus.Success,KernelRuntime.CertifiedCylindricalFaceExtent(face,out var box));Assert.True(box.ZLo<=-1&&box.ZHi>=2&&box.XLo<=-1&&box.XHi>=1&&box.YLo<=-1&&box.YHi>=1);
     }
 
+    [Theory]
+    [InlineData(2.0,true)]
+    [InlineData(0.5,false)]
+    public void NearlyParallelPlaneSeparationUsesTheCompleteFiniteCylinder(double offset,bool separated)
+    {
+        var face=Face(Sheet(0,Math.PI*.5,-1,2));var sf=new PK_PLANE_sf_s();
+        sf.basis_set.location.coord[0]=offset;sf.basis_set.axis.coord[0]=1;sf.basis_set.axis.coord[2]=5e-13;
+        sf.basis_set.ref_direction.coord[1]=1;int plane;Assert.Equal(0,KernelRuntime.PlaneCreate(&sf,&plane));
+        Assert.Equal(separated,KernelRuntime.RegularCylinderFaceSeparatedFromPlane(face,plane,1e-8));
+    }
+
     [Fact]
     public void RationalBoundaryInteriorAxialExtremumIsNotBoundByItsVertices()
     {

@@ -282,6 +282,31 @@ internal static class ParametricSurfaceIntersection
                     continue;
                 }
             }
+            else if(first.IsProcedural||second.IsProcedural)
+            {
+                // Even without a contraction proof the interval Newton
+                // image encloses every root in this cell. Use it to reject
+                // or contract the finite box; existence is still established
+                // by the unchanged strict inclusion test above.
+                var center=new ParameterCell{Lower=point,Upper=point};
+                status=Bounds(first,second,center,centerF,centerJac);
+                if(status!=AlgorithmStatus.Success&&status!=AlgorithmStatus.NotConverged)return status;
+                if(status==AlgorithmStatus.Success&&Invert(centerJac,axes,inverse))
+                {
+                    var retained=cell;var shrink=false;var empty=false;
+                    for(var r=0;r<3;r++)
+                    {
+                        var axis=axes[r];var image=IsolatedRootImage(point,cell,axes,inverse,centerF,jac,r);
+                        var lo=Math.Max(cell.Lower.Parameter(axis),image.Lower);var hi=Math.Min(cell.Upper.Parameter(axis),image.Upper);
+                        if(hi<lo){empty=true;break;}
+                        if(!double.IsFinite(lo)||!double.IsFinite(hi))break;
+                        retained.Lower.SetParameter(axis,lo);retained.Upper.SetParameter(axis,hi);
+                        shrink|=hi-lo<.5*cell.Width(axis);
+                    }
+                    if(empty)continue;
+                    if(shrink&&cell.Depth<64){retained.Depth++;pending[count++]=retained;continue;}
+                }
+            }
             Subdivide:
             // A shallow rolling contact may require smaller parameter boxes
             // before the same Krawczyk test contracts. More subdivision does
@@ -301,6 +326,20 @@ internal static class ParametricSurfaceIntersection
             pending[count++] = right; pending[count++] = cell;
         }
         return AlgorithmStatus.Success;
+    }
+
+    private static IntervalNumber IsolatedRootImage(in SurfaceIntersectionNode point,in ParameterCell box,ReadOnlySpan<BufferOffset> axes,
+        ReadOnlySpan<double> inverse,ReadOnlySpan<IntervalNumber> f,ReadOnlySpan<IntervalNumber> jac,BufferOffset row)
+    {
+        IntervalNumber image=point.Parameter(axes[row]);
+        for(var k=0;k<3;k++)image-=inverse[3*row+k]*f[k];
+        for(var c=0;c<3;c++)
+        {
+            IntervalNumber value=row==c?1:0;
+            for(var k=0;k<3;k++)value-=inverse[3*row+k]*jac[4*k+axes[c]];
+            var axis=axes[c];image+=value*(new IntervalNumber(box.Lower.Parameter(axis),box.Upper.Parameter(axis))-point.Parameter(axis));
+        }
+        return image;
     }
 
     private static void Axes(BufferOffset excluded, Span<BufferOffset> axes)

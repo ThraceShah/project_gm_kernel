@@ -56,6 +56,8 @@ internal static unsafe partial class KernelRuntime
                 if(RegularPlaneFacesSeparated(input,a,b,model.Tolerance))continue;
                 if(RegularNaturalNurbsSeparatedFromPlane(input,a,b,model.Tolerance)||RegularNaturalNurbsSeparatedFromPlane(input,b,a,model.Tolerance))continue;
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
+                if(RegularCylinderFaceSeparatedFromPlane(sources[a],second,model.Tolerance)
+                    ||RegularCylinderFaceSeparatedFromPlane(sources[b],first,model.Tolerance))continue;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
                 if(family<0)
                 {

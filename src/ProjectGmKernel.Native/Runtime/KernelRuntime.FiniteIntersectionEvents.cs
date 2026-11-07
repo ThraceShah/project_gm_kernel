@@ -133,7 +133,8 @@ internal static unsafe partial class KernelRuntime
                         if(original[e]<0)return Generated.ParasolidConstants.PK_ERROR_bad_loop;
                         var edge=input.Edges[e];interval.value[0]=edge.Start;interval.value[1]=edge.End;
                         resolved=ResolveIntersectionCurve(edge.Curve,interval,out var span);if(resolved!=0)return resolved;
-                        var status=IntersectCurveSpans(span,contactSpan,roots,out var n);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                        LastSheetPartitionStage=SheetPartitionStage.BoundaryIntersections;LastSheetCurve=edge.Curve;LastSheetParameter=edge.Start;
+                        var status=IntersectCurveSpans(span,contactSpan,roots,out var n);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                         if(n>2||count==results.Length)return Generated.ParasolidConstants.PK_ERROR_not_implemented;
                         var certificate=NewFiniteEventResult(edge,e,band.Surface);certificate.TangentSupport=input.Faces[sourceFace].Surface;
                         certificate.Count=n;certificate.State=n==0?FiniteIntersectionState.Empty:FiniteIntersectionState.Complete;

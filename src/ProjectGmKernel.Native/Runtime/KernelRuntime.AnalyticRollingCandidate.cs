@@ -57,8 +57,11 @@ internal static unsafe partial class KernelRuntime
             var cylinder=CreateCylinderSurfaceTag(origin.X,origin.Y,origin.Z,axis.X,axis.Y,axis.Z,radial0.X,radial0.Y,radial0.Z,radius);
             if(cylinder<=0)return ParasolidConstants.PK_ERROR_memory_full;
             var p0=Add(origin,Scale(radial0,radius));var p1=Add(origin,Scale(radial1,radius));
-            var c0=CreateLineCurveTag(p0.X,p0.Y,p0.Z,axis.X,axis.Y,axis.Z);var c1=CreateLineCurveTag(p1.X,p1.Y,p1.Z,axis.X,axis.Y,axis.Z);
-            if(c0<=0||c1<=0)return ParasolidConstants.PK_ERROR_memory_full;
+            // These are translations of the selected line, with the same
+            // native linear gauge. Renormalizing a transported direction a
+            // second time destroys the exact parallel-frame certificate.
+            error=TranslateRollingLine(edge.CurveTag,p0,out var c0);if(error!=0)return error;
+            error=TranslateRollingLine(edge.CurveTag,p1,out var c1);if(error!=0)return error;
             Curves[GetCurveSlotByTag(c0)].Sense=source.Sense;Curves[GetCurveSlotByTag(c1)].Sense=FlipLocalSense(source.Sense);
             var angle=Math.Atan2(Dot(radial1,ProfileCross(axis,radial0)),Dot(radial1,radial0));
             candidate=new(){Source=selected,FirstSupport=fa,SecondSupport=fb,Surface=cylinder,FirstContact=c0,SecondContact=c1,First=lower,Last=upper,Radius=radius,FirstSection=Math.Min(0,angle),LastSection=Math.Max(0,angle)};return 0;
@@ -92,8 +95,24 @@ internal static unsafe partial class KernelRuntime
         status=AnalyticSpineContact.Curve(instruction.Curve,program.Surfaces[root.Second],r1,out var secondContact);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         error=BindAnalyticContact(firstContact,out var ca);if(error!=0)return error;
         error=BindAnalyticContact(secondContact,out var cb);if(error!=0)return error;
-        Curves[GetCurveSlotByTag(ca)].Sense=source.Sense;Curves[GetCurveSlotByTag(cb)].Sense=FlipLocalSense(source.Sense);
+        // Where the two axial charts oppose one another, use their signed
+        // projections of the selected conic's major direction. These are
+        // unchanged by rigid motion or reflection, and do not depend on
+        // which fin is first or where the selected conic was split.
+        var major=new IntervalVector(instruction.Curve.First);
+        var axialA=IntervalVector.Dot(major,new IntervalVector(a.Axis)).Value;
+        var axialB=IntervalVector.Dot(major,new IntervalVector(b.Axis)).Value;
+        var contactSense=axialA.Lower>0&&axialB.Upper<0?ParasolidConstants.PK_TOPOL_sense_positive_c
+            :axialA.Upper<0&&axialB.Lower>0?ParasolidConstants.PK_TOPOL_sense_negative_c:source.Sense;
+        Curves[GetCurveSlotByTag(ca)].Sense=contactSense;Curves[GetCurveSlotByTag(cb)].Sense=FlipLocalSense(contactSense);
         candidate=new(){Source=selected,FirstSupport=fa,SecondSupport=fb,Surface=surface,FirstContact=ca,SecondContact=cb,First=lower,Last=upper,Radius=radius,FirstSection=0,LastSection=1};return 0;
+    }
+
+    private static int TranslateRollingLine(CurveTag source,in KernelVector3 origin,out CurveTag curve)
+    {
+        var error=TryCloneEntityCore(source,out curve);if(error!=0)return error;
+        ref var data=ref LineDataPool[Curves[GetCurveSlotByTag(curve)].DataIndex];
+        data.LocationX=origin.X;data.LocationY=origin.Y;data.LocationZ=origin.Z;return 0;
     }
 
     private static int FiniteRollingLineWindow(BodySlot body,in KernelVector3 origin,in KernelVector3 axis,double radius,out double first,out double last)

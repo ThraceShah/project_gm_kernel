@@ -61,6 +61,12 @@ var researchPrecision=NumberOption(args,"--research-precision=",0);
 Require(researchPrecision==0||double.IsFinite(researchPrecision)&&researchPrecision>0&&args.Contains("--native-only")&&args.Contains("--diagnostics")&&!args.Contains("--record-fixtures"),
     "research precision requires native-only diagnostics and cannot update fixtures");
 var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs",researchPrecision==0?"short-edge-blend-oracle":"short-edge-native-research");
+var floor=NumberOption(args,"--seed-floor=",0);
+var phase=NumberOption(args,"--support-phase=",0);
+var splitRemote=args.Contains("--split-remote-edge");
+Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
+Require(double.IsFinite(phase),"support phase must be finite");
+Require(floor==0&&phase==0&&!splitRemote||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
 M.PK_TRANSF_sf_s inputTransform;double inputScale;bool mappedInput;
 unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
@@ -88,13 +94,16 @@ using(host)unsafe
         foreach(var procedural in args.Contains("--both-updates")?new[]{false,true}:new[]{false})
         {
             var name=$"a{angle:R}-r{radius:R}-t{tolerance:R}-reverse{reverse}-"+(procedural?"v261":"default");
+            if(floor!=0)name+=$"-floor{floor:R}";
+            if(splitRemote)name+="-split-remote";
+            if(phase!=0)name+=$"-support-phase{phase:R}";
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
                 if(researchPrecision!=0)name+=$"-pk-precision{researchPrecision:R}";
             cases++;
             Console.WriteLine("CASE "+name);
             try
             {
-                var reference=Seed(angle);CheckBody(reference,"generated input");Counts(reference,8,17,11);
+                var reference=Seed(angle,floor,splitRemote,phase);CheckBody(reference,"generated input");Counts(reference,8,splitRemote?18:17,splitRemote?12:11);
                 var bytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(output,name+"-input.x_t"),bytes);
                 var own=Receive(true,bytes);
                 if(mappedInput){ApplyInput(true,own,inputTransform);ApplyInput(false,reference,inputTransform);}
@@ -165,6 +174,7 @@ using(host)unsafe
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
                     if(args.Contains("--diagnostics")){ProductEdges(reference,"reference");ProductEdges(received,"self-constructed-product");}
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
+                    CompareFiniteIntersections(reference,received,"independent fillet");
                     if(args.Contains("--geometry"))SelfGeometry(own,reference);
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
@@ -273,7 +283,30 @@ static unsafe int Cut(bool own,int body,int tool)
 {
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
     var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
-    Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage} face={KernelRuntime.LastRegularBooleanFace} other={KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");Check(error,"cut fillet product");
+    Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage} face={KernelRuntime.LastRegularBooleanFace} other={KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+    if(own&&error!=0&&KernelRuntime.TraceFiniteBoundary!=null)
+    {
+        var target=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var cutter=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(tool).Slot];
+        foreach(var index in new[]{KernelRuntime.LastRegularBooleanFace,KernelRuntime.LastRegularBooleanOtherFace})
+        {
+            var owner=index<target.FaceCountBody?target:cutter;var local=index<target.FaceCountBody?index:index-target.FaceCountBody;
+            if(local<0||local>=owner.FaceCountBody)continue;
+            var face=owner.FirstFaceBody;for(var f=0;f<local;f++)face=KernelRuntime.Faces[face].NextInBody;
+            var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(KernelRuntime.Faces[face].SurfTag)];
+            Console.WriteLine($"FAILED CUT FACE index={index} tag={KernelRuntime.Faces[face].Header.Tag} surface={surface.Header.Tag}/{surface.Class}");
+            if(surface.Class==SurfaceClass.Plane)
+            {
+                var plane=KernelRuntime.PlaneDataPool[surface.DataIndex];
+                Console.WriteLine($"FAILED CUT PLANE origin=({plane.LocationX:R},{plane.LocationY:R},{plane.LocationZ:R}) normal=({plane.NormalX:R},{plane.NormalY:R},{plane.NormalZ:R})");
+            }
+            if(surface.Class==SurfaceClass.Cylinder)
+            {
+                var cylinder=KernelRuntime.CylinderDataPool[surface.DataIndex];
+                Console.WriteLine($"FAILED CUT CYLINDER origin=({cylinder.LocationX:R},{cylinder.LocationY:R},{cylinder.LocationZ:R}) axis=({cylinder.AxisX:R},{cylinder.AxisY:R},{cylinder.AxisZ:R}) radius={cylinder.Radius:R}");
+            }
+        }
+    }
+    Check(error,"cut fillet product");
     try{Require(n==1,"one cut result");return bodies[0];}finally{Free(own,bodies);}
 }
 static unsafe int CompareFresh(int own,int reference,string directory,string name)
@@ -287,6 +320,7 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         CheckBody(referenceReload,name+" native own roundtrip");
         try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);}catch(Exception ex){Console.WriteLine("COMPARE DIAGNOSTIC "+ex.Message);throw;}
         CheckBody(received,name);
+        CompareFiniteIntersections(reference,received,name);
         try{Mass(reference,received,name);return 0;}
         catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);return 1;}
     }
@@ -574,12 +608,20 @@ static unsafe void NativeProbeEvidence(int body,PK_VECTOR_t query,string label)
 }
 
 // Finite face loops define the solid. Each undirected pair is one shared edge.
-static unsafe int Seed(double degrees)
+static unsafe int Seed(double degrees,double floor,bool splitRemote,double phase)
 {
     var theta=degrees*Math.PI/180;var t=Math.Tan(theta);var f=-2.5+4*t;var h=5-4*t;
-    PK_VECTOR_t[] p=[new(-2.5,2.5,0),new(2.5,2.5,0),new(2.5,f,0),new(-1.5,-2.5,0),new(-2.5,-1.5,0),
+    PK_VECTOR_t[] p=[new(-2.5,2.5,floor),new(2.5,2.5,floor),new(2.5,f,floor),new(-1.5,-2.5,floor),new(-2.5,-1.5,floor),
         new(-2.5,2.5,4),new(-1.5,2.5,5),new(2.5,2.5,h),new(2.5,f,h),new(-1.5,-2.5,5),new(-2.5,-1.5,4)];
     int[][] loops=[[0,1,2,3,4],[0,5,6,7,1],[1,7,8,2],[2,8,9,3],[6,9,8,7],[0,4,10,5],[5,10,9,6],[4,3,9,10]];
+    if(splitRemote)
+    {
+        // Subdivide the common bottom/back line in both directed loops.
+        // The rolling neighbourhood and the two selection occurrences are
+        // identical; the bodies supplied to the two kernels have 18 edges.
+        p=[..p,new(0,2.5,floor)];
+        loops[0]=[0,11,1,2,3,4];loops[1]=[0,5,6,7,1,11];
+    }
     var classes=new List<int>();var parents=new List<int>();var children=new List<int>();var senses=new List<int>();
     int Add(int type){var i=classes.Count;classes.Add(type);return i;}
     void Rel(int a,int b,int s=PK_TOPOL_sense_none_c){parents.Add(a);children.Add(b);senses.Add(s);}
@@ -614,7 +656,7 @@ static unsafe int Seed(double degrees)
             var key=(Math.Min(a,b),Math.Max(a,b));
             if(key==(3,4)||key==(5,6))
             {
-                var center=key==(3,4)?new PK_VECTOR_t(-1.5,-1.5,0):new PK_VECTOR_t(-1.5,2.5,4);
+                var center=key==(3,4)?new PK_VECTOR_t(-1.5,-1.5,floor):new PK_VECTOR_t(-1.5,2.5,4);
                 var axis=key==(3,4)?new PK_VECTOR1_t(0,0,1):new PK_VECTOR1_t(0,1,0);
                 var sf=new PK_CIRCLE_sf_t(new PK_AXIS2_sf_t(center,axis,new PK_VECTOR1_t(-1,0,0)),1);
                 Check(PK_CIRCLE_create(&sf,&curve),"circle");
@@ -636,7 +678,7 @@ static unsafe int Seed(double degrees)
             var attach=new PK_EDGE_attach_curves_o_t{n_intervals=1,intervals=&interval,interval_map=&intervalIndex,have_senses=PK_LOGICAL_true,senses=&curveSense};PK_ENTITY_track_r_t tracking;
             Check(PK_EDGE_attach_curves_2(1,&edge,&curve,&attach,&tracking),"attach curve");Check(PK_ENTITY_track_r_f(&tracking),"free attach tracking");
         }
-        PK_VECTOR_t[] origins=[new(0,0,0),new(0,2.5,0),new(2.5,0,0),new(-1.5,-2.5,0),new(-1.5,0,5),new(-2.5,0,0)];
+        PK_VECTOR_t[] origins=[new(0,0,floor),new(0,2.5,0),new(2.5,0,0),new(-1.5,-2.5,0),new(-1.5,0,5),new(-2.5,0,0)];
         PK_VECTOR1_t[] normals=[new(0,0,-1),new(0,1,0),new(1,0,0),new(Math.Sin(theta),-Math.Cos(theta),0),new(Math.Sin(theta),0,Math.Cos(theta)),new(-1,0,0)];
         for(var i=0;i<8;i++)
         {
@@ -649,7 +691,8 @@ static unsafe int Seed(double degrees)
             }
             else
             {
-                var sf=new PK_CYL_sf_t(new PK_AXIS2_sf_t(i==6?new PK_VECTOR_t(-1.5,0,4):new PK_VECTOR_t(-1.5,-1.5,0),i==6?new PK_VECTOR1_t(0,1,0):new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(-1,0,0)),1);
+                var reference=i==6?new PK_VECTOR1_t(-Math.Cos(phase),0,Math.Sin(phase)):new PK_VECTOR1_t(-1,0,0);
+                var sf=new PK_CYL_sf_t(new PK_AXIS2_sf_t(i==6?new PK_VECTOR_t(-1.5,0,4):new PK_VECTOR_t(-1.5,-1.5,0),i==6?new PK_VECTOR1_t(0,1,0):new PK_VECTOR1_t(0,0,1),reference),1);
                 Check(PK_CYL_create(&sf,&surface),"cylinder");
             }
             var face=creation.topols[faces[i]];var sense=PK_LOGICAL_true;Check(PK_FACE_attach_surfs(1,&face,&surface,&sense),"attach surface");
@@ -673,6 +716,69 @@ static unsafe void ProductEdges(int body,string label)
         }
     }
     finally{Free(false,edges);}
+}
+
+static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actual,string label)
+{
+    var expected=IntersectionEdges(reference);var found=IntersectionEdges(actual);
+    Require(expected.Count==found.Count,label+" finite ICurve count");
+    var maxEndpoint=0.0;var maxLength=0.0;
+    foreach(var edge in expected)
+    {
+        var match=-1;var reversed=false;
+        for(var i=0;i<found.Count;i++)
+        {
+            var candidate=found[i];
+            if(!Pair(edge.Start,edge.End,candidate.Start,candidate.End,1e-8))continue;
+            Require(match<0,label+" ambiguous finite ICurve match");match=i;
+            reversed=Distance(edge.Start,candidate.End)<Distance(edge.Start,candidate.Start);
+        }
+        Require(match>=0,label+$" unmatched finite ICurve edge={edge.Edge}");
+        var other=found[match];found.RemoveAt(match);
+        var endpoint=Math.Max(Distance(edge.Low,reversed?other.High:other.Low),Distance(edge.High,reversed?other.Low:other.High));
+        var length=Math.Abs(edge.Length-other.Length);
+        Require(endpoint<=1e-8&&length<=2e-8,label+$" finite ICurve edge={edge.Edge}/{other.Edge} endpoint={endpoint:R} length={length:R}");
+        maxEndpoint=Math.Max(maxEndpoint,endpoint);maxLength=Math.Max(maxLength,length);
+    }
+    Console.WriteLine($"FINITE ICurve {label} count={expected.Count} endpoint_max={maxEndpoint:R} length_delta_max={maxLength:R}");
+
+    static List<(PK_EDGE_t Edge,PK_VECTOR_t Start,PK_VECTOR_t End,PK_VECTOR_t Low,PK_VECTOR_t High,double Length)> IntersectionEdges(PK_BODY_t body)
+    {
+        int count;int* edges;Check(PK_BODY_ask_edges(body,&count,&edges),"finite ICurve edges");
+        var result=new List<(PK_EDGE_t,PK_VECTOR_t,PK_VECTOR_t,PK_VECTOR_t,PK_VECTOR_t,double)>();
+        PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
+        PK_VERTEX_t* vertices=stackalloc PK_VERTEX_t[2];
+        try
+        {
+            for(var e=0;e<count;e++)
+            {
+                PK_CURVE_t curve;PK_CLASS_t kind;PK_INTERVAL_t range,used;PK_LOGICAL_t sense;
+                Check(PK_EDGE_ask_geometry(edges[e],PK_LOGICAL_true,&curve,&kind,ends,&range,&sense),"finite ICurve geometry");
+                if(kind!=PK_CLASS_icurve)continue;
+                Require(double.IsFinite(range.value[0])&&double.IsFinite(range.value[1])&&range.value[1]>range.value[0],"increasing native ICurve limits");
+                PK_VECTOR_t low,high;double length;
+                Check(PK_CURVE_eval(curve,range.value[0],0,&low),"finite ICurve lower limit");
+                Check(PK_CURVE_eval(curve,range.value[1],0,&high),"finite ICurve upper limit");
+                Check(PK_CURVE_find_length(curve,range,&length,&used),"finite ICurve length");
+                Check(PK_EDGE_ask_vertices(edges[e],vertices),"finite ICurve vertices");
+                var start=vertices[0]!=0?Position(vertices[0]):ends[0];
+                var end=vertices[1]!=0?Position(vertices[1]):ends[1];
+                if(sense!=PK_LOGICAL_true)(low,high)=(high,low);
+                var error=Math.Max(Distance(low,start),Distance(high,end));
+                Require(length>0&&error<=1e-8,$"ICurve finite oriented endpoints edge={edges[e]} t=[{range.value[0]:R},{range.value[1]:R}] error={error:R}");
+                result.Add((edges[e],start,end,low,high,length));
+            }
+        }
+        finally{Free(false,edges);}
+        return result;
+
+        static PK_VECTOR_t Position(PK_VERTEX_t vertex)
+        {
+            PK_POINT_t point;PK_POINT_sf_t definition;
+            Check(PK_VERTEX_ask_point(vertex,&point),"finite ICurve vertex point");
+            Check(PK_POINT_ask(point,&definition),"finite ICurve vertex position");return definition.position;
+        }
+    }
 }
 
 static unsafe int Fillet(bool own,int body,double angle,double radius,double tolerance,bool reverse,bool procedural,M.PK_TRANSF_sf_s* input=null,double unitScale=1)
