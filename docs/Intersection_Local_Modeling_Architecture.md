@@ -55,6 +55,11 @@ coedge direction 各有自己的语义。证明用的局部 UV 图不能被当�
 `ArrangeFaceCutGraph`，随后由 `BuildModelingBrep` 验证和发布结果。输入边的不同
 拓扑身份分别保留自己的片段；已迁移的认证路径按同一事件和精确有限区间复用切割边。
 
+重复发现同一个有限根时，见证标识实际输入边、求交方程和已经隔离的根序号；两个
+coedge 各保留来源。椭圆／圆柱的标量根使用整个原生有限区间的区间包围。刀具直边／
+Blend 则对 `B(u,v)−L(t)=0` 求根，在可收缩参数盒内进一步收紧结果。数学扩展域内
+的根不能直接充当有限输入的交点。孤立区间重叠且无同根证据时，认证路径拒绝归并。
+
 已支持的数学域及有限参数传递见
 [有限解析滚动网络](Finite_Analytic_Rolling_Network.md)。未覆盖的通用多方事件和
 实际验收差异见 [实施验收记录](reviews/advanced-modeling/topology-event-framework-acceptance.md)；

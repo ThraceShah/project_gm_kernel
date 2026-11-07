@@ -42,8 +42,9 @@ internal static unsafe partial class KernelRuntime
     {
         index=vertices[..count].IndexOf(vertex);if(index>=0)return 0;
         var error=SheetOriginalVertex(vertex,out var p);if(error!=0)return error;
-        for(var candidate=0;candidate<count;candidate++)if(Vertices[vertices[candidate]].Body!=body&&ProfileDistance(points[candidate],p)<=tolerance)
-        {if(index>=0)return ParasolidConstants.PK_ERROR_not_implemented;index=candidate;}
+        if(!ForbidSpatialBoundaryReuse)
+            for(var candidate=0;candidate<count;candidate++)if(Vertices[vertices[candidate]].Body!=body&&ProfileDistance(points[candidate],p)<=tolerance)
+            {if(index>=0)return ParasolidConstants.PK_ERROR_not_implemented;index=candidate;}
         if(index<0){if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;index=count;vertices[count]=vertex;if(!precisions.IsEmpty)precisions[count]=0;points[count++]=p;}
         if(!precisions.IsEmpty)precisions[index]=Math.Max(precisions[index],Vertices[vertex].Tolerance);return 0;
     }

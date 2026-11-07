@@ -327,7 +327,8 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
-        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale,materialOwnership,checkNativeTrims);
+        own=requireNativeCutWitness?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
+        native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale,materialOwnership,checkNativeTrims);
     }
     finally
     {
@@ -362,7 +363,7 @@ static int CutWithNativeWitness(int body,int tool)
         {published.Add((trace.Curve,trace.StartEvent));published.Add((trace.Curve,trace.EndEvent));}
     };
     int result;
-    try{result=Cut(true,body,tool);}
+    try{result=CutWithoutSpatialReuse(body,tool);}
     finally{KernelRuntime.TraceFiniteBoundary=previous;}
     var consumed=witnesses.Where(x=>arranged.Contains((x.ProductCurve,x.StartEvent))&&published.Contains((x.ProductCurve,x.StartEvent))).ToArray();
     Require(consumed.All(x=>double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0)
@@ -371,6 +372,13 @@ static int CutWithNativeWitness(int body,int tool)
     Require(spatialReuses==0,$"the guarded self cut must use certified endpoint joins; found {spatialReuses} position-only reuses");
     Console.WriteLine($"NATIVE CUT WITNESSES published_events={consumed.Select(x=>x.StartEvent).Distinct().Count()} spatial_reuses={spatialReuses}");
     return result;
+}
+static int CutWithoutSpatialReuse(int body,int tool)
+{
+    var previous=KernelRuntime.ForbidSpatialBoundaryReuse;
+    KernelRuntime.ForbidSpatialBoundaryReuse=true;
+    try{return Cut(true,body,tool);}
+    finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
 }
 static unsafe void Move(bool own,int body,int transform)
 {
@@ -381,7 +389,7 @@ static unsafe int Cut(bool own,int body,int tool)
 {
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
     var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
-    Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage} face={KernelRuntime.LastRegularBooleanFace} other={KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+    Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage} face={KernelRuntime.LastRegularBooleanFace} other={KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R}) proof_only={KernelRuntime.ForbidSpatialBoundaryReuse}");
     if(own&&error!=0&&KernelRuntime.TraceFiniteBoundary!=null)
     {
         var target=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var cutter=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(tool).Slot];

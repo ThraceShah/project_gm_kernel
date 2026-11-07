@@ -66,6 +66,8 @@ The existing interval implicit evaluator encloses those source unknowns over the
 
 The target interval and the source root are associated with one boundary event before halfedge assembly. A spatial candidate can join this event only through a compatible native anchor. Across a rebuilt wrap the original chart association is retained along with the cloned arc's endpoint. The transverse cut oracle follows both source short ICurve roots through the shared events to actual published cut edges.
 
+When adjacent cutter faces rediscover a root of their common finite line on a Cylinder or Blend, the same finite line occurrence and isolated root ordinal identify the event. The Cylinder uses the exact analytic radial equation; the Blend uses a contracting box for the line parameter and the two Blend coordinates. A narrowed line parameter enclosure gives a spatial error bound without a second XYZ inverse on the source line. Repeated boxes for the same equations join only when one root enclosure belongs to the other's uniqueness domain. A surface-parameter extension can aid certification but cannot supply a root outside the finite search domain. The native target ICurve still supplies its own CHART and paired support UV when the arrangement evaluates its boundary.
+
 ### Subdividing a selected rolling carrier
 
 Selected finite fragments with the same native line or ellipse carrier, support occurrences and radius join only across an exact contiguous native interval and a degree-two source vertex. A single rolling band uses the component's entire finite source range and both terminal vertices. Each fragment independently receives its collapsed-end certificates; the representative edge's interval cannot establish events for the other fragments.

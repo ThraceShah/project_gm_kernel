@@ -444,7 +444,7 @@ internal static unsafe partial class KernelRuntime
                     // position is only a check of the cut against it.
                     var priorEvents=model.NP;
                     error=model.AddPoint(sourcePoint,sourceVertex,out var endpoint,out var reusedByPosition,anchors[..anchorCount],
-                        requireProof:model.RequireBoundaryAssociations||cutLocator.Finite||lineSurfaceWitness);if(error!=0)return error;
+                        requireProof:model.RequireBoundaryAssociations||cutLocator.Finite||lineSurfaceWitness||ForbidSpatialBoundaryReuse);if(error!=0)return error;
                     if(reusedByPosition)TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.SpatialEndpointReuse,Surface=input.Faces[first].Surface,
                         OtherSurface=input.Faces[second].Surface,Curve=curve.Curve,StartEvent=endpoint,First=sourceParameter,StartPoint=sourcePoint,
                         EndPoint=model.Points[endpoint]});
