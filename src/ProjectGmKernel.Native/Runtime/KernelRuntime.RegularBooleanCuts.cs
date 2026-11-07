@@ -429,7 +429,8 @@ internal static unsafe partial class KernelRuntime
     {
         var record=Curves[GetCurveSlotByTag(curve)];
         if(TryAnalyticBlendContactMap(surface,record,record.TMin,record.TMax,out _,out _,out _)
-            ||record.Class==CurveClass.ICurve&&(SameSheetSupport(surface,ICurveDataPool[record.DataIndex].Surface0Tag)||SameSheetSupport(surface,ICurveDataPool[record.DataIndex].Surface1Tag)))
+            ||record.Class==CurveClass.ICurve&&(TryCertifySupportChart(ICurveDataPool[record.DataIndex].Surface0Tag,surface,out _)
+                ||TryCertifySupportChart(ICurveDataPool[record.DataIndex].Surface1Tag,surface,out _)))
             return SheetCurveUV(surface,curve,parameter,true,out uv,out _,out _);
         var found=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
         return found==AlgorithmStatus.InvalidInput?ParasolidConstants.PK_ERROR_not_on_surface:IntersectionError(found);

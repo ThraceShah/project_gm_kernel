@@ -144,7 +144,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool SameSupportChainFace(FaceSlot a,FaceSlot b)
-        =>TryCertifyIdentitySupport(Faces[a].SurfTag,Faces[b].SurfTag,out var certificate)
+        =>TryCertifySupportChart(Faces[a].SurfTag,Faces[b].SurfTag,out var certificate)
             &&LocalSenseSign(Faces[a].Orientation)*LocalSenseSign(Faces[b].Orientation)*certificate.NormalRelation>0;
 
     private static int SupportChainSeamPlane(EdgeSlot edge,in KernelVector3 chainTangent,out AnalyticSurface plane)
@@ -303,14 +303,22 @@ internal static unsafe partial class KernelRuntime
         for(var f=0;f<model.NF;f++)
         {
             if(model.Sources[f]==blendFace){order[at++]=f;continue;}
-            var source=workingSources[workingFaces.IndexOf(model.Sources[f])];var found=-1;
+            var source=workingSources[workingFaces.IndexOf(model.Sources[f])];var found=-1;var cell=model.Faces[f];var changeChart=false;
             for(var i=0;i<originals.Length;i++)
             {
                 if(source!=aliases[i])continue;
-                error=SheetSourceContains(originals[i],model.Witnesses[f],out var inside);if(error!=0)return error;if(!inside)continue;
-                if(found>=0)return ParasolidConstants.PK_ERROR_bad_loop;found=i;
+                var original=Faces[originals[i]];
+                if(!TryCertifySupportChart(cell.Surface,original.SurfTag,out var chart)
+                    ||LocalSenseSign(cell.Sense)*LocalSenseSign(original.Orientation)*chart.NormalRelation<=0)
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                error=SheetSourceContains(originals[i],chart.Map(model.Witnesses[f]),out var inside);if(error!=0)return error;if(!inside)continue;
+                if(found>=0)return ParasolidConstants.PK_ERROR_bad_loop;found=i;changeChart=!chart.Identity;
             }
             if(found<0||order[found]>=0)return ParasolidConstants.PK_ERROR_bad_loop;order[found]=f;
+            if(changeChart)
+            {
+                var original=Faces[originals[found]];cell.Surface=original.SurfTag;cell.Sense=NormalizeLocalSense(original.Orientation);model.Faces[f]=cell;
+            }
         }
         foreach(var index in order)if(index<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         for(var b=originals.Length;b<order.Length;b++)

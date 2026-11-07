@@ -51,22 +51,41 @@ public unsafe class BlendSupportChainTests:IDisposable
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(1e-10)]
-    public void ASeparateSupportRecordRequiresItsOwnContinuityCertificate(double displacement)
+    [InlineData(0,false)]
+    [InlineData(1e-10,false)]
+    [InlineData(0,true)]
+    [InlineData(1e-10,true)]
+    public void ASeparateSupportRecordRequiresItsOwnContinuityCertificate(double displacement,bool reversePlaneChart)
     {
         var body=Source();Span<int> edges=stackalloc int[2];Selected(body,edges);var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(edges[0]).Slot];var fin=edge.FirstFinEdge;var face=0;
         for(var i=0;i<2;i++,fin=KernelRuntime.Fins[fin].Other)
         {
             var slot=KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face;var f=KernelRuntime.Faces[slot];
-            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(f.SurfTag)].Class==SurfaceClass.BSurface)face=f.Header.Tag;
+            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(f.SurfTag)].Class==(reversePlaneChart?SurfaceClass.Plane:SurfaceClass.BSurface))face=f.Header.Tag;
         }
-        Assert.NotEqual(0,face);int original,copy;Assert.Equal(0,KernelRuntime.FaceAskSurf(face,&original));
-        var matrix=new PK_TRANSF_sf_s();matrix.matrix[0]=matrix.matrix[5]=matrix.matrix[10]=matrix.matrix[15]=1;matrix.matrix[11]=displacement;
-        int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&matrix,&transform));byte exact;
-        Assert.Equal(0,KernelRuntime.GeomTransform(original,transform,0,&copy,&exact));Assert.Equal(0,KernelRuntime.EntityDelete(1,&transform));
-        Assert.Equal(0,KernelRuntime.TopologyDetachGeometry(face));byte sense=1;Assert.Equal(0,KernelRuntime.FaceAttachSurfaces(1,&face,&copy,&sense));
-        Mark(edges,.1);Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out var before));var error=Fix(body,out var made);
+        Assert.NotEqual(0,face);int original,copy;byte sense;Assert.Equal(0,KernelRuntime.FaceAskOrientedSurf(face,&original,&sense));
+        if(reversePlaneChart)
+        {
+            PK_PLANE_sf_s basis;Assert.Equal(0,KernelRuntime.PlaneAsk(original,&basis));
+            for(var i=0;i<3;i++)
+            {
+                basis.basis_set.location.coord[i]+=displacement*basis.basis_set.axis.coord[i];
+                basis.basis_set.ref_direction.coord[i]= -basis.basis_set.ref_direction.coord[i];
+            }
+            Assert.Equal(0,KernelRuntime.PlaneCreate(&basis,&copy));
+        }
+        else
+        {
+            var matrix=new PK_TRANSF_sf_s();matrix.matrix[0]=matrix.matrix[5]=matrix.matrix[10]=matrix.matrix[15]=1;matrix.matrix[11]=displacement;
+            int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&matrix,&transform));byte exact;
+            Assert.Equal(0,KernelRuntime.GeomTransform(original,transform,0,&copy,&exact));Assert.Equal(0,KernelRuntime.EntityDelete(1,&transform));
+        }
+        Assert.Equal(0,KernelRuntime.TopologyDetachGeometry(face));Assert.Equal(0,KernelRuntime.FaceAttachSurfaces(1,&face,&copy,&sense));
+        Mark(edges,.1);Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out var before));
+        var faceGeneration=KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(face).Slot].Header.Generation;var bytes=KernelRuntime.BlocksLiveBytes;
+        var guard=KernelRuntime.ForbidLegacyRegularBlendAssembly;int error,made;
+        try{KernelRuntime.ForbidLegacyRegularBlendAssembly=true;error=Fix(body,out made);}
+        finally{KernelRuntime.ForbidLegacyRegularBlendAssembly=guard;}
         if(displacement==0)
         {
             Assert.True(error==0,$"error={error} support={KernelRuntime.LastSupportChainStage} regular={KernelRuntime.LastRegularBlendStage}");Assert.Equal(3,made);
@@ -75,6 +94,9 @@ public unsafe class BlendSupportChainTests:IDisposable
         else
         {
             Assert.NotEqual(0,error);Assert.Equal(0,made);Assert.Equal(0,XtWriter.WriteText(new[]{body},371,out var after));Assert.Equal(before,after);
+            Assert.Equal(faceGeneration,KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(face).Slot].Header.Generation);
+            Assert.Equal(bytes,KernelRuntime.BlocksLiveBytes);
+            foreach(var selected in edges)Assert.Equal(1,KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(selected).Slot].PendingBlendKind);
         }
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Empty();
     }

@@ -63,6 +63,12 @@ internal static unsafe partial class KernelRuntime
         var blendContact=contact.IsBlendContact!=0&&SameSheetSupport(surface,contact.Surface1Tag);
         var nativeSide=Curves[slot].Class==CurveClass.ICurve&&contact.IsBlendContact==0
             ?SameSheetSupport(surface,contact.Surface0Tag)?0:SameSheetSupport(surface,contact.Surface1Tag)?1:-1:-1;
+        var map=default(SupportChartCertificate);var mapped=false;
+        if(nativeSide<0&&kind==SurfaceClass.Plane&&Curves[slot].Class==CurveClass.ICurve&&contact.IsBlendContact==0)
+        {
+            if(TryCertifySupportChart(contact.Surface0Tag,surface,out map)){nativeSide=0;mapped=true;}
+            else if(TryCertifySupportChart(contact.Surface1Tag,surface,out map)){nativeSide=1;mapped=true;}
+        }
         double station=0;Span<KernelVector3> jet=stackalloc KernelVector3[2];
         var status=nativeSide>=0?SheetNativeCurveParameters(Curves[slot],parameter,nativeSide,jet,out uv)
             :sourceContact||blendContact?EvaluateBlendContact(contact,parameter,1,jet,out station):EvaluateCurveCore(in Curves[slot],parameter,1,false,jet,out _);
@@ -74,6 +80,7 @@ internal static unsafe partial class KernelRuntime
             status=JointNestedBlendEvaluation.SplineContactParameters(program,blend.ProgramRoot,station,contact.BlendContactSide,out var su,out var sv);uv.param[0]=su;uv.param[1]=sv;
         }
         else if(blendContact){uv.param[0]=station;uv.param[1]=BlendContactV(contact);}
+        else if(mapped)uv=map.Map(uv);
         else if(nativeSide<0)status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         return SheetUvTangent(surface,uv,jet[1],forward==(LocalSenseSign(Curves[slot].Sense)>0),out tangent);

@@ -13,6 +13,7 @@ using M=ProjectGmKernel.Native.Generated;
 
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 var remoteBore=args.Contains("--remote-bore",StringComparer.Ordinal);
+var reversePlaneChart=args.Contains("--reverse-plane-chart",StringComparer.Ordinal);
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","support-blend-chain-oracle");Directory.CreateDirectory(directory);
 if(!ParasolidScriptHost.TryStartSession("Independent smooth chain support transitions",out var host,out var message))throw new Exception(message);
 using(host)unsafe
@@ -24,6 +25,7 @@ using(host)unsafe
         {
             var name=$"{fixture.Name}-{(reflected?"reflected":"base")}";if(args.Any(a=>!a.StartsWith("--",StringComparison.Ordinal))&&!args.Contains(name,StringComparer.Ordinal))continue;
             if(remoteBore){Require(!fixture.CurvedWall,"the bore fixture requires a planar wall");name+="-remote-bore";}
+            if(reversePlaneChart){Require(!fixture.CurvedWall,"the chart fixture requires a planar wall");name+="-reversed-chart";}
             // Author a genuine partition seam in PK, then both modifiers
             // consume the identical finite input, independently of their
             // primitive creators' LINE parameterization conventions.
@@ -47,17 +49,29 @@ using(host)unsafe
             }
             Require(!remoteBore||boredFace!=0,"bore belongs to an actually selected support");
             if(args.Contains("--separate-support",StringComparer.Ordinal)){SeparateSupport(true,a[0]);SeparateSupport(false,b[0]);}
+            var changedChartFace=0;var reversedBasis=new PK_PLANE_sf_t();
+            if(reversePlaneChart)
+            {
+                changedChartFace=SeparateSupport(true,a[0],true);SeparateSupport(false,b[0],true);
+                reversedBasis=PlaneBasis(changedChartFace);
+            }
             Check(KernelRuntime.BodyAskFaces(own,&n,&imprinted),"original self faces");int[] retained;
             try{retained=new ReadOnlySpan<int>(imprinted,n).ToArray();}finally{Free(true,imprinted);}Require(retained.Length==(remoteBore?11:10),"source faces include the bore wall");
             var radius=reflected?.17:.1;var selfMade=Fix(true,own,a,radius);var nativeMade=Fix(false,native,b,radius);
             Require(selfMade==nativeMade&&selfMade==3,"two independent seam transports create three Blend faces");
             foreach(var face in retained)Require(KernelRuntime.IsValidTag(face),"surviving source face identity");
             if(remoteBore)Require(KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(boredFace).Slot].LoopCount==2,"modified selected support retains its bore loop");
+            if(reversePlaneChart)
+            {
+                var basis=PlaneBasis(changedChartFace);
+                for(var axis=0;axis<3;axis++)Require(basis.basis_set.ref_direction.coord[axis]==reversedBasis.basis_set.ref_direction.coord[axis],
+                    "modified support retains its native chart");
+            }
             var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-result.x_t"),bytes);var received=Receive(bytes);
             try
             {
                 CheckBody(native,name+" native");CheckBody(received,name+" received");Compare(native,received,name);
-                if(remoteBore)ParasolidBodyCompare.AssertEquivalent(native,received,name);
+                if(remoteBore||reversePlaneChart)ParasolidBodyCompare.AssertEquivalent(native,received,name);
             }
             finally{Check(PK_ENTITY_delete(1,&received),"delete receive");}
             var restored=ReceiveSelf(bytes);Check(KernelRuntime.EntityDelete(1,&own),"delete before reload");own=restored;
@@ -75,7 +89,7 @@ using(host)unsafe
             try
             {
                 CheckBody(native,name+" cut native");CheckBody(received,name+" cut received");Compare(native,received,name+" cut");
-                if(remoteBore)ParasolidBodyCompare.AssertEquivalent(native,received,name+" cut");
+                if(remoteBore||reversePlaneChart)ParasolidBodyCompare.AssertEquivalent(native,received,name+" cut");
             }
             finally{Check(PK_ENTITY_delete(1,&received),"delete cut receive");}
             Check(KernelRuntime.EntityDelete(1,&own),"delete self");Check(PK_ENTITY_delete(1,&native),"delete native");
@@ -96,7 +110,14 @@ static unsafe void BoreNative(int body)
     CheckBody(body,"bored seed");
 }
 
-static unsafe void SeparateSupport(bool own,int edge)
+static unsafe PK_PLANE_sf_t PlaneBasis(int face)
+{
+    int surface;PK_PLANE_sf_t basis;
+    Check(KernelRuntime.FaceAskSurf(face,&surface),"read managed plane support");
+    Check(KernelRuntime.PlaneAsk(surface,(M.PK_PLANE_sf_s*)&basis),"read managed plane chart");return basis;
+}
+
+static unsafe int SeparateSupport(bool own,int edge,bool reversePlaneChart=false)
 {
     Span<int> faces=stackalloc int[2];
     if(own)
@@ -113,15 +134,23 @@ static unsafe void SeparateSupport(bool own,int edge)
     {
         int surface;byte sense;
         Check(own?KernelRuntime.FaceAskOrientedSurf(faceTag,&surface,&sense):PK_FACE_ask_oriented_surf(faceTag,&surface,(PK_LOGICAL_t*)&sense),"separate support geometry");
-        var spline=own?KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface:false;
-        if(!own){int type;Check(PK_ENTITY_ask_class(surface,&type),"support class");spline=type==PK_CLASS_bsurf;}
-        if(!spline)continue;
-        int copy;Check(own?KernelRuntime.EntityCopy(surface,&copy):PK_ENTITY_copy(surface,&copy),"independent support record copy");
+        bool matches;
+        if(own)matches=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class==(reversePlaneChart?SurfaceClass.Plane:SurfaceClass.BSurface);
+        else{int type;Check(PK_ENTITY_ask_class(surface,&type),"support class");matches=type==(reversePlaneChart?PK_CLASS_plane:PK_CLASS_bsurf);}
+        if(!matches)continue;
+        int copy;
+        if(reversePlaneChart)
+        {
+            PK_PLANE_sf_t basis;Check(own?KernelRuntime.PlaneAsk(surface,(M.PK_PLANE_sf_s*)&basis):PK_PLANE_ask(surface,&basis),"read original plane chart");
+            for(var axis=0;axis<3;axis++)basis.basis_set.ref_direction.coord[axis]= -basis.basis_set.ref_direction.coord[axis];
+            Check(own?KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&basis,&copy):PK_PLANE_create(&basis,&copy),"create equivalent reversed plane chart");
+        }
+        else Check(own?KernelRuntime.EntityCopy(surface,&copy):PK_ENTITY_copy(surface,&copy),"independent support record copy");
         var face=faceTag;Check(own?KernelRuntime.TopologyDetachGeometry(face):PK_TOPOL_detach_geom(face),"detach support record");
         Check(own?KernelRuntime.FaceAttachSurfaces(1,&face,&copy,&sense):PK_FACE_attach_surfs(1,&face,&copy,(PK_LOGICAL_t*)&sense),"attach equivalent support record");
-        Console.WriteLine($"SUPPORT CERTIFICATE own={own} face={face} source={surface} copy={copy} map=identity");return;
+        Console.WriteLine($"SUPPORT CERTIFICATE own={own} face={face} source={surface} copy={copy} map={(reversePlaneChart?"(-u,-v)":"identity")}");return face;
     }
-    throw new Exception("selected edge has no spline support to copy");
+    throw new Exception("selected edge has no requested support class");
 }
 
 static unsafe int[] Select(bool own,int body,bool reflected)
