@@ -69,6 +69,21 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Fact]
+    public void OverlappingRootEnclosuresWithoutCommonEquationAreUnresolved()
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[0]=.75;plane.basis_set.axis.coord[1]=Math.Sqrt(7)/4;
+        plane.basis_set.location.coord[1]=.5;plane.basis_set.ref_direction.coord[2]=1;
+        SurfTag a,b;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&a));
+        plane.basis_set.location.coord[1]=Math.BitIncrement(.5);
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&b));
+        Span<SurfTag> planes=stackalloc SurfTag[2]{a,b};Span<BoundaryEventId> ids=stackalloc BoundaryEventId[2];
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.TestFiniteLinePlaneEventIdentities(carrier,-1,1,planes,ids,out _,requireProof:true));
+    }
+
+    [Fact]
     public void CoincidentCarrierDoesNotIdentifyDistinctSourceEdgeOccurrences()
     {
         var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
