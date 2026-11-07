@@ -59,7 +59,8 @@ internal static unsafe partial class KernelRuntime
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
 
-        internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN,SurfTag equation=0)
+        internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN,
+            SurfTag equation=0,BoundaryRootWitnessId witness=0)
         {
             if(Parameters.IsEmpty)return 0;
             if(double.IsNaN(lower)){lower=parameter;upper=parameter;}
@@ -76,26 +77,26 @@ internal static unsafe partial class KernelRuntime
                         LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=curve;LastSheetParameter=parameter;return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     }
                     hasCertificate|=known.Surface!=0;
-                    if(known.Surface==equation||known.Surface==0)match=i;
+                    if(known.Surface==equation&&known.Witness==witness||known.Surface==0)match=i;
                 }
             }
             if(equation==0&&hasCertificate)return 0;
             if(match>=0)
             {
                 ref var known=ref Parameters[match];
-                if(known.Surface==equation)
+                if(known.Surface==equation&&known.Witness==witness)
                 {
                     known.Lower=Math.Max(lower,known.Lower);known.Upper=Math.Min(upper,known.Upper);
                     known.Parameter=Math.Clamp(known.Parameter,known.Lower,known.Upper);
                 }
-                else {known.Surface=equation;known.Lower=lower;known.Upper=upper;known.Parameter=parameter;}
+                else {known.Surface=equation;known.Witness=witness;known.Lower=lower;known.Upper=upper;known.Parameter=parameter;}
                 return 0;
             }
             // A joined event may have been proved by a different common
             // participant. Retain each native root equation so a later
             // pair can join through any one of them.
             if(ParameterCount==Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Surface=equation,Parameter=parameter,Lower=lower,Upper=upper};return 0;
+            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Surface=equation,Witness=witness,Parameter=parameter,Lower=lower,Upper=upper};return 0;
         }
 
         internal bool KnownParameter(BoundaryEventId endpoint,CurveTag curve,out double parameter)
@@ -173,13 +174,18 @@ internal static unsafe partial class KernelRuntime
                 if(known.Event!=endpoint||known.Carrier!=anchor.Carrier||known.Generation!=anchor.Generation)continue;
                 if(known.Upper<anchor.Lower||known.Lower>anchor.Upper)return true;
                 shared=true;
-                // A common exact parameter proves one spatial point even
-                // if the two source/plane equations used different faces.
-                // A shared isolated equation is monotone throughout both
-                // overlapping root intervals and likewise has one root.
-                same|=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower
-                    ||anchor.Surface!=0&&known.Surface!=0&&(known.Surface==anchor.Surface
-                        ||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface));
+                var exact=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower;
+                if(anchor.Witness!=0||known.Witness!=0)
+                {
+                    if(anchor.Witness!=0&&known.Witness!=0)
+                        same|=anchor.Surface==known.Surface?anchor.Witness==known.Witness
+                            :exact&&(anchor.Witness-1)/IntersectionPointCapacity==(known.Witness-1)/IntersectionPointCapacity;
+                    continue;
+                }
+                // Analytic source/plane equations can prove the same native
+                // root even if that parameter has no binary64 representation.
+                same|=exact||anchor.Surface!=0&&known.Surface!=0&&(known.Surface==anchor.Surface
+                    ||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface));
             }
             return false;
         }

@@ -18,7 +18,7 @@ internal static unsafe partial class KernelRuntime
     {
         LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=LastRegularBooleanOtherFace=-1;
         if(options->merge_imprinted!=0||options->tracking!=0)return ParasolidConstants.PK_ERROR_not_implemented;
-        var scratch=CommandScratch.Current;var memory=scratch.Take(213000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        var scratch=CommandScratch.Current;var memory=scratch.Take(213000+2*SheetPointLimit);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         ModelingPerformance.Context performance=default;using var measurement=new ModelingPerformance.Scope(&performance,immutableGeometry:true);ModelingPerformance.Stage(RegularBooleanStage.Read);
         var ownedCount=0;
         try

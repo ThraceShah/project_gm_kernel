@@ -76,6 +76,7 @@ global using ControlPointIndex = int;
 global using BlendSurfaceIndex = int;
 global using BlendSpineIndex = int;
 global using BoundaryEventId = int;
+global using BoundaryRootWitnessId = int;
 
 // Memory ownership and allocator metadata.
 global using MemoryPageIndex = int;

@@ -1,8 +1,10 @@
 global using BoundaryEventId=System.Int32;
 
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Runtime;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace KernelTests;
@@ -92,6 +94,40 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(0,KernelRuntime.TestCoincidentSourceFragments(carrier,fragmentCounts,out var ambiguousCut));
         Assert.Equal(1,fragmentCounts[0]);Assert.Equal(1,fragmentCounts[1]);
         Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,ambiguousCut);
+    }
+
+    [Fact]
+    public void RepeatedDiscoveryOfOneIsolatedRootCanJoinButAnotherBranchCannot()
+    {
+        var circle=new PK_CIRCLE_sf_s{radius=1};circle.basis_set.axis.coord[2]=1;circle.basis_set.ref_direction.coord[0]=1;
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.CircleCreate(&circle,&carrier));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[0]=1;plane.basis_set.ref_direction.coord[1]=1;
+        SurfTag equation;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&equation));
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.TestFiniteRootWitnessIdentity(carrier,equation,out var first,out var repeated));
+        Assert.True(first>=0);Assert.Equal(first,repeated);
+    }
+
+    [Theory]
+    [InlineData(1.5,4,false)]
+    [InlineData(2.5,0,false)]
+    [InlineData(2,0,true)]
+    public void FiniteConicCylinderProviderDistinguishesSimpleEmptyAndTangentDomains(double radius,int expectedCount,bool unresolved)
+    {
+        var ellipse=new PK_ELLIPSE_sf_s{R1=2,R2=1};ellipse.basis_set.axis.coord[2]=1;ellipse.basis_set.ref_direction.coord[0]=1;
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.EllipseCreate(&ellipse,&carrier));
+        var cylinder=new PK_CYL_sf_s{radius=radius,basis_set=ellipse.basis_set};SurfTag support;Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&support));
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[8];Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[8];
+        Span<double> errors=stackalloc double[8];
+        var expected=unresolved?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;
+        Assert.Equal(expected,KernelRuntime.IsolateFiniteConicCylinder(new(){Curve=carrier,Start=0,End=Math.Tau},support,roots,isolation,errors,out var count));
+        if(unresolved)return;
+        Assert.Equal(expectedCount,count);if(count==0)return;
+        var angle=Math.Acos(Math.Sqrt(5.0/12.0));Span<double> exact=stackalloc double[4]{angle,Math.PI-angle,Math.PI+angle,Math.Tau-angle};
+        for(var i=0;i<count;i++)
+        {
+            Assert.True(isolation[i].Certified);Assert.InRange(exact[i],isolation[i].Root.Lower,isolation[i].Root.Upper);
+            if(i>0)Assert.True(isolation[i-1].Root.Upper<isolation[i].Root.Lower);
+        }
     }
     private static void Write(PK_VECTOR_s* target,KernelVector3 value){target->coord[0]=value.X;target->coord[1]=value.Y;target->coord[2]=value.Z;}
 }

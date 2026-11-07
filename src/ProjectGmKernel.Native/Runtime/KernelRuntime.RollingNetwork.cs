@@ -6,7 +6,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish,PatchDomain,SourceAssociations,BoundaryProofs,Subdivision}
+    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish,PatchDomain,SourceAssociations,BoundaryProofs,Subdivision,ProvedEndpointReuse}
     [ThreadStatic] internal static RollingNetworkStage LastRollingNetworkStage;
     [ThreadStatic] internal static BufferOffset LastRollingFirstFace,LastRollingSecondFace;
     internal struct RollingNetworkTrace

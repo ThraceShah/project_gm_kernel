@@ -18,7 +18,7 @@ internal static unsafe partial class KernelRuntime
         for(var f=0;f<oldFaces;f++,face=Faces[face].NextInBody)loopCount+=Faces[face].LoopCount;
         if(oldFaces+bands.Length>RegularInputFaces||Bodies[body].EdgeCountBody+4*bands.Length>RegularInputEdges
             ||loopCount+bands.Length>RegularInputLoops||2*Bodies[body].EdgeCountBody+4*bands.Length>RegularInputCoedges)return ParasolidConstants.PK_ERROR_not_implemented;
-        var scratch=CommandScratch.Current;var memory=scratch.Take(249000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        var scratch=CommandScratch.Current;var memory=scratch.Take(249000+2*SheetPointLimit);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -58,7 +58,8 @@ internal static unsafe partial class KernelRuntime
             foreach(var family in families)
             {
                 LastRollingFirstFace=family.FirstFace;LastRollingSecondFace=family.SecondFace;var before=cutCount;
-                error=ClipRegularFacePair(view,family.FirstFace,family.SecondFace,curves.Slice(family.FirstCurve,family.Count),cuts,ref cutCount,owned,ref ownedCount,ref model,certificates[..certificateCount]);
+                error=ClipRegularFacePair(view,family.FirstFace,family.SecondFace,curves.Slice(family.FirstCurve,family.Count),cuts,ref cutCount,owned,ref ownedCount,
+                    ref model,certificates[..certificateCount],sourceFaces.Length);
                 if(error!=0)
                 {
                     TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Surface=view.Faces[family.FirstFace].Surface,Other=view.Faces[family.SecondFace].Surface,Curve=LastSheetCurve,First=LastSheetParameter});

@@ -31,6 +31,38 @@ internal static unsafe partial class KernelRuntime
         internal FiniteCurveSurfaceRoot FirstRoot,SecondRoot;
     }
 
+    internal static AlgorithmStatus IsolateFiniteConicCylinder(in ModelingEdge edge,SurfTag cylinderTag,Span<OperationIntersectionPoint> roots,
+        Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
+    {
+        count=0;var record=Curves[GetCurveSlotByTag(edge.Curve)];
+        if(!TryReadExplicitSpineCurve(record,out var conic)||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(cylinderTag)],out var cylinder))
+            return AlgorithmStatus.Unsupported;
+        // In the native conic parameter, solve |(C(t)-O) x axis|²-r²=0.
+        // Interval position and derivative bounds cover the entire trim;
+        // non-simple or unresolved roots cannot certify branch identity.
+        Span<BlendSpineInstruction> spine=stackalloc BlendSpineInstruction[1]{new(){Curve=conic,ChartCount=2}};
+        Span<BlendChartInstruction> domain=stackalloc BlendChartInstruction[2]{new(){Parameter=edge.Start},new(){Parameter=edge.End}};
+        var program=new NestedBlendProgram(default,spine,domain);
+        var patch=new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
+        var status=SurfaceIsoPlaneRoots.Find(patch,cylinder,edge.Start,edge.End,roots,ref count,strictSeparation:true,isolation:isolation);
+        if(status!=AlgorithmStatus.Success)return status;
+        for(var i=1;i<count;i++)for(var j=i;j>0&&isolation[j].Root.Lower<isolation[j-1].Root.Lower;j--)
+        {
+            (roots[j],roots[j-1])=(roots[j-1],roots[j]);
+            (isolation[j],isolation[j-1])=(isolation[j-1],isolation[j]);
+        }
+        for(var i=0;i<count;i++)
+        {
+            var root=isolation[i].Root;var at=roots[i].First;
+            if(i>0&&isolation[i-1].Root.Upper>=root.Lower)return AlgorithmStatus.NotConverged;
+            status=SpineParameterMap.Series(conic,new(at,0),out var point,out _);if(status!=AlgorithmStatus.Success)return status;
+            status=SpineParameterMap.Interval(conic,new(root,0),out var box,out _);if(status!=AlgorithmStatus.Success)return status;
+            roots[i].Point=point.Value;spatialErrors[i]=(box-new IntervalVector(roots[i].Point)).Norm().Value.Upper;
+            if(!double.IsFinite(spatialErrors[i]))return AlgorithmStatus.NotConverged;
+        }
+        return status;
+    }
+
     private static int ReadRollingFiniteEvents(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,
         ReadOnlySpan<VertexSlot> vertices,ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingSubdivision> subdivisions,ReadOnlySpan<RollingPointContact> points,
         Span<FiniteCurveSurfaceResult> results,out BufferCount count)

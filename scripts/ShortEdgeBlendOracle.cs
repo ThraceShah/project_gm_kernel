@@ -21,6 +21,8 @@ KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangemen
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceRollingNetwork=trace=>
     {
+        if(trace.Stage==KernelRuntime.RollingNetworkStage.ProvedEndpointReuse)
+        {Console.WriteLine($"ROLLING PROVED REUSE event={trace.Cell} supports={trace.Surface}/{trace.Other} curve={trace.Curve} t={trace.First:R}/{trace.Last:R}");return;}
         if(trace.Stage is KernelRuntime.RollingNetworkStage.Select or KernelRuntime.RollingNetworkStage.Build)
         {Console.WriteLine($"ROLLING CELL {trace.Stage} cell={trace.Cell} source={trace.CellSource} surface={trace.Surface} material={trace.Material}");return;}
         Console.WriteLine($"ROLLING {trace.Stage} source={trace.Source} supports={trace.FirstSupport}/{trace.SecondSupport} surface={trace.Surface} other={trace.Other} curve={trace.Curve} relation={trace.Relation} vertex={trace.Vertex} t=[{trace.First:R},{trace.Last:R}]");
@@ -56,7 +58,7 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
         {
             var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];
-            Console.WriteLine($"BOUNDARY CertifiedRoot event={trace.StartEvent} edge={trace.Edge} coedge={trace.InputCoedge} carrier={trace.Curve}/{trace.Generation}/{carrier.Class} supports={trace.Surface}/{trace.OtherSurface} cut={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R}");return;
+            Console.WriteLine($"BOUNDARY CertifiedRoot event={trace.StartEvent} edge={trace.Edge} coedge={trace.InputCoedge} carrier={trace.Curve}/{trace.Generation}/{carrier.Class} supports={trace.Surface}/{trace.OtherSurface} cut={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R} witness={trace.Witness}");return;
         }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface}/{surface.Class} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
         if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.BoundaryTraceStage.Input)

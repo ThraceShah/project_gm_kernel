@@ -20,6 +20,9 @@ internal static unsafe partial class KernelRuntime
         // locator, Surface may name the scalar equation with a unique root
         // in this interval. That equation is used only within this command.
         internal SurfTag Surface;
+        // One-based (finite input edge, isolated root ordinal) within the
+        // named equation's complete result, shared by its coedge discoveries.
+        internal BoundaryRootWitnessId Witness;
         internal double Parameter,Lower,Upper;
     }
     private struct BoundaryCarrierSurface
@@ -83,6 +86,7 @@ internal static unsafe partial class KernelRuntime
         internal EntityGeneration Generation,SurfaceGeneration;
         internal BufferOffset Edge,Face,NextEdge,InputCoedge;
         internal BoundaryEventId StartEvent,EndEvent;
+        internal BoundaryRootWitnessId Witness;
         internal double First,Last,StartAngle,EndAngle,SpatialError;
         internal KernelVector3 StartPoint,EndPoint;
         internal KernelSense CurveSense,SurfaceSense,FaceSense;
