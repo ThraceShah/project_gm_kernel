@@ -166,10 +166,10 @@ internal static unsafe partial class KernelRuntime
         error0=ValidateRegularContactPlacement(edge,supports,curves[..2],lo[..2],hi[..2]);if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Reach;
         error0=ValidateRegularBlendEndExtensions(body,edge,supports,ends,contacts,blend,firstStation,lastStation);if(error0!=0)return error0;
-        error0=AssembleFiniteRegularBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products);
+        error0=AssembleFiniteRegularBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products,out var product);
         if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Release;
-        descriptions[0]=new(){Edge=original.Header.Tag,First=Faces[fa].Header.Tag,Second=Faces[fb].Header.Tag};made=1;
+        descriptions[0]=new(){Edge=original.Header.Tag,First=Faces[fa].Header.Tag,Second=Faces[fb].Header.Tag,Result=product};made=1;
         // The assembled body owns cloned geometry, including the complete
         // procedural support closure. Release the construction roots.
         // Replacing the source also releases construction geometry adopted

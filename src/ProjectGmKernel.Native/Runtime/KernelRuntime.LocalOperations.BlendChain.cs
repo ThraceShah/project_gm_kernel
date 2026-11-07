@@ -55,13 +55,13 @@ internal static unsafe partial class KernelRuntime
         Span<EdgeSlot> one=stackalloc EdgeSlot[1]{merged};Span<LocalBlendProduct> ignored=stackalloc LocalBlendProduct[1];Span<FaceSlot> wholeProducts=stackalloc FaceSlot[faces.Length+1];
         error=BuildRegularLocalBlend(workingSlot,workingFaces,one,ignored,wholeProducts,out var count);if(error!=0)return error;
         if(count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        var blendFace=wholeProducts[faces.Length];var blend=Faces[blendFace].SurfTag;
+        var blendFace=TagRec(ignored[0].Result).Slot;var blend=Faces[blendFace].SurfTag;
         Span<SheetCutCurve> sections=stackalloc SheetCutCurve[ordered.Length-1];sections.Clear();
         for(var i=0;i<sections.Length;i++)
         {
             error=BlendChainSection(blend,primarySide,junctions[i],tangents[i],out sections[i]);if(error!=0)return error;
         }
-        error=PartitionBlendChain(working,workingFaces,blendFace,sections,products,out var output);if(error!=0)return error;
+        error=PartitionBlendChain(working,workingFaces,blendFace,sections,products,descriptions[..selected.Length],out var output);if(error!=0)return error;
         error=ReplaceLocalBody(body,output,faces,products[..(faces.Length+selected.Length)]);if(error!=0)return error;
         error=EntityDelete(1,&working);if(error!=0)return error;
         foreach(var section in sections)if(IsValidTag(section.Curve)){var tag=section.Curve;error=EntityDelete(1,&tag);if(error!=0)return error;}
@@ -136,7 +136,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int PartitionBlendChain(BodyTag input,ReadOnlySpan<FaceSlot> originals,FaceSlot blendFace,ReadOnlySpan<SheetCutCurve> cuts,
-        Span<FaceSlot> products,out BodyTag output)
+        Span<FaceSlot> products,Span<LocalBlendProduct> descriptions,out BodyTag output)
     {
         output=0;var body=TagRec(input).Slot;var ne=Bodies[body].EdgeCountBody;var nv=Bodies[body].VertexCountBody;var nf=Bodies[body].FaceCountBody;var count=cuts.Length+1;
         var model=new SheetArrangement{Points=stackalloc KernelVector3[nv+2*cuts.Length],OriginalVertices=stackalloc VertexSlot[nv+2*cuts.Length],
@@ -169,9 +169,13 @@ internal static unsafe partial class KernelRuntime
             var found=-1;for(var f=0;f<model.NF;f++)if(model.Sources[f]==original){if(found>=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;found=f;}
             if(found<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;order[at++]=found;
         }
-        for(var f=0;f<model.NF;f++)if(model.Sources[f]==blendFace)order[at++]=f;
-        if(at!=model.NF)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        Span<BufferOffset> resultCells=stackalloc BufferOffset[count];var resultCount=0;
+        for(var f=0;f<model.NF;f++)if(model.Sources[f]==blendFace)
+        {if(resultCount==resultCells.Length)return ParasolidConstants.PK_ERROR_bad_loop;resultCells[resultCount++]=at;order[at++]=f;}
+        if(at!=model.NF||resultCount!=descriptions.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         Span<byte> reversed=stackalloc byte[model.NF],cavity=stackalloc byte[model.NF];reversed.Clear();cavity.Clear();
-        return CloneRegularBoundaryBody(ref model,order,reversed,cavity,out output,products[..model.NF]);
+        error=CloneRegularBoundaryBody(ref model,order,reversed,cavity,out output,products[..model.NF]);if(error!=0)return error;
+        for(var i=0;i<resultCount;i++)descriptions[i].Result=Faces[products[resultCells[i]]].Header.Tag;
+        return 0;
     }
 }

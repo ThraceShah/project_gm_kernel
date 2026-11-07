@@ -9,8 +9,9 @@ internal static unsafe partial class KernelRuntime
     // retained source boundary; no provider supplies an ordered result loop.
     private static int AssembleFiniteRegularBlend(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,EdgeSlot selected,
         ReadOnlySpan<FaceSlot> supports,ReadOnlySpan<FaceSlot> caps,ReadOnlySpan<VertexSlot> ends,SurfTag blend,
-        ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,ReadOnlySpan<KernelVector3> contacts,Span<FaceSlot> products)
+        ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,ReadOnlySpan<KernelVector3> contacts,Span<FaceSlot> products,out FaceTag product)
     {
+        product=0;
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=sourceFaces.Length;var loopCapacity=0;
         foreach(var face in sourceFaces)loopCapacity+=Faces[face].LoopCount;
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne+curves.Length];
@@ -95,12 +96,15 @@ internal static unsafe partial class KernelRuntime
         error=ExtractSheetCycles(blend,ref model,halfedges[..nh],cycleCoedges,cycles,out var cycleCount,out _);if(error!=0)return error;
         if(cycleCount!=1)return ParasolidConstants.PK_ERROR_not_implemented;
         var sense=cycles[0].Positive!=0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c;
+        var blendCell=model.NF;
         error=ArrangeFiniteReplacementFace(blend,sense,-1,newBoundary[..newCount],ref model,halfedges,cycleCoedges,cycles);if(error!=0)return error;
+        if(model.NF!=blendCell+1)return ParasolidConstants.PK_ERROR_bad_loop;
         Span<BufferOffset> indices=stackalloc BufferOffset[model.NF];for(var i=0;i<indices.Length;i++)indices[i]=i;
         Span<byte> reversed=stackalloc byte[model.NF],cavities=stackalloc byte[model.NF];reversed.Clear();cavities.Clear();
         LastRegularBlendStage=RegularBlendStage.Build;
         error=CloneRegularBoundaryBody(ref model,indices,reversed,cavities,out var output,products[..model.NF]);if(error!=0)return error;
         LastRegularBlendStage=RegularBlendStage.Publish;
-        return ReplaceLocalBody(body,output,sourceFaces,products);
+        error=ReplaceLocalBody(body,output,sourceFaces,products);if(error!=0)return error;
+        product=Faces[products[blendCell]].Header.Tag;return 0;
     }
 }

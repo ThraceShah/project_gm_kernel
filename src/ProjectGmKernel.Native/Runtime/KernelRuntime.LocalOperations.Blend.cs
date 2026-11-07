@@ -127,7 +127,7 @@ internal static unsafe partial class KernelRuntime
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildPlanarLocalBlends(slot,faces,selected[..count],descriptions,products,out made);
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
-            error=BuildTrivalentLocalBlendCorner(slot,faces,selected[..count],descriptions,products,out made);
+            error=BuildTrivalentLocalBlendCorner(slot,faces,selected[..count],descriptions,out made);
         if(error==ParasolidConstants.PK_ERROR_not_implemented)
             error=BuildRegularLocalBlend(slot,faces,selected[..count],descriptions,products,out made);
         }
@@ -136,13 +136,19 @@ internal static unsafe partial class KernelRuntime
             *fault=error==ParasolidConstants.PK_ERROR_not_implemented?ParasolidConstants.PK_blend_fault_type_c:ParasolidConstants.PK_blend_fault_range_c;
             *faultEdge=Edges[selected[0]].Header.Tag;return error;
         }
+        for(var i=0;i<made;i++)
+        {
+            var tag=descriptions[i].Result;
+            if(!IsValidTag(tag)||TagRec(tag).Pool!=(byte)PoolKind.Face||TopologyBody(PoolKind.Face,TagRec(tag).Slot)!=slot)
+                return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        }
         var result=output==null?null:(EntityTag*)State.Session->Returns.TryAllocate((nuint)(made*sizeof(int)));
         var replaced=topols==null?null:(EntityTag*)State.Session->Returns.TryAllocate((nuint)(made*sizeof(int)));
         var underlying=unders==null?null:(PK_FACE_array_s*)State.Session->Returns.TryAllocate((nuint)(made*sizeof(PK_FACE_array_s)));
         if(output!=null&&result==null||topols!=null&&replaced==null||unders!=null&&underlying==null)return ParasolidConstants.PK_ERROR_memory_full;
         for(var i=0;i<made;i++)
         {
-            var desc=descriptions[i];if(result!=null)result[i]=desc.Result!=0?desc.Result:Faces[products[faceCount+i]].Header.Tag;
+            var desc=descriptions[i];if(result!=null)result[i]=desc.Result;
             if(replaced!=null)replaced[i]=options->vx_twin!=0&&desc.Vertex!=0?desc.Vertex:desc.Edge;
             if(underlying!=null)
             {

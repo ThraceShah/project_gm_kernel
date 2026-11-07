@@ -24,19 +24,19 @@ internal static unsafe partial class KernelRuntime
     {LastBlendCornerEvent=kind;return error;}
 
     private static int BuildTrivalentLocalBlendCorner(BodySlot body,ReadOnlySpan<FaceSlot> faces,ReadOnlySpan<EdgeSlot> selected,
-        Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
+        Span<LocalBlendProduct> descriptions,out BufferCount made)
     {
-        var error=BuildTrivalentCornerCore(body,faces,selected,descriptions,products,out made);
+        var error=BuildTrivalentCornerCore(body,faces,selected,descriptions,out made);
         // A matched star owns its entire attempt. Never let a partial geometry
         // construction fall through to another local-operation algorithm.
         return error==ParasolidConstants.PK_ERROR_not_implemented&&LastBlendCornerStage>=BlendCornerStage.OffsetRoot?ParasolidConstants.PK_ERROR_cant_do_intersect:error;
     }
 
     private static int BuildTrivalentCornerCore(BodySlot body,ReadOnlySpan<FaceSlot> faces,ReadOnlySpan<EdgeSlot> selected,
-        Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
+        Span<LocalBlendProduct> descriptions,out BufferCount made)
     {
         made=0;LastBlendCornerStage=BlendCornerStage.Graph;LastBlendCornerEvent=BlendCornerEvent.None;
-        if(selected.Length!=3||Bodies[body].RegionCount!=2||Bodies[body].ShellCount!=2||products.Length<faces.Length+4||descriptions.Length<4)
+        if(selected.Length!=3||Bodies[body].RegionCount!=2||Bodies[body].ShellCount!=2||descriptions.Length<4)
             return CornerReject(BlendCornerEvent.UnsupportedGraph);
         Span<FaceSlot> supports=stackalloc FaceSlot[3],pairFaces=stackalloc FaceSlot[6],caps=stackalloc FaceSlot[3];
         Span<VertexSlot> far=stackalloc VertexSlot[3];Span<EdgeRecord> oldEdges=stackalloc EdgeRecord[3];
@@ -201,7 +201,7 @@ internal static unsafe partial class KernelRuntime
         var vertexTag=Vertices[vertex].Header.Tag;
         var surviving=0;for(var e=0;e<3;e++)if(vanished[e]==0)descriptions[surviving++]=new(){Edge=oldEdges[e].Header.Tag,First=Faces[pairFaces[2*e]].Header.Tag,Second=Faces[pairFaces[2*e+1]].Header.Tag};
         descriptions[surviving]=new(){Edge=oldEdges[0].Header.Tag,Vertex=vertexTag,First=Faces[supports[0]].Header.Tag,Second=Faces[supports[1]].Header.Tag,Third=Faces[supports[2]].Header.Tag};
-        error=AssembleTrivalentBlendCorner(body,faces,selected,vertex,supports,pairFaces,caps,far,bands,sphere,curves,lower,upper,contacts,distantContacts,vanished,products);if(error!=0)return error;
+        error=AssembleTrivalentBlendCorner(body,faces,selected,vertex,supports,pairFaces,caps,far,bands,sphere,curves,lower,upper,contacts,distantContacts,vanished,descriptions[..(surviving+1)]);if(error!=0)return error;
         LastBlendCornerStage=BlendCornerStage.Release;
         foreach(var curve in curves)if(IsValidTag(curve)){var tag=curve;error=EntityDelete(1,&tag);if(error!=0)return error;}
         foreach(var band in bands)if(IsValidTag(band)&&GeometricOwnerCount(PoolKind.Surface,GetSurfaceSlotByTag(band))==0){var tag=band;error=EntityDelete(1,&tag);if(error!=0)return error;}

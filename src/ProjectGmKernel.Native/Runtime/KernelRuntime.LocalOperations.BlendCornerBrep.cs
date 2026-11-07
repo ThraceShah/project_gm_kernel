@@ -7,7 +7,7 @@ internal static unsafe partial class KernelRuntime
     private static int AssembleTrivalentBlendCorner(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,ReadOnlySpan<EdgeSlot> selected,
         VertexSlot corner,ReadOnlySpan<FaceSlot> supports,ReadOnlySpan<FaceSlot> pairs,ReadOnlySpan<FaceSlot> caps,ReadOnlySpan<VertexSlot> far,
         ReadOnlySpan<SurfTag> bands,SurfTag sphere,ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,
-        ReadOnlySpan<KernelVector3> contacts,ReadOnlySpan<KernelVector3> distant,ReadOnlySpan<byte> vanished,Span<FaceSlot> products)
+        ReadOnlySpan<KernelVector3> contacts,ReadOnlySpan<KernelVector3> distant,ReadOnlySpan<byte> vanished,Span<LocalBlendProduct> descriptions)
     {
         var collapsed=vanished.Contains((byte)1);
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=sourceFaces.Length;
@@ -137,11 +137,23 @@ internal static unsafe partial class KernelRuntime
             }
         }
         else sourceFaces.CopyTo(retained);
+        Span<SurfTag> productSurfaces=stackalloc SurfTag[descriptions.Length];var productCount=0;
+        for(var e=0;e<bands.Length;e++)if(vanished[e]==0)productSurfaces[productCount++]=bands[e];
+        productSurfaces[productCount++]=sphere;
+        Span<BufferOffset> resultCells=stackalloc BufferOffset[productCount];
+        for(var i=0;i<productCount;i++)
+        {
+            var cell=-1;
+            for(var f=0;f<model.NF;f++)if(model.Sources[f]<0&&model.Faces[f].Surface==productSurfaces[i])
+            {if(cell>=0)return ParasolidConstants.PK_ERROR_bad_loop;cell=f;}
+            if(cell<0)return ParasolidConstants.PK_ERROR_bad_loop;resultCells[i]=cell;
+        }
         Span<BufferOffset> indices=stackalloc BufferOffset[model.NF];for(var i=0;i<indices.Length;i++)indices[i]=i;
         Span<byte> reversed=stackalloc byte[model.NF],cavities=stackalloc byte[model.NF];reversed.Clear();cavities.Clear();
         Span<FaceSlot> built=stackalloc FaceSlot[model.NF];error=CloneRegularBoundaryBody(ref model,indices,reversed,cavities,out var output,built);if(error!=0)return error;
         LastBlendCornerStage=BlendCornerStage.Publish;error=ReplaceLocalBody(body,output,retained[..retainedCount],built);if(error!=0)return error;
-        built[..retainedCount].CopyTo(products);built[retainedCount..].CopyTo(products[nf..]);return 0;
+        for(var i=0;i<productCount;i++)descriptions[i].Result=Faces[built[resultCells[i]]].Header.Tag;
+        return 0;
     }
 
     private static int PublishCornerBoundary(SurfTag surface,KernelSense sense,FaceSlot source,scoped ReadOnlySpan<ModelingCoedge> boundary,

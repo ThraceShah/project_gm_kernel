@@ -109,7 +109,7 @@ internal static unsafe partial class KernelRuntime
         LastSupportChainStage=SupportChainStage.Roll;
         error0=BuildRegularLocalBlend(TagRec(working).Slot,workingFaces,one,ignored,wholeProducts,out var count);if(error0!=0)return error0;
         if(count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        var blendFace=wholeProducts[workingCount];var blend=Faces[blendFace].SurfTag;
+        var blendFace=TagRec(ignored[0].Result).Slot;var blend=Faces[blendFace].SurfTag;
         Span<OperationIntersectionPoint> passiveRoots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
         foreach(var seam in seams[..seamCount])if(seam.Side<0)
         {
@@ -134,7 +134,7 @@ internal static unsafe partial class KernelRuntime
         }
         LastSupportChainStage=SupportChainStage.Restore;
         error0=RestoreSupportChain(working,faces,aliases,workingFaces,workingSources[..workingCount],workingSupports,blendFace,seams[..seamCount],sections[..sectionCount],
-            descriptions,products,out var output);if(error0!=0)return error0;
+            descriptions[..(sectionCount+1)],products,out var output);if(error0!=0)return error0;
         LastSupportChainStage=SupportChainStage.Publish;
         error0=ReplaceLocalBody(body,output,faces,products[..(faces.Length+sectionCount+1)]);if(error0!=0)return error0;
         error0=EntityDelete(1,&working);if(error0!=0)return error0;
@@ -300,9 +300,11 @@ internal static unsafe partial class KernelRuntime
         }
         if(model.NF!=faceCapacity)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         Span<BufferOffset> order=stackalloc BufferOffset[faceCapacity];order.Fill(-1);var at=originals.Length;
+        Span<BufferOffset> resultCells=stackalloc BufferOffset[descriptions.Length];var resultCount=0;
         for(var f=0;f<model.NF;f++)
         {
-            if(model.Sources[f]==blendFace){order[at++]=f;continue;}
+            if(model.Sources[f]==blendFace)
+            {if(resultCount==resultCells.Length)return ParasolidConstants.PK_ERROR_bad_loop;resultCells[resultCount++]=at;order[at++]=f;continue;}
             var source=workingSources[workingFaces.IndexOf(model.Sources[f])];var found=-1;var cell=model.Faces[f];var changeChart=false;
             for(var i=0;i<originals.Length;i++)
             {
@@ -320,10 +322,11 @@ internal static unsafe partial class KernelRuntime
                 var original=Faces[originals[found]];cell.Surface=original.SurfTag;cell.Sense=NormalizeLocalSense(original.Orientation);model.Faces[f]=cell;
             }
         }
+        if(resultCount!=descriptions.Length)return ParasolidConstants.PK_ERROR_bad_loop;
         foreach(var index in order)if(index<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        for(var b=originals.Length;b<order.Length;b++)
+        for(var b=0;b<resultCount;b++)
         {
-            var blend=model.Faces[order[b]];FaceSlot a=-1,c=-1;
+            var blend=model.Faces[order[resultCells[b]]];FaceSlot a=-1,c=-1;
             for(var l=0;l<blend.LoopCount;l++)
             {
                 var loop=model.Loops[blend.FirstLoop+l];
@@ -341,9 +344,11 @@ internal static unsafe partial class KernelRuntime
                     }
                 }
             }
-            if(a<0||c<0)return ParasolidConstants.PK_ERROR_bad_loop;descriptions[b-originals.Length]=new(){First=Faces[a].Header.Tag,Second=Faces[c].Header.Tag};
+            if(a<0||c<0)return ParasolidConstants.PK_ERROR_bad_loop;descriptions[b]=new(){First=Faces[a].Header.Tag,Second=Faces[c].Header.Tag};
         }
         Span<byte> reversed=stackalloc byte[faceCapacity],cavity=stackalloc byte[faceCapacity];reversed.Clear();cavity.Clear();
-        return CloneRegularBoundaryBody(ref model,order,reversed,cavity,out output,products[..faceCapacity]);
+        error=CloneRegularBoundaryBody(ref model,order,reversed,cavity,out output,products[..faceCapacity]);if(error!=0)return error;
+        for(var i=0;i<resultCount;i++)descriptions[i].Result=Faces[products[resultCells[i]]].Header.Tag;
+        return 0;
     }
 }
