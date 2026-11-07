@@ -69,19 +69,21 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
-    [Fact]
-    public void SubdividedSelectedGeneratorRetainsTheSharedSectionAndProductProvenance()
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void SubdividedSelectedCarrierRetainsTheSharedSectionAndProductProvenance(bool ellipse)
     {
         var body=Seed();Span<EdgeTag> selected=stackalloc EdgeTag[3];Selection(body,selected[..2]);
-        var line=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(selected[1]).Slot];
-        var lo=line.ParameterStart;var hi=line.ParameterEnd;
-        if(line.HasParameterRange==0)
+        var index=ellipse?0:1;var carrier=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(selected[index]).Slot];
+        var lo=carrier.ParameterStart;var hi=carrier.ParameterEnd;
+        if(carrier.HasParameterRange==0)
         {
-            var p=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[line.StartVertex].PointTag)].Position;
-            var q=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[line.EndVertex].PointTag)].Position;
+            Assert.False(ellipse,"fixture ellipse has a finite native range");
+            var p=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[carrier.StartVertex].PointTag)].Position;
+            var q=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[carrier.EndVertex].PointTag)].Position;
             var length=EvaluationMath.Sub(p,q);hi=Math.Sqrt(EvaluationMath.Dot(length,length));
         }
-        EntityTag vertex;EdgeTag tail;Assert.Equal(0,KernelRuntime.EdgeSplitAtParam(selected[1],lo+(hi-lo)*.5,&vertex,&tail));selected[2]=tail;
+        EntityTag vertex;EdgeTag tail;Assert.Equal(0,KernelRuntime.EdgeSplitAtParam(selected[index],lo+(hi-lo)*.5,&vertex,&tail));selected[2]=tail;
         selected.Reverse();Mark(selected);
         var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;EntityTag* products;EntityTag* replaced;
         Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,&products,null,&replaced,&fault,&edgeFault,&topolFault));
@@ -89,7 +91,7 @@ public unsafe class RollingNetworkTests:IDisposable
         {
             Assert.Equal(3,count);
             for(var i=0;i<count;i++)Assert.Equal(selected[i],replaced[i]);
-            var a=KernelRuntime.ResolveTagRecord(products[0]).Slot;var b=KernelRuntime.ResolveTagRecord(products[1]).Slot;
+            var a=KernelRuntime.ResolveTagRecord(products[0]).Slot;var b=KernelRuntime.ResolveTagRecord(products[2-index]).Slot;
             var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var sections=0;
             for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
             {

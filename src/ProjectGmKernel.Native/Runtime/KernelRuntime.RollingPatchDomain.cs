@@ -89,11 +89,29 @@ internal static unsafe partial class KernelRuntime
         Span<KernelVector3> point=stackalloc KernelVector3[1];
         foreach(ref readonly var split in subdivisions)
         {
-            var band=bands[split.Band];var at=split.Parameter;var face=sourceFaces+split.Band;
-            if(!(at>band.First&&at<band.Last)||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(band.Surface)],out var cylinder)
-                ||cylinder.Kind!=SurfaceClass.Cylinder)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-            var center=Add(cylinder.Origin,Scale(cylinder.Axis,at));
-            var plane=new AnalyticSurface(SurfaceClass.Plane,center,cylinder.Axis,cylinder.X);
+            var band=bands[split.Band];var at=split.Station;var face=sourceFaces+split.Band;
+            if(!(split.StationLower>band.First&&split.StationUpper<band.Last))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            var record=Surfaces[GetSurfaceSlotByTag(band.Surface)];var elliptical=record.Class==SurfaceClass.BlendSurface;
+            CurveTag section;double lower,upper;
+            if(elliptical)
+            {
+                // The certified station belongs to the finite rolling
+                // branch. Its fixed-u section is an exact bounded circle.
+                var sectionError=NestedBlendIsoparam(band.Surface,true,at,band.FirstSection,band.LastSection,out section,out lower,out upper);
+                if(sectionError!=0)return sectionError;
+            }
+            else
+            {
+                if(!TryPrepareSurface(record,out var cylinder)||cylinder.Kind!=SurfaceClass.Cylinder)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                var center=Add(cylinder.Origin,Scale(cylinder.Axis,at));
+                section=CreateCircleCurveTag(center.X,center.Y,center.Z,cylinder.Axis.X,cylinder.Axis.Y,cylinder.Axis.Z,
+                    cylinder.X.X,cylinder.X.Y,cylinder.X.Z,cylinder.Radius);
+                if(section<=0)return ParasolidConstants.PK_ERROR_memory_full;
+                lower=band.FirstSection;upper=band.LastSection;
+            }
+            var data=CircleDataPool[Curves[GetCurveSlotByTag(section)].DataIndex];
+            var plane=new AnalyticSurface(SurfaceClass.Plane,Vector(data.CenterX,data.CenterY,data.CenterZ),
+                Vector(data.AxisX,data.AxisY,data.AxisZ),Vector(data.RefDirX,data.RefDirY,data.RefDirZ));
             foreach(ref readonly var accepted in cuts[..cutCount])
             {
                 if(accepted.First!=face&&accepted.Second!=face)continue;
@@ -103,22 +121,26 @@ internal static unsafe partial class KernelRuntime
                 if(count!=0)return ParasolidConstants.PK_ERROR_not_implemented;
             }
             if(cutCount==cuts.Length||ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-            var section=CreateCircleCurveTag(center.X,center.Y,center.Z,cylinder.Axis.X,cylinder.Axis.Y,cylinder.Axis.Z,
-                cylinder.X.X,cylinder.X.Y,cylinder.X.Z,cylinder.Radius);
-            if(section<=0)return ParasolidConstants.PK_ERROR_memory_full;
-            var imprint=new SheetCutCurve{Curve=section,First=band.FirstSection,Last=band.LastSection};
+            var imprint=new SheetCutCurve{Curve=section,First=lower,Last=upper};
             cuts[cutCount++]=new(){First=face,Second=-1,Cut=imprint};owned[ownedCount++]=imprint;
             var error=AssociateBoundaryCarrierSurface(ref model,section,band.Surface);if(error!=0)return error;
             for(var side=0;side<2;side++)
             {
                 var contact=side==0?band.FirstContact:band.SecondContact;
                 var angle=side==0?0:band.FirstSection==0?band.LastSection:band.FirstSection;
-                var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(contact)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                var parameter=at;var carrier=Curves[GetCurveSlotByTag(contact)];
+                if(elliptical)
+                {
+                    if(!TryAnalyticBlendContactMap(band.Surface,carrier,carrier.TMin,carrier.TMax,out var v,out var shift,out var scale))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    parameter=(at-shift)/scale;angle=v==band.FirstSection?lower:upper;
+                }
+                var status=EvaluateCurveCore(in carrier,parameter,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 error=model.AddPoint(point[0],-1,out var endpoint);if(error!=0)return error;
-                error=model.AssociateParameter(endpoint,contact,at);if(error!=0)return error;
+                error=model.AssociateParameter(endpoint,contact,parameter);if(error!=0)return error;
                 error=model.AssociateParameter(endpoint,section,angle);if(error!=0)return error;
             }
-            TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.Subdivision,Source=split.Before,Surface=band.Surface,Curve=section,Vertex=split.Vertex,First=at,Last=at,Relation=SurfacePairRelation.CurveContact});
+            TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.Subdivision,Source=split.Before,Surface=band.Surface,Curve=section,Vertex=split.Vertex,
+                First=split.StationLower,Last=split.StationUpper,Relation=SurfacePairRelation.CurveContact});
         }
         return 0;
     }

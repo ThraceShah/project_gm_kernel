@@ -42,7 +42,7 @@ using(host)unsafe
     var reference=Read(prefix+"-native.x_t");var actual=nativeGauge?Read(prefix+"-native.x_t"):Read(prefix+"-self.x_t");
     try
     {
-        if(args.Contains("--edges")){EdgeEndpoints(reference,actual);return;}
+        if(args.Contains("--edges")||args.Contains("--lengths")){EdgeEndpoints(reference,actual,args.Contains("--lengths"));return;}
         if(args.Contains("--definitions")){Definitions(reference,"reference");Definitions(actual,"actual");}
         var scaleOption=args.FirstOrDefault(x=>x.StartsWith("--scale-power=",StringComparison.Ordinal));var scale=scaleOption==null?1:Math.ScaleB(1,int.Parse(scaleOption[14..],System.Globalization.CultureInfo.InvariantCulture));
         if(scale!=1){ScaleBody(reference,scale);ScaleBody(actual,scale);}
@@ -91,7 +91,7 @@ using(host)unsafe
     }
     finally{Check(PK_ENTITY_delete(1,&reference));Check(PK_ENTITY_delete(1,&actual));}
 }
-static unsafe void EdgeEndpoints(int reference,int actual)
+static unsafe void EdgeEndpoints(int reference,int actual,bool lengths)
 {
     int nr,na;int* referenceEdges;int* actualEdges;
     Check(PK_BODY_ask_edges(reference,&nr,&referenceEdges));Check(PK_BODY_ask_edges(actual,&na,&actualEdges));
@@ -119,6 +119,14 @@ static unsafe void EdgeEndpoints(int reference,int actual)
             int curve,type;PK_INTERVAL_t range;PK_LOGICAL_t sense;
             Check(PK_EDGE_ask_geometry(actualEdges[match],PK_LOGICAL_true,&curve,&type,b,&range,&sense));
             Console.WriteLine($"EDGE endpoints reference={referenceEdges[i]}/{kindA} actual={actualEdges[match]}/{type} reverse={reversed} distance={best:R} native_limits=[{rangeA.value[0]:R},{rangeA.value[1]:R}]/[{range.value[0]:R},{range.value[1]:R}]");
+            if(lengths&&kindA==PK_CLASS_icurve&&type==PK_CLASS_icurve)
+            {
+                for(var pieces=1;pieces<=32;pieces*=2)
+                {
+                    var first=ParasolidBodyCompare.FiniteLength(ca,rangeA,pieces);var second=ParasolidBodyCompare.FiniteLength(curve,range,pieces);
+                    Console.WriteLine($"EDGE lengths pieces={pieces} reference={first.Value:R}[{first.Lower:R},{first.Upper:R}] actual={second.Value:R}[{second.Lower:R},{second.Upper:R}] delta={Math.Abs(first.Value-second.Value):R}");
+                }
+            }
         }
         Console.WriteLine($"DIAGNOSTIC ONLY: finite endpoint maximum={maximum:R}; matching uses nearest endpoints and does not prove curve equivalence");
     }

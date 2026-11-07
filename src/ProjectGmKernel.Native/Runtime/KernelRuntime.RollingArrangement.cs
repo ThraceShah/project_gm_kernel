@@ -53,7 +53,7 @@ internal static unsafe partial class KernelRuntime
             LastRollingNetworkStage=RollingNetworkStage.SourceAssociations;
             error=ReadRollingBoundaryAssociations(view,originalEdges[..ne],families,curves,ref model);if(error!=0)return error;
             LastRollingNetworkStage=RollingNetworkStage.BoundaryProofs;
-            error=ReadRollingFiniteEvents(view,originalEdges[..ne],model.OriginalVertices[..model.NP],bands,contacts,certificates,out var certificateCount);if(error!=0)return error;
+            error=ReadRollingFiniteEvents(view,originalEdges[..ne],model.OriginalVertices[..model.NP],bands,subdivisions,contacts,certificates,out var certificateCount);if(error!=0)return error;
             LastRollingNetworkStage=RollingNetworkStage.Clip;
             foreach(var family in families)
             {

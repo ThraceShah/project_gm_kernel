@@ -3,6 +3,24 @@ using static parasolid;
 // Both inputs are real-PK bodies: an independent reference and our XT reimport.
 internal static unsafe class ParasolidBodyCompare
 {
+    // PK returns an arc-length bound, separately from its nominal value.
+    // Summing bounds on a partition keeps the same complete native trim.
+    internal static (double Value,double Lower,double Upper) FiniteLength(PK_CURVE_t curve,PK_INTERVAL_t range,int pieces)
+    {
+        var start=range.value[0];var end=range.value[1];var first=start;double value=0,lower=0,upper=0;
+        for(var i=0;i<pieces;i++)
+        {
+            var last=i==pieces-1?end:start+(end-start)*(i+1)/pieces;
+            Require(last>first,"finite length subdivision is representable");
+            double nominal;PK_INTERVAL_t bounds;
+            Check(PK_CURVE_find_length(curve,new(first,last),&nominal,&bounds),"finite curve length");
+            Require(double.IsFinite(nominal)&&nominal>0&&double.IsFinite(bounds.value[0])&&double.IsFinite(bounds.value[1])
+                &&bounds.value[0]<=nominal&&nominal<=bounds.value[1],"native length enclosure contains nominal length");
+            value+=nominal;lower=Math.BitDecrement(lower+bounds.value[0]);upper=Math.BitIncrement(upper+bounds.value[1]);first=last;
+        }
+        return (value,lower,upper);
+    }
+
     public static void AssertEquivalent(PK_BODY_t reference, PK_BODY_t actual, string label)
     {
         PK_BODY_type_t referenceType, actualType;

@@ -115,7 +115,8 @@ internal static unsafe partial class KernelRuntime
         out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point)
     {
         var positive=(forward!=0)==(LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0);
-        var parameter=positive?edge.Start+(edge.End-edge.Start)*fraction:edge.End-(edge.End-edge.Start)*fraction;
+        var parameter=fraction==0?(positive?edge.Start:edge.End):fraction==1?(positive?edge.End:edge.Start)
+            :positive?edge.Start+(edge.End-edge.Start)*fraction:edge.End-(edge.End-edge.Start)*fraction;
         return SheetCurveUV(surface,edge.Curve,parameter,forward!=0,out uv,out tangent,out point,edge.Start,edge.End);
     }
 

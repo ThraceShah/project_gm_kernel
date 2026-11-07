@@ -42,7 +42,7 @@ internal static unsafe partial class KernelRuntime
             &&ExactIntervalZero(secondHeight*secondHeight-new IntervalNumber(right.Analytic.Radius)*right.Analytic.Radius*norm2);
         if(firstHeight.Lower*secondHeight.Lower<=0)return false;
         var cross=ProfileCross(left.Analytic.Axis,right.Analytic.Axis);if(!(Dot(cross,cross)>1e-20))return false;
-        var edge=Edges[band.Source];Span<VertexSlot> endpoints=stackalloc VertexSlot[2]{edge.StartVertex,edge.EndVertex};var found=false;
+        Span<VertexSlot> endpoints=stackalloc VertexSlot[2]{band.SourceFirst,band.SourceLast};var found=false;
         foreach(var vertex in endpoints)
         {
             if(vertex<0||!FaceUsesRollingVertex(face,vertex))continue;

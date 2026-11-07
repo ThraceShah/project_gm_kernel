@@ -83,7 +83,8 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<count;i++)if(model.Faces[indices[i]].Surface==bands[band].Surface)
             {
                 if(made==descriptions.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-                var source=RollingCellSource(bands[band].Source,band,subdivisions,model.Witnesses[indices[i]].param[1]);
+                var axial=Surfaces[GetSurfaceSlotByTag(bands[band].Surface)].Class==SurfaceClass.Cylinder;
+                var source=RollingCellSource(bands[band].Source,band,subdivisions,model.Witnesses[indices[i]].param[axial?1:0]);
                 if(source<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 descriptions[made++]=new(){Edge=Edges[source].Header.Tag,Sequence=Edges[source].PendingBlendSequence,
                     First=Faces[bands[band].FirstSupport].Header.Tag,Second=Faces[bands[band].SecondSupport].Header.Tag,Result=Faces[products[i]].Header.Tag};
@@ -99,9 +100,9 @@ internal static unsafe partial class KernelRuntime
         EdgeSlot before=-1,after=-1;var lo=double.NegativeInfinity;var hi=double.PositiveInfinity;
         foreach(ref readonly var split in subdivisions)if(split.Band==band)
         {
-            if(station==split.Parameter)return -1;
-            if(station>split.Parameter&&split.Parameter>lo){lo=split.Parameter;after=split.After;}
-            if(station<split.Parameter&&split.Parameter<hi){hi=split.Parameter;before=split.Before;}
+            if(station>=split.StationLower&&station<=split.StationUpper)return -1;
+            if(station>split.StationUpper&&split.StationUpper>lo){lo=split.StationUpper;after=split.After;}
+            if(station<split.StationLower&&split.StationLower<hi){hi=split.StationLower;before=split.Before;}
         }
         if(before>=0&&after>=0&&before!=after)return -1;
         return before>=0?before:after>=0?after:representative;

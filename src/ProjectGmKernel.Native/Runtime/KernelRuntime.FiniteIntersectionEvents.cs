@@ -32,31 +32,39 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int ReadRollingFiniteEvents(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,
-        ReadOnlySpan<VertexSlot> vertices,ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingPointContact> points,
+        ReadOnlySpan<VertexSlot> vertices,ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingSubdivision> subdivisions,ReadOnlySpan<RollingPointContact> points,
         Span<FiniteCurveSurfaceResult> results,out BufferCount count)
     {
         count=0;
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-        foreach(var band in bands)
+        for(var bandIndex=0;bandIndex<bands.Length;bandIndex++)
         {
+            var band=bands[bandIndex];
             var source=original.IndexOf(band.Source);if(source<0)return Generated.ParasolidConstants.PK_ERROR_bad_loop;
             var curve=Curves[GetCurveSlotByTag(input.Edges[source].Curve)];
             if(curve.Class==CurveClass.Ellipse&&Surfaces[GetSurfaceSlotByTag(band.Surface)].Class==SurfaceClass.BlendSurface)
+            for(var e=0;e<original.Length;e++)
             {
+                var sourceSlot=original[e];if(sourceSlot<0)continue;
+                var member=sourceSlot==band.Source;
+                foreach(ref readonly var split in subdivisions)
+                    member|=split.Band==bandIndex&&(split.Before==sourceSlot||split.After==sourceSlot);
+                if(!member)continue;
                 if(count==results.Length)return Generated.ParasolidConstants.PK_ERROR_not_implemented;
-                var certificate=NewFiniteEventResult(input.Edges[source],source,band.Surface);
+                var edge=input.Edges[e];var sourceEdge=Edges[sourceSlot];
+                var certificate=NewFiniteEventResult(edge,e,band.Surface);
                 for(var end=0;end<2;end++)
                 {
-                    var parameter=end==0?band.First:band.Last;var edge=input.Edges[source];
+                    var parameter=end==0?band.First:band.Last;
                     LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref parameter);
                     foreach(var contact in points)if(contact.Band==band.Surface&&parameter>=contact.First&&parameter<=contact.Last)
                     {
-                        var sourceEdge=Edges[band.Source];var positive=LocalSenseSign(curve.Sense)>0;
+                        var positive=LocalSenseSign(curve.Sense)>0;
                         if(sourceEdge.StartVertex==contact.Vertex)parameter=positive?edge.Start:edge.End;
                         else if(sourceEdge.EndVertex==contact.Vertex)parameter=positive?edge.End:edge.Start;
                     }
                     if(parameter<edge.Start||parameter>edge.End)continue;
-                    var error=FiniteRollingEndpointRoot(original[source],parameter,out var root);if(error!=0)return error;
+                    var error=FiniteRollingEndpointRoot(sourceSlot,parameter,out var root);if(error!=0)return error;
                     if(certificate.Count++==0)certificate.FirstRoot=root;else certificate.SecondRoot=root;
                 }
                 certificate.State=certificate.Count==0?FiniteIntersectionState.Empty:FiniteIntersectionState.Complete;

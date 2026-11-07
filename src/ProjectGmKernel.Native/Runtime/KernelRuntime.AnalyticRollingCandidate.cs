@@ -12,9 +12,11 @@ internal static unsafe partial class KernelRuntime
     private struct RollingBandCandidate
     {
         internal EdgeSlot Source;
+        internal VertexSlot SourceFirst,SourceLast;
         internal FaceSlot FirstSupport,SecondSupport;
         internal SurfTag Surface;
         internal CurveTag FirstContact,SecondContact;
+        internal double SourceStart,SourceEnd;
         internal double First,Last,Radius;
         internal double FirstSection,LastSection;
     }

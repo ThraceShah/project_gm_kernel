@@ -36,6 +36,7 @@ internal static unsafe partial class KernelRuntime
         internal EdgeSlot Before,After;
         internal VertexSlot Vertex;
         internal double Parameter;
+        internal double Station,StationLower,StationUpper;
     }
 
     private static bool CanBuildAnalyticRollingNetwork(ReadOnlySpan<EdgeSlot> selected)
@@ -84,7 +85,7 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<groups.Length;i++)groups[i]=i;
         for(var i=0;i<networkEdges.Length;i++)for(var j=i+1;j<networkEdges.Length;j++)
         {
-            if(!TryRollingLineSubdivision(networkEdges[i],networkEdges[j],out var join))continue;
+            if(!TryRollingCarrierSubdivision(networkEdges[i],networkEdges[j],out var join))continue;
             var a=RollingComponent(groups,i);var b=RollingComponent(groups,j);
             if(a==b||subdivisionCount==subdivisions.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
             groups[Math.Max(a,b)]=Math.Min(a,b);subdivisions[subdivisionCount++]=join;
@@ -94,11 +95,36 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<selected.Length;i++)if(RollingComponent(groups,i)==i)
         {
             var error=CreateAnalyticRollingCandidate(body,networkEdges[i],out var band);if(error!=0)return error;
+            var sourceLower=double.PositiveInfinity;var sourceUpper=double.NegativeInfinity;
+            for(var e=i;e<networkEdges.Length;e++)if(RollingComponent(groups,e)==i)
+            {
+                var member=Edges[networkEdges[e]];
+                if(!TryProfileEdgeRange(member,out var lower,out var upper)
+                    ||!OperationIntersection.InInterval(lower,band.First,band.Last)||!OperationIntersection.InInterval(upper,band.First,band.Last))
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                var positive=LocalSenseSign(Curves[GetCurveSlotByTag(member.CurveTag)].Sense)>0;
+                if(lower<sourceLower){sourceLower=lower;band.SourceFirst=positive?member.StartVertex:member.EndVertex;}
+                if(upper>sourceUpper){sourceUpper=upper;band.SourceLast=positive?member.EndVertex:member.StartVertex;}
+            }
+            band.SourceStart=sourceLower;band.SourceEnd=sourceUpper;
             bandForGroup[i]=bandCount;candidates[bandCount++]=band;
             TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=band.Source,FirstSupport=band.FirstSupport,SecondSupport=band.SecondSupport,Surface=band.Surface,First=band.First,Last=band.Last});
         }
         var bands=candidates[..bandCount];
-        for(var i=0;i<subdivisionCount;i++)subdivisions[i].Band=bandForGroup[RollingComponent(groups,networkEdges.IndexOf(subdivisions[i].Before))];
+        for(var i=0;i<subdivisionCount;i++)
+        {
+            ref var split=ref subdivisions[i];split.Band=bandForGroup[RollingComponent(groups,networkEdges.IndexOf(split.Before))];
+            var band=bands[split.Band];
+            split.Station=split.StationLower=split.StationUpper=split.Parameter;
+            if(Surfaces[GetSurfaceSlotByTag(band.Surface)].Class==SurfaceClass.BlendSurface
+                &&!TryEllipticSubdivisionStation(band,ref split))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            for(var previous=0;previous<i;previous++)if(subdivisions[previous].Band==split.Band)
+            {
+                var other=subdivisions[previous];
+                if(!(other.Parameter<split.Parameter&&other.StationUpper<split.StationLower
+                    ||split.Parameter<other.Parameter&&split.StationUpper<other.StationLower))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            }
+        }
         Span<SheetCutCurve> cuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];
         Span<RollingPointContact> points=stackalloc RollingPointContact[128];var pointCount=0;
         Span<BufferCount> interactions=stackalloc BufferCount[bands.Length];interactions.Clear();
@@ -111,7 +137,8 @@ internal static unsafe partial class KernelRuntime
             // Reject before editing topology; disjoint components are still
             // processed in the same operation regardless of component count.
             if(count>0&&(++interactions[i]>1||++interactions[j]>1))return ParasolidConstants.PK_ERROR_not_implemented;
-            foreach(var cut in cuts[..count])SetRollingCurveSense(cut.Curve,Curves[GetCurveSlotByTag(Edges[bands[i].Source].CurveTag)].Sense);
+            var sense=RollingInteractionSense(bands,i,j,subdivisions[..subdivisionCount]);
+            foreach(var cut in cuts[..count])SetRollingCurveSense(cut.Curve,sense);
             error=AppendRollingCutFamily(faces.Length+i,faces.Length+j,cuts[..count],false,families,ref familyCount,allCuts,ref curveCount);if(error!=0)return error;
             foreach(var cut in cuts[..count])TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=bands[i].Source,Surface=bands[i].Surface,Other=bands[j].Surface,Curve=cut.Curve,First=cut.First,Last=cut.Last});
         }
@@ -166,6 +193,24 @@ internal static unsafe partial class KernelRuntime
         if(record.Class==CurveClass.ICurve)ICurveDataPool[record.DataIndex].Sense=sense;
     }
 
+    private static KernelSense RollingInteractionSense(ReadOnlySpan<RollingBandCandidate> bands,BufferOffset first,BufferOffset second,
+        ReadOnlySpan<RollingSubdivision> subdivisions)
+    {
+        var a=bands[first];var b=bands[second];var sense=Curves[GetCurveSlotByTag(Edges[a.Source].CurveTag)].Sense;
+        if(a.SourceFirst!=b.SourceFirst&&a.SourceFirst!=b.SourceLast&&a.SourceLast!=b.SourceFirst&&a.SourceLast!=b.SourceLast)return sense;
+        // At a common source junction, an incident mark can interrupt a
+        // chain traversed in decreasing native station. The shared curve
+        // then uses the opposite carrier sense; its finite events and
+        // material cells are independent of that representational choice.
+        foreach(ref readonly var split in subdivisions)
+        {
+            if(split.Band!=first&&split.Band!=second)continue;
+            var between=Edges[split.Band==first?b.Source:a.Source].PendingBlendSequence;
+            if(Edges[split.After].PendingBlendSequence<between&&between<Edges[split.Before].PendingBlendSequence)return FlipLocalSense(sense);
+        }
+        return sense;
+    }
+
     // Two planar generator bands meeting across three supports need a corner
     // provider. Their two carrier cylinders alone do not certify a smooth
     // rolling replacement. The existing three-selected-edge corner provider
@@ -176,7 +221,7 @@ internal static unsafe partial class KernelRuntime
         {
             var a=Edges[selected[i]];var b=Edges[selected[j]];
             if(a.StartVertex!=b.StartVertex&&a.StartVertex!=b.EndVertex&&a.EndVertex!=b.StartVertex&&a.EndVertex!=b.EndVertex)continue;
-            if(TryRollingLineSubdivision(selected[i],selected[j],out _))continue;
+            if(TryRollingCarrierSubdivision(selected[i],selected[j],out _))continue;
             if(!LocalEdgeFaces(selected[i],out var a0,out var a1)||!LocalEdgeFaces(selected[j],out var b0,out var b1))continue;
             if(a0!=b0&&a0!=b1&&a1!=b0&&a1!=b1)continue;
             if(Surfaces[GetSurfaceSlotByTag(Faces[a0].SurfTag)].Class==SurfaceClass.Plane&&Surfaces[GetSurfaceSlotByTag(Faces[a1].SurfTag)].Class==SurfaceClass.Plane
@@ -185,13 +230,13 @@ internal static unsafe partial class KernelRuntime
         return false;
     }
 
-    private static bool TryRollingLineSubdivision(EdgeSlot first,EdgeSlot second,out RollingSubdivision join)
+    private static bool TryRollingCarrierSubdivision(EdgeSlot first,EdgeSlot second,out RollingSubdivision join)
     {
         join=default;var a=Edges[first];var b=Edges[second];
         if(a.CurveTag!=b.CurveTag||a.PendingBlendKind!=1||b.PendingBlendKind!=1||a.PendingBlendFirst!=b.PendingBlendFirst
             ||!LocalEdgeFaces(first,out var a0,out var a1)||!LocalEdgeFaces(second,out var b0,out var b1)
             ||!(a0==b0&&a1==b1||a0==b1&&a1==b0)||!TryProfileEdgeRange(a,out var lo,out var hi)||!TryProfileEdgeRange(b,out var nextLo,out var nextHi))return false;
-        var curve=Curves[GetCurveSlotByTag(a.CurveTag)];if(curve.Class!=CurveClass.Line)return false;
+        var curve=Curves[GetCurveSlotByTag(a.CurveTag)];if(curve.Class is not (CurveClass.Line or CurveClass.Ellipse))return false;
         var forward=LocalSenseSign(curve.Sense)>0;
         if(nextHi==lo){(first,second)=(second,first);(a,b)=(b,a);hi=lo;}
         else if(hi!=nextLo)return false;

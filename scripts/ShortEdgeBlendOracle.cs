@@ -49,6 +49,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         {Console.WriteLine($"SUCCESSOR surface={trace.Surface} edge={trace.Edge} forward={trace.Forward} end={trace.EndEvent} next={trace.NextEdge} angles={trace.StartAngle:R}/{trace.EndAngle:R}");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CarrierReuse)
         {Console.WriteLine($"BOUNDARY REUSE surface={trace.Surface} edge={trace.Edge} implicit={trace.Curve} source_line={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} bound={trace.SpatialError:R}");return;}
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.UnresolvedOrder)
+        {Console.WriteLine($"BOUNDARY ORDER event={trace.StartEvent} surface={trace.Surface} curves={trace.Curve}/{trace.ProductCurve} angles={trace.StartAngle:R}/{trace.EndAngle:R} curvature=[{trace.First:R},{trace.Last:R}]");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
         {
             var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];
@@ -72,11 +74,17 @@ var floor=NumberOption(args,"--seed-floor=",0);
 var phase=NumberOption(args,"--support-phase=",0);
 var splitRemote=args.Contains("--split-remote-edge");
 var splitSelected=args.Contains("--split-selected-edge");
+var splitEllipse=args.Contains("--split-selected-ellipse");
+Require(!splitSelected||!splitEllipse,"choose one selected carrier to split");
+var splitFraction=NumberOption(args,"--selected-split-fraction=",.5);
+Require(double.IsFinite(splitFraction)&&splitFraction>0&&splitFraction<1&&(splitFraction==.5||splitSelected||splitEllipse),"selected split fraction requires a split and an interior value");
+var rotateMarks=NumberOption(args,"--rotate-marks=",0);
+Require(rotateMarks is 0 or 1 or 2&&(rotateMarks==0||splitSelected||splitEllipse),"mark rotation requires a split and a rotation of zero, one or two");
 var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
-Require(floor==0&&phase==0&&!splitRemote&&!splitSelected||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
+Require(floor==0&&phase==0&&!splitRemote&&!splitSelected&&!splitEllipse||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
 M.PK_TRANSF_sf_s inputTransform;double inputScale;bool mappedInput;
 unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
@@ -108,6 +116,9 @@ using(host)unsafe
             if(floor!=0)name+=$"-floor{floor:R}";
             if(splitRemote)name+="-split-remote";
             if(splitSelected)name+="-split-selected";
+            if(splitEllipse)name+="-split-selected-ellipse";
+            if(splitFraction!=.5)name+=$"-at{splitFraction:R}";
+            if(rotateMarks!=0)name+=$"-marks{rotateMarks:R}";
             if(localCut)name+=transverseCut?"-transverse-local-cut":"-local-cut";
             if(phase!=0)name+=$"-support-phase{phase:R}";
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
@@ -127,7 +138,7 @@ using(host)unsafe
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-before-fix");
                 if(researchPrecision!=0)Check(PK_SESSION_set_precision(researchPrecision),"set research precision");
                 int nativeError;
-                try{nativeError=Fillet(false,reference,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected);}
+                try{nativeError=Fillet(false,reference,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks);}
                 finally{if(researchPrecision!=0)Check(PK_SESSION_set_precision(precision),"restore default precision");}
                 Check(nativeError,"native fix");CheckBody(reference,"native fillet");
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-after-fix");
@@ -182,7 +193,7 @@ using(host)unsafe
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
                 {
-                    Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected),"managed fix");
+                    Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks),"managed fix");
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
                     if(args.Contains("--diagnostics")){ProductEdges(reference,"reference");ProductEdges(received,"self-constructed-product");}
@@ -485,7 +496,7 @@ static unsafe void SelfGeometry(int own,int reference)
                 int on;var contains=new PK_FACE_contains_vectors_o_t{n_uvs=1,uvs=&uv};Check(PK_FACE_contains_vectors(matchedFace,&contains,&on),"native finite face membership");
                 Require(inside==(on!=0),"finite face memberships agree under the certified map");if(!inside)continue;
                 Check(PK_SURF_eval(matched,uv,2,2,PK_LOGICAL_false,native),"native mapped geometry jet");Check(KernelRuntime.SurfEval(source.SurfTag,ownUv,2,2,0,(M.PK_VECTOR_s*)actual),"self mapped geometry jet");samples++;
-                d0=Math.Max(d0,Distance(native[0],actual[0]));d1=Math.Max(d1,Math.Max(Distance(native[3],ScaleVector(actual[3],scaleU)),Distance(native[1],ScaleVector(actual[1],scaleV))));
+                d0=Math.Max(d0,Distance(native[0],actual[0]));d1=Math.Max(d1,Math.Max(Distance(native[1],ScaleVector(actual[1],scaleU)),Distance(native[3],ScaleVector(actual[3],scaleV))));
                 if(side!=1)continue;
                 const double h=1e-4;
                 for(var axis=0;axis<2;axis++)
@@ -567,11 +578,48 @@ static unsafe bool CylinderMap(PK_CYL_sf_t own,PK_CYL_sf_t native,out double shi
 
 static unsafe void Geometry(int imported,int reference)
 {
-    int n;int* faces;Check(PK_BODY_ask_faces(reference,&n,&faces),"geometry faces");var nativeSurface=0;var box=new PK_UVBOX_t();
-    try{for(var i=0;i<n;i++){int surface,type;Check(PK_FACE_ask_surf(faces[i],&surface),"geometry support");Check(PK_ENTITY_ask_class(surface,&type),"geometry class");if(type!=PK_CLASS_blendsf)continue;Require(nativeSurface==0,"unique procedural surface");nativeSurface=surface;Check(PK_FACE_find_uvbox(faces[i],&box),"finite UV box");}}finally{Free(false,faces);}
-    Require(nativeSurface!=0,"procedural surface");var slot=KernelRuntime.ResolveTagRecord(imported).Slot;var face=KernelRuntime.Bodies[slot].FirstFaceBody;var ownSurface=0;
-    for(var i=0;i<KernelRuntime.Bodies[slot].FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody){var surface=KernelRuntime.Faces[face].SurfTag;if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BlendSurface)ownSurface=surface;}
-    Require(ownSurface!=0,"imported procedural surface");var sf=new M.PK_BLENDSF_sf_s();Check(KernelRuntime.BlendSfAsk(ownSurface,&sf),"spine definition");
+    int n;int* faces;Check(PK_BODY_ask_faces(reference,&n,&faces),"geometry faces");
+    try
+    {
+        var native=new List<(int Face,int Surface)>();
+        for(var i=0;i<n;i++)
+        {
+            int surface,type;Check(PK_FACE_ask_surf(faces[i],&surface),"geometry support");Check(PK_ENTITY_ask_class(surface,&type),"geometry class");
+            if(type==PK_CLASS_blendsf)native.Add((faces[i],surface));
+        }
+        Require(native.Count!=0,"native procedural faces");
+        var matched=new HashSet<int>();var body=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(imported).Slot];var face=body.FirstFaceBody;
+        for(var i=0;i<body.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var own=KernelRuntime.Faces[face].SurfTag;
+            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(own)].Class!=SurfaceClass.BlendSurface)continue;
+            var vertices=ManagedFaceVertices(face);var candidate=(Face:0,Surface:0);
+            foreach(var item in native)
+            {
+                if(!SameFiniteFaceVertices(vertices,item.Face))continue;
+                Require(candidate.Face==0,"unique native match for imported procedural finite boundary");candidate=item;
+            }
+            Require(candidate.Face!=0&&matched.Add(candidate.Face),"one-to-one imported procedural face correspondence");
+            GeometryOnNativeCharts(own,candidate.Face,candidate.Surface);
+        }
+        Require(matched.Count==native.Count,"all native procedural faces were compared after import");
+    }
+    finally{Free(false,faces);}
+}
+
+static unsafe void GeometryOnNativeCharts(int ownSurface,int nativeFace,int nativeSurface)
+{
+    var box=new PK_UVBOX_t();Check(PK_FACE_find_uvbox(nativeFace,&box),"finite UV box");
+    var sf=new M.PK_BLENDSF_sf_s();Check(KernelRuntime.BlendSfAsk(ownSurface,&sf),"spine definition");
+    var nativeDefinition=new PK_BLENDSF_sf_t();Check(PK_BLENDSF_ask(nativeSurface,&nativeDefinition),"native roundtrip spine definition");
+    var ownEllipse=new M.PK_ELLIPSE_sf_s();Check(KernelRuntime.EllipseAsk(sf.spine,&ownEllipse),"imported ellipse");
+    var nativeEllipse=new PK_ELLIPSE_sf_t();Check(PK_ELLIPSE_ask(nativeDefinition.spine,&nativeEllipse),"native ellipse");
+    for(var axis=0;axis<3;axis++)
+        Require(Math.Abs(ownEllipse.basis_set.location.coord[axis]-nativeEllipse.basis_set.location.coord[axis])<1e-12
+            &&Math.Abs(ownEllipse.basis_set.axis.coord[axis]-nativeEllipse.basis_set.axis.coord[axis])<1e-12
+            &&Math.Abs(ownEllipse.basis_set.ref_direction.coord[axis]-nativeEllipse.basis_set.ref_direction.coord[axis])<1e-12,"imported spine retains native chart frame");
+    Require(Math.Abs(ownEllipse.R1-nativeEllipse.R1)<1e-12&&Math.Abs(ownEllipse.R2-nativeEllipse.R2)<1e-12
+        &&Math.Abs(sf.radii[0]-nativeDefinition.radii[0])<1e-12&&Math.Abs(sf.radii[1]-nativeDefinition.radii[1])<1e-12,"imported spine retains native section and dimensions");
     PK_VECTOR_t* a=stackalloc PK_VECTOR_t[9];PK_VECTOR_t* b=stackalloc PK_VECTOR_t[9];PK_VECTOR_t* supportJet=stackalloc PK_VECTOR_t[4];
     PK_VECTOR_t* plus=stackalloc PK_VECTOR_t[4];PK_VECTOR_t* minus=stackalloc PK_VECTOR_t[4];PK_VECTOR_t* finePlus=stackalloc PK_VECTOR_t[4];PK_VECTOR_t* fineMinus=stackalloc PK_VECTOR_t[4];
     double d0=0,d1=0,d2=0,d2Math=0,radiusError=0,g1=0;var timer=Stopwatch.GetTimestamp();
@@ -818,16 +866,30 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
         // estimates in the seed's units after an explicit similarity. The
         // oriented endpoint/model precision and strict body gates stay in
         // product coordinates.
-        Require(endpoint<=1e-8&&length/unitScale<=2e-8,
+        Require(endpoint<=1e-8,
             label+$" finite ICurve edge={edge.Edge}/{other.Edge} endpoint={endpoint:R} length={length:R} scale={unitScale:R}");
+        if(length/unitScale>2e-8)
+        {
+            var proved=false;
+            for(var pieces=2;pieces<=32;pieces*=2)
+            {
+                var a=ParasolidBodyCompare.FiniteLength(edge.Curve,edge.Range,pieces);
+                var b=ParasolidBodyCompare.FiniteLength(other.Curve,other.Range,pieces);
+                var bound=Math.BitIncrement(Math.Max(a.Upper-b.Lower,b.Upper-a.Lower));
+                if(bound/unitScale>2e-8)continue;
+                Console.WriteLine($"FINITE ICurve refined edge={edge.Edge}/{other.Edge} pieces={pieces} raw_delta={length:R} bounded_delta={bound:R}");
+                length=bound;proved=true;break;
+            }
+            Require(proved,label+$" finite ICurve edge={edge.Edge}/{other.Edge} length={length:R} scale={unitScale:R}");
+        }
         maxEndpoint=Math.Max(maxEndpoint,endpoint);maxLength=Math.Max(maxLength,length);
     }
     Console.WriteLine($"FINITE ICurve {label} count={expected.Count} endpoint_max={maxEndpoint:R} length_delta_max={maxLength:R} length_delta_seed_max={maxLength/unitScale:R}");
 
-    static List<(PK_EDGE_t Edge,PK_VECTOR_t Start,PK_VECTOR_t End,PK_VECTOR_t Low,PK_VECTOR_t High,double Length)> IntersectionEdges(PK_BODY_t body)
+    static List<(PK_EDGE_t Edge,PK_CURVE_t Curve,PK_INTERVAL_t Range,PK_VECTOR_t Start,PK_VECTOR_t End,PK_VECTOR_t Low,PK_VECTOR_t High,double Length)> IntersectionEdges(PK_BODY_t body)
     {
         int count;int* edges;Check(PK_BODY_ask_edges(body,&count,&edges),"finite ICurve edges");
-        var result=new List<(PK_EDGE_t,PK_VECTOR_t,PK_VECTOR_t,PK_VECTOR_t,PK_VECTOR_t,double)>();
+        var result=new List<(PK_EDGE_t,PK_CURVE_t,PK_INTERVAL_t,PK_VECTOR_t,PK_VECTOR_t,PK_VECTOR_t,PK_VECTOR_t,double)>();
         PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
         PK_VERTEX_t* vertices=stackalloc PK_VERTEX_t[2];
         try
@@ -848,7 +910,7 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
                 if(sense!=PK_LOGICAL_true)(low,high)=(high,low);
                 var error=Math.Max(Distance(low,start),Distance(high,end));
                 Require(length>0&&error<=1e-8,$"ICurve finite oriented endpoints edge={edges[e]} t=[{range.value[0]:R},{range.value[1]:R}] error={error:R}");
-                result.Add((edges[e],start,end,low,high,length));
+                result.Add((edges[e],curve,range,start,end,low,high,length));
             }
         }
         finally{Free(false,edges);}
@@ -857,10 +919,10 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
     }
 }
 
-static unsafe int Fillet(bool own,int body,double angle,double radius,double tolerance,bool reverse,bool procedural,M.PK_TRANSF_sf_s* input,double unitScale,bool splitSelected)
+static unsafe int Fillet(bool own,int body,double angle,double radius,double tolerance,bool reverse,bool procedural,M.PK_TRANSF_sf_s* input,double unitScale,bool splitSelected,bool splitEllipse,double splitFraction,int rotateMarks)
 {
     int n;int* edges;Check(own?KernelRuntime.BodyAskEdges(body,&n,&edges):PK_BODY_ask_edges(body,&n,&edges),"edges");
-    var selected=new int[splitSelected?3:2];PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];var lineMidpoint=double.NaN;
+    var split=splitEllipse?0:splitSelected?1:-1;var selected=new int[split>=0?3:2];PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];var midpoint=double.NaN;
     try
     {
         var t=Math.Tan(angle*Math.PI/180);var j=new PK_VECTOR_t(-1.5,-2.5,5);var k=new PK_VECTOR_t(-2.5,-1.5,4);var i=new PK_VECTOR_t(2.5,-2.5+4*t,5-4*t);
@@ -895,20 +957,22 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
                 if(input!=null)middle=MapPoint(input,middle,true);
                 Require(s==0?Math.Abs(middle.coord[1]+middle.coord[2]-2.5)<1e-8:Math.Abs(middle.coord[1]+2.5-t*(middle.coord[0]+1.5))<1e-8,"selection midpoint geometry");
                 Require(selected[s]==0,"unique edge selection");selected[s]=edges[e];
-                if(s==1)lineMidpoint=u;
+                if(s==split)midpoint=range.value[0]+(range.value[1]-range.value[0])*splitFraction;
             }
         }
     }
     finally{Free(own,edges);}
     Require(selected[0]!=0&&selected[1]!=0,"both selected edges found");
-    if(splitSelected)
+    if(split>=0)
     {
         PK_VERTEX_t vertex;PK_EDGE_t fragment;
-        Check(own?KernelRuntime.EdgeSplitAtParam(selected[1],lineMidpoint,&vertex,&fragment):PK_EDGE_split_at_param(selected[1],lineMidpoint,&vertex,&fragment),"split selected native carrier");
+        Check(own?KernelRuntime.EdgeSplitAtParam(selected[split],midpoint,&vertex,&fragment):PK_EDGE_split_at_param(selected[split],midpoint,&vertex,&fragment),"split selected native carrier");
         selected[2]=fragment;
-        Console.WriteLine($"SELECTED SPLIT {(own?"self":"PK")} edge={selected[1]} fragment={fragment} vertex={vertex} t={lineMidpoint:R}");
+        Console.WriteLine($"SELECTED SPLIT {(own?"self":"PK")} edge={selected[split]} fragment={fragment} vertex={vertex} t={midpoint:R}");
     }
     if(reverse)Array.Reverse(selected);
+    for(var rotation=0;rotation<rotateMarks;rotation++)(selected[0],selected[1],selected[2])=(selected[1],selected[2],selected[0]);
+    if(rotateMarks!=0)Console.WriteLine($"MARK ORDER {(own?"self":"PK")}: {string.Join(',',selected)}");
     var mark=new PK_EDGE_set_blend_constant_o_t();mark.properties.tolerance=1e-7*unitScale;int count;int* marked;
     fixed(int* selection=selected)Check(own?KernelRuntime.EdgeSetBlendConstant(selected.Length,selection,radius,(M.PK_EDGE_set_blend_constant_o_s*)&mark,&count,&marked):PK_EDGE_set_blend_constant(selected.Length,selection,radius,&mark,&count,&marked),"set blend");Free(own,marked);
     var fix=new PK_BODY_fix_blends_o_t{local_check=PK_LOGICAL_true,tolerance=tolerance};if(procedural)fix.update=PK_blend_edge_update_v261_c;

@@ -446,7 +446,7 @@ internal static unsafe partial class KernelRuntime
                             ||!TryBoundaryCurvature(surface,ce,candidate.Forward,false,out var outgoing))return ParasolidConstants.PK_ERROR_not_implemented;
                         var turn=-incoming-outgoing;
                         if(turn.Lower>0)angle=0;else if(turn.Upper<0)angle=Math.Tau;
-                        else return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        else return TraceUnresolvedOrder(surface,end,edge.Curve,ce.Curve,h.EndAngle,candidate.StartAngle,turn);
                     }
                 }
                 var choose=angle<best;
@@ -459,7 +459,7 @@ internal static unsafe partial class KernelRuntime
                             ||!TryBoundaryCurvature(surface,previousEdge,previous.Forward,false,out var previousCurvature))return ParasolidConstants.PK_ERROR_not_implemented;
                         var order=currentCurvature-previousCurvature;
                         if(order.Lower>0)choose=true;else if(order.Upper<0)choose=false;
-                        else return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        else return TraceUnresolvedOrder(surface,end,ce.Curve,previousEdge.Curve,candidate.StartAngle,previous.StartAngle,order);
                     }
                 }
                 if(choose){best=angle;next=j;}
@@ -486,6 +486,13 @@ internal static unsafe partial class KernelRuntime
             cycles[cycleCount++]=cycle;
         }
         return 0;
+    }
+
+    private static int TraceUnresolvedOrder(SurfTag surface,BoundaryEventId endpoint,CurveTag first,CurveTag second,double a,double b,IntervalNumber turn)
+    {
+        TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.UnresolvedOrder,Surface=surface,StartEvent=endpoint,EndEvent=endpoint,
+            Curve=first,ProductCurve=second,StartAngle=a,EndAngle=b,First=turn.Lower,Last=turn.Upper});
+        return ParasolidConstants.PK_ERROR_cant_do_intersect;
     }
 
     // A finite cut can end in the interior of the other occurrence's
