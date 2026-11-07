@@ -388,7 +388,17 @@ internal static unsafe partial class KernelRuntime
                         anchors[anchorCount++]=new(){Carrier=root.Curve,Generation=carrier.Header.Generation,Surface=root.CuttingSurface,Lower=root.Root.Lower,Upper=root.Root.Upper};
                     }
                     status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                    error=model.AddPoint(point[0],-1,out var endpoint,anchors[..anchorCount],requireProof:cutLocator.Finite);if(error!=0)return error;
+                    VertexSlot sourceVertex=-1;var sourcePoint=point[0];
+                    for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter&&roots[r].Certified!=0&&roots[r].Root.Vertex>=0)
+                    {
+                        var root=roots[r].Root;
+                        if(sourceVertex>=0&&sourceVertex!=root.Vertex||ProfileDistance(point[0],root.Point)>model.Tolerance)
+                            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        sourceVertex=root.Vertex;sourcePoint=root.Point;
+                    }
+                    // Certified original incidence selects the event;
+                    // position is only a check of the cut against it.
+                    error=model.AddPoint(sourcePoint,sourceVertex,out var endpoint,anchors[..anchorCount],requireProof:cutLocator.Finite);if(error!=0)return error;
                     ref var finite=ref cuts[cutCount-1].Cut;
                     if(end==0)finite.LowerEvent=endpoint+1;else finite.UpperEvent=endpoint+1;
                     if(cutLocator.Finite)finite.NativeLocatorEnds|=(byte)(1<<end);
@@ -400,11 +410,6 @@ internal static unsafe partial class KernelRuntime
                     for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter)
                     {
                         var root=roots[r];
-                        if(root.Certified!=0&&root.Root.Vertex>=0)
-                        {
-                            error=model.AddPoint(root.Root.Point,root.Root.Vertex,out var original);if(error!=0)return error;
-                            if(original!=endpoint)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                        }
                         if(root.Certified!=0)
                         {
                             error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,root.Root.Lower,root.Root.Upper,
