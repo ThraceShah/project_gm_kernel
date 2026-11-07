@@ -192,8 +192,9 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
-    internal static int TestFiniteLinePlaneEventIdentities(CurveTag line,double first,double last,ReadOnlySpan<SurfTag> planes,Span<BoundaryEventId> ids)
+    internal static int TestFiniteLinePlaneEventIdentities(CurveTag line,double first,double last,ReadOnlySpan<SurfTag> planes,Span<BoundaryEventId> ids,out BufferCount associations)
     {
+        associations=0;
         var edge=new ModelingEdge{Curve=line,Start=first,End=last};
         var model=new SheetArrangement{Points=stackalloc KernelVector3[8],OriginalVertices=stackalloc VertexSlot[8],
             Parameters=stackalloc BoundaryParameter[8],Tolerance=OperationIntersection.DistanceTolerance};
@@ -207,7 +208,7 @@ internal static unsafe partial class KernelRuntime
             var error=model.AddPoint(root.Point,-1,out ids[i],anchor);if(error!=0)return error;
             error=model.AssociateParameter(ids[i],line,root.Parameter,root.Lower,root.Upper,planes[i]);if(error!=0)return error;
         }
-        return 0;
+        associations=model.ParameterCount;return 0;
     }
 #endif
 
@@ -241,6 +242,21 @@ internal static unsafe partial class KernelRuntime
                 for(var j=0;j<n;j++)
                 {
                     if(Math.Abs(parameters[j]-t)>=1e-10)continue;
+                    var distinct=false;
+                    if(roots[i].Certified!=0)for(var r=0;r<i;r++)
+                    {
+                        var other=roots[r];var current=roots[i];
+                        if(rootParameters[r]!=parameters[j]||other.Certified==0||other.Curve!=current.Curve
+                            ||!(other.Root.Upper<current.Root.Lower||current.Root.Upper<other.Root.Lower))continue;
+                        // A native proof prevents the chart-anchor epsilon
+                        // from erasing two events. Keep their cut order only
+                        // when it follows from disjoint projected enclosures.
+                        if(!TryCutLineParameterBox(curve.Curve,other.Root,out var a)||!TryCutLineParameterBox(curve.Curve,current.Root,out var b)
+                            ||!(a.Upper<b.Lower&&parameters[j]<t||b.Upper<a.Lower&&t<parameters[j]))
+                            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        distinct=true;
+                    }
+                    if(distinct)continue;
                     if(model.RequireBoundaryAssociations&&roots[i].Certified!=0&&parameters[j]!=t)
                     {
                         if(!CertifiedRootMatchesCutAnchor(roots[i],curve.Curve,parameters[j],point))continue;
@@ -258,7 +274,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var closed=curve.Closed!=0&&n==0;var wrap=curve.Closed!=0&&n>0&&i==n-1;
                 var lo=closed?curve.First:parameters[i];var hi=closed?curve.Last:parameters[(i+1)%n];
-                var width=wrap?curve.Last-lo+hi-curve.First:hi-lo;if(!(width>(model.RequireBoundaryAssociations?0:1e-12)))continue;
+                var width=wrap?curve.Last-lo+hi-curve.First:hi-lo;if(!(width>0))continue;
                 var at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;
                 var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
@@ -354,6 +370,18 @@ internal static unsafe partial class KernelRuntime
         return native>=root.Root.Lower&&native<=root.Root.Upper;
     }
 
+    private static bool TryCutLineParameterBox(CurveTag cut,in FiniteCurveSurfaceRoot root,out IntervalNumber parameter)
+    {
+        parameter=default;var record=Curves[GetCurveSlotByTag(cut)];
+        if(record.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(record,out var line)||!double.IsFinite(root.SpatialError))return false;
+        var axis=new IntervalVector(line.First);var speed=axis.Norm().Value;
+        if(!(speed.Lower>0))return false;
+        var projection=IntervalVector.Dot(new IntervalVector(root.Point)-new IntervalVector(line.Origin),axis).Value;
+        var error=(speed*root.SpatialError).Upper;
+        parameter=(projection+new IntervalNumber(-error,error))/IntervalVector.Dot(axis,axis).Value;
+        return parameter.Finite;
+    }
+
     private static int FiniteBoundarySurfaceParameters(SurfTag surface,CurveTag curve,double parameter,in KernelVector3 point,out PK_UV_s uv)
     {
         var record=Curves[GetCurveSlotByTag(curve)];
@@ -380,7 +408,8 @@ internal static unsafe partial class KernelRuntime
             if(!ring){parameters[n]=edge.Start;vertices[n++]=positive?edge.StartVertex:edge.EndVertex;parameters[n]=edge.End;vertices[n++]=positive?edge.EndVertex:edge.StartVertex;}
             for(var p=0;p<model.NP;p++)
             {
-                var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);double t=0;var known=model.KnownParameter(p,edge.Curve,out t);
+                var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);
+                var known=model.KnownBoundaryParameter(p,edge.Curve,out var anchor);var t=anchor.Parameter;
                 if(!known&&model.RequireBoundaryAssociations)continue;
                 var error=known?0:CurveParameteriseVectorCore(edge.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
@@ -394,7 +423,18 @@ internal static unsafe partial class KernelRuntime
                     // merge only if surviving cells use both source bodies.
                     if(RegularPlanarImprintJunction(input,p,e))model.VertexMergeCandidates[p]=1;
                 }
-                var duplicate=false;for(var k=0;k<n;k++)duplicate|=(model.RequireBoundaryAssociations?parameters[k]==t:Math.Abs(parameters[k]-t)<1e-10)||vertices[k]==p;
+                var duplicate=false;for(var k=0;k<n;k++)
+                {
+                    if(vertices[k]==p){duplicate=true;break;}
+                    if(model.RequireBoundaryAssociations?parameters[k]!=t:Math.Abs(parameters[k]-t)>=1e-10)continue;
+                    if(anchor.Surface!=0&&model.KnownBoundaryParameter(vertices[k],edge.Curve,out var other)&&other.Surface!=0
+                        &&(other.Upper<anchor.Lower||anchor.Upper<other.Lower))
+                    {
+                        if(parameters[k]==t)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        continue;
+                    }
+                    duplicate=true;break;
+                }
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=Math.Clamp(t,edge.Start,edge.End);vertices[n++]=p;}
             }
             for(var i=1;i<n;i++)for(var j=i;j>0&&parameters[j]<parameters[j-1];j--){(parameters[j],parameters[j-1])=(parameters[j-1],parameters[j]);(vertices[j],vertices[j-1])=(vertices[j-1],vertices[j]);}

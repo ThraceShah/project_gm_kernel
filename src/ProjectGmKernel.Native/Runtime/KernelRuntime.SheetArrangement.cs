@@ -64,9 +64,10 @@ internal static unsafe partial class KernelRuntime
             if(Parameters.IsEmpty)return 0;
             if(double.IsNaN(lower)){lower=parameter;upper=parameter;}
             var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
+            var match=-1;var hasCertificate=false;
             for(var i=0;i<ParameterCount;i++)
             {
-                ref var known=ref Parameters[i];
+                ref readonly var known=ref Parameters[i];
                 if(known.Event==endpoint&&known.Carrier==curve&&known.Generation==generation)
                 {
                     if(upper<known.Lower||lower>known.Upper)
@@ -74,26 +75,41 @@ internal static unsafe partial class KernelRuntime
                         LastBoundaryParameterConflict=new(){Event=endpoint,Carrier=curve,Previous=known.Parameter,PreviousLower=known.Lower,PreviousUpper=known.Upper,Incoming=parameter,Lower=lower,Upper=upper};
                         LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=curve;LastSheetParameter=parameter;return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     }
-                    if(known.Surface!=0&&known.Surface!=equation)return 0;
-                    if(known.Surface==0&&equation!=0)
-                    {
-                        known.Surface=equation;known.Lower=lower;known.Upper=upper;known.Parameter=parameter;return 0;
-                    }
-                    known.Lower=Math.Max(lower,known.Lower);known.Upper=Math.Min(upper,known.Upper);
-                    known.Parameter=Math.Clamp(known.Parameter,known.Lower,known.Upper);return 0;
+                    hasCertificate|=known.Surface!=0;
+                    if(known.Surface==equation||known.Surface==0)match=i;
                 }
             }
+            if(equation==0&&hasCertificate)return 0;
+            if(match>=0)
+            {
+                ref var known=ref Parameters[match];
+                if(known.Surface==equation)
+                {
+                    known.Lower=Math.Max(lower,known.Lower);known.Upper=Math.Min(upper,known.Upper);
+                    known.Parameter=Math.Clamp(known.Parameter,known.Lower,known.Upper);
+                }
+                else {known.Surface=equation;known.Lower=lower;known.Upper=upper;known.Parameter=parameter;}
+                return 0;
+            }
+            // A joined event may have been proved by a different common
+            // participant. Retain each native root equation so a later
+            // pair can join through any one of them.
             if(ParameterCount==Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Surface=equation,Parameter=parameter,Lower=lower,Upper=upper};return 0;
         }
 
         internal bool KnownParameter(BoundaryEventId endpoint,CurveTag curve,out double parameter)
         {
-            parameter=0;var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
+            var found=KnownBoundaryParameter(endpoint,curve,out var known);parameter=known.Parameter;return found;
+        }
+
+        internal bool KnownBoundaryParameter(BoundaryEventId endpoint,CurveTag curve,out BoundaryParameter parameter)
+        {
+            parameter=default;var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
             for(var i=0;i<ParameterCount;i++)
             {
                 var known=Parameters[i];if(known.Event!=endpoint||known.Carrier!=curve||known.Generation!=generation)continue;
-                parameter=known.Parameter;return true;
+                parameter=known;return true;
             }
             return false;
         }

@@ -31,18 +31,20 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(separated,KernelRuntime.PlanarLoopSeparatedFromPlane(source,edges,coedges,other,1e-8,out _));
     }
 
-    [Fact]
-    public void DistinctCertifiedRootsInsideTheSpatialCandidateRadiusKeepTheirOwnEvents()
+    [Theory]
+    [InlineData(5e-9)] [InlineData(5e-11)]
+    public void DistinctCertifiedRootsInsideTheSpatialCandidateRadiusKeepTheirOwnEvents(double separation)
     {
         var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
         Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
         var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[0]=1;plane.basis_set.ref_direction.coord[1]=1;
         SurfTag a,b,equivalent;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&a));
         plane.basis_set.location.coord[1]=1;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&equivalent));
-        plane.basis_set.location.coord[0]=5e-9;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&b));
+        plane.basis_set.location.coord[0]=separation;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&b));
         Span<SurfTag> planes=stackalloc SurfTag[4]{a,b,b,equivalent};Span<BoundaryEventId> ids=stackalloc BoundaryEventId[4];
-        Assert.Equal(0,KernelRuntime.TestFiniteLinePlaneEventIdentities(carrier,-1,1,planes,ids));
+        Assert.Equal(0,KernelRuntime.TestFiniteLinePlaneEventIdentities(carrier,-1,1,planes,ids,out var associations));
         Assert.NotEqual(ids[0],ids[1]);Assert.Equal(ids[0],ids[3]);Assert.Equal(ids[1],ids[2]);
+        Assert.Equal(3,associations);
     }
     private static void Write(PK_VECTOR_s* target,KernelVector3 value){target->coord[0]=value.X;target->coord[1]=value.Y;target->coord[2]=value.Z;}
 }
