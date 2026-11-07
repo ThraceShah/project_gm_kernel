@@ -83,7 +83,7 @@ internal static unsafe partial class KernelRuntime
         if (!AnalyticBezierPatches.HasDomain(a, bounds) || !AnalyticBezierPatches.HasDomain(b, bounds)) return AlgorithmStatus.Success;
         Span<IntervalNumber> ap = stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         Span<IntervalNumber> bp = stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
-        var scratch = CommandScratch.Current; var memory = scratch.Take(100000);
+        var scratch = CommandScratch.Current; var memory = scratch.Take(150000);
         if (memory.IsEmpty) return AlgorithmStatus.WorkspaceTooSmall;
         try
         {
@@ -113,6 +113,10 @@ internal static unsafe partial class KernelRuntime
                     for (var n = 0; n < nn; n++)
                     {
                         ref var node = ref localNodes[n];
+                        // Scalar isolation is in this exact rational chart,
+                        // not in the native angular/axial parameter frame.
+                        // Preserve that distinction when remapping witnesses.
+                        node.RemappedParameters=true;
                         status = OperationIntersection.Parameters(a,node.Point,out node.U,out node.V); if (status != AlgorithmStatus.Success) return status;
                         status = OperationIntersection.Parameters(b,node.Point,out node.S,out node.T); if (status != AlgorithmStatus.Success) return status;
                         var found = -1;

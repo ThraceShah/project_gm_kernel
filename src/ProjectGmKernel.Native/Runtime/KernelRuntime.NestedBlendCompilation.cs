@@ -3,6 +3,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;
@@ -95,14 +96,25 @@ internal static unsafe partial class KernelRuntime
                 original.CopyTo(charts[nh..]);nh+=original.Length;return AlgorithmStatus.Success;
             }
             var hulls=HvecSpan(data);var positions=MemoryMarshal.Cast<double,KernelVector3>(hulls.Slice(data.StartLimit.HvecCount*3,data.ChartCount*3));
-            status=ChartSpine(a,b,positions,data.BaseParameter,data.BaseScale,data.ChordalError,data.AngularError,data.StartLimit.Type,data.EndLimit.Type,out index,data.Sense);
+            Span<double> knownUv=default;
+            if(data.UvType!=IntersectionUvType.None)
+            {
+                knownUv=NestedWorkspace<double>(4*data.ChartCount);if(knownUv.IsEmpty)return AlgorithmStatus.WorkspaceTooSmall;
+                for(var chart=0;chart<data.ChartCount;chart++)
+                {
+                    if(!TryReadChartUv(data,chart,out knownUv[4*chart],out knownUv[4*chart+1],out knownUv[4*chart+2],out knownUv[4*chart+3]))return AlgorithmStatus.InvalidInput;
+                }
+            }
+            status=ChartSpine(a,b,positions,data.BaseParameter,data.BaseScale,data.ChordalError,data.AngularError,data.StartLimit.Type,data.EndLimit.Type,out index,data.Sense,knownUv);
             if(status==AlgorithmStatus.Success)spineTags[index]=tag;return status;
         }
 
         internal AlgorithmStatus ChartSpine(BlendSurfaceIndex a,BlendSurfaceIndex b,scoped ReadOnlySpan<KernelVector3> positions,
-            double baseParameter,double baseScale,double chordalError,double angularError,LimitType start,LimitType end,out BlendSpineIndex index,KernelSense sense=ParasolidConstants.PK_TOPOL_sense_positive_c)
+            double baseParameter,double baseScale,double chordalError,double angularError,LimitType start,LimitType end,out BlendSpineIndex index,KernelSense sense=ParasolidConstants.PK_TOPOL_sense_positive_c,
+            scoped ReadOnlySpan<double> knownUv=default)
         {
             index=-1;var count=positions.Length;if(count<2||nc==spines.Length||nh+count>charts.Length)return AlgorithmStatus.OutputTooSmall;
+            if(!knownUv.IsEmpty&&knownUv.Length!=4*count)return AlgorithmStatus.InvalidInput;
             if(start is not (LimitType.Artificial or LimitType.Help)||end is not (LimitType.Artificial or LimitType.Help))return AlgorithmStatus.Unsupported;
             var tangents=NestedWorkspace<KernelVector3>(count);var parameters=NestedWorkspace<double>(count);var scales=NestedWorkspace<double>(count-1);var chords=NestedWorkspace<KernelVector3>(count-1);
             if(tangents.IsEmpty||parameters.IsEmpty||scales.IsEmpty||chords.IsEmpty)return AlgorithmStatus.WorkspaceTooSmall;
@@ -111,9 +123,14 @@ internal static unsafe partial class KernelRuntime
             {
                 var point=TaylorVector.Constant(positions[i],0);
                 TaylorJet d0,d1;TaylorVector n0,n1;
-                var status=ChartSupportDistance(program,a,point,i!=0,ref u0,ref v0,out d0,out n0);if(status!=AlgorithmStatus.Success)
+                var firstKnown=!knownUv.IsEmpty&&double.IsFinite(knownUv[4*i])&&double.IsFinite(knownUv[4*i+1]);
+                var secondKnown=!knownUv.IsEmpty&&double.IsFinite(knownUv[4*i+2])&&double.IsFinite(knownUv[4*i+3]);
+                if(firstKnown){u0=knownUv[4*i];v0=knownUv[4*i+1];}if(secondKnown){u1=knownUv[4*i+2];v1=knownUv[4*i+3];}
+                var status=!firstKnown?ChartSupportDistance(program,a,point,i!=0,ref u0,ref v0,out d0,out n0)
+                    :ChartSupportWitness(program,a,surfaceTags[a],positions[i],u0,v0,out d0,out n0);if(status!=AlgorithmStatus.Success)
                 {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve anchor={i}/{count} first distance={status}");return status;}
-                status=ChartSupportDistance(program,b,point,i!=0,ref u1,ref v1,out d1,out n1);if(status!=AlgorithmStatus.Success)
+                status=!secondKnown?ChartSupportDistance(program,b,point,i!=0,ref u1,ref v1,out d1,out n1)
+                    :ChartSupportWitness(program,b,surfaceTags[b],positions[i],u1,v1,out d1,out n1);if(status!=AlgorithmStatus.Success)
                 {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve anchor={i}/{count} second distance={status}");return status;}
                 if(Math.Abs(d0[0])>1e-8||Math.Abs(d1[0])>1e-8)
                 {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve CHART anchor={i}/{count} supports={a}/{b} residual={d0[0]:R}/{d1[0]:R} point=({positions[i].X:R},{positions[i].Y:R},{positions[i].Z:R})");return AlgorithmStatus.InvalidInput;}
@@ -128,6 +145,28 @@ internal static unsafe partial class KernelRuntime
                 var witness=charts[nh];witness.Position=positions[i];witness.Parameter=parameters[i];witness.Scale=i<count-1?scales[i]:1;witness.Chord=i<count-1?chords[i]:default;charts[nh++]=witness;
             }
             return AlgorithmStatus.Success;
+        }
+
+        private static AlgorithmStatus ChartSupportWitness(in NestedBlendProgram program,BlendSurfaceIndex surface,SurfTag tag,
+            in KernelVector3 point,double u,double v,out TaylorJet distance,out TaylorVector normal)
+        {
+            distance=default;normal=default;var slot=GetSurfaceSlotByTag(tag);if(slot<0)return AlgorithmStatus.InvalidInput;
+            SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> jets=stackalloc KernelVector3[4];
+            var status=EvaluateSurfaceCore(in Surfaces[slot],u,v,layout,jets,0);if(status!=AlgorithmStatus.Success)return status;
+            var error=OperationIntersection.Norm(Sub(point,jets[0]));if(error>OperationIntersection.DistanceTolerance)return AlgorithmStatus.InvalidInput;
+            var node=program.Surfaces[surface];KernelVector3 direction;
+            if(node.IsBlend)
+            {
+                status=NestedBlendSeriesEvaluation.Spine(program,node.Spine,u,0,0,out var center);if(status!=AlgorithmStatus.Success)return status;
+                direction=Scale(Unit(Sub(jets[0],center.Value)),node.NormalSense);
+            }
+            else if(node.IsBSpline)direction=Scale(Unit(EvaluationMath.Cross(jets[layout.GetIndex(1,0)],jets[layout.GetIndex(0,1)])),node.NormalSense);
+            else
+            {
+                status=AnalyticDistanceSeries.Evaluate(node.Analytic,TaylorVector.Constant(jets[0],0),out _,out var analyticNormal);if(status!=AlgorithmStatus.Success)return status;
+                direction=Scale(analyticNormal.Value,node.NormalSense);
+            }
+            distance=new(error,0);normal=TaylorVector.Constant(direction,0);return AlgorithmStatus.Success;
         }
 
         private static AlgorithmStatus ChartSupportDistance(in NestedBlendProgram program,BlendSurfaceIndex surface,in TaylorVector point,bool seeded,

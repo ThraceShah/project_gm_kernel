@@ -16,6 +16,9 @@ internal static class SurfacePlaneIntersection
     [ThreadStatic] internal static BufferCount LastUnresolvedDepth;
     [ThreadStatic] internal static BufferOffset LastUnresolvedFreeAxis;
     [ThreadStatic] internal static bool LastUnresolvedBudget;
+    internal enum BoundaryFailure:byte{None,Bound,Roots,Node,Transverse,Order}
+    [ThreadStatic] internal static BoundaryFailure LastBoundaryFailure;
+    [ThreadStatic] internal static IntervalNumber LastBoundaryResidual;
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,
         Span<SurfaceIntersectionNode> nodes,ref BufferCount nodeCount,
         Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount)
@@ -29,19 +32,21 @@ internal static class SurfacePlaneIntersection
         Span<SurfaceIntersectionSegment> segments,ref BufferCount segmentCount,ref BufferCount remaining,bool deferIsolatedPoints=false,double tolerance=1e-10,bool strictSeparation=false)
     {
         if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
-        LastUnresolvedBudget=false;
+        LastUnresolvedBudget=false;LastBoundaryFailure=BoundaryFailure.None;
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];pending[0]=patch.Domain;depths[0]=0;var count=1;var visited=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
         Span<IntervalNumber> centerBounds=stackalloc IntervalNumber[9];
         Span<SurfaceIntersectionNode> boundary=stackalloc SurfaceIntersectionNode[64];
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[32];
+        Span<ScalarRootIsolation> isolations=stackalloc ScalarRootIsolation[32];
+        var certifiedRoots=plane.Kind!=SurfaceClass.Plane;
         while(count>0)
         {
             ModelingPerformance.Cell(false);
             if(++visited>32768||remaining--<=0)
             {LastUnresolvedBudget=true;LastUnresolvedBox=pending[count-1];LastUnresolvedDepth=depths[count-1];ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
-            var index=--count;var cell=pending[index];var depth=depths[index];var free=-1;
+            var index=--count;var cell=pending[index];var depth=depths[index];var free=-1;var failedBoundary=false;
             var savedNodes=nodeCount;var savedSegments=segmentCount;
             var status=patch.Bound(cell,bounds);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
             var distance=Distance(bounds,plane);
@@ -73,8 +78,8 @@ internal static class SurfacePlaneIntersection
                 var at=axis==0?(end==0?cell.U0:cell.U1):(end==0?cell.V0:cell.V1);
                 var lower=axis==0?cell.V0:cell.U0;var upper=axis==0?cell.V1:cell.U1;
                 var iso=new SurfaceIntersectionPatch(patch,axis==0,at,lower,upper);
-                status=iso.Bound(new(lower,upper,0,0),bounds);if(status!=AlgorithmStatus.Success)goto Retry;
-                if(Distance(bounds,plane).Magnitude<=Math.Min(2e-12,tolerance))
+                status=iso.Bound(new(lower,upper,0,0),bounds);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Bound;goto Retry;}
+                if(Distance(bounds,plane).Magnitude==0||!certifiedRoots&&Distance(bounds,plane).Magnitude<=Math.Min(2e-12,tolerance))
                 {
                     // An entire edge is within the geometric root tolerance.
                     // Its two ends belong to the same unique regular graph.
@@ -82,9 +87,9 @@ internal static class SurfacePlaneIntersection
                     status=BoundaryNode(patch,plane,axis,at,upper,boundary,ref n,tolerance);if(status!=AlgorithmStatus.Success)goto Retry;
                     continue;
                 }
-                var nr=0;status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation);if(status!=AlgorithmStatus.Success)goto Retry;
+                var nr=0;status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Roots;goto Retry;}
                 for(var r=0;r<nr;r++)
-                {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n,tolerance);if(status!=AlgorithmStatus.Success)goto Retry;}
+                {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n,tolerance,certifiedRoots?isolations[r]:default);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Node;goto Retry;}}
             }
             // A cell/chart corner can belong to an arc in its neighbour.
             // Keep every candidate until the complete graph is assembled;
@@ -98,22 +103,27 @@ internal static class SurfacePlaneIntersection
                 if(!(at>lo&&at<hi))
                 {
                     if(Same(boundary[i],boundary[i+1]))continue;
-                    status=AlgorithmStatus.NotConverged;goto Retry;
+                    status=AlgorithmStatus.NotConverged;LastBoundaryFailure=BoundaryFailure.Order;goto Retry;
                 }
                 var lower=free==0?cell.V0:cell.U0;var upper=free==0?cell.V1:cell.U1;
                 var iso=new SurfaceIntersectionPatch(patch,free==0,at,lower,upper);var nr=0;
-                status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation);if(status!=AlgorithmStatus.Success||nr>1)goto Retry;
+                status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default);if(status!=AlgorithmStatus.Success||nr>1){LastBoundaryFailure=BoundaryFailure.Transverse;goto Retry;}
                 if(nr==0)continue;
                 status=AddSegment(patch,cell,boundary[i],boundary[i+1],nodes,ref nodeCount,segments,ref segmentCount);if(status!=AlgorithmStatus.Success)return status;
             }
             continue;
             Retry:
+            failedBoundary=true;
             if(status is not (AlgorithmStatus.Success or AlgorithmStatus.NotConverged))return status;
             Subdivide:
             nodeCount=savedNodes;segmentCount=savedSegments;
             if(depth>=40||count+2>pending.Length)
             {LastUnresolvedBox=cell;LastUnresolvedDepth=depth;LastUnresolvedFreeAxis=free;return AlgorithmStatus.NotConverged;}
-            var split=free>=0?free:Width(cell,0)/Width(patch.Domain,0)>=Width(cell,1)/Width(patch.Domain,1)?0:1;
+            // A failed section proof can be caused by the graph's dependent
+            // coordinate. Repeatedly shrinking only the free coordinate
+            // leaves that conditioning unchanged and eventually reaches an
+            // unresolvable floating-point strip around a cell corner.
+            var split=free>=0&&!failedBoundary?free:Width(cell,0)/Width(patch.Domain,0)>=Width(cell,1)/Width(patch.Domain,1)?0:1;
             var low=split==0?cell.U0:cell.V0;var high=split==0?cell.U1:cell.V1;var middle=low+(high-low)*.4931471805599453;
             if(!(middle>low&&middle<high))return AlgorithmStatus.NotConverged;
             pending[count]=split==0?new(cell.U0,middle,cell.V0,cell.V1):new(cell.U0,cell.U1,cell.V0,middle);depths[count++]=depth+1;
@@ -136,15 +146,38 @@ internal static class SurfacePlaneIntersection
     private static IntervalNumber Distance(ReadOnlySpan<IntervalNumber> bounds,in AnalyticSurface plane)
         =>AnalyticLevelSet.Value(bounds,plane);
     private static bool Same(in SurfaceIntersectionNode a,in SurfaceIntersectionNode b)
-        =>Math.Abs(a.U-b.U)<2e-10&&Math.Abs(a.V-b.V)<2e-10&&OperationIntersection.Norm(Sub(a.Point,b.Point))<1e-8;
+        =>a.RootAxis!=0||b.RootAxis!=0
+            ?a.RootAxis==b.RootAxis?a.HasCommonScalarRoot(b):a.U==b.U&&a.V==b.V
+            :Math.Abs(a.U-b.U)<2e-10&&Math.Abs(a.V-b.V)<2e-10&&OperationIntersection.Norm(Sub(a.Point,b.Point))<1e-8;
 
     private static AlgorithmStatus BoundaryNode(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,BufferOffset axis,double at,double parameter,
-        Span<SurfaceIntersectionNode> nodes,ref BufferCount count,double tolerance)
+        Span<SurfaceIntersectionNode> nodes,ref BufferCount count,double tolerance,ScalarRootIsolation isolation=default)
     {
         var u=axis==0?at:parameter;var v=axis==0?parameter:at;var node=new SurfaceIntersectionNode{U=u,V=v};
+        if(isolation.Certified){node.Isolation=isolation;node.RootAxis=axis==0?(byte)2:(byte)1;}
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var status=patch.Bound(new(u,u,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
-        if(Distance(bounds,plane).Magnitude>tolerance)return AlgorithmStatus.NotConverged;
+        LastBoundaryResidual=Distance(bounds,plane);
+        if(isolation.Certified)
+        {
+            // The sign bracket and monotone derivative already establish a
+            // unique root. Keep floating evaluation uncertainty separately
+            // from the computed residual and propagate the root box into XYZ.
+            if(Math.Abs(LastBoundaryResidual.Midpoint)>tolerance)return AlgorithmStatus.NotConverged;
+        }
+        else if(LastBoundaryResidual.Magnitude>tolerance)return AlgorithmStatus.NotConverged;
         node.Point=Vector(bounds[0].Midpoint,bounds[1].Midpoint,bounds[2].Midpoint);
+        if(isolation.Certified)
+        {
+            var box=axis==0?new SurfaceParameterBox(at,at,isolation.Root.Lower,isolation.Root.Upper)
+                :new(isolation.Root.Lower,isolation.Root.Upper,at,at);
+            status=patch.Bound(box,bounds);if(status!=AlgorithmStatus.Success)return status;
+            var squared=IntervalNumber.Square(bounds[0]-node.Point.X)+IntervalNumber.Square(bounds[1]-node.Point.Y)+IntervalNumber.Square(bounds[2]-node.Point.Z);
+            node.SpatialError=Math.BitIncrement(Math.Sqrt(squared.Upper));
+            // Keep the existing ICurve point-on-support budget. This bound
+            // controls the discovery witness only; it never welds topology
+            // or changes an entity's precision or the caller's fix tolerance.
+            if(!double.IsFinite(node.SpatialError)||node.SpatialError>OperationIntersection.DistanceTolerance)return AlgorithmStatus.NotConverged;
+        }
         status=OperationIntersection.Parameters(plane,node.Point,out node.S,out node.T);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<count;i++)if(Same(nodes[i],node))return AlgorithmStatus.Success;
         if(count==nodes.Length)return AlgorithmStatus.OutputTooSmall;nodes[count++]=node;return AlgorithmStatus.Success;
@@ -166,7 +199,7 @@ internal static class SurfacePlaneIntersection
             var t=square>0?Math.Clamp(Dot(Sub(point,a.Point),chord)/square,0,1):0;
             error=Math.Max(error,OperationIntersection.Norm(Sub(point,Add(a.Point,Scale(chord,t)))));
         }
-        segments[segmentCount++]=new(){Start=start,End=end,ChordalError=error*(1+1e-12)+2e-12*Math.Max(1,OperationIntersection.Norm(a.Point))};return AlgorithmStatus.Success;
+        segments[segmentCount++]=new(){Start=start,End=end,ChordalError=error*(1+1e-12)+Math.Max(a.SpatialError,b.SpatialError)+2e-12*Math.Max(1,OperationIntersection.Norm(a.Point))};return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus AddNode(in SurfaceIntersectionNode node,Span<SurfaceIntersectionNode> nodes,ref BufferCount count,out BufferOffset index)

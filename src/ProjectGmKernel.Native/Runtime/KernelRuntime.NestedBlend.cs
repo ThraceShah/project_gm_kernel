@@ -43,16 +43,17 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    internal static int BindNestedBlendSpine(SurfTag first,SurfTag second,in NestedBlendProgram program,BlendSpineIndex root,CurveTag* result)
+    internal static int BindNestedBlendSpine(SurfTag first,SurfTag second,in NestedBlendProgram program,BlendSpineIndex root,CurveTag* result,ReadOnlySpan<double> uv=default)
     {
         if(result!=null)*result=0;
         fixed(BlendSurfaceInstruction* surfaces=program.Surfaces)
         fixed(BlendSpineInstruction* spines=program.Spines)
         fixed(BlendChartInstruction* charts=program.Charts)
         fixed(double* scalars=program.Scalars)
+        fixed(double* witnesses=uv)
         {
             var command=new BindNestedBlendCommand{First=first,Second=second,Surfaces=surfaces,Spines=spines,Charts=charts,
-                SurfaceCount=program.Surfaces.Length,SpineCount=program.Spines.Length,ChartCount=program.Charts.Length,ScalarCount=program.Scalars.Length,Scalars=scalars,CurveRoot=root,IsCurve=true,Result=result};
+                SurfaceCount=program.Surfaces.Length,SpineCount=program.Spines.Length,ChartCount=program.Charts.Length,ScalarCount=program.Scalars.Length,Scalars=scalars,CurveRoot=root,IsCurve=true,Result=result,Uv=witnesses,UvCount=uv.Length};
             if(Dispatcher.IsExecuting)return command.Execute();
             return Dispatch(ApiId.SurfCreateBlend,ConcurrencyKind.Local,AccessKind.GlobalWrite,ref command,first);
         }
@@ -66,6 +67,8 @@ internal static unsafe partial class KernelRuntime
         internal BlendSpineInstruction* Spines;
         internal BlendChartInstruction* Charts;
         internal double* Scalars;
+        internal double* Uv;
+        internal BufferCount UvCount;
         internal BufferCount SurfaceCount,SpineCount,ChartCount,ScalarCount;
         internal BlendSurfaceIndex Root;
         internal BlendSpineIndex CurveRoot;
@@ -76,7 +79,7 @@ internal static unsafe partial class KernelRuntime
             if(!IsSessionStarted)return ParasolidConstants.PK_ERROR_not_in_PK;
             if(Result==null||(!IsCurve&&(Root<0||Root>=SurfaceCount))||IsCurve&&(CurveRoot<0||CurveRoot>=SpineCount)||SurfaceCount is <1 or >128||SpineCount is <1 or >128||ChartCount is <2 or >4096||ScalarCount is <0 or >65536)return ParasolidConstants.PK_ERROR_bad_parameter;
             var program=new NestedBlendProgram(new(Surfaces,SurfaceCount),new(Spines,SpineCount),new(Charts,ChartCount),new(Scalars,ScalarCount),CommandScratch.Current.AvailableSpanOfDoubles());
-            if(IsCurve)return BindNestedBlendSpineCore(First,Second,program,CurveRoot,Result);
+            if(IsCurve)return BindNestedBlendSpineCore(First,Second,program,CurveRoot,Result,new(Uv,UvCount));
             var root=program.Surfaces[Root];if(!root.IsBlend||root.Spine<0||root.Spine>=SpineCount)return ParasolidConstants.PK_ERROR_bad_parameter;
             var firstSlot=GetSurfaceSlotByTag(First);var secondSlot=GetSurfaceSlotByTag(Second);var spineSlot=GetCurveSlotByTag(Spine);
             if(firstSlot<0||secondSlot<0||spineSlot<0)return ParasolidConstants.PK_ERROR_bad_class;
@@ -132,13 +135,13 @@ internal static unsafe partial class KernelRuntime
         return new(surfaces,spines,charts,new ReadOnlySpan<double>(pointer,scalarCount),CommandScratch.Current.AvailableSpanOfDoubles());
     }
 
-    private static int BindNestedBlendSpineCore(SurfTag first,SurfTag second,in NestedBlendProgram program,BlendSpineIndex root,CurveTag* result)
+    private static int BindNestedBlendSpineCore(SurfTag first,SurfTag second,in NestedBlendProgram program,BlendSpineIndex root,CurveTag* result,ReadOnlySpan<double> uv)
     {
         var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);if(a<0||b<0)return ParasolidConstants.PK_ERROR_bad_class;
         var error=CheckGeometryDependency(PoolKind.Surface,a);if(error!=0)return error;
         error=CheckGeometryDependency(PoolKind.Surface,b);if(error!=0)return error;
         var source=program.Spines[root];var charts=program.Charts.Slice(source.ChartOffset,source.ChartCount);
-        if(charts.Length<2)return ParasolidConstants.PK_ERROR_bad_parameter;
+        if(charts.Length<2||!uv.IsEmpty&&uv.Length!=4*charts.Length)return ParasolidConstants.PK_ERROR_bad_parameter;
         if(!ICurveDataPool.TryAllocate(out var dataSlot))return ParasolidConstants.PK_ERROR_memory_full;
         ref var data=ref ICurveDataPool[dataSlot];data.HvecBlock=data.UvValueBlock=data.ProgramBlock=-1;
         data.Surface0Tag=first;data.Surface1Tag=second;data.BaseParameter=charts[0].Parameter;data.BaseScale=charts[0].Scale;
@@ -148,6 +151,12 @@ internal static unsafe partial class KernelRuntime
         if(hull==null){FreeICurveData(dataSlot);return ParasolidConstants.PK_ERROR_memory_full;}
         data.HvecBlock=State.Session->Blocks.HandleOf(hull);
         for(var i=0;i<charts.Length;i++)hull[i+1]=charts[i].Position;hull[0]=hull[1];hull[data.HvecCount-1]=hull[data.HvecCount-2];
+        if(!uv.IsEmpty)
+        {
+            var witnesses=State.Session->Blocks.TryAllocate((nuint)(uv.Length*sizeof(double)));if(witnesses==null){FreeICurveData(dataSlot);return ParasolidConstants.PK_ERROR_memory_full;}
+            data.UvValueBlock=State.Session->Blocks.HandleOf(witnesses);data.UvType=IntersectionUvType.Both;data.UvValueCount=uv.Length;
+            uv.CopyTo(new Span<double>(witnesses,uv.Length));
+        }
         data.StartLimit=new(){Type=source.StartType==LimitType.Help?LimitType.Help:LimitType.Artificial,TermUse=LimitTermUse.Unset,HvecCount=1,HvecIndex=0};
         data.EndLimit=new(){Type=source.EndType==LimitType.Help?LimitType.Help:LimitType.Artificial,TermUse=LimitTermUse.Unset,HvecCount=1,HvecIndex=data.HvecCount-1};
         var bytes=(int)NestedBlendProgramBytes(program.Surfaces.Length,program.Spines.Length,program.Charts.Length,program.Scalars.Length);

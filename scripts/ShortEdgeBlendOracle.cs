@@ -23,6 +23,15 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         {Console.WriteLine($"ROLLING CELL {trace.Stage} cell={trace.Cell} source={trace.CellSource} surface={trace.Surface} material={trace.Material}");return;}
         Console.WriteLine($"ROLLING {trace.Stage} source={trace.Source} supports={trace.FirstSupport}/{trace.SecondSupport} surface={trace.Surface} other={trace.Other} curve={trace.Curve} relation={trace.Relation} vertex={trace.Vertex} t=[{trace.First:R},{trace.Last:R}]");
         if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.RollingNetworkStage.BandEvents&&trace.Curve==0)ScalarBoundaryEvidence(trace.Surface,trace.Other);
+        if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.RollingNetworkStage.Clip&&trace.Curve!=0)
+        {
+            var record=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];
+            if(record.Class==CurveClass.Line)
+            {
+                var line=KernelRuntime.LineDataPool[record.DataIndex];
+                Console.WriteLine($"ROLLING LINE origin=({line.LocationX:R},{line.LocationY:R},{line.LocationZ:R}) axis=({line.AxisX:R},{line.AxisY:R},{line.AxisZ:R})");
+            }
+        }
         var other=KernelRuntime.GetSurfaceSlotByTag(trace.Other);
         if(other>=0&&KernelRuntime.Surfaces[other].Class==SurfaceClass.Plane)
         {
@@ -37,6 +46,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Successor)
         {Console.WriteLine($"SUCCESSOR surface={trace.Surface} edge={trace.Edge} forward={trace.Forward} end={trace.EndEvent} next={trace.NextEdge} angles={trace.StartAngle:R}/{trace.EndAngle:R}");return;}
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface}/{surface.Class} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
+        if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.BoundaryTraceStage.Input)
+            Console.WriteLine($"BOUNDARY XYZ start=({trace.StartPoint.X:R},{trace.StartPoint.Y:R},{trace.StartPoint.Z:R}) end=({trace.EndPoint.X:R},{trace.EndPoint.Y:R},{trace.EndPoint.Z:R})");
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Input&&surface.Class==SurfaceClass.BlendSurface)
         {
             var blend=KernelRuntime.BlendedEdgeDataPool[surface.DataIndex];var spine=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(blend.SpineTag)];
@@ -52,6 +63,8 @@ Require(!args.Contains("--record-fixtures")||!args.Contains("--matrix")&&!args.C
 Require(!args.Contains("--saved-probes")||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
 Require(!args.Contains("--native-only")||!args.Any(x=>x is "--import-only" or "--probes" or "--geometry" or "--lifecycle"),"managed checks require a managed-import mode");
 Require(!mappedInput||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"transformed inputs cannot replace fixed fixtures or historical probe inputs");
+Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
+    ||!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"parameter overrides cannot replace fixed fixtures or historical probe inputs");
 if(!ParasolidScriptHost.TryStartSession("Generated short-edge fillet",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
@@ -130,8 +143,8 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null);
-                    Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null);
+                    Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
@@ -144,10 +157,10 @@ using(host)unsafe
                     if(args.Contains("--geometry"))SelfGeometry(own,reference);
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
-                Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
+                if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
             }
             catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+": "+ex.Message);}
         }
@@ -205,9 +218,9 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(int imported,int reference,string output,string name,M.PK_TRANSF_sf_s* input=null)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input=null)
 {
-    int own,native;Check(KernelRuntime.EntityCopy(imported,&own),"copy imported fillet");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
+    int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
     matrix.matrix[0]=-s*Math.Cos(a);matrix.matrix[1]=-s*Math.Sin(a);matrix.matrix[4]=-s*Math.Sin(a);matrix.matrix[5]=s*Math.Cos(a);matrix.matrix[10]=s;matrix.matrix[15]=1;
     matrix.matrix[3]=3;matrix.matrix[7]=5;matrix.matrix[11]=7;
@@ -215,6 +228,8 @@ static unsafe int Lifecycle(int imported,int reference,string output,string name
     var failures=0;
     try
     {
+        var original=source;Check(KernelRuntime.EntityDelete(1,&original),"delete fillet source before copy modelling");source=0;
+        Console.WriteLine($"LIFECYCLE {name} source_deleted=True copy={own}");
         Move(true,own,selfTransform);Move(false,native,pkTransform);
         failures+=CompareFresh(own,native,output,name+"-copy-reflected");
         var toolAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(3,0,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));int ownTool,pkTool;
@@ -222,6 +237,13 @@ static unsafe int Lifecycle(int imported,int reference,string output,string name
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
         own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut");
+        var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=Receive(true,reload);
+        Console.WriteLine($"LIFECYCLE {name} managed_reload=True body={own}");
+        var secondAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(0,2.5,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));
+        Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
+        if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
+        Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
+        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut");
     }
     finally
     {
@@ -698,7 +720,10 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
         var cell=ParametricSurfaceIntersection.LastUnresolvedCell;
         Console.WriteLine($"UNRESOLVED reason={ParametricSurfaceIntersection.LastGraphFailure} depth={cell.Depth} graph_axis={ParametricSurfaceIntersection.LastGraphAxis} box=[{cell.Lower.U:R},{cell.Upper.U:R}]x[{cell.Lower.V:R},{cell.Upper.V:R}]x[{cell.Lower.S:R},{cell.Upper.S:R}]x[{cell.Lower.T:R},{cell.Upper.T:R}]");
         var box=SurfacePlaneIntersection.LastUnresolvedBox;
-        Console.WriteLine($"UNRESOLVED scalar budget={SurfacePlaneIntersection.LastUnresolvedBudget} depth={SurfacePlaneIntersection.LastUnresolvedDepth} free={SurfacePlaneIntersection.LastUnresolvedFreeAxis} box=[{box.U0:R},{box.U1:R}]x[{box.V0:R},{box.V1:R}]");
+        Console.WriteLine($"UNRESOLVED scalar budget={SurfacePlaneIntersection.LastUnresolvedBudget} depth={SurfacePlaneIntersection.LastUnresolvedDepth} free={SurfacePlaneIntersection.LastUnresolvedFreeAxis} box=[{box.U0:R},{box.U1:R}]x[{box.V0:R},{box.V1:R}] boundary={SurfacePlaneIntersection.LastBoundaryFailure} residual=[{SurfacePlaneIntersection.LastBoundaryResidual.Lower:R},{SurfacePlaneIntersection.LastBoundaryResidual.Upper:R}]");
+        Console.WriteLine($"UNRESOLVED iso reason={SurfaceIsoPlaneRoots.LastFailure} requested=[{SurfaceIsoPlaneRoots.LastRequestedInterval.Lower:R},{SurfaceIsoPlaneRoots.LastRequestedInterval.Upper:R}] cell=[{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Lower:R},{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Upper:R}] f0=[{SurfaceIsoPlaneRoots.LastLeft.Lower:R},{SurfaceIsoPlaneRoots.LastLeft.Upper:R}] f1=[{SurfaceIsoPlaneRoots.LastRight.Lower:R},{SurfaceIsoPlaneRoots.LastRight.Upper:R}] slope=[{SurfaceIsoPlaneRoots.LastDerivative.Lower:R},{SurfaceIsoPlaneRoots.LastDerivative.Upper:R}]");
+        var rootCell=ParametricSurfaceIntersection.LastRootCell;
+        Console.WriteLine($"UNRESOLVED isolated reason={ParametricSurfaceIntersection.LastRootFailure} fixed={ParametricSurfaceIntersection.LastRootFixedAxis} depth={rootCell.Depth} box=[{rootCell.Lower.U:R},{rootCell.Upper.U:R}]x[{rootCell.Lower.V:R},{rootCell.Upper.V:R}]x[{rootCell.Lower.S:R},{rootCell.Upper.S:R}]x[{rootCell.Lower.T:R},{rootCell.Upper.T:R}]");
     }
     Free(own,made);return error;
 }

@@ -69,7 +69,7 @@ internal static unsafe partial class KernelRuntime
                 var other = new BezierSurfacePatch(bp[..(4 * (p + 1) * (q + 1))], p, q, domain);
                 // Analytic chart parameters differ from their native angular
                 // parameters; keep a pair-local graph until remapping is done.
-                var scratch = CommandScratch.Current; var memory = scratch.Take(100000);
+                var scratch = CommandScratch.Current; var memory = scratch.Take(150000);
                 if (memory.IsEmpty) return AlgorithmStatus.WorkspaceTooSmall;
                 try
                 {
@@ -208,6 +208,8 @@ internal static unsafe partial class KernelRuntime
 
     private static bool GeneralIntersectionSameNode(SurfaceSlot first, SurfaceSlot second, in SurfaceIntersectionNode a, in SurfaceIntersectionNode b)
     {
+        if((a.RootAxis!=0||b.RootAxis!=0)&&!a.RemappedParameters&&!b.RemappedParameters)
+            return a.RootAxis==b.RootAxis?a.HasCommonScalarRoot(b):a.U==b.U&&a.V==b.V&&a.S==b.S&&a.T==b.T;
         if (OperationIntersection.Norm(Sub(a.Point, b.Point)) > 2e-8) return false;
         for (var d = 0; d < 4; d++)
         {
@@ -241,7 +243,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static AlgorithmStatus OrderGeneralIntersectionGraph(ReadOnlySpan<SurfaceIntersectionNode> nodes,
-        ReadOnlySpan<SurfaceIntersectionSegment> edges, Span<SurfaceIntersectionNode> ordered, Span<GeneralIntersectionBranch> branches,
+        ReadOnlySpan<SurfaceIntersectionSegment> edges, Span<BufferOffset> ordered, Span<GeneralIntersectionBranch> branches,
         out BufferCount branchCount)
     {
         branchCount = 0;
@@ -263,7 +265,7 @@ internal static unsafe partial class KernelRuntime
                 var first = position; var node = seed; var closed = false;var chordalError=0.0;
                 while (true)
                 {
-                    if (position == ordered.Length) return AlgorithmStatus.OutputTooSmall; ordered[position++] = nodes[node];
+                    if (position == ordered.Length) return AlgorithmStatus.OutputTooSmall; ordered[position++] = node;
                     var nextEdge = -1;
                     for (var e = 0; e < edges.Length; e++) if (used[e] == 0 && (edges[e].Start == node || edges[e].End == node)) { nextEdge = e; break; }
                     if (nextEdge < 0) break;
@@ -271,7 +273,7 @@ internal static unsafe partial class KernelRuntime
                     used[nextEdge] = 1; node = edges[nextEdge].Start == node ? edges[nextEdge].End : edges[nextEdge].Start;
                     if (node == seed)
                     {
-                        if (position == ordered.Length) return AlgorithmStatus.OutputTooSmall; ordered[position++] = nodes[seed]; closed = true; break;
+                        if (position == ordered.Length) return AlgorithmStatus.OutputTooSmall; ordered[position++] = seed; closed = true; break;
                     }
                 }
                 if (position - first < 2) return AlgorithmStatus.NotConverged;
@@ -285,14 +287,19 @@ internal static unsafe partial class KernelRuntime
     private static int GeneralSurfIntersectSurf(SurfaceSlot first, SurfaceSlot second, BodySlot owner,
         PK_SURF_intersect_surf_o_s* options, BufferCount* curveCount, CurveTag** curves, PK_INTERVAL_s** intervals, int** kinds)
     {
-        var scratch = CommandScratch.Current; var memory = scratch.Take(150000);
+        // Store graph order as indices. A second maximum-sized node array
+        // would reserve certificate storage twice and exhaust the command
+        // arena when discovery is nested inside Boolean or imprint.
+        var required=GeneralIntersectionNodeLimit*(sizeof(SurfaceIntersectionNode)+sizeof(SurfaceIntersectionSegment))
+            +(GeneralIntersectionNodeLimit+GeneralIntersectionBranchLimit)*sizeof(BufferOffset)+GeneralIntersectionBranchLimit*sizeof(GeneralIntersectionBranch);
+        var scratch = CommandScratch.Current; var memory = scratch.Take((required+7)/8);
         if (memory.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
             var bytes = MemoryMarshal.AsBytes(memory); var cursor = 0;
             var nodes = ModelSpan<SurfaceIntersectionNode>(bytes, ref cursor, GeneralIntersectionNodeLimit);
             var edges = ModelSpan<SurfaceIntersectionSegment>(bytes, ref cursor, GeneralIntersectionNodeLimit);
-            var ordered = ModelSpan<SurfaceIntersectionNode>(bytes, ref cursor, GeneralIntersectionNodeLimit + GeneralIntersectionBranchLimit);
+            var ordered = ModelSpan<BufferOffset>(bytes, ref cursor, GeneralIntersectionNodeLimit + GeneralIntersectionBranchLimit);
             var branches = ModelSpan<GeneralIntersectionBranch>(bytes, ref cursor, GeneralIntersectionBranchLimit);
             LastGeneralIntersectionStage=GeneralIntersectionStage.Discovery;
             var status = DiscoverGeneralSurfaceIntersections(first, second, nodes, out var nn, edges, out var ne,options);
@@ -311,10 +318,10 @@ internal static unsafe partial class KernelRuntime
             {
                 ref readonly var branch = ref branches[i];
                 if (branch.Closed != 0) continue;
-                LastGeneralLimitFirst=ordered[branch.First];LastGeneralLimitLast=ordered[branch.First+branch.Count-1];
+                LastGeneralLimitFirst=nodes[ordered[branch.First]];LastGeneralLimitLast=nodes[ordered[branch.First+branch.Count-1]];
                 if(unboundedBlendPair)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                if (!GeneralIntersectionBoundary(first, second, ordered[branch.First],options)
-                    || !GeneralIntersectionBoundary(first, second, ordered[branch.First + branch.Count - 1],options))
+                if (!GeneralIntersectionBoundary(first, second, nodes[ordered[branch.First]],options)
+                    || !GeneralIntersectionBoundary(first, second, nodes[ordered[branch.First + branch.Count - 1]],options))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;
             }
             if (options->have_vector != 0)
@@ -326,7 +333,7 @@ internal static unsafe partial class KernelRuntime
                 {
                     ref readonly var branch = ref branches[i];
                     var candidateError = CreateGeneralIntersectionCurve(Surfaces[first].Header.Tag, Surfaces[second].Header.Tag,
-                        ordered.Slice(branch.First, branch.Count), branch.Closed != 0, out var candidate, branch.ChordalError, ownsSupports:false);
+                        nodes[..nn],ordered.Slice(branch.First, branch.Count), branch.Closed != 0, out var candidate, branch.ChordalError, ownsSupports:false);
                     if (candidateError != 0) return candidateError;
                     double parameter = 0;
                     candidateError = CurveParameteriseVectorCore(candidate, options->vector, &parameter);
@@ -351,7 +358,7 @@ internal static unsafe partial class KernelRuntime
             for (var i = 0; i < nb; i++)
             {
                 ref readonly var branch = ref branches[i];
-                error = CreateGeneralIntersectionCurve(a, b, ordered.Slice(branch.First, branch.Count), branch.Closed != 0, out tags[i],branch.ChordalError);
+                error = CreateGeneralIntersectionCurve(a, b, nodes[..nn],ordered.Slice(branch.First, branch.Count), branch.Closed != 0, out tags[i],branch.ChordalError);
                 if (error == 0 && owner >= 0) error = TryRegisterConstructionGeometry(owner, tags[i]);
                 if (error != 0)
                 { State.Session->Returns.TryFree(tags); State.Session->Returns.TryFree(ranges); State.Session->Returns.TryFree(types); return error; }
@@ -391,6 +398,20 @@ internal static unsafe partial class KernelRuntime
         return false;
     }
 
+    private static int CreateGeneralIntersectionCurve(SurfTag first,SurfTag second,ReadOnlySpan<SurfaceIntersectionNode> nodes,ReadOnlySpan<BufferOffset> order,
+        bool closed,out CurveTag curve,double chordalError=0,double angularError=Math.PI,bool ownsSupports=true)
+    {
+        curve=0;var scratch=CommandScratch.Current;var memory=scratch.Take((order.Length*sizeof(SurfaceIntersectionNode)+7)/8);
+        if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        try
+        {
+            var samples=MemoryMarshal.Cast<double,SurfaceIntersectionNode>(memory)[..order.Length];
+            for(var i=0;i<order.Length;i++)samples[i]=nodes[order[i]];
+            return CreateGeneralIntersectionCurve(first,second,samples,closed,out curve,chordalError,angularError,ownsSupports);
+        }
+        finally{scratch.Return(memory);}
+    }
+
     private static int CreateGeneralIntersectionCurve(SurfTag first, SurfTag second, Span<SurfaceIntersectionNode> samples,
         bool closed, out CurveTag curve,double chordalError=0,double angularError=Math.PI,bool ownsSupports=true)
     {
@@ -427,8 +448,8 @@ internal static unsafe partial class KernelRuntime
                 var compiler=new NestedProgramCompiler();if(!compiler.Ready)return ParasolidConstants.PK_ERROR_memory_full;
                 status=compiler.Surface(first,out var firstInstruction);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 status=compiler.Surface(second,out var secondInstruction);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                status=compiler.ChartSpine(firstInstruction,secondInstruction,MemoryMarshal.Cast<double,KernelVector3>(chart),0,1,Math.Max(chordalError,1e-12),angularError,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spine);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                CurveTag created=0;var error=BindNestedBlendSpine(first,second,compiler.View,spine,&created);if(error!=0)return error;
+                status=compiler.ChartSpine(firstInstruction,secondInstruction,MemoryMarshal.Cast<double,KernelVector3>(chart),0,1,Math.Max(chordalError,1e-12),angularError,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spine,knownUv:uv);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                CurveTag created=0;var error=BindNestedBlendSpine(first,second,compiler.View,spine,&created,uv);if(error!=0)return error;
                 ICurveDataPool[Curves[GetCurveSlotByTag(created)].DataIndex].OwnsSupportSurfaces=ownsSupports?(byte)1:(byte)0;curve=created;return 0;
             }
             var input = new IcurveDecodeInput { Surface0Tag = first, Surface1Tag = second,

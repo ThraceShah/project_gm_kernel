@@ -25,6 +25,18 @@ public unsafe class BlendIntersectionTests:IDisposable
         try
         {
             Assert.Equal(0,np);Assert.Equal(1,nc);
+            var record=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(curves[0])];var data=KernelRuntime.ICurveDataPool[record.DataIndex];
+            Assert.Equal(IntersectionUvType.Both,data.UvType);Assert.Equal(4*data.ChartCount,data.UvValueCount);
+            var witnesses=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(data.UvValueBlock),data.UvValueCount);
+            var hulls=new ReadOnlySpan<KernelVector3>(KernelRuntime.DereferenceBlock(data.HvecBlock),data.HvecCount);
+            PK_VECTOR_s witnessPoint;var uv=new PK_UV_s();
+            for(var chart=0;chart<data.ChartCount;chart++)for(var side=0;side<2;side++)
+            {
+                var support=side==0?data.Surface0Tag:data.Surface1Tag;uv.param[0]=witnesses[4*chart+2*side];uv.param[1]=witnesses[4*chart+2*side+1];
+                Assert.Equal(0,KernelRuntime.SurfEval(support,uv,0,0,0,&witnessPoint));
+                var position=new KernelVector3{X=witnessPoint.coord[0],Y=witnessPoint.coord[1],Z=witnessPoint.coord[2]};
+                Assert.InRange(OperationIntersection.Norm(EvaluationMath.Sub(position,hulls[chart+1])),0,1e-9);
+            }
             for(var i=0;i<=12;i++)
             {
                 var t=intervals[0].value[0]+(intervals[0].value[1]-intervals[0].value[0])*i/12;var p=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(curves[0],t,0,&p));

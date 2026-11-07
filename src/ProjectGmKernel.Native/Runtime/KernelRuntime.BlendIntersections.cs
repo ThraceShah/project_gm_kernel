@@ -20,7 +20,7 @@ internal static unsafe partial class KernelRuntime
         var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {
-            var memory=CommandScratch.Current.Take(100000);if(memory.IsEmpty)return AlgorithmStatus.WorkspaceTooSmall;
+            var memory=CommandScratch.Current.Take(150000);if(memory.IsEmpty)return AlgorithmStatus.WorkspaceTooSmall;
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;var localNodes=ModelSpan<SurfaceIntersectionNode>(bytes,ref cursor,GeneralIntersectionNodeLimit);
             var localEdges=ModelSpan<SurfaceIntersectionSegment>(bytes,ref cursor,GeneralIntersectionNodeLimit);var map=ModelSpan<BufferOffset>(bytes,ref cursor,GeneralIntersectionNodeLimit);
             var data=BlendedEdgeDataPool[a.DataIndex];var program=GetNestedBlendProgram(data);var definition=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
@@ -80,7 +80,11 @@ internal static unsafe partial class KernelRuntime
                     for(var k=0;k<ln;k++)
                     {
                         if(analytic){status=OperationIntersection.Parameters(support,localNodes[k].Point,out localNodes[k].S,out localNodes[k].T);if(status!=AlgorithmStatus.Success)return status;}
-                        if(reverse){(localNodes[k].U,localNodes[k].S)=(localNodes[k].S,localNodes[k].U);(localNodes[k].V,localNodes[k].T)=(localNodes[k].T,localNodes[k].V);}
+                        if(reverse)
+                        {
+                            (localNodes[k].U,localNodes[k].S)=(localNodes[k].S,localNodes[k].U);(localNodes[k].V,localNodes[k].T)=(localNodes[k].T,localNodes[k].V);
+                            if(localNodes[k].RootAxis!=0)localNodes[k].RootAxis=(byte)(((localNodes[k].RootAxis-1)^2)+1);
+                        }
                         // A certified arc reaching an artificial extent already
                         // disproves completeness. Reject before discovering all
                         // remaining patch pairs; no partial graph is published.

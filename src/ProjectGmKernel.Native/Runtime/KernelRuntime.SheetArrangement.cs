@@ -211,7 +211,9 @@ internal static unsafe partial class KernelRuntime
         var slot=GetCurveSlotByTag(use.Carrier);
         if(slot<0||Curves[slot].Header.Generation!=use.Generation||record.Curve!=use.Carrier
             ||record.Start!=use.First||record.End!=use.Last)return ParasolidConstants.PK_ERROR_bad_parameter;
-        TraceBoundary(BoundaryTraceStage.Input,use);
+        TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.Input,Source=use.Source,Surface=use.Surface,Curve=use.Carrier,
+            Generation=use.Generation,Edge=use.Edge,Face=-1,Product=-1,StartEvent=use.StartEvent,EndEvent=use.EndEvent,First=use.First,Last=use.Last,Forward=use.Forward,
+            StartPoint=use.StartEvent>=0?model.Points[use.StartEvent]:default,EndPoint=use.EndEvent>=0?model.Points[use.EndEvent]:default});
         if(Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.Sphere)
         {
             var sphericalError=SphericalHalfedgeAngle(surface,record,forward,false,model.Points,out var startAngle);if(sphericalError!=0)return sphericalError;

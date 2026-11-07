@@ -48,7 +48,12 @@ internal static unsafe partial class KernelRuntime
             foreach(var family in families)
             {
                 LastRollingFirstFace=family.FirstFace;LastRollingSecondFace=family.SecondFace;var before=cutCount;
-                error=ClipRegularFacePair(view,family.FirstFace,family.SecondFace,curves.Slice(family.FirstCurve,family.Count),cuts,ref cutCount,owned,ref ownedCount,ref model,certificates[..certificateCount]);if(error!=0)return error;
+                error=ClipRegularFacePair(view,family.FirstFace,family.SecondFace,curves.Slice(family.FirstCurve,family.Count),cuts,ref cutCount,owned,ref ownedCount,ref model,certificates[..certificateCount]);
+                if(error!=0)
+                {
+                    TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Surface=view.Faces[family.FirstFace].Surface,Other=view.Faces[family.SecondFace].Surface,Curve=LastSheetCurve,First=LastSheetParameter});
+                    return error;
+                }
                 for(var c=before;c<cutCount;c++)cuts[c].SecondIsBoundary=family.SecondIsBoundary;
             }
             LastRollingNetworkStage=RollingNetworkStage.Split;

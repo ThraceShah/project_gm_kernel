@@ -266,7 +266,7 @@ internal static unsafe partial class KernelRuntime
         try
         {
             var status=TryPrepareICurveView(record,out var view,out _);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-            var scratch=CommandScratch.Current;var memory=scratch.Take((view.ChartParameters.Length+3)*7);
+            var scratch=CommandScratch.Current;var memory=scratch.Take(((view.ChartParameters.Length+3)*sizeof(SurfaceIntersectionNode)+7)/8);
             if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
             var samples=System.Runtime.InteropServices.MemoryMarshal.Cast<double,SurfaceIntersectionNode>(memory);
             var count=0;

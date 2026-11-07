@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using EdgeTag=System.Int32;
 using System.Runtime.InteropServices;
@@ -175,6 +176,8 @@ public unsafe class RollingNetworkTests:IDisposable
         for(var e=0;e<KernelRuntime.Bodies[slot].EdgeCountBody;e++,edge=KernelRuntime.Edges[edge].NextInBody)
         {
             var record=KernelRuntime.Edges[edge];if(KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)].Class!=CurveClass.ICurve)continue;
+            var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)];var data=KernelRuntime.ICurveDataPool[curve.DataIndex];
+            Assert.Equal(IntersectionUvType.Both,data.UvType);Assert.Equal(4*data.ChartCount,data.UvValueCount);
             Assert.Equal(1,record.HasParameterRange);Assert.True(record.ParameterEnd>record.ParameterStart);
             Assert.Equal(0,KernelRuntime.CurveEval(record.CurveTag,record.ParameterStart,0,point));Assert.Equal(0,KernelRuntime.CurveEval(record.CurveTag,record.ParameterEnd,0,point+1));
             var squared=0.0;for(var i=0;i<3;i++){var d=point[0].coord[i]-point[1].coord[i];squared+=d*d;}

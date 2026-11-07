@@ -10,6 +10,16 @@ internal struct SurfaceIntersectionNode
 {
     internal KernelVector3 Point;
     internal double U, V, S, T;
+    internal ScalarRootIsolation Isolation;
+    internal double SpatialError;
+    // One-based native parameter axis isolated on the other coordinate's
+    // exact isoparametric boundary. Zero denotes a different producer.
+    internal byte RootAxis;
+    internal bool RemappedParameters;
+    internal readonly bool HasCommonScalarRoot(in SurfaceIntersectionNode other)
+        =>RootAxis!=0&&RootAxis==other.RootAxis
+            &&Parameter((RootAxis-1)^1)==other.Parameter((RootAxis-1)^1)
+            &&Isolation.SameRoot(other.Isolation);
     internal readonly double Parameter(BufferOffset axis) => axis == 0 ? U : axis == 1 ? V : axis == 2 ? S : T;
     internal void SetParameter(BufferOffset axis, double value)
     { if (axis == 0) U = value; else if (axis == 1) V = value; else if (axis == 2) S = value; else T = value; }
@@ -45,6 +55,9 @@ internal static class ParametricSurfaceIntersection
     [ThreadStatic] internal static GraphFailure LastGraphFailure;
     [ThreadStatic] internal static ParameterCell LastUnresolvedCell;
     [ThreadStatic] internal static BufferOffset LastGraphAxis;
+    [ThreadStatic] internal static GraphFailure LastRootFailure;
+    [ThreadStatic] internal static ParameterCell LastRootCell;
+    [ThreadStatic] internal static BufferOffset LastRootFixedAxis;
     internal const BufferCount MaxCells = 200000;
     private const double ParameterTolerance = 2e-10;
 
@@ -197,7 +210,7 @@ internal static class ParametricSurfaceIntersection
     internal static AlgorithmStatus Isolate(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
         in ParameterCell domain,BufferOffset fixedAxis,Span<SurfaceIntersectionNode> roots,out BufferCount rootCount)
     {
-        rootCount = 0;
+        rootCount = 0;LastRootFailure=GraphFailure.None;LastRootFixedAxis=fixedAxis;
         Span<ParameterCell> pending = stackalloc ParameterCell[160]; pending[0] = domain; var count = 1; var visited = 0;
         Span<IntervalNumber> f = stackalloc IntervalNumber[3]; Span<IntervalNumber> jac = stackalloc IntervalNumber[12];
         Span<IntervalNumber> centerF = stackalloc IntervalNumber[3]; Span<IntervalNumber> centerJac = stackalloc IntervalNumber[12];
@@ -207,16 +220,20 @@ internal static class ParametricSurfaceIntersection
         while (count > 0)
         {
             ModelingPerformance.Cell(true);
-            if (++visited > 12000){ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
+            if (++visited > 12000){LastRootFailure=GraphFailure.Budget;LastRootCell=pending[count-1];ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var cell = pending[--count];var bounded=false;var status = Bounds(first, second, cell, f, jac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;bounded=true;if(status!=AlgorithmStatus.Success)return status;
             if (!f[0].ContainsZero || !f[1].ContainsZero || !f[2].ContainsZero) continue;
             var point = cell.Center;
             if (Invert(jac, axes, inverse) && Contraction(jac, axes, inverse, cell) < .8)
             {
-                for (var iteration = 0; iteration < 12; iteration++)
+                for (var iteration = 0; iteration < 24; iteration++)
                 {
                     var singleton = new ParameterCell { Lower = point, Upper = point };
                     status = Bounds(first, second, singleton, centerF, centerJac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
+                    // Further point Newton steps cannot resolve signs inside
+                    // the floating evaluation enclosure. Existence/uniqueness
+                    // is still decided by the interval test below.
+                    if(centerF[0].ContainsZero&&centerF[1].ContainsZero&&centerF[2].ContainsZero)break;
                     if (!Invert(centerJac, axes, inverse)) break;
                     var step = 0.0;
                     for (var r = 0; r < 3; r++)
@@ -266,7 +283,11 @@ internal static class ParametricSurfaceIntersection
                 }
             }
             Subdivide:
-            if (cell.Depth >= 44 || count + 2 > pending.Length) return AlgorithmStatus.NotConverged;
+            // A shallow rolling contact may require smaller parameter boxes
+            // before the same Krawczyk test contracts. More subdivision does
+            // not relax that test or turn an exhausted search into success.
+            if (cell.Depth >= (first.IsProcedural||second.IsProcedural?64:44) || count + 2 > pending.Length)
+            {LastRootFailure=GraphFailure.SubdivisionLimit;LastRootCell=cell;return AlgorithmStatus.NotConverged;}
             var split = axes[0]; var width = 0.0;
             for (var i = 0; i < 3; i++)
             {

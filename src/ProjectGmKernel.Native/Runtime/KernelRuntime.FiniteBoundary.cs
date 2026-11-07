@@ -52,6 +52,7 @@ internal static unsafe partial class KernelRuntime
         internal BufferOffset Edge,Face,NextEdge;
         internal BoundaryEventId StartEvent,EndEvent;
         internal double First,Last,StartAngle,EndAngle;
+        internal KernelVector3 StartPoint,EndPoint;
         internal byte Forward;
     }
     [ThreadStatic] internal static Action<BoundaryTrace>? TraceFiniteBoundary;

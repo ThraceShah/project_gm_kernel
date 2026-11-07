@@ -9,6 +9,38 @@ namespace KernelTests;
 
 public class SurfaceAnalyticIntersectionTests
 {
+    [Fact]
+    public void ShallowRootRetainsAnIsolationBoxInsteadOfStoppingAtSmallResidual()
+    {
+        const double slope=1.0/(1<<18);
+        var first=1-.37*slope;var last=1+.63*slope;
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[8];poles.Clear();
+        poles[0]=first;poles[3]=1;poles[4]=last;poles[7]=1;
+        var curve=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,1,0,new(0,1,0,1)));
+        var cylinder=new AnalyticSurface(SurfaceClass.Cylinder,default,new(){Z=1},new(){X=1},1);
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[4];
+        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[4];var count=0;
+        Assert.Equal(AlgorithmStatus.Success,SurfaceIsoPlaneRoots.Find(curve,cylinder,0,1,roots,ref count,1e-10,true,isolation));
+        Assert.Equal(1,count);Assert.True(isolation[0].Certified);
+        var exact=(1-first)/(last-first);
+        Assert.InRange(exact,isolation[0].Root.Lower,isolation[0].Root.Upper);
+        Assert.InRange(isolation[0].Root.Upper-isolation[0].Root.Lower,0,1e-8);
+        Assert.InRange(Math.Abs(roots[0].First-exact),0,1e-8);
+    }
+
+    [Fact]
+    public void APositiveNearZeroIsoEdgeDoesNotInventAContactRoot()
+    {
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[8];poles.Clear();
+        poles[0]=1+1e-12;poles[3]=1;poles[4]=1+2e-12;poles[7]=1;
+        var curve=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,1,0,new(0,1,0,1)));
+        var cylinder=new AnalyticSurface(SurfaceClass.Cylinder,default,new(){Z=1},new(){X=1},1);
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[4];
+        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[4];var count=0;
+        Assert.Equal(AlgorithmStatus.Success,SurfaceIsoPlaneRoots.Find(curve,cylinder,0,1,roots,ref count,1e-10,false,isolation));
+        Assert.Equal(0,count);
+    }
+
     [Theory]
     [InlineData((int)SurfaceClass.Cylinder)]
     [InlineData((int)SurfaceClass.Sphere)]

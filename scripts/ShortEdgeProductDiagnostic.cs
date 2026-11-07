@@ -33,6 +33,7 @@ using(host)unsafe
     var reference=Read(prefix+"-native.x_t");var actual=Read(prefix+"-self.x_t");
     try
     {
+        if(args.Contains("--edges")){EdgeEndpoints(reference,actual);return;}
         if(args.Contains("--definitions")){Definitions(reference,"reference");Definitions(actual,"actual");}
         var scaleOption=args.FirstOrDefault(x=>x.StartsWith("--scale-power=",StringComparison.Ordinal));var scale=scaleOption==null?1:Math.ScaleB(1,int.Parse(scaleOption[14..],System.Globalization.CultureInfo.InvariantCulture));
         if(scale!=1){ScaleBody(reference,scale);ScaleBody(actual,scale);}
@@ -59,6 +60,41 @@ using(host)unsafe
     }
     finally{Check(PK_ENTITY_delete(1,&reference));Check(PK_ENTITY_delete(1,&actual));}
 }
+static unsafe void EdgeEndpoints(int reference,int actual)
+{
+    int nr,na;int* referenceEdges;int* actualEdges;
+    Check(PK_BODY_ask_edges(reference,&nr,&referenceEdges));Check(PK_BODY_ask_edges(actual,&na,&actualEdges));
+    Span<byte> used=stackalloc byte[na];used.Clear();var maximum=0.0;
+    PK_VECTOR_t* a=stackalloc PK_VECTOR_t[2];PK_VECTOR_t* b=stackalloc PK_VECTOR_t[2];
+    try
+    {
+        for(var i=0;i<nr;i++)
+        {
+            int ca,kindA;PK_INTERVAL_t rangeA;PK_LOGICAL_t senseA;
+            Check(PK_EDGE_ask_geometry(referenceEdges[i],PK_LOGICAL_true,&ca,&kindA,a,&rangeA,&senseA));
+            // Evaluate the finite native limits as well as the topological
+            // vertex positions returned by ask_geometry.
+            Check(PK_CURVE_eval(ca,rangeA.value[0],0,a));Check(PK_CURVE_eval(ca,rangeA.value[1],0,a+1));
+            var best=double.PositiveInfinity;var match=-1;var reversed=false;
+            for(var j=0;j<na;j++)
+            {
+                if(used[j]!=0)continue;int cb,kindB;PK_INTERVAL_t rangeB;PK_LOGICAL_t senseB;
+                Check(PK_EDGE_ask_geometry(actualEdges[j],PK_LOGICAL_true,&cb,&kindB,b,&rangeB,&senseB));
+                Check(PK_CURVE_eval(cb,rangeB.value[0],0,b));Check(PK_CURVE_eval(cb,rangeB.value[1],0,b+1));
+                var same=Math.Max(Distance(a[0],b[0]),Distance(a[1],b[1]));var reverse=Math.Max(Distance(a[0],b[1]),Distance(a[1],b[0]));
+                var error=Math.Min(same,reverse);if(error>=best)continue;best=error;match=j;reversed=reverse<same;
+            }
+            if(match<0)throw new Exception("unmatched diagnostic edge");used[match]=1;maximum=Math.Max(maximum,best);
+            int curve,type;PK_INTERVAL_t range;PK_LOGICAL_t sense;
+            Check(PK_EDGE_ask_geometry(actualEdges[match],PK_LOGICAL_true,&curve,&type,b,&range,&sense));
+            Console.WriteLine($"EDGE endpoints reference={referenceEdges[i]}/{kindA} actual={actualEdges[match]}/{type} reverse={reversed} distance={best:R} native_limits=[{rangeA.value[0]:R},{rangeA.value[1]:R}]/[{range.value[0]:R},{range.value[1]:R}]");
+        }
+        Console.WriteLine($"DIAGNOSTIC ONLY: finite endpoint maximum={maximum:R}; matching uses nearest endpoints and does not prove curve equivalence");
+    }
+    finally{Check(PK_MEMORY_free(referenceEdges));Check(PK_MEMORY_free(actualEdges));}
+}
+static unsafe double Distance(PK_VECTOR_t a,PK_VECTOR_t b)
+{var x=a.coord[0]-b.coord[0];var y=a.coord[1]-b.coord[1];var z=a.coord[2]-b.coord[2];return Math.Sqrt(x*x+y*y+z*z);}
 static unsafe int Read(string name)
 {
     var bytes=File.ReadAllBytes(ProductPath(name));
