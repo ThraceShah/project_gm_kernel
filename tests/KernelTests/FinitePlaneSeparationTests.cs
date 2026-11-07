@@ -2,7 +2,9 @@ global using BoundaryEventId=System.Int32;
 
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Runtime;
+using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -119,7 +121,7 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[8];Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[8];
         Span<double> errors=stackalloc double[8];
         var expected=unresolved?AlgorithmStatus.NotConverged:AlgorithmStatus.Success;
-        Assert.Equal(expected,KernelRuntime.IsolateFiniteConicCylinder(new(){Curve=carrier,Start=0,End=Math.Tau},support,roots,isolation,errors,out var count));
+        Assert.Equal(expected,KernelRuntime.IsolateFiniteExplicitCylinder(new(){Curve=carrier,Start=0,End=Math.Tau},support,roots,isolation,errors,out var count));
         if(unresolved)return;
         Assert.Equal(expectedCount,count);if(count==0)return;
         var angle=Math.Acos(Math.Sqrt(5.0/12.0));Span<double> exact=stackalloc double[4]{angle,Math.PI-angle,Math.PI+angle,Math.Tau-angle};
@@ -128,6 +130,32 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
             Assert.True(isolation[i].Certified);Assert.InRange(exact[i],isolation[i].Root.Lower,isolation[i].Root.Upper);
             if(i>0)Assert.True(isolation[i-1].Root.Upper<isolation[i].Root.Lower);
         }
+    }
+
+    [Theory]
+    [InlineData(0,2)]
+    [InlineData(.45,1)]
+    public void ParameterBoxesKeepSeparateLineSurfaceRootsAndRespectTheFiniteLine(double lineStart,int expectedCount)
+    {
+        // P(u,v)=(u,v,(u-.5)^2), L(t)=(t,.4,.01).
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[24]
+        {0,0,.25,1,0,1,.25,1,.5,0,-.25,1,.5,1,-.25,1,1,0,.25,1,1,1,.25,1};
+        Span<IntervalNumber> line=stackalloc IntervalNumber[8]{0,.4,.01,1,1,.4,.01,1};
+        var domain=new SurfaceParameterBox(0,1,0,1);
+        var a=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,2,1,domain));
+        var b=new SurfaceIntersectionPatch(new BezierSurfacePatch(line,1,0,domain));
+        var search=new ParameterCell{Lower=new(){S=lineStart},Upper=new(){U=1,V=1,S=1}};
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[4];
+        Span<IsolatedRootCertificate> proofs=stackalloc IsolatedRootCertificate[4];
+        Assert.Equal(AlgorithmStatus.Success,ParametricSurfaceIntersection.Isolate(a,b,search,3,roots,out var count,proofs));
+        Assert.Equal(expectedCount,count);var lower=false;var upper=false;
+        for(var i=0;i<count;i++)
+        {
+            var p=proofs[i];Assert.True(IsolatedRootCertificate.Contains(search.Second,p.Second));
+            lower|=p.Second.U0<=.4&&p.Second.U1>=.4;upper|=p.Second.U0<=.6&&p.Second.U1>=.6;
+        }
+        Assert.Equal(expectedCount==2,lower);Assert.True(upper);
+        if(count==2)Assert.False(proofs[0].MayShareRoot(proofs[1]));
     }
     private static void Write(PK_VECTOR_s* target,KernelVector3 value){target->coord[0]=value.X;target->coord[1]=value.Y;target->coord[2]=value.Z;}
 }

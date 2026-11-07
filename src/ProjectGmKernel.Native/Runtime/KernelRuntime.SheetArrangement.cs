@@ -142,7 +142,12 @@ internal static unsafe partial class KernelRuntime
         }
 
         internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index,scoped ReadOnlySpan<BoundaryParameter> anchors=default,bool requireProof=false)
+            =>AddPoint(point,original,out index,out _,anchors,requireProof);
+
+        internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index,out bool reusedByPosition,
+            scoped ReadOnlySpan<BoundaryParameter> anchors=default,bool requireProof=false)
         {
+            reusedByPosition=false;
             index=-1;BoundaryEventId proven=-1;var ambiguous=false;var unresolved=false;
             for(var i=0;i<NP;i++)
             {
@@ -158,7 +163,7 @@ internal static unsafe partial class KernelRuntime
             }
             if(proven>=0){index=proven;return 0;}
             if(ambiguous||unresolved){LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;return ParasolidConstants.PK_ERROR_cant_do_intersect;}
-            if(index>=0)return 0;
+            if(index>=0){reusedByPosition=true;return 0;}
             if(NP==Points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             index=NP;OriginalVertices[NP]=original;if(!VertexPrecisions.IsEmpty)VertexPrecisions[NP]=original>=0?Vertices[original].Tolerance:0;if(!VertexMergeCandidates.IsEmpty)VertexMergeCandidates[NP]=0;Points[NP++]=point;return 0;
         }

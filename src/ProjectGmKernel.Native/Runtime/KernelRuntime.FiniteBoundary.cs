@@ -74,7 +74,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
-    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds}
+    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse}
     internal struct BoundaryTrace
     {
         internal BoundaryTraceStage Stage;

@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Bounds;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 
 namespace ProjectGmKernel.Native.Runtime;
@@ -130,6 +131,52 @@ internal static unsafe partial class KernelRuntime
             }
         }
         return AlgorithmStatus.Success;
+    }
+
+    private static bool TryIsolateFiniteBlendLine(in ModelingEdge edge,SurfaceSlot surface,Span<OperationIntersectionPoint> output,
+        Span<ScalarRootIsolation> lineParameters,Span<double> spatialErrors,out BufferCount count)
+    {
+        count=0;if(!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(edge.Curve)],out var line)||!(edge.End>edge.Start))return false;
+        if(RegularSurfaceExtent(surface,out var extent)!=AlgorithmStatus.Success)return false;
+        Span<BlendSpineInstruction> spine=stackalloc BlendSpineInstruction[1]{new(){Curve=line,ChartCount=2}};
+        Span<BlendChartInstruction> domain=stackalloc BlendChartInstruction[2]{new(){Parameter=edge.Start},new(){Parameter=edge.End}};
+        var program=new NestedBlendProgram(default,spine,domain);var path=new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
+        Span<IsolatedRootCertificate> certificates=stackalloc IsolatedRootCertificate[64],accepted=stackalloc IsolatedRootCertificate[output.Length];
+        for(var i=0;i<RegularSurfacePatchCount(surface);i++)
+        {
+            var status=RegularSurfacePatch(surface,i,extent,poles,out var patch);if(status!=AlgorithmStatus.Success)return false;
+            var box=patch.Domain;if(!(box.U1>box.U0&&box.V1>box.V0))continue;
+            var search=new ParameterCell{Lower=new(){U=box.U0,V=box.V0,S=edge.Start},Upper=new(){U=box.U1,V=box.V1,S=edge.End}};
+            status=ParametricSurfaceIntersection.Isolate(patch,path,search,3,roots,out var n,certificates);if(status!=AlgorithmStatus.Success)return false;
+            for(var r=0;r<n;r++)
+            {
+                var proof=certificates[r];var interval=new IntervalNumber(proof.Second.U0,proof.Second.U1);
+                if(!(interval.Lower>edge.Start&&interval.Upper<edge.End))return false;
+                var duplicate=false;
+                for(var k=0;k<count;k++)
+                {
+                    var previous=lineParameters[k].Root;if(previous.Upper<interval.Lower||interval.Upper<previous.Lower)continue;
+                    if(!proof.MayShareRoot(accepted[k])||!proof.ProvesSameRoot(accepted[k]))return false;
+                    duplicate=true;break;
+                }
+                if(duplicate)continue;
+                if(count==output.Length)return false;
+                var t=Math.Clamp(roots[r].S,interval.Lower,interval.Upper);
+                if(SpineParameterMap.Series(line,new(t,0),out var point,out _)!=AlgorithmStatus.Success
+                    ||SpineParameterMap.Interval(line,new(interval,0),out var bound,out _)!=AlgorithmStatus.Success)return false;
+                var error=(bound-new IntervalVector(point.Value)).Norm().Value.Upper;
+                if(!double.IsFinite(error)||error>OperationIntersection.DistanceTolerance)return false;
+                var at=count++;
+                while(at>0&&interval.Lower<lineParameters[at-1].Root.Lower)
+                {accepted[at]=accepted[at-1];lineParameters[at]=lineParameters[at-1];output[at]=output[at-1];spatialErrors[at]=spatialErrors[at-1];at--;}
+                accepted[at]=proof;lineParameters[at]=new(){Root=interval};spatialErrors[at]=error;
+                output[at]=new(){Point=point.Value,First=t,U=Math.Clamp(roots[r].U,proof.First.U0,proof.First.U1),
+                    V=Math.Clamp(roots[r].V,proof.First.V0,proof.First.V1),Kind=IntersectionVectorKind.Simple};
+            }
+        }
+        return true;
     }
 
     private static AlgorithmStatus IntersectRegularICurveSurface(SurfaceSlot surface,CurveSlot curve,double first,double last,

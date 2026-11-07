@@ -42,6 +42,25 @@ internal struct ParameterCell
         S = Lower.S + Width(2) * .5, T = Lower.T + Width(3) * .5 };
 }
 
+internal struct IsolatedRootCertificate
+{
+    internal SurfaceParameterBox First,Second,FirstDomain,SecondDomain;
+
+    // Compare only witnesses for the same two parameterized equations.
+    internal readonly bool MayShareRoot(in IsolatedRootCertificate other)
+        =>Overlaps(First,other.First)&&Overlaps(Second,other.Second);
+
+    internal readonly bool ProvesSameRoot(in IsolatedRootCertificate other)
+        =>Contains(FirstDomain,other.First)&&Contains(SecondDomain,other.Second)
+            ||Contains(other.FirstDomain,First)&&Contains(other.SecondDomain,Second);
+
+    internal static bool Contains(in SurfaceParameterBox outer,in SurfaceParameterBox inner)
+        =>outer.U0<=inner.U0&&inner.U1<=outer.U1&&outer.V0<=inner.V0&&inner.V1<=outer.V1;
+
+    internal static bool Overlaps(in SurfaceParameterBox a,in SurfaceParameterBox b)
+        =>a.U0<=b.U1&&b.U0<=a.U1&&a.V0<=b.V1&&b.V0<=a.V1;
+}
+
 /// <summary>
 /// Exhaustive regular-locus discovery in the four-dimensional parameter domain.
 /// Convex-hull interval bounds reject empty cells. A contracting 3x3 Jacobian
@@ -208,7 +227,8 @@ internal static class ParametricSurfaceIntersection
         =>Isolate(new SurfaceIntersectionPatch(first),new SurfaceIntersectionPatch(second),domain,fixedAxis,roots,out rootCount);
 
     internal static AlgorithmStatus Isolate(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
-        in ParameterCell domain,BufferOffset fixedAxis,Span<SurfaceIntersectionNode> roots,out BufferCount rootCount)
+        in ParameterCell domain,BufferOffset fixedAxis,Span<SurfaceIntersectionNode> roots,out BufferCount rootCount,
+        Span<IsolatedRootCertificate> certificates=default)
     {
         rootCount = 0;LastRootFailure=GraphFailure.None;LastRootFixedAxis=fixedAxis;
         Span<ParameterCell> pending = stackalloc ParameterCell[160]; pending[0] = domain; var count = 1; var visited = 0;
@@ -246,7 +266,7 @@ internal static class ParametricSurfaceIntersection
                 }
                 var anchor = new ParameterCell { Lower = point, Upper = point };
                 status = Bounds(first, second, anchor, centerF, centerJac);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
-                var empty = false; var unique = true;
+                var empty = false; var unique = true;var enclosure=anchor;
                 // Certify on a small extension of the unknown domain, allowing
                 // a root on a shared cell boundary to be isolated by both sides.
                 var expanded = cell;
@@ -268,17 +288,41 @@ internal static class ParametricSurfaceIntersection
                         image += value * (new IntervalNumber(expanded.Lower.Parameter(axes[c]), expanded.Upper.Parameter(axes[c])) - point.Parameter(axes[c]));
                     }
                     var axis = axes[r];
+                    enclosure.Lower.SetParameter(axis,image.Lower);enclosure.Upper.SetParameter(axis,image.Upper);
                     if (image.Upper < cell.Lower.Parameter(axis) || image.Lower > cell.Upper.Parameter(axis)) empty = true;
                     unique &= image.Lower > expanded.Lower.Parameter(axis) && image.Upper < expanded.Upper.Parameter(axis);
                 }
                 if (empty) continue;
                 if (unique && centerF[0].Magnitude < 1e-9 && centerF[1].Magnitude < 1e-9 && centerF[2].Magnitude < 1e-9)
                 {
+                    IsolatedRootCertificate certificate=default;
+                    if(!certificates.IsEmpty)
+                    {
+                        // A root certified on a mathematical extension is
+                        // not automatically in either finite input domain.
+                        if(!IsolatedRootCertificate.Overlaps(domain.First,enclosure.First)||!IsolatedRootCertificate.Overlaps(domain.Second,enclosure.Second))continue;
+                        if(!IsolatedRootCertificate.Contains(domain.First,enclosure.First)||!IsolatedRootCertificate.Contains(domain.Second,enclosure.Second)
+                            ||Contraction(jac,axes,inverse,expanded)>=1)goto Subdivide;
+                        status=RefineIsolatedRoot(first,second,point,axes,inverse,centerF,ref enclosure,f,jac);
+                        if(status!=AlgorithmStatus.Success)return status;
+                        certificate=new(){First=enclosure.First,Second=enclosure.Second,FirstDomain=expanded.First,SecondDomain=expanded.Second};
+                    }
                     status = first.Bound(anchor.First, position); if (status != AlgorithmStatus.Success) return status;
                     point.Point = Vector(position[0].Midpoint, position[1].Midpoint, position[2].Midpoint);
                     var duplicate = false;
-                    for (var i = 0; i < rootCount; i++) if (SameParameters(roots[i], point, domain)) duplicate = true;
-                    if (!duplicate) { if (rootCount == roots.Length) return AlgorithmStatus.OutputTooSmall; roots[rootCount++] = point;ModelingPerformance.Root(); }
+                    for (var i = 0; i < rootCount; i++)
+                    {
+                        if(certificates.IsEmpty){duplicate|=SameParameters(roots[i],point,domain);continue;}
+                        if(!certificate.MayShareRoot(certificates[i]))continue;
+                        if(!certificate.ProvesSameRoot(certificates[i]))goto Subdivide;
+                        duplicate=true;
+                    }
+                    if (!duplicate)
+                    {
+                        if (rootCount == roots.Length||!certificates.IsEmpty&&rootCount==certificates.Length) return AlgorithmStatus.OutputTooSmall;
+                        if(!certificates.IsEmpty)certificates[rootCount]=certificate;
+                        roots[rootCount++] = point;ModelingPerformance.Root();
+                    }
                     continue;
                 }
             }
@@ -324,6 +368,35 @@ internal static class ParametricSurfaceIntersection
             if (!(middle > cell.Lower.Parameter(split) && middle < cell.Upper.Parameter(split))) return AlgorithmStatus.NumericalFailure;
             var right = cell; cell.Upper.SetParameter(split, middle); right.Lower.SetParameter(split, middle); cell.Depth++; right.Depth = cell.Depth;
             pending[count++] = right; pending[count++] = cell;
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus RefineIsolatedRoot(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
+        in SurfaceIntersectionNode anchor,ReadOnlySpan<BufferOffset> axes,ReadOnlySpan<double> inverse,ReadOnlySpan<IntervalNumber> centerF,
+        ref ParameterCell enclosure,Span<IntervalNumber> f,Span<IntervalNumber> jac)
+    {
+        for(var i=0;i<12;i++)
+        {
+            var hull=enclosure;
+            foreach(var axis in axes)
+            {
+                var at=anchor.Parameter(axis);
+                hull.Lower.SetParameter(axis,Math.Min(at,hull.Lower.Parameter(axis)));
+                hull.Upper.SetParameter(axis,Math.Max(at,hull.Upper.Parameter(axis)));
+            }
+            var status=Bounds(first,second,hull,f,jac);
+            if(status==AlgorithmStatus.NotConverged)return AlgorithmStatus.Success; // keep the existing certificate
+            if(status!=AlgorithmStatus.Success)return status;
+            var next=enclosure;var shrank=false;
+            for(var r=0;r<axes.Length;r++)
+            {
+                var axis=axes[r];var image=IsolatedRootImage(anchor,enclosure,axes,inverse,centerF,jac,r);
+                var lo=Math.Max(enclosure.Lower.Parameter(axis),image.Lower);var hi=Math.Min(enclosure.Upper.Parameter(axis),image.Upper);
+                if(!double.IsFinite(lo)||!double.IsFinite(hi)||hi<lo)return AlgorithmStatus.NotConverged;
+                next.Lower.SetParameter(axis,lo);next.Upper.SetParameter(axis,hi);shrank|=hi-lo<.75*enclosure.Width(axis);
+            }
+            enclosure=next;if(!shrank)break;
         }
         return AlgorithmStatus.Success;
     }

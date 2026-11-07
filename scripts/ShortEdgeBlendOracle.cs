@@ -55,6 +55,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         {Console.WriteLine($"BOUNDARY ORDER event={trace.StartEvent} surface={trace.Surface} curves={trace.Curve}/{trace.ProductCurve} angles={trace.StartAngle:R}/{trace.EndAngle:R} curvature=[{trace.First:R},{trace.Last:R}]");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator)
         {Console.WriteLine($"BOUNDARY NATIVE LOCATOR event={trace.StartEvent} source_curve={trace.Curve} cut_curve={trace.ProductCurve} supports={trace.Surface}/{trace.OtherSurface} cut_t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R}");return;}
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)
+        {Console.WriteLine($"BOUNDARY SPATIAL REUSE event={trace.StartEvent} supports={trace.Surface}/{trace.OtherSurface} carrier={trace.Curve} t={trace.First:R} xyz=({trace.StartPoint.X:R},{trace.StartPoint.Y:R},{trace.StartPoint.Z:R}) old=({trace.EndPoint.X:R},{trace.EndPoint.Y:R},{trace.EndPoint.Z:R})");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
         {
             var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];
@@ -348,10 +350,12 @@ static int CutWithNativeWitness(int body,int tool)
     var witnesses=new List<KernelRuntime.BoundaryTrace>();
     var arranged=new HashSet<(int Carrier,int Event)>();
     var published=new HashSet<(int Carrier,int Event)>();
+    var spatialReuses=0;
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
         previous?.Invoke(trace);
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator)witnesses.Add(trace);
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)spatialReuses++;
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints)
         {arranged.Add((trace.Curve,trace.StartEvent));arranged.Add((trace.Curve,trace.EndEvent));}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product)
@@ -364,7 +368,8 @@ static int CutWithNativeWitness(int body,int tool)
     Require(consumed.All(x=>double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0)
         &&consumed.Select(x=>x.Curve).Distinct().Count()>=2&&consumed.Select(x=>x.StartEvent).Distinct().Count()>=2,
         "both short ICurve witnesses must reach published cut edges");
-    Console.WriteLine($"NATIVE CUT WITNESSES published_events={consumed.Select(x=>x.StartEvent).Distinct().Count()}");
+    Require(spatialReuses==0,$"the guarded self cut must use certified endpoint joins; found {spatialReuses} position-only reuses");
+    Console.WriteLine($"NATIVE CUT WITNESSES published_events={consumed.Select(x=>x.StartEvent).Distinct().Count()} spatial_reuses={spatialReuses}");
     return result;
 }
 static unsafe void Move(bool own,int body,int transform)
