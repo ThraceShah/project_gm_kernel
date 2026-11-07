@@ -55,9 +55,15 @@ using(host)unsafe
             var axis=imprint[10]-'x';var value=double.Parse(imprint[12..],System.Globalization.CultureInfo.InvariantCulture);
             ImprintPlane(reference,axis,value,"reference");ImprintPlane(actual,axis,value,"actual");
         }
-        var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c};double* a=stackalloc double[20];double* b=stackalloc double[20];
+        var singleShell=args.Contains("--single-shell");
+        var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c,single=singleShell?PK_LOGICAL_true:PK_LOGICAL_false};
+        double* a=stackalloc double[20];double* b=stackalloc double[20];
         var accuracy=args.Contains("--full-accuracy")?1:.99999999999;
-        if(args.Contains("--faces")){FaceMass(reference,accuracy,options,a);FaceMass(actual,accuracy,options,b);}
+        if(singleShell||args.Contains("--faces"))
+        {
+            if(singleShell)Console.WriteLine("NATIVE INTEGRAL: each body's oriented faces supplied as one closed shell");
+            FaceMass(reference,accuracy,options,a);FaceMass(actual,accuracy,options,b);
+        }
         else
         {
             Check(PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+2,a+4,a+8,a+18));
@@ -81,6 +87,7 @@ using(host)unsafe
         var maximum=0.0;
         for(var property=0;property<15;property++)
         {
+            if(singleShell&&property==1)continue; // The face-shell option does not evaluate density mass.
             var value=property==0?0:property==1?2:property<5?property+2:property<14?property+3:18;
             var bound=property==0?1:property==1?3:property<5?7:property<14?17:19;
             var residual=Math.Abs(a[value]-b[value])/(1+Math.Abs(a[value]));maximum=Math.Max(maximum,residual);
