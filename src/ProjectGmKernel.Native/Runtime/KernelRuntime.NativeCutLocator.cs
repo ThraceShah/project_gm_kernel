@@ -14,7 +14,7 @@ internal static unsafe partial class KernelRuntime
     private static int LocateCertifiedNativeCut(in SheetCutCurve cut,in RegularBoundaryRoot root,out double parameter,out IntervalNumber isolation,out bool handled)
     {
         parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
-        if(root.Certified==0||root.Root.Vertex>=0||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
+        if(root.Certified!=NativePlaneCertificate||root.Root.Vertex>=0||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
         var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
         if(source.Class!=CurveClass.ICurve||target.Class!=CurveClass.ICurve
             ||Surfaces[GetSurfaceSlotByTag(root.CuttingSurface)].Class!=SurfaceClass.Plane)return 0;
@@ -23,11 +23,30 @@ internal static unsafe partial class KernelRuntime
             ||!(SameSheetSupport(from.Surface0Tag,root.ContactSurface)||SameSheetSupport(from.Surface1Tag,root.ContactSurface))
             ||!(SameSheetSupport(to.Surface0Tag,root.ContactSurface)&&SameSheetSupport(to.Surface1Tag,root.CuttingSurface)
                 ||SameSheetSupport(to.Surface1Tag,root.ContactSurface)&&SameSheetSupport(to.Surface0Tag,root.CuttingSurface)))return 0;
-        var sourceProgram=GetNestedBlendProgram(from.ProgramBlock,from.ProgramSurfaceCount,from.ProgramSpineCount,from.ProgramChartCount,from.ProgramScalarCount);
-        var program=GetNestedBlendProgram(to.ProgramBlock,to.ProgramSurfaceCount,to.ProgramSpineCount,to.ProgramChartCount,to.ProgramScalarCount);
-        var sourceDefinition=sourceProgram.Spines[from.ProgramSpine];var definition=program.Spines[to.ProgramSpine];
+        var checkpoint=CommandScratch.ThreadArenaOffset;
+        try
+        {
+            // Rebuild the exact occurrence used by IntersectFiniteIntersectionCurvePlane.
+            // It keeps the stored root CHART but reads the current support
+            // definitions. A transformed cached spine can round differently.
+            var compiler=new NestedProgramCompiler();
+            if(!compiler.Ready){handled=true;return ParasolidConstants.PK_ERROR_memory_full;}
+            var status=compiler.Spine(root.Curve,out var sourceSpine);
+            if(status!=AlgorithmStatus.Success){handled=true;return IntersectionError(status);}
+            var program=GetNestedBlendProgram(to.ProgramBlock,to.ProgramSurfaceCount,to.ProgramSpineCount,to.ProgramChartCount,to.ProgramScalarCount);
+            return LocateInCertifiedCutChart(cut,root,compiler.View,sourceSpine,SameSheetSupport(from.Surface0Tag,root.ContactSurface),
+                program,to.ProgramSpine,SameSheetSupport(to.Surface0Tag,root.ContactSurface),out parameter,out isolation,out handled);
+        }
+        finally{CommandScratch.ThreadArenaOffset=checkpoint;}
+    }
+
+    private static int LocateInCertifiedCutChart(in SheetCutCurve cut,in RegularBoundaryRoot root,
+        in NestedBlendProgram sourceProgram,BlendSpineIndex sourceSpine,bool sourceFirst,in NestedBlendProgram program,BlendSpineIndex cutSpine,bool targetFirst,
+        out double parameter,out IntervalNumber isolation,out bool handled)
+    {
+        parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
+        var sourceDefinition=sourceProgram.Spines[sourceSpine];var definition=program.Spines[cutSpine];
         if(SpineParameterMap.Explicit(sourceDefinition)||SpineParameterMap.Explicit(definition))return 0;
-        var sourceFirst=SameSheetSupport(from.Surface0Tag,root.ContactSurface);var targetFirst=SameSheetSupport(to.Surface0Tag,root.ContactSurface);
         var sourceSupport=sourceProgram.Surfaces[sourceFirst?sourceDefinition.First:sourceDefinition.Second];
         var targetSupport=program.Surfaces[targetFirst?definition.First:definition.Second];
         var sourceOther=sourceProgram.Surfaces[sourceFirst?sourceDefinition.Second:sourceDefinition.First];
@@ -44,7 +63,7 @@ internal static unsafe partial class KernelRuntime
         handled=true;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
         Span<IntervalNumber> witness=stackalloc IntervalNumber[sourceSupport.IsBlend?7:3];
-        if(JointNestedBlendEvaluation.BoundSharedSpineWitness(sourceProgram,from.ProgramSpine,new(root.Root.Lower,root.Root.Upper,0,0),bounds,capture:witness)!=AlgorithmStatus.Success)
+        if(JointNestedBlendEvaluation.BoundSharedSpineWitness(sourceProgram,sourceSpine,new(root.Root.Lower,root.Root.Upper,0,0),bounds,capture:witness)!=AlgorithmStatus.Success)
             return ParasolidConstants.PK_ERROR_cant_do_intersect;
         var position=new IntervalVector(witness[0],witness[1],witness[2]);
         var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
@@ -58,7 +77,7 @@ internal static unsafe partial class KernelRuntime
             var projected=frame.Parameter+frame.Scale*IntervalVector.Dot(new IntervalVector(frame.Chord),position-new IntervalVector(frame.Position)).Value;
             var lo=Math.Max(first,projected.Lower);var hi=Math.Min(last,projected.Upper);if(hi<lo)continue;
             var enclosure=new IntervalNumber(lo,hi);
-            if(!enclosure.Finite||JointNestedBlendEvaluation.BoundSpine(program,to.ProgramSpine,new(lo,hi,0,0),bounds)!=AlgorithmStatus.Success)
+            if(!enclosure.Finite||JointNestedBlendEvaluation.BoundSpine(program,cutSpine,new(lo,hi,0,0),bounds)!=AlgorithmStatus.Success)
                 return ParasolidConstants.PK_ERROR_cant_do_intersect;
             if(Separated(bounds[0],position.X.Value)||Separated(bounds[1],position.Y.Value)||Separated(bounds[2],position.Z.Value))continue;
             // The shared support, cutting plane and projected CHART
@@ -67,7 +86,7 @@ internal static unsafe partial class KernelRuntime
             // of a shared explicit rolling spine. Overlap alone is not a
             // correspondence; this proves uniqueness in the same branch.
             if(found||projected.Lower<first||projected.Upper>last
-                ||JointNestedBlendEvaluation.BoundSharedSpineWitness(program,to.ProgramSpine,new(lo,hi,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
+                ||JointNestedBlendEvaluation.BoundSharedSpineWitness(program,cutSpine,new(lo,hi,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
                 return ParasolidConstants.PK_ERROR_cant_do_intersect;
             native=enclosure;found=true;
         }

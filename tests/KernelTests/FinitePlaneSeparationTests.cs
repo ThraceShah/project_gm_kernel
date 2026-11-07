@@ -46,5 +46,26 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.NotEqual(ids[0],ids[1]);Assert.Equal(ids[0],ids[3]);Assert.Equal(ids[1],ids[2]);
         Assert.Equal(3,associations);
     }
+
+    [Fact]
+    public void DifferentPlaneEquationsCanCertifyOneNonrepresentableNativeLineRoot()
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var lateral=Math.Sqrt(7)/4;
+        // Both planes meet the line at t=(lateral/2)/.75. Their normals
+        // differ, and the exact root has no binary64 representation.
+        Assert.NotEqual(0,Math.FusedMultiplyAdd((lateral*.5)/.75,.75,-lateral*.5));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[0]=.75;
+        plane.basis_set.axis.coord[1]=lateral;plane.basis_set.location.coord[1]=.5;plane.basis_set.ref_direction.coord[2]=1;
+        SurfTag a,b,near;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&a));
+        plane.basis_set.axis.coord[1]=0;plane.basis_set.location.coord[1]=0;plane.basis_set.ref_direction.coord[2]=0;
+        plane.basis_set.axis.coord[2]=lateral;plane.basis_set.location.coord[2]=.5;plane.basis_set.ref_direction.coord[1]=1;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&b));
+        plane.basis_set.location.coord[2]+=5e-11;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&near));
+        Span<SurfTag> planes=stackalloc SurfTag[3]{a,b,near};Span<BoundaryEventId> ids=stackalloc BoundaryEventId[3];
+        Assert.Equal(0,KernelRuntime.TestFiniteLinePlaneEventIdentities(carrier,-1,1,planes,ids,out var associations,requireProof:true));
+        Assert.Equal(ids[0],ids[1]);Assert.NotEqual(ids[0],ids[2]);Assert.Equal(3,associations);
+    }
     private static void Write(PK_VECTOR_s* target,KernelVector3 value){target->coord[0]=value.X;target->coord[1]=value.Y;target->coord[2]=value.Z;}
 }

@@ -11,6 +11,7 @@ internal static unsafe partial class KernelRuntime
 {
     private struct RegularCutFamily{internal SurfTag First,Second;internal BufferOffset Start,PointStart;internal BufferCount Count,PointCount;internal SurfacePairRelation Relation;}
     private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;internal byte SecondIsBoundary;}
+    private const byte NativePlaneCertificate=2;
     private struct RegularBoundaryRoot
     {
         internal CurveTag Curve;
@@ -138,7 +139,7 @@ internal static unsafe partial class KernelRuntime
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
-                            Certified=known||nativeProof?(byte)1:(byte)0,Root=witness};
+                            Certified=nativeProof?NativePlaneCertificate:known?(byte)1:(byte)0,Root=witness};
                     }
                 }
             }
@@ -166,10 +167,8 @@ internal static unsafe partial class KernelRuntime
         var record=Curves[GetCurveSlotByTag(edge.Curve)];var planeSlot=GetSurfaceSlotByTag(surface);
         if(record.Class!=CurveClass.Line||Surfaces[planeSlot].Class!=SurfaceClass.Plane
             ||!TryReadExplicitSpineCurve(record,out var line)||!TryPrepareSurface(Surfaces[planeSlot],out var plane))return false;
-        var axis=new IntervalVector(line.First);var normal=new IntervalVector(plane.Axis);
-        var denominator=IntervalVector.Dot(axis,normal).Value;
-        if(!denominator.Finite||denominator.Lower<=0&&denominator.Upper>=0)return false;
-        var numerator=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(line.Origin),normal).Value;
+        if(!TryLinePlaneRatio(line,plane,out var numerator,out var denominator))return false;
+        var axis=new IntervalVector(line.First);
         var t=numerator/denominator;if(!t.Finite)return false;
         var speed=axis.Norm().Value;
         if(!(speed.Lower>0))return false;
@@ -191,8 +190,31 @@ internal static unsafe partial class KernelRuntime
         return true;
     }
 
+    private static bool TryLinePlaneRatio(in ParametricSpineCurve line,in AnalyticSurface plane,out IntervalNumber numerator,out IntervalNumber denominator)
+    {
+        var normal=new IntervalVector(plane.Axis);
+        denominator=IntervalVector.Dot(new IntervalVector(line.First),normal).Value;
+        numerator=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(line.Origin),normal).Value;
+        return numerator.Finite&&denominator.Finite&&!denominator.ContainsZero;
+    }
+
+    private static bool SameCertifiedLinePlaneRoot(CurveTag carrier,SurfTag first,SurfTag second)
+    {
+        var line=GetCurveSlotByTag(carrier);var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);
+        if(line<0||a<0||b<0||Curves[line].Class!=CurveClass.Line||Surfaces[a].Class!=SurfaceClass.Plane||Surfaces[b].Class!=SurfaceClass.Plane
+            ||!TryReadExplicitSpineCurve(Curves[line],out var geometry)
+            ||!TryPrepareSurface(Surfaces[a],out var p)||!TryPrepareSurface(Surfaces[b],out var q)
+            ||!TryLinePlaneRatio(geometry,p,out var n0,out var d0)||!TryLinePlaneRatio(geometry,q,out var n1,out var d1))return false;
+        // The quotient need not be a representable parameter. Compare the
+        // two exact coefficient pairs, or prove their cross difference zero.
+        if(n0.Lower==n0.Upper&&n1.Lower==n1.Upper&&d0.Lower==d0.Upper&&d1.Lower==d1.Upper
+            &&(n0.Lower==n1.Lower&&d0.Lower==d1.Lower||n0.Lower== -n1.Lower&&d0.Lower== -d1.Lower))return true;
+        var difference=n0*d1-n1*d0;
+        return difference.Lower==0&&difference.Upper==0;
+    }
+
 #if KERNEL_TEST_HOOKS
-    internal static int TestFiniteLinePlaneEventIdentities(CurveTag line,double first,double last,ReadOnlySpan<SurfTag> planes,Span<BoundaryEventId> ids,out BufferCount associations)
+    internal static int TestFiniteLinePlaneEventIdentities(CurveTag line,double first,double last,ReadOnlySpan<SurfTag> planes,Span<BoundaryEventId> ids,out BufferCount associations,bool requireProof=false)
     {
         associations=0;
         var edge=new ModelingEdge{Curve=line,Start=first,End=last};
@@ -205,7 +227,7 @@ internal static unsafe partial class KernelRuntime
             if(!TryFiniteLinePlaneEvent(edge,0,planes[i],out var result)||result.Count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
             var root=result.FirstRoot;
             anchor[0]=new(){Carrier=line,Generation=generation,Surface=planes[i],Lower=root.Lower,Upper=root.Upper};
-            var error=model.AddPoint(root.Point,-1,out ids[i],anchor);if(error!=0)return error;
+            var error=model.AddPoint(root.Point,-1,out ids[i],anchor,requireProof);if(error!=0)return error;
             error=model.AssociateParameter(ids[i],line,root.Parameter,root.Lower,root.Upper,planes[i]);if(error!=0)return error;
         }
         associations=model.ParameterCount;return 0;

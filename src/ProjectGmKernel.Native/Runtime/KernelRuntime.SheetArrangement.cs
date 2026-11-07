@@ -177,7 +177,8 @@ internal static unsafe partial class KernelRuntime
                 // A shared isolated equation is monotone throughout both
                 // overlapping root intervals and likewise has one root.
                 same|=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower
-                    ||anchor.Surface!=0&&known.Surface==anchor.Surface;
+                    ||anchor.Surface!=0&&known.Surface!=0&&(known.Surface==anchor.Surface
+                        ||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface));
             }
             return false;
         }
