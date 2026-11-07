@@ -49,6 +49,11 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         {Console.WriteLine($"SUCCESSOR surface={trace.Surface} edge={trace.Edge} forward={trace.Forward} end={trace.EndEvent} next={trace.NextEdge} angles={trace.StartAngle:R}/{trace.EndAngle:R}");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CarrierReuse)
         {Console.WriteLine($"BOUNDARY REUSE surface={trace.Surface} edge={trace.Edge} implicit={trace.Curve} source_line={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} bound={trace.SpatialError:R}");return;}
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
+        {
+            var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];
+            Console.WriteLine($"BOUNDARY CertifiedRoot event={trace.StartEvent} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{carrier.Class} supports={trace.Surface}/{trace.OtherSurface} cut={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R}");return;
+        }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface}/{surface.Class} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation}/{KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward}");
         if(args.Contains("--diagnostics")&&trace.Stage==KernelRuntime.BoundaryTraceStage.Input)
             Console.WriteLine($"BOUNDARY XYZ start=({trace.StartPoint.X:R},{trace.StartPoint.Y:R},{trace.StartPoint.Z:R}) end=({trace.EndPoint.X:R},{trace.EndPoint.Y:R},{trace.EndPoint.Z:R})");
@@ -67,6 +72,8 @@ var floor=NumberOption(args,"--seed-floor=",0);
 var phase=NumberOption(args,"--support-phase=",0);
 var splitRemote=args.Contains("--split-remote-edge");
 var splitSelected=args.Contains("--split-selected-edge");
+var transverseCut=args.Contains("--transverse-local-cut");
+var localCut=args.Contains("--local-cut")||transverseCut;
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
 Require(floor==0&&phase==0&&!splitRemote&&!splitSelected||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
@@ -76,6 +83,7 @@ Directory.CreateDirectory(output);
 Require(!args.Contains("--record-fixtures")||!args.Contains("--matrix")&&!args.Contains("--both-updates"),"record fixtures uses the single default seed");
 Require(!args.Contains("--saved-probes")||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
 Require(!args.Contains("--native-only")||!args.Any(x=>x is "--import-only" or "--probes" or "--geometry" or "--lifecycle"),"managed checks require a managed-import mode");
+Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"local cutter requires lifecycle mode");
 Require(!mappedInput||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"transformed inputs cannot replace fixed fixtures or historical probe inputs");
 Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
     ||!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"parameter overrides cannot replace fixed fixtures or historical probe inputs");
@@ -100,6 +108,7 @@ using(host)unsafe
             if(floor!=0)name+=$"-floor{floor:R}";
             if(splitRemote)name+="-split-remote";
             if(splitSelected)name+="-split-selected";
+            if(localCut)name+=transverseCut?"-transverse-local-cut":"-local-cut";
             if(phase!=0)name+=$"-support-phase{phase:R}";
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
                 if(researchPrecision!=0)name+=$"-pk-precision{researchPrecision:R}";
@@ -167,7 +176,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
@@ -182,7 +191,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))SelfGeometry(own,reference);
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -243,7 +252,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -257,11 +266,32 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Console.WriteLine($"LIFECYCLE {name} source_deleted=True copy={own}");
         Move(true,own,selfTransform);Move(false,native,pkTransform);
         failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale);
-        var toolAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(3,0,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));int ownTool,pkTool;
-        Check(KernelRuntime.BodyCreateSolidBlock(2,10,10,(M.PK_AXIS2_sf_s*)&toolAxis,&ownTool),"self cutter");Check(PK_BODY_create_solid_block(2,10,10,&toolAxis,&pkTool),"PK cutter");
+        // The local variant crosses the native short ICurve interiors. Its
+        // lower cap leaves the bottom connected; it is a notch, not a slab
+        // cutting the whole solid into disconnected components.
+        var toolAxis=new PK_AXIS2_sf_t(localCut?new PK_VECTOR_t(-1.5999998,0,4.1):new PK_VECTOR_t(3,0,-1),
+            new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));
+        var width=localCut?.2:2;var depth=10.0;var height=10.0;int ownTool,pkTool;
+        if(transverseCut)
+        {
+            var q=1/Math.Sqrt(2);var center=(-7-3.8e-5)*q-.075;
+            toolAxis=new(new PK_VECTOR_t(-1.5,(1+center)*q,(1-center)*q),
+                new PK_VECTOR1_t(0,q,q),new PK_VECTOR1_t(0,q,-q));
+            width=.15;depth=.4;height=2.5;
+        }
+        Check(KernelRuntime.BodyCreateSolidBlock(width,depth,height,(M.PK_AXIS2_sf_s*)&toolAxis,&ownTool),"self cutter");
+        Check(PK_BODY_create_solid_block(width,depth,height,&toolAxis,&pkTool),"PK cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
-        own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale);
+        if(localCut)
+        {
+            native=Cut(false,native,pkTool);CheckBody(native,name+" native local cut");
+            File.WriteAllBytes(Path.Combine(output,name+"-independent-local-reference.x_t"),Transmit(false,native));
+            if(KernelRuntime.TraceFiniteBoundary!=null)ProductEdges(native,"native-local-cut");
+            own=Cut(true,own,ownTool);
+        }
+        else{own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
+        failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale);
         var reload=Transmit(true,own);Check(KernelRuntime.EntityDelete(1,&own),"delete product before managed XT reload");own=0;own=Receive(true,reload);
         Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),name+" reload must be editable");
         Console.WriteLine($"LIFECYCLE {name} managed_reload=True body={own}");

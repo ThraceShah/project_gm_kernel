@@ -16,8 +16,9 @@ internal static unsafe partial class KernelRuntime
         internal BoundaryEventId Event;
         internal CurveTag Carrier;
         internal EntityGeneration Generation;
-        // Carrier==0 denotes a certified surface participant of this event.
-        // Otherwise this is the carrier's native parameter locator.
+        // Carrier==0 denotes a certified surface participant. For a native
+        // locator, Surface may name the scalar equation with a unique root
+        // in this interval. That equation is used only within this command.
         internal SurfTag Surface;
         internal double Parameter,Lower,Upper;
     }
@@ -62,7 +63,7 @@ internal static unsafe partial class KernelRuntime
     {
         internal BoundaryTraceStage Stage;
         internal FaceSlot Source,Product;
-        internal SurfTag Surface;
+        internal SurfTag Surface,OtherSurface;
         internal CurveTag Curve,ProductCurve;
         internal EntityGeneration Generation;
         internal BufferOffset Edge,Face,NextEdge;

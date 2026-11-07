@@ -22,7 +22,7 @@ internal static unsafe partial class KernelRuntime
     private static int AssociateBoundarySurfaceEvent(ref SheetArrangement model,BoundaryEventId endpoint,SurfTag surface)
     {
         var generation=Surfaces[GetSurfaceSlotByTag(surface)].Header.Generation;
-        foreach(var use in model.Parameters[..model.ParameterCount])if(use.Event==endpoint&&use.Surface==surface&&use.Generation==generation)return 0;
+        foreach(var use in model.Parameters[..model.ParameterCount])if(use.Event==endpoint&&use.Carrier==0&&use.Surface==surface&&use.Generation==generation)return 0;
         if(model.ParameterCount==model.Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
         model.Parameters[model.ParameterCount++]=new(){Event=endpoint,Surface=surface,Generation=generation};return 0;
     }
@@ -39,7 +39,7 @@ internal static unsafe partial class KernelRuntime
         foreach(var use in model.Parameters[..model.ParameterCount])
         {
             if(use.Event!=endpoint)continue;
-            if(use.Surface!=0)
+            if(use.Carrier==0)
             {
                 var slot=GetSurfaceSlotByTag(use.Surface);
                 if(slot>=0&&Surfaces[slot].Header.Generation==use.Generation&&SameSheetSupport(use.Surface,surface))return true;

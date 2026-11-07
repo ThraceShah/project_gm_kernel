@@ -59,7 +59,7 @@ internal static unsafe partial class KernelRuntime
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
 
-        internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN)
+        internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN,SurfTag equation=0)
         {
             if(Parameters.IsEmpty)return 0;
             if(double.IsNaN(lower)){lower=parameter;upper=parameter;}
@@ -74,12 +74,17 @@ internal static unsafe partial class KernelRuntime
                         LastBoundaryParameterConflict=new(){Event=endpoint,Carrier=curve,Previous=known.Parameter,PreviousLower=known.Lower,PreviousUpper=known.Upper,Incoming=parameter,Lower=lower,Upper=upper};
                         LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=curve;LastSheetParameter=parameter;return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     }
+                    if(known.Surface!=0&&known.Surface!=equation)return 0;
+                    if(known.Surface==0&&equation!=0)
+                    {
+                        known.Surface=equation;known.Lower=lower;known.Upper=upper;known.Parameter=parameter;return 0;
+                    }
                     known.Lower=Math.Max(lower,known.Lower);known.Upper=Math.Min(upper,known.Upper);
                     known.Parameter=Math.Clamp(known.Parameter,known.Lower,known.Upper);return 0;
                 }
             }
             if(ParameterCount==Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Parameter=parameter,Lower=lower,Upper=upper};return 0;
+            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Surface=equation,Parameter=parameter,Lower=lower,Upper=upper};return 0;
         }
 
         internal bool KnownParameter(BoundaryEventId endpoint,CurveTag curve,out double parameter)
@@ -143,7 +148,7 @@ internal static unsafe partial class KernelRuntime
         {
             same=false;
             // A disjoint pair of certified native intervals on the same
-            // linear carrier identifies distinct events even when their
+            // carrier identifies distinct events even when their
             // positions lie inside the spatial candidate radius.
             foreach(ref readonly var anchor in anchors)
             foreach(ref readonly var known in Parameters[..ParameterCount])
@@ -152,8 +157,10 @@ internal static unsafe partial class KernelRuntime
                 if(known.Upper<anchor.Lower||known.Lower>anchor.Upper)return true;
                 // A common exact parameter proves one spatial point even
                 // if the two source/plane equations used different faces.
-                // Overlap of nontrivial intervals alone does not prove it.
-                same|=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower;
+                // A shared isolated equation is monotone throughout both
+                // overlapping root intervals and likewise has one root.
+                same|=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower
+                    ||anchor.Surface!=0&&known.Surface==anchor.Surface;
             }
             return false;
         }
