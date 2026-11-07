@@ -17,7 +17,9 @@
 5. M4: self-construct the heterogeneous short-edge fillet, then cut, copy/delete source, reload and model. Verify independent PK, geometry and preconstruction transforms and parameter variants.
 6. M5: regressions, immutable 510-probe replay, capability updates, commit and push verified increments.
 
-## Investigated call chain
+The current results and remaining gates are maintained in `docs/reviews/advanced-modeling/topology-event-framework-acceptance.md`. The analytic rolling equations, finite station proofs and persistent chart handling are in `docs/Finite_Analytic_Rolling_Network.md`.
+
+## Investigated baseline call chain
 
 `FixLocalBlendsCore` tries axial, planar, trivalent and regular providers. `BuildRegularLocalBlend` sends multiple edges to `BuildRegularBlendChain`; single regular edges produce contact and cap curves before `AssembleRegularLocalBlend` decides a fixed four-edge boundary. That assembler also rejects multiple loops.
 

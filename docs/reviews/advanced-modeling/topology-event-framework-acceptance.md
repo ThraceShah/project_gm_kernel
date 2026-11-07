@@ -1,6 +1,6 @@
 # Topology event framework acceptance
 
-Status: in progress. M0 reproduced; the first common cycle consumer and the two M2 representation gates have current evidence. The complete M1 event contract and M3–M5 remain unaccepted.
+Status: in progress. The default self-constructed short-edge fillet and both downstream self Booleans publish through the shared arrangement and pass strict independent geometry, full BODY_check and finite edge checks. The standard default command still fails its original native mass point checks; some mirrored/parameter variants pass every gate. The historic classification suite still has 16 differences. General multi-participant association remains incomplete.
 
 The required final result is a **self-constructed** short-edge fillet with successful downstream Boolean, lifecycle and independent PK validation. Imported native products are tracked separately and never establish this gate.
 
@@ -29,7 +29,7 @@ All commands below use `MSBUILDDISABLENODEREUSE=1`. Test exit codes are saved be
 
 At M0 the production heterogeneous rolling network, finite interaction solver and boundary assembly had not been implemented. The later checkpoints record their actual consumers and remaining acceptance gaps.
 
-## Latest checkpoint
+## M2 checkpoint (historical)
 
 - Real kernel version confirmed by the running oracle: PK `38.0.150`, session precision `1e-8`.
 - `m2-focused.log`: exit 0, **64/64**, zero failures/skips; includes the corrected retained-hole regression, identity-copy positive and near-copy negative, and the guarded provenance/lifecycle/allocation cases.
@@ -284,3 +284,9 @@ Axial blend applicability verifies the actual two full circle occurrences, each 
 For planar all-edge blends, an offset vertex and the actual supporting plane index identify each contact point. Separated planar providers preserve the input intersection vertex indices. These replace coordinate-only welding in their candidate generation. The original offset halfspace and analytic sphere/cylinder formulas generate the finite carriers; the common arrangement rebuilds the loops from their unordered directed uses and the shared builder publishes the result. Product handles come from the actual staged cells.
 
 `m3-analytic-blends-finite-ring-provenance.log`: `dotnet run scripts/LocalOperationOracle.cs -c Release -- --blend-arrangement`, exit 0, **17/17**. The run checks provenance on every resulting use and full BODY_check and native mass for each independently constructed product. All five axial variants also pass `AssertEquivalent` on the original received bodies. The twelve planar variants retain the existing independently checked material/fin orientation and the historical canonical comparison for the representation sense differences (see `docs/reviews/advanced-modeling/local-operations-oracle-2026-11-03.txt`); they are not reported as raw strict sense matches.
+
+### Mass and material evidence on the current default product
+
+`m4-current-standard-lifecycle.log`: the guarded default self Fix and both self Booleans (the second after reloading the first result) publish and pass full BODY_check, strict comparison and finite ICurve checks. The standard command exits 134 on the same four self mass point checks. The imported-product lifecycle is a separate check and succeeds in that run.
+
+`m4-native-mass-multiple-imprints.log`: `dotnet run scripts/ShortEdgeProductDiagnostic.cs -c Release -- --imprint-x=-2.2 --imprint-x=-2 --imprint-x=-1.8 --imprint-x=-1.6 --imprint-x=-1.4 --imprint-y=-2.49 --imprint-y=-2.25 --imprint-y=-2.05 --imprint-z=4.75 --imprint-z=4.95`. The same ten native imprints on each saved default body all return tracking and pass full BODY_check. The independently recomputed native point residual is `7.8764e-9` (exit 0), versus `2.26895e-7` without the imprints. Reported error moduli are larger after partitioning. This is additional evidence that the native point result depends on the integration partition; these imprinted bodies do not replace the original mass or geometry acceptance inputs.

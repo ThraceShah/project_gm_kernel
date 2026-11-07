@@ -48,12 +48,12 @@ using(host)unsafe
         if(scale!=1){ScaleBody(reference,scale);ScaleBody(actual,scale);}
         if(nativeGauge)TransformBody(actual,new PK_TRANSF_sf_t{matrixI0J2=1,matrixI1J0=1,matrixI2J1=1,matrixI3J3=1});
         if(args.Contains("--tight-precision"))Check(PK_SESSION_set_precision(1e-12));
-        var imprint=args.FirstOrDefault(x=>x.StartsWith("--imprint-x=",StringComparison.Ordinal));
-        if(imprint!=null)
+        foreach(var imprint in args.Where(x=>x.StartsWith("--imprint-",StringComparison.Ordinal)))
         {
             if(nativeGauge||scale!=1)throw new ArgumentException("the common imprint uses the original product coordinates");
-            var x=double.Parse(imprint[12..],System.Globalization.CultureInfo.InvariantCulture);
-            ImprintPlane(reference,x,"reference");ImprintPlane(actual,x,"actual");
+            if(imprint.Length<13||imprint[10] is <'x' or >'z'||imprint[11]!='=')throw new ArgumentException("expected --imprint-x=, --imprint-y=, or --imprint-z=");
+            var axis=imprint[10]-'x';var value=double.Parse(imprint[12..],System.Globalization.CultureInfo.InvariantCulture);
+            ImprintPlane(reference,axis,value,"reference");ImprintPlane(actual,axis,value,"actual");
         }
         var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c};double* a=stackalloc double[20];double* b=stackalloc double[20];
         var accuracy=args.Contains("--full-accuracy")?1:.99999999999;
@@ -149,10 +149,10 @@ static unsafe void FaceMass(int body,double accuracy,PK_TOPOL_eval_mass_props_o_
     try{Check(PK_TOPOL_eval_mass_props(count,faces,accuracy,&options,output,output+2,output+4,output+8,output+18));}
     finally{Check(PK_MEMORY_free(faces));}
 }
-static unsafe void ImprintPlane(int body,double x,string label)
+static unsafe void ImprintPlane(int body,int axis,double station,string label)
 {
-    var definition=new PK_PLANE_sf_t();definition.basis_set.location.coord[0]=x;
-    definition.basis_set.axis.coord[0]=1;definition.basis_set.ref_direction.coord[1]=1;
+    var definition=new PK_PLANE_sf_t();definition.basis_set.location.coord[axis]=station;
+    definition.basis_set.axis.coord[axis]=1;definition.basis_set.ref_direction.coord[(axis+1)%3]=1;
     int plane;Check(PK_PLANE_create(&definition,&plane));
     try
     {
@@ -164,7 +164,7 @@ static unsafe void ImprintPlane(int body,double x,string label)
             Check(PK_BODY_check(body,&check,&faults,&details));
             try
             {
-                Console.WriteLine($"NATIVE IMPRINT {label} plane_x={x:R} tracking={tracking.n_track_records} full_check_faults={faults}");
+                Console.WriteLine($"NATIVE IMPRINT {label} plane_{(char)('x'+axis)}={station:R} tracking={tracking.n_track_records} full_check_faults={faults}");
                 if(faults!=0||tracking.n_track_records==0)throw new InvalidOperationException("no valid native face subdivision");
             }
             finally{if(details!=null)Check(PK_MEMORY_free(details));}
