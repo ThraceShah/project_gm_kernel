@@ -157,6 +157,22 @@ internal static unsafe partial class KernelRuntime
         return ParasolidConstants.PK_ERROR_not_on_curve;
     }
 
+    private static int BlendContactParameterAtStation(in ICurveData data,in KernelVector3 point,double u,out double parameter)
+    {
+        parameter=0;var n=data.ChartCount;var map=BlendContactMap(data);var station=map[..n];var ts=map.Slice(n,n);var scales=map.Slice(2*n,n-1);
+        var chords=MemoryMarshal.Cast<double,KernelVector3>(map[(3*n-1)..]);var positions=MemoryMarshal.Cast<double,KernelVector3>(HvecSpan(data).Slice(3*data.StartLimit.HvecCount,3*n));
+        // The contact map is built with strictly monotone blend stations.
+        // A station at a knot names the shared native endpoint exactly.
+        for(var i=0;i<n;i++)
+        {
+            if(u==station[i]){parameter=ts[i];return 0;}
+            if(i+1==n||!(u>Math.Min(station[i],station[i+1])&&u<Math.Max(station[i],station[i+1])))continue;
+            parameter=ts[i]+scales[i]*Dot(Sub(point,positions[i]),chords[i]);
+            return parameter>ts[i]&&parameter<ts[i+1]?0:ParasolidConstants.PK_ERROR_cant_do_intersect;
+        }
+        return ParasolidConstants.PK_ERROR_not_on_curve;
+    }
+
     private static AlgorithmStatus BlendContactInterval(in ICurveData data,double first,double last,out double lower,out double upper)
     {
         lower=upper=0;Span<KernelVector3> point=stackalloc KernelVector3[1];

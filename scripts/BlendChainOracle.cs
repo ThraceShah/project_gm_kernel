@@ -10,11 +10,20 @@ using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 using M=ProjectGmKernel.Native.Generated;
 
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","blend-chain-oracle");Directory.CreateDirectory(directory);
 var remoteBore=args.Contains("--remote-bore",StringComparer.Ordinal);
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
+var witnessedSections=0;
+if(KernelRuntime.ForbidLegacyRegularBlendAssembly)KernelRuntime.TraceFiniteBoundary=trace=>
+{
+    if(trace.Stage!=KernelRuntime.BoundaryTraceStage.NativeCutEndpoints)return;
+    Require(trace.StartEvent>=0&&trace.EndEvent>=0&&trace.StartEvent!=trace.EndEvent&&trace.Last>trace.First,"positive finite cut and two distinct events");
+    witnessedSections++;
+    Console.WriteLine($"SECTION ENDPOINTS face={trace.Source} curve={trace.Curve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}/{trace.EndEvent}");
+};
 ModelingPerformance.Enabled=args.Contains("--profile",StringComparer.Ordinal);ModelingPerformance.CacheEnabled=!args.Contains("--no-bound-cache",StringComparer.Ordinal);
 JointNestedBlendEvaluation.ReuseSplineContactBounds=!args.Contains("--no-spline-reuse",StringComparer.Ordinal);
 var repeat=1;var repeatAt=Array.IndexOf(args,"--repeat");if(repeatAt>=0){Require(repeatAt+1<args.Length&&int.TryParse(args[repeatAt+1],out repeat)&&repeat is >=1 and <=10,"--repeat needs 1..10");}
@@ -41,7 +50,8 @@ using(host)unsafe
             if(transformed){Transform(true,own);Transform(false,native);}
             var boredFace=remoteBore?BoredSupport(a[0]):0;
             if(args.Contains("diagnostics",StringComparer.Ordinal)){DumpSource(true,a[0]);DumpSource(false,b[0]);}
-            var radius=transformed?.17:.1;FixChain(true,own,a,radius);FixChain(false,native,b,radius);
+            witnessedSections=0;var radius=transformed?.17:.1;FixChain(true,own,a,radius);FixChain(false,native,b,radius);
+            if(KernelRuntime.ForbidLegacyRegularBlendAssembly)Require(witnessedSections==segments-1,"each section carries its native endpoints into arrangement");
             if(remoteBore)Require(KernelRuntime.IsValidTag(boredFace)&&KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(boredFace).Slot].LoopCount==2,
                 "the modified support retains its remote inner loop and face identity");
             var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),bytes);var received=Receive(bytes);
@@ -99,6 +109,11 @@ static unsafe void FixChain(bool own,int body,int[] edges,double radius)
     var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&n,&output,null,null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&n,&output,null,null,&fault,&fe,&ft);
     Console.WriteLine($"TIME FixBlends own={own} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
     if(own&&ModelingPerformance.Enabled)PrintProfile("FixBlends");
+    if(own&&error!=0&&KernelRuntime.LastRegularBlendStage==KernelRuntime.RegularBlendStage.Ends)
+    {
+        var root=SurfaceIsoPlaneRoots.LastUnresolvedInterval;
+        Console.WriteLine($"section isolation={SurfaceIsoPlaneRoots.LastFailure} station=[{root.Lower:R},{root.Upper:R}]");
+    }
     if(own&&error!=0&&KernelRuntime.IsValidTag(KernelRuntime.LastRegularBlendDomainFace))
     {
         Console.WriteLine($"contact proof pair={KernelRuntime.LastRegularContactPiece}/{KernelRuntime.LastRegularContactPieces} x {KernelRuntime.LastRegularContactOtherPiece}/{KernelRuntime.LastRegularContactOtherPieces}");

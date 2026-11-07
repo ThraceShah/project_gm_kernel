@@ -46,6 +46,21 @@ public unsafe class BlendChainTests:IDisposable
         var allocated=GC.GetAllocatedBytesForCurrentThread()-before;Assert.Equal(0,error);Assert.Equal(3,count);Assert.Equal(0,allocated);
     }
 
+    [Fact]
+    public void SectionCanCrossAnObliqueCapBetweenItsEndpointsAndMidpoint()
+    {
+        var circle=new PK_CIRCLE_sf_s{radius=1};circle.basis_set.axis.coord[2]=1;circle.basis_set.ref_direction.coord[0]=1;
+        CurveTag section;Assert.Equal(0,KernelRuntime.CircleCreate(&circle,&section));
+        var plane=new PK_PLANE_sf_s();var diagonal=Math.Sqrt(.5);
+        plane.basis_set.axis.coord[0]=-diagonal;plane.basis_set.axis.coord[1]=diagonal;plane.basis_set.ref_direction.coord[2]=1;
+        plane.basis_set.location.coord[0]=-.9*diagonal;plane.basis_set.location.coord[1]=.9*diagonal;
+        SurfTag crossing;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&crossing));
+        plane.basis_set.location.coord[0]=-1.5*diagonal;plane.basis_set.location.coord[1]=1.5*diagonal;
+        SurfTag separate;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&separate));
+        Assert.False(KernelRuntime.TestBlendChainSectionSeparated(section,0,Math.PI,crossing));
+        Assert.True(KernelRuntime.TestBlendChainSectionSeparated(section,0,Math.PI,separate));
+    }
+
     private static void Split(int body,Span<int> edges)
     {
         edges[0]=RegularSolidBlendTests.SelectedEdge(body);int vertex,tail;

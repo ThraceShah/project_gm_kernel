@@ -56,13 +56,19 @@ internal static unsafe partial class KernelRuntime
         error=BuildRegularLocalBlend(workingSlot,workingFaces,one,ignored,wholeProducts,out var count);if(error!=0)return error;
         if(count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         var blendFace=TagRec(ignored[0].Result).Slot;var blend=Faces[blendFace].SurfTag;
+        LastRegularBlendStage=RegularBlendStage.Ends;
         Span<SheetCutCurve> sections=stackalloc SheetCutCurve[ordered.Length-1];sections.Clear();
+        Span<IntervalNumber> stations=stackalloc IntervalNumber[sections.Length];
         for(var i=0;i<sections.Length;i++)
         {
-            error=BlendChainSection(blend,primarySide,junctions[i],tangents[i],out sections[i]);if(error!=0)return error;
+            error=BlendChainSection(blend,primarySide,junctions[i],tangents[i],out sections[i],out stations[i]);if(error!=0)return error;
+            for(var j=0;j<i;j++)if(stations[j].Lower<=stations[i].Upper&&stations[i].Lower<=stations[j].Upper)
+                return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
-        error=PartitionBlendChain(working,workingFaces,blendFace,sections,products,descriptions[..selected.Length],out var output);if(error!=0)return error;
+        error=PartitionBlendChain(working,workingFaces,blendFace,sections,stations,products,descriptions[..selected.Length],out var output);if(error!=0)return error;
+        LastRegularBlendStage=RegularBlendStage.Publish;
         error=ReplaceLocalBody(body,output,faces,products[..(faces.Length+selected.Length)]);if(error!=0)return error;
+        LastRegularBlendStage=RegularBlendStage.Release;
         error=EntityDelete(1,&working);if(error!=0)return error;
         foreach(var section in sections)if(IsValidTag(section.Curve)){var tag=section.Curve;error=EntityDelete(1,&tag);if(error!=0)return error;}
         made=selected.Length;return 0;
@@ -120,28 +126,31 @@ internal static unsafe partial class KernelRuntime
         merged=edge;return 0;
     }
 
-    private static int BlendChainSection(SurfTag surface,BufferOffset primarySide,in KernelVector3 point,in KernelVector3 normal,out SheetCutCurve section)
+    private static int BlendChainSection(SurfTag surface,BufferOffset primarySide,in KernelVector3 point,in KernelVector3 normal,out SheetCutCurve section,out IntervalNumber station)
     {
-        section=default;var record=Surfaces[GetSurfaceSlotByTag(surface)];var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);
+        section=default;station=default;var record=Surfaces[GetSurfaceSlotByTag(surface)];var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);
         var root=program.Surfaces[data.ProgramRoot];var definition=program.Spines[root.Spine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
         var reference=ProfileCross(normal,Math.Abs(normal.X)<.7?Vector(1,0,0):Vector(0,1,0));ProfileNormalize(ref reference);
         var plane=new AnalyticSurface(SurfaceClass.Plane,point,normal,reference);Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];var count=0;
+        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[IntersectionPointCapacity];var covered=record.UMin;
         for(var i=0;i<charts.Length-1;i++)
         {
             var lo=Math.Max(record.UMin,charts[i].Parameter);var hi=Math.Min(record.UMax,charts[i+1].Parameter);if(!(hi>lo))continue;
+            if(lo!=covered)return ParasolidConstants.PK_ERROR_cant_do_intersect;covered=hi;
             // A subdivision is transported through the primary support's
             // contact, rather than by projecting its vertex onto the spine.
             // The primary fin/support order also changes under reflection.
             var basis=new SurfaceIntersectionPatch(program,data.ProgramRoot,new(lo,hi,0,1));
             var patch=new SurfaceIntersectionPatch(basis,false,root.ReverseSection?primarySide:1-primarySide,lo,hi);
-            var status=SurfaceIsoPlaneRoots.Find(patch,plane,lo,hi,roots,ref count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            var status=SurfaceIsoPlaneRoots.Find(patch,plane,lo,hi,roots,ref count,strictSeparation:true,isolation:isolation);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         }
-        if(count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        var error=NestedBlendIsoparam(surface,true,roots[0].First,0,1,out var circle,out var first,out var last);if(error!=0)return error;
+        if(covered!=record.UMax||count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        station=isolation[0].Root;
+        var error=NestedBlendIsoparam(surface,true,station.Midpoint,0,1,out var circle,out var first,out var last);if(error!=0)return error;
         section=new(){Curve=circle,First=first,Last=last};return 0;
     }
 
-    private static int PartitionBlendChain(BodyTag input,ReadOnlySpan<FaceSlot> originals,FaceSlot blendFace,ReadOnlySpan<SheetCutCurve> cuts,
+    private static int PartitionBlendChain(BodyTag input,ReadOnlySpan<FaceSlot> originals,FaceSlot blendFace,Span<SheetCutCurve> cuts,ReadOnlySpan<IntervalNumber> stations,
         Span<FaceSlot> products,Span<LocalBlendProduct> descriptions,out BodyTag output)
     {
         output=0;var body=TagRec(input).Slot;var ne=Bodies[body].EdgeCountBody;var nv=Bodies[body].VertexCountBody;var nf=Bodies[body].FaceCountBody;var count=cuts.Length+1;
@@ -151,21 +160,20 @@ internal static unsafe partial class KernelRuntime
         var model=new SheetArrangement{Points=stackalloc KernelVector3[nv+2*cuts.Length],OriginalVertices=stackalloc VertexSlot[nv+2*cuts.Length],
             Edges=stackalloc ModelingEdge[ne+3*cuts.Length],CutEdges=stackalloc byte[ne+3*cuts.Length],
             Coedges=stackalloc ModelingCoedge[2*ne+6*cuts.Length],Loops=stackalloc ModelingLoop[loopCapacity],Faces=stackalloc ModelingFace[nf+cuts.Length],
-            Sources=stackalloc FaceSlot[nf+cuts.Length],Sides=stackalloc sbyte[nf+cuts.Length],Witnesses=stackalloc PK_UV_s[nf+cuts.Length],Tolerance=1e-9};
+            Sources=stackalloc FaceSlot[nf+cuts.Length],Sides=stackalloc sbyte[nf+cuts.Length],Witnesses=stackalloc PK_UV_s[nf+cuts.Length],
+            Parameters=stackalloc BoundaryParameter[4*cuts.Length],RequireBoundaryAssociations=true,Tolerance=1e-9};
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne];Span<EdgeSlot> sourceEdges=stackalloc EdgeSlot[ne];Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[2*ne];
         Span<ModelingLoop> loops=stackalloc ModelingLoop[sourceLoops];Span<ModelingFace> faces=stackalloc ModelingFace[nf];Span<FaceSlot> sources=stackalloc FaceSlot[nf];
         Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];Span<BodyTag> bodies=stackalloc BodyTag[1]{input};
         var error=ReadRegularBoundaries(bodies,model.Points,model.OriginalVertices,edges,sourceEdges,coedges,loops,faces,sources,owners,offsets,out model.NP,out var nEdges,out var nc,out var nl,out var nFaces);if(error!=0)return error;
-        Span<KernelVector3> p=stackalloc KernelVector3[1];
-        foreach(var cut in cuts)for(var end=0;end<2;end++)
-        {
-            var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,p,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-            error=model.AddPoint(p[0],-1,out _);if(error!=0)return error;
-        }
         var view=new RegularBoundaryView(edges[..nEdges],coedges[..nc],loops[..nl],faces[..nFaces]);Span<SheetSourceEdge> fragments=stackalloc SheetSourceEdge[ne];
+        LastRegularBlendStage=RegularBlendStage.EndParameters;
+        var blendIndex=sources.IndexOf(blendFace);if(blendIndex<0)return ParasolidConstants.PK_ERROR_bad_loop;
+        error=AssociateBlendChainSections(view,blendIndex,blendFace,sourceEdges[..nEdges],cuts,stations,ref model);if(error!=0)return error;
         Span<SheetCutCurve> owned=stackalloc SheetCutCurve[ne];var ownedCount=0;
         error=SplitRegularSourceEdges(view,sourceEdges,fragments,owned,ref ownedCount,ref model);if(error!=0)return error;
         if(ownedCount!=0)return ParasolidConstants.PK_ERROR_not_implemented;
+        LastRegularBlendStage=RegularBlendStage.Loops;
         Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[2*(ne+3*cuts.Length)];Span<ModelingCoedge> cycles=stackalloc ModelingCoedge[2*(ne+3*cuts.Length)];Span<SheetCycle> cycleData=stackalloc SheetCycle[loopCapacity];
         foreach(var face in sources)
         {
@@ -183,8 +191,76 @@ internal static unsafe partial class KernelRuntime
         {if(resultCount==resultCells.Length)return ParasolidConstants.PK_ERROR_bad_loop;resultCells[resultCount++]=at;order[at++]=f;}
         if(at!=model.NF||resultCount!=descriptions.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         Span<byte> reversed=stackalloc byte[model.NF],cavity=stackalloc byte[model.NF];reversed.Clear();cavity.Clear();
+        LastRegularBlendStage=RegularBlendStage.Build;
         error=CloneRegularBoundaryBody(ref model,order,reversed,cavity,out output,products[..model.NF]);if(error!=0)return error;
         for(var i=0;i<resultCount;i++)descriptions[i].Result=Faces[products[resultCells[i]]].Header.Tag;
         return 0;
     }
+
+    private static int AssociateBlendChainSections(scoped in RegularBoundaryView input,BufferOffset blendIndex,FaceSlot blendFace,
+        scoped ReadOnlySpan<EdgeSlot> sourceEdges,scoped Span<SheetCutCurve> cuts,scoped ReadOnlySpan<IntervalNumber> stations,scoped ref SheetArrangement model)
+    {
+        var blend=input.Faces[blendIndex];Span<BufferOffset> contacts=stackalloc BufferOffset[2]{-1,-1};
+        for(var l=0;l<blend.LoopCount;l++)
+        {
+            var loop=input.Loops[blend.FirstLoop+l];
+            foreach(var use in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+            {
+                var curve=Curves[GetCurveSlotByTag(input.Edges[use.Edge].Curve)];
+                var data=curve.Class==CurveClass.ICurve?ICurveDataPool[curve.DataIndex]:default;
+                // The staged face and its contact can own independent
+                // clones. Complete program equality certifies the U/V map.
+                if(data.IsBlendContact==0||!SameSheetSupport(data.Surface1Tag,blend.Surface))
+                {
+                    var edge=sourceEdges[use.Edge];
+                    if(!LocalEdgeFaces(edge,out var a,out var b)||a!=blendFace&&b!=blendFace
+                        ||!RegularPlanarSupport(GetSurfaceSlotByTag(Faces[a==blendFace?b:a].SurfTag),out var cap,out var deviation))
+                        return ParasolidConstants.PK_ERROR_not_implemented;
+                    var precision=Math.Max(Edges[edge].Tolerance,model.Tolerance);
+                    foreach(ref readonly var cut in cuts)if(!BlendChainSectionSeparated(cut,cap,deviation,precision))
+                        return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    continue;
+                }
+                var v=BlendContactV(data)==0?0:1;
+                if(contacts[v]>=0&&contacts[v]!=use.Edge)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                contacts[v]=use.Edge;
+            }
+        }
+        if(contacts[0]<0||contacts[1]<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        Span<KernelVector3> point=stackalloc KernelVector3[1],check=stackalloc KernelVector3[1];
+        for(var i=0;i<cuts.Length;i++)for(var end=0;end<2;end++)
+        {
+            ref var cut=ref cuts[i];var edge=input.Edges[contacts[end]];var data=ICurveDataPool[Curves[GetCurveSlotByTag(edge.Curve)].DataIndex];
+            var t=end==0?cut.First:cut.Last;var station=stations[i].Midpoint;
+            var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],t,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            var error=BlendContactParameterAtStation(data,point[0],station,out var contact);if(error!=0)return error;
+            if(!(contact>edge.Start&&contact<edge.End))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            status=EvaluateBlendContact(data,contact,0,check,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            if(ProfileDistance(point[0],check[0])>model.Tolerance)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            error=model.AddPoint(point[0],-1,out var endpoint,requireProof:true);if(error!=0)return error;
+            error=model.AssociateParameter(endpoint,cut.Curve,t);if(error!=0)return error;
+            error=model.AssociateParameter(endpoint,edge.Curve,contact);if(error!=0)return error;
+            if(end==0)cut.LowerEvent=endpoint+1;else cut.UpperEvent=endpoint+1;
+            cut.NativeLocatorEnds|=(byte)(1<<end);
+        }
+        return 0;
+    }
+
+    private static bool BlendChainSectionSeparated(in SheetCutCurve cut,in AnalyticSurface cap,double deviation,double precision)
+    {
+        if(!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(cut.Curve)],out var circle))return false;
+        // Bound the entire finite section's signed height above the cap,
+        // including the cap's support deviation and existing edge precision.
+        var status=SpineParameterMap.Interval(circle,new IntervalDual(new IntervalNumber(cut.First,cut.Last),0),out var arc,out _);
+        if(status!=AlgorithmStatus.Success)return false;
+        var normal=new IntervalVector(cap.Axis);var height=IntervalVector.Dot(arc-new IntervalVector(cap.Origin),normal).Value;
+        var margin=(deviation+precision*normal.Norm().Value).Upper;
+        return height.Finite&&(height.Lower>margin||height.Upper< -margin);
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static bool TestBlendChainSectionSeparated(CurveTag section,double first,double last,SurfTag support)
+        =>RegularPlanarSupport(GetSurfaceSlotByTag(support),out var cap,out var deviation)
+            &&BlendChainSectionSeparated(new(){Curve=section,First=first,Last=last},cap,deviation,1e-9);
+#endif
 }
