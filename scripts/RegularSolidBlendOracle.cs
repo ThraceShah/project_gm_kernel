@@ -9,15 +9,19 @@ using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using System.Globalization;
 using M=ProjectGmKernel.Native.Generated;
 
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
+var cutArg=args.SingleOrDefault(x=>x.StartsWith("--cut-x=",StringComparison.Ordinal));
+var cutX=cutArg==null?.5:double.Parse(cutArg[8..],CultureInfo.InvariantCulture);
+Require(cutX>0&&cutX<1,"the cut station must be inside the seed's X range");
 var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
 Require(!requireCutSection||KernelRuntime.ForbidLegacyRegularBlendAssembly&&args.Any(x=>x is "affine-plane-nurbs" or "plane-nurbs")
     &&!args.Any(x=>x is "rounding-only" or "lifecycle-only" or "native-only"),"cut section check needs a guarded plane/NURBS fillet and Boolean");
 var sectionWitnesses=0;var traceCutSection=false;
 var cutCharts=new HashSet<(int Curve,int Generation)>();var cutCrossings=new HashSet<(int Curve,int Generation)>();
-var cutProducts=new HashSet<(int Curve,int Generation)>();
+var cutProducts=new HashSet<(int Curve,int Generation)>();var cutEnds=new HashSet<(int Curve,int Event)>();
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
@@ -28,6 +32,7 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
             if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionChart)cutCharts.Add(key);
             if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionWinding)cutCrossings.Add(key);
             if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product&&trace.ProductCurve>0)cutProducts.Add(key);
+            if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator&&trace.First==trace.Last)cutEnds.Add((trace.ProductCurve,trace.StartEvent));
         }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
     };
@@ -50,7 +55,7 @@ using(host)unsafe
             var native=Roof(false,.4,wall,concave);CheckBody(native,"native input");var blend=Fillet(false,native,.1,concave);CheckBody(native,"native fillet");
             int type;Check(PK_ENTITY_ask_class(blend,&type),"native fillet surface class");Console.WriteLine($"native fillet support class={type}");DumpEdges(native);
             var stem="native-v261-"+(concave?"concave-":"")+(wall?"nurbs-nurbs-":"")+"fillet";DumpNativeXt(native,directory,stem);
-            native=Cut(false,native);CheckBody(native,"native fillet cut");Console.WriteLine("NATIVE CUT EDGES");DumpEdges(native);DumpNativeXt(native,directory,stem+"-cut");Console.WriteLine("PASS native fixture and subsequent cutting");
+            native=Cut(false,native,cutX);CheckBody(native,"native fillet cut");Console.WriteLine("NATIVE CUT EDGES");DumpEdges(native);DumpNativeXt(native,directory,stem+"-cut");Console.WriteLine("PASS native fixture and subsequent cutting");
         }
         else
         {
@@ -86,15 +91,18 @@ using(host)unsafe
                     {
                         try
                         {
-                            reference=Cut(false,reference);CheckBody(reference,name+" reference fillet cut");
+                            reference=Cut(false,reference,cutX);CheckBody(reference,name+" reference fillet cut");
                             var verifySection=requireCutSection&&(name is "affine-plane-nurbs" or "plane-nurbs");
                             traceCutSection=verifySection;
-                            if(traceCutSection){cutCharts.Clear();cutCrossings.Clear();cutProducts.Clear();}
-                            try{own=Cut(true,own);}
-                            finally{traceCutSection=false;}
+                            if(traceCutSection){cutCharts.Clear();cutCrossings.Clear();cutProducts.Clear();cutEnds.Clear();}
+                            var savedProofGuard=KernelRuntime.ForbidSpatialBoundaryReuse;
+                            if(verifySection)KernelRuntime.ForbidSpatialBoundaryReuse=true;
+                            try{own=Cut(true,own,cutX);}
+                            finally{KernelRuntime.ForbidSpatialBoundaryReuse=savedProofGuard;traceCutSection=false;}
                             if(verifySection)
-                                Require(cutCharts.Any(key=>cutCrossings.Contains(key)&&cutProducts.Contains(key)),
-                                    "the managed Boolean cut must use the same generated section chart for halfedges, winding and the published product");
+                                Require(cutCharts.Any(key=>cutCrossings.Contains(key)&&cutProducts.Contains(key)
+                                    &&cutEnds.Count(end=>end.Curve==key.Curve)==2),
+                                    "the managed Boolean cut must use one section chart for both exact endpoints, halfedges, winding and the published product");
                             CompareFresh(own,reference,name+"-fillet-cut",directory);
                         }
                         catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" subsequent cut: "+ex.Message);}
@@ -278,14 +286,13 @@ static unsafe int Bore(bool own,int body)
     try{Require(n==1,"one bored input");return bodies[0];}finally{Free(own,bodies);}
 }
 
-static unsafe int Cut(bool own,int body)
+static unsafe int Cut(bool own,int body,double x)
 {
-    // The manufacturing section x=.5 crosses the procedural Blend at the
-    // common symmetry plane of both supports, and consumes the far end.
-    var tool=Block(own,1,.5,-.1,1,2,2);var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+    // The default station is the symmetry plane of both supports.
+    var tool=Block(own,x+.5,.5,-.1,1,2,2);var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
     var started=Stopwatch.GetTimestamp();
     var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
-    Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x=.5 ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");Check(error,"cut filleted solid");
+    Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");Check(error,"cut filleted solid");
     try{Require(n==1,"one cut solid");return bodies[0];}finally{Free(own,bodies);}
 }
 static unsafe int Notch(bool own,int body)

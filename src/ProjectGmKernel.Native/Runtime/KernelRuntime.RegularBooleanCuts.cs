@@ -182,7 +182,9 @@ internal static unsafe partial class KernelRuntime
         count=0;var curve=Curves[GetCurveSlotByTag(edge.Curve)];var support=Surfaces[GetSurfaceSlotByTag(surface)];
         if(curve.Class!=CurveClass.ICurve||support.Class!=SurfaceClass.Plane||!TryPrepareSurface(support,out var plane))return false;
         var data=ICurveDataPool[curve.DataIndex];
-        if(data.ProgramBlock<=0||data.IsBlendContact!=0||RegularCoincidentSupports(surface,data.Surface0Tag)||RegularCoincidentSupports(surface,data.Surface1Tag))return false;
+        if(data.ProgramBlock<=0&&data.IsBlendContact==0)return false;
+        if(RegularCoincidentSupports(surface,data.Surface0Tag)||RegularCoincidentSupports(surface,data.Surface1Tag))return false;
+        if(data.IsBlendContact!=0)return TryBlendContactPlaneEvents(data,edge,plane,roots,isolation,spatialErrors,out count);
         var status=IntersectFiniteIntersectionCurvePlane(edge.Curve,edge.Start,edge.End,plane,roots,out count,isolation,spatialErrors);
         // Endpoint contacts or a nonmonotone unresolved cell retain the
         // existing explicit endpoint/general solver. No partial root list
@@ -309,9 +311,14 @@ internal static unsafe partial class KernelRuntime
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<double> rootParameters=stackalloc double[SheetPointLimit];Span<KernelVector3> point=stackalloc KernelVector3[1];
         Span<IntervalNumber> cutLocators=stackalloc IntervalNumber[nRoots];
         Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[IntersectionPointCapacity];
+        var sectionCharts=model.SectionCharts[..model.SectionChartCount];
+        var firstSurface=input.Faces[first].Surface;var secondSurface=input.Faces[second].Surface;
         foreach(ref readonly var curve in curves)
         {
             var n=0;
+            var hasSection=TryFiniteSectionChart(sectionCharts,firstSurface,curve.Curve,curve.First,curve.Last,out var section)
+                ||TryFiniteSectionChart(sectionCharts,secondSurface,curve.Curve,curve.First,curve.Last,out section);
+            var sectionPlane=section.Surface==firstSurface?secondSurface:firstSurface;
             // A line's bounded material intervals begin and end at actual
             // face-boundary crossings. Artificial infinite support bounds
             // are not finite-domain witnesses for a planar NURBS patch.
@@ -324,6 +331,8 @@ internal static unsafe partial class KernelRuntime
                 else
                 {
                     error=LocateCertifiedNativeCut(curve,roots[i],out t,out cutLocators[i],out var handled);
+                    if(!handled&&hasSection&&TryFiniteSectionContactEnd(section,sectionPlane,roots[i],out var sectionEnd))
+                    {handled=true;t=sectionEnd;cutLocators[i]=new(t);}
                     if(!handled)error=CurveParameteriseVectorCore(curve.Curve,p,&t);
                 }
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
@@ -389,7 +398,6 @@ internal static unsafe partial class KernelRuntime
                 var at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;
                 var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
-                var sectionCharts=model.SectionCharts[..model.SectionChartCount];
                 error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve,at,point[0],sectionCharts,out var a);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
                 error=FiniteBoundarySurfaceParameters(input.Faces[second].Surface,curve,at,point[0],sectionCharts,out var b);
@@ -471,7 +479,9 @@ internal static unsafe partial class KernelRuntime
                                 model.RequireBoundaryAssociations&&root.Witness==0?0:root.CuttingSurface,root.Witness);if(error!=0)return error;
                             if(cutLocators[r].Finite)
                                 TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.NativeCutLocator,Curve=root.Curve,ProductCurve=cut.Curve,
-                                    Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,StartEvent=endpoint,EndEvent=endpoint,
+                                    Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,InputCoedge=root.InputCoedge,
+                                    StartEvent=endpoint,EndEvent=endpoint,Source=-1,Face=-1,Product=-1,Witness=root.Witness,
+                                    Generation=Curves[GetCurveSlotByTag(root.Curve)].Header.Generation,
                                     First=cutLocator.Lower,Last=cutLocator.Upper,SpatialError=root.Root.SpatialError});
                             TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CertifiedRoot,Curve=root.Curve,ProductCurve=cut.Curve,
                                 Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,InputCoedge=root.InputCoedge,StartEvent=endpoint,EndEvent=endpoint,

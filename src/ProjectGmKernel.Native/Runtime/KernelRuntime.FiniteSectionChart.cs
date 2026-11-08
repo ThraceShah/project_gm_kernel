@@ -11,8 +11,8 @@ internal static unsafe partial class KernelRuntime
     private struct FiniteSectionChart
     {
         internal CurveTag Curve;
-        internal SurfTag Surface;
-        internal EntityGeneration CurveGeneration,SurfaceGeneration;
+        internal SurfTag Surface,CuttingPlane;
+        internal EntityGeneration CurveGeneration,SurfaceGeneration,PlaneGeneration;
         internal double Station,First,Last,VFirst,VLast;
     }
 
@@ -25,10 +25,12 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
-    private static FiniteSectionChart MakeFiniteSectionChart(SurfTag surface,CurveTag curve,double station,double first,double last,double vFirst,double vLast)
+    private static FiniteSectionChart MakeFiniteSectionChart(SurfTag surface,CurveTag curve,double station,double first,double last,
+        double vFirst,double vLast,SurfTag cuttingPlane=0)
         =>new(){Curve=curve,Surface=surface,
             CurveGeneration=Curves[GetCurveSlotByTag(curve)].Header.Generation,
             SurfaceGeneration=Surfaces[GetSurfaceSlotByTag(surface)].Header.Generation,
+            CuttingPlane=cuttingPlane,PlaneGeneration=cuttingPlane==0?0:Surfaces[GetSurfaceSlotByTag(cuttingPlane)].Header.Generation,
             Station=station,First=first,Last=last,VFirst=vFirst,VLast=vLast};
 
     private static bool TryFiniteSectionChart(ReadOnlySpan<FiniteSectionChart> charts,SurfTag surface,CurveTag curve,

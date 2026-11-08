@@ -22,8 +22,27 @@ public unsafe class RegularSolidBlendTests:IDisposable
         var trace=new List<KernelRuntime.BoundaryTrace>();KernelRuntime.TraceFiniteBoundary=trace.Add;
         var body=RoundedRoof();CheckTrace();trace.Clear();
         var tool=BooleanOperationTests.Block(1,.5,-.1,1,2,2);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int count;int* products;
-        Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&count,&products));
-        try{Assert.Equal(1,count);CheckTrace();}finally{KernelRuntime.MemoryFree(products);}
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;
+        KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        try{Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&count,&products));}
+        finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
+        try
+        {
+            Assert.Equal(1,count);CheckTrace();
+            Assert.DoesNotContain(trace,t=>t.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse);
+            var section=trace.First(t=>t.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionChart);
+            var ends=trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator&&t.ProductCurve==section.Curve).ToArray();
+            Assert.Equal(new[]{section.First,section.Last},ends.Select(t=>t.First).Order().ToArray());
+            Assert.All(ends,t=>Assert.Equal(t.First,t.Last));
+            foreach(var e in new[]{section.StartEvent,section.EndEvent})
+            {
+                var root=Assert.Single(trace,t=>t.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot&&t.ProductCurve==section.Curve&&t.StartEvent==e);
+                Assert.True(root.Witness>0);Assert.True(root.SpatialError<1e-10);
+                Assert.Contains(trace,t=>t.Stage==root.Stage&&t.Curve==root.Curve&&t.Generation==root.Generation
+                    &&t.Witness==root.Witness&&t.InputCoedge!=root.InputCoedge&&t.StartEvent==e&&t.First==root.First&&t.Last==root.Last);
+            }
+        }
+        finally{KernelRuntime.MemoryFree(products);}
 
         void CheckTrace()
         {

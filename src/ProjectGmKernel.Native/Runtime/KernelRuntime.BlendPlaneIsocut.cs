@@ -52,7 +52,7 @@ internal static unsafe partial class KernelRuntime
         // arrangement maps its endpoints/coedges through that use sense.
         Curves[GetCurveSlotByTag(circle)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
         cuts[0]=new(){Curve=circle,First=lower,Last=upper};
-        section=MakeFiniteSectionChart(surface,circle,u,lower,upper,record.VMin,record.VMax);
+        section=MakeFiniteSectionChart(surface,circle,u,lower,upper,record.VMin,record.VMax,planeTag);
         count=1;handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Ready;return 0;
     }
 
