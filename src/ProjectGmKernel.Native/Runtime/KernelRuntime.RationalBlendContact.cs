@@ -63,7 +63,7 @@ internal static unsafe partial class KernelRuntime
             out var station,out var inverseSlope,out var interior))return ParasolidConstants.PK_ERROR_cant_do_intersect;
         if(!interior&&parameter!=first&&parameter!=last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         Span<KernelVector3> evaluated=stackalloc KernelVector3[1];
-        var status=EvaluateCurveCore(boundary,parameter,0,false,evaluated,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+        var status=EvaluateCurveCore(in boundary,parameter,0,false,evaluated,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
         point=evaluated[0];
         if(!interior)
         {
@@ -105,7 +105,7 @@ internal static unsafe partial class KernelRuntime
         if(parameter.Lower<=edge.Start||parameter.Upper>=edge.End)return AlgorithmStatus.NotConverged;
         if(output.IsEmpty)return AlgorithmStatus.OutputTooSmall;
         Span<KernelVector3> point=stackalloc KernelVector3[1];var at=parameter.Midpoint;
-        var status=EvaluateCurveCore(boundary,at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
+        var status=EvaluateCurveCore(in boundary,at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
         output[count++]=new(){Point=point[0],First=along.Midpoint,Second=at,Kind=IntersectionVectorKind.Simple};
         return AlgorithmStatus.Success;
     }

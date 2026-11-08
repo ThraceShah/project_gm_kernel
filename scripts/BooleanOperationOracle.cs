@@ -19,7 +19,8 @@ var threePlaneOnly=args.Contains("--three-plane-events")||thirdFaceHole||thirdFa
 var conicCutOnly=args.Contains("--plane-conic-cut");
 var conicCornerOnly=args.Contains("--conic-corner");
 var coplanarToolsOnly=args.Contains("--coplanar-tools");
-var specialized=threePlaneOnly||conicCutOnly||conicCornerOnly||coplanarToolsOnly;
+var axialContactOnly=args.Contains("--finite-axial-contact");
+var specialized=threePlaneOnly||conicCutOnly||conicCornerOnly||coplanarToolsOnly||axialContactOnly;
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
 Directory.CreateDirectory(output);var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -33,7 +34,7 @@ try
         {
             var failures=0;var count=0;
             foreach(var mode in specialized?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
+            foreach(var fixture in axialContactOnly?["guarded-axial-contact-outside","guarded-axial-contact-mapped"]:coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
@@ -118,11 +119,13 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var conicCorner=fixture=="guarded-conic-corner";
     var mappedTools=fixture=="guarded-coplanar-tools-mapped";
     var coplanarTools=mappedTools||fixture is "guarded-coplanar-tools" or "guarded-coplanar-tools-reversed";
+    var mappedContact=fixture=="guarded-axial-contact-mapped";
+    var axialContact=mappedContact||fixture=="guarded-axial-contact-outside";
     int target;
-    if(threePlane||conicCut||conicCorner||coplanarTools)
+    if(threePlane||conicCut||conicCorner||coplanarTools||axialContact)
     {
         var radius=mixed||conicCorner||coplanarTools?5:4;var height=mixed?6:4;
-        if(mappedTools)
+        if(mappedTools||mappedContact)
         {
             var axis=CoplanarToolsBasis(0,0,0);var selfAxis=Unsafe.BitCast<PK_AXIS2_sf_t,M.PK_AXIS2_sf_s>(axis);
             Check(own?KernelRuntime.BodyCreateSolidCyl(radius,height,&selfAxis,&target):PK_BODY_create_solid_cyl(radius,height,&axis,&target),"mapped cylindrical target");
@@ -133,7 +136,9 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     if(holed)target=SubtractSeedTool(own,target,Block(own,1,0,-1,.5,.5,6,0));
     if(trimmedConic)target=SubtractSeedTool(own,target,Block(own,0,4,-1,12,6,6,0));
     var nt=fixture=="two-tools"||threePlane||coplanarTools?2:1;var tools=stackalloc int[nt];
-    if(coplanarTools)
+    if(axialContact)
+        tools[0]=mappedContact?BlockWithBasis(own,CoplanarToolsBasis(5,2,1),2,2,2):Block(own,5,2,1,2,2,2,0);
+    else if(coplanarTools)
     {
         tools[0]=mappedTools?BlockWithBasis(own,CoplanarToolsBasis(1,1.5,3),2,3,2):Block(own,1,1.5,3,2,3,2,0);
         tools[1]=mappedTools?BlockWithBasis(own,CoplanarToolsBasis(1.5,1,2.75),3,2,2):Block(own,1.5,1,2.75,3,2,2,0);
@@ -172,7 +177,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     if(own)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
-        if(threePlane||conicCut||conicCorner||coplanarTools)
+        if(threePlane||conicCut||conicCorner||coplanarTools||axialContact)
         {
             var certified=new HashSet<(int Event,int Curve)>();
             var transferredLines=new HashSet<(int Event,int Curve)>();
@@ -241,7 +246,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                     Require(joins>0,"coplanar line stations must meet on an actual published edge");
                     Console.WriteLine($"COPLANAR TOOLS published_coincident_events={joins}");
                 }
-                else Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
+                else if(!axialContact)Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
             }
             finally{KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;}
         }

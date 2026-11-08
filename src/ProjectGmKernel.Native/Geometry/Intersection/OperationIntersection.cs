@@ -466,7 +466,7 @@ internal static class OperationIntersection
                 if(Math.Abs(dot)<1-1e-14){branch.Class=CurveClass.Ellipse;branch.Radius=surface.Radius/Math.Abs(dot);}
                 curves[nc++]=branch;return AlgorithmStatus.Success;
             }
-            return AxialCylinderPlane(plane,surface,curves,out nc);
+            return AxialCylinderPlane(plane,surface,curves,out nc,out _);
         }
         if(surface.Kind==SurfaceClass.Cone&&Math.Abs(Math.Abs(dot)-1)<=AngularTolerance)
         {
@@ -497,10 +497,10 @@ internal static class OperationIntersection
         return AlgorithmStatus.Unsupported;
     }
 
-    private static AlgorithmStatus AxialCylinderPlane(in AnalyticSurface plane,in AnalyticSurface cylinder,
-        Span<OperationIntersectionBranch> curves,out BufferCount count)
+    internal static AlgorithmStatus AxialCylinderPlane(in AnalyticSurface plane,in AnalyticSurface cylinder,
+        Span<OperationIntersectionBranch> curves,out BufferCount count,out IntervalVector contactAnchor)
     {
-        count=0;
+        count=0;contactAnchor=default;
         if(!ExactProjectionEqual(cylinder.Axis,default,plane.Axis))return AlgorithmStatus.NotConverged;
         var normal=new IntervalVector(plane.Axis);var origin=new IntervalVector(cylinder.Origin);
         var x=new IntervalVector(cylinder.X);var y=new IntervalVector(cylinder.Y);
@@ -516,16 +516,18 @@ internal static class OperationIntersection
         if(!tangent&&discriminant.Lower<=0)return AlgorithmStatus.NotConverged;
         var height=-h/radius;
         var split=tangent?new IntervalNumber(0):IntervalDual.Sqrt(new(discriminant,0)).Value/radius;
-        var a=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,split);
-        if(!IsFinite(a))return AlgorithmStatus.NotConverged;
+        var first=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,split);
+        var a=Representative(first);
+        if(!first.Finite||!IsFinite(a))return AlgorithmStatus.NotConverged;
         if(tangent)
         {
             if(curves.IsEmpty)return AlgorithmStatus.OutputTooSmall;
-            curves[count++]=Line(a,cylinder.Axis);curves[0].Kind=IntersectionCurveKind.Tangent;
+            contactAnchor=first;curves[count++]=Line(a,cylinder.Axis);curves[0].Kind=IntersectionCurveKind.Tangent;
             return AlgorithmStatus.Success;
         }
-        var b=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,-split);
-        if(!IsFinite(b))return AlgorithmStatus.NotConverged;
+        var second=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,-split);
+        var b=Representative(second);
+        if(!second.Finite||!IsFinite(b))return AlgorithmStatus.NotConverged;
         var separation=IntervalVector.Cross(new IntervalVector(a)-new IntervalVector(b),new(cylinder.Axis));
         if(!ExcludesZero(separation.X.Value)&&!ExcludesZero(separation.Y.Value)&&!ExcludesZero(separation.Z.Value))
             return AlgorithmStatus.NotConverged;
@@ -535,12 +537,14 @@ internal static class OperationIntersection
 
         static bool ExcludesZero(IntervalNumber value)=>value.Finite&&(value.Lower>0||value.Upper<0);
 
-        static KernelVector3 GeneratorAnchor(IntervalVector origin,IntervalVector x,IntervalVector y,
+        static KernelVector3 Representative(IntervalVector point)
+            =>Vector(point.X.Value.Midpoint,point.Y.Value.Midpoint,point.Z.Value.Midpoint);
+
+        static IntervalVector GeneratorAnchor(IntervalVector origin,IntervalVector x,IntervalVector y,
             IntervalNumber radius,IntervalNumber radial2,IntervalNumber dx,IntervalNumber dy,IntervalNumber height,IntervalNumber split)
         {
             var radialX=(height*dx-split*dy)/radial2;var radialY=(height*dy+split*dx)/radial2;
-            var point=origin+(x*radialX+y*radialY)*radius;
-            return Vector(point.X.Value.Midpoint,point.Y.Value.Midpoint,point.Z.Value.Midpoint);
+            return origin+(x*radialX+y*radialY)*radius;
         }
     }
 }

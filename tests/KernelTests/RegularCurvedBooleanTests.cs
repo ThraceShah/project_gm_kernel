@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Runtime;
+using BodyTag=System.Int32;
 
 namespace KernelTests;
 
@@ -39,6 +40,34 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         {
             Assert.Equal(generations[i],KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(bodies[i]).Slot].Header.Generation);
             Assert.Equal(before[i],XtBrepImportTests.Transmit(bodies[i]));
+        }
+    }
+
+    [Fact]
+    public void AxialContactInsideBothTrimsIsNotMistakenForFiniteSeparation()
+    {
+        BodyTag target;Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(4,4,null,&target));
+        var tool=BooleanOperationTests.Block(5,0,1,2,2,2);
+        var input=new[]{target,tool};var before=input.Select(XtBrepImportTests.Transmit).ToArray();
+        var generations=input.Select(body=>KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot].Header.Generation).ToArray();
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
+        PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        try
+        {
+            Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result));
+            Assert.Equal(KernelRuntime.RegularBooleanStage.Cuts,KernelRuntime.LastRegularBooleanStage);
+        }
+        finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
+        Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);Assert.True(tracking.track_records==null);
+        Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+        Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);
+        for(var i=0;i<input.Length;i++)
+        {
+            Assert.Equal(generations[i],KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(input[i]).Slot].Header.Generation);
+            Assert.Equal(before[i],XtBrepImportTests.Transmit(input[i]));
         }
     }
 

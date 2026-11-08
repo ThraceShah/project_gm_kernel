@@ -52,6 +52,30 @@ internal static unsafe partial class KernelRuntime
         return bound.Finite&&(bound.Lower>tolerance||bound.Upper< -tolerance);
     }
 
+    private static bool FiniteCylinderPlaneContactOutsideTrim(FaceSlot first,FaceSlot second,double tolerance)
+    {
+        var a=Surfaces[GetSurfaceSlotByTag(Faces[first].SurfTag)];var b=Surfaces[GetSurfaceSlotByTag(Faces[second].SurfTag)];
+        var reverse=a.Class==SurfaceClass.Plane&&b.Class==SurfaceClass.Cylinder;
+        if(!reverse&&!(a.Class==SurfaceClass.Cylinder&&b.Class==SurfaceClass.Plane))return false;
+        if(!TryPrepareSurface(reverse?b:a,out var cylinder)||!TryPrepareSurface(reverse?a:b,out var plane)
+            ||Math.Abs(Dot(cylinder.Axis,plane.Axis))>OperationIntersection.AngularTolerance)return false;
+        Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[2];
+        var status=OperationIntersection.AxialCylinderPlane(plane,cylinder,branches,out var count,out var anchor);
+        if(status!=AlgorithmStatus.Success||count!=1||branches[0].Kind!=IntersectionCurveKind.Tangent)return false;
+        var cylinderFace=reverse?second:first;var planeFace=reverse?first:second;
+        if(CertifiedCylindricalFaceAxialRange(cylinderFace,out _,out var height,out var cylinderPrecision)!=AlgorithmStatus.Success
+            ||RegularFiniteFaceExtent(planeFace,out var planeExtent)!=AlgorithmStatus.Success)return false;
+        var planarPrecision=Math.Max(tolerance,Faces[planeFace].Tolerance);
+        if(!TryThirdFacePrecision(planeFace,ref planarPrecision))return false;
+        // The contact generator uses the cylinder's native axial coordinate.
+        // Bound that actual finite interval before looking at the plane trim.
+        var line=anchor+new IntervalVector(cylinder.Axis)*height;
+        if(!line.Finite)return false;
+        var extent=new IntervalBox3(line.X.Value.Lower,line.X.Value.Upper,line.Y.Value.Lower,line.Y.Value.Upper,line.Z.Value.Lower,line.Z.Value.Upper);
+        var margin=(new IntervalNumber(planarPrecision)+cylinderPrecision).Upper;
+        return double.IsFinite(margin)&&ThirdFaceBoxesDisjoint(extent,planeExtent,margin);
+    }
+
     private static bool NeedsFiniteCylinderPlaneChart(in AnalyticSurface cylinder,in AnalyticSurface plane)
     {
         var tilt=Math.Abs(Dot(cylinder.Axis,plane.Axis));

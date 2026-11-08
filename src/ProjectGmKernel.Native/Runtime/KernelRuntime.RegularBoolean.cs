@@ -57,7 +57,8 @@ internal static unsafe partial class KernelRuntime
                 if(RegularNaturalNurbsSeparatedFromPlane(input,a,b,model.Tolerance)||RegularNaturalNurbsSeparatedFromPlane(input,b,a,model.Tolerance))continue;
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
                 if(RegularCylinderFaceSeparatedFromPlane(sources[a],second,model.Tolerance)
-                    ||RegularCylinderFaceSeparatedFromPlane(sources[b],first,model.Tolerance))continue;
+                    ||RegularCylinderFaceSeparatedFromPlane(sources[b],first,model.Tolerance)
+                    ||FiniteCylinderPlaneContactOutsideTrim(sources[a],sources[b],model.Tolerance))continue;
                 error=ClipExistingAffineCylinderRing(input,sources[..nf],originalEdges[..ne],a,b,cuts,ref cutCount,ref model,out var reusedRing);
                 if(error!=0)return error;if(reusedRing)continue;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
