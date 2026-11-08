@@ -47,7 +47,7 @@ internal static unsafe partial class KernelRuntime
         ReadOnlySpan<ModelingEdge> edges, ReadOnlySpan<ModelingCoedge> coedges,
         ReadOnlySpan<ModelingLoop> loops, ReadOnlySpan<ModelingFace> faces,
         bool solid, out EntityTag result, Span<FaceSlot> faceProducts = default,
-        ReadOnlySpan<byte> cavityFaces = default,Span<EdgeSlot> edgeProducts=default)
+        ReadOnlySpan<byte> cavityFaces = default,Span<EdgeSlot> edgeProducts=default,bool cloneBoundaryCurves=false)
     {
         result = 0;
         if (faces.IsEmpty || faces.Length > 4096 || points.Length > 8192 || edges.Length > 16384
@@ -249,7 +249,13 @@ internal static unsafe partial class KernelRuntime
             for (var i = 0; i < edges.Length; i++)
             {
                 ref readonly var e = ref edges[i];
-                edgeSlots[i] = AddProfileEdge(body, e.Curve, e.StartVertex < 0 ? -1 : vertexSlots[e.StartVertex],
+                var curve=e.Curve;
+                if(cloneBoundaryCurves)
+                {
+                    var copied=CloneBoundaryCurve(e.Curve,faces[firstFace[i]].Surface,secondFace[i]>=0?faces[secondFace[i]].Surface:0,out curve);
+                    if(copied!=0)return copied;
+                }
+                edgeSlots[i] = AddProfileEdge(body, curve, e.StartVertex < 0 ? -1 : vertexSlots[e.StartVertex],
                     e.EndVertex < 0 ? -1 : vertexSlots[e.EndVertex], e.Start, e.End);
                 if (edgeSlots[i] < 0) return ParasolidConstants.PK_ERROR_memory_full;
             }

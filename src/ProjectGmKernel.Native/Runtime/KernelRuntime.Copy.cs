@@ -32,6 +32,33 @@ internal static unsafe partial class KernelRuntime
         return error;
     }
 
+    private static int CloneBoundaryCurve(CurveTag source,SurfTag first,SurfTag second,out CurveTag clone)
+    {
+        var record=Curves[GetCurveSlotByTag(source)];
+        if(record.Class==CurveClass.ICurve&&first>0&&second>0)
+        {
+            var data=ICurveDataPool[record.DataIndex];
+            // A BLEND_BOUND contact has its own dependency on the rolling
+            // support inside the blend, in addition to the incident face.
+            if(data.IsBlendContact!=0)return TryCloneEntityCore(source,out clone);
+            var forward=SameChart(data.Surface0Tag,first)&&SameChart(data.Surface1Tag,second);
+            var reverse=SameChart(data.Surface0Tag,second)&&SameChart(data.Surface1Tag,first);
+            if(forward!=reverse||forward&&first==second)
+            {
+                // Keep the native UV data and the compiled support equations
+                // unchanged. Attach their dependencies to the actual face
+                // uses, rather than to detached copies of the same charts.
+                var context=new EntityCopyContext{Pairs=stackalloc EntityCopyPair[3]};
+                context.Add(data.Surface0Tag,forward?first:second);
+                if(data.Surface1Tag!=data.Surface0Tag)context.Add(data.Surface1Tag,forward?second:first);
+                return CloneEntity(source,ref context,0,out clone);
+            }
+        }
+        return TryCloneEntityCore(source,out clone);
+
+        static bool SameChart(SurfTag a,SurfTag b)=>TryCertifySupportChart(a,b,out var certificate)&&certificate.Identity&&certificate.NormalRelation==1;
+    }
+
     internal static int TryCloneEntitiesCore(ReadOnlySpan<EntityTag> sources,Span<EntityTag> clones)
     {
         if (!IsSessionStarted) return ParasolidConstants.PK_ERROR_not_in_PK;

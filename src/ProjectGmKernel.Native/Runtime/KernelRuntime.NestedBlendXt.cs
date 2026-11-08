@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 
 namespace ProjectGmKernel.Native.Runtime;
@@ -80,5 +81,39 @@ internal static unsafe partial class KernelRuntime
         var slot=GetSurfaceSlotByTag(surface);if(slot<0)return;var record=Surfaces[slot];
         if(record.Class!=SurfaceClass.BlendSurface)return;
         LiftFiniteConicBlendParameter(record,BlendedEdgeDataPool[record.DataIndex].SpineTag,ref u);
+    }
+
+    private static bool TryFiniteBlendXtParameters(CurveTag spine,ReadOnlySpan<double> first,ReadOnlySpan<double> last,
+        out double lower,out double upper)
+    {
+        double a,b;var p=new PK_VECTOR_s();p.coord[0]=first[0];p.coord[1]=first[1];p.coord[2]=first[2];
+        lower=upper=0;
+        if(CurveParameteriseVectorCore(spine,p,&a)!=0)return false;
+        p.coord[0]=last[0];p.coord[1]=last[1];p.coord[2]=last[2];
+        if(CurveParameteriseVectorCore(spine,p,&b)!=0||!double.IsFinite(a)||!double.IsFinite(b))return false;
+        var record=Curves[GetCurveSlotByTag(spine)];
+        if(LocalSenseSign(record.Sense)<0)(a,b)=(b,a);
+        if(record.Class is CurveClass.Circle or CurveClass.Ellipse)while(b<=a)b+=Math.Tau;
+        lower=a;upper=b;return b>a;
+    }
+
+    internal static double FiniteBlendXtChartShift(SurfTag tag)
+    {
+        var slot=GetSurfaceSlotByTag(tag);if(slot<0)return 0;
+        var surface=Surfaces[slot];if(surface.Class!=SurfaceClass.BlendSurface||!(surface.UMax-surface.UMin<Math.Tau))return 0;
+        var data=BlendedEdgeDataPool[surface.DataIndex];var spine=GetCurveSlotByTag(data.SpineTag);
+        if(spine<0||Curves[spine].Class is not (CurveClass.Circle or CurveClass.Ellipse)||data.HvecBlock<=0
+            ||data.StartLimit.Type!=LimitType.Terminator||data.EndLimit.Type!=LimitType.Terminator
+            ||data.StartLimit.HvecCount!=1||data.EndLimit.HvecCount!=1
+            ||(uint)data.StartLimit.HvecIndex>=(uint)data.HvecCount||(uint)data.EndLimit.HvecIndex>=(uint)data.HvecCount)return 0;
+        var block=DereferenceBlock(data.HvecBlock);if(block==null)return 0;
+        var limits=new ReadOnlySpan<double>(block,3*data.HvecCount);
+        if(!TryFiniteBlendXtParameters(data.SpineTag,limits.Slice(3*data.StartLimit.HvecIndex,3),limits.Slice(3*data.EndLimit.HvecIndex,3),
+            out var lower,out var upper))return 0;
+        // The limits are spatial. Both oriented endpoints must choose the
+        // same whole turn in the parameter range reconstructed on receive.
+        var lo=(lower-surface.UMin)/Math.Tau;var hi=(upper-surface.UMax)/Math.Tau;
+        var turns=Math.Round(lo);
+        return Math.Abs(lo-turns)<.5&&Math.Abs(hi-turns)<.5?turns*Math.Tau:0;
     }
 }

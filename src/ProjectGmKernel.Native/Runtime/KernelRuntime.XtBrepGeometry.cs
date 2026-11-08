@@ -146,14 +146,7 @@ internal static unsafe partial class KernelRuntime
                     if(n0!=1||n1!=1||firstLimit.Type!=LimitType.Terminator||lastLimit.Type!=LimitType.Terminator
                         ||firstLimit.TermUse!=LimitTermUse.Unset||lastLimit.TermUse!=LimitTermUse.Unset)return AlgorithmStatus.Unsupported;
                     firstLimit.HvecIndex=0;firstLimit.HvecCount=1;lastLimit.HvecIndex=1;lastLimit.HvecCount=1;
-                    var p=new PK_VECTOR_s();p.coord[0]=limits[0];p.coord[1]=limits[1];p.coord[2]=limits[2];
-                    if(CurveParameteriseVectorCore(curve,p,&lower)!=0)return AlgorithmStatus.InvalidInput;
-                    p.coord[0]=limits[3];p.coord[1]=limits[4];p.coord[2]=limits[5];
-                    if(CurveParameteriseVectorCore(curve,p,&upper)!=0)return AlgorithmStatus.InvalidInput;
-                    if(LocalSenseSign(Curves[GetCurveSlotByTag(curve)].Sense)<0)(lower,upper)=(upper,lower);
-                    if(Curves[GetCurveSlotByTag(curve)].Class is CurveClass.Circle or CurveClass.Ellipse)
-                        while(upper<=lower)upper+=Math.Tau;
-                    if(!(upper>lower))return AlgorithmStatus.InvalidInput;
+                    if(!TryFiniteBlendXtParameters(curve,limits[..3],limits[3..],out lower,out upper))return AlgorithmStatus.InvalidInput;
                 }
                 error=CompileAndBindNestedBlend(a,b,curve,fields[11].Real,fields[12].Real,&created,lower,upper);
                 if(error==0&&firstLimit.HvecCount!=0)

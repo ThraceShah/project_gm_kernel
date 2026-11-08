@@ -1346,9 +1346,20 @@ internal static unsafe partial class XtWriter
             if (block is null)
                 throw new InvalidOperationException("INTERSECTION_DATA UV block is missing.");
             var values = new ReadOnlySpan<double>((double*)block, uvCount);
+            var firstShift=0.0;var secondShift=0.0;
+            if(data.IsBlendContact==0)
+            {
+                if(data.UvType is IntersectionUvType.First or IntersectionUvType.Both)firstShift=KernelRuntime.FiniteBlendXtChartShift(data.Surface0Tag);
+                if(data.UvType is IntersectionUvType.Second or IntersectionUvType.Both)secondShift=KernelRuntime.FiniteBlendXtChartShift(data.Surface1Tag);
+            }
             for (BufferOffset i = 0; i < uvCount; i++)
             {
                 var val = values[i];
+                if((i&1)==0&&double.IsFinite(val))
+                {
+                    var shift=(data.UvType==IntersectionUvType.Second||data.UvType==IntersectionUvType.Both&&(i&2)!=0)?secondShift:firstShift;
+                    if(shift!=0)val+=shift;
+                }
                 if (double.IsInfinity(val))
                     throw new InvalidOperationException("INTERSECTION_DATA UV value must be finite or NaN (null sentinel).");
                 fields[1 + i] = double.IsFinite(val) ? XtFieldValue.RealValue(val) : XtFieldValue.Null();

@@ -59,13 +59,13 @@ public unsafe class RollingNetworkTests:IDisposable
         }
         finally{KernelRuntime.MemoryFree(products);}
         Assert.Equal(KernelRuntime.RollingNetworkStage.Publish,KernelRuntime.LastRollingNetworkStage);
-        BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body);
+        BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body);NativeSupportIncidence(body);
         foreach(var product in trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product))
             Assert.Contains(trace,t=>t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement&&t.Source==product.Source&&t.Edge==product.Edge
                 &&t.Curve==product.Curve&&t.Generation==product.Generation&&t.First==product.First&&t.Last==product.Last
                 &&t.StartEvent==product.StartEvent&&t.EndEvent==product.EndEvent);
         var text=Transmit(body);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
-        Assert.Equal(0,XtBrepImportTests.Receive(text,out var restored));ShortIntervals(restored);
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var restored));ShortIntervals(restored);NativeSupportIncidence(restored);
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
@@ -231,6 +231,20 @@ public unsafe class RollingNetworkTests:IDisposable
         var a=KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face;var b=KernelRuntime.Loops[KernelRuntime.Fins[other].Loop].Face;
         return KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(KernelRuntime.Faces[a].SurfTag)].Class==type
             &&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(KernelRuntime.Faces[b].SurfTag)].Class==type;
+    }
+
+    private static void NativeSupportIncidence(int body)
+    {
+        var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;
+        for(var e=0;e<KernelRuntime.Bodies[slot].EdgeCountBody;e++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var record=KernelRuntime.Edges[edge];var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)];
+            if(carrier.Class!=CurveClass.ICurve)continue;
+            var data=KernelRuntime.ICurveDataPool[carrier.DataIndex];var fin=record.FirstFinEdge;var other=KernelRuntime.Fins[fin].Other;
+            var a=KernelRuntime.Faces[KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face].SurfTag;
+            var b=KernelRuntime.Faces[KernelRuntime.Loops[KernelRuntime.Fins[other].Loop].Face].SurfTag;
+            Assert.True(data.Surface0Tag==a&&data.Surface1Tag==b||data.Surface0Tag==b&&data.Surface1Tag==a);
+        }
     }
     private static void CubeSelection(int body,Span<EdgeTag> selected)
     {

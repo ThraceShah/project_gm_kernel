@@ -227,7 +227,7 @@ internal static unsafe partial class KernelRuntime
                         var coedge=model.Coedges[loop.FirstCoedge+(reverse?loop.CoedgeCount-1-k:k)];var e=edgeMap[coedge.Edge];
                         if(e<0)
                         {
-                            var source=model.Edges[coedge.Edge];var error=TryCloneEntityCore(source.Curve,out var curve);if(error!=0)return error;
+                            var source=model.Edges[coedge.Edge];
                             var start=-1;var end=-1;
                             for(var side=0;side<2;side++)
                             {
@@ -240,7 +240,7 @@ internal static unsafe partial class KernelRuntime
                                 }
                                 if(side==0)start=mapped;else end=mapped;
                             }
-                            e=ne;edgeMap[coedge.Edge]=ne;edges[ne++]=new(){Curve=curve,Start=source.Start,End=source.End,StartVertex=start,EndVertex=end};
+                            e=ne;edgeMap[coedge.Edge]=ne;edges[ne++]=new(){Curve=source.Curve,Start=source.Start,End=source.End,StartVertex=start,EndVertex=end};
                         }
                         var sourceEdge=model.Edges[coedge.Edge];
                         for(var side=0;side<2;side++)
@@ -258,8 +258,9 @@ internal static unsafe partial class KernelRuntime
                 if(mapped>=0&&original>=0&&(vertexOwners[mapped]==-2||vertexOwners[mapped]!=Vertices[original].Body)&&model.VertexMergeCandidates[v]!=0)
                     vertexPrecisions[mapped]=Math.Max(vertexPrecisions[mapped],RegularPlanarImprintMinimumPrecision);
             }
-            Span<EdgeSlot> builtEdges=edgeProducts.IsEmpty?default:stackalloc EdgeSlot[ne];
-            var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities,builtEdges);if(built!=0)return built;
+            Span<EdgeSlot> builtEdges=edgeProducts.IsEmpty&&TraceFiniteBoundary==null?default:stackalloc EdgeSlot[ne];
+            var built=BuildModelingBrep(points[..np],edges[..ne],coedges[..nc],loops[..nl],faces,true,out body,products,cavities,builtEdges,
+                cloneBoundaryCurves:true);if(built!=0)return built;
             if(!edgeProducts.IsEmpty)
                 for(var i=0;i<edgeMap.Length;i++)edgeProducts[i]=edgeMap[i]<0?-1:builtEdges[edgeMap[i]];
             if(TraceFiniteBoundary!=null)
@@ -272,7 +273,7 @@ internal static unsafe partial class KernelRuntime
                         foreach(var coedge in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
                         {
                             var use=FiniteBoundaryUse.Create(face.Surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,model.Sources[index],faceSense:face.Sense);
-                            TraceBoundary(BoundaryTraceStage.Product,use,index,products[i],edges[edgeMap[coedge.Edge]].Curve);
+                            TraceBoundary(BoundaryTraceStage.Product,use,index,products[i],Edges[builtEdges[edgeMap[coedge.Edge]]].CurveTag);
                         }
                     }
                 }
