@@ -13,6 +13,7 @@ internal static unsafe partial class KernelRuntime
     private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;internal byte SecondIsBoundary;}
     private const byte NativePlaneCertificate=2;
     private const byte LineSurfaceCertificate=3;
+    private const byte LinePlaneCertificate=4;
     private struct RegularBoundaryRoot
     {
         internal CurveTag Curve;
@@ -157,7 +158,7 @@ internal static unsafe partial class KernelRuntime
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
-                            Certified=nativeProof?NativePlaneCertificate:lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
+                            Certified=linePlane?LinePlaneCertificate:nativeProof?NativePlaneCertificate:lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
                             Witness=cached||conicProof||lineProof||linePlane||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
                     }
                 }
@@ -389,7 +390,7 @@ internal static unsafe partial class KernelRuntime
                 }
                 else
                 {
-                    error=LocateCertifiedNativeCut(curve,roots[i],out t,out cutLocators[i],out var handled);
+                    error=LocateCertifiedCut(curve,roots[i],out t,out cutLocators[i],out var handled);
                     if(!handled&&hasSection&&TryFiniteSectionContactEnd(section,sectionPlane,roots[i],out var sectionEnd))
                     {handled=true;t=sectionEnd;cutLocators[i]=new(t);}
                     if(!handled)error=CurveParameteriseVectorCore(curve.Curve,p,&t);

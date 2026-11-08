@@ -134,12 +134,17 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         if(threePlane)
         {
             var certified=new HashSet<(int Event,int Curve)>();
+            var transferredLines=new HashSet<(int Event,int Curve)>();
             var published=new HashSet<(int Event,int Curve)>();
             KernelRuntime.ForbidSpatialBoundaryReuse=guarded;
             var excluded=0;
             KernelRuntime.TraceFiniteBoundary=trace=>
             {
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceStation)certified.Add((trace.StartEvent,trace.Curve));
+                if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator&&trace.Witness!=0&&trace.Curve!=trace.ProductCurve
+                    &&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class==CurveClass.Line
+                    &&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.ProductCurve)].Class==CurveClass.Line)
+                    transferredLines.Add((trace.StartEvent,trace.ProductCurve));
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceOutsideTrim&&trace.Source>=0
                     &&KernelRuntime.Faces[trace.Source].LoopCount>1&&double.IsFinite(trace.First)&&double.IsFinite(trace.Last)&&trace.Last>=trace.First)excluded++;
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product)
@@ -150,9 +155,11 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                 var error=KernelRuntime.BodyBoolean2(target,nt,tools,&options,&tracking,&result);
                 Check(error,$"{fixture} Boolean at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}, curve {KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}");
                 var joined=certified.Where(published.Contains).GroupBy(x=>x.Event).Count(x=>x.Count()==3);
+                var publishedTransfers=transferredLines.Count(published.Contains);
                 Require(joined>0,"a three-plane event must retain all three native stations on published edges");
                 if(holed)Require(excluded>0,"a carrier root inside the planar bore must be excluded by the actual trim");
-                Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded}");
+                if(!holed&&!mixed)Require(publishedTransfers>0,"a transferred source line root must reach an actual published cut edge");
+                Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
             }
             finally{KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;}
         }

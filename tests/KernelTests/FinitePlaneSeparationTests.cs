@@ -53,6 +53,48 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(3,associations);
     }
 
+    [Fact]
+    public void CertifiedLineCutTransferPreservesOrderAndChecksBothCarrierEquations()
+    {
+        var support=Plane(Vector(0,0,1));var cutting=Plane(Vector(0,1,0));
+        var delta=Math.ScaleB(1,-42);
+        var a=Line(Vector(.5,-.25,0),Vector(0,1,0));var b=Line(Vector(.5+delta,-.25,0),Vector(0,1,0));
+        var cut=Line(Vector(1,0,0),Vector(-1,0,0));
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(a,cut,support,cutting,0,1,out var first,out var known,out var inside));
+        Assert.True(known);Assert.True(inside);Assert.Equal(.5,first.Lower);Assert.Equal(.5,first.Upper);
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(b,cut,support,cutting,0,1,out var second,out known,out inside));
+        Assert.True(known);Assert.True(inside);Assert.Equal(.5-delta,second.Lower);Assert.Equal(.5-delta,second.Upper);
+        Assert.True(second.Upper<first.Lower);
+
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(b,cut,support,cutting,.5-delta/2,1,out _,out known,out inside));
+        Assert.True(known);Assert.False(inside);
+
+        var oblique=Line(Vector(0,-.125,0),Vector(.6,.8,0));
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(oblique,cut,support,cutting,0,1,out var rounded,out known,out inside));
+        Assert.True(known);Assert.True(inside);Assert.True(rounded.Lower<rounded.Upper);Assert.InRange(.90625,rounded.Lower,rounded.Upper);
+
+        var displacedSource=Line(Vector(.5,-.25,delta),Vector(0,1,0));
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(displacedSource,cut,support,cutting,0,1,out _,out known,out _));
+        Assert.False(known);
+        foreach(var offset in new[]{Vector(1,0,delta),Vector(1,delta,0)})
+        {
+            var displacedCut=Line(offset,Vector(-1,0,0));
+            Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(a,displacedCut,support,cutting,0,1,out _,out known,out _));
+            Assert.False(known);
+        }
+
+        static SurfTag Plane(KernelVector3 axis)
+        {
+            var p=new PK_PLANE_sf_s();Write(&p.basis_set.axis,axis);p.basis_set.ref_direction.coord[0]=1;
+            SurfTag tag;Assert.Equal(0,KernelRuntime.PlaneCreate(&p,&tag));return tag;
+        }
+        static CurveTag Line(KernelVector3 origin,KernelVector3 axis)
+        {
+            var l=new PK_LINE_sf_s();Write(&l.basis_set.location,origin);Write(&l.basis_set.axis,axis);
+            CurveTag tag;Assert.Equal(0,KernelRuntime.LineCreate(&l,&tag));return tag;
+        }
+    }
+
     [Theory]
     [InlineData(2.5,3,0)] // The exact plane crossing misses the finite side.
     [InlineData(1.5,.5,0)] // The actual curve trim ends before the plane.
