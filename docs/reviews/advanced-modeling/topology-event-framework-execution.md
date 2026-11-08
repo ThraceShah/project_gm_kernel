@@ -6,9 +6,9 @@
 
 恢复时重读原始任务、`docs/reviews/advanced-modeling/topology-event-framework-plan.md`、`docs/reviews/advanced-modeling/topology-event-framework-acceptance.md` 及其 **Shutdown checkpoint**。核对实际 HEAD、分支、工作区、远端和依赖，保留已有修改，不 reset。
 
-本轮文档改动前，主副本在项目的 `main` checkout，工作区干净，HEAD 与远端 `main` 均为 `958a2439bf54548e1be8bfd95f11bd467447ec90`；最近的实现提交为 `e2436d083357f88997591a00b756c1054220f95a`。`intersection-baseline` 是历史对照，停在 detached HEAD `598fac8e079793150bf80f3c8a3dd86c312326b3`，不能在其中实施。以恢复时的实际状态为准。
+关机检查点为 `958a2439bf54548e1be8bfd95f11bd467447ec90`，其实现为 `e2436d083357f88997591a00b756c1054220f95a`。`intersection-baseline` 是历史对照，停在 detached HEAD `598fac8e079793150bf80f3c8a3dd86c312326b3`，不能在其中实施。以本文件末尾的当前恢复检查点及恢复时的实际状态为准。
 
-已核对 .NET SDK `10.0.302`、运行时 `10.0.10`、PKToy `d820719b6d8510d623972ab9d8efc65edbc312f9`，及 `third_party/parasolid/` 下现有的 Linux SDK 库与 schema。既有独立 oracle 日志记录 PK `38.0.150`。最新全量测试因关机主动中止，退出码 `1`，中止前通过 491 项；没有完整总数，不能算通过或视为实现回归。上一份完整结果是 `5f307db` 上的 1817/1817。
+已核对 .NET SDK `10.0.302`、运行时 `10.0.10`、PKToy `d820719b6d8510d623972ab9d8efc65edbc312f9`，及 `third_party/parasolid/` 下现有的 Linux SDK 库与 schema。既有独立 oracle 日志记录 PK `38.0.150`。关机时的全量测试因主动中止退出 `1`，中止前通过 491 项；没有完整总数，不能算通过或视为实现回归。后续已完成的全量结果单独记录。
 
 ## 2. 完成标准
 
@@ -18,7 +18,7 @@
 
 ## 3. 恢复顺序
 
-先按 **Shutdown checkpoint** 的首条测试命令补跑最新实现的全量托管回归，记录实际构建快照、退出码和日志，建立可信基线。默认依次处理：
+每次恢复先核对最新实现是否有完整托管回归；缺失时按当前恢复检查点的命令补跑，记录实际构建快照、退出码和日志。按以下顺序处理尚未解决的工作：
 
 1. **A**：`.997` 近端分割的额外成品分界。
 2. **B**：510 个固定探针的 16 处差异，优先定位自研 row 289 的 `5018`。
@@ -65,7 +65,33 @@
 
 | 问题 | 验收条件 | 当前证据 | 下一项验证或实验 | 状态 |
 | --- | --- | --- | --- | --- |
-| 最新实现全量回归 | 实际快照完成全量运行，结果可追溯 | `2aaaea2`（实现 `e2436d0`）1820/1820，退出 0；`m5-resume-full.log` | 基线已建立；仅在影响范围或总验收要求时重跑 | 通过 |
+| 最新实现全量回归 | 实际快照完成全量运行，结果可追溯 | `2aaaea2`（实现 `e2436d0`）1820/1820，`2c7082c` 1822/1822，均退出 0；`c4a7e09` 聚焦回归 9/9 | 恢复后先对包含两项分类改动的快照跑全量 | 当前快照待全量 |
 | A：`.997` 成品分界 | 守卫开启时严格比较通过，保住 `.003`、`.61` 和两条短 ICurve | 自研和独立原生均发布两个圆角面；两种选边顺序、严格比较、有限几何和两次后续切割通过；保留分界对照通过 | 拓扑证据已建立；原始惯量失败转入 C 继续追踪 | 拓扑通过 |
-| B：固定探针 | 逐项归因并修复目标相关错误，原坐标、基线及阈值不变 | 严格重放：自研 15 行、导入 16 行；自研与原生原体的差异从 11 减到 9，row 289 无 `5018`、row 391 四方一致 | 继续逐项核实剩余边界归属和原生往返差异，保留原探针验收 | 部分修复，未通过 |
-| C：惯量与总验收 | 按原门槛判定；如需替代，等用户裁定；原始失败继续保留 | 默认 transverse 仍有 4 项原始 `inertia.yz` 失败；最近矩阵 96/96 自研构造、44 完整通过、52 仅原始点值失败 | 用已有对照、误差界与官方合同判断判别力，准备错误几何负例；随后重跑总验收 | 未通过 |
+| B：固定探针 | 逐项归因并修复目标相关错误，原坐标、基线及阈值不变 | 严格重放：自研 15 行、导入 16 行；自研与原生原体的差异从 11 减到 9，row 289 无 `5018`、row 391 四方一致 | 先验证 row 339 的有限边界归属假设，再逐项核实其余差异 | 部分修复，未通过 |
+| C：惯量与总验收 | 按原门槛判定；如需替代，等用户裁定；原始失败继续保留 | 默认 transverse 仍有 4 项原始 `inertia.yz` 失败；最近矩阵 96/96 自研构造、44 完整通过、52 仅原始点值失败 | 复用原生等价对照和错误几何负例；若需裁定，先给出可执行条件，保留原失败 | 未通过 |
+
+## 当前恢复检查点
+
+本次文档更新前，主副本 `main` 的 HEAD 和远端 `main` 均为 `c4a7e093e7f3a56cbf9fb6da933fbfa3a596d7ae`，工作区干净。没有运行中的测试或 oracle。此次仅记录恢复准备，不修改实现，不运行大型测试。关机检查点之后已有完整回归；最近一份是 `2c7082c` 的 1822/1822，退出 0，不能当成 `c4a7e09` 的全量结果。
+
+用户执行 `/goal resume` 后，在主副本根目录先运行以下全量回归。记录实际 HEAD；原测试退出码须在清理 testhost 前获取。
+
+```sh
+(
+  record=temp_docs/topology-event-framework/m5-resume-current-full
+  mkdir -p temp_docs/topology-event-framework
+  git rev-parse HEAD > "$record.head"
+  git status --porcelain=v1 > "$record.status"
+  MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests -c Release -m:1 \
+    -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true \
+    --logger 'console;verbosity=normal' > "$record.log" 2>&1
+  result=$?
+  pkill -f '[t]esthost.dll' 2>/dev/null || true
+  printf '%s\n' "$result" > "$record.exit"
+  exit "$result"
+)
+```
+
+`.997` 的额外分界已通过守卫下的严格拓扑验收，row 289 的 `5018` 已消除。恢复后的第一个攻关假设是：**row 339 的平面投影落在有限边的归属域，原三维点超出该边的归属域时，原生不再把它判为面上的点。** 两个真实 PK 接收体都将原坐标判为区域内部、投影点判为边；这还不能证明判定顺序。用同两个保存的 XT，在原法向偏移不变时横向穿过同一有限边的归属边界，对照原生的投影、原坐标归属及自研结果。若原生只在投影离开边的归属域时才返回面，核实真实执行路径及其参数；若两者不对应，保留差异并否定该假设。已有法向扫掠在 `temp_docs/topology-event-framework/m5-probe-339-face-owner-sweep.log`（退出 0）；横向诊断 `InspectSavedFaceOwnerLaterally.cs` 因局部变量重名未编译（`m5-probe-339-face-owner-lateral.log`，退出 1），恢复后先修复诊断脚本，不能引用它作为行为证据。
+
+惯量的独立错误几何负例已保存在 `temp_docs/topology-event-framework/m5-mass-wrong-size-finite-control-final.log`（退出 0）：对同一个真实 PK 体独立施加比例 `1+2^-22`，严格比较拒绝；独立有限域积分也检测到约 `1.192e-6` 的归一化差异。该结果仅用于评估判别力，原惯量门槛和原失败均保留。

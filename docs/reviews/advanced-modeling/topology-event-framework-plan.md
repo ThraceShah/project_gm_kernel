@@ -17,7 +17,7 @@
 5. M4: self-construct the heterogeneous short-edge fillet, then cut, copy/delete source, reload and model. Verify independent PK, geometry and preconstruction transforms and parameter variants.
 6. M5: regressions, immutable 510-probe replay, capability updates, commit and push verified increments.
 
-After an explicit goal resume, follow the recovery order, research rules and issue table in `docs/reviews/advanced-modeling/topology-event-framework-execution.md`. The original M0–M5 gates remain in force.
+After an explicit goal resume, follow the recovery order, research rules and issue table in `docs/reviews/advanced-modeling/topology-event-framework-execution.md`. Use its **当前恢复检查点** for the exact full regression command and first remaining probe hypothesis; the earlier Shutdown checkpoint records the historical baseline. The original M0–M5 gates remain in force.
 
 The current results and remaining gates are maintained in `docs/reviews/advanced-modeling/topology-event-framework-acceptance.md`. The analytic rolling equations, finite station proofs and persistent chart handling are in `docs/Finite_Analytic_Rolling_Network.md`.
 
