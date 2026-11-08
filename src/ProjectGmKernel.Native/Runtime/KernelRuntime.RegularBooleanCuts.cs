@@ -316,6 +316,31 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
+    internal static int TestFiniteConicPlaneEventIdentities(CurveTag carrier,double first,double last,ReadOnlySpan<SurfTag> planes,
+        Span<BoundaryEventId> ids,out BufferCount associations,bool requireProof)
+    {
+        associations=0;
+        var edge=new ModelingEdge{Curve=carrier,Start=first,End=last};
+        var model=new SheetArrangement{Points=stackalloc KernelVector3[2],OriginalVertices=stackalloc VertexSlot[2],
+            Parameters=stackalloc BoundaryParameter[2],Tolerance=OperationIntersection.DistanceTolerance};
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[2];
+        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[2];
+        Span<double> errors=stackalloc double[2];
+        Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[1];
+        var generation=Curves[GetCurveSlotByTag(carrier)].Header.Generation;
+        for(var i=0;i<planes.Length;i++)
+        {
+            if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(planes[i])],out var plane))return ParasolidConstants.PK_ERROR_bad_parameter;
+            var status=IsolateFiniteExplicitLevelSet(edge,plane,roots,isolation,errors,out var count);
+            if(status!=AlgorithmStatus.Success||count!=1||!AllStrictlyInterior(edge,isolation[..count]))return ParasolidConstants.PK_ERROR_bad_parameter;
+            var root=isolation[0].Root;
+            anchors[0]=new(){Carrier=carrier,Generation=generation,Surface=planes[i],Witness=1,Lower=root.Lower,Upper=root.Upper};
+            var error=model.AddPoint(roots[0].Point,-1,out ids[i],anchors,requireProof);if(error!=0)return error;
+            error=model.AssociateParameter(ids[i],carrier,roots[0].First,root.Lower,root.Upper,planes[i],witness:1);if(error!=0)return error;
+        }
+        associations=model.ParameterCount;return 0;
+    }
+
     internal static int TestFiniteRootWitnessIdentity(CurveTag carrier,SurfTag equation,bool separateOccurrence,out BoundaryEventId first,out BoundaryEventId repeated)
     {
         first=repeated=-1;

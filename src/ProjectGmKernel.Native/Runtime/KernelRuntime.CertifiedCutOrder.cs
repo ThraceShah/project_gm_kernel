@@ -28,8 +28,9 @@ internal static unsafe partial class KernelRuntime
                 &&incoming.Lower==incoming.Upper&&previous.Lower==previous.Upper&&incoming.Lower==previous.Lower;
             var overlap=IntersectStationBounds(incoming,previous).Finite;
             if(!sameSource&&!overlap)continue;
+            var samePoint=overlap&&!sameSource&&!sameEnd&&SameCertifiedLineConicCutRoot(carrier,root,other);
             joint=IntersectStationBounds(joint,previous);
-            if(!sameSource&&!sameEnd||!joint.Finite
+            if(!sameSource&&!sameEnd&&!samePoint||!joint.Finite
                 ||sameSource&&(root.Root.Lower>other.Root.Upper||other.Root.Lower>root.Root.Upper)
                 ||double.IsFinite(existing)&&existing!=rootParameters[i])
                 return UnresolvedBoundaryStation(carrier,-1,parameter,incoming,rootParameters[i],previous);

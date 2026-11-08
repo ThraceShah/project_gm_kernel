@@ -203,7 +203,7 @@ internal static unsafe partial class KernelRuntime
                 }
                 if(proven>=0)
                 {
-                    if(ConflictingBoundaryAnchor(proven,anchors,out _,out _))
+                    if(ConflictingBoundaryAnchor(proven,anchors,out _,out _,out _))
                     {LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;return ParasolidConstants.PK_ERROR_cant_do_intersect;}
                     index=proven;return 0;
                 }
@@ -212,13 +212,13 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<NP;i++)
             {
                 if(original>=0&&OriginalVertices[i]==original){index=i;return 0;}
-                if(original>=0||!(ProfileDistance(Points[i],point)<=Tolerance)||ConflictingBoundaryAnchor(i,anchors,out var same,out var shared))continue;
+                if(original>=0||!(ProfileDistance(Points[i],point)<=Tolerance)||ConflictingBoundaryAnchor(i,anchors,out var same,out var shared,out var certified))continue;
                 if(same)
                 {
                     if(proven>=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     proven=i;continue;
                 }
-                if(requireProof){unresolved|=shared;continue;}
+                if(requireProof||certified){unresolved|=shared;continue;}
                 ambiguous|=index>=0;index=i;
             }
             if(proven>=0){index=proven;return 0;}
@@ -227,9 +227,10 @@ internal static unsafe partial class KernelRuntime
             if(NP==Points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             index=NP;OriginalVertices[NP]=original;if(!VertexPrecisions.IsEmpty)VertexPrecisions[NP]=original>=0?Vertices[original].Tolerance:0;if(!VertexMergeCandidates.IsEmpty)VertexMergeCandidates[NP]=0;Points[NP++]=point;return 0;
         }
-        private bool ConflictingBoundaryAnchor(BoundaryEventId endpoint,scoped ReadOnlySpan<BoundaryParameter> anchors,out bool same,out bool shared)
+        private bool ConflictingBoundaryAnchor(BoundaryEventId endpoint,scoped ReadOnlySpan<BoundaryParameter> anchors,
+            out bool same,out bool shared,out bool certified)
         {
-            same=shared=false;
+            same=shared=certified=false;
             // A disjoint pair of certified native intervals on the same
             // carrier identifies distinct events even when their
             // positions lie inside the spatial candidate radius.
@@ -242,9 +243,15 @@ internal static unsafe partial class KernelRuntime
                 var exact=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower;
                 if(anchor.Witness!=0||known.Witness!=0)
                 {
-                    if(anchor.Witness!=0&&known.Witness!=0&&anchor.SourceOccurrence==known.SourceOccurrence)
-                        same|=anchor.Surface==known.Surface?anchor.Witness==known.Witness
-                            :exact||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface);
+                    if(anchor.Witness!=0&&known.Witness!=0)
+                    {
+                        // Two certified boxes do not become one event by
+                        // spatial fallback, even outside proof-only mode.
+                        certified=true;
+                        if(anchor.SourceOccurrence==known.SourceOccurrence)
+                            same|=anchor.Surface==known.Surface?anchor.Witness==known.Witness
+                                :exact||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface)||SameCertifiedConicPlaneRoot(anchor,known);
+                    }
                     continue;
                 }
                 // Analytic source/plane equations can prove the same native

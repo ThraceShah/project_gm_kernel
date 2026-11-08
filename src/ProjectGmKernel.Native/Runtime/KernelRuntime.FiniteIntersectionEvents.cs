@@ -92,6 +92,91 @@ internal static unsafe partial class KernelRuntime
         return status;
     }
 
+    private static bool SameCertifiedConicPlaneRoot(in BoundaryParameter first,in BoundaryParameter second)
+    {
+        // The caller has checked one common source occurrence and overlapping
+        // isolated roots. Their combined window must exclude another lift.
+        if(!(Math.Max(first.Upper,second.Upper)-Math.Min(first.Lower,second.Lower)<Math.PI))return false;
+        var carrier=GetCurveSlotByTag(first.Carrier);var a=GetSurfaceSlotByTag(first.Surface);var b=GetSurfaceSlotByTag(second.Surface);
+        if(carrier<0||a<0||b<0||Curves[carrier].Class is not (CurveClass.Circle or CurveClass.Ellipse)
+            ||Surfaces[a].Class!=SurfaceClass.Plane||Surfaces[b].Class!=SurfaceClass.Plane
+            ||!TryReadExplicitSpineCurve(Curves[carrier],out var conic)
+            ||!TryPrepareSurface(Surfaces[a],out var p)||!TryPrepareSurface(Surfaces[b],out var q))return false;
+
+        // Write each equation as x*cos(t)+y*sin(t)=h. Cramer's rule gives
+        // the only common phase (c/d,s/d). Prove it is on the unit circle
+        // without dividing or converting the phase to an approximate angle.
+        ConicPlaneCoefficients(conic,p,out var x0,out var y0,out var h0);
+        ConicPlaneCoefficients(conic,q,out var x1,out var y1,out var h1);
+        var d=x0*y1-y0*x1;if(!d.Finite||d.ContainsZero)return false;
+        var c=h0*y1-h1*y0;var s=x0*h1-x1*h0;
+        if(!OnConicPhase(c,s,d))return false;
+
+        // Each transverse sign occurs at most once per plane equation per
+        // turn. Both certified roots must select the sign of the common phase.
+        return SameConicBranch(new(first.Lower,first.Upper),x0,y0,c,s,d)&&SameConicBranch(new(second.Lower,second.Upper),x1,y1,c,s,d);
+    }
+
+    private static bool OnConicPhase(IntervalNumber c,IntervalNumber s,IntervalNumber d)=>(c*c+s*s-d*d).Magnitude==0;
+
+    private static bool SameConicBranch(IntervalNumber root,IntervalNumber x,IntervalNumber y,IntervalNumber c,IntervalNumber s,IntervalNumber d)
+    {
+        IntervalDual.SinCos(new(root,0),out var sin,out var cos);
+        var actual=y*cos.Value-x*sin.Value;var common=(y*c-x*s)/d;
+        return actual.Lower>0&&common.Lower>0||actual.Upper<0&&common.Upper<0;
+    }
+
+    private static void ConicPlaneCoefficients(in ParametricSpineCurve conic,in AnalyticSurface plane,
+        out IntervalNumber x,out IntervalNumber y,out IntervalNumber h)
+    {
+        var normal=new IntervalVector(plane.Axis);
+        x=IntervalVector.Dot(new IntervalVector(conic.First),normal).Value;
+        y=IntervalVector.Dot(new IntervalVector(conic.Second),normal).Value;
+        h=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(conic.Origin),normal).Value;
+    }
+
+    private static bool SameCertifiedLineConicCutRoot(CurveTag cut,in RegularBoundaryRoot first,in RegularBoundaryRoot second)
+    {
+        if(first.Certified!=ExplicitPlaneCertificate||second.Certified!=ExplicitPlaneCertificate||first.Witness==0||second.Witness==0)return false;
+        var target=GetCurveSlotByTag(cut);var a=GetCurveSlotByTag(first.Curve);var b=GetCurveSlotByTag(second.Curve);
+        if(target<0||a<0||b<0||Curves[target].Class!=CurveClass.Line)return false;
+        var aLine=Curves[a].Class==CurveClass.Line;
+        ref readonly var straight=ref (aLine?ref first:ref second);
+        ref readonly var curved=ref (aLine?ref second:ref first);
+        ref readonly var straightRecord=ref Curves[aLine?a:b];
+        ref readonly var curvedRecord=ref Curves[aLine?b:a];
+        var bound=new IntervalNumber(curved.Root.Lower,curved.Root.Upper);
+        var plane=GetSurfaceSlotByTag(curved.CuttingSurface);
+        if(straightRecord.Class!=CurveClass.Line||curvedRecord.Class is not (CurveClass.Circle or CurveClass.Ellipse)
+            ||!double.IsFinite(straight.Root.Lower)||straight.Root.Lower!=straight.Root.Upper||!(bound.Upper-bound.Lower<Math.PI)
+            ||plane<0||Surfaces[plane].Class!=SurfaceClass.Plane||!TryPrepareSurface(Surfaces[plane],out var other)
+            ||!TryReadExplicitSpineCurve(straightRecord,out var line)||!TryReadExplicitSpineCurve(curvedRecord,out var conic))return false;
+
+        // An exact line root yields a point box. Solve the conic's two
+        // coefficient equations in a nonzero minor of its 3D basis, then
+        // verify all three coordinates and the isolated plane-root sign.
+        var point=new IntervalVector(line.Origin)+new IntervalVector(line.First)*straight.Root.Lower;
+        if(IntervalVector.Dot(point-new IntervalVector(other.Origin),new IntervalVector(other.Axis)).Value.Magnitude!=0)return false;
+        var relative=point-new IntervalVector(conic.Origin);var u=new IntervalVector(conic.First);var v=new IntervalVector(conic.Second);
+        var determinant=IntervalVector.Cross(u,v);var cNumerator=IntervalVector.Cross(relative,v);var sNumerator=IntervalVector.Cross(u,relative);
+        for(var axis=0;axis<3;axis++)
+        {
+            var d=Coordinate(determinant,axis);if(!d.Finite||d.ContainsZero)continue;
+            var c=Coordinate(cNumerator,axis);var s=Coordinate(sNumerator,axis);
+            if(!OnConicPhase(c,s,d))return false;
+            var residual=u*c+v*s-relative*d;
+            if(residual.X.Value.Magnitude!=0||residual.Y.Value.Magnitude!=0||residual.Z.Value.Magnitude!=0)return false;
+            ConicPlaneCoefficients(conic,other,out var x,out var y,out _);
+            // The original locators mapped both finite roots to this one
+            // injective target line. Equality of the source roots makes
+            // their target enclosures independent bounds of one station.
+            return SameConicBranch(bound,x,y,c,s,d);
+        }
+        return false;
+
+        static IntervalNumber Coordinate(in IntervalVector value,int axis)=>axis==0?value.X.Value:axis==1?value.Y.Value:value.Z.Value;
+    }
+
     private static int ReadRollingFiniteEvents(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,
         ReadOnlySpan<VertexSlot> vertices,ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingSubdivision> subdivisions,ReadOnlySpan<RollingPointContact> points,
         Span<FiniteCurveSurfaceResult> results,out BufferCount count)

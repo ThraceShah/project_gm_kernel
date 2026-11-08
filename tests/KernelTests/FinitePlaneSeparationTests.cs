@@ -351,6 +351,43 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(false,0,0,true)]
+    [InlineData(true,0,0,true)]
+    [InlineData(false,1,ParasolidConstants.PK_ERROR_cant_do_intersect,false)]
+    [InlineData(true,1,ParasolidConstants.PK_ERROR_cant_do_intersect,false)]
+    [InlineData(false,1<<20,0,false)]
+    [InlineData(true,1<<20,0,false)]
+    public void TwoPlanesShareAConicEventOnlyWithAnExactCommonPhase(bool ellipse,int ulps,int expected,bool shared)
+    {
+        var definition=new PK_ELLIPSE_sf_s{R1=5,R2=2.5};
+        definition.basis_set.axis.coord[2]=1;definition.basis_set.ref_direction.coord[0]=1;
+        CurveTag carrier;
+        if(ellipse)Assert.Equal(0,KernelRuntime.EllipseCreate(&definition,&carrier));
+        else
+        {
+            var circle=new PK_CIRCLE_sf_s{basis_set=definition.basis_set,radius=5};
+            Assert.Equal(0,KernelRuntime.CircleCreate(&circle,&carrier));
+        }
+        var plane=new PK_PLANE_sf_s();plane.basis_set.ref_direction.coord[2]=1;
+        plane.basis_set.axis.coord[0]=1;plane.basis_set.location.coord[0]=3;
+        SurfTag a,b;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&a));
+        plane.basis_set.axis.coord[0]=0;plane.basis_set.location.coord[0]=0;plane.basis_set.axis.coord[1]=1;
+        var y=ellipse?2.0:4.0;plane.basis_set.location.coord[1]=y+ulps*(Math.BitIncrement(y)-y);
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&b));
+        Span<SurfTag> planes=stackalloc SurfTag[2]{a,b};Span<BoundaryEventId> ids=stackalloc BoundaryEventId[2];
+        var turn=ellipse?Math.Tau:0;
+        for(var order=0;order<2;order++)
+        {
+            for(var guard=0;guard<2;guard++)
+            {
+                Assert.Equal(expected,KernelRuntime.TestFiniteConicPlaneEventIdentities(carrier,.8+turn,1+turn,planes,ids,out var certificates,guard!=0));
+                if(expected==0){Assert.Equal(shared,ids[0]==ids[1]);Assert.Equal(2,certificates);}
+            }
+            (planes[0],planes[1])=(planes[1],planes[0]);
+        }
+    }
+
+    [Theory]
     [InlineData(.4995,.5005,1e-10,true,false,0,1)]
     [InlineData(.4995,.5005,.1,true,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]
     [InlineData(.5011,.502,1e-10,true,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]

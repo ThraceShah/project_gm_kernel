@@ -17,7 +17,8 @@ var thirdFaceHole=args.Contains("--three-plane-hole");
 var thirdFaceCylinder=args.Contains("--three-face-cylinder");
 var threePlaneOnly=args.Contains("--three-plane-events")||thirdFaceHole||thirdFaceCylinder;
 var conicCutOnly=args.Contains("--plane-conic-cut");
-var specialized=threePlaneOnly||conicCutOnly;
+var conicCornerOnly=args.Contains("--conic-corner");
+var specialized=threePlaneOnly||conicCutOnly||conicCornerOnly;
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
 Directory.CreateDirectory(output);var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -31,7 +32,7 @@ try
         {
             var failures=0;var count=0;
             foreach(var mode in specialized?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
+            foreach(var fixture in conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
@@ -113,10 +114,11 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var obliqueConic=fixture=="guarded-oblique-conic-cut";
     var tiltedConic=fixture=="guarded-tilted-conic-cut";
     var conicCut=trimmedConic||obliqueConic||tiltedConic||fixture=="guarded-plane-conic-cut";
+    var conicCorner=fixture=="guarded-conic-corner";
     int target;
-    if(threePlane||conicCut)
+    if(threePlane||conicCut||conicCorner)
     {
-        var radius=mixed?5:4;var height=mixed?6:4;
+        var radius=mixed||conicCorner?5:4;var height=mixed?6:4;
         Check(own?KernelRuntime.BodyCreateSolidCyl(radius,height,null,&target):PK_BODY_create_solid_cyl(radius,height,null,&target),"cylindrical target");
     }
     else target=Block(own,offset,0,0,outer,outer,outer,0);
@@ -128,6 +130,13 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         tools[0]=mixed?Block(own,0,-.5,1,12,7,2,0):Block(own,0,0,3,2,2,2,0);
         tools[1]=mixed?Block(own,0,.5,2,14,7,2,0):Block(own,1,1,2.75,2,2,2.5,0);
         if(guarded)(tools[0],tools[1])=(tools[1],tools[0]);
+    }
+    else if(conicCorner)
+    {
+        // The tilted base meets the circular cap z=4 at x=3. Its
+        // y=±4 edges independently locate the same two finite roots.
+        var basis=new PK_AXIS2_sf_t(new(3,0,4),new(.75,0,Math.Sqrt(7)/4),new(0,1,0));
+        tools[0]=BlockWithBasis(own,basis,8,8,4);
     }
     else if(tiltedConic)
     {
@@ -149,12 +158,13 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     if(own)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
-        if(threePlane||conicCut)
+        if(threePlane||conicCut||conicCorner)
         {
             var certified=new HashSet<(int Event,int Curve)>();
             var transferredLines=new HashSet<(int Event,int Curve)>();
             var transferredConics=new HashSet<(int Event,int Curve)>();
             var transferredGenerators=new HashSet<(int Event,int Curve)>();
+            var cornerSources=new Dictionary<(int Event,int Curve),int>();
             var published=new HashSet<(int Event,int Curve)>();
             KernelRuntime.ForbidSpatialBoundaryReuse=guarded;
             var excluded=0;
@@ -165,6 +175,12 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                     &&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.ProductCurve)].Class==CurveClass.Line)
                 {
                     var source=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class;
+                    if(conicCorner)
+                    {
+                        var key=(trace.StartEvent,trace.ProductCurve);
+                        var kind=source==CurveClass.Line?1:source is CurveClass.Circle or CurveClass.Ellipse?2:0;
+                        cornerSources[key]=cornerSources.GetValueOrDefault(key)|kind;
+                    }
                     if(source==CurveClass.Line)transferredLines.Add((trace.StartEvent,trace.ProductCurve));
                     if(source is CurveClass.Circle or CurveClass.Ellipse)
                     {
@@ -195,6 +211,12 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                     Console.WriteLine($"CONIC CUT published_line_transfers={crossings} published_generator_transfers={generators}");
                     Require(crossings==expected,$"expected {expected} cap-curve roots on the published cut lines; found {crossings}");
                     Require(generators==expected,$"expected {expected} cylinder-branch roots on the published generators; found {generators}");
+                }
+                else if(conicCorner)
+                {
+                    var joins=cornerSources.Where(x=>x.Value==3&&published.Contains(x.Key)).Select(x=>x.Key.Event).Distinct().Count();
+                    Require(joins==2,$"expected both line/conic events on published edges; found {joins}");
+                    Console.WriteLine($"CONIC CORNER published_line_and_conic_events={joins}");
                 }
                 else Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
             }
