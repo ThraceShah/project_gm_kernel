@@ -6,7 +6,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish,PatchDomain,SourceAssociations,BoundaryProofs,Subdivision,ProvedEndpointReuse}
+    internal enum RollingNetworkStage:byte{None,Read,Bands,SupportEvents,BandEvents,BoundaryIncidence,Clip,Split,Arrange,Select,Build,Publish,PatchDomain,SourceAssociations,BoundaryProofs,Subdivision,ProvedEndpointReuse,ContinuedSubdivision}
     [ThreadStatic] internal static RollingNetworkStage LastRollingNetworkStage;
     [ThreadStatic] internal static BufferOffset LastRollingFirstFace,LastRollingSecondFace;
     internal struct RollingNetworkTrace
@@ -37,6 +37,7 @@ internal static unsafe partial class KernelRuntime
         internal VertexSlot Vertex;
         internal double Parameter;
         internal double Station,StationLower,StationUpper;
+        internal bool Continued;
     }
 
     private static bool CanBuildAnalyticRollingNetwork(ReadOnlySpan<EdgeSlot> selected)
@@ -137,8 +138,6 @@ internal static unsafe partial class KernelRuntime
             // Reject before editing topology; disjoint components are still
             // processed in the same operation regardless of component count.
             if(count>0&&(++interactions[i]>1||++interactions[j]>1))return ParasolidConstants.PK_ERROR_not_implemented;
-            var sense=RollingInteractionSense(bands,i,j,subdivisions[..subdivisionCount]);
-            foreach(var cut in cuts[..count])SetRollingCurveSense(cut.Curve,sense);
             error=AppendRollingCutFamily(faces.Length+i,faces.Length+j,cuts[..count],false,families,ref familyCount,allCuts,ref curveCount);if(error!=0)return error;
             foreach(var cut in cuts[..count])TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=bands[i].Source,Surface=bands[i].Surface,Other=bands[j].Surface,Curve=cut.Curve,First=cut.First,Last=cut.Last});
         }
@@ -204,7 +203,7 @@ internal static unsafe partial class KernelRuntime
         // material cells are independent of that representational choice.
         foreach(ref readonly var split in subdivisions)
         {
-            if(split.Band!=first&&split.Band!=second)continue;
+            if(split.Continued||split.Band!=first&&split.Band!=second)continue;
             var between=Edges[split.Band==first?b.Source:a.Source].PendingBlendSequence;
             if(Edges[split.After].PendingBlendSequence<between&&between<Edges[split.Before].PendingBlendSequence)return FlipLocalSense(sense);
         }

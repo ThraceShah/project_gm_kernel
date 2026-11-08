@@ -82,7 +82,8 @@ internal static unsafe partial class KernelRuntime
         if(!model.VertexPrecisions.IsEmpty)model.VertexPrecisions[model.NP]=original>=0?Vertices[original].Tolerance:0;model.NP++;return 0;
     }
 
-    private static int ImprintRollingSubdivisions(BufferCount sourceFaces,ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingSubdivision> subdivisions,
+    private static int ImprintRollingSubdivisions(ReadOnlySpan<FaceSlot> sources,
+        ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RollingSubdivision> subdivisions,
         Span<RegularFaceCut> cuts,ref BufferCount cutCount,Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model)
     {
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
@@ -90,9 +91,21 @@ internal static unsafe partial class KernelRuntime
         Span<BoundaryParameter> anchor=stackalloc BoundaryParameter[1];
         foreach(ref readonly var split in subdivisions)
         {
-            var band=bands[split.Band];var at=split.Station;var face=sourceFaces+split.Band;
+            var band=bands[split.Band];var at=split.Station;var face=sources.Length+split.Band;
             if(!(split.StationLower>band.First&&split.StationUpper<band.Last))return ParasolidConstants.PK_ERROR_cant_do_intersect;
             var record=Surfaces[GetSurfaceSlotByTag(band.Surface)];var elliptical=record.Class==SurfaceClass.BlendSurface;
+            if(split.Continued)
+            {
+                // The incompatible independent cap does not remove any of
+                // the band. Both clipped contacts must cross this station,
+                // and the arrangement still has to prove material closure.
+                if(!RollingContactCoversSubdivision(band,sources.IndexOf(band.FirstSupport),face,split,cuts[..cutCount])
+                    ||!RollingContactCoversSubdivision(band,sources.IndexOf(band.SecondSupport),face,split,cuts[..cutCount]))
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.ContinuedSubdivision,Source=split.Before,Surface=band.Surface,Vertex=split.Vertex,
+                    First=split.StationLower,Last=split.StationUpper,FirstSupport=band.FirstSupport,SecondSupport=band.SecondSupport});
+                continue;
+            }
             CurveTag section;double lower,upper;
             if(elliptical)
             {

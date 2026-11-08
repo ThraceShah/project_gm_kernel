@@ -819,7 +819,8 @@ static unsafe void SelfGeometry(int own,int reference)
             var source=KernelRuntime.Faces[face];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(source.SurfTag)];
             if(surface.Class is not (SurfaceClass.BlendSurface or SurfaceClass.Cylinder))continue;
             var vertices=ManagedFaceVertices(face);
-            var matched=0;var matchedFace=0;double shiftU=0,scaleU=0,shiftV=0,scaleV=0;
+            var matched=0;var matchedFace=0;PK_CURVE_t mappedSpine=0;ParametricSpineCurve mappedConic=default;
+            double shiftU=0,scaleU=0,shiftV=0,scaleV=0;
             for(var n=0;n<count;n++)
             {
                 int candidate,type;Check(PK_FACE_ask_surf(nativeFaces[n],&candidate),"self geometry surface");Check(PK_ENTITY_ask_class(candidate,&type),"self geometry class");
@@ -836,10 +837,6 @@ static unsafe void SelfGeometry(int own,int reference)
                     if(type!=PK_CLASS_blendsf)continue;var data=KernelRuntime.BlendedEdgeDataPool[surface.DataIndex];var program=KernelRuntime.GetNestedBlendProgram(data);var root=program.Surfaces[data.ProgramRoot];
                     var a=program.Spines[root.Spine].Curve;PK_BLENDSF_sf_t definition;Check(PK_BLENDSF_ask(candidate,&definition),"native rolling definition");
                     if(Math.Abs(Math.Abs(definition.radii[0])-Math.Abs(data.Range0))>1e-12||Math.Abs(Math.Abs(definition.radii[1])-Math.Abs(data.Range1))>1e-12)continue;
-                    var ellipse=new PK_ELLIPSE_sf_t();Check(PK_ELLIPSE_ask(definition.spine,&ellipse),"native rolling carrier");
-                    var x=AsVector(ellipse.basis_set.ref_direction);var y=Cross(AsVector(ellipse.basis_set.axis),x);
-                    var b=new ParametricSpineCurve{Kind=CurveClass.Ellipse,Origin=Vector(ellipse.basis_set.location),First=Vector(ScaleVector(x,ellipse.R1)),Second=Vector(ScaleVector(y,ellipse.R2))};
-                    if(!AnalyticSpineContact.TryParameterMap(a,b,1e-10,definition.spine_extent.value[0],definition.spine_extent.value[1],out var phase,out var sign))continue;
                     var own0=new M.PK_CYL_sf_s();var own1=new M.PK_CYL_sf_s();var pk0=new PK_CYL_sf_t();var pk1=new PK_CYL_sf_t();
                     Check(KernelRuntime.CylAsk(data.Surface0Tag,&own0),"first rolling support");Check(KernelRuntime.CylAsk(data.Surface1Tag,&own1),"second rolling support");
                     Check(PK_CYL_ask(definition.geom_1,&pk0),"native first rolling support");Check(PK_CYL_ask(definition.geom_2,&pk1),"native second rolling support");
@@ -847,33 +844,52 @@ static unsafe void SelfGeometry(int own,int reference)
                     var swapped=CylinderMap(*(PK_CYL_sf_t*)&own0,pk1,out _,out _,out _,out _)&&CylinderMap(*(PK_CYL_sf_t*)&own1,pk0,out _,out _,out _,out _);
                     if(!direct&&!swapped)continue;
                     if(!SameFiniteFaceVertices(vertices,nativeFaces[n]))continue;
-                    phase+=Math.Tau*Math.Round((surface.UMin+(surface.UMax-surface.UMin)*.5-phase-sign*(definition.spine_extent.value[0]+definition.spine_extent.value[1])*.5)/Math.Tau);
+                    int spineClass;Check(PK_ENTITY_ask_class(definition.spine,&spineClass),"native rolling carrier class");
+                    double phase,sign=0;var rational=spineClass==PK_CLASS_bcurve;
+                    if(rational)
+                    {
+                        if(!CertifyNativeRollingGauge(definition.spine,a,surface.UMin,surface.UMax,out phase))continue;
+                    }
+                    else
+                    {
+                        if(spineClass!=PK_CLASS_ellipse)continue;
+                        var ellipse=new PK_ELLIPSE_sf_t();Check(PK_ELLIPSE_ask(definition.spine,&ellipse),"native rolling carrier");
+                        var x=AsVector(ellipse.basis_set.ref_direction);var y=Cross(AsVector(ellipse.basis_set.axis),x);
+                        var b=new ParametricSpineCurve{Kind=CurveClass.Ellipse,Origin=Vector(ellipse.basis_set.location),
+                            First=Vector(ScaleVector(x,ellipse.R1)),Second=Vector(ScaleVector(y,ellipse.R2))};
+                        if(!AnalyticSpineContact.TryParameterMap(a,b,1e-10,definition.spine_extent.value[0],definition.spine_extent.value[1],out phase,out sign))continue;
+                        phase+=Math.Tau*Math.Round((surface.UMin+(surface.UMax-surface.UMin)*.5-phase-sign*(definition.spine_extent.value[0]+definition.spine_extent.value[1])*.5)/Math.Tau);
+                    }
                     var box=new PK_UVBOX_t();Check(PK_FACE_find_uvbox(nativeFaces[n],&box),"native rolling finite box");
                     var test=new PK_UV_t();test.param[0]=(box.param[0]+box.param[2])*.5;test.param[1]=.25;
                     Check(PK_SURF_eval(candidate,test,0,0,PK_LOGICAL_false,native),"native rolling chart discriminator");
                     var same=0;double sectionSign=0,sectionShift=0;
                     for(var reverse=0;reverse<2;reverse++)
                     {
-                        var uv=new M.PK_UV_s();uv.param[0]=phase+sign*test.param[0];uv.param[1]=reverse==0?.25:.75;
+                        var uv=new M.PK_UV_s();uv.param[0]=rational?NativeRollingAngleJet(definition.spine,a,phase,test.param[0]).U:phase+sign*test.param[0];
+                        uv.param[1]=reverse==0?.25:.75;
                         Check(KernelRuntime.SurfEval(source.SurfTag,uv,0,0,0,(M.PK_VECTOR_s*)actual),"self rolling chart discriminator");
                         if(Distance(native[0],actual[0])<1e-10){same++;sectionSign=reverse==0?1:-1;sectionShift=reverse;}
                     }
                     Require(same==1,"unique circular section map after complete spine/support certificates");
                     Require(matched==0,"unique rolling support correspondence");matched=candidate;matchedFace=nativeFaces[n];shiftU=phase;scaleU=sign;shiftV=sectionShift;scaleV=sectionSign;
+                    if(rational){mappedSpine=definition.spine;mappedConic=a;}
                 }
             }
             Require(matched!=0,"every curved face has a certified carrier/support correspondence");
             var bounds=new PK_UVBOX_t();Check(PK_FACE_find_uvbox(matchedFace,&bounds),"matched finite UV box");var samples=0;double d0=0,d1=0,d2=0;
             for(var i=1;i<=9;i++)for(var side=0;side<3;side++)
             {
-                var uv=new PK_UV_t();uv.param[0]=bounds.param[0]+(bounds.param[2]-bounds.param[0])*i/10;uv.param[1]=bounds.param[1]+(bounds.param[3]-bounds.param[1])*(.1+side*.4);
-                var ownUv=new M.PK_UV_s();ownUv.param[0]=shiftU+scaleU*uv.param[0];ownUv.param[1]=shiftV+scaleV*uv.param[1];
+                var uv=new PK_UV_t();uv.param[0]=bounds.param[0]+(bounds.param[2]-bounds.param[0])*(mappedSpine==0?i:i-.25)/10;
+                uv.param[1]=bounds.param[1]+(bounds.param[3]-bounds.param[1])*(.1+side*.4);
+                var gauge=mappedSpine==0?(U:shiftU+scaleU*uv.param[0],D1:scaleU,D2:0d):NativeRollingAngleJet(mappedSpine,mappedConic,shiftU,uv.param[0]);
+                var ownUv=new M.PK_UV_s();ownUv.param[0]=gauge.U;ownUv.param[1]=shiftV+scaleV*uv.param[1];
                 if(surface.Class==SurfaceClass.Cylinder)LiftUv(ref ownUv,surface);
                 var containment=KernelRuntime.SheetSourceContains(face,ownUv,out var inside);Check(containment,"self finite face geometry membership");
                 int on;var contains=new PK_FACE_contains_vectors_o_t{n_uvs=1,uvs=&uv};Check(PK_FACE_contains_vectors(matchedFace,&contains,&on),"native finite face membership");
                 Require(inside==(on!=0),"finite face memberships agree under the certified map");if(!inside)continue;
                 Check(PK_SURF_eval(matched,uv,2,2,PK_LOGICAL_false,native),"native mapped geometry jet");Check(KernelRuntime.SurfEval(source.SurfTag,ownUv,2,2,0,(M.PK_VECTOR_s*)actual),"self mapped geometry jet");samples++;
-                d0=Math.Max(d0,Distance(native[0],actual[0]));d1=Math.Max(d1,Math.Max(Distance(native[1],ScaleVector(actual[1],scaleU)),Distance(native[3],ScaleVector(actual[3],scaleV))));
+                d0=Math.Max(d0,Distance(native[0],actual[0]));d1=Math.Max(d1,Math.Max(Distance(native[1],ScaleVector(actual[1],gauge.D1)),Distance(native[3],ScaleVector(actual[3],scaleV))));
                 if(side!=1)continue;
                 const double h=1e-4;
                 for(var axis=0;axis<2;axis++)
@@ -884,19 +900,61 @@ static unsafe void SelfGeometry(int own,int reference)
                     for(var derivative=0;derivative<2;derivative++)for(var d=0;d<3;d++)
                     {
                         var index=derivative==0?1:2;var target=axis==0?(derivative==0?2:4):(derivative==0?4:6);
-                        var chain=axis==0?(derivative==0?scaleU*scaleU:scaleU*scaleV):(derivative==0?scaleU*scaleV:scaleV*scaleV);
+                        var chain=axis==0?(derivative==0?gauge.D1*gauge.D1:gauge.D1*scaleV):(derivative==0?gauge.D1*scaleV:scaleV*scaleV);
                         var expected=(4*(finePlus[index].coord[d]-fineMinus[index].coord[d])/h-(plus[index].coord[d]-minus[index].coord[d])/(2*h))/3;
-                        d2=Math.Max(d2,Math.Abs(expected-chain*actual[target].coord[d])/(1+Math.Abs(expected)));
+                        var mapped=chain*actual[target].coord[d]+(axis==0&&derivative==0?gauge.D2*actual[1].coord[d]:0);
+                        d2=Math.Max(d2,Math.Abs(expected-mapped)/(1+Math.Abs(expected)));
                     }
                 }
             }
-            Console.WriteLine($"SELF GEOMETRY face={source.Header.Tag} native_face={matchedFace} type={surface.Class} map_u={shiftU:R}+{scaleU:R}*u map_v={shiftV:R}+{scaleV:R}*v samples={samples} D0={d0:R} D1={d1:R} D2_Richardson={d2:R}");
+            Console.WriteLine($"SELF GEOMETRY face={source.Header.Tag} native_face={matchedFace} type={surface.Class} map_u={(mappedSpine==0?$"{shiftU:R}+{scaleU:R}*u":"certified rational angular gauge")} map_v={shiftV:R}+{scaleV:R}*v samples={samples} D0={d0:R} D1={d1:R} D2_Richardson={d2:R}");
             Require(samples>0&&d0<1e-10&&d1<1e-8&&d2<1e-6,"self finite geometry under certified parameter map");checkedFaces++;
         }
         Require(checkedFaces>0,"self curved geometry was checked");
         Console.WriteLine($"TIME SELF GEOMETRY ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
     }
     finally{if(checkpoint)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);Free(false,nativeFaces);}
+}
+// Certify the complete finite native spline before evaluating its angular map.
+static unsafe bool CertifyNativeRollingGauge(PK_CURVE_t spine,in ParametricSpineCurve conic,double first,double last,out double anchor)
+{
+    anchor=0;var form=new PK_BCURVE_sf_t();Check(PK_BCURVE_ask(spine,&form),"native rational rolling carrier");
+    try
+    {
+        if(form.is_rational==PK_LOGICAL_false||form.is_periodic!=PK_LOGICAL_false||form.vertex_dim!=4
+            ||form.degree is <1 or >3||form.n_vertices>RationalConicGauge.MaxSpans*3+1)return false;
+        Span<double> knots=stackalloc double[form.n_vertices+form.degree+1];var count=0;
+        for(var k=0;k<form.n_knots;k++)for(var j=0;j<form.knot_mult[k];j++)
+        {if(count==knots.Length)return false;knots[count++]=form.knot[k];}
+        if(count!=knots.Length)return false;
+        var view=new BCurveView(form.degree,4,true,false,new(form.vertex,4*form.n_vertices),knots);
+        Span<RationalConicArc> arcs=stackalloc RationalConicArc[RationalConicGauge.MaxSpans];
+        Span<IntervalNumber> x=stackalloc IntervalNumber[RationalConicGauge.MaxSpans*RationalConicGauge.Stride];
+        Span<IntervalNumber> y=stackalloc IntervalNumber[x.Length];
+        if(!RationalConicGauge.Certify(view,conic,1e-10,arcs,x,y,out var spans)
+            ||!RationalConicGauge.NativeAngleLift(arcs[..spans],first,last,out var lift))return false;
+        anchor=(arcs[0].FirstAngle.Midpoint+arcs[spans-1].LastAngle.Midpoint)*.5-lift.Midpoint;
+        return true;
+    }
+    finally{Free(false,form.vertex);Free(false,form.knot);Free(false,form.knot_mult);}
+}
+
+static unsafe (double U,double D1,double D2) NativeRollingAngleJet(PK_CURVE_t native,in ParametricSpineCurve conic,double anchor,double t)
+{
+    PK_VECTOR_t* jet=stackalloc PK_VECTOR_t[3];Check(PK_CURVE_eval(native,t,2,jet),"native rolling angular jet");
+    var a=EvaluationMath.Dot(conic.First,conic.First);var b=EvaluationMath.Dot(conic.Second,conic.Second);var c=EvaluationMath.Dot(conic.First,conic.Second);
+    var determinant=a*b-c*c;
+    var p=Coordinates(EvaluationMath.Sub(Vector(jet[0]),conic.Origin),conic,a,b,c,determinant);
+    var d=Coordinates(Vector(jet[1]),conic,a,b,c,determinant);var e=Coordinates(Vector(jet[2]),conic,a,b,c,determinant);
+    var angle=Math.Atan2(p.Y,p.X);angle+=Math.Tau*Math.Round((anchor-angle)/Math.Tau);
+    var squared=p.X*p.X+p.Y*p.Y;var numerator=p.X*d.Y-p.Y*d.X;
+    return (angle,numerator/squared,(p.X*e.Y-p.Y*e.X)/squared-2*numerator*(p.X*d.X+p.Y*d.Y)/(squared*squared));
+
+    static (double X,double Y) Coordinates(in KernelVector3 v,in ParametricSpineCurve k,double a,double b,double c,double determinant)
+    {
+        var x=EvaluationMath.Dot(k.First,v);var y=EvaluationMath.Dot(k.Second,v);
+        return ((b*x-c*y)/determinant,(a*y-c*x)/determinant);
+    }
 }
 static unsafe List<PK_VECTOR_t> ManagedFaceVertices(FaceSlot face)
 {

@@ -128,6 +128,37 @@ public unsafe class RollingNetworkTests:IDisposable
     }
 
     [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void IncompatibleFiniteCapContinuesAcrossAnInteriorSelectedSubdivision(bool reverse)
+    {
+        var body=Seed();Span<EdgeTag> selected=stackalloc EdgeTag[3];Selection(body,selected[..2]);
+        var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(selected[0]).Slot];
+        Assert.Equal(1,edge.HasParameterRange);
+        var t=edge.ParameterStart+.997*(edge.ParameterEnd-edge.ParameterStart);
+        EntityTag vertex;EdgeTag tail;
+        Assert.Equal(0,KernelRuntime.EdgeSplitAtParam(selected[0],t,&vertex,&tail));selected[2]=tail;
+        var occurrence=KernelRuntime.ResolveTagRecord(vertex).Slot;if(reverse)selected.Reverse();Mark(selected);
+        var trace=new List<KernelRuntime.RollingNetworkTrace>();KernelRuntime.TraceRollingNetwork=trace.Add;
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;EntityTag* products;EntityTag* replaced;
+        try
+        {
+            Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,&products,null,&replaced,&fault,&edgeFault,&topolFault));
+            try
+            {
+                Assert.Equal(2,count);var contributors=new ReadOnlySpan<EntityTag>(replaced,count).ToArray();
+                Assert.Contains(selected[1],contributors);
+                var fragment=tail;Assert.Single(contributors,x=>x==fragment||x==edge.Header.Tag);
+            }
+            finally{KernelRuntime.MemoryFree(products);KernelRuntime.MemoryFree(replaced);}
+        }
+        finally{KernelRuntime.TraceRollingNetwork=null;}
+        var witness=Assert.Single(trace,x=>x.Stage==KernelRuntime.RollingNetworkStage.ContinuedSubdivision);
+        Assert.Equal(occurrence,witness.Vertex);Assert.True(witness.Last>witness.First);
+        Assert.DoesNotContain(trace,x=>x.Stage==KernelRuntime.RollingNetworkStage.Subdivision);
+        BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body);NativeSupportIncidence(body);
+    }
+
+    [Theory]
     [InlineData(0)] [InlineData(10)] [InlineData(50)] [InlineData(200)]
     public void NetworkAllocationFailureRestoresPendingIncidenceGenerationsAndGeometry(int budget)
     {

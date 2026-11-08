@@ -100,7 +100,7 @@ internal static unsafe partial class KernelRuntime
         EdgeSlot before=-1,after=-1;var lo=double.NegativeInfinity;var hi=double.PositiveInfinity;
         foreach(ref readonly var split in subdivisions)if(split.Band==band)
         {
-            if(station>=split.StationLower&&station<=split.StationUpper)return -1;
+            if(station>=split.StationLower&&station<=split.StationUpper)return split.Continued?split.Before:-1;
             if(station>split.StationUpper&&split.StationUpper>lo){lo=split.StationUpper;after=split.After;}
             if(station<split.StationLower&&split.StationLower<hi){hi=split.StationLower;before=split.Before;}
         }

@@ -6,7 +6,7 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     private static int BuildRollingArrangement(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,ReadOnlySpan<EdgeSlot> selected,ReadOnlySpan<RollingBandCandidate> bands,
-        ReadOnlySpan<RollingSubdivision> subdivisions,ReadOnlySpan<RollingPointContact> contacts,ReadOnlySpan<RollingCutFamily> families,
+        Span<RollingSubdivision> subdivisions,ReadOnlySpan<RollingPointContact> contacts,ReadOnlySpan<RollingCutFamily> families,
         ReadOnlySpan<SheetCutCurve> curves,Span<LocalBlendProduct> descriptions,Span<FaceSlot> products,out BufferCount made)
     {
         made=0;
@@ -57,11 +57,21 @@ internal static unsafe partial class KernelRuntime
             error=ReadRollingBoundaryAssociations(view,originalEdges[..ne],ref model);if(error!=0)return error;
             LastRollingNetworkStage=RollingNetworkStage.BoundaryProofs;
             error=ReadRollingFiniteEvents(view,originalEdges[..ne],model.OriginalVertices[..model.NP],bands,subdivisions,contacts,certificates,out var certificateCount);if(error!=0)return error;
+            LastRollingNetworkStage=RollingNetworkStage.Subdivision;
+            foreach(ref var split in subdivisions)
+                if(!TryRollingSubdivisionCap(bands[split.Band],split,view,sourceFaces,out split.Continued))
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
             LastRollingNetworkStage=RollingNetworkStage.Clip;
             foreach(var family in families)
             {
                 LastRollingFirstFace=family.FirstFace;LastRollingSecondFace=family.SecondFace;var before=cutCount;
-                error=ClipRegularFacePair(view,family.FirstFace,family.SecondFace,curves.Slice(family.FirstCurve,family.Count),cuts,ref cutCount,owned,ref ownedCount,
+                var familyCurves=curves.Slice(family.FirstCurve,family.Count);
+                if(family.FirstFace>=sourceFaces.Length&&family.SecondFace>=sourceFaces.Length)
+                {
+                    var sense=RollingInteractionSense(bands,family.FirstFace-sourceFaces.Length,family.SecondFace-sourceFaces.Length,subdivisions);
+                    foreach(var cut in familyCurves)SetRollingCurveSense(cut.Curve,sense);
+                }
+                error=ClipRegularFacePair(view,family.FirstFace,family.SecondFace,familyCurves,cuts,ref cutCount,owned,ref ownedCount,
                     ref model,certificates[..certificateCount],sourceFaces.Length);
                 if(error!=0)
                 {
@@ -75,7 +85,7 @@ internal static unsafe partial class KernelRuntime
             if(!subdivisions.IsEmpty)
             {
                 LastRollingNetworkStage=RollingNetworkStage.Subdivision;
-                error=ImprintRollingSubdivisions(sourceFaces.Length,bands,subdivisions,cuts,ref cutCount,owned,ref ownedCount,ref model);if(error!=0)return error;
+                error=ImprintRollingSubdivisions(sourceFaces,bands,subdivisions,cuts,ref cutCount,owned,ref ownedCount,ref model);if(error!=0)return error;
             }
             LastRollingNetworkStage=RollingNetworkStage.Split;
             error=SplitRegularSourceEdges(view,originalEdges[..ne],fragments,owned,ref ownedCount,ref model);if(error!=0)return error;
