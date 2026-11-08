@@ -112,7 +112,7 @@ internal static unsafe partial class KernelRuntime
         joined=true;return 0;
     }
 
-    private static bool FindThreePlaneCutRoot(in RegularBoundaryView input,ReadOnlySpan<RegularFaceCut> cuts,
+    private static bool FindThreePlaneCutRoot(in RegularBoundaryView input,scoped ReadOnlySpan<RegularFaceCut> cuts,
         BufferOffset first,BufferOffset second,BufferOffset third,ref SheetArrangement model,
         out BoundaryParameter anchor,out FiniteCurveSurfaceRoot root,out BoundaryEventId endpoint)
     {

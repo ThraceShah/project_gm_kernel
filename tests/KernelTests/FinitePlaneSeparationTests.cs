@@ -390,6 +390,28 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(0,true)]
+    [InlineData(1.0/(1L<<38),false)]
+    public void DifferentLineSourcesShareACutStationOnlyAtTheSameExactPoint(double offset,bool expected)
+    {
+        var a=new PK_PLANE_sf_s();var b=new PK_PLANE_sf_s();
+        a.basis_set.axis.coord[0]=1;b.basis_set.axis.coord[1]=1;
+        a.basis_set.ref_direction.coord[2]=1;b.basis_set.ref_direction.coord[2]=1;
+        SurfTag first,second;Assert.Equal(0,KernelRuntime.PlaneCreate(&a,&first));Assert.Equal(0,KernelRuntime.PlaneCreate(&b,&second));
+        Span<SurfTag> supports=stackalloc SurfTag[2]{first,second};
+        Span<CurveTag> sources=stackalloc CurveTag[2]{Line(Vector(0,-.25,.5),Vector(0,1,0)),Line(Vector(-1,0,.5+offset),Vector(1,0,0))};
+        var target=Line(default,Vector(0,0,1));
+        Assert.Equal(0,KernelRuntime.TestTwoFiniteLinesOnCommonCut(target,sources,supports,out var joined,out var left,out var right));
+        Assert.Equal(expected,joined);Assert.Equal(.5,left);Assert.Equal(.5+offset,right);
+
+        static CurveTag Line(KernelVector3 origin,KernelVector3 direction)
+        {
+            var definition=new PK_LINE_sf_s();Write(&definition.basis_set.location,origin);Write(&definition.basis_set.axis,direction);
+            CurveTag tag;Assert.Equal(0,KernelRuntime.LineCreate(&definition,&tag));return tag;
+        }
+    }
+
+    [Theory]
     [InlineData(.4995,.5005,1e-10,true,false,0,1)]
     [InlineData(.4995,.5005,.1,true,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]
     [InlineData(.5011,.502,1e-10,true,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]

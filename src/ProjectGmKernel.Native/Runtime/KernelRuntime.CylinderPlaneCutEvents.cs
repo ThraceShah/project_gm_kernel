@@ -18,7 +18,7 @@ internal static unsafe partial class KernelRuntime
             ||a==SurfaceClass.Plane&&b==SurfaceClass.Plane&&c==SurfaceClass.Cylinder;
     }
 
-    private static int JoinCylinderPlaneCutRoots(in RegularBoundaryView input,BufferOffset third,ReadOnlySpan<RegularFaceCut> cuts,
+    private static int JoinCylinderPlaneCutRoots(in RegularBoundaryView input,BufferOffset third,scoped ReadOnlySpan<RegularFaceCut> cuts,
         BufferOffset current,in OperationIntersectionPoint source,in ScalarRootIsolation sourceProof,double sourceError,
         ref SheetArrangement model,out bool joined,out AlgorithmStatus proofStatus)
     {

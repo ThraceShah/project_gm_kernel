@@ -135,7 +135,7 @@ internal static unsafe partial class KernelRuntime
         h=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(conic.Origin),normal).Value;
     }
 
-    private static bool SameCertifiedLineConicCutRoot(CurveTag cut,in RegularBoundaryRoot first,in RegularBoundaryRoot second)
+    private static bool SameCertifiedExplicitCutRoot(CurveTag cut,in RegularBoundaryRoot first,in RegularBoundaryRoot second)
     {
         if(first.Certified!=ExplicitPlaneCertificate||second.Certified!=ExplicitPlaneCertificate||first.Witness==0||second.Witness==0)return false;
         var target=GetCurveSlotByTag(cut);var a=GetCurveSlotByTag(first.Curve);var b=GetCurveSlotByTag(second.Curve);
@@ -145,17 +145,24 @@ internal static unsafe partial class KernelRuntime
         ref readonly var curved=ref (aLine?ref second:ref first);
         ref readonly var straightRecord=ref Curves[aLine?a:b];
         ref readonly var curvedRecord=ref Curves[aLine?b:a];
+        if(!TrySingleLineRootPoint(straightRecord,straight.Root,out var point))return false;
+        // Both original locators map to the same injective finite line.
+        // Exact spatial equality lets both native intervals describe one
+        // station without merging either original edge occurrence.
+        if(curvedRecord.Class==CurveClass.Line)
+        {
+            if(!TrySingleLineRootPoint(curvedRecord,curved.Root,out var otherPoint))return false;
+            return ZeroVector(point-otherPoint);
+        }
         var bound=new IntervalNumber(curved.Root.Lower,curved.Root.Upper);
         var plane=GetSurfaceSlotByTag(curved.CuttingSurface);
-        if(straightRecord.Class!=CurveClass.Line||curvedRecord.Class is not (CurveClass.Circle or CurveClass.Ellipse)
-            ||!double.IsFinite(straight.Root.Lower)||straight.Root.Lower!=straight.Root.Upper||!(bound.Upper-bound.Lower<Math.PI)
+        if(curvedRecord.Class is not (CurveClass.Circle or CurveClass.Ellipse)||!(bound.Upper-bound.Lower<Math.PI)
             ||plane<0||Surfaces[plane].Class!=SurfaceClass.Plane||!TryPrepareSurface(Surfaces[plane],out var other)
-            ||!TryReadExplicitSpineCurve(straightRecord,out var line)||!TryReadExplicitSpineCurve(curvedRecord,out var conic))return false;
+            ||!TryReadExplicitSpineCurve(curvedRecord,out var conic))return false;
 
         // An exact line root yields a point box. Solve the conic's two
         // coefficient equations in a nonzero minor of its 3D basis, then
         // verify all three coordinates and the isolated plane-root sign.
-        var point=new IntervalVector(line.Origin)+new IntervalVector(line.First)*straight.Root.Lower;
         if(IntervalVector.Dot(point-new IntervalVector(other.Origin),new IntervalVector(other.Axis)).Value.Magnitude!=0)return false;
         var relative=point-new IntervalVector(conic.Origin);var u=new IntervalVector(conic.First);var v=new IntervalVector(conic.Second);
         var determinant=IntervalVector.Cross(u,v);var cNumerator=IntervalVector.Cross(relative,v);var sNumerator=IntervalVector.Cross(u,relative);
@@ -164,8 +171,7 @@ internal static unsafe partial class KernelRuntime
             var d=Coordinate(determinant,axis);if(!d.Finite||d.ContainsZero)continue;
             var c=Coordinate(cNumerator,axis);var s=Coordinate(sNumerator,axis);
             if(!OnConicPhase(c,s,d))return false;
-            var residual=u*c+v*s-relative*d;
-            if(residual.X.Value.Magnitude!=0||residual.Y.Value.Magnitude!=0||residual.Z.Value.Magnitude!=0)return false;
+            if(!ZeroVector(u*c+v*s-relative*d))return false;
             ConicPlaneCoefficients(conic,other,out var x,out var y,out _);
             // The original locators mapped both finite roots to this one
             // injective target line. Equality of the source roots makes
@@ -175,6 +181,14 @@ internal static unsafe partial class KernelRuntime
         return false;
 
         static IntervalNumber Coordinate(in IntervalVector value,int axis)=>axis==0?value.X.Value:axis==1?value.Y.Value:value.Z.Value;
+        static bool ZeroVector(in IntervalVector value)=>value.X.Value.Magnitude==0&&value.Y.Value.Magnitude==0&&value.Z.Value.Magnitude==0;
+        static bool TrySingleLineRootPoint(in CurveRecord record,in FiniteCurveSurfaceRoot root,out IntervalVector point)
+        {
+            point=default;
+            if(record.Class!=CurveClass.Line||!double.IsFinite(root.Lower)||root.Lower!=root.Upper||!TryReadExplicitSpineCurve(record,out var line))return false;
+            point=new IntervalVector(line.Origin)+new IntervalVector(line.First)*root.Lower;
+            return point.Finite;
+        }
     }
 
     private static int ReadRollingFiniteEvents(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,

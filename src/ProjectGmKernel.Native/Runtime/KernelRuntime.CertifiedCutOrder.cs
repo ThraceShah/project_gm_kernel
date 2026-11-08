@@ -28,7 +28,7 @@ internal static unsafe partial class KernelRuntime
                 &&incoming.Lower==incoming.Upper&&previous.Lower==previous.Upper&&incoming.Lower==previous.Lower;
             var overlap=IntersectStationBounds(incoming,previous).Finite;
             if(!sameSource&&!overlap)continue;
-            var samePoint=overlap&&!sameSource&&!sameEnd&&SameCertifiedLineConicCutRoot(carrier,root,other);
+            var samePoint=overlap&&!sameSource&&!sameEnd&&SameCertifiedExplicitCutRoot(carrier,root,other);
             joint=IntersectStationBounds(joint,previous);
             if(!sameSource&&!sameEnd&&!samePoint||!joint.Finite
                 ||sameSource&&(root.Root.Lower>other.Root.Upper||other.Root.Lower>root.Root.Upper)
@@ -73,6 +73,30 @@ internal static unsafe partial class KernelRuntime
         Span<IntervalNumber> locators=stackalloc IntervalNumber[2]{new(.5),exactTarget?new(.5):new(.49,.51)};
         Span<double> stations=stackalloc double[1]{.5};
         return ReconcileCertifiedCutRoot(3,1,roots,parameters,locators,stations,out joined);
+    }
+
+    internal static int TestTwoFiniteLinesOnCommonCut(CurveTag target,ReadOnlySpan<CurveTag> sources,
+        ReadOnlySpan<SurfTag> supports,out bool joined,out double first,out double second)
+    {
+        joined=false;first=second=0;
+        var cut=new SheetCutCurve{Curve=target,First=-4,Last=4};
+        Span<RegularBoundaryRoot> roots=stackalloc RegularBoundaryRoot[2];
+        Span<double> parameters=stackalloc double[2];
+        Span<IntervalNumber> locators=stackalloc IntervalNumber[2];
+        for(var i=0;i<2;i++)
+        {
+            var edge=new ModelingEdge{Curve=sources[i],Start=-4,End=4};
+            if(!TryFiniteLinePlaneEvent(edge,i,supports[1-i],out var result)||result.Count!=1)
+                return ParasolidConstants.PK_ERROR_bad_parameter;
+            roots[i]=new(){Curve=sources[i],ContactSurface=supports[i],CuttingSurface=supports[1-i],InputEdge=i,
+                Witness=1+i*IntersectionPointCapacity,Certified=ExplicitPlaneCertificate,Root=result.FirstRoot};
+            var error=LocateCertifiedCut(cut,roots[i],out parameters[i],out locators[i],out var handled);
+            if(error!=0)return error;
+            if(!handled||!locators[i].Finite)return ParasolidConstants.PK_ERROR_bad_parameter;
+        }
+        Span<double> stations=stackalloc double[1]{parameters[0]};
+        var status=ReconcileCertifiedCutRoot(target,1,roots,parameters,locators,stations,out joined);
+        first=parameters[0];second=parameters[1];return status;
     }
 #endif
 }
