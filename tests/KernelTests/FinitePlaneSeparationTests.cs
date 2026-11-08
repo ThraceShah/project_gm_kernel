@@ -98,14 +98,15 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,ambiguousCut);
     }
 
-    [Fact]
-    public void RepeatedDiscoveryOfOneIsolatedRootCanJoinButAnotherBranchCannot()
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void RepeatedDiscoveryOfOneIsolatedRootCanJoinButAnotherBranchOrOccurrenceCannot(bool separateOccurrence)
     {
         var circle=new PK_CIRCLE_sf_s{radius=1};circle.basis_set.axis.coord[2]=1;circle.basis_set.ref_direction.coord[0]=1;
         CurveTag carrier;Assert.Equal(0,KernelRuntime.CircleCreate(&circle,&carrier));
         var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[0]=1;plane.basis_set.ref_direction.coord[1]=1;
         SurfTag equation;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&equation));
-        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.TestFiniteRootWitnessIdentity(carrier,equation,out var first,out var repeated));
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.TestFiniteRootWitnessIdentity(carrier,equation,separateOccurrence,out var first,out var repeated));
         Assert.True(first>=0);Assert.Equal(first,repeated);
     }
 

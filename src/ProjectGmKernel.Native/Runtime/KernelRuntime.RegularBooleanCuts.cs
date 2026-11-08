@@ -107,7 +107,7 @@ internal static unsafe partial class KernelRuntime
             {
                 var inputCoedge=loop.FirstCoedge+k;var inputEdge=input.Coedges[inputCoedge].Edge;var edge=input.Edges[inputEdge];
                 LastSheetPartitionStage=SheetPartitionStage.BoundaryIntersections;LastSheetCurve=edge.Curve;LastSheetParameter=edge.Start;
-                var n=0;var known=false;var cached=false;FiniteCurveSurfaceResult proof=default;
+                var n=0;var known=false;var cached=false;var linePlane=false;FiniteCurveSurfaceResult proof=default;
                 foreach(var certificate in certificates)
                 {
                     if(certificate.InputEdge!=inputEdge||certificate.Surface!=surface||certificate.Curve!=edge.Curve)continue;
@@ -120,7 +120,7 @@ internal static unsafe partial class KernelRuntime
                 }
                 if(!known&&certificates.IsEmpty&&TryFiniteLinePlaneEvent(edge,inputEdge,surface,out proof))
                 {
-                    known=true;n=proof.Count;
+                    known=linePlane=true;n=proof.Count;
                     if(n!=0)roots[0]=new(){Point=proof.FirstRoot.Point,First=proof.FirstRoot.Parameter,Kind=proof.FirstRoot.Kind};
                 }
                 var curveClass=Curves[GetCurveSlotByTag(edge.Curve)].Class;
@@ -156,7 +156,7 @@ internal static unsafe partial class KernelRuntime
                         }
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
                             Certified=nativeProof?NativePlaneCertificate:lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
-                            Witness=cached||conicProof||lineProof?1+inputEdge*IntersectionPointCapacity+r:0};
+                            Witness=cached||conicProof||lineProof||linePlane||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
                     }
                 }
             }
@@ -242,17 +242,18 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
-    internal static int TestFiniteRootWitnessIdentity(CurveTag carrier,SurfTag equation,out BoundaryEventId first,out BoundaryEventId repeated)
+    internal static int TestFiniteRootWitnessIdentity(CurveTag carrier,SurfTag equation,bool separateOccurrence,out BoundaryEventId first,out BoundaryEventId repeated)
     {
         first=repeated=-1;
         var model=new SheetArrangement{Points=stackalloc KernelVector3[3],OriginalVertices=stackalloc VertexSlot[3],
             Parameters=stackalloc BoundaryParameter[3],Tolerance=OperationIntersection.DistanceTolerance};
         Span<BoundaryParameter> anchor=stackalloc BoundaryParameter[1];
-        anchor[0]=new(){Carrier=carrier,Generation=Curves[GetCurveSlotByTag(carrier)].Header.Generation,Surface=equation,Witness=1,Lower=.499999999,Upper=.500000001};
+        anchor[0]=new(){Carrier=carrier,Generation=Curves[GetCurveSlotByTag(carrier)].Header.Generation,Surface=equation,Witness=1,
+            Lower=separateOccurrence?.5:.499999999,Upper=separateOccurrence?.5:.500000001};
         var error=model.AddPoint(default,-1,out first,anchor,requireProof:true);if(error!=0)return error;
         error=model.AssociateParameter(first,carrier,.5,anchor[0].Lower,anchor[0].Upper,equation,anchor[0].Witness);if(error!=0)return error;
         error=model.AddPoint(Vector(1e-10,0,0),-1,out repeated,anchor,requireProof:true);if(error!=0)return error;
-        anchor[0].Witness=2;
+        anchor[0].Witness=separateOccurrence?1+IntersectionPointCapacity:2;
         return model.AddPoint(default,-1,out _,anchor,requireProof:true);
     }
 
@@ -268,9 +269,9 @@ internal static unsafe partial class KernelRuntime
         {
             if(!TryFiniteLinePlaneEvent(edge,0,planes[i],out var result)||result.Count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
             var root=result.FirstRoot;
-            anchor[0]=new(){Carrier=line,Generation=generation,Surface=planes[i],Lower=root.Lower,Upper=root.Upper};
+            anchor[0]=new(){Carrier=line,Generation=generation,Surface=planes[i],Witness=1,Lower=root.Lower,Upper=root.Upper};
             var error=model.AddPoint(root.Point,-1,out ids[i],anchor,requireProof);if(error!=0)return error;
-            error=model.AssociateParameter(ids[i],line,root.Parameter,root.Lower,root.Upper,planes[i]);if(error!=0)return error;
+            error=model.AssociateParameter(ids[i],line,root.Parameter,root.Lower,root.Upper,planes[i],witness:1);if(error!=0)return error;
         }
         associations=model.ParameterCount;return 0;
     }

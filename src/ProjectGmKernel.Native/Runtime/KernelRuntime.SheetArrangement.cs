@@ -182,9 +182,9 @@ internal static unsafe partial class KernelRuntime
                 var exact=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower;
                 if(anchor.Witness!=0||known.Witness!=0)
                 {
-                    if(anchor.Witness!=0&&known.Witness!=0)
+                    if(anchor.Witness!=0&&known.Witness!=0&&(anchor.Witness-1)/IntersectionPointCapacity==(known.Witness-1)/IntersectionPointCapacity)
                         same|=anchor.Surface==known.Surface?anchor.Witness==known.Witness
-                            :exact&&(anchor.Witness-1)/IntersectionPointCapacity==(known.Witness-1)/IntersectionPointCapacity;
+                            :exact||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface);
                     continue;
                 }
                 // Analytic source/plane equations can prove the same native
