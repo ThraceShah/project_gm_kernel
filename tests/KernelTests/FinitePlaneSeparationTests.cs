@@ -173,6 +173,24 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
             KernelRuntime.TestFiniteLinePlaneEventIdentities(carrier,-1,1,planes,ids,out _,requireProof:true));
     }
 
+    [Theory]
+    [InlineData(.4995,.5005,1e-10,true,false,0,1)]
+    [InlineData(.4995,.5005,.1,true,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]
+    [InlineData(.5011,.502,1e-10,true,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]
+    [InlineData(.5011,.502,1e-10,false,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]
+    [InlineData(.4995,.5005,.1,true,true,ParasolidConstants.PK_ERROR_cant_do_intersect,2)]
+    public void RediscoveredRootWitnessCannotIdentifyADifferentEvent(double lower,double upper,double offset,bool requireProof,
+        bool associateOnly,int expected,BufferCount expectedEvents)
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.location.coord[0]=.5;
+        plane.basis_set.axis.coord[0]=1;plane.basis_set.ref_direction.coord[1]=1;
+        SurfTag equation;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&equation));
+        Assert.Equal(expected,KernelRuntime.TestFiniteWitnessRediscovery(carrier,equation,lower,upper,offset,requireProof,associateOnly,out var events));
+        Assert.Equal(expectedEvents,events);
+    }
+
     [Fact]
     public void CoincidentCarrierDoesNotIdentifyDistinctSourceEdgeOccurrences()
     {

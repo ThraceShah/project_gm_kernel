@@ -71,16 +71,17 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<ParameterCount;i++)
             {
                 ref readonly var known=ref Parameters[i];
-                if(known.Event==endpoint&&known.Carrier==curve&&known.Generation==generation)
+                if(known.Carrier!=curve||known.Generation!=generation)continue;
+                if(known.Event!=endpoint)
                 {
-                    if(upper<known.Lower||lower>known.Upper)
-                    {
-                        LastBoundaryParameterConflict=new(){Event=endpoint,Carrier=curve,Previous=known.Parameter,PreviousLower=known.Lower,PreviousUpper=known.Upper,Incoming=parameter,Lower=lower,Upper=upper};
-                        LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=curve;LastSheetParameter=parameter;return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                    }
-                    hasCertificate|=known.Surface!=0;
-                    if(known.Surface==equation&&known.Witness==witness||known.Surface==0)match=i;
+                    if(witness!=0&&known.Witness==witness&&known.Surface==equation)
+                        return UnresolvedBoundaryStation(curve,known.Event,parameter,new(lower,upper),known.Parameter,new(known.Lower,known.Upper));
+                    continue;
                 }
+                if(upper<known.Lower||lower>known.Upper)
+                    return UnresolvedBoundaryStation(curve,endpoint,parameter,new(lower,upper),known.Parameter,new(known.Lower,known.Upper));
+                hasCertificate|=known.Surface!=0;
+                if(known.Surface==equation&&known.Witness==witness||known.Surface==0&&known.Witness==0)match=i;
             }
             if(equation==0&&hasCertificate)return 0;
             if(match>=0)
@@ -167,7 +168,35 @@ internal static unsafe partial class KernelRuntime
             scoped ReadOnlySpan<BoundaryParameter> anchors=default,bool requireProof=false)
         {
             reusedByPosition=false;
-            index=-1;BoundaryEventId proven=-1;var ambiguous=false;var unresolved=false;
+            index=-1;BoundaryEventId proven=-1;
+            // The witness identifies a root on one finite input use of one
+            // equation. Neither a disjoint box nor an unexpectedly far XYZ
+            // can turn a rediscovery of that witness into a second event.
+            if(original<0)
+            {
+                foreach(ref readonly var anchor in anchors)
+                {
+                    if(anchor.Witness==0)continue;
+                    foreach(ref readonly var known in Parameters[..ParameterCount])
+                    {
+                        if(known.Witness!=anchor.Witness||known.Surface!=anchor.Surface
+                            ||known.Carrier!=anchor.Carrier||known.Generation!=anchor.Generation)continue;
+                        var incoming=new IntervalNumber(anchor.Lower,anchor.Upper);
+                        if(known.Upper<anchor.Lower||anchor.Upper<known.Lower||proven>=0&&proven!=known.Event
+                            ||!(ProfileDistance(Points[known.Event],point)<=Tolerance))
+                            return UnresolvedBoundaryStation(anchor.Carrier,known.Event,incoming.Midpoint,incoming,
+                                known.Parameter,new(known.Lower,known.Upper));
+                        proven=known.Event;
+                    }
+                }
+                if(proven>=0)
+                {
+                    if(ConflictingBoundaryAnchor(proven,anchors,out _,out _))
+                    {LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;return ParasolidConstants.PK_ERROR_cant_do_intersect;}
+                    index=proven;return 0;
+                }
+            }
+            var ambiguous=false;var unresolved=false;
             for(var i=0;i<NP;i++)
             {
                 if(original>=0&&OriginalVertices[i]==original){index=i;return 0;}

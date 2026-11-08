@@ -261,6 +261,28 @@ internal static unsafe partial class KernelRuntime
         return model.AddPoint(default,-1,out _,anchor,requireProof:true);
     }
 
+    internal static int TestFiniteWitnessRediscovery(CurveTag carrier,SurfTag equation,double lower,double upper,double offset,
+        bool requireProof,bool associateOnly,out BufferCount events)
+    {
+        events=0;
+        var model=new SheetArrangement{Points=stackalloc KernelVector3[2],OriginalVertices=stackalloc VertexSlot[2],
+            Parameters=stackalloc BoundaryParameter[2],Tolerance=OperationIntersection.DistanceTolerance};
+        var error=model.AddPoint(Vector(.5,0,0),-1,out var original,requireProof:true);if(error!=0)return error;
+        error=model.AssociateParameter(original,carrier,.5,.499,.501,equation,witness:1);if(error!=0)return error;
+        if(associateOnly)
+        {
+            error=model.AddPoint(Vector(.5+offset,0,0),-1,out var other,requireProof:true);if(error!=0)return error;
+            error=model.AssociateParameter(other,carrier,(lower+upper)*.5,lower,upper,equation,witness:1);
+        }
+        else
+        {
+            Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[1]{new(){Carrier=carrier,
+                Generation=Curves[GetCurveSlotByTag(carrier)].Header.Generation,Surface=equation,Witness=1,Lower=lower,Upper=upper}};
+            error=model.AddPoint(Vector(.5+offset,0,0),-1,out _,anchors,requireProof);
+        }
+        events=model.NP;return error;
+    }
+
     internal static int TestFiniteLinePlaneEventIdentities(CurveTag line,double first,double last,ReadOnlySpan<SurfTag> planes,Span<BoundaryEventId> ids,out BufferCount associations,bool requireProof=false)
     {
         associations=0;
