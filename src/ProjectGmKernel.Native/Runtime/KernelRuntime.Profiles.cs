@@ -189,8 +189,13 @@ internal static unsafe partial class KernelRuntime
             // native G1 checks after XT import, despite correct end positions.
             var error = CloneProfileBoundedCurve(segment.Curve,segment.T0,segment.T1,out var clone);
             if (error != 0) return error;
-            var edge = AddProfileEdge(bodySlot, clone, periodicRing ? -1 : vertices[segment.Start],
-                periodicRing ? -1 : vertices[segment.End], segment.T0, segment.T1);
+            var start=segment.Start;var endVertex=segment.End;
+            ref readonly var carrier=ref Curves[GetCurveSlotByTag(clone)];
+            // The finite limits remain in native order; an oriented LINE
+            // returned by SSI can traverse them in reverse.
+            if(carrier.Class==CurveClass.Line&&LocalSenseSign(carrier.Sense)<0)(start,endVertex)=(endVertex,start);
+            var edge = AddProfileEdge(bodySlot, clone, periodicRing ? -1 : vertices[start],
+                periodicRing ? -1 : vertices[endVertex], segment.T0, segment.T1);
             if (edge < 0) return ParasolidConstants.PK_ERROR_memory_full;
             segment.Edge = edge;
             Edges[edge].WireShellTag = Shells[shells[segment.Component]].Header.Tag;

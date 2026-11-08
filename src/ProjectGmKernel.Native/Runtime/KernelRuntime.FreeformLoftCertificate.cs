@@ -154,38 +154,6 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    private static bool ExactProjectionEqual(in KernelVector3 a, in KernelVector3 b, in KernelVector3 normal)
-    {
-        Span<double> expansion = stackalloc double[24]; var length = 0;
-        Span<double> positions = stackalloc double[6] { a.X, a.Y, a.Z, b.X, b.Y, b.Z };
-        Span<double> directions = stackalloc double[3] { normal.X, normal.Y, normal.Z };
-        for (var i = 0; i < positions.Length; i++)
-        {
-            var coefficient = directions[i % 3] * (i < 3 ? 1 : -1);
-            if (coefficient == 0 || positions[i] == 0) continue;
-            var product = positions[i] * coefficient;
-            // Underflow would destroy the error-free product decomposition.
-            if (!double.IsFinite(product) || Math.Abs(product) < 2.2250738585072014e-308) return false;
-            var error = Math.FusedMultiplyAdd(positions[i], coefficient, -product);
-            if (!FreeformGrowExpansion(expansion, ref length, product) || !FreeformGrowExpansion(expansion, ref length, error)) return false;
-        }
-        for (var i = 0; i < length; i++) if (expansion[i] != 0) return false;
-        return true;
-    }
-
-    private static bool FreeformGrowExpansion(Span<double> expansion, ref BufferCount length, double value)
-    {
-        var count = 0; var carry = value;
-        for (var i = 0; i < length; i++)
-        {
-            var term = expansion[i]; var sum = carry + term; if (!double.IsFinite(sum)) return false;
-            var part = sum - carry; var residual = (carry - (sum - part)) + (term - part);
-            if (residual != 0) expansion[count++] = residual; carry = sum;
-        }
-        if (carry != 0 || count == 0) expansion[count++] = carry;
-        length = count; return true;
-    }
-
     private static int FreeformPolygonSectionCurve(EdgeSlot edge, byte forward, out CurveTag curve)
     {
         var a = FreeformEdgeStart(edge, forward); var b = FreeformEdgeStart(edge, (byte)(forward == 0 ? 1 : 0));

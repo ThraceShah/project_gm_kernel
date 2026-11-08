@@ -437,7 +437,10 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<nc;i++)
             {
                 var branch=branches[i];
-                var oriented=analyticFirst&&analyticSecond&&PrepareOrientedPlanarCircle(firstSupport,secondSupport,ref branch);
+                var oriented=analyticFirst&&analyticSecond&&(PrepareOrientedPlanarCircle(firstSupport,secondSupport,ref branch)
+                    ||branch.Class==CurveClass.Line&&branch.Kind==IntersectionCurveKind.Simple
+                    &&(firstSupport.Kind==SurfaceClass.Plane&&secondSupport.Kind==SurfaceClass.Cylinder
+                        ||firstSupport.Kind==SurfaceClass.Cylinder&&secondSupport.Kind==SurfaceClass.Plane));
                 tags[i]=0;error=CreateIntersectionBranch(branch,tags+i);if(error!=0)break;
                 if(oriented)
                 {

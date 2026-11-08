@@ -458,7 +458,6 @@ internal static class OperationIntersection
         }
         if(surface.Kind==SurfaceClass.Cylinder)
         {
-            if(dot!=0&&Math.Abs(dot)<=AngularTolerance)return AlgorithmStatus.NumericalFailure;
             if(Math.Abs(dot)>AngularTolerance)
             {
                 var center=Sub(surface.Origin,Scale(surface.Axis,h/dot));var projected=Sub(surface.Axis,Scale(plane.Axis,dot));
@@ -467,13 +466,7 @@ internal static class OperationIntersection
                 if(Math.Abs(dot)<1-1e-14){branch.Class=CurveClass.Ellipse;branch.Radius=surface.Radius/Math.Abs(dot);}
                 curves[nc++]=branch;return AlgorithmStatus.Success;
             }
-            if(Math.Abs(h)>surface.Radius+DistanceTolerance)return AlgorithmStatus.Success;
-            var basePoint=Sub(surface.Origin,Scale(plane.Axis,h));var side=Unit(Cross(surface.Axis,plane.Axis));
-            var r2=(surface.Radius-h)*(surface.Radius+h);var distance=Math.Sqrt(Math.Max(0,r2));
-            curves[nc++]=Line(Add(basePoint,Scale(side,distance)),surface.Axis);
-            if(distance>DistanceTolerance)curves[nc++]=Line(Sub(basePoint,Scale(side,distance)),surface.Axis);
-            else curves[0].Kind=IntersectionCurveKind.Tangent;
-            return AlgorithmStatus.Success;
+            return AxialCylinderPlane(plane,surface,curves,out nc);
         }
         if(surface.Kind==SurfaceClass.Cone&&Math.Abs(Math.Abs(dot)-1)<=AngularTolerance)
         {
@@ -502,5 +495,52 @@ internal static class OperationIntersection
             }
         }
         return AlgorithmStatus.Unsupported;
+    }
+
+    private static AlgorithmStatus AxialCylinderPlane(in AnalyticSurface plane,in AnalyticSurface cylinder,
+        Span<OperationIntersectionBranch> curves,out BufferCount count)
+    {
+        count=0;
+        if(!ExactProjectionEqual(cylinder.Axis,default,plane.Axis))return AlgorithmStatus.NotConverged;
+        var normal=new IntervalVector(plane.Axis);var origin=new IntervalVector(cylinder.Origin);
+        var x=new IntervalVector(cylinder.X);var y=new IntervalVector(cylinder.Y);
+        var dx=IntervalVector.Dot(x,normal).Value;var dy=IntervalVector.Dot(y,normal).Value;
+        var h=IntervalVector.Dot(origin-new IntervalVector(plane.Origin),normal).Value;
+        var radius=new IntervalNumber(cylinder.Radius);var radial2=dx*dx+dy*dy;
+        // h+r(dx cos(u)+dy sin(u))=0 on the represented cylinder chart.
+        // The line in the (cos(u),sin(u)) disk is empty, tangent or secant.
+        var discriminant=radius*radius*radial2-h*h;
+        if(!radial2.Finite||radial2.Lower<=0||!discriminant.Finite)return AlgorithmStatus.NotConverged;
+        if(discriminant.Upper<0)return AlgorithmStatus.Success;
+        var tangent=discriminant.Magnitude==0;
+        if(!tangent&&discriminant.Lower<=0)return AlgorithmStatus.NotConverged;
+        var height=-h/radius;
+        var split=tangent?new IntervalNumber(0):IntervalDual.Sqrt(new(discriminant,0)).Value/radius;
+        var a=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,split);
+        if(!IsFinite(a))return AlgorithmStatus.NotConverged;
+        if(tangent)
+        {
+            if(curves.IsEmpty)return AlgorithmStatus.OutputTooSmall;
+            curves[count++]=Line(a,cylinder.Axis);curves[0].Kind=IntersectionCurveKind.Tangent;
+            return AlgorithmStatus.Success;
+        }
+        var b=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,-split);
+        if(!IsFinite(b))return AlgorithmStatus.NotConverged;
+        var separation=IntervalVector.Cross(new IntervalVector(a)-new IntervalVector(b),new(cylinder.Axis));
+        if(!ExcludesZero(separation.X.Value)&&!ExcludesZero(separation.Y.Value)&&!ExcludesZero(separation.Z.Value))
+            return AlgorithmStatus.NotConverged;
+        if(curves.Length<2)return AlgorithmStatus.OutputTooSmall;
+        curves[count++]=Line(a,cylinder.Axis);curves[count++]=Line(b,cylinder.Axis);
+        return AlgorithmStatus.Success;
+
+        static bool ExcludesZero(IntervalNumber value)=>value.Finite&&(value.Lower>0||value.Upper<0);
+
+        static KernelVector3 GeneratorAnchor(IntervalVector origin,IntervalVector x,IntervalVector y,
+            IntervalNumber radius,IntervalNumber radial2,IntervalNumber dx,IntervalNumber dy,IntervalNumber height,IntervalNumber split)
+        {
+            var radialX=(height*dx-split*dy)/radial2;var radialY=(height*dy+split*dx)/radial2;
+            var point=origin+(x*radialX+y*radialY)*radius;
+            return Vector(point.X.Value.Midpoint,point.Y.Value.Midpoint,point.Z.Value.Midpoint);
+        }
     }
 }

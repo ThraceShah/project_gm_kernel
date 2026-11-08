@@ -128,6 +128,42 @@ public unsafe class IntersectionOperationTests:IDisposable
         if(points!=0)Assert.Equal(large,result.Points[0].coord[0]);
     }
 
+    [Theory]
+    [InlineData(-1,2)] [InlineData(0,1)] [InlineData(1,0)]
+    public void AxialCylinderPlaneContactPreservesBothProvedGeneratorBranches(int side,int curves)
+    {
+        var radius=Math.ScaleB(1,-10);var station=radius+side*Math.ScaleB(1,-59);
+        var definition=new PK_CYL_sf_s{basis_set=Axis(),radius=radius};SurfTag cylinder;
+        Assert.Equal(0,KernelRuntime.CylCreate(&definition,&cylinder));
+        var plane=Plane(station,0,0,1,0,0,0,1,0);
+        using var result=SS(plane,cylinder);
+        Assert.Equal(0,result.PointCount);Assert.Equal(curves,result.CurveCount);
+        if(curves==1)Assert.Equal(ParasolidConstants.PK_intersect_curve_tangent_c,result.Kinds[0]);
+        if(curves==2)
+        {
+            PK_VECTOR_s first,second;Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[0],0,0,&first));
+            Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[1],0,0,&second));
+            Assert.Equal(station,first.coord[0]);Assert.Equal(station,second.coord[0]);
+            Assert.True(first.coord[1]*second.coord[1]<0&&Math.Abs(first.coord[1]-second.coord[1])<1e-8);
+            Assert.Equal(ParasolidConstants.PK_intersect_curve_simple_c,result.Kinds[0]);
+            Assert.Equal(ParasolidConstants.PK_intersect_curve_simple_c,result.Kinds[1]);
+        }
+    }
+
+    [Fact]
+    public void AxialCylinderPlaneProvesCancellationInAnObliqueAxis()
+    {
+        var diagonal=Math.Sqrt(.5);
+        var definition=new PK_CYL_sf_s{basis_set=Axis(0,0,0,diagonal,diagonal,0,0,0,1),radius=2};SurfTag cylinder;
+        Assert.Equal(0,KernelRuntime.CylCreate(&definition,&cylinder));
+        var plane=Plane(0,0,0,-diagonal,diagonal,0,0,0,1);
+        using var result=SS(cylinder,plane);
+        Assert.Equal(0,result.PointCount);Assert.Equal(2,result.CurveCount);
+        PK_VECTOR_s first,second;Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[0],0,0,&first));
+        Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[1],0,0,&second));
+        Near(2,first.coord[2]);Near(-2,second.coord[2]);
+    }
+
     [Fact]
     public void PlaneTorus_FindsBothClosedBranchesAndExplicitSeedSelectsOne()
     {

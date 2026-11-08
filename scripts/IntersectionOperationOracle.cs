@@ -45,6 +45,10 @@ try
             SS("sphere-contained-gap",Sphere(0,0,0,2),Sphere(.875,0,0,1));
             SS("sphere-external-gap",Sphere(0,0,0,2),Sphere(4+Math.ScaleB(1,-10),0,0,2));
             SS("sphere-near-regular-circle",Sphere(0,0,0,2),Sphere(4-Math.ScaleB(1,-10),0,0,2));
+            SS("axial-cylinder-two-generators",Plane(.75,0,0,1,0,0,0,1,0),Cylinder(2));
+            SS("axial-cylinder-reversed-generators",Cylinder(2),Plane(.75,0,0,1,0,0,0,1,0));
+            SS("axial-cylinder-proved-gap",Cylinder(2),Plane(2.125,0,0,1,0,0,0,1,0));
+            SS("axial-cylinder-contact-generator",Plane(2,0,0,1,0,0,0,1,0),Cylinder(2));
             SS("oblique-plane-cylinder",Plane(0,0,0,Math.Sqrt(.5),0,Math.Sqrt(.5),0,1,0),Cylinder(2));
             SS("plane-torus-two-circles",xy,torus);SS("plane-torus-tangent-circle",Plane(0,0,1,0,0,1),torus);
             SS("bilinear-nurbs-hyperbola",Bilinear(false),Plane(0,0,.25,0,0,1));
