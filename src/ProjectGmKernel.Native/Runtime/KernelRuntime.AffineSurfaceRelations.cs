@@ -1,3 +1,5 @@
+using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -6,6 +8,51 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    private static bool TryAffineSphereCircle(SurfaceSlot slot,in AnalyticSurface sphere,
+        Span<OperationIntersectionBranch> branches,out BufferCount count)
+    {
+        count=0;
+        if(sphere.Kind!=SurfaceClass.Sphere||!TryAffinePlanarSurface(slot,out var plane,out _,out _))return false;
+        var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[slot].DataIndex]);var poles=view.Vertices;
+        var origin=new IntervalVector(plane.Origin);
+        var u=new IntervalVector(ProfileEuclideanPole(poles,3,(view.UVertexCount-1)*view.VVertexCount))-origin;
+        var v=new IntervalVector(ProfileEuclideanPole(poles,3,view.VVertexCount-1))-origin;
+        var normal=new IntervalVector(plane.Axis);
+        if((IntervalVector.Dot(normal,normal).Value-1).Magnitude!=0
+            ||IntervalVector.Dot(u,normal).Value.Magnitude!=0||IntervalVector.Dot(v,normal).Value.Magnitude!=0)return false;
+        var d=new IntervalVector(sphere.Origin)-origin;
+        var height=IntervalVector.Dot(d,normal).Value;
+        var radius2=IntervalNumber.Square(sphere.Radius)-IntervalNumber.Square(height);
+        if(!radius2.Finite||radius2.Lower<=0)return false;
+        var radius=IntervalDual.Sqrt(new(radius2,0)).Value;
+        if(!radius.Finite)return false;
+
+        // Bound the entire analytic section in the actual finite affine
+        // chart. Coordinates here are normalized Bernstein coordinates,
+        // so even a reparameterized patch must contain this box in [0,1]^2.
+        var span=new IntervalNumber(-radius.Upper,radius.Upper);
+        var footprint=d-normal*height+new IntervalVector(span,span,span);
+        var uu=IntervalVector.Dot(u,u).Value;var uv=IntervalVector.Dot(u,v).Value;var vv=IntervalVector.Dot(v,v).Value;
+        var determinant=uu*vv-uv*uv;if(!determinant.Finite||determinant.Lower<=0)return false;
+        var a=IntervalVector.Dot(footprint,u).Value;var b=IntervalVector.Dot(footprint,v).Value;
+        if(!Inside((a*vv-b*uv)/determinant)||!Inside((b*uu-a*uv)/determinant))return false;
+        Span<KernelVector3> isolated=stackalloc KernelVector3[1];
+        if(OperationIntersection.Surfaces(plane,sphere,branches,out var found,isolated,out var points)!=AlgorithmStatus.Success
+            ||found!=1||points!=0||branches[0].Class!=CurveClass.Circle||branches[0].Kind!=IntersectionCurveKind.Simple)return false;
+        count=found;return true;
+
+        static bool Inside(IntervalNumber range)=>range.Finite&&range.Lower>0&&range.Upper<1;
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static bool TestAffineSphereCircle(SurfTag patch,SurfTag sphere)
+    {
+        Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[1];
+        return TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(sphere)],out var round)
+            &&TryAffineSphereCircle(GetSurfaceSlotByTag(patch),round,branches,out _);
+    }
+#endif
+
     private static bool BranchesInsideAffineSurface(SurfaceSlot slot,ReadOnlySpan<OperationIntersectionBranch> branches)
     {
         if(!TryAffinePlanarSurface(slot,out var plane,out var du,out var dv))return false;

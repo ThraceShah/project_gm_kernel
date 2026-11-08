@@ -77,8 +77,10 @@ try
             SS("general-disjoint-patches",GeneralPatch(3),GeneralPatch(2));
             SS("general-cross-span-closed-loop",GeneralPatch(5),Plane(0,0,0,0,0,1));
             SS("general-convex-isolated-plane-contact",GeneralPatch(0),Plane(0,0,-.0625,0,0,1));
-            SS("general-nurbs-sphere",GeneralPatch(2),Sphere(.5,.5,.1,.3));
-            SS("general-nurbs-sphere-equator",GeneralPatch(2),Sphere(.5,.5,0,.3));
+            SS("general-nurbs-sphere",GeneralPatch(2),Sphere(.5,.5,.1,.3),circleDirection:true);
+            SS("general-nurbs-sphere-equator",GeneralPatch(2),Sphere(.5,.5,0,.3),circleDirection:true);
+            SS("sphere-affine-patch-directed-circle",Sphere(.5,.5,.1,.3),GeneralPatch(2),circleDirection:true);
+            SS("affine-patch-finite-sphere-arc",GeneralPatch(2,.625),Sphere(.5,.5,.1,.3));
             SS("general-nurbs-cylinder",GeneralPatch(0),Cylinder(.5));
             SS("general-nurbs-cone",GeneralPatch(0),Cone(.5,.3));
             SS("general-nurbs-torus",GeneralPatch(2),Torus(.6,.2));
@@ -581,14 +583,14 @@ static unsafe GeometryPair StraightBCurve()
         form=M.ParasolidConstants.PK_BCURVE_form_arbitrary_c,knot_type=M.ParasolidConstants.PK_knot_bezier_ends_c,self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c};
     int m=0,p=0;Check(KernelRuntime.BCurveCreate(&sf,&m),"self straight B-curve");Check(PK_BCURVE_create((PK_BCURVE_sf_t*)&sf,&p),"PK straight B-curve");return new(m,p);
 }
-static unsafe GeometryPair GeneralPatch(int kind)
+static unsafe GeometryPair GeneralPatch(int kind,double width=1)
 {
     var rational=kind==4;var dim=rational?4:3;double* poles=stackalloc double[36];double* z=stackalloc double[3]{.25,-.25,.25};
     var nu=kind==5?4:3;double* xs=stackalloc double[4]{0,.25,.75,1};double* zs=stackalloc double[4]{.25,0,0,.25};
     for(var u=0;u<nu;u++)for(var v=0;v<3;v++)
     {
         var at=(u*3+v)*dim;var w=rational?1+.2*u+.3*v:1;
-        poles[at]=(kind==5?xs[u]:u*.5)*w;poles[at+1]=v*.5*w;poles[at+2]=(kind==1?.08*u*.5*v*.5:kind==2?0:(kind==5?zs[u]:z[u])+z[v]-.0625+(kind==3?10:0))*w;if(rational)poles[at+3]=w;
+        poles[at]=(kind==5?xs[u]:u*.5)*w*width;poles[at+1]=v*.5*w;poles[at+2]=(kind==1?.08*u*.5*v*.5:kind==2?0:(kind==5?zs[u]:z[u])+z[v]-.0625+(kind==3?10:0))*w;if(rational)poles[at+3]=w;
     }
     double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2]{3,3};
     double* uk=stackalloc double[3]{0,.5,1};int* um=stackalloc int[3]{3,1,3};

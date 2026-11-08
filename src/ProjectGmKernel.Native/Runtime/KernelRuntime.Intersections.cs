@@ -431,8 +431,8 @@ internal static unsafe partial class KernelRuntime
         else
         {
             for(var i=0;i<np;i++)WriteVector(vectors+i,isolated[i]);
-            var analyticFirst=TryPrepareSurface(Surfaces[sa],out var firstSupport);
-            var analyticSecond=TryPrepareSurface(Surfaces[sb],out var secondSupport);
+            var analyticFirst=TryPrepareSurface(Surfaces[sa],out var firstSupport)||TryAffinePlanarSurface(sa,out firstSupport,out _,out _);
+            var analyticSecond=TryPrepareSurface(Surfaces[sb],out var secondSupport)||TryAffinePlanarSurface(sb,out secondSupport,out _,out _);
             var firstSense=Surfaces[sa].Sense;var secondSense=Surfaces[sb].Sense;
             for(var i=0;i<nc;i++)
             {
@@ -499,6 +499,8 @@ internal static unsafe partial class KernelRuntime
         nc=np=0;
         var analyticA=TryPrepareSurface(Surfaces[sa],out var a);var analyticB=TryPrepareSurface(Surfaces[sb],out var b);
         if(analyticA&&analyticB)return OperationIntersection.Surfaces(a,b,branches,out nc,isolated,out np);
+        if(analyticA&&TryAffineSphereCircle(sb,a,branches,out nc)||analyticB&&TryAffineSphereCircle(sa,b,branches,out nc))
+            return AlgorithmStatus.Success;
         else if(analyticA&&a.Kind==SurfaceClass.Plane&&Surfaces[sb].Class==SurfaceClass.BSurface)
             return RuledBSurfacePlaneIntersection.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[sb].DataIndex]),a,branches,out nc,isolated,out np);
         else if(analyticB&&b.Kind==SurfaceClass.Plane&&Surfaces[sa].Class==SurfaceClass.BSurface)

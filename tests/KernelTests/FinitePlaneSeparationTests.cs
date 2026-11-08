@@ -300,6 +300,31 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(1,0,.3,true)]
+    [InlineData(.625,0,.3,false)] // The circle extends past the actual U trim.
+    [InlineData(1,1e-10,.3,false)] // One non-affine control point.
+    [InlineData(1,0,.1,false)] // Point tangency is not a regular circle.
+    public void AffineSphereCircleRequiresTheWholeFiniteChart(double width,double perturbation,double radius,bool expected)
+    {
+        double* poles=stackalloc double[27];
+        for(var u=0;u<3;u++)for(var v=0;v<3;v++)
+        {
+            var at=3*(3*u+v);poles[at]=width*u*.5;poles[at+1]=v*.5;poles[at+2]=u==1&&v==1?perturbation:0;
+        }
+        double* uk=stackalloc double[2]{-2,3};double* vk=stackalloc double[2]{4,7};
+        int* mult=stackalloc int[2]{3,3};
+        var patch=new PK_BSURF_sf_s{u_degree=2,v_degree=2,n_u_vertices=3,n_v_vertices=3,vertex_dim=3,vertex=poles,
+            n_u_knots=2,n_v_knots=2,u_knot=uk,v_knot=vk,u_knot_mult=mult,v_knot_mult=mult,
+            form=ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=ParasolidConstants.PK_knot_non_uniform_c,
+            v_knot_type=ParasolidConstants.PK_knot_non_uniform_c,self_intersecting=ParasolidConstants.PK_self_intersect_false_c,
+            convexity=ParasolidConstants.PK_convexity_unset_c};
+        var round=new PK_SPHERE_sf_s{radius=radius};
+        Write(&round.basis_set.location,Vector(.5,.5,.1));round.basis_set.axis.coord[2]=1;round.basis_set.ref_direction.coord[0]=1;
+        SurfTag a,b;Assert.Equal(0,KernelRuntime.BSurfCreate(&patch,&a));Assert.Equal(0,KernelRuntime.SphereCreate(&round,&b));
+        Assert.Equal(expected,KernelRuntime.TestAffineSphereCircle(a,b));
+    }
+
+    [Theory]
     [InlineData(false,false,.25,0,false,false,false)]
     [InlineData(true,false,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
     [InlineData(false,true,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
