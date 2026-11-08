@@ -8,24 +8,46 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    // Command local: one clipped use and one actual source face stay
+    // immutable through this entire pass.
+    private struct ThirdFaceBounds
+    {
+        internal IntervalBox3 Box;
+        internal double Margin;
+        internal bool Checked,Available;
+    }
+
     // The cut has already passed the two original finite face trims.
     // Test a third occurrence against that interval, not the mathematical
     // extension used by the pairwise intersection provider.
     private static int ReadThirdFaceEvents(in RegularBoundaryView input,BufferOffset face,FaceSlot source,
-        ReadOnlySpan<RegularFaceCut> cuts,BufferOffset cutIndex,ref SheetArrangement model,bool requireProof)
+        ReadOnlySpan<RegularFaceCut> cuts,BufferOffset cutIndex,ref ThirdFaceBounds cutBounds,ref ThirdFaceBounds faceBounds,
+        ref SheetArrangement model,bool requireProof,out SurfacePairRelation relation)
     {
+        relation=SurfacePairRelation.Unresolved;
         ref readonly var cut=ref cuts[cutIndex].Cut;
         LastSheetPartitionStage=SheetPartitionStage.BoundaryIntersections;LastSheetCurve=cut.Curve;LastSheetParameter=cut.First;
         var surface=input.Faces[face].Surface;var surfaceRecord=Surfaces[GetSurfaceSlotByTag(surface)];
         var curve=Curves[GetCurveSlotByTag(cut.Curve)];
-        var faceBox=default(IntervalBox3);
-        var margin=model.Tolerance;
-        var havePlane=surfaceRecord.Class==SurfaceClass.Plane&&source>=0&&TryThirdFacePrecision(source,ref margin)
-            &&RegularFiniteFaceExtent(source,out faceBox)==AlgorithmStatus.Success;
-        if(havePlane&&TryThirdFaceCurveExtent(cut,curve,out var extent)&&ThirdFaceBoxesDisjoint(extent,faceBox,margin))
+        if(!faceBounds.Checked)
         {
-            LastSheetAlgorithmStatus=AlgorithmStatus.Success;
-            return 0;
+            faceBounds.Checked=true;faceBounds.Margin=model.Tolerance;
+            faceBounds.Available=surfaceRecord.Class==SurfaceClass.Plane&&source>=0&&TryThirdFacePrecision(source,ref faceBounds.Margin)
+                &&RegularFiniteFaceExtent(source,out faceBounds.Box)==AlgorithmStatus.Success;
+        }
+        var havePlane=faceBounds.Available;var margin=faceBounds.Margin;
+        if(havePlane)
+        {
+            if(!cutBounds.Checked)
+            {
+                cutBounds.Checked=true;
+                cutBounds.Available=TryThirdFaceCurveExtent(cut,curve,out cutBounds.Box);
+            }
+            if(cutBounds.Available&&ThirdFaceBoxesDisjoint(cutBounds.Box,faceBounds.Box,margin))
+            {
+                LastSheetAlgorithmStatus=AlgorithmStatus.Success;relation=SurfacePairRelation.Empty;
+                return 0;
+            }
         }
 
         var canJoin=surfaceRecord.Class==SurfaceClass.Plane&&curve.Class==CurveClass.Line&&cuts[cutIndex].First>=0&&cuts[cutIndex].Second>=0;
@@ -37,17 +59,19 @@ internal static unsafe partial class KernelRuntime
             var status=CertifyThirdSurfaceRoots(surface,surfaceRecord,cut,curve,roots,isolation,spatialErrors,out var count);
             LastSheetAlgorithmStatus=status;
             if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            var resolved=SurfacePairRelation.Empty;
             for(var i=0;i<count;i++)
             {
                 var point=roots[i].Point;var error=spatialErrors[i];
                 var radius=new IntervalNumber(-error,error);
                 var x=new IntervalNumber(point.X)+radius;var y=new IntervalNumber(point.Y)+radius;var z=new IntervalNumber(point.Z)+radius;
                 var rootBox=new IntervalBox3(x.Lower,x.Upper,y.Lower,y.Upper,z.Lower,z.Upper);
-                if(havePlane&&ThirdFaceBoxesDisjoint(rootBox,faceBox,margin))continue;
+                if(havePlane&&ThirdFaceBoxesDisjoint(rootBox,faceBounds.Box,margin))continue;
                 if(canJoin)
                 {
                     var errorJoin=JoinThreePlaneCutRoots(input,face,cuts,cutIndex,ref model,out var joined);
-                    if(errorJoin!=0)return errorJoin;if(joined)continue;
+                    if(errorJoin!=0)return errorJoin;
+                    if(joined){resolved=SurfacePairRelation.PointContact;continue;}
                 }
                 var insideTrim=false;
                 var ownership=havePlane?CertifiedPlanarRootOwnership(input,face,surfaceRecord,point,rootBox,margin,out insideTrim):AlgorithmStatus.Unsupported;
@@ -62,7 +86,7 @@ internal static unsafe partial class KernelRuntime
                 LastSheetAlgorithmStatus=ownership==AlgorithmStatus.Success?AlgorithmStatus.Unsupported:ownership;
                 return IntersectionError(LastSheetAlgorithmStatus);
             }
-            return 0;
+            relation=resolved;return 0;
         }
 
         var fallback=IntersectRegularSurfaceCurve(surface,cut.Curve,cut.First,cut.Last,roots,out var n);LastSheetAlgorithmStatus=fallback;
@@ -177,7 +201,9 @@ internal static unsafe partial class KernelRuntime
         var occurrence=originals[..nf].IndexOf(face);if(occurrence<0)return ParasolidConstants.PK_ERROR_bad_loop;
         var model=new SheetArrangement{Points=stackalloc KernelVector3[2],OriginalVertices=stackalloc VertexSlot[2],Tolerance=1e-9};
         Span<RegularFaceCut> cuts=stackalloc RegularFaceCut[1]{new(){First=-1,Second=-1,Cut=new(){Curve=carrier,First=first,Last=last}}};
-        error=ReadThirdFaceEvents(new(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]),occurrence,face,cuts,0,ref model,requireProof:true);
+        ThirdFaceBounds cutBounds=default,faceBounds=default;
+        error=ReadThirdFaceEvents(new(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]),occurrence,face,cuts,0,
+            ref cutBounds,ref faceBounds,ref model,requireProof:true,out _);
         events=model.NP;return error;
     }
 #endif

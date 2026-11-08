@@ -112,11 +112,13 @@ internal static unsafe partial class KernelRuntime
     private static int ReadRollingThirdSurfaceEvents(in RegularBoundaryView input,ReadOnlySpan<FaceSlot> sourceFaces,
         ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RegularFaceCut> cuts,ref SheetArrangement model)
     {
+        Span<ThirdFaceBounds> faceBounds=stackalloc ThirdFaceBounds[sourceFaces.Length];faceBounds.Clear();
         for(var i=0;i<cuts.Length;i++)
         {
             ref readonly var accepted=ref cuts[i];
             if(accepted.First<sourceFaces.Length||accepted.Second<sourceFaces.Length)continue;
             var a=bands[accepted.First-sourceFaces.Length];var b=bands[accepted.Second-sourceFaces.Length];
+            ThirdFaceBounds cutBounds=default;
             for(var f=0;f<sourceFaces.Length;f++)
             {
                 // The original convex supports' contacts have already
@@ -124,7 +126,9 @@ internal static unsafe partial class KernelRuntime
                 var face=sourceFaces[f];
                 if(face==a.FirstSupport||face==a.SecondSupport||face==b.FirstSupport||face==b.SecondSupport)continue;
                 LastRollingFirstFace=accepted.First;LastRollingSecondFace=f;
-                var error=ReadThirdFaceEvents(input,f,face,cuts,i,ref model,requireProof:true);
+                var error=ReadThirdFaceEvents(input,f,face,cuts,i,ref cutBounds,ref faceBounds[f],ref model,requireProof:true,out var relation);
+                TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.BoundaryIncidence,CellSource=face,Surface=input.Faces[f].Surface,
+                    Other=a.Surface,OtherBand=b.Surface,Curve=accepted.Cut.Curve,First=accepted.Cut.First,Last=accepted.Cut.Last,Relation=relation});
                 if(error!=0)return error;
             }
         }

@@ -23,6 +23,11 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     {
         if(trace.Stage==KernelRuntime.RollingNetworkStage.ProvedEndpointReuse)
         {Console.WriteLine($"ROLLING PROVED REUSE event={trace.Cell} supports={trace.Surface}/{trace.Other} curve={trace.Curve} t={trace.First:R}/{trace.Last:R}");return;}
+        if(trace.Stage==KernelRuntime.RollingNetworkStage.BoundaryIncidence)
+        {
+            Console.WriteLine($"ROLLING THIRD FACE source={trace.CellSource} surface={trace.Surface} bands={trace.Other}/{trace.OtherBand} curve={trace.Curve} t=[{trace.First:R},{trace.Last:R}] relation={trace.Relation} status={KernelRuntime.LastSheetAlgorithmStatus}");
+            return;
+        }
         if(trace.Stage is KernelRuntime.RollingNetworkStage.Select or KernelRuntime.RollingNetworkStage.Build)
         {Console.WriteLine($"ROLLING CELL {trace.Stage} cell={trace.Cell} source={trace.CellSource} surface={trace.Surface} material={trace.Material}");return;}
         Console.WriteLine($"ROLLING {trace.Stage} source={trace.Source} supports={trace.FirstSupport}/{trace.SecondSupport} surface={trace.Surface} other={trace.Other} curve={trace.Curve} relation={trace.Relation} vertex={trace.Vertex} t=[{trace.First:R},{trace.Last:R}]");

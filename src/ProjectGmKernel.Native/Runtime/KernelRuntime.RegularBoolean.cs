@@ -113,10 +113,19 @@ internal static unsafe partial class KernelRuntime
             // With several tools, intersections of three different bodies
             // also split the curves on the target. The final classification
             // applies BooleanMaterial to the union of all tools.
-            if(inputs.Length>2)for(var c=0;c<cutCount;c++)for(var f=0;f<nf;f++)
+            if(inputs.Length>2)
             {
-                var cut=cuts[c];if(owners[f]==owners[cut.First]||owners[f]==owners[cut.Second])continue;
-                error=ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref model,ForbidSpatialBoundaryReuse);if(error!=0)return error;
+                Span<ThirdFaceBounds> faceBounds=stackalloc ThirdFaceBounds[nf];faceBounds.Clear();
+                for(var c=0;c<cutCount;c++)
+                {
+                    var cut=cuts[c];ThirdFaceBounds cutBounds=default;
+                    for(var f=0;f<nf;f++)
+                    {
+                        if(owners[f]==owners[cut.First]||owners[f]==owners[cut.Second])continue;
+                        error=ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model,ForbidSpatialBoundaryReuse,out _);
+                        if(error!=0)return error;
+                    }
+                }
             }
             LastRegularBooleanStage=RegularBooleanStage.Split;ModelingPerformance.Stage(RegularBooleanStage.Split);
             var coincident=false;for(var i=0;i<familyCount;i++)coincident|=families[i].Relation==SurfacePairRelation.CoincidentArea;

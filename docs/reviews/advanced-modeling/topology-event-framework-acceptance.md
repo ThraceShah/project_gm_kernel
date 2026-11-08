@@ -7,6 +7,7 @@ The required final result is a **self-constructed** short-edge fillet with succe
 | Current default product path | Managed publication | Independent native validation |
 | --- | --- | --- |
 | Self Fix from the unblended seed | Success, shared arrangement and legacy guard | Fresh XT, full BODY_check, strict comparison, mapped geometry and finite edges pass; original raw mass point check fails |
+| Self ordinary Boolean lifecycle | Both proof-only cuts publish; copy survives source deletion and remains editable after XT reload | Strict, full and finite checks pass; original raw mass point checks fail on the reflected copy and both cuts |
 | Self transverse Boolean lifecycle | Both proof-only cuts publish, including after source deletion and editable XT reload | Both short native interior roots reach published edges with zero position-only reuses; strict, full, finite and 48 lifecycle material probes pass; the complete command still includes a raw mass failure on the reflected self copy |
 | Imported-native product lifecycle | Both transverse cuts publish | Fresh XT, strict and full/finite checks pass; two raw mass point checks on these imported-product cuts still fail independently of the self path |
 
@@ -487,7 +488,7 @@ The same finite scalar solver now isolates plane roots of actual analytic conics
 
 - `m4-third-face-hole-verified.log`: `BooleanOperationOracle.cs --three-plane-hole` independently drills a square through bore in the cylindrical target, then applies both overlapping tools. One finite root on the actual bored face is excluded, two three-face events retain all three stations on published edges, and the fresh result passes complete native checks and strict independent comparison (exit 0).
 - `m5-third-face-hole-regression.log`: **75/75**, exit 0. Tests exercise a genuine inner loop, a material-side root and a boundary root (157), and one, two, empty and unresolved tangent native ellipse/plane intervals.
-- The full managed replay of `51ced9f` passed **1740/1740** (`m5-third-face-hole-all.log`, exit 0). The parallel matrix replay in `m5-third-face-hole-matrix/` runs the same 96 input/update combinations in 48 independent process groups and preserves each exit code; its results are pending at this checkpoint.
+- The full managed replay of `51ced9f` passed **1740/1740** (`m5-third-face-hole-all.log`, exit 0). The parallel matrix replay in `m5-third-face-hole-matrix/` runs the same 96 input/update combinations in 48 independent process groups and preserves each exit code; the completed results are recorded below.
 - `m4-third-face-hole-regular.log`: both guarded affine and curved plane/NURBS cases with a remote inner loop pass fresh native geometry and both Boolean/lifecycle checks (exit 0). The function catalog still contains **175** entries; the allocation IL guard is CLEAN across **2650** methods.
 
 ### Endpoint proofs in trim winding and cut rediscovery
@@ -502,3 +503,18 @@ On those same saved transverse cut bodies, real PK returns the identical normali
 
 
 `m5-third-face-endpoint-proof.log`: **47/47**, exit 0, including the actual bored-face ray through the uncertainty of two inner vertices and the four exact/ambiguous cut-vertex associations. On `51ced9f`, the fixed probe replay remains **510 positions, 16 identical differing rows, zero native baseline changes**, exit 134 (`m5-third-face-hole-saved-probes.log`). The final endpoint snapshot's independent intersection oracle is **65 passed / 22 failed**, exit 1; the 22 failure lines compare byte-for-byte with the earlier failure set (`m5-third-face-endpoint-intersection.log`).
+
+
+### Replayed matrix and command-local third-face bounds
+
+The complete replay on `51ced9f` covered **96/96** self Fix cases, with fresh independent full/strict and finite checks and **384** mapped faces. **44** pass all gates and **52** fail only the unchanged raw `yz` mass point gate. All 52 native modulus comparisons overlap for all 15 properties. The exact case-level pass/fail set is unchanged. There are 32/32 raw failures at radius .25, 20/32 at .5 and 0/32 at .6. See `m5-third-face-hole-matrix/summary.log` and `m5-third-face-matrix-final-comparison.log` (both exit 1). This replay covers construction and geometry; the separate lifecycle commands are not included in that count.
+
+On `0e20709`, the original guarded default ordinary lifecycle (`m4-third-face-endpoint-standard.log`) passes strict/full/finite/material checks and still exits 134 with the four original normalized `yz` discrepancies: `1.43346e-7` (self Fix), `1.65786e-6` (source-deleted reflected copy), `8.66898e-7` and `5.99624e-7` (both cuts). The pre-Fix mirror, radius .6, selected ellipse split at .61, reversed marks and both guarded cuts pass all gates including the original mass check (`m4-third-face-endpoint-mirror.log`, exit 0).
+
+`m4-third-face-native-identical-partition.log`: two receives of the exact same native-created radius .6 XT from the replay; only one receives ten real PK planar imprints. All checks after the imprints report zero faults. With native `accuracy=1.0` the raw point residual is still `3.474053443024873e-7` (exit 1). The control changes topology by subdivision, without using managed construction or removing material. It is separate from the acceptance reference.
+
+During one third-face pass, finite boxes are now computed at most once per accepted cut use or actual source face occurrence. The pass keeps no data beyond the command and does not change any separation interval or fallback. The rolling trace identifies the original face, both rolling bands, the actual clipped native interval and whether that interval is proven empty, associated, or unresolved. `m4-third-face-cache-hole.log`: both junctions and the inner-loop exclusion still reach the native strict/full oracle (exit 0). `m5-third-face-cache-regression.log`: **91/91**, exit 0.
+
+`m4-third-face-cache-final.log`: for the pre-Fix rigid radius .6 seed with cylinder phase .27, the trace certifies eight empty third-face tests on two accepted band-pair intervals. The native strict/full/finite and mapped checks pass. Its only failure is the raw `yz` residual `1.0313923962833059e-7`; the same independently rebuilt seed on `0e20709` gives identical mass points and moduli (`m4-third-face-cache-rigid-prechange.log`, both exit 134). This is a separate transformed seed, not one of the untransformed radius .6 matrix cases.
+
+The Parasolid v38 Functional Description, Mass Properties §§31.1 and 31.4.1, describes `accuracy` as a work/iteration control and recommends using the error bounds in model comparisons. It does not promise the requested point residual across different valid partitions. The original gate is still required and still fails; no error modulus, integration diagnostic or native partition control is counted in its place. The unresolved geometry work outside the verified short-edge paths includes a positive multiway association for curved third supports: a certified root must transfer to every actual accepted incident cut before publishing. The guarded code reports unresolved/unsupported if it cannot establish that correspondence.

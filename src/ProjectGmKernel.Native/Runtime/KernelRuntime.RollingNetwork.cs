@@ -14,7 +14,7 @@ internal static unsafe partial class KernelRuntime
         internal RollingNetworkStage Stage;
         internal EdgeSlot Source;
         internal FaceSlot FirstSupport,SecondSupport;
-        internal SurfTag Surface,Other;
+        internal SurfTag Surface,Other,OtherBand;
         internal CurveTag Curve;
         internal VertexSlot Vertex;
         internal BufferOffset Cell;
