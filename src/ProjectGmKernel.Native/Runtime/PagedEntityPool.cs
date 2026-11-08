@@ -29,7 +29,14 @@ internal unsafe struct PagedEntityPool<T> where T : unmanaged
 
     private struct LocalState
     {
-        internal DataSlot FreeHead;
+        // StableTable publishes a zeroed segment. That state must already
+        // mean an empty free list for readers in another partition.
+        private DataSlot freeHeadPlusOne;
+        internal DataSlot FreeHead
+        {
+            readonly get => freeHeadPlusOne - 1;
+            set => freeHeadPlusOne = value + 1;
+        }
         internal DataSlot Next;
         internal DataSlot End;
         internal BufferCount Alive;
@@ -53,7 +60,6 @@ internal unsafe struct PagedEntityPool<T> where T : unmanaged
         kind = poolKind;
         freePage = -1;
         locals.Attach(memory);
-        defaultLocal.FreeHead = -1;
     }
 
     public readonly int AllocatedCount => allocatedCount;
@@ -83,7 +89,7 @@ internal unsafe struct PagedEntityPool<T> where T : unmanaged
         try
         {
             var partition = authorized ? KernelRuntime.AllocationPartition : 0;
-            if (partition != 0 && partition >= locals.Capacity && !InitializeLocals(partition, authorized)) { slot = -1; return false; }
+            if (partition != 0 && partition >= locals.Capacity && !EnsureLocals(partition, authorized)) { slot = -1; return false; }
             ref var local = ref (partition == 0 ? ref defaultLocal : ref locals[partition]);
             EntityGeneration generation;
             if (local.FreeHead >= 0)
@@ -292,16 +298,10 @@ internal unsafe struct PagedEntityPool<T> where T : unmanaged
         Attach(owner, kind);
     }
 
-    private bool InitializeLocals(PartitionSlot partition, bool authorized)
+    private bool EnsureLocals(PartitionSlot partition, bool authorized)
     {
         if (authorized) Enter();
-        try
-        {
-            var previous = locals.Capacity;
-            var success = locals.TryEnsure(partition);
-            for (var i = previous; i < locals.Capacity; i++) locals[i].FreeHead = -1;
-            return success;
-        }
+        try { return locals.TryEnsure(partition); }
         finally { if (authorized) Exit(); }
     }
 
