@@ -71,7 +71,7 @@ internal static unsafe partial class KernelRuntime
                 for(var c=before;c<cutCount;c++)cuts[c].SecondIsBoundary=family.SecondIsBoundary;
             }
             LastRollingNetworkStage=RollingNetworkStage.BoundaryIncidence;
-            error=ReadRollingThirdSurfaceEvents(sourceFaces,bands,families,curves,ref model);if(error!=0)return error;
+            error=ReadRollingThirdSurfaceEvents(view,sourceFaces,bands,cuts[..cutCount],ref model);if(error!=0)return error;
             if(!subdivisions.IsEmpty)
             {
                 LastRollingNetworkStage=RollingNetworkStage.Subdivision;

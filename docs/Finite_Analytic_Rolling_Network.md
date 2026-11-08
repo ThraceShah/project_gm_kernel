@@ -74,6 +74,12 @@ The target interval and the source root are associated with one boundary event b
 
 When adjacent cutter faces rediscover a root of their common finite line on a Cylinder or Blend, the same finite line occurrence and isolated root ordinal identify the event. The Cylinder uses the exact analytic radial equation; the Blend uses a contracting box for the line parameter and the two Blend coordinates. A narrowed line parameter enclosure gives a spatial error bound without a second XYZ inverse on the source line. Repeated boxes for the same equations join only when one root enclosure belongs to the other's uniqueness domain. A surface-parameter extension can aid certification but cannot supply a root outside the finite search domain. The native target ICurve still supplies its own CHART and paired support UV when the arrangement evaluates its boundary.
 
+### Associating a third face with a finite cut
+
+The rolling network and multi-tool Boolean share `ReadThirdFaceEvents`. It takes a cut already clipped to both participating face occurrences. Outward finite carrier and planar face extents can exclude the third occurrence. For the remaining bounded interval, a plane root of a native procedural carrier keeps its original CHART gauge; an explicit carrier against a cylinder uses the interval radial equation. An unresolved finite root, rank loss or unsupported trim does not become a spatial join in the guarded path.
+
+The three-plane provider requires three accepted pair uses. For each line `L(t)=O+t*d`, its two pair equations have zero constant and derivative by outward arithmetic. Their normals are independent. The opposite plane has nonzero `n·d`, so `t=n·(P−O)/(n·d)` gives the only common point in space. The full root interval must be strictly in one actual finite pair use on each of the three lines. A second possible use, a trim endpoint without an identity proof, or an unsupported representation is unresolved. The shared event retains all three native stations; it does not replace any carrier with a sampled point or use a fixed three-edge product template.
+
 ### Subdividing a selected rolling carrier
 
 Selected finite fragments with the same native line or ellipse carrier, support occurrences and radius join only across an exact contiguous native interval and a degree-two source vertex. A single rolling band uses the component's entire finite source range and both terminal vertices. Each fragment independently receives its collapsed-end certificates; the representative edge's interval cannot establish events for the other fragments.

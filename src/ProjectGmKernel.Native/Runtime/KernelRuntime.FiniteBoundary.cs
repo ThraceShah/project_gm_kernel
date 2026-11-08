@@ -16,12 +16,12 @@ internal static unsafe partial class KernelRuntime
         internal BoundaryEventId Event;
         internal CurveTag Carrier;
         internal EntityGeneration Generation;
-        // Carrier==0 denotes a certified surface participant. For a native
-        // locator, Surface may name the scalar equation with a unique root
-        // in this interval. That equation is used only within this command.
+        // Surface may name the scalar equation with a unique root in this
+        // native interval. That equation is used only within this command.
         internal SurfTag Surface;
         // One-based (finite input edge, isolated root ordinal) within the
         // named equation's complete result, shared by its coedge discoveries.
+        // Accepted cut uses occupy a separate occurrence range after input edges.
         internal BoundaryRootWitnessId Witness;
         internal double Parameter,Lower,Upper;
 
@@ -81,7 +81,7 @@ internal static unsafe partial class KernelRuntime
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
     [ThreadStatic] internal static bool ForbidSpatialBoundaryReuse;
-    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding}
+    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding,ThirdFaceStation}
     internal struct BoundaryTrace
     {
         internal PK_UV_s UvStart,UvEnd;

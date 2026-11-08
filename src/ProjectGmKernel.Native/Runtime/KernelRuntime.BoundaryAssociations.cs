@@ -21,14 +21,6 @@ internal static unsafe partial class KernelRuntime
             First=first,Last=last,InputEdge=inputEdge};return 0;
     }
 
-    private static int AssociateBoundarySurfaceEvent(ref SheetArrangement model,BoundaryEventId endpoint,SurfTag surface)
-    {
-        var generation=Surfaces[GetSurfaceSlotByTag(surface)].Header.Generation;
-        foreach(var use in model.Parameters[..model.ParameterCount])if(use.Event==endpoint&&use.Carrier==0&&use.Surface==surface&&use.Generation==generation)return 0;
-        if(model.ParameterCount==model.Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-        model.Parameters[model.ParameterCount++]=new(){Event=endpoint,Surface=surface,Generation=generation};return 0;
-    }
-
     private static bool BoundaryEventOnSurface(ref SheetArrangement model,BoundaryEventId endpoint,SurfTag surface)
     {
         var original=model.OriginalVertices[endpoint];
@@ -41,12 +33,6 @@ internal static unsafe partial class KernelRuntime
         foreach(var use in model.Parameters[..model.ParameterCount])
         {
             if(use.Event!=endpoint)continue;
-            if(use.Carrier==0)
-            {
-                var slot=GetSurfaceSlotByTag(use.Surface);
-                if(slot>=0&&Surfaces[slot].Header.Generation==use.Generation&&SameSheetSupport(use.Surface,surface))return true;
-                continue;
-            }
             var curve=GetCurveSlotByTag(use.Carrier);if(curve<0||Curves[curve].Header.Generation!=use.Generation)continue;
             if(Curves[curve].Class==CurveClass.ICurve)
             {
@@ -123,35 +109,23 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
-    private static int ReadRollingThirdSurfaceEvents(ReadOnlySpan<FaceSlot> sourceFaces,ReadOnlySpan<RollingBandCandidate> bands,
-        ReadOnlySpan<RollingCutFamily> families,ReadOnlySpan<SheetCutCurve> curves,ref SheetArrangement model)
+    private static int ReadRollingThirdSurfaceEvents(in RegularBoundaryView input,ReadOnlySpan<FaceSlot> sourceFaces,
+        ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RegularFaceCut> cuts,ref SheetArrangement model)
     {
-        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-        foreach(var family in families)
+        for(var i=0;i<cuts.Length;i++)
         {
-            if(family.FirstFace<sourceFaces.Length||family.SecondFace<sourceFaces.Length)continue;
-            var a=bands[family.FirstFace-sourceFaces.Length];var b=bands[family.SecondFace-sourceFaces.Length];
-            foreach(var face in sourceFaces)
+            ref readonly var accepted=ref cuts[i];
+            if(accepted.First<sourceFaces.Length||accepted.Second<sourceFaces.Length)continue;
+            var a=bands[accepted.First-sourceFaces.Length];var b=bands[accepted.Second-sourceFaces.Length];
+            for(var f=0;f<sourceFaces.Length;f++)
             {
-                // An inward ball meets either original convex support only
-                // on its certified contact locus. Those occurrences already
-                // produce the band-pair's finite boundary events during clip.
-                var surface=Faces[face].SurfTag;
-                if(SameSheetSupport(surface,Faces[a.FirstSupport].SurfTag)||SameSheetSupport(surface,Faces[a.SecondSupport].SurfTag)
-                    ||SameSheetSupport(surface,Faces[b.FirstSupport].SurfTag)||SameSheetSupport(surface,Faces[b.SecondSupport].SurfTag))continue;
-                foreach(var curve in curves.Slice(family.FirstCurve,family.Count))
-                {
-                    LastSheetPartitionStage=SheetPartitionStage.BoundaryIntersections;LastSheetCurve=curve.Curve;LastSheetParameter=curve.First;
-                    var status=IntersectRegularSurfaceCurve(surface,curve.Curve,curve.First,curve.Last,roots,out var n);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-                    for(var root=0;root<n;root++)
-                    {
-                        if(roots[root].Kind is not (IntersectionVectorKind.Simple or IntersectionVectorKind.Tangent))return ParasolidConstants.PK_ERROR_not_implemented;
-                        var error=model.AddPoint(roots[root].Point,-1,out var endpoint);if(error!=0)return error;
-                        error=model.AssociateParameter(endpoint,curve.Curve,roots[root].First);if(error!=0)return error;
-                        error=AssociateBoundarySurfaceEvent(ref model,endpoint,surface);if(error!=0)return error;
-                        TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.BoundaryIncidence,Surface=surface,Curve=curve.Curve,First=roots[root].First,Last=roots[root].First,Relation=SurfacePairRelation.PointContact});
-                    }
-                }
+                // The original convex supports' contacts have already
+                // participated in the pair's finite clipping.
+                var face=sourceFaces[f];
+                if(face==a.FirstSupport||face==a.SecondSupport||face==b.FirstSupport||face==b.SecondSupport)continue;
+                LastRollingFirstFace=accepted.First;LastRollingSecondFace=f;
+                var error=ReadThirdFaceEvents(input,f,face,cuts,i,ref model,requireProof:true);
+                if(error!=0)return error;
             }
         }
         return 0;

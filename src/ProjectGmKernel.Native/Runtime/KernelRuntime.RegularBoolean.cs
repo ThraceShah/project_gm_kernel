@@ -113,21 +113,10 @@ internal static unsafe partial class KernelRuntime
             // With several tools, intersections of three different bodies
             // also split the curves on the target. The final classification
             // applies BooleanMaterial to the union of all tools.
-            if(inputs.Length>2)
+            if(inputs.Length>2)for(var c=0;c<cutCount;c++)for(var f=0;f<nf;f++)
             {
-                Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-                for(var c=0;c<cutCount;c++)for(var f=0;f<nf;f++)
-                {
-                    var cut=cuts[c];if(owners[f]==owners[cut.First]||owners[f]==owners[cut.Second])continue;
-                    var status=IntersectRegularSurfaceCurve(inputFaces[f].Surface,cut.Cut.Curve,cut.Cut.First,cut.Cut.Last,roots,out var n);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-                    for(var r=0;r<n;r++)
-                    {
-                        if(roots[r].Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                        status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(inputFaces[f].Surface)],roots[r].Point,out var uv);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-                        error=RegularFaceContains(input,f,uv,out var inside);if(error!=0)return error;if(!inside)continue;
-                        error=model.AddPoint(roots[r].Point,-1,out _);if(error!=0)return error;
-                    }
-                }
+                var cut=cuts[c];if(owners[f]==owners[cut.First]||owners[f]==owners[cut.Second])continue;
+                error=ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref model,ForbidSpatialBoundaryReuse);if(error!=0)return error;
             }
             LastRegularBooleanStage=RegularBooleanStage.Split;ModelingPerformance.Stage(RegularBooleanStage.Split);
             var coincident=false;for(var i=0;i<familyCount;i++)coincident|=families[i].Relation==SurfacePairRelation.CoincidentArea;

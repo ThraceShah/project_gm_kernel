@@ -8,6 +8,8 @@ using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
+using BodyTag=System.Int32;
+using FaceSlot=System.Int32;
 
 namespace KernelTests;
 
@@ -49,6 +51,58 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(0,KernelRuntime.TestFiniteLinePlaneEventIdentities(carrier,-1,1,planes,ids,out var associations));
         Assert.NotEqual(ids[0],ids[1]);Assert.Equal(ids[0],ids[3]);Assert.Equal(ids[1],ids[2]);
         Assert.Equal(3,associations);
+    }
+
+    [Theory]
+    [InlineData(2.5,3,0)] // The exact plane crossing misses the finite side.
+    [InlineData(1.5,.5,0)] // The actual curve trim ends before the plane.
+    [InlineData(1.5,3,ParasolidConstants.PK_ERROR_not_implemented)]
+    public void GuardedThirdFaceChecksTheActualCurveAndFaceTrims(double y,double end,int expected)
+    {
+        BodyTag body;Assert.Equal(0,KernelRuntime.BodyCreateSolidBlock(2,2,2,null,&body));
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];FaceSlot side=-1;
+        var face=record.FirstFaceBody;
+        for(var i=0;i<record.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            PK_PLANE_sf_s plane;Assert.Equal(0,KernelRuntime.PlaneAsk(KernelRuntime.Faces[face].SurfTag,&plane));
+            if(plane.basis_set.location.coord[0]==1&&Math.Abs(plane.basis_set.axis.coord[0])==1){side=face;break;}
+        }
+        Assert.True(side>=0);
+        var line=new PK_LINE_sf_s();var diagonal=1/Math.Sqrt(2);
+        Write(&line.basis_set.axis,Vector(diagonal,-diagonal,0));Write(&line.basis_set.location,Vector(0,y,1));
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        Assert.Equal(expected,KernelRuntime.TestFiniteThirdFaceEvents(side,carrier,0,end,out var events));
+        Assert.Equal(0,events);
+    }
+
+    [Theory]
+    [InlineData(false,false)] [InlineData(true,false)] [InlineData(false,true)]
+    public void ThreePlaneCutsShareOneEventOnlyWhenAllFiniteCarriersProveIt(bool truncate,bool displaced)
+    {
+        Span<SurfTag> surfaces=stackalloc SurfTag[3];
+        Span<CurveTag> carriers=stackalloc CurveTag[3];
+        Span<KernelVector3> axes=stackalloc KernelVector3[3]{Vector(1,0,0),Vector(0,1,0),Vector(0,0,1)};
+        for(var i=0;i<3;i++)
+        {
+            var plane=new PK_PLANE_sf_s();
+            Write(&plane.basis_set.axis,axes[i]);Write(&plane.basis_set.ref_direction,axes[(i+1)%3]);
+            SurfTag tag;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&tag));surfaces[i]=tag;
+        }
+        Span<KernelVector3> origins=stackalloc KernelVector3[3]{Vector(0,0,-.25),Vector(displaced?.125:0,.375,0),Vector(-.625,0,0)};
+        for(var i=0;i<3;i++)
+        {
+            var line=new PK_LINE_sf_s();Write(&line.basis_set.location,origins[i]);
+            Write(&line.basis_set.axis,Scale(axes[2-i],i==1?-1:1));
+            CurveTag tag;Assert.Equal(0,KernelRuntime.LineCreate(&line,&tag));carriers[i]=tag;
+        }
+        Span<double> stations=stackalloc double[3];
+        var error=KernelRuntime.TestThreePlaneCutEvents(surfaces,carriers,truncate,stations,out var events);
+        if(truncate||displaced)
+        {
+            Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,error);Assert.Equal(0,events);return;
+        }
+        Assert.Equal(0,error);Assert.Equal(1,events);
+        Assert.Equal(.25,stations[0]);Assert.Equal(.375,stations[1]);Assert.Equal(.625,stations[2]);
     }
 
     [Fact]
