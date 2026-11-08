@@ -968,3 +968,46 @@ The plane-constrained diagnostic for historical row 289 improves the distance en
 The positive counterpart is now a finite contact operation under the legacy guard. The provider proves the whole axial side from the two actual full circular trims and proves the contact line has exactly two transverse roots on the finite straight tool loop. It checks interior/exterior signs, both native axial bounds, opposite material normals and the absence of competing interactions. The resulting same-face line has two opposing uses in a non-area loop. The incidence trace records both source edge occurrences, native stations and the one published edge. The command journal covers publication, including allocation failure. End-cap contact and a later volumetric cut on a contact-bearing body remain explicitly unsupported; both restore the inputs and return buffers.
 
 `BooleanOperationOracle.cs -- --axial-contact-imprint` passes **5/5** independent native products with full BODY_check, the unchanged strict comparator, endpoint/native limit checks and opposite fins (`m3-axial-contact-imprint-final-native.log`, exit 0). Both sides start from independently built copies of the same finite tool loop. An additional control using two primitive constructors gives the same physical contact but different initial loop fin on two orientations; its strict comparator reports two `vx_dev` endpoint correspondences for those orientations (`m3-axial-contact-oriented-imprint.log`). No check is downgraded. The **43/43** ordinary native Boolean fixtures pass (`m3-axial-contact-imprint-final-ordinary.log`, exit 0). Managed verification covers fresh editable XT, copy after source deletion, a subsequent disjoint operation and rollback on crossing, end-cap and publication failures (**3/3** final contact tests, `m3-axial-contact-publication-rollback.log`, exit 0). The broader related snapshot passed **234/234**, catalog **175**, allocation guard CLEAN across **2784** methods (`m3-axial-contact-imprint-focused.log`, exit 0).
+
+## Shutdown checkpoint
+
+The goal is paused at the user's request. The last implementation commit is `e2436d083357f88997591a00b756c1054220f95a`, verified on `origin/main` before this checkpoint. Resume on `main` at the checkout containing this entry. The historical detached intersection baseline checkout is not the implementation checkout. There are no uncommitted implementation changes. Keep the locked PKToy, PK 38.0.150 and current .NET 10.0.302; no native ABI build was needed.
+
+The full managed rerun on `e2436d0` was intentionally stopped for shutdown by terminating its testhost. The runner recorded the real exit **1** and cleaned up; the log says **491 passed before abort**, with no completed total. Do not treat it as a regression failure or a passing full run. The last completed full run remains **1817/1817** on `5f307db`; the contact increment's narrower successful runs are recorded above.
+
+| Stage | State at pause |
+| --- | --- |
+| M0–M2 | Baseline captured; guarded shared arrangement for plane-nurbs fillet and Boolean, including a remote bore on the modified support and certified equivalent support records. |
+| M3 | Guarded heterogeneous rolling network publishes, and disjoint components and certified finite contacts have regression coverage. The near-end selected ellipse continuation/seam remains unresolved. |
+| M4 | Default self Fix, both self cuts, copy after source deletion, editable reload, strict independent comparison, full BODY_check, finite geometry and 48 material probes pass in the guarded lifecycle. Native raw inertia still fails. A pre-Fix mirrored .61 split at radius .6 passes all recorded gates; the pre-Fix rigid .6/phase .31 lifecycle still has three raw failures. The imported .997 result is independently editable through both cuts; the self .997 strict comparison still fails. |
+| M5 | Guarded matrix: 96/96 self constructions, 44 complete passes, 52 raw-mass-only failures. The immutable 510 points have 16 differences in each of the imported and self runs, with no native baseline change. Self row 289 returns 5018 at Faces/RayOrigin. Full replay of the latest implementation still required. |
+
+Resume with these commands from the implementation checkout. Preserve the test command's original exit when cleaning testhost, and keep the original raw mass gate, strict comparator and probe coordinates.
+
+```sh
+git status --short --branch
+git log -5 --oneline
+mkdir -p temp_docs/topology-event-framework
+MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests -c Release -m:1 \
+  -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true \
+  --logger 'console;verbosity=normal' > temp_docs/topology-event-framework/m5-resume-full.log 2>&1
+status=$?
+pkill -f '[t]esthost.dll' 2>/dev/null || true
+printf '%s\n' "$status" > temp_docs/topology-event-framework/m5-resume-full.exit
+
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- \
+  --event-arrangement --geometry --lifecycle --material-ownership --require-native-fin-uvbox \
+  --require-native-cut-witness --require-cutter-chart-witness --reload-before-local-cut --transverse-local-cut
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- \
+  --event-arrangement --geometry --split-selected-ellipse --selected-split-fraction=0.997 --diagnostics
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- \
+  --event-arrangement --self-saved-probes --require-native-fin-uvbox
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- \
+  --import-only --saved-probes --diagnostics
+```
+
+The last transverse default run exits **134** at the four original raw `inertia.yz` gates (two imported cuts, self Fix, self reflected copy). Strict topology, finite chart and material checks passed. The native-only exact CHART insertion experiment above reproduces raw failures on geometrically equivalent PK products. This is evidence about the raw integrator, not acceptance or authorization to change the gate. For row 289, the short Blend/plane ICurve's finite native parameter interval is `[0,7.614767051463436e-5]`, and the best saved plane-constrained spatial enclosure still straddles the original membership threshold. A further refinement must use the actual parameterized root and edge occurrence rather than changing the threshold.
+
+The smallest continuation gap is deciding whether the finite section for a selected same-carrier subdivision bounds any distinct cell after resolving both rolling end events. Start at `TryEllipticSubdivisionStation` and `ImprintRollingSubdivisions`. In the guarded .997 run the source station is `1.566083937814512` and the certified section station is `[1.564513150531331,1.5645131505313328]`. The section is positive; no length cutoff is justified. The native result is two blend faces with full BODY_check; self currently publishes three and the unchanged strict check exits 134. Require .997 to pass the unchanged strict comparison with the guard on while preserving the legitimate .003 and .61 split cases and both short ICurves.
+
+Static address lookup works again. Read-only runtime checkpoints at `find_fbbs+0x8ab` show both calls to `BLE__short_trim_seg` return zero and clear both outputs for .997. The branch at `BLE__find_blend_chain+0x4eb` reports successful conic compatibility for .997. The .85 control enters neither branch. Logs: `m4-native-split-end-decisions-{0.85,0.997}.log` and `m4-native-split-chain-decisions-{0.85,0.997}.log`. The latter contains a failed symbol lookup for the pseudo-short return breakpoint; disregard the line labeled `PSEUDO SHORT result` because GDB attached the command to the preceding breakpoint. If resuming that diagnostic, put the breakpoint at the instruction after the call, `0xbeb012` in the PK 38.0.150 image (`BLE__pseudo_short+0xbb2` after relocation), and verify the breakpoint address before using its result. This work has established a continuation candidate but has not proved which end-boundary event makes the subdivision optional.
