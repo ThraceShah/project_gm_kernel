@@ -36,12 +36,15 @@ internal static unsafe partial class KernelRuntime
     private static bool ExactVector(in KernelVector3 a,in KernelVector3 b)=>a.X==b.X&&a.Y==b.Y&&a.Z==b.Z;
 
     private static int SheetCurveUV(SurfTag surface, CurveTag curve, double parameter, bool forward,
-        out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point,double first=double.NaN,double last=double.NaN)
+        out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point,double first=double.NaN,double last=double.NaN,
+        ReadOnlySpan<FiniteSectionChart> sectionCharts=default)
     {
         uv=tangent=default;point=default;
         var slot=GetCurveSlotByTag(curve);if(slot<0)return ParasolidConstants.PK_ERROR_missing_geom;
         LastSheetPartitionStage=SheetPartitionStage.CurveEvaluation;
         LastSheetCurve=curve;LastSheetParameter=parameter;
+        if(TryFiniteSectionChart(sectionCharts,surface,curve,parameter,parameter,out var sectionChart))
+            return EvaluateFiniteSectionChart(sectionChart,in Curves[slot],parameter,forward,out uv,out tangent,out point);
         if(double.IsNaN(first)){first=Curves[slot].TMin;last=Curves[slot].TMax;}
         var kind=Surfaces[GetSurfaceSlotByTag(surface)].Class;
         if(kind is SurfaceClass.Cone or SurfaceClass.Torus&&TryCoaxialCircleChart(surface,Curves[slot],out var phase,out var direction,out var stationV))
@@ -128,11 +131,15 @@ internal static unsafe partial class KernelRuntime
 
     internal static int SheetCoedgePoint(SurfTag surface,in ModelingEdge edge,byte forward,double fraction,
         out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point)
+        =>SheetCoedgePoint(surface,edge,forward,fraction,default,out uv,out tangent,out point);
+
+    private static int SheetCoedgePoint(SurfTag surface,in ModelingEdge edge,byte forward,double fraction,ReadOnlySpan<FiniteSectionChart> sectionCharts,
+        out PK_UV_s uv,out PK_UV_s tangent,out KernelVector3 point)
     {
         var positive=(forward!=0)==(LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0);
         var parameter=fraction==0?(positive?edge.Start:edge.End):fraction==1?(positive?edge.End:edge.Start)
             :positive?edge.Start+(edge.End-edge.Start)*fraction:edge.End-(edge.End-edge.Start)*fraction;
-        return SheetCurveUV(surface,edge.Curve,parameter,forward!=0,out uv,out tangent,out point,edge.Start,edge.End);
+        return SheetCurveUV(surface,edge.Curve,parameter,forward!=0,out uv,out tangent,out point,edge.Start,edge.End,sectionCharts);
     }
 
     // Exact isoparametric rays reduce UV winding to existing bounded curve

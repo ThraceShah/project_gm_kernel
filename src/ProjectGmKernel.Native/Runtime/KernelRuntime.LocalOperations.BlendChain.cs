@@ -161,7 +161,7 @@ internal static unsafe partial class KernelRuntime
             Edges=stackalloc ModelingEdge[ne+3*cuts.Length],CutEdges=stackalloc byte[ne+3*cuts.Length],
             Coedges=stackalloc ModelingCoedge[2*ne+6*cuts.Length],Loops=stackalloc ModelingLoop[loopCapacity],Faces=stackalloc ModelingFace[nf+cuts.Length],
             Sources=stackalloc FaceSlot[nf+cuts.Length],Sides=stackalloc sbyte[nf+cuts.Length],Witnesses=stackalloc PK_UV_s[nf+cuts.Length],
-            Parameters=stackalloc BoundaryParameter[4*cuts.Length],RequireBoundaryAssociations=true,Tolerance=1e-9};
+            Parameters=stackalloc BoundaryParameter[4*cuts.Length],SectionCharts=stackalloc FiniteSectionChart[cuts.Length],RequireBoundaryAssociations=true,Tolerance=1e-9};
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne];Span<EdgeSlot> sourceEdges=stackalloc EdgeSlot[ne];Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[2*ne];
         Span<ModelingLoop> loops=stackalloc ModelingLoop[sourceLoops];Span<ModelingFace> faces=stackalloc ModelingFace[nf];Span<FaceSlot> sources=stackalloc FaceSlot[nf];
         Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];Span<BodyTag> bodies=stackalloc BodyTag[1]{input};
@@ -232,6 +232,8 @@ internal static unsafe partial class KernelRuntime
         {
             ref var cut=ref cuts[i];var edge=input.Edges[contacts[end]];var data=ICurveDataPool[Curves[GetCurveSlotByTag(edge.Curve)].DataIndex];
             var t=end==0?cut.First:cut.Last;var station=stations[i].Midpoint;
+            if(end==0)
+            {var added=AssociateFiniteSectionChart(ref model,blend.Surface,cut.Curve,station,cut.First,cut.Last,0,1);if(added!=0)return added;}
             var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],t,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var error=BlendContactParameterAtStation(data,point[0],station,out var contact);if(error!=0)return error;
             if(!(contact>edge.Start&&contact<edge.End))return ParasolidConstants.PK_ERROR_cant_do_intersect;

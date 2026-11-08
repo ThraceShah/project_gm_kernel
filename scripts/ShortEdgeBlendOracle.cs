@@ -57,6 +57,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         {Console.WriteLine($"BOUNDARY NATIVE LOCATOR event={trace.StartEvent} source_curve={trace.Curve} cut_curve={trace.ProductCurve} supports={trace.Surface}/{trace.OtherSurface} cut_t=[{trace.First:R},{trace.Last:R}] error={trace.SpatialError:R}");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)
         {Console.WriteLine($"BOUNDARY SPATIAL REUSE event={trace.StartEvent} supports={trace.Surface}/{trace.OtherSurface} carrier={trace.Curve} t={trace.First:R} xyz=({trace.StartPoint.X:R},{trace.StartPoint.Y:R},{trace.StartPoint.Z:R}) old=({trace.EndPoint.X:R},{trace.EndPoint.Y:R},{trace.EndPoint.Z:R})");return;}
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionChart)
+        {Console.WriteLine($"SECTION UV surface={trace.Surface} curve={trace.Curve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}/{trace.EndEvent} uv=({trace.UvStart.param[0]:R},{trace.UvStart.param[1]:R})->({trace.UvEnd.param[0]:R},{trace.UvEnd.param[1]:R})");return;}
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
         {
             var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)];

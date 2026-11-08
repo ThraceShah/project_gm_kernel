@@ -261,6 +261,9 @@ public unsafe class RegularSolidBlendTests:IDisposable
                 {
                     Assert.Equal(0,section.First);
                     Assert.InRange(section.Last,Math.PI*.5-1e-12,Math.PI*.5+1e-12);
+                    Assert.Contains(boundaryTrace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionChart&&x.Curve==section.Curve
+                        &&x.UvStart.param[0]==x.UvEnd.param[0]&&Math.Min(x.UvStart.param[1],x.UvEnd.param[1])==0
+                        &&Math.Max(x.UvStart.param[1],x.UvEnd.param[1])==1);
                     Assert.Contains(boundaryTrace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.Product&&x.Curve==section.Curve
                         &&x.Generation==section.Generation&&x.First==section.First&&x.Last==section.Last);
                 }

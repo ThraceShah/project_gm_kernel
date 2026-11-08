@@ -124,6 +124,8 @@ internal static unsafe partial class KernelRuntime
             if(cutCount==cuts.Length||ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             var imprint=new SheetCutCurve{Curve=section,First=lower,Last=upper};
             var error=AssociateBoundaryCarrierSurface(ref model,section,band.Surface);if(error!=0)return error;
+            if(elliptical)
+            {error=AssociateFiniteSectionChart(ref model,band.Surface,section,at,lower,upper,band.FirstSection,band.LastSection);if(error!=0)return error;}
             for(var side=0;side<2;side++)
             {
                 var contact=side==0?band.FirstContact:band.SecondContact;

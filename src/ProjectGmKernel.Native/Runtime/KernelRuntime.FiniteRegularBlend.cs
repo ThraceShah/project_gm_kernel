@@ -9,7 +9,8 @@ internal static unsafe partial class KernelRuntime
     // retained source boundary; no provider supplies an ordered result loop.
     private static int AssembleFiniteRegularBlend(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,EdgeSlot selected,
         ReadOnlySpan<FaceSlot> supports,ReadOnlySpan<FaceSlot> caps,ReadOnlySpan<VertexSlot> ends,SurfTag blend,
-        ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,ReadOnlySpan<KernelVector3> contacts,Span<FaceSlot> products,out FaceTag product)
+        ReadOnlySpan<CurveTag> curves,ReadOnlySpan<double> lower,ReadOnlySpan<double> upper,ReadOnlySpan<KernelVector3> contacts,
+        Span<FiniteSectionChart> sectionCharts,Span<FaceSlot> products,out FaceTag product)
     {
         product=0;
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=sourceFaces.Length;var loopCapacity=0;
@@ -21,7 +22,7 @@ internal static unsafe partial class KernelRuntime
         Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];
         var model=new SheetArrangement{Points=stackalloc KernelVector3[nv+contacts.Length],OriginalVertices=stackalloc VertexSlot[nv+contacts.Length],Edges=edges,
             Coedges=stackalloc ModelingCoedge[2*ne+2*curves.Length],Loops=stackalloc ModelingLoop[loopCapacity+1],Faces=stackalloc ModelingFace[nf+1],
-            Sources=stackalloc FaceSlot[nf+1],Witnesses=stackalloc PK_UV_s[nf+1],Tolerance=1e-9};
+            Sources=stackalloc FaceSlot[nf+1],Witnesses=stackalloc PK_UV_s[nf+1],SectionCharts=sectionCharts,SectionChartCount=sectionCharts.Length,Tolerance=1e-9};
         Span<BodyTag> bodies=stackalloc BodyTag[1]{Bodies[body].Header.Tag};
         var error=ReadRegularBoundaries(bodies,model.Points,model.OriginalVertices,edges,originals,inputCoedges,inputLoops,inputFaces,sources,owners,offsets,
             out model.NP,out model.NE,out _,out _,out var faceCount);if(error!=0)return error;

@@ -98,6 +98,7 @@ internal static unsafe partial class KernelRuntime
         }
         LastRegularBlendStage=RegularBlendStage.Ends;
         Span<SheetCutCurve> cuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];
+        Span<FiniteSectionChart> sectionCharts=stackalloc FiniteSectionChart[2];var sectionChartCount=0;
         for(var cap=0;cap<2;cap++)
         {
             var u0=stations[cap];var u1=stations[2+cap];
@@ -107,7 +108,8 @@ internal static unsafe partial class KernelRuntime
             if(Math.Abs(u0-u1)<1e-10)
             {
                 LastRegularBlendStage=RegularBlendStage.EndCircle;
-                error0=NestedBlendIsoparam(blend,true,(u0+u1)*.5,0,1,out var circle,out var sectionFirst,out var sectionLast);if(error0!=0)return error0;
+                var station=(u0+u1)*.5;
+                error0=NestedBlendIsoparam(blend,true,station,0,1,out var circle,out var sectionFirst,out var sectionLast);if(error0!=0)return error0;
                 TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(capSurfaces[cap])],out var plane);
                 var circleSlot=GetCurveSlotByTag(circle);var data=CircleDataPool[Curves[circleSlot].DataIndex];
                 var axis=Vector(data.AxisX,data.AxisY,data.AxisZ);var center=Vector(data.CenterX,data.CenterY,data.CenterZ);
@@ -127,6 +129,7 @@ internal static unsafe partial class KernelRuntime
                     if(firstError<=OperationIntersection.DistanceTolerance&&secondError<=OperationIntersection.DistanceTolerance)
                     {
                         LastRegularBlendStage=RegularBlendStage.EndParameters;
+                        sectionCharts[sectionChartCount++]=MakeFiniteSectionChart(blend,circle,station,sectionFirst,sectionLast,0,1);
                         Curves[circleSlot].Sense=direction>0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
                         TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.AnalyticSectionEnds,Surface=blend,OtherSurface=capSurfaces[cap],
                             SourceEdge=edge,Curve=circle,Generation=Curves[circleSlot].Header.Generation,First=sectionFirst,Last=sectionLast,
@@ -166,7 +169,7 @@ internal static unsafe partial class KernelRuntime
         error0=ValidateRegularContactPlacement(edge,supports,curves[..2],lo[..2],hi[..2]);if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Reach;
         error0=ValidateRegularBlendEndExtensions(body,edge,supports,ends,contacts,blend,firstStation,lastStation);if(error0!=0)return error0;
-        error0=AssembleFiniteRegularBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,products,out var product);
+        error0=AssembleFiniteRegularBlend(body,faces,edge,supports,caps,ends,blend,curves,lo,hi,contacts,sectionCharts[..sectionChartCount],products,out var product);
         if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Release;
         descriptions[0]=new(){Edge=original.Header.Tag,First=Faces[fa].Header.Tag,Second=Faces[fb].Header.Tag,Result=product};made=1;

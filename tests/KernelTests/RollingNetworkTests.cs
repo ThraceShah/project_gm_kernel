@@ -104,6 +104,17 @@ public unsafe class RollingNetworkTests:IDisposable
             }
             Assert.Equal(1,sections);
             var witness=Assert.Single(trace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints);
+            if(ellipse)
+            {
+                var charts=trace.Where(x=>x.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionChart&&x.Curve==witness.Curve).ToArray();
+                Assert.Equal(2,charts.Length);
+                foreach(var chart in charts)
+                {
+                    Assert.Equal(chart.UvStart.param[0],chart.UvEnd.param[0]);
+                    Assert.Equal(0,Math.Min(chart.UvStart.param[1],chart.UvEnd.param[1]));
+                    Assert.Equal(1,Math.Max(chart.UvStart.param[1],chart.UvEnd.param[1]));
+                }
+            }
             Assert.True(witness.StartEvent>=0&&witness.EndEvent>=0&&witness.StartEvent!=witness.EndEvent&&witness.Last>witness.First);
             Assert.Contains(trace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.Product&&x.Curve==witness.Curve&&x.Generation==witness.Generation
                 &&x.First==witness.First&&x.Last==witness.Last);

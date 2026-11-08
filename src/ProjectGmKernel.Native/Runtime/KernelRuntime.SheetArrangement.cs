@@ -50,6 +50,8 @@ internal static unsafe partial class KernelRuntime
         internal Span<BoundaryParameter> Parameters;
         internal Span<BoundaryCarrierSurface> CarrierSurfaces;
         internal BufferCount CarrierSurfaceCount;
+        internal Span<FiniteSectionChart> SectionCharts;
+        internal BufferCount SectionChartCount;
         internal bool RequireBoundaryAssociations;
         internal Span<BoundaryTangency> Tangencies;
         internal BufferCount TangencyCount;
@@ -314,8 +316,13 @@ internal static unsafe partial class KernelRuntime
             sphericalError=SphericalHalfedgeAngle(surface,record,forward,true,model.Points,out var endAngle);if(sphericalError!=0)return sphericalError;
             halfedges[count++]=new(){Edge=edge,Forward=forward,StartEvent=use.StartEvent,EndEvent=use.EndEvent,Next=-1,StartAngle=startAngle,EndAngle=endAngle};return 0;
         }
-        var error=SheetCoedgePoint(surface,record,forward,0,out _,out var start,out _);if(error!=0)return error;
-        error=SheetCoedgePoint(surface,record,forward,1,out _,out var end,out _);if(error!=0)return error;
+        var sectionCharts=model.SectionCharts[..model.SectionChartCount];
+        var error=SheetCoedgePoint(surface,record,forward,0,sectionCharts,out var uvStart,out var start,out _);if(error!=0)return error;
+        error=SheetCoedgePoint(surface,record,forward,1,sectionCharts,out var uvEnd,out var end,out _);if(error!=0)return error;
+        if(TraceFiniteBoundary!=null&&TryFiniteSectionChart(sectionCharts,surface,use.Carrier,use.First,use.Last,out _))
+            TraceFiniteBoundary(new(){Stage=BoundaryTraceStage.NativeSectionChart,Surface=surface,Curve=use.Carrier,Generation=use.Generation,
+                SurfaceGeneration=use.SurfaceGeneration,Source=use.Source,SourceEdge=use.SourceEdge,SourceFin=use.SourceFin,Edge=edge,Face=-1,Product=-1,
+                StartEvent=use.StartEvent,EndEvent=use.EndEvent,First=use.First,Last=use.Last,Forward=forward,UvStart=uvStart,UvEnd=uvEnd});
         halfedges[count++]=new(){Edge=edge,Forward=forward,StartEvent=use.StartEvent,EndEvent=use.EndEvent,Next=-1,StartAngle=Math.Atan2(start.param[1],start.param[0]),EndAngle=Math.Atan2(end.param[1],end.param[0])};return 0;
     }
 
@@ -435,7 +442,7 @@ internal static unsafe partial class KernelRuntime
                 for(var attempt=0;attempt<7;attempt++)
                 {
                     var fraction=.3819660112501051+attempt*.037;var t=first+span*fraction;if(t>cut.Last)t=cut.First+t-cut.Last;
-                    var error=SheetCurveUV(surface,cut.Curve,t,true,out var uv,out _,out var point);if(error!=0)return error;
+                    var error=SheetCurveUV(surface,cut.Curve,t,true,out var uv,out _,out var point,sectionCharts:model.SectionCharts[..model.SectionChartCount]);if(error!=0)return error;
                     var coincident=false;
                     if(face>=0){error=SheetPointOnCoincidentBoundary(face,sources,point,out coincident,checkAllBoundaries);if(error!=0)return error;}
                     if(coincident){inside=false;located=true;break;}
@@ -449,8 +456,9 @@ internal static unsafe partial class KernelRuntime
                     a=endpoints[i];b=endpoints[j];
                     if(a<0||b<0)
                     {
-                        var error=SheetCurveUV(surface,cut.Curve,first,true,out _,out _,out var pa);if(error!=0)return error;
-                        error=SheetCurveUV(surface,cut.Curve,last,true,out _,out _,out var pb);if(error!=0)return error;
+                        var charts=model.SectionCharts[..model.SectionChartCount];
+                        var error=SheetCurveUV(surface,cut.Curve,first,true,out _,out _,out var pa,sectionCharts:charts);if(error!=0)return error;
+                        error=SheetCurveUV(surface,cut.Curve,last,true,out _,out _,out var pb,sectionCharts:charts);if(error!=0)return error;
                         if(a<0){error=model.AddPoint(pa,-1,out a);if(error!=0)return error;}
                         if(b<0){error=model.AddPoint(pb,-1,out b);if(error!=0)return error;}
                     }
@@ -554,7 +562,8 @@ internal static unsafe partial class KernelRuntime
             var cycle=new SheetCycle{First=first,Count=coedgeCount-first,Parent=-1};
             if(NullSheetBoundary(cycleCoedges.Slice(first,cycle.Count))){coedgeCount=first;continue;}
             LastSheetPartitionStage=SheetPartitionStage.CycleWitness;
-            var error=SheetCycleWitness(surface,model.Edges[..model.NE],cycleCoedges.Slice(first,cycle.Count),out cycle.Left,out cycle.Positive);if(error!=0)return error;
+            var error=SheetCycleWitness(surface,model.Edges[..model.NE],cycleCoedges.Slice(first,cycle.Count),out cycle.Left,out cycle.Positive,
+                model.SectionCharts[..model.SectionChartCount]);if(error!=0)return error;
             cycles[cycleCount++]=cycle;
         }
         return 0;

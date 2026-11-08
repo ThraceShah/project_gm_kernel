@@ -18,7 +18,8 @@ internal static unsafe partial class KernelRuntime
         for(var f=0;f<oldFaces;f++,face=Faces[face].NextInBody)loopCount+=Faces[face].LoopCount;
         if(oldFaces+bands.Length>RegularInputFaces||Bodies[body].EdgeCountBody+4*bands.Length>RegularInputEdges
             ||loopCount+bands.Length>RegularInputLoops||2*Bodies[body].EdgeCountBody+4*bands.Length>RegularInputCoedges)return ParasolidConstants.PK_ERROR_not_implemented;
-        var scratch=CommandScratch.Current;var memory=scratch.Take(249000+2*SheetPointLimit);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        var chartWords=(sizeof(FiniteSectionChart)*subdivisions.Length+sizeof(double)-1)/sizeof(double);
+        var scratch=CommandScratch.Current;var memory=scratch.Take(249000+2*SheetPointLimit+chartWords);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -27,6 +28,7 @@ internal static unsafe partial class KernelRuntime
                 Points=ModelSpan<KernelVector3>(bytes,ref cursor,SheetPointLimit),OriginalVertices=ModelSpan<VertexSlot>(bytes,ref cursor,SheetPointLimit),
                 VertexPrecisions=ModelSpan<double>(bytes,ref cursor,SheetPointLimit),Parameters=ModelSpan<BoundaryParameter>(bytes,ref cursor,2*SheetPointLimit),
                 CarrierSurfaces=ModelSpan<BoundaryCarrierSurface>(bytes,ref cursor,4*RegularInputEdges),RequireBoundaryAssociations=true,
+                SectionCharts=ModelSpan<FiniteSectionChart>(bytes,ref cursor,subdivisions.Length),
                 Tangencies=ModelSpan<BoundaryTangency>(bytes,ref cursor,2*SheetPointLimit),
                 SurfaceContacts=ModelSpan<BoundarySurfaceContact>(bytes,ref cursor,2*SheetPointLimit),
                 Edges=ModelSpan<ModelingEdge>(bytes,ref cursor,SheetEdgeLimit),CutEdges=ModelSpan<byte>(bytes,ref cursor,SheetEdgeLimit),

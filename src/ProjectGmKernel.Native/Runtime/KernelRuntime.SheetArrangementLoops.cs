@@ -7,7 +7,7 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     private static int SheetCycleWitness(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
-        out PK_UV_s left,out byte positive)
+        out PK_UV_s left,out byte positive,ReadOnlySpan<FiniteSectionChart> sectionCharts=default)
     {
         left=default;positive=0;var support=Surfaces[GetSurfaceSlotByTag(surface)];
         if(support.Class==SurfaceClass.Sphere)return SphericalCycleWitness(surface,edges,loop,out left,out positive);
@@ -17,7 +17,7 @@ internal static unsafe partial class KernelRuntime
         for(var attempt=0;attempt<tries;attempt++)
         {
             var coedge=loop[attempt%loop.Length];var fraction=.2931471805599453+(attempt%5)*.071;
-            var error=SheetCoedgePoint(surface,edges[coedge.Edge],coedge.Forward,fraction,out var uv,out var tangent,out _);if(error!=0)return error;
+            var error=SheetCoedgePoint(surface,edges[coedge.Edge],coedge.Forward,fraction,sectionCharts,out var uv,out var tangent,out _);if(error!=0)return error;
             var length=Math.Sqrt(tangent.param[0]*tangent.param[0]+tangent.param[1]*tangent.param[1]);if(!(length>0))continue;
             // For a small complete cell the usual probe step can already
             // be inside the ray's boundary uncertainty. Try a larger
