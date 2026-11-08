@@ -786,6 +786,7 @@ internal static unsafe partial class KernelRuntime
             }
             for(var p=0;p<model.NP;p++)
             {
+                if(!model.LiveBoundaryPoint(p))continue;
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);
                 var known=model.KnownSourceBoundaryParameter(p,edge.Curve,e,out var anchor,out var otherOccurrence);var t=anchor.Parameter;
                 if(!known&&(model.RequireBoundaryAssociations||otherOccurrence))continue;

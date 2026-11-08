@@ -121,7 +121,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int ReadRollingThirdSurfaceEvents(in RegularBoundaryView input,ReadOnlySpan<FaceSlot> sourceFaces,
-        ReadOnlySpan<RollingBandCandidate> bands,ReadOnlySpan<RegularFaceCut> cuts,ref SheetArrangement model)
+        ReadOnlySpan<RollingBandCandidate> bands,scoped Span<RegularFaceCut> cuts,ref SheetArrangement model)
     {
         Span<ThirdFaceBounds> faceBounds=stackalloc ThirdFaceBounds[sourceFaces.Length];faceBounds.Clear();
         for(var i=0;i<cuts.Length;i++)

@@ -793,3 +793,34 @@ The independent radius-5 cylinder and tilted block fixture isolates the same two
 `dotnet run scripts/BooleanOperationOracle.cs -c Release -- --conic-corner` (with `MSBUILDDISABLENODEREUSE=1`) asserts that both joined events and their two different source carriers reach actual published cut edges with spatial fallback disabled. The fixture independently constructs both inputs and cuts in PK, then runs fresh receive, full BODY_check and the unchanged strict comparator (`m3-conic-corner-oracle.log`, exit 0).
 
 The affected managed suite passes **132/132** (catalog **175**, allocation IL guard CLEAN across **2702** methods, `m5-conic-plane-join-focused.log`, exit 0). The **43** ordinary and **9** existing guarded independent Boolean fixtures pass (`m5-conic-common-station-{ordinary,three-face-cylinder,three-plane-hole,three-plane-events,plane-conic-cut}.log`, all exit 0). The original default transverse closure still publishes the fillet and both self cuts, proves **12** transfers and **48** material probes, and gets **3, 3, 5, 5** native fin boxes per side. The raw mass rows match the earlier XT repair replay exactly; the same four original point checks keep the command at exit 134 (`m4-conic-common-station-default.log`).
+
+On `fb03390`, the pre-Fix mirrored, selected-ellipse split at `.61` and reversed-selection lifecycle passes every original gate and native fin boxes at all four stages (`m4-conic-common-station-mirror-at061.log`, exit 0). The guarded plane/NURBS remote-bore fixture also passes its cut and lifecycle (`m4-conic-common-station-plane-nurbs.log`, exit 0).
+
+## Native-only finite trim integral control
+
+`temp_docs/topology-event-framework/NativeFiniteTrimIntegral.cs` uses the PKToy host to receive the saved independent and fresh products. It uses only real PK evaluations for finite fin geometry, curve stations and surface jets. Each ICurve's own native CHART divides its integration cells; the same Gauss–Legendre rule integrates both representations. The Jacobian uses the curve tangent and the two surface tangents for the actual finite fin, with periodic Blend U chosen from the native fin box. Divergence and Green's theorem reduce the volume moments to the original directed finite loops. No model or baseline bytes are rewritten.
+
+The analytic block control matches native raw volume, centroid, inertia and area to within `8e-14` normalized. The table reports the maximum normalized difference with eight subdivisions per original CHART cell, as well as the raw mass comparison on the same two native receives. All controls exit 0 and both modeled inputs pass the unchanged strict comparator and full BODY_check. The accuracy and comparison used in the original oracle remain unchanged.
+
+| Products | Raw native integration | Same finite trim integration |
+| --- | ---: | ---: |
+| Default fillet | `1.4334617612288428e-7` | `6.194814442446243e-13` |
+| Default self reflected copy | `1.6578616453917745e-6` | `5.65411582274627e-10` |
+| Default self transverse cut | `9.522948638505319e-8` | `2.266452603933464e-10` |
+| Default self second cut after reload | `9.158494905266194e-8` | `3.74949399510057e-10` |
+| Imported-product transverse cut | `1.5053297414264072e-7` | `3.312507651902755e-10` |
+| Imported-product second cut after reload | `1.4151885609048214e-7` | `2.026753510865173e-11` |
+
+Logs: `m5-independent-native-integral-{block,fix,copy-reflected,copy-reflected-cut,reloaded-second-cut,imported-copy-reflected-cut,imported-reloaded-second-cut}.log`. On the reflected self copy, the common quadrature differs from the PK default integration by `1.35e-6` for the independent reference and `3.01e-6` for the fresh self product, while the largest last-refinement change is below `5e-10`. This is independent numerical evidence of an integration-path discrepancy. It is not a certified error bound or a replacement for the four failing live raw checks.
+
+The reflected native-only control also adds three or seven real PK samples inside each original CHART cell of the long ICurve. It retains every original CHART row and does not edit the surfaces, vertices, or topology. Full BODY_check and strict comparison still pass; the only comparator diagnostic is the chart count changing from 10 to 37 or 73. The normalized raw `yz` residual is respectively `2.9907783752848296e-7` and `5.700021923133332e-7` at both `.99999999` and `1.0` (raw point exit 1). Using the common native-only finite integral on the same pairs gives `1.6588521628718396e-10` and `7.476516790408291e-11` at the final refinement (diagnostic exit 0). See `m5-native-refined-chart-reflected-{4,8}{,.control,-integral}.log`. This reproduces a raw failure without a managed product, changed topology, or modified reference fixture. None of the diagnostic copies is an acceptance input.
+
+## Joining previously registered cut endpoints
+
+The exact three-plane provider can now join two synthetic endpoints that were independently registered before it ran. Its three finite line/plane certificates first establish the common point and identify the actual declared endpoints. The join checks all shared carrier generations and station intervals, preserves distinct root occurrences, rejects any endpoint already owned by input topology or assembled edges, then rewrites all pending cut and event references. Retired point slots are excluded from later station discovery and source splitting. This does not join original topological vertices or use position to establish event identity.
+
+Two lower/upper-end fixtures expose the old 157 on two different but exactly equivalent endpoint records (`m1-existing-endpoint-join-red.log`, 12/14, exit 1). A disjoint station on a common carrier remains a negative case. The positive tests verify that an additional use outside the three proving cuts points to the survivor and that the retired slot cannot seed a second lookup. The existing six independent native junction/corner fixtures and 43 ordinary Boolean fixtures pass (`m3-existing-endpoint-join-{three-plane-events,three-plane-hole,three-face-cylinder,conic-corner}.log`, `m5-existing-endpoint-join-ordinary.log`, exit 0).
+
+The affected managed tests pass **134/134**, and the final finite-station subset passes **82/82** after the explicit finite-interval check. Function catalog **175** and allocation IL guard across **2704** methods pass (`m5-existing-endpoint-join-focused.log`, `m1-existing-endpoint-join-final.log`, exit 0).
+
+A separate overlapping-tool control using a radius-5 cylinder and two blocks with overlapping coplanar walls remains unresolved at `Clip/BoundaryAssociation`: native Boolean and full BODY_check succeed; the managed guard returns 157 at cut station 0 before the three-plane join (`m3-three-plane-endpoint-independent-control.log`, script exit 1). This is outside the accepted junction fixtures.

@@ -277,20 +277,22 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
-    [InlineData(false,false,.25,0,false,false)]
-    [InlineData(true,false,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false)]
-    [InlineData(false,true,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false)]
-    [InlineData(false,false,1.0/(1L<<42),0,false,false)]
-    [InlineData(false,false,1-1.0/(1L<<42),0,false,false)]
-    [InlineData(false,false,0,ParasolidConstants.PK_ERROR_cant_do_intersect,false,false)]
-    [InlineData(false,false,1,ParasolidConstants.PK_ERROR_cant_do_intersect,false,false)]
-    [InlineData(false,false,-1.0/(1L<<42),ParasolidConstants.PK_ERROR_not_implemented,false,false)]
-    [InlineData(false,false,1+1.0/(1L<<42),ParasolidConstants.PK_ERROR_not_implemented,false,false)]
-    [InlineData(false,false,0,0,true,false)]
-    [InlineData(false,false,1,0,true,false)]
-    [InlineData(false,false,0,ParasolidConstants.PK_ERROR_cant_do_intersect,true,true)]
+    [InlineData(false,false,.25,0,false,false,false)]
+    [InlineData(true,false,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
+    [InlineData(false,true,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
+    [InlineData(false,false,1.0/(1L<<42),0,false,false,false)]
+    [InlineData(false,false,1-1.0/(1L<<42),0,false,false,false)]
+    [InlineData(false,false,0,ParasolidConstants.PK_ERROR_cant_do_intersect,false,false,false)]
+    [InlineData(false,false,1,ParasolidConstants.PK_ERROR_cant_do_intersect,false,false,false)]
+    [InlineData(false,false,-1.0/(1L<<42),ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
+    [InlineData(false,false,1+1.0/(1L<<42),ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
+    [InlineData(false,false,0,0,true,false,false)]
+    [InlineData(false,false,1,0,true,false,false)]
+    [InlineData(false,false,0,0,true,false,true)]
+    [InlineData(false,false,1,0,true,false,true)]
+    [InlineData(false,false,0,ParasolidConstants.PK_ERROR_cant_do_intersect,true,true,true)]
     public void ThreePlaneCutsShareOneEventOnlyWhenAllFiniteCarriersProveIt(bool truncate,bool displaced,double station,int expected,
-        bool declaredEnd,bool conflictingEnd)
+        bool declaredEnd,bool conflictingEnd,bool separateEnd)
     {
         Span<SurfTag> surfaces=stackalloc SurfTag[3];
         Span<CurveTag> carriers=stackalloc CurveTag[3];
@@ -309,7 +311,7 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
             CurveTag tag;Assert.Equal(0,KernelRuntime.LineCreate(&line,&tag));carriers[i]=tag;
         }
         Span<double> stations=stackalloc double[3];
-        var error=KernelRuntime.TestThreePlaneCutEvents(surfaces,carriers,truncate,stations,out var events,declaredEnd?station:null,conflictingEnd);
+        var error=KernelRuntime.TestThreePlaneCutEvents(surfaces,carriers,truncate,stations,out var events,declaredEnd?station:null,conflictingEnd,separateEnd);
         Assert.Equal(expected,error);Assert.Equal(conflictingEnd?2:expected==0?1:0,events);
         if(expected==0){Assert.Equal(station,stations[0]);Assert.Equal(.375,stations[1]);Assert.Equal(.625,stations[2]);}
     }

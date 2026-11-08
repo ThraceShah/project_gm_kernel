@@ -21,7 +21,7 @@ internal static unsafe partial class KernelRuntime
     // Test a third occurrence against that interval, not the mathematical
     // extension used by the pairwise intersection provider.
     private static int ReadThirdFaceEvents(in RegularBoundaryView input,BufferOffset face,FaceSlot source,
-        ReadOnlySpan<RegularFaceCut> cuts,BufferOffset cutIndex,ref ThirdFaceBounds cutBounds,ref ThirdFaceBounds faceBounds,
+        scoped Span<RegularFaceCut> cuts,BufferOffset cutIndex,ref ThirdFaceBounds cutBounds,ref ThirdFaceBounds faceBounds,
         ref SheetArrangement model,bool requireProof,out SurfacePairRelation relation)
     {
         relation=SurfacePairRelation.Unresolved;

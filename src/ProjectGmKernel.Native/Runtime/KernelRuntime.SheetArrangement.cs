@@ -11,6 +11,7 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     private const BufferCount SheetFaceLimit=512,SheetEdgeLimit=4096,SheetPointLimit=4096,SheetLoopLimit=2048,SheetCoedgeLimit=16384;
+    private const VertexSlot RetiredBoundaryVertex=-2;
     private struct SheetSourceEdge
     {
         internal EdgeSlot Source;
@@ -60,6 +61,8 @@ internal static unsafe partial class KernelRuntime
         internal BufferCount ParameterCount;
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
+
+        internal bool LiveBoundaryPoint(BoundaryEventId point)=>OriginalVertices.IsEmpty||OriginalVertices[point]!=RetiredBoundaryVertex;
 
         internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN,
             SurfTag equation=0,BoundaryRootWitnessId witness=0)
@@ -211,6 +214,7 @@ internal static unsafe partial class KernelRuntime
             var ambiguous=false;var unresolved=false;
             for(var i=0;i<NP;i++)
             {
+                if(!LiveBoundaryPoint(i))continue;
                 if(original>=0&&OriginalVertices[i]==original){index=i;return 0;}
                 if(original>=0||!(ProfileDistance(Points[i],point)<=Tolerance)||ConflictingBoundaryAnchor(i,anchors,out var same,out var shared,out var certified))continue;
                 if(same)
@@ -471,6 +475,7 @@ internal static unsafe partial class KernelRuntime
             }
             for(var i=0;i<model.NP;i++)
             {
+                if(!model.LiveBoundaryPoint(i))continue;
                 if(certified&&(i==lowerEvent||i==upperEvent))continue;
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[i]);double t=0;
                 var known=model.KnownBoundaryParameter(i,cut.Curve,out var anchor);t=anchor.Parameter;var error=0;
@@ -591,7 +596,8 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool HasCutEnd(ref SheetArrangement graph,CurveTag carrier,BoundaryEventId endpoint,double parameter)
-        =>endpoint>=0&&endpoint<graph.NP&&graph.KnownBoundaryParameter(endpoint,carrier,out var known)&&parameter>=known.Lower&&parameter<=known.Upper;
+        =>endpoint>=0&&endpoint<graph.NP&&graph.LiveBoundaryPoint(endpoint)&&graph.KnownBoundaryParameter(endpoint,carrier,out var known)
+            &&parameter>=known.Lower&&parameter<=known.Upper;
 
     private static int ExtractSheetCycles(SurfTag surface,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,
         scoped Span<ModelingCoedge> cycleCoedges,scoped Span<SheetCycle> cycles,out BufferCount cycleCount,out BufferCount coedgeCount)
