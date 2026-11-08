@@ -4,6 +4,12 @@ Status: in progress. The default self-constructed short-edge fillet and both dow
 
 The required final result is a **self-constructed** short-edge fillet with successful downstream Boolean, lifecycle and independent PK validation. Imported native products are tracked separately and never establish this gate.
 
+| Current default product path | Managed publication | Independent native validation |
+| --- | --- | --- |
+| Self Fix from the unblended seed | Success, shared arrangement and legacy guard | Fresh XT, full BODY_check, strict comparison, mapped geometry and finite edges pass; original raw mass point check fails |
+| Self transverse Boolean lifecycle | Both proof-only cuts publish, including after source deletion and editable XT reload | Both short native interior roots reach published edges with zero position-only reuses; strict, full, finite and 48 lifecycle material probes pass; the complete command still includes a raw mass failure on the reflected self copy |
+| Imported-native product lifecycle | Both transverse cuts publish | Fresh XT, strict and full/finite checks pass; two raw mass point checks on these imported-product cuts still fail independently of the self path |
+
 ## Commands and evidence
 
 All commands below use `MSBUILDDISABLENODEREUSE=1`. Test exit codes are saved before testhost cleanup. All build invocations use existing dependencies.
@@ -481,5 +487,18 @@ The same finite scalar solver now isolates plane roots of actual analytic conics
 
 - `m4-third-face-hole-verified.log`: `BooleanOperationOracle.cs --three-plane-hole` independently drills a square through bore in the cylindrical target, then applies both overlapping tools. One finite root on the actual bored face is excluded, two three-face events retain all three stations on published edges, and the fresh result passes complete native checks and strict independent comparison (exit 0).
 - `m5-third-face-hole-regression.log`: **75/75**, exit 0. Tests exercise a genuine inner loop, a material-side root and a boundary root (157), and one, two, empty and unresolved tangent native ellipse/plane intervals.
-- A full managed replay of this increment is running as `m5-third-face-hole-all.log`. The parallel matrix replay in `m5-third-face-hole-matrix/` runs the same 96 input/update combinations in 48 independent process groups and preserves each exit code; its results are pending at this checkpoint.
+- The full managed replay of `51ced9f` passed **1740/1740** (`m5-third-face-hole-all.log`, exit 0). The parallel matrix replay in `m5-third-face-hole-matrix/` runs the same 96 input/update combinations in 48 independent process groups and preserves each exit code; its results are pending at this checkpoint.
 - `m4-third-face-hole-regular.log`: both guarded affine and curved plane/NURBS cases with a remote inner loop pass fresh native geometry and both Boolean/lifecycle checks (exit 0). The function catalog still contains **175** entries; the allocation IL guard is CLEAN across **2650** methods.
+
+### Endpoint proofs in trim winding and cut rediscovery
+
+The native debugger replay of the bored three-face Boolean (`m4-native-third-face-hole-gdb.log`) hits `QTP_enquire_loop_heritage` under `imp_in_face → IMP__imprint_interval`, and `QTP_bcurve_of_halfedge` under `test_edge → face_x_curve`. The updated static query also resolves both ELF addresses in 38.0.150. The halfedge wrapper calls its bounded-curve routine and has a block geometry transform path. These observations support treating loop ownership, finite halfedges and their frames as separate inputs; they do not establish PK's winding or tolerance policy.
+
+For the guarded planar trim proof, the signed ray and the box connecting its origin to the candidate root must also clear the geometric-to-topological endpoint envelopes. The bound covers both edge and vertex precision. A ray that could cross a forward endpoint connector retries, including when neither open coedge happens to return a root. For cut rediscovery on distinct source coedges, a common original vertex only identifies one event when both providers explicitly name the native endpoints and both target locators give the same exact station. A matching XYZ or overlapping target interval remains insufficient.
+
+`m4-third-face-endpoint-proof.log`: the bored independent Boolean still publishes both three-face junctions and excludes the bounded hole root (exit 0). The latest default transverse replay on `51ced9f` (`m4-third-face-hole-transverse.log`) still passes both guarded self cuts, two actual short ICurve event witnesses and all 48 material checks, with the four original raw mass failures (exit 134). On the imported product's first transverse cut, the unchanged raw native residual is `1.50537e-7` on `yz`. Separately integrating both saved finite trims gives a maximum normalized difference `3.27e-10` at eight slices, with final refinement changes `2.35e-10` and `5.93e-10` (`m4-third-face-imported-cut-trim-integral.log`, exit 0). This is numerical evidence about the differing integration paths, not a replacement acceptance result.
+
+On those same saved transverse cut bodies, real PK returns the identical normalized point residual `1.5053287025916261e-7` when requested at both `accuracy=1.0` and `0.99999999999` (`m4-third-face-imported-cut-accuracy-one.log` and `m4-third-face-imported-cut-high-accuracy.log`, both diagnostic exit 1). The original live-reference gate and tolerance are unchanged. The guarded rigid seed replay (`m4-third-face-endpoint-rigid.log`) preserves both short-edge witnesses, both downstream cuts, strict/full/finite checks and all 48 material probes; it still exits 134 on two raw mass checks.
+
+
+`m5-third-face-endpoint-proof.log`: **47/47**, exit 0, including the actual bored-face ray through the uncertainty of two inner vertices and the four exact/ambiguous cut-vertex associations. On `51ced9f`, the fixed probe replay remains **510 positions, 16 identical differing rows, zero native baseline changes**, exit 134 (`m5-third-face-hole-saved-probes.log`). The final endpoint snapshot's independent intersection oracle is **65 passed / 22 failed**, exit 1; the 22 failure lines compare byte-for-byte with the earlier failure set (`m5-third-face-endpoint-intersection.log`).

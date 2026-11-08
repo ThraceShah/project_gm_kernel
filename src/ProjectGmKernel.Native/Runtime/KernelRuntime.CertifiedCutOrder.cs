@@ -18,12 +18,19 @@ internal static unsafe partial class KernelRuntime
         {
             var previous=locators[i];if(!previous.Finite)continue;
             ref readonly var other=ref roots[i];
-            var same=root.Witness!=0&&root.Witness==other.Witness&&root.InputEdge==other.InputEdge
+            var sameSource=root.Witness!=0&&root.Witness==other.Witness&&root.InputEdge==other.InputEdge
                 &&root.Curve==other.Curve&&root.CuttingSurface==other.CuttingSurface;
+            // Distinct source coedges may identify the same actual vertex.
+            // This is a join only when both providers declared their native
+            // endpoints and the target occurrence supplies one exact station.
+            var sameEnd=root.Root.Vertex>=0&&root.Root.Vertex==other.Root.Vertex
+                &&root.Root.NativeEnd!=FiniteNativeEnd.None&&other.Root.NativeEnd!=FiniteNativeEnd.None
+                &&incoming.Lower==incoming.Upper&&previous.Lower==previous.Upper&&incoming.Lower==previous.Lower;
             var overlap=IntersectStationBounds(incoming,previous).Finite;
-            if(!same&&!overlap)continue;
+            if(!sameSource&&!overlap)continue;
             joint=IntersectStationBounds(joint,previous);
-            if(!same||!joint.Finite||root.Root.Lower>other.Root.Upper||other.Root.Lower>root.Root.Upper
+            if(!sameSource&&!sameEnd||!joint.Finite
+                ||sameSource&&(root.Root.Lower>other.Root.Upper||other.Root.Lower>root.Root.Upper)
                 ||double.IsFinite(existing)&&existing!=rootParameters[i])
                 return UnresolvedBoundaryStation(carrier,-1,parameter,incoming,rootParameters[i],previous);
             existing=rootParameters[i];
@@ -55,6 +62,16 @@ internal static unsafe partial class KernelRuntime
         Span<double> stations=stackalloc double[1]{first.Midpoint};
         var error=ReconcileCertifiedCutRoot(3,1,roots,rootParameters,locators,stations,out joined);
         representative=stations[0];return error;
+    }
+    internal static int TestCertifiedCutVertexJoin(bool sameVertex,bool explicitEnd,bool exactTarget,out bool joined)
+    {
+        Span<RegularBoundaryRoot> roots=stackalloc RegularBoundaryRoot[2];
+        roots[0]=new(){Curve=1,InputEdge=0,Witness=1,Root=new(){Vertex=7,NativeEnd=FiniteNativeEnd.Last,Lower=1,Upper=1}};
+        roots[1]=new(){Curve=2,InputEdge=1,Witness=2,Root=new(){Vertex=sameVertex?7:8,NativeEnd=explicitEnd?FiniteNativeEnd.First:FiniteNativeEnd.None,Lower=3,Upper=3}};
+        Span<double> parameters=stackalloc double[2]{.5,.5};
+        Span<IntervalNumber> locators=stackalloc IntervalNumber[2]{new(.5),exactTarget?new(.5):new(.49,.51)};
+        Span<double> stations=stackalloc double[1]{.5};
+        return ReconcileCertifiedCutRoot(3,1,roots,parameters,locators,stations,out joined);
     }
 #endif
 }

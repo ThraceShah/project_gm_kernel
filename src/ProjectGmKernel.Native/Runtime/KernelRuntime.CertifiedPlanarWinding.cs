@@ -50,7 +50,12 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[4];
         Span<ScalarRootIsolation> intervals=stackalloc ScalarRootIsolation[4];
         Span<double> errors=stackalloc double[4];
-        var origin=new IntervalVector(cutter.Origin);var scale=forward.Norm().Value;
+        var origin=new IntervalVector(cutter.Origin);var axis=new IntervalVector(cutter.Axis);var scale=forward.Norm().Value;
+        // Each connector from the geometric endpoint to its topological
+        // vertex can carry both edge and vertex precision. A ray that can
+        // hit this envelope cannot use the open coedge roots for winding.
+        var endpointPrecision=2*new IntervalNumber(precision);
+        var planeMargin=(endpointPrecision*axis.Norm().Value).Upper;var forwardMargin=(endpointPrecision*scale).Upper;
         for(var l=0;l<face.LoopCount;l++)
         {
             var loop=input.Loops[face.FirstLoop+l];
@@ -59,11 +64,17 @@ internal static unsafe partial class KernelRuntime
                 var edge=input.Edges[coedge.Edge];var curve=Curves[GetCurveSlotByTag(edge.Curve)];
                 if(!TryReadExplicitSpineCurve(curve,out var explicitCurve)||!ExplicitCurveExactlyOnPlane(explicitCurve,plane))
                     return AlgorithmStatus.Unsupported;
-                var status=SeparatePlanarBoundaryFromRoot(explicitCurve,edge.Start,edge.End,domain,precision);
+                var status=SeparatePlanarBoundaryFromRoot(explicitCurve,edge.Start,edge.End,domain,endpointPrecision.Upper);
                 if(status!=AlgorithmStatus.Success)return status;
+                var nativePositive=LocalSenseSign(curve.Sense)>0;
+                var firstVertex=nativePositive?edge.StartVertex:edge.EndVertex;
+                var lastVertex=nativePositive?edge.EndVertex:edge.StartVertex;
+                if(firstVertex>=0&&!PlanarRayClearsEndpoint(explicitCurve,edge.Start,origin,axis,forward,planeMargin,forwardMargin)
+                    ||lastVertex>=0&&!PlanarRayClearsEndpoint(explicitCurve,edge.End,origin,axis,forward,planeMargin,forwardMargin))
+                    return AlgorithmStatus.NotConverged;
                 status=IsolateFiniteExplicitLevelSet(edge,cutter,roots,intervals,errors,out var n);
                 if(status!=AlgorithmStatus.Success)return status;
-                var increasing=(coedge.Forward!=0)==(LocalSenseSign(curve.Sense)>0);
+                var increasing=(coedge.Forward!=0)==nativePositive;
                 for(var r=0;r<n;r++)
                 {
                     var error=(new IntervalNumber(errors[r])*scale).Upper;
@@ -76,6 +87,17 @@ internal static unsafe partial class KernelRuntime
             }
         }
         return AlgorithmStatus.Success;
+    }
+
+    private static bool PlanarRayClearsEndpoint(in ParametricSpineCurve curve,double station,in IntervalVector origin,
+        in IntervalVector axis,in IntervalVector forward,double planeMargin,double forwardMargin)
+    {
+        var status=SpineParameterMap.Interval(curve,new(new(station),0),out var point,out _);
+        if(status!=AlgorithmStatus.Success||!point.Finite)return false;
+        var offset=point-origin;var normal=IntervalVector.Dot(offset,axis).Value;
+        if(normal.Lower>planeMargin||normal.Upper< -planeMargin)return true;
+        var along=IntervalVector.Dot(offset,forward).Value;
+        return along.Upper< -forwardMargin;
     }
 
     private static AlgorithmStatus SeparatePlanarBoundaryFromRoot(in ParametricSpineCurve curve,double first,double last,in IntervalBox3 root,double precision)

@@ -76,10 +76,11 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
-    [InlineData(0,0)]
-    [InlineData(.75,ParasolidConstants.PK_ERROR_not_implemented)]
-    [InlineData(.5,ParasolidConstants.PK_ERROR_cant_do_intersect)]
-    public void ThirdFaceWindingExcludesARootInsideAnActualInnerLoop(double x,int expected)
+    [InlineData(0,0,0)]
+    [InlineData(.75,0,ParasolidConstants.PK_ERROR_not_implemented)]
+    [InlineData(-.75,.5,ParasolidConstants.PK_ERROR_not_implemented)] // A horizontal ray would hit the two inner vertices.
+    [InlineData(.5,0,ParasolidConstants.PK_ERROR_cant_do_intersect)]
+    public void ThirdFaceWindingExcludesARootInsideAnActualInnerLoop(double x,double y,int expected)
     {
         BodyTag body,tool;
         Assert.Equal(0,KernelRuntime.BodyCreateSolidBlock(4,4,2,null,&body));
@@ -100,7 +101,7 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
             if(occurrence.LoopCount==2&&plane.basis_set.location.coord[2]==2&&Math.Abs(plane.basis_set.axis.coord[2])==1){top=face;break;}
         }
         Assert.True(top>=0);
-        var line=new PK_LINE_sf_s();Write(&line.basis_set.axis,Vector(0,0,1));Write(&line.basis_set.location,Vector(x,0,1));
+        var line=new PK_LINE_sf_s();Write(&line.basis_set.axis,Vector(0,0,1));Write(&line.basis_set.location,Vector(x,y,1));
         CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
         var error=KernelRuntime.TestFiniteThirdFaceEvents(body,top,carrier,0,2,out var events);
         Assert.Equal(expected,error);Assert.Equal(0,events);
@@ -274,6 +275,15 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.False(joined);
         Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
             KernelRuntime.TestCertifiedCutRediscovery(first,second,true,true,out _,out _));
+    }
+
+    [Fact]
+    public void DifferentSourceCoedgesNeedActualEndpointIdentityAndAnExactCommonCutStation()
+    {
+        Assert.Equal(0,KernelRuntime.TestCertifiedCutVertexJoin(true,true,true,out var joined));Assert.True(joined);
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.TestCertifiedCutVertexJoin(false,true,true,out _));
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.TestCertifiedCutVertexJoin(true,false,true,out _));
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.TestCertifiedCutVertexJoin(true,true,false,out _));
     }
 
     [Theory]
