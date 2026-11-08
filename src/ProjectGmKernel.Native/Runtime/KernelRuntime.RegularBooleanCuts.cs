@@ -620,9 +620,23 @@ internal static unsafe partial class KernelRuntime
                     if(end==0)finite.LowerEvent=endpoint+1;else finite.UpperEvent=endpoint+1;
                     if(cutLocator.Finite)finite.NativeLocatorEnds|=(byte)(1<<end);
                     var t=end==0?cut.First:cut.Last;
+                    var targetLocator=cutLocator;
                     if(wrap&&cutLocator.Finite)
-                    {error=model.AssociateParameter(endpoint,curve.Curve,sourceParameter,cutLocator.Lower,cutLocator.Upper);if(error!=0)return error;}
-                    error=wrap||!cutLocator.Finite?model.AssociateParameter(endpoint,cut.Curve,t):model.AssociateParameter(endpoint,cut.Curve,t,cutLocator.Lower,cutLocator.Upper);
+                    {
+                        error=model.AssociateParameter(endpoint,curve.Curve,sourceParameter,cutLocator.Lower,cutLocator.Upper);if(error!=0)return error;
+                        // An analytic arc clone keeps the same angular chart;
+                        // only its upper endpoint moves by one exact turn.
+                        // Rebuilt ICurve charts do not have that mapping.
+                        if(Curves[GetCurveSlotByTag(curve.Curve)].Class is CurveClass.Circle or CurveClass.Ellipse)
+                        {
+                            if(end!=0)targetLocator+=new IntervalNumber(Math.Tau,Math.BitIncrement(Math.Tau));
+                            if(!targetLocator.Finite||t<targetLocator.Lower||t>targetLocator.Upper)
+                                return UnresolvedBoundaryStation(cut.Curve,endpoint,t,targetLocator,sourceParameter,cutLocator);
+                        }
+                        else targetLocator=UncertifiedStation;
+                    }
+                    error=targetLocator.Finite?model.AssociateParameter(endpoint,cut.Curve,t,targetLocator.Lower,targetLocator.Upper)
+                        :model.AssociateParameter(endpoint,cut.Curve,t);
                     if(error!=0)return error;
                     for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter)
                     {
@@ -631,12 +645,12 @@ internal static unsafe partial class KernelRuntime
                         {
                             error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter,root.Root.Lower,root.Root.Upper,
                                 model.RequireBoundaryAssociations&&root.Witness==0?0:root.CuttingSurface,root.Witness);if(error!=0)return error;
-                            if(cutLocators[r].Finite)
+                            if(cutLocators[r].Finite&&targetLocator.Finite)
                                 TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.NativeCutLocator,Curve=root.Curve,ProductCurve=cut.Curve,
                                     Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,InputCoedge=root.InputCoedge,
                                     StartEvent=endpoint,EndEvent=endpoint,Source=-1,Face=-1,Product=-1,Witness=root.Witness,
                                     Generation=Curves[GetCurveSlotByTag(root.Curve)].Header.Generation,
-                                    First=cutLocator.Lower,Last=cutLocator.Upper,SpatialError=root.Root.SpatialError});
+                                    First=targetLocator.Lower,Last=targetLocator.Upper,SpatialError=root.Root.SpatialError});
                             TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CertifiedRoot,Curve=root.Curve,ProductCurve=cut.Curve,
                                 Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,InputCoedge=root.InputCoedge,StartEvent=endpoint,EndEvent=endpoint,
                                 Source=-1,Face=-1,Product=-1,Witness=root.Witness,

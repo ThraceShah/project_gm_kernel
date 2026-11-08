@@ -15,7 +15,9 @@ using ProjectGmKernel.Native.Geometry.Intersection;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
+using EdgeSlot=System.Int32;
 using FaceSlot=System.Int32;
+using FinSlot=System.Int32;
 using VertexSlot=System.Int32;
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
@@ -161,6 +163,9 @@ using(host)unsafe
             if(phase!=0)name+=$"-support-phase{phase:R}";
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
                 if(researchPrecision!=0)name+=$"-pk-precision{researchPrecision:R}";
+            // The two short contacts start at y-z=-7 for radius .5 in
+            // seed units. The planar contact shifts that limit by Δradius.
+            var transversePlaneDifference=-7+(radius-.5)-transverseOffset;
             cases++;
             Console.WriteLine("CASE "+name);
             try
@@ -225,7 +230,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transverseOffset);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
@@ -241,7 +246,7 @@ using(host)unsafe
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transverseOffset,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -302,7 +307,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transverseOffset,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transversePlaneDifference,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -325,7 +330,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         var width=localCut?.2:2;var depth=10.0;var height=10.0;int ownTool,pkTool;
         if(transverseCut)
         {
-            var q=1/Math.Sqrt(2);var center=(-7-transverseOffset)*q-.075;
+            var q=1/Math.Sqrt(2);var center=transversePlaneDifference*q-.075;
             toolAxis=new(new PK_VECTOR_t(-1.5,(1+center)*q,(1-center)*q),
                 new PK_VECTOR1_t(0,q,q),new PK_VECTOR1_t(0,q,-q));
             width=.15;depth=.4;height=2.5;
@@ -389,8 +394,9 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
     var roots=new List<KernelRuntime.BoundaryTrace>();
     var cutterRoots=new List<KernelRuntime.BoundaryTrace>();
     var conicRoots=new List<KernelRuntime.BoundaryTrace>();
-    var arranged=new HashSet<(int Carrier,int Event)>();
+    var arranged=new List<KernelRuntime.BoundaryTrace>();
     var published=new HashSet<(int Carrier,int Event)>();
+    var productUses=new List<(KernelRuntime.BoundaryTrace Trace,EdgeSlot Edge,FinSlot Fin,char Sense)>();
     var spatialReuses=0;
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
@@ -410,15 +416,31 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
         }
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)spatialReuses++;
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints)
-        {arranged.Add((trace.Curve,trace.StartEvent));arranged.Add((trace.Curve,trace.EndEvent));}
+            arranged.Add(trace);
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product)
-        {published.Add((trace.Curve,trace.StartEvent));published.Add((trace.Curve,trace.EndEvent));}
+        {
+            published.Add((trace.Curve,trace.StartEvent));published.Add((trace.Curve,trace.EndEvent));
+            if(witnesses.Any(w=>w.ProductCurve==trace.Curve&&(w.StartEvent==trace.StartEvent||w.StartEvent==trace.EndEvent)))
+            {
+                var face=KernelRuntime.Faces[trace.Product];var loop=face.FirstLoop;
+                for(var l=0;l<face.LoopCount;l++,loop=KernelRuntime.Loops[loop].NextInFace)
+                {
+                    var ring=KernelRuntime.Loops[loop];var fin=ring.FirstFin;
+                    for(var f=0;f<ring.FinCount;f++,fin=KernelRuntime.Fins[fin].NextInLoop)
+                    {
+                        var use=KernelRuntime.Fins[fin];if(use.Edge<0)continue;
+                        var edge=KernelRuntime.Edges[use.Edge];
+                        if(edge.CurveTag==trace.ProductCurve&&edge.HasParameterRange!=0&&edge.ParameterStart==trace.First&&edge.ParameterEnd==trace.Last)
+                            productUses.Add((trace,use.Edge,fin,use.Sense));
+                    }
+                }
+            }
+        }
     };
     int result;
     try{result=CutWithoutSpatialReuse(body,tool);}
     finally{KernelRuntime.TraceFiniteBoundary=previous;}
-    var consumed=witnesses.Where(x=>arranged.Contains((x.ProductCurve,x.StartEvent))&&published.Contains((x.ProductCurve,x.StartEvent))
-        &&double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0).ToArray();
+    var consumed=witnesses.Where(PublishedOnBothFaces).ToArray();
     var shortEvents=new HashSet<int>();
     var certifiedCoedges=0;
     foreach(var edge in shortEdges)
@@ -445,16 +467,53 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
     }
     return result;
 
+    bool PublishedOnBothFaces(KernelRuntime.BoundaryTrace witness)
+    {
+        if(!double.IsFinite(witness.First)||!double.IsFinite(witness.Last)||witness.Last<witness.First||!(witness.SpatialError>0))return false;
+        var pairs=0;
+        foreach(var left in productUses)
+        {
+            if(left.Trace.Surface!=witness.Surface||!Arrived(left.Trace,out var station))continue;
+            foreach(var right in productUses)
+                if(right.Trace.Surface==witness.OtherSurface&&right.Trace.Product!=left.Trace.Product&&right.Edge==left.Edge
+                    &&right.Fin!=left.Fin&&right.Sense!=left.Sense&&Arrived(right.Trace,out var other)&&other==station)
+                    pairs++;
+        }
+        return pairs==1;
+
+        bool Arrived(KernelRuntime.BoundaryTrace product,out double station)
+        {
+            station=default;
+            if(product.Curve!=witness.ProductCurve||!Endpoint(product,out var end)||end<witness.First||end>witness.Last)return false;
+            station=end;
+            return arranged.Any(a=>a.Curve==product.Curve&&a.Generation==product.Generation&&a.Source==product.Source
+                &&a.Surface==product.Surface&&a.SurfaceGeneration==product.SurfaceGeneration&&Endpoint(a,out var at)&&at==end);
+        }
+
+        bool Endpoint(KernelRuntime.BoundaryTrace trace,out double t)
+        {
+            // Arrangement traces name lower/upper directly. Product traces
+            // follow the coedge, whose native direction also uses carrier sense.
+            var increasing=trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints
+                ||(trace.Forward!=0)==(trace.CurveSense!=PK_TOPOL_sense_negative_c);
+            if(trace.StartEvent==witness.StartEvent){t=increasing?trace.First:trace.Last;return true;}
+            if(trace.EndEvent==witness.StartEvent){t=increasing?trace.Last:trace.First;return true;}
+            t=default;return false;
+        }
+    }
+
     void CheckCutterCharts(List<KernelRuntime.BoundaryTrace> candidates,string kind)
     {
         var uses=candidates.Where(r=>published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
         var events=uses.GroupBy(r=>r.StartEvent).ToArray();
-        Require(events.Length==2&&events.All(g=>g.Select(r=>r.InputCoedge).Distinct().Count()==2)
-            &&uses.Select(r=>r.Edge).Distinct().Count()==1,$"one finite cutter edge must supply two separate {kind} events on both of its coedges");
+        var cutterEdges=events.GroupBy(g=>g.First().Edge).ToArray();
+        Require(cutterEdges.Length>0&&cutterEdges.All(g=>g.Count()==2)
+            &&events.All(g=>g.Select(r=>r.Edge).Distinct().Count()==1&&g.Select(r=>r.InputCoedge).Distinct().Count()==2),
+            $"each intersected finite cutter edge must supply two separate {kind} events on both of its coedges");
         var certified=uses.Count(r=>consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge
             &&x.StartEvent==r.StartEvent&&x.Witness==r.Witness));
         Require(certified==uses.Length,$"cutter edge stations must transfer to both published {kind} cuts; proved {certified}/{uses.Length}");
-        Console.WriteLine($"CUTTER {kind} WITNESSES events={events.Length} certified_coedges={certified}");
+        Console.WriteLine($"CUTTER {kind} WITNESSES events={events.Length} certified_coedges={certified} cutter_edges={cutterEdges.Length}");
     }
 }
 static int CutWithoutSpatialReuse(int body,int tool)
