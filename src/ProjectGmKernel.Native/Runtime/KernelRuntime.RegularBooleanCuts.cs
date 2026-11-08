@@ -560,9 +560,10 @@ internal static unsafe partial class KernelRuntime
                 error=RegularFiniteFaceContains(input,second,b,point[0],out var insideB,out var boundaryB);if(error!=0)return error;if(!insideB)continue;
                 if(boundaryA&&boundaryB)continue;
                 var cut=curve;cut.First=lo;cut.Last=hi;cut.Closed=closed?(byte)1:(byte)0;
+                WrappedCutCharts wrappedCharts=default;
                 if(wrap)
                 {
-                    error=CloneSheetCurveArc(curve.Curve,lo,hi,true,out cut.Curve,out cut.First,out cut.Last);if(error!=0)return error;
+                    error=CloneSheetCurveArc(curve.Curve,lo,hi,true,out cut.Curve,out cut.First,out cut.Last,out wrappedCharts);if(error!=0)return error;
                     if(ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;owned[ownedCount++]=cut;
                 }
                 if(cutCount==cuts.Length)return ParasolidConstants.PK_ERROR_not_implemented;cuts[cutCount++]=new(){First=first,Second=second,Cut=cut};
@@ -630,10 +631,17 @@ internal static unsafe partial class KernelRuntime
                         if(Curves[GetCurveSlotByTag(curve.Curve)].Class is CurveClass.Circle or CurveClass.Ellipse)
                         {
                             if(end!=0)targetLocator+=new IntervalNumber(Math.Tau,Math.BitIncrement(Math.Tau));
-                            if(!targetLocator.Finite||t<targetLocator.Lower||t>targetLocator.Upper)
+                            if(!targetLocator.Finite)return UnresolvedBoundaryStation(cut.Curve,endpoint,t,targetLocator,sourceParameter,cutLocator);
+                        }
+                        else
+                        {
+                            var chart=end==0?wrappedCharts.First:wrappedCharts.Last;
+                            if(!chart.Available)targetLocator=UncertifiedStation;
+                            else if(!chart.TryTransfer(cutLocator,out targetLocator))
                                 return UnresolvedBoundaryStation(cut.Curve,endpoint,t,targetLocator,sourceParameter,cutLocator);
                         }
-                        else targetLocator=UncertifiedStation;
+                        if(targetLocator.Finite&&(t<targetLocator.Lower||t>targetLocator.Upper))
+                            return UnresolvedBoundaryStation(cut.Curve,endpoint,t,targetLocator,sourceParameter,cutLocator);
                     }
                     error=targetLocator.Finite?model.AssociateParameter(endpoint,cut.Curve,t,targetLocator.Lower,targetLocator.Upper)
                         :model.AssociateParameter(endpoint,cut.Curve,t);

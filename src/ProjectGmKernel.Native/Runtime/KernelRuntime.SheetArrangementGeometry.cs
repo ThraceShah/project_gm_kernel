@@ -302,8 +302,12 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int CloneSheetCurveArc(CurveTag original,double first,double last,bool wrap,out CurveTag curve,out double lower,out double upper)
+        =>CloneSheetCurveArc(original,first,last,wrap,out curve,out lower,out upper,out _);
+
+    private static int CloneSheetCurveArc(CurveTag original,double first,double last,bool wrap,out CurveTag curve,out double lower,out double upper,
+        out WrappedCutCharts mapping)
     {
-        curve=0;lower=first;upper=last;
+        curve=0;lower=first;upper=last;mapping=default;
         if(!wrap)return TryCloneEntityCore(original,out curve);
         LastSheetPartitionStage=SheetPartitionStage.PeriodicArc;LastSheetCurve=original;LastSheetParameter=first;
         var record=Curves[GetCurveSlotByTag(original)];
@@ -311,7 +315,7 @@ internal static unsafe partial class KernelRuntime
         { upper=last+Math.Tau;return TryCloneEntityCore(original,out curve); }
         if(record.Class!=CurveClass.ICurve)return ParasolidConstants.PK_ERROR_not_implemented;
         var data=ICurveDataPool[record.DataIndex];
-        if(data.ProgramBlock>0)return CloneWrappedNestedIntersection(original,record,data,first,last,out curve,out lower,out upper);
+        if(data.ProgramBlock>0)return CloneWrappedNestedIntersection(original,record,data,first,last,out curve,out lower,out upper,out mapping);
         var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {
