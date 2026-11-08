@@ -93,17 +93,18 @@ public unsafe class RollingNetworkTests:IDisposable
             Assert.Equal(3,count);
             for(var i=0;i<count;i++)Assert.Equal(selected[i],replaced[i]);
             var a=KernelRuntime.ResolveTagRecord(products[0]).Slot;var b=KernelRuntime.ResolveTagRecord(products[2-index]).Slot;
-            var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var sections=0;
+            var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var sections=0;CurveTag sharedSection=0;
             for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
             {
                 var record=KernelRuntime.Edges[edge];var first=record.FirstFinEdge;var second=KernelRuntime.Fins[first].Other;
                 var x=KernelRuntime.Loops[KernelRuntime.Fins[first].Loop].Face;var y=KernelRuntime.Loops[KernelRuntime.Fins[second].Loop].Face;
                 if(!(a==x&&b==y||a==y&&b==x))continue;
-                sections++;Assert.Equal(CurveClass.Circle,KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)].Class);
+                sections++;sharedSection=record.CurveTag;Assert.Equal(CurveClass.Circle,KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(record.CurveTag)].Class);
                 Assert.True(record.ParameterEnd>record.ParameterStart);Assert.NotEqual(KernelRuntime.Fins[first].Sense,KernelRuntime.Fins[second].Sense);
             }
             Assert.Equal(1,sections);
-            var witness=Assert.Single(trace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints);
+            var witness=Assert.Single(trace,x=>x.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints
+                &&trace.Any(p=>p.Stage==KernelRuntime.BoundaryTraceStage.Product&&p.ProductCurve==sharedSection&&p.Curve==x.Curve&&p.Generation==x.Generation));
             if(ellipse)
             {
                 var charts=trace.Where(x=>x.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionChart&&x.Curve==witness.Curve).ToArray();

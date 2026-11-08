@@ -143,6 +143,7 @@ internal static unsafe partial class KernelRuntime
                     // own support and provenance even when the event joins.
                     var duplicate=false;for(var i=count-1;i>=0&&points[i].InputCoedge==inputCoedge;i--)
                         duplicate|=points[i].Root.Parameter==roots[r].First;
+                    if(duplicate&&(known||nativeProof||conicProof||lineProof))return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     if(!duplicate)
                     {
                         if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -336,6 +337,7 @@ internal static unsafe partial class KernelRuntime
         LastSheetPartitionStage=SheetPartitionStage.CutClip;
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<double> rootParameters=stackalloc double[SheetPointLimit];Span<KernelVector3> point=stackalloc KernelVector3[1];
         Span<IntervalNumber> cutLocators=stackalloc IntervalNumber[nRoots];
+        Span<IntervalNumber> stations=stackalloc IntervalNumber[SheetPointLimit+2];
         Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[IntersectionPointCapacity];
         var sectionCharts=model.SectionCharts[..model.SectionChartCount];
         var firstSurface=input.Faces[first].Surface;var secondSurface=input.Faces[second].Surface;
@@ -353,7 +355,12 @@ internal static unsafe partial class KernelRuntime
             {
                 rootParameters[i]=double.NaN;cutLocators[i]=new(double.NaN,double.NaN);
                 var p=new PK_VECTOR_s();WriteVector(&p,roots[i].Root.Point);double t=roots[i].Root.Parameter;
-                if(roots[i].Curve==curve.Curve)error=0;
+                if(roots[i].Curve==curve.Curve)
+                {
+                    error=0;
+                    if(roots[i].Certified!=0&&roots[i].Witness!=0)
+                        cutLocators[i]=new(roots[i].Root.Lower,roots[i].Root.Upper);
+                }
                 else
                 {
                     error=LocateCertifiedNativeCut(curve,roots[i],out t,out cutLocators[i],out var handled);
@@ -362,33 +369,47 @@ internal static unsafe partial class KernelRuntime
                     if(!handled)error=CurveParameteriseVectorCore(curve.Curve,p,&t);
                 }
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
-                LiftPeriodicEdgeParameter(curve.Curve,curve.First,curve.Last,ref t);
-                if(!OperationIntersection.InInterval(t,curve.First,curve.Last))continue;
-                t=Math.Clamp(t,curve.First,curve.Last);rootParameters[i]=t;
+                if(cutLocators[i].Finite)
+                {
+                    var anchor=new BoundaryParameter{Parameter=t,Lower=cutLocators[i].Lower,Upper=cutLocators[i].Upper};
+                    var lowerEnd=false;var upperEnd=false;
+                    if(roots[i].Curve==curve.Curve&&roots[i].Witness!=0)
+                    {
+                        var source=input.Edges[roots[i].InputEdge];
+                        lowerEnd=roots[i].Root.NativeEnd==FiniteNativeEnd.First&&t==source.Start&&t==curve.First;
+                        upperEnd=roots[i].Root.NativeEnd==FiniteNativeEnd.Last&&t==source.End&&t==curve.Last;
+                    }
+                    error=LocateBoundedStation(curve.Curve,0,anchor,curve.First,curve.Last,lowerEnd?0:-1,upperEnd?0:-1,
+                        out t,out cutLocators[i],out var inside);
+                    if(error!=0)return error;if(!inside){cutLocators[i]=UncertifiedStation;continue;}
+                    rootParameters[i]=t;
+                    error=ReconcileCertifiedCutRoot(curve.Curve,i,roots[..nRoots],rootParameters,cutLocators,parameters[..n],out var joined);
+                    if(error!=0)return error;if(joined)continue;
+                }
+                else
+                {
+                    LiftPeriodicEdgeParameter(curve.Curve,curve.First,curve.Last,ref t);
+                    if(!OperationIntersection.InInterval(t,curve.First,curve.Last))continue;
+                    t=Math.Clamp(t,curve.First,curve.Last);rootParameters[i]=t;
+                }
                 var duplicate=false;
                 for(var j=0;j<n;j++)
                 {
-                    if(Math.Abs(parameters[j]-t)>=1e-10)continue;
-                    var distinct=false;
                     if(cutLocators[i].Finite&&curve.Closed==0&&(parameters[j]==curve.First||parameters[j]==curve.Last))
                     {
                         if(parameters[j]<cutLocators[i].Lower||parameters[j]>cutLocators[i].Upper)continue;
-                        if(cutLocators[i].Lower!=cutLocators[i].Upper)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        if(cutLocators[i].Lower!=cutLocators[i].Upper)
+                            return UnresolvedBoundaryStation(curve.Curve,-1,t,cutLocators[i],parameters[j],new(parameters[j]));
                     }
-                    if(cutLocators[i].Finite)for(var r=0;r<i;r++)if(rootParameters[r]==parameters[j]&&cutLocators[r].Finite)
+                    if(Math.Abs(parameters[j]-t)>=1e-10)continue;
+                    var distinct=false;
+                    if(cutLocators[i].Finite)
                     {
-                        var a=cutLocators[r];var b=cutLocators[i];
-                        if(a.Upper<b.Lower||b.Upper<a.Lower)
-                        {
-                            if(!(a.Upper<b.Lower&&parameters[j]<t||b.Upper<a.Lower&&t<parameters[j]))return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                            distinct=true;continue;
-                        }
-                        if(roots[r].Curve!=roots[i].Curve||roots[r].CuttingSurface!=roots[i].CuttingSurface
-                            ||roots[r].Root.Upper<roots[i].Root.Lower||roots[i].Root.Upper<roots[r].Root.Lower)
-                            return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                        rootParameters[i]=parameters[j];
+                        // Certified pairs were settled above, without the
+                        // station epsilon. A point inverse cannot move one.
+                        for(var r=0;r<i;r++)distinct|=rootParameters[r]==parameters[j]&&cutLocators[r].Finite;
+                        if(distinct||parameters[j]!=t)continue;
                     }
-                    if(distinct)continue;
                     if(roots[i].Certified!=0)for(var r=0;r<i;r++)
                     {
                         var other=roots[r];var current=roots[i];
@@ -415,13 +436,26 @@ internal static unsafe partial class KernelRuntime
                 }
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n++]=t;}
             }
-            parameters[..n].Sort();var intervals=curve.Closed!=0?Math.Max(1,n):n-1;
+            parameters[..n].Sort();stations[..n].Fill(UncertifiedStation);
+            for(var r=0;r<nRoots;r++)if(cutLocators[r].Finite&&double.IsFinite(rootParameters[r]))
+            {
+                var at=parameters[..n].BinarySearch(rootParameters[r]);if(at<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                stations[at]=stations[at].Finite?IntersectStationBounds(stations[at],cutLocators[r]):cutLocators[r];
+            }
+            var intervals=curve.Closed!=0?Math.Max(1,n):n-1;
             for(var i=0;i<intervals;i++)
             {
                 var closed=curve.Closed!=0&&n==0;var wrap=curve.Closed!=0&&n>0&&i==n-1;
                 var lo=closed?curve.First:parameters[i];var hi=closed?curve.Last:parameters[(i+1)%n];
                 var width=wrap?curve.Last-lo+hi-curve.First:hi-lo;if(!(width>0))continue;
-                var at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;
+                var aBound=closed?UncertifiedStation:stations[i];var bBound=closed?UncertifiedStation:stations[(i+1)%n];
+                var witnessFirst=aBound.Finite?aBound.Upper:lo;var witnessLast=bBound.Finite?bBound.Lower:hi;double at;
+                if(witnessFirst!=lo||witnessLast!=hi)
+                {
+                    if(!TryInteriorBoundaryStation(witnessFirst,witnessLast,curve.First,curve.Last,wrap,.3819660112501051,out at))
+                        return UnresolvedBoundaryStation(curve.Curve,-1,hi,bBound,lo,aBound);
+                }
+                else{at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;}
                 var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
                 error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve,at,point[0],sectionCharts,out var a);

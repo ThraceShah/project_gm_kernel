@@ -10,11 +10,13 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     private enum FiniteIntersectionState:byte{Unresolved,Empty,Complete,Unsupported,BudgetExceeded}
+    private enum FiniteNativeEnd:byte{None,First,Last}
     private struct FiniteCurveSurfaceRoot
     {
         internal KernelVector3 Point;
         internal VertexSlot Vertex;
         internal IntersectionVectorKind Kind;
+        internal FiniteNativeEnd NativeEnd;
         internal double Parameter,Lower,Upper,SpatialError;
     }
     private struct FiniteCurveSurfaceResult
@@ -225,6 +227,10 @@ internal static unsafe partial class KernelRuntime
         if(Math.Abs(parameter-last)<=delta)
         {var other=positive?endVertex:startVertex;if(vertex>=0&&vertex!=other)return Generated.ParasolidConstants.PK_ERROR_cant_do_intersect;vertex=other;}
         if(vertex>=0){var found=SheetOriginalVertex(vertex,out point);if(found!=0)return found;}
-        root=new(){Point=point,Vertex=vertex,Kind=IntersectionVectorKind.Tangent,Parameter=parameter,Lower=Math.BitDecrement(parameter-delta),Upper=Math.BitIncrement(parameter+delta),SpatialError=precision};return 0;
+        // The native station is exact when the provider explicitly
+        // evaluated the declared trim endpoint. Spatial error still applies.
+        var nativeEnd=first==last?FiniteNativeEnd.None:parameter==first?FiniteNativeEnd.First:parameter==last?FiniteNativeEnd.Last:FiniteNativeEnd.None;
+        root=new(){Point=point,Vertex=vertex,Kind=IntersectionVectorKind.Tangent,NativeEnd=nativeEnd,
+            Parameter=parameter,Lower=Math.BitDecrement(parameter-delta),Upper=Math.BitIncrement(parameter+delta),SpatialError=precision};return 0;
     }
 }

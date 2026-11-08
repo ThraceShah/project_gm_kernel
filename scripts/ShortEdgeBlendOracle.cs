@@ -327,7 +327,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
             native=Cut(false,native,pkTool);CheckBody(native,name+" native local cut");
             File.WriteAllBytes(Path.Combine(output,name+"-independent-local-reference.x_t"),Transmit(false,native));
             if(KernelRuntime.TraceFiniteBoundary!=null)ProductEdges(native,"native-local-cut");
-            own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool):proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
+            own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool,s*inputScale):proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
         }
         else{own=proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
         failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership,checkNativeTrims);
@@ -354,10 +354,27 @@ static unsafe void ReloadEditable(ref int own,string label)
     Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),label+" reload must be editable");
     Console.WriteLine($"LIFECYCLE {label} managed_reload=True body={own}");
 }
-static int CutWithNativeWitness(int body,int tool)
+static int CutWithNativeWitness(int body,int tool,double unitScale)
 {
+    // Identify the original short edges on the actual editable input, so
+    // certificates on long cut carriers cannot satisfy this assertion.
+    var input=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];
+    var shortEdges=new List<(int Curve,int Generation,double First,double Last)>();
+    var edgeSlot=input.FirstEdgeBody;
+    for(var i=0;i<input.EdgeCountBody;i++,edgeSlot=KernelRuntime.Edges[edgeSlot].NextInBody)
+    {
+        var edge=KernelRuntime.Edges[edgeSlot];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)];
+        if(curve.Class!=CurveClass.ICurve||edge.StartVertex<0||edge.EndVertex<0||edge.HasParameterRange==0)continue;
+        var a=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[edge.StartVertex].PointTag)].Position;
+        var b=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[edge.EndVertex].PointTag)].Position;
+        var dx=a.X-b.X;var dy=a.Y-b.Y;var dz=a.Z-b.Z;
+        var chord=Math.Sqrt(dx*dx+dy*dy+dz*dz)/unitScale;
+        if(chord>0&&chord<1e-3)shortEdges.Add((edge.CurveTag,curve.Header.Generation,edge.ParameterStart,edge.ParameterEnd));
+    }
+    Require(shortEdges.Count==2,$"the transverse seed must have two positive short ICurves; found {shortEdges.Count}");
     var previous=KernelRuntime.TraceFiniteBoundary;
     var witnesses=new List<KernelRuntime.BoundaryTrace>();
+    var roots=new List<KernelRuntime.BoundaryTrace>();
     var arranged=new HashSet<(int Carrier,int Event)>();
     var published=new HashSet<(int Carrier,int Event)>();
     var spatialReuses=0;
@@ -365,6 +382,7 @@ static int CutWithNativeWitness(int body,int tool)
     {
         previous?.Invoke(trace);
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator)witnesses.Add(trace);
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)roots.Add(trace);
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)spatialReuses++;
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints)
         {arranged.Add((trace.Curve,trace.StartEvent));arranged.Add((trace.Curve,trace.EndEvent));}
@@ -374,12 +392,20 @@ static int CutWithNativeWitness(int body,int tool)
     int result;
     try{result=CutWithoutSpatialReuse(body,tool);}
     finally{KernelRuntime.TraceFiniteBoundary=previous;}
-    var consumed=witnesses.Where(x=>arranged.Contains((x.ProductCurve,x.StartEvent))&&published.Contains((x.ProductCurve,x.StartEvent))).ToArray();
-    Require(consumed.All(x=>double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0)
-        &&consumed.Select(x=>x.Curve).Distinct().Count()>=2&&consumed.Select(x=>x.StartEvent).Distinct().Count()>=2,
-        "both short ICurve witnesses must reach published cut edges");
+    var consumed=witnesses.Where(x=>arranged.Contains((x.ProductCurve,x.StartEvent))&&published.Contains((x.ProductCurve,x.StartEvent))
+        &&double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0).ToArray();
+    var shortEvents=new HashSet<int>();
+    foreach(var edge in shortEdges)
+    {
+        var evidence=roots.Where(r=>r.Curve==edge.Curve&&r.Generation==edge.Generation&&r.First>edge.First&&r.Last<edge.Last
+            &&consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge&&x.StartEvent==r.StartEvent&&x.Witness==r.Witness))
+            .Select(r=>r.StartEvent).Distinct().ToArray();
+        Require(evidence.Length==1,$"short ICurve {edge.Curve} must have one interior root reaching a published cut edge; found {evidence.Length}");
+        shortEvents.Add(evidence[0]);
+    }
+    Require(shortEvents.Count==2,"the two actual short ICurves must contribute distinct published cut events");
     Require(spatialReuses==0,$"the guarded self cut must use certified endpoint joins; found {spatialReuses} position-only reuses");
-    Console.WriteLine($"NATIVE CUT WITNESSES published_events={consumed.Select(x=>x.StartEvent).Distinct().Count()} spatial_reuses={spatialReuses}");
+    Console.WriteLine($"NATIVE CUT WITNESSES short_occurrences={shortEdges.Count} published_events={shortEvents.Count} spatial_reuses={spatialReuses}");
     return result;
 }
 static int CutWithoutSpatialReuse(int body,int tool)

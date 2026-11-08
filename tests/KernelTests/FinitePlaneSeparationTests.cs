@@ -169,6 +169,28 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.False(KernelRuntime.TryInteriorBoundaryStation(.75,Math.BitIncrement(.75),0,1,false,.38,out _));
     }
 
+    [Fact]
+    public void CertifiedCutRediscoveryRefinesOneRootAndRejectsAnOverlappingDifferentOccurrence()
+    {
+        IntervalNumber first=new(.2,.4),second=new(.35,.6);
+        Assert.Equal(0,KernelRuntime.TestCertifiedCutRediscovery(first,second,true,true,out var joined,out var representative));
+        Assert.True(joined);Assert.Equal(.35,representative);
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.TestCertifiedCutRediscovery(first,second,false,true,out _,out _));
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.TestCertifiedCutRediscovery(first,second,true,false,out _,out _));
+    }
+
+    [Fact]
+    public void DisjointCertifiedCutRootsSurviveTheOldCandidateEpsilon()
+    {
+        IntervalNumber first=new(.5,.5+2e-14),second=new(.5+2e-13,.5+3e-13);
+        Assert.Equal(0,KernelRuntime.TestCertifiedCutRediscovery(first,second,true,false,out var joined,out _));
+        Assert.False(joined);
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.TestCertifiedCutRediscovery(first,second,true,true,out _,out _));
+    }
+
     [Theory]
     [InlineData(.2,.3,true)]
     [InlineData(2.2,2.3,true)]
