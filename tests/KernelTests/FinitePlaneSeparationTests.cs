@@ -95,6 +95,39 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         }
     }
 
+    [Fact]
+    public void RoundedTwoPlaneLineNeedsProducerProvenanceAndAFiniteDriftBound()
+    {
+        var commonPlane=new PK_PLANE_sf_s();commonPlane.basis_set.axis.coord[2]=1;commonPlane.basis_set.ref_direction.coord[0]=1;
+        SurfTag common;Assert.Equal(0,KernelRuntime.PlaneCreate(&commonPlane,&common));
+        var other=new PK_PLANE_sf_s();Write(&other.basis_set.axis,Vector(.6,.8,0));
+        other.basis_set.location.coord[0]=1;other.basis_set.ref_direction.coord[2]=1;
+        SurfTag cutting;Assert.Equal(0,KernelRuntime.PlaneCreate(&other,&cutting));
+        var source=Line(default,Vector(0,1,0));
+        var anchor=Vector(0,Math.BitIncrement(.75),0);var direction=Vector(.8,-.6,0);
+        var target=Line(anchor,direction);
+
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(source,target,common,cutting,-1,1,out var station,out var handled,out var inside,fromPlanePair:true));
+        Assert.True(handled);Assert.True(inside);Assert.True(station.Finite);
+        Assert.True(station.Lower> -1e-12&&station.Upper<1e-12);
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(source,target,common,cutting,-1,1,out _,out handled,out inside));
+        Assert.False(handled);Assert.False(inside);
+
+        var moved=Line(Add(anchor,Vector(0,0,1e-10)),direction);
+        var drift=Line(anchor,Add(direction,Vector(0,0,1e-11)));
+        foreach(var otherLine in new[]{moved,drift})
+        {
+            Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(source,otherLine,common,cutting,-1,1,out _,out handled,out inside,fromPlanePair:true));
+            Assert.False(handled);Assert.False(inside);
+        }
+
+        static CurveTag Line(KernelVector3 origin,KernelVector3 axis)
+        {
+            var l=new PK_LINE_sf_s();Write(&l.basis_set.location,origin);Write(&l.basis_set.axis,axis);
+            CurveTag tag;Assert.Equal(0,KernelRuntime.LineCreate(&l,&tag));return tag;
+        }
+    }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void CylindricalCutSelectsOneGeneratorBeforeUsingTheSharedAxialStation(bool narrow)

@@ -186,10 +186,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                     var expected=trimmedConic?2:4;
                     var generators=transferredGenerators.Count(published.Contains);
                     Console.WriteLine($"CONIC CUT published_line_transfers={crossings} published_generator_transfers={generators}");
-                    // The oblique cutter exercises the rounded cylindrical
-                    // generator. Its two-plane lines lack the exact plane
-                    // identities required by the separate planar provider.
-                    if(!obliqueConic)Require(crossings==expected,$"expected {expected} cap-curve roots on the published cut lines; found {crossings}");
+                    Require(crossings==expected,$"expected {expected} cap-curve roots on the published cut lines; found {crossings}");
                     Require(generators==expected,$"expected {expected} cylinder-branch roots on the published generators; found {generators}");
                 }
                 else Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");

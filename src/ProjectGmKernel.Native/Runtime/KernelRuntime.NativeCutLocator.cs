@@ -12,7 +12,7 @@ internal static unsafe partial class KernelRuntime
     {
         parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
         if(root.Certified==ExplicitPlaneCertificate)
-            return LocateCertifiedLineCut(cut.Curve,root,ref parameter,ref isolation,out handled);
+            return LocateCertifiedLineCut(cut,root,ref parameter,ref isolation,out handled);
         // Project the entire source ICurve root box into the target's
         // finite CHART cells on the same two supports. Only one connected
         // chart occurrence may supply the station.
@@ -42,10 +42,10 @@ internal static unsafe partial class KernelRuntime
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }
 
-    private static int LocateCertifiedLineCut(CurveTag cut,in RegularBoundaryRoot root,ref double parameter,ref IntervalNumber isolation,out bool handled)
+    private static int LocateCertifiedLineCut(in SheetCutCurve cut,in RegularBoundaryRoot root,ref double parameter,ref IntervalNumber isolation,out bool handled)
     {
         handled=false;
-        var target=Curves[GetCurveSlotByTag(cut)];
+        var target=Curves[GetCurveSlotByTag(cut.Curve)];
         if(target.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(target,out var line)
             ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.ContactSurface)],out var common)
             ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.CuttingSurface)],out var cutting)||cutting.Kind!=SurfaceClass.Plane
@@ -59,16 +59,43 @@ internal static unsafe partial class KernelRuntime
             if(!sourceSide.Finite||sourceSide.ContainsZero)return ParasolidConstants.PK_ERROR_cant_do_intersect;
             if((sourceSide.Lower>0)!=positive)return ParasolidConstants.PK_ERROR_not_on_curve;
         }
-        else if(common.Kind!=SurfaceClass.Plane||!ExplicitCurveExactlyOnPlane(source,common)||!ExplicitCurveExactlyOnPlane(line,common)
-            ||!ExplicitCurveExactlyOnPlane(line,cutting))return 0;
-        // The selected branch and its represented carrier share the same
-        // axial gauge, even if a generator's radial anchor rounds.
+        else
+        {
+            if(common.Kind!=SurfaceClass.Plane||!ExplicitCurveExactlyOnPlane(source,common))return 0;
+            if(!(ExplicitCurveExactlyOnPlane(line,common)&&ExplicitCurveExactlyOnPlane(line,cutting))
+                &&(cut.AnalyticPlaneLine==0||!BoundRoundedPlaneLine(cut,line,common,cutting)))return 0;
+        }
+        // Use the represented carrier's gauge for the selected true
+        // branch; a rounded representation must have been bounded above.
         handled=true;
         var axis=new IntervalVector(line.First);
         isolation=ProjectExplicitRoot(source,line.Origin,axis,station)/IntervalVector.Dot(axis,axis).Value;
         if(!isolation.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         parameter=isolation.Midpoint;
         return 0;
+    }
+
+    private static bool BoundRoundedPlaneLine(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface first,in AnalyticSurface second)
+    {
+        var domain=new IntervalNumber(cut.First,cut.Last);
+        if(!domain.Finite)return false;
+        var a=new IntervalVector(first.Axis);var b=new IntervalVector(second.Axis);
+        var q=IntervalVector.Cross(a,b);var qq=IntervalVector.Dot(q,q).Value;
+        var origin=new IntervalVector(line.Origin);var direction=new IntervalVector(line.First);
+        var alignment=IntervalVector.Dot(q,direction).Value;
+        if(!(qq.Lower>0)||!qq.Finite||!alignment.Finite||alignment.ContainsZero)return false;
+        var ra=IntervalVector.Dot(a,new IntervalVector(first.Origin)-origin).Value-IntervalVector.Dot(a,direction).Value*domain;
+        var rb=IntervalVector.Dot(b,new IntervalVector(second.Origin)-origin).Value-IntervalVector.Dot(b,direction).Value*domain;
+        // Minimum transverse correction from the represented point to the
+        // unique analytic line. Keep the gauge by adding the component
+        // along q that makes the correction orthogonal to the stored axis.
+        var correction=(IntervalVector.Cross(b,q)*new IntervalDual(ra,0)+IntervalVector.Cross(q,a)*new IntervalDual(rb,0))/new IntervalDual(qq,0);
+        var gaugeCorrection=correction-q*(IntervalVector.Dot(correction,direction)/new IntervalDual(alignment,0));
+        var error=gaugeCorrection.Norm().Value;
+        var scale=origin.Norm().Value+new IntervalVector(first.Origin).Norm().Value+new IntervalVector(second.Origin).Norm().Value
+            +direction.Norm().Value*domain.Magnitude;
+        var roundoff=(64*SmallLinearSolve.MachineEpsilon*scale).Upper;
+        return error.Finite&&error.Upper<=Math.Min(roundoff,OperationIntersection.DistanceTolerance/16);
     }
 
     private static bool TryCertifiedGeneratorSide(in ParametricSpineCurve line,in AnalyticSurface cylinder,in AnalyticSurface plane,
@@ -172,7 +199,7 @@ internal static unsafe partial class KernelRuntime
 
 #if KERNEL_TEST_HOOKS
     internal static int TestLocateCertifiedLineCut(CurveTag source,CurveTag target,SurfTag support,SurfTag plane,double first,double last,
-        out IntervalNumber bound,out bool certified,out bool inside,double sourceFirst=0,double sourceLast=1)
+        out IntervalNumber bound,out bool certified,out bool inside,double sourceFirst=0,double sourceLast=1,bool fromPlanePair=false)
     {
         bound=UncertifiedStation;certified=inside=false;
         var edge=new ModelingEdge{Curve=source,Start=sourceFirst,End=sourceLast};
@@ -188,7 +215,7 @@ internal static unsafe partial class KernelRuntime
             witness=ThirdFiniteRoot(roots[0],boxes[0],errors[0]);
         }
         var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=plane,Certified=ExplicitPlaneCertificate,Witness=1,Root=witness};
-        var cut=new SheetCutCurve{Curve=target,First=first,Last=last};
+        var cut=new SheetCutCurve{Curve=target,First=first,Last=last,AnalyticPlaneLine=fromPlanePair?(byte)1:(byte)0};
         var error=LocateCertifiedCut(cut,root,out var station,out var projected,out certified);
         if(error!=0||!certified)return error;
         var anchor=new BoundaryParameter{Parameter=station,Lower=projected.Lower,Upper=projected.Upper};
