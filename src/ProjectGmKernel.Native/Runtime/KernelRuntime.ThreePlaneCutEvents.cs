@@ -21,6 +21,13 @@ internal static unsafe partial class KernelRuntime
         // transverse root on the third. The independent first pair
         // therefore has exactly one common point with the third plane.
         // These are three gauges of that root, not three nearby XYZ hits.
+        return AssociateThirdFaceStations(anchors,roots,ref model,out joined);
+    }
+
+    private static int AssociateThirdFaceStations(scoped ReadOnlySpan<BoundaryParameter> anchors,scoped ReadOnlySpan<FiniteCurveSurfaceRoot> roots,
+        ref SheetArrangement model,out bool joined)
+    {
+        joined=false;
         var error=model.AddPoint(roots[0].Point,-1,out var endpoint,anchors,requireProof:true);if(error!=0)return error;
         for(var i=0;i<3;i++)
         {
@@ -41,11 +48,11 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<cuts.Length;i++)
         {
             ref readonly var cut=ref cuts[i];
-            if(!(cut.First==first&&cut.Second==second||cut.First==second&&cut.Second==first))continue;
+            if(!ThirdCutHasPair(cut,first,second))continue;
             if(!TryThreePlaneCutRoot(input,cut,third,out var candidate,out var crosses))return false;
             if(!crosses)continue;
             if(found)return false;
-            root=candidate;anchor=ThreePlaneCutAnchor(input,cut,third,i,candidate);found=true;
+            root=candidate;anchor=ThirdCutAnchor(input,cut,third,i,0,candidate);found=true;
         }
         return found;
     }
@@ -65,10 +72,10 @@ internal static unsafe partial class KernelRuntime
         crosses=result.Count==1;root=result.FirstRoot;return true;
     }
 
-    private static BoundaryParameter ThreePlaneCutAnchor(in RegularBoundaryView input,in RegularFaceCut pair,BufferOffset third,
-        BufferOffset cutIndex,in FiniteCurveSurfaceRoot root)
+    private static BoundaryParameter ThirdCutAnchor(in RegularBoundaryView input,in RegularFaceCut pair,BufferOffset third,
+        BufferOffset cutIndex,BufferOffset rootIndex,in FiniteCurveSurfaceRoot root)
         =>new(){Carrier=pair.Cut.Curve,Generation=Curves[GetCurveSlotByTag(pair.Cut.Curve)].Header.Generation,Surface=input.Faces[third].Surface,
-            Witness=1+(RegularInputEdges+cutIndex)*IntersectionPointCapacity,Parameter=root.Parameter,Lower=root.Lower,Upper=root.Upper};
+            Witness=1+(RegularInputEdges+cutIndex)*IntersectionPointCapacity+rootIndex,Parameter=root.Parameter,Lower=root.Lower,Upper=root.Upper};
 
 #if KERNEL_TEST_HOOKS
     internal static int TestThreePlaneCutEvents(ReadOnlySpan<SurfTag> surfaces,ReadOnlySpan<CurveTag> carriers,bool truncate,

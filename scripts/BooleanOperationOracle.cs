@@ -14,7 +14,8 @@ using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
 var thirdFaceHole=args.Contains("--three-plane-hole");
-var threePlaneOnly=args.Contains("--three-plane-events")||thirdFaceHole;
+var thirdFaceCylinder=args.Contains("--three-face-cylinder");
+var threePlaneOnly=args.Contains("--three-plane-events")||thirdFaceHole||thirdFaceCylinder;
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
 Directory.CreateDirectory(output);var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -28,7 +29,8 @@ try
         {
             var failures=0;var count=0;
             foreach(var mode in threePlaneOnly?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
+            foreach(var fixture in threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
+                :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
                 try
@@ -102,17 +104,23 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var offset=fixture=="translated-large"?100.0:0;
     var outer=fixture is "nested" or "closed-cavity" or "through-hole"?4:fixture=="two-tools"?10:2;
     var holed=fixture=="guarded-three-plane-hole";
-    var threePlane=holed||fixture is "three-plane-cuts" or "guarded-three-plane-cuts";
+    var mixed=fixture is "cylindrical-third-face" or "guarded-cylindrical-third-face";
+    var guarded=fixture.StartsWith("guarded-",StringComparison.Ordinal);
+    var threePlane=holed||mixed||fixture is "three-plane-cuts" or "guarded-three-plane-cuts";
     int target;
-    if(threePlane)Check(own?KernelRuntime.BodyCreateSolidCyl(4,4,null,&target):PK_BODY_create_solid_cyl(4,4,null,&target),"cylindrical target");
+    if(threePlane)
+    {
+        var radius=mixed?5:4;var height=mixed?6:4;
+        Check(own?KernelRuntime.BodyCreateSolidCyl(radius,height,null,&target):PK_BODY_create_solid_cyl(radius,height,null,&target),"cylindrical target");
+    }
     else target=Block(own,offset,0,0,outer,outer,outer,0);
     if(holed)target=ThroughBore(own,target);
     var nt=fixture=="two-tools"||threePlane?2:1;var tools=stackalloc int[nt];
     if(threePlane)
     {
-        tools[0]=Block(own,0,0,3,2,2,2,0);
-        tools[1]=Block(own,1,1,2.75,2,2,2.5,0);
-        if(fixture!="three-plane-cuts")(tools[0],tools[1])=(tools[1],tools[0]);
+        tools[0]=mixed?Block(own,0,-.5,1,12,7,2,0):Block(own,0,0,3,2,2,2,0);
+        tools[1]=mixed?Block(own,0,.5,2,14,7,2,0):Block(own,1,1,2.75,2,2,2.5,0);
+        if(guarded)(tools[0],tools[1])=(tools[1],tools[0]);
     }
     else
     {
@@ -127,7 +135,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         {
             var certified=new HashSet<(int Event,int Curve)>();
             var published=new HashSet<(int Event,int Curve)>();
-            KernelRuntime.ForbidSpatialBoundaryReuse=fixture!="three-plane-cuts";
+            KernelRuntime.ForbidSpatialBoundaryReuse=guarded;
             var excluded=0;
             KernelRuntime.TraceFiniteBoundary=trace=>
             {

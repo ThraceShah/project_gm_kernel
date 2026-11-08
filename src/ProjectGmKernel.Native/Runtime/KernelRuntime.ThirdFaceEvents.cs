@@ -51,14 +51,17 @@ internal static unsafe partial class KernelRuntime
         }
 
         var canJoin=surfaceRecord.Class==SurfaceClass.Plane&&curve.Class==CurveClass.Line&&cuts[cutIndex].First>=0&&cuts[cutIndex].Second>=0;
+        var mixedTriple=IsCylinderPlaneTriple(input,cuts[cutIndex],face);
+        var proofSize=requireProof||mixedTriple?IntersectionPointCapacity:0;
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
+        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[proofSize];
+        Span<double> spatialErrors=stackalloc double[proofSize];
+        var count=0;
+        var proofStatus=proofSize==0?AlgorithmStatus.NotRun:CertifyThirdSurfaceRoots(surface,surfaceRecord,cut,curve,roots,isolation,spatialErrors,out count);
         if(requireProof)
         {
-            Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
-            Span<double> spatialErrors=stackalloc double[IntersectionPointCapacity];
-            var status=CertifyThirdSurfaceRoots(surface,surfaceRecord,cut,curve,roots,isolation,spatialErrors,out var count);
-            LastSheetAlgorithmStatus=status;
-            if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            LastSheetAlgorithmStatus=proofStatus;
+            if(proofStatus!=AlgorithmStatus.Success)return IntersectionError(proofStatus);
             var resolved=SurfacePairRelation.Empty;
             for(var i=0;i<count;i++)
             {
@@ -73,6 +76,13 @@ internal static unsafe partial class KernelRuntime
                     if(errorJoin!=0)return errorJoin;
                     if(joined){resolved=SurfacePairRelation.PointContact;continue;}
                 }
+                var mixedProof=AlgorithmStatus.Unsupported;
+                if(mixedTriple)
+                {
+                    var mixed=JoinCylinderPlaneCutRoots(input,face,cuts,cutIndex,roots[i],isolation[i],error,ref model,out var mixedJoined,out mixedProof);
+                    if(mixed!=0)return mixed;
+                    if(mixedJoined){resolved=SurfacePairRelation.PointContact;continue;}
+                }
                 var insideTrim=false;
                 var ownership=havePlane?CertifiedPlanarRootOwnership(input,face,surfaceRecord,point,rootBox,margin,out insideTrim):AlgorithmStatus.Unsupported;
                 if(ownership==AlgorithmStatus.Success&&!insideTrim)
@@ -83,17 +93,25 @@ internal static unsafe partial class KernelRuntime
                 }
                 // No uncorrelated point is admitted to a guarded graph.
                 LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetParameter=roots[i].First;
-                LastSheetAlgorithmStatus=ownership==AlgorithmStatus.Success?AlgorithmStatus.Unsupported:ownership;
+                LastSheetAlgorithmStatus=mixedProof!=AlgorithmStatus.Unsupported?mixedProof
+                    :ownership==AlgorithmStatus.Success?AlgorithmStatus.Unsupported:ownership;
                 return IntersectionError(LastSheetAlgorithmStatus);
             }
             relation=resolved;return 0;
         }
 
-        var fallback=IntersectRegularSurfaceCurve(surface,cut.Curve,cut.First,cut.Last,roots,out var n);LastSheetAlgorithmStatus=fallback;
+        var fallback=proofStatus==AlgorithmStatus.Success?proofStatus
+            :IntersectRegularSurfaceCurve(surface,cut.Curve,cut.First,cut.Last,roots,out count);
+        LastSheetAlgorithmStatus=fallback;
         if(fallback!=AlgorithmStatus.Success)return IntersectionError(fallback);
-        for(var r=0;r<n;r++)
+        for(var r=0;r<count;r++)
         {
             if(roots[r].Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            if(mixedTriple&&proofStatus==AlgorithmStatus.Success)
+            {
+                var mixed=JoinCylinderPlaneCutRoots(input,face,cuts,cutIndex,roots[r],isolation[r],spatialErrors[r],ref model,out var joined,out _);
+                if(mixed!=0)return mixed;if(joined)continue;
+            }
             fallback=IntersectionSurfaceParameters(surfaceRecord,roots[r].Point,out var uv);if(fallback!=AlgorithmStatus.Success)return IntersectionError(fallback);
             var error=RegularFaceContains(input,face,uv,out var inside);if(error!=0)return error;if(!inside)continue;
             if(canJoin)

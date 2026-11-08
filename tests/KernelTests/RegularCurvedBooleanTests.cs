@@ -10,6 +10,39 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
     public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
 
     [Fact]
+    public void UncertifiedCylinderJunctionLeavesEveryInputAndGeometryPoolUnchanged()
+    {
+        int target;
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(5+Math.ScaleB(1,-25),6,null,&target));
+        var first=BooleanOperationTests.Block(0,.5,2,14,7,2);
+        var second=BooleanOperationTests.Block(0,-.5,1,12,7,2);
+        var bodies=new[]{target,first,second};
+        var before=bodies.Select(XtBrepImportTests.Transmit).ToArray();
+        var generations=bodies.Select(x=>KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(x).Slot].Header.Generation).ToArray();
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
+        var tools=stackalloc int[2]{first,second};
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
+        PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;
+        KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        try
+        {
+            Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.BodyBoolean2(target,2,tools,&options,&tracking,&result));
+            Assert.Equal(KernelRuntime.SheetPartitionStage.BoundaryAssociation,KernelRuntime.LastSheetPartitionStage);
+        }
+        finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
+        Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);Assert.True(tracking.track_records==null);
+        Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+        Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);
+        for(var i=0;i<bodies.Length;i++)
+        {
+            Assert.Equal(generations[i],KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(bodies[i]).Slot].Header.Generation);
+            Assert.Equal(before[i],XtBrepImportTests.Transmit(bodies[i]));
+        }
+    }
+
+    [Fact]
     public void CurvedInputIsASewnSolidWithAnExactBiquadraticRoof()
     {
         var body=RoofSolid();BooleanOperationTests.Counts(body,6,12,8);
