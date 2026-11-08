@@ -40,7 +40,7 @@ internal static unsafe partial class KernelRuntime
         if(slot<0||planeSlot<0)return false;
         if(Surfaces[slot].Class!=SurfaceClass.Cylinder||Surfaces[planeSlot].Class!=SurfaceClass.Plane
             ||!TryPrepareSurface(Surfaces[slot],out var cylinder)||!TryPrepareSurface(Surfaces[planeSlot],out var plane))return false;
-        var tilt=Math.Abs(Dot(cylinder.Axis,plane.Axis));if(tilt==0||tilt>OperationIntersection.AngularTolerance)return false;
+        if(!NeedsFiniteCylinderPlaneChart(cylinder,plane))return false;
         if(CertifiedCylindricalFaceAxialRange(face,out cylinder,out var height,out var precision)!=AlgorithmStatus.Success)return false;
         var n=new IntervalVector(plane.Axis);var x=IntervalVector.Dot(n,new IntervalVector(cylinder.X)).Value;
         var y=IntervalVector.Dot(n,new IntervalVector(cylinder.Y)).Value;
@@ -50,6 +50,14 @@ internal static unsafe partial class KernelRuntime
             +height*IntervalVector.Dot(n,new IntervalVector(cylinder.Axis)).Value;
         var bound=distance+new IntervalNumber(-margin,margin);
         return bound.Finite&&(bound.Lower>tolerance||bound.Upper< -tolerance);
+    }
+
+    private static bool NeedsFiniteCylinderPlaneChart(in AnalyticSurface cylinder,in AnalyticSurface plane)
+    {
+        var tilt=Math.Abs(Dot(cylinder.Axis,plane.Axis));
+        // Rounded cancellation can hide a real axial term. Only the exact
+        // zero belongs to the unbounded analytic generator provider.
+        return tilt<=OperationIntersection.AngularTolerance&&(tilt!=0||!ExactProjectionEqual(cylinder.Axis,default,plane.Axis));
     }
 
     // The infinite near-parallel conic has an ill-conditioned centre. Over
@@ -66,7 +74,7 @@ internal static unsafe partial class KernelRuntime
         var reverse=av.Kind==SurfaceClass.Plane&&bv.Kind==SurfaceClass.Cylinder;
         var cylinder=reverse?bv:av;var plane=reverse?av:bv;
         if(cylinder.Kind!=SurfaceClass.Cylinder||plane.Kind!=SurfaceClass.Plane)return 0;
-        var tilt=Math.Abs(Dot(cylinder.Axis,plane.Axis));if(tilt==0||tilt>OperationIntersection.AngularTolerance)return 0;
+        if(!NeedsFiniteCylinderPlaneChart(cylinder,plane))return 0;
         var cylinderTag=reverse?second:first;IntervalNumber height=default;var haveRange=false;
         for(var f=0;f<faces.Length;f++)if(faces[f].Surface==cylinderTag)
         {
