@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
@@ -17,6 +18,13 @@ internal static unsafe partial class KernelRuntime
         var ca=Curves[GetCurveSlotByTag(a.Curve)];var cb=Curves[GetCurveSlotByTag(b.Curve)];
         if(ca.Class!=CurveClass.Line||cb.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(ca,out var la)||!TryReadExplicitSpineCurve(cb,out var lb))
             return false;
+        return TryExactFiniteLineRoots(la,a.Start,a.End,lb,b.Start,b.End,roots,out count);
+    }
+
+    private static bool TryExactFiniteLineRoots(in ParametricSpineCurve la,double aStart,double aEnd,
+        in ParametricSpineCurve lb,double bStart,double bEnd,Span<OperationIntersectionPoint> roots,out BufferCount count)
+    {
+        count=0;
         var p=new IntervalVector(la.Origin);var q=new IntervalVector(lb.Origin);
         var d=new IntervalVector(la.First);var e=new IntervalVector(lb.First);
         var r=q-p;var cross=IntervalVector.Cross(d,e);
@@ -26,7 +34,7 @@ internal static unsafe partial class KernelRuntime
             var t=Value(IntervalVector.Cross(r,e),component)/divisor;
             var u=Value(IntervalVector.Cross(r,d),component)/divisor;
             if(!t.Finite||!u.Finite)return false;
-            if(t.Upper<a.Start||t.Lower>a.End||u.Upper<b.Start||u.Lower>b.End)return true;
+            if(t.Upper<aStart||t.Lower>aEnd||u.Upper<bStart||u.Lower>bEnd)return true;
             if(!Single(t)||!Single(u))return false;
             var x=p+d*t;var y=q+e*u;
             if(TryComponent(x-y,out _,out _))return true;
@@ -38,10 +46,10 @@ internal static unsafe partial class KernelRuntime
         if(!TryComponent(d,out var axis,out var first)||!Single(first))return false;
         var second=Value(e,axis);if(!Single(second)||second.ContainsZero)return false;
         var shift=Value(r,axis);
-        var lo=(shift+second*b.Start)/first;var hi=(shift+second*b.End)/first;
+        var lo=(shift+second*bStart)/first;var hi=(shift+second*bEnd)/first;
         if(!Single(lo)||!Single(hi))return false;
-        var lower=Math.Max(a.Start,Math.Min(lo.Lower,hi.Lower));
-        var upper=Math.Min(a.End,Math.Max(lo.Lower,hi.Lower));
+        var lower=Math.Max(aStart,Math.Min(lo.Lower,hi.Lower));
+        var upper=Math.Min(aEnd,Math.Max(lo.Lower,hi.Lower));
         if(upper<lower)return true;
         var ul=(first*lower-shift)/second;
         if(!SetRoot(roots,0,new(lower),ul,p+d*lower,q+e*ul,upper==lower?IntersectionVectorKind.Tangent:IntersectionVectorKind.Start))return false;

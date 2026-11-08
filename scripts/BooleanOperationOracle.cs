@@ -20,7 +20,8 @@ var conicCutOnly=args.Contains("--plane-conic-cut");
 var conicCornerOnly=args.Contains("--conic-corner");
 var coplanarToolsOnly=args.Contains("--coplanar-tools");
 var axialContactOnly=args.Contains("--finite-axial-contact");
-var specialized=threePlaneOnly||conicCutOnly||conicCornerOnly||coplanarToolsOnly||axialContactOnly;
+var axialImprintOnly=args.Contains("--axial-contact-imprint");
+var specialized=threePlaneOnly||conicCutOnly||conicCornerOnly||coplanarToolsOnly||axialContactOnly||axialImprintOnly;
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
 Directory.CreateDirectory(output);var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -34,7 +35,7 @@ try
         {
             var failures=0;var count=0;
             foreach(var mode in specialized?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in axialContactOnly?["guarded-axial-contact-outside","guarded-axial-contact-mapped"]:coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
+            foreach(var fixture in axialImprintOnly?["guarded-axial-imprint","guarded-axial-imprint-negative","guarded-axial-imprint-yside","guarded-axial-imprint-mapped","guarded-axial-imprint-axis-reversed"]:axialContactOnly?["guarded-axial-contact-outside","guarded-axial-contact-mapped"]:coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
@@ -56,7 +57,8 @@ try
                         File.WriteAllBytes(Path.Combine(output,$"{label}-{b}-reference.x_t"),TransmitReference(reference[b]));
                         for(var k=0;k<5;k++)Require(OracleCount(reference[b],k)==OracleCount(received[b],k),$"kind{k}: expected{OracleCount(reference[b],k)} received{OracleCount(received[b],k)}");
                         if(specialized)ParasolidBodyCompare.AssertEquivalent(reference[b],received[b],label);
-                        else CompareBodies(reference[b],received[b],label,Log);
+                        if(axialImprintOnly)CompareAxialContact(reference[b],received[b]);
+                        if(!specialized)CompareBodies(reference[b],received[b],label,Log);
                     }
                     Log("PASS "+label);
                 }
@@ -119,15 +121,18 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var conicCorner=fixture=="guarded-conic-corner";
     var mappedTools=fixture=="guarded-coplanar-tools-mapped";
     var coplanarTools=mappedTools||fixture is "guarded-coplanar-tools" or "guarded-coplanar-tools-reversed";
-    var mappedContact=fixture=="guarded-axial-contact-mapped";
-    var axialContact=mappedContact||fixture=="guarded-axial-contact-outside";
+    var axialImprint=fixture.StartsWith("guarded-axial-imprint",StringComparison.Ordinal);
+    var reversedContact=fixture=="guarded-axial-imprint-axis-reversed";
+    var mappedContact=fixture is "guarded-axial-contact-mapped" or "guarded-axial-imprint-mapped";
+    var axialContact=axialImprint||mappedContact||fixture=="guarded-axial-contact-outside";
     int target;
     if(threePlane||conicCut||conicCorner||coplanarTools||axialContact)
     {
         var radius=mixed||conicCorner||coplanarTools?5:4;var height=mixed?6:4;
-        if(mappedTools||mappedContact)
+        if(mappedTools||mappedContact||reversedContact)
         {
-            var axis=CoplanarToolsBasis(0,0,0);var selfAxis=Unsafe.BitCast<PK_AXIS2_sf_t,M.PK_AXIS2_sf_s>(axis);
+            var axis=reversedContact?new PK_AXIS2_sf_t(new(0,0,4),new(0,0,-1),new(1,0,0)):CoplanarToolsBasis(0,0,0);
+            var selfAxis=Unsafe.BitCast<PK_AXIS2_sf_t,M.PK_AXIS2_sf_s>(axis);
             Check(own?KernelRuntime.BodyCreateSolidCyl(radius,height,&selfAxis,&target):PK_BODY_create_solid_cyl(radius,height,&axis,&target),"mapped cylindrical target");
         }
         else Check(own?KernelRuntime.BodyCreateSolidCyl(radius,height,null,&target):PK_BODY_create_solid_cyl(radius,height,null,&target),"cylindrical target");
@@ -136,7 +141,26 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     if(holed)target=SubtractSeedTool(own,target,Block(own,1,0,-1,.5,.5,6,0));
     if(trimmedConic)target=SubtractSeedTool(own,target,Block(own,0,4,-1,12,6,6,0));
     var nt=fixture=="two-tools"||threePlane||coplanarTools?2:1;var tools=stackalloc int[nt];
-    if(axialContact)
+    if(axialImprint)
+    {
+        // Both kernels receive the same explicit finite loop origin. The
+        // native reference constructs its tool independently; the managed
+        // path imports only its own separately constructed unmodified input.
+        var nativeTool=fixture switch
+        {
+            "guarded-axial-imprint-negative"=>Block(false,-5,0,1,2,2,2,0),
+            "guarded-axial-imprint-yside"=>Block(false,0,5,1,2,2,2,0),
+            "guarded-axial-imprint-mapped"=>BlockWithBasis(false,CoplanarToolsBasis(5,0,1),2,2,2),
+            _=>Block(false,5,0,1,2,2,2,0),
+        };
+        if(own)
+        {
+            var bytes=TransmitReference(nativeTool);Check(PK_ENTITY_delete(1,&nativeTool),"delete independently built tool input");
+            tools[0]=ReceiveEditableTool(bytes);
+        }
+        else tools[0]=nativeTool;
+    }
+    else if(axialContact)
         tools[0]=mappedContact?BlockWithBasis(own,CoplanarToolsBasis(5,2,1),2,2,2):Block(own,5,2,1,2,2,2,0);
     else if(coplanarTools)
     {
@@ -186,11 +210,17 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
             var cornerSources=new Dictionary<(int Event,int Curve),int>();
             var coincidentLines=new HashSet<(int Event,int Curve)>();
             var published=new HashSet<(int Event,int Curve)>();
+            var contactSources=new HashSet<int>();var contactEdge=-1;
             KernelRuntime.ForbidSpatialBoundaryReuse=guarded;
             var excluded=0;
             KernelRuntime.TraceFiniteBoundary=trace=>
             {
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceStation)certified.Add((trace.StartEvent,trace.Curve));
+                if(trace.Stage==KernelRuntime.BoundaryTraceStage.AxialContactImprint)
+                {
+                    Require(contactEdge<0||contactEdge==trace.Edge,"both source occurrences bind one line contact");
+                    contactEdge=trace.Edge;contactSources.Add(trace.SourceEdge);
+                }
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.CoincidentLineStation)
                     coincidentLines.Add((trace.StartEvent,trace.Curve));
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator&&trace.Witness!=0&&trace.Curve!=trace.ProductCurve
@@ -246,6 +276,12 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                     Require(joins>0,"coplanar line stations must meet on an actual published edge");
                     Console.WriteLine($"COPLANAR TOOLS published_coincident_events={joins}");
                 }
+                else if(axialImprint)
+                {
+                    Require(contactEdge>=0&&contactSources.Count==2,"two distinct finite tool roots reach the published contact line");
+                    var edge=KernelRuntime.Edges[contactEdge];
+                    Require(edge.FinCount==2&&edge.ParameterEnd>edge.ParameterStart,"positive native contact with two uses");
+                }
                 else if(!axialContact)Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
             }
             finally{KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;}
@@ -262,6 +298,66 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         Check(PK_TOPOL_track_r_f(&tracking),"PK tracking free");Check(PK_boolean_r_f(&result),"PK result free");return bodies;
     }
 }
+static unsafe int ReceiveEditableTool(byte[] bytes)
+{
+    fixed(byte* p=bytes)
+    {
+        var mem=new M.PK_MEMORY_block_s{bytes=p,n_bytes=(nuint)bytes.Length};
+        var options=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};
+        int count;int* parts;Check(KernelRuntime.PartReceiveB(mem,&options,&count,&parts),"managed finite tool input");
+        try
+        {
+            Require(count==1,"one finite tool input");
+            var body=parts[0];var slot=KernelRuntime.ResolveTagRecord(body).Slot;
+            Require(!KernelRuntime.Xt.IsOpaque(slot),"editable finite tool");SessionMemoryOwner.DropBodyXt(slot);return body;
+        }
+        finally{Check(KernelRuntime.MemoryFree(parts),"free finite tool tags");}
+    }
+}
+
+static unsafe void CompareAxialContact(int reference,int actual)
+{
+    var a=Contact(reference);var b=Contact(actual);
+    Require(a.First==b.First&&a.Last==b.Last&&b.Last>b.First,"same increasing native contact interval");
+    Require(Distance(a.Start,b.Start)<1e-12&&Distance(a.End,b.End)<1e-12,"same finite contact endpoints");
+    Require(Distance(a.Axis,b.Axis)<1e-12,"same native contact axis");
+
+    static double Distance(PK_VECTOR_t a,PK_VECTOR_t b)
+    {
+        var d0=a.coord[0]-b.coord[0];var d1=a.coord[1]-b.coord[1];var d2=a.coord[2]-b.coord[2];
+        return Math.Sqrt(d0*d0+d1*d1+d2*d2);
+    }
+
+    static (PK_VECTOR_t Start,PK_VECTOR_t End,PK_VECTOR_t Axis,double First,double Last) Contact(int body)
+    {
+        int count;int* edges;Check(PK_BODY_ask_edges(body,&count,&edges),"contact edges");
+        try
+        {
+            var found=false;var result=default((PK_VECTOR_t,PK_VECTOR_t,PK_VECTOR_t,double,double));PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
+            for(var i=0;i<count;i++)
+            {
+                int curve,type;PK_INTERVAL_t range;PK_LOGICAL_t sense;
+                Check(PK_EDGE_ask_geometry(edges[i],PK_LOGICAL_true,&curve,&type,ends,&range,&sense),"finite contact");
+                if(type!=PK_CLASS_line)continue;
+                Require(!found&&sense==PK_LOGICAL_false,"one reversed axial line");found=true;
+                PK_LINE_sf_t line;Check(PK_LINE_ask(curve,&line),"contact carrier");
+                var axis=line.basis_set.axis;result=(ends[0],ends[1],new(axis.coord[0],axis.coord[1],axis.coord[2]),range.value[0],range.value[1]);
+                int n;int* fins;Check(PK_EDGE_ask_fins(edges[i],&n,&fins),"contact uses");
+                try
+                {
+                    Require(n==2,"contact uses share one edge");int f0,f1;PK_LOGICAL_t s0,s1;
+                    Check(PK_FIN_ask_face(fins[0],&f0),"contact face");Check(PK_FIN_ask_face(fins[1],&f1),"contact face");
+                    Check(PK_FIN_is_positive(fins[0],&s0),"contact use sense");Check(PK_FIN_is_positive(fins[1],&s1),"contact use sense");
+                    Require(f0==f1&&s0!=s1,"opposite uses on the same cylindrical face");
+                }
+                finally{Check(PK_MEMORY_free(fins),"free contact uses");}
+            }
+            Require(found,"finite contact line present");return result;
+        }
+        finally{Check(PK_MEMORY_free(edges),"free contact edges");}
+    }
+}
+
 static PK_AXIS2_sf_t CoplanarToolsBasis(double x,double y,double z)
     =>new(new(z+4,x-2,y+.125),new(1,0,0),new(0,1,0));
 

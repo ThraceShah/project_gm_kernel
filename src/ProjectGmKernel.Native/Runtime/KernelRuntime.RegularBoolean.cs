@@ -49,6 +49,7 @@ internal static unsafe partial class KernelRuntime
             model.VertexMergeCandidates[..model.NP].Clear();
             var input=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
+            RegularAxialContact axialContact=default;var haveAxialContact=false;
             Span<SurfaceIntersectionNode> supportPoints=stackalloc SurfaceIntersectionNode[64];
             for(var a=0;a<nf;a++)for(var b=a+1;b<nf;b++)
             {
@@ -59,6 +60,12 @@ internal static unsafe partial class KernelRuntime
                 if(RegularCylinderFaceSeparatedFromPlane(sources[a],second,model.Tolerance)
                     ||RegularCylinderFaceSeparatedFromPlane(sources[b],first,model.Tolerance)
                     ||FiniteCylinderPlaneContactOutsideTrim(sources[a],sources[b],model.Tolerance))continue;
+                if(inputs.Length==2&&options->function==ParasolidConstants.PK_boolean_subtract_c
+                    &&TryRegularAxialContact(input,sources[..nf],owners[..nf],a,b,out var contact))
+                {
+                    if(haveAxialContact)return ParasolidConstants.PK_ERROR_not_implemented;
+                    axialContact=contact;haveAxialContact=true;continue;
+                }
                 error=ClipExistingAffineCylinderRing(input,sources[..nf],originalEdges[..ne],a,b,cuts,ref cutCount,ref model,out var reusedRing);
                 if(error!=0)return error;if(reusedRing)continue;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
@@ -187,15 +194,23 @@ internal static unsafe partial class KernelRuntime
             // or intersect. Tangent cavity/union topology is not represented
             // by a zero-dimensional event alone, so those cases fail closed.
             if(finiteContact&&(hasClash||options->function==ParasolidConstants.PK_boolean_unite_c))return ParasolidConstants.PK_ERROR_not_implemented;
+            if(haveAxialContact&&(hasClash||pointLoopCount!=0)
+                ||(hasClash||finiteContact||haveAxialContact)&&RegularHasContactLine(input))
+                return ParasolidConstants.PK_ERROR_not_implemented;
             if(!hasClash)
             {
                 if(options->function==ParasolidConstants.PK_boolean_subtract_c)for(var p=0;p<pointLoopCount;p++)
                 {error=AppendRegularPointLoop(pointLoops[p].Face,pointLoops[p].Point);if(error!=0)return error;}
+                if(haveAxialContact)
+                {
+                    LastRegularBooleanStage=RegularBooleanStage.Publish;
+                    error=AppendRegularAxialContact(axialContact,originalEdges[..ne]);if(error!=0)return error;
+                }
                 var count=options->function==ParasolidConstants.PK_boolean_unite_c?inputs.Length:options->function==ParasolidConstants.PK_boolean_subtract_c?1:0;
                 var returned=count==0?null:AllocateReturnSlice(count);if(count>0&&returned==null)return ParasolidConstants.PK_ERROR_memory_full;
                 inputs[..count].CopyTo(new Span<BodyTag>(returned,count));
                 if(count<inputs.Length){fixed(BodyTag* delete=inputs[count..]){error=EntityDelete(inputs.Length-count,delete);if(error!=0)return error;}}
-                *result=new(){result=ParasolidConstants.PK_boolean_result_no_clash_c,n_bodies=count,bodies=returned};
+                *result=new(){result=haveAxialContact?ParasolidConstants.PK_boolean_result_success_c:ParasolidConstants.PK_boolean_result_no_clash_c,n_bodies=count,bodies=returned};
             }
             else
             {

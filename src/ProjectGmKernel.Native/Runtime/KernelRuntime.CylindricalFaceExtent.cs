@@ -54,15 +54,7 @@ internal static unsafe partial class KernelRuntime
 
     private static bool FiniteCylinderPlaneContactOutsideTrim(FaceSlot first,FaceSlot second,double tolerance)
     {
-        var a=Surfaces[GetSurfaceSlotByTag(Faces[first].SurfTag)];var b=Surfaces[GetSurfaceSlotByTag(Faces[second].SurfTag)];
-        var reverse=a.Class==SurfaceClass.Plane&&b.Class==SurfaceClass.Cylinder;
-        if(!reverse&&!(a.Class==SurfaceClass.Cylinder&&b.Class==SurfaceClass.Plane))return false;
-        if(!TryPrepareSurface(reverse?b:a,out var cylinder)||!TryPrepareSurface(reverse?a:b,out var plane)
-            ||Math.Abs(Dot(cylinder.Axis,plane.Axis))>OperationIntersection.AngularTolerance)return false;
-        Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[2];
-        var status=OperationIntersection.AxialCylinderPlane(plane,cylinder,branches,out var count,out var anchor);
-        if(status!=AlgorithmStatus.Success||count!=1||branches[0].Kind!=IntersectionCurveKind.Tangent)return false;
-        var cylinderFace=reverse?second:first;var planeFace=reverse?first:second;
+        if(!TryAxialCylinderPlaneContact(first,second,out var cylinderFace,out var planeFace,out var cylinder,out _,out var anchor))return false;
         if(CertifiedCylindricalFaceAxialRange(cylinderFace,out _,out var height,out var cylinderPrecision)!=AlgorithmStatus.Success
             ||RegularFiniteFaceExtent(planeFace,out var planeExtent)!=AlgorithmStatus.Success)return false;
         var planarPrecision=Math.Max(tolerance,Faces[planeFace].Tolerance);
@@ -74,6 +66,21 @@ internal static unsafe partial class KernelRuntime
         var extent=new IntervalBox3(line.X.Value.Lower,line.X.Value.Upper,line.Y.Value.Lower,line.Y.Value.Upper,line.Z.Value.Lower,line.Z.Value.Upper);
         var margin=(new IntervalNumber(planarPrecision)+cylinderPrecision).Upper;
         return double.IsFinite(margin)&&ThirdFaceBoxesDisjoint(extent,planeExtent,margin);
+    }
+
+    private static bool TryAxialCylinderPlaneContact(FaceSlot first,FaceSlot second,out FaceSlot cylinderFace,out FaceSlot planeFace,
+        out AnalyticSurface cylinder,out AnalyticSurface plane,out IntervalVector anchor)
+    {
+        cylinderFace=planeFace=-1;cylinder=plane=default;anchor=default;
+        var a=Surfaces[GetSurfaceSlotByTag(Faces[first].SurfTag)];var b=Surfaces[GetSurfaceSlotByTag(Faces[second].SurfTag)];
+        var reverse=a.Class==SurfaceClass.Plane&&b.Class==SurfaceClass.Cylinder;
+        if(!reverse&&!(a.Class==SurfaceClass.Cylinder&&b.Class==SurfaceClass.Plane))return false;
+        if(!TryPrepareSurface(reverse?b:a,out cylinder)||!TryPrepareSurface(reverse?a:b,out plane)
+            ||Math.Abs(Dot(cylinder.Axis,plane.Axis))>OperationIntersection.AngularTolerance)return false;
+        Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[2];
+        var status=OperationIntersection.AxialCylinderPlane(plane,cylinder,branches,out var count,out anchor);
+        if(status!=AlgorithmStatus.Success||count!=1||branches[0].Kind!=IntersectionCurveKind.Tangent)return false;
+        cylinderFace=reverse?second:first;planeFace=reverse?first:second;return true;
     }
 
     private static bool NeedsFiniteCylinderPlaneChart(in AnalyticSurface cylinder,in AnalyticSurface plane)

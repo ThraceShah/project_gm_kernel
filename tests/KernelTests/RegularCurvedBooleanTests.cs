@@ -44,10 +44,10 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
     }
 
     [Fact]
-    public void AxialContactInsideBothTrimsIsNotMistakenForFiniteSeparation()
+    public void AxialContactMeetingACylinderEndFailsBeforePublishingAnUnprovedImprint()
     {
         BodyTag target;Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(4,4,null,&target));
-        var tool=BooleanOperationTests.Block(5,0,1,2,2,2);
+        var tool=BooleanOperationTests.Block(5,0,-1,2,2,2);
         var input=new[]{target,tool};var before=input.Select(XtBrepImportTests.Transmit).ToArray();
         var generations=input.Select(body=>KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot].Header.Generation).ToArray();
         var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
@@ -69,6 +69,81 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
             Assert.Equal(generations[i],KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(input[i]).Slot].Header.Generation);
             Assert.Equal(before[i],XtBrepImportTests.Transmit(input[i]));
         }
+    }
+
+    [Fact]
+    public void AxialContactHasTwoUsesAndSurvivesCopyAndReload()
+    {
+        BodyTag target;Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(4,4,null,&target));
+        var tool=BooleanOperationTests.Block(5,0,1,2,2,2);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        try
+        {
+            PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+            Assert.Equal(0,KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result));
+            Assert.Equal(ParasolidConstants.PK_boolean_result_success_c,result.result);Assert.Equal(1,result.n_bodies);
+            Assert.Equal(target,result.bodies[0]);Assert.Equal(0,KernelRuntime.TopolTrackResultFree(&tracking));
+            Assert.Equal(0,KernelRuntime.BooleanResultFree(&result));
+            CheckContact(target);
+            BodyTag copy;Assert.Equal(0,KernelRuntime.EntityCopy(target,&copy));Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));
+            SessionMemoryOwner.DropBodyXt(KernelRuntime.ResolveTagRecord(copy).Slot);
+            Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(copy),out var restored));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));CheckContact(restored);
+            var outside=BooleanOperationTests.Block(11,0,1,2,2,2);
+            Assert.Equal(0,KernelRuntime.BodyBoolean2(restored,1,&outside,&options,&tracking,&result));
+            Assert.Equal(ParasolidConstants.PK_boolean_result_no_clash_c,result.result);Assert.Equal(restored,result.bodies[0]);
+            Assert.Equal(0,KernelRuntime.TopolTrackResultFree(&tracking));Assert.Equal(0,KernelRuntime.BooleanResultFree(&result));
+            CheckContact(restored);
+            var crossing=BooleanOperationTests.Block(3.5,0,1.5,2,2,1);
+            var before=XtBrepImportTests.Transmit(restored);var beforeTool=XtBrepImportTests.Transmit(crossing);
+            Assert.NotEqual(0,KernelRuntime.BodyBoolean2(restored,1,&crossing,&options,&tracking,&result));
+            Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);Assert.True(tracking.track_records==null);
+            Assert.Equal(before,XtBrepImportTests.Transmit(restored));Assert.Equal(beforeTool,XtBrepImportTests.Transmit(crossing));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&crossing));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+        }
+        finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
+
+        static void CheckContact(BodyTag body)
+        {
+            BooleanOperationTests.Counts(body,3,3,2);
+            var point=new PK_VECTOR_s();point.coord[0]=4;point.coord[2]=2;int enclosure,topology;
+            Assert.Equal(0,KernelRuntime.BodyContainsVector(body,point,&enclosure,&topology));Assert.Equal(ParasolidConstants.PK_enclosure_on_c,enclosure);
+            int type;Assert.Equal(0,KernelRuntime.EntityAskClass(topology,&type));Assert.Equal(ParasolidConstants.PK_CLASS_edge,type);
+            var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(topology).Slot];Assert.Equal(2,edge.FinCount);
+            var first=KernelRuntime.Fins[edge.FirstFinEdge];var last=KernelRuntime.Fins[edge.LastFinEdge];
+            Assert.Equal(first.Loop,last.Loop);Assert.NotEqual(first.Sense,last.Sense);
+        }
+    }
+
+    [Fact]
+    public void AllocationFailureDuringAxialContactPublicationRestoresBothBodies()
+    {
+        BodyTag target;Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(4,4,null,&target));
+        var tool=BooleanOperationTests.Block(5,0,1,2,2,2);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
+        var before=XtBrepImportTests.Transmit(target);var beforeTool=XtBrepImportTests.Transmit(tool);
+        var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        var publicationFailed=false;
+        try
+        {
+            for(var budget=0;budget<128&&!publicationFailed;budget++)
+            {
+                PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+                KernelRuntime.InjectAllocationFailure(budget);
+                var error=KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result);
+                KernelRuntime.InjectAllocationFailure(-1);
+                Assert.NotEqual(0,error);
+                Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);Assert.True(tracking.track_records==null);
+                publicationFailed=KernelRuntime.LastRegularBooleanStage==KernelRuntime.RegularBooleanStage.Publish;
+                Assert.Equal(before,XtBrepImportTests.Transmit(target));Assert.Equal(beforeTool,XtBrepImportTests.Transmit(tool));
+                Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);
+                Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+            }
+        }
+        finally{KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
+        Assert.True(publicationFailed,"the budget sweep must reach a failure in actual publication");
     }
 
     [Fact]
