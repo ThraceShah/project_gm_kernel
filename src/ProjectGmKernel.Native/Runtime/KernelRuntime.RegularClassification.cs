@@ -3,6 +3,8 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Bounds;
+using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -63,7 +65,13 @@ internal static unsafe partial class KernelRuntime
                 }
                 else error=SurfParameteriseVectorCore(support,vector,&uv);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
-                error=RegularFaceContains(view,i,uv,out var inside);if(error!=0)return error;
+                error=RegularFaceContains(view,i,uv,out var inside);
+                if(error!=0)
+                {
+                    if(error==ParasolidConstants.PK_ERROR_eval_failure&&LastSheetPartitionStage==SheetPartitionStage.RayOrigin
+                        &&RegularPointOutsideRollingCarrier(support,point,uv.param[0]))continue;
+                    return error;
+                }
                 if(inside){*enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Faces[sources[i]].Header.Tag;return 0;}
             }
             Span<BufferOffset> indices=stackalloc BufferOffset[nf];for(var i=0;i<nf;i++)indices[i]=i;
@@ -84,6 +92,18 @@ internal static unsafe partial class KernelRuntime
             LastRegularClassificationStage=RegularClassificationStage.Complete;return 0;
         }
         finally{scratch.Return(memory);}
+    }
+
+    // A rounded inverse can land on an ambiguous trim ray even when the
+    // query is separated from every point on the rolling carrier. Prove
+    // that separation without changing the boundary membership tolerance.
+    private static bool RegularPointOutsideRollingCarrier(SurfTag support,in KernelVector3 point,double station)
+    {
+        var surface=Surfaces[GetSurfaceSlotByTag(support)];if(surface.Class!=SurfaceClass.BlendSurface)return false;
+        var blend=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(blend);var root=program.Surfaces[blend.ProgramRoot];
+        var radius=Math.Abs(root.Range0);
+        return radius==Math.Abs(root.Range1)
+            &&ConicTubeSeparation.ProvesOutside(program.Spines[root.Spine].Curve,point,radius,OperationIntersection.DistanceTolerance,station);
     }
 
     // An intersection curve is a subset of each of its defining supports.

@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using EdgeTag=System.Int32;
+using BodyTag=System.Int32;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -60,12 +61,14 @@ public unsafe class RollingNetworkTests:IDisposable
         finally{KernelRuntime.MemoryFree(products);}
         Assert.Equal(KernelRuntime.RollingNetworkStage.Publish,KernelRuntime.LastRollingNetworkStage);
         BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body);NativeSupportIncidence(body);
+        AssertSavedOriginProbeOutside(body);
         foreach(var product in trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product))
             Assert.Contains(trace,t=>t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement&&t.Source==product.Source&&t.Edge==product.Edge
                 &&t.Curve==product.Curve&&t.Generation==product.Generation&&t.First==product.First&&t.Last==product.Last
                 &&t.StartEvent==product.StartEvent&&t.EndEvent==product.EndEvent);
         var text=Transmit(body);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
         Assert.Equal(0,XtBrepImportTests.Receive(text,out var restored));ShortIntervals(restored);NativeSupportIncidence(restored);
+        AssertSavedOriginProbeOutside(restored);
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
@@ -298,6 +301,17 @@ public unsafe class RollingNetworkTests:IDisposable
         fixed(EdgeTag* edges=selected)Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(selected.Length,edges,radius,&options,&count,null));
         Assert.Equal(selected.Length,count);
     }
+    private static void AssertSavedOriginProbeOutside(BodyTag body)
+    {
+        // Immutable historical probe 289. Its inverse lands near the
+        // short Blend/plane trim; the original native class is outside.
+        var p=new PK_VECTOR_s();p.coord[0]=-1.499999667811987;p.coord[1]=-2.500000004201637;p.coord[2]=4.50007614662344;
+        int enclosure;EntityTag topology;
+        Assert.Equal(0,KernelRuntime.BodyContainsVector(body,p,&enclosure,&topology));
+        Assert.Equal(ParasolidConstants.PK_enclosure_outside_c,enclosure);
+        Assert.True(topology>0);
+    }
+
     private static void ShortIntervals(int body)
     {
         var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var count=0;
