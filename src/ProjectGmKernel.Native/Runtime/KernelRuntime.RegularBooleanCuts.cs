@@ -756,6 +756,9 @@ internal static unsafe partial class KernelRuntime
         var record=Curves[GetCurveSlotByTag(curve)];
         if(TryFiniteSectionChart(sectionCharts,surface,curve,cut.First,cut.Last,out var section))
             return EvaluateFiniteSectionChart(section,record,parameter,true,out uv,out _,out _);
+        var contactError=IsRationalContact(surface,record,cut.First,cut.Last,out var rationalContact);
+        if(contactError!=0)return contactError;
+        if(rationalContact)return SheetCurveUV(surface,curve,parameter,true,out uv,out _,out _,cut.First,cut.Last);
         if(TryAnalyticBlendContactMap(surface,record,record.TMin,record.TMax,out _,out _,out _)
             ||record.Class==CurveClass.ICurve&&(TryCertifySupportChart(ICurveDataPool[record.DataIndex].Surface0Tag,surface,out _)
                 ||TryCertifySupportChart(ICurveDataPool[record.DataIndex].Surface1Tag,surface,out _)))

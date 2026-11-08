@@ -40,7 +40,9 @@ internal static unsafe partial class KernelRuntime
     {
         count=0;var slot=GetSurfaceSlotByTag(surface);var cs=GetCurveSlotByTag(curve);
         if(slot<0||cs<0)return AlgorithmStatus.InvalidInput;
-        if(TryAnalyticBlendContactMap(surface,Curves[cs],first,last,out _,out _,out _))
+        var contactError=IsRationalContact(surface,Curves[cs],first,last,out var rationalContact);
+        if(contactError!=0)return AlgorithmStatus.NotConverged;
+        if(rationalContact||TryAnalyticBlendContactMap(surface,Curves[cs],first,last,out _,out _,out _))
         {
             if(output.Length<2)return AlgorithmStatus.OutputTooSmall;Span<KernelVector3> point=stackalloc KernelVector3[1];
             var status=EvaluateCurveCore(in Curves[cs],first,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;

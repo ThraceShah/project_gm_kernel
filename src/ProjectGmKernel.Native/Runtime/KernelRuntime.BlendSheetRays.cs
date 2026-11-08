@@ -17,6 +17,11 @@ internal static unsafe partial class KernelRuntime
             return IntersectBlendContactRay(surface,query,du,dv,edge,output,out count);
         if(TryAnalyticBlendContactMap(surface,record,edge.Start,edge.End,out var section,out var shift,out var scale))
             return IntersectAnalyticBlendContactRay(surface,query,du,dv,edge,section,shift,scale,output,out count);
+        if(Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface&&record.Class is CurveClass.Circle or CurveClass.Ellipse)
+        {
+            var rational=IntersectRationalContactRay(surface,record,query,du,dv,edge,output,out count,out var handled);
+            if(handled||rational!=AlgorithmStatus.Success)return rational;
+        }
         if(du==0&&dv!=0&&record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].ProgramBlock>0
             &&Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface)
         {

@@ -37,6 +37,33 @@ public unsafe class ExplicitSpineTests:IDisposable
     }
 
     [Fact]
+    public void RationalConicGaugeMapsBothFiniteSpansWithoutAnXyzInverse()
+    {
+        var w=Math.Sqrt(.5);
+        Span<double> poles=stackalloc double[20]{1,0,0,1,w,w,0,w,0,1,0,1,-w,w,0,w,-1,0,0,1};
+        Span<double> knots=stackalloc double[8]{0,0,0,.4,.4,1,1,1};
+        var spine=new BCurveView(2,4,true,false,poles,knots);
+        var conic=new ParametricSpineCurve{Kind=CurveClass.Circle,First=new(){X=1},Second=new(){Y=1}};
+        Span<RationalConicArc> arcs=stackalloc RationalConicArc[2];
+        Span<IntervalNumber> x=stackalloc IntervalNumber[8],y=stackalloc IntervalNumber[8];
+        Assert.True(RationalConicGauge.Certify(spine,conic,1e-10,arcs,x,y,out var count));Assert.Equal(2,count);
+        Assert.True(RationalConicGauge.NativeAngleLift(arcs,Math.Tau+.1,Math.Tau+3,out var lift));
+        for(var i=0;i<2;i++)
+        {
+            var angle=new IntervalNumber(Math.Tau+(i==0?Math.PI/4:3*Math.PI/4))+lift;
+            Assert.True(RationalConicGauge.LocateStation(2,arcs,x,y,angle,out var station,out var slope,out var interior));
+            Assert.True(interior&&slope>0&&station.Upper-station.Lower<1e-12);
+            Assert.InRange(i==0?.2:.7,station.Lower,station.Upper);
+            Assert.True(RationalConicGauge.LocateAngle(2,arcs,x,y,station,out var recovered));
+            Assert.InRange(i==0?Math.PI/4:3*Math.PI/4,recovered.Lower,recovered.Upper);
+        }
+        Assert.False(RationalConicGauge.LocateStation(2,arcs,x,y,new(-.1),out _,out _,out _));
+        Assert.False(RationalConicGauge.LocateAngle(2,arcs,x,y,new(.39,.41),out _));
+        poles[4]+=1e-5;
+        Assert.False(RationalConicGauge.Certify(spine,conic,1e-10,arcs,x,y,out _));
+    }
+
+    [Fact]
     public void NativeShortEdgeProductIsEditableAndFreshXtRetainsSpineAndTrueLimits()
     {
         var body=Import();BooleanOperationTests.Counts(body,10,23,15);

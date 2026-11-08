@@ -105,7 +105,10 @@ internal static unsafe partial class KernelRuntime
             surface.Class=SurfaceClass.BlendSurface;surface.DataIndex=dataSlot;surface.OwnerFace=-1;
             surface.Sense=ParasolidConstants.PK_TOPOL_sense_positive_c;
             var source=program.Spines[root.Spine];var domain=program.Charts.Slice(source.ChartOffset,source.ChartCount);
-            if(SpineParameterMap.Explicit(source)&&source.StartType==LimitType.Terminator&&source.EndType==LimitType.Terminator)
+            // A clamped rational spine already has finite native knot
+            // limits. Do not turn its natural ends into explicit XT T limits.
+            if(SpineParameterMap.Explicit(source)&&source.Curve.Kind!=CurveClass.BCurve
+                &&source.StartType==LimitType.Terminator&&source.EndType==LimitType.Terminator)
             {
                 var limits=(KernelVector3*)State.Session->Blocks.TryAllocate(2*(nuint)sizeof(KernelVector3));
                 if(limits==null){FreeNestedBlendData(dataSlot);KernelRuntime.Surfaces.Free(slot);return ParasolidConstants.PK_ERROR_memory_full;}

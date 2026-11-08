@@ -57,6 +57,11 @@ internal static unsafe partial class KernelRuntime
             point=evaluated[0];uv.param[0]=shift+scale*parameter;uv.param[1]=section;
             tangent.param[0]=scale*(forward?1:-1)*LocalSenseSign(Curves[slot].Sense);return 0;
         }
+        if(kind==SurfaceClass.BlendSurface&&Curves[slot].Class is CurveClass.Circle or CurveClass.Ellipse)
+        {
+            var error=TryRationalContactUV(surface,Curves[slot],first,last,parameter,forward,out uv,out tangent,out point,out var handled);
+            if(error!=0||handled)return error;
+        }
         var contact=Curves[slot].Class==CurveClass.ICurve?ICurveDataPool[Curves[slot].DataIndex]:default;
         var sourceContact=contact.IsBlendContact!=0&&Surfaces[GetSurfaceSlotByTag(surface)].Class==SurfaceClass.BSurface&&SameSheetSupport(surface,contact.Surface0Tag);
         var blendContact=contact.IsBlendContact!=0&&SameSheetSupport(surface,contact.Surface1Tag);
