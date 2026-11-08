@@ -1,5 +1,8 @@
 Short-edge spine continuation, 2026-11-07
 
+Historical checkpoint. Current implementation and acceptance evidence:
+docs/reviews/advanced-modeling/topology-event-framework-acceptance.md.
+
 STATUS: INCOMPLETE. This is a verified local checkpoint, not final acceptance
 of the requested heterogeneous two-edge solid fillet. No remote operation,
 push, PR, upload, NativeAOT compilation or C ABI modification was performed.

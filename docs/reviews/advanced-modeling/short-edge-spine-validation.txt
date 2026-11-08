@@ -1,5 +1,8 @@
 Short-edge fillet / explicit rolling spine progress, 2026-11-07
 
+Historical checkpoint. Current implementation and acceptance evidence:
+docs/reviews/advanced-modeling/topology-event-framework-acceptance.md.
+
 STATUS: INCOMPLETE. The seed's managed two-edge FixBlends still fails with
 5000 at Supports. This report does not claim completion of the requested
 solid fillet or of the full general-spine contract.
