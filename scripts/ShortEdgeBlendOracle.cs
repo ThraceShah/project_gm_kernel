@@ -107,6 +107,7 @@ Require(double.IsFinite(transverseOffset)&&transverseOffset>0&&(transverseOffset
     "transverse offset must be positive and requires the transverse cutter");
 var materialOwnership=args.Contains("--material-ownership");
 var requireNativeCutWitness=args.Contains("--require-native-cut-witness");
+var requireCutterChartWitness=args.Contains("--require-cutter-chart-witness");
 var proofOnlyLifecycle=args.Contains("--proof-only-lifecycle");
 var reloadBeforeLocalCut=args.Contains("--reload-before-local-cut");
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
@@ -122,6 +123,7 @@ Require(!materialOwnership||!args.Contains("--native-only")&&!args.Contains("--i
 Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"local cutter requires lifecycle mode");
 Require(!requireNativeCutWitness||transverseCut&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only"),
     "native cut witness requires the guarded transverse self lifecycle");
+Require(!requireCutterChartWitness||requireNativeCutWitness,"cutter chart witness requires the guarded native cut witness");
 Require(!proofOnlyLifecycle||args.Contains("--lifecycle")&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only")
     &&!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"proof-only cuts require a guarded self lifecycle");
 Require(!reloadBeforeLocalCut||requireNativeCutWitness,"early XT reload requires a guarded transverse cut with native witnesses");
@@ -239,7 +241,7 @@ using(host)unsafe
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transverseOffset,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transverseOffset,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -300,7 +302,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transverseOffset,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transverseOffset,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -337,7 +339,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
             native=Cut(false,native,pkTool);CheckBody(native,name+" native local cut");
             File.WriteAllBytes(Path.Combine(output,name+"-independent-local-reference.x_t"),Transmit(false,native));
             if(KernelRuntime.TraceFiniteBoundary!=null)ProductEdges(native,"native-local-cut");
-            own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool,s*inputScale):proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
+            own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool,s*inputScale,requireCutterChartWitness):proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
         }
         else{own=proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
         failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership,checkNativeTrims);
@@ -364,7 +366,7 @@ static unsafe void ReloadEditable(ref int own,string label)
     Require(KernelRuntime.TryResolveBodySlot(own,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),label+" reload must be editable");
     Console.WriteLine($"LIFECYCLE {label} managed_reload=True body={own}");
 }
-static int CutWithNativeWitness(int body,int tool,double unitScale)
+static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireCutterChartWitness)
 {
     // Identify the original short edges on the actual editable input, so
     // certificates on long cut carriers cannot satisfy this assertion.
@@ -385,6 +387,7 @@ static int CutWithNativeWitness(int body,int tool,double unitScale)
     var previous=KernelRuntime.TraceFiniteBoundary;
     var witnesses=new List<KernelRuntime.BoundaryTrace>();
     var roots=new List<KernelRuntime.BoundaryTrace>();
+    var cutterRoots=new List<KernelRuntime.BoundaryTrace>();
     var arranged=new HashSet<(int Carrier,int Event)>();
     var published=new HashSet<(int Carrier,int Event)>();
     var spatialReuses=0;
@@ -392,7 +395,14 @@ static int CutWithNativeWitness(int body,int tool,double unitScale)
     {
         previous?.Invoke(trace);
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator)witnesses.Add(trace);
-        if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)roots.Add(trace);
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
+        {
+            roots.Add(trace);
+            if(requireCutterChartWitness&&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class==CurveClass.Line
+                &&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.ProductCurve)].Class==CurveClass.ICurve
+                &&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)].Class==SurfaceClass.Plane
+                &&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.OtherSurface)].Class==SurfaceClass.BlendSurface)cutterRoots.Add(trace);
+        }
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)spatialReuses++;
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints)
         {arranged.Add((trace.Curve,trace.StartEvent));arranged.Add((trace.Curve,trace.EndEvent));}
@@ -423,6 +433,17 @@ static int CutWithNativeWitness(int body,int tool,double unitScale)
     Require(shortEvents.Count==2,"the two actual short ICurves must contribute distinct published cut events");
     Require(spatialReuses==0,$"the guarded self cut must use certified endpoint joins; found {spatialReuses} position-only reuses");
     Console.WriteLine($"NATIVE CUT WITNESSES short_occurrences={shortEdges.Count} published_events={shortEvents.Count} spatial_reuses={spatialReuses} certified_coedges={certifiedCoedges}");
+    if(requireCutterChartWitness)
+    {
+        var uses=cutterRoots.Where(r=>published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
+        var events=uses.GroupBy(r=>r.StartEvent).ToArray();
+        Require(events.Length==2&&events.All(g=>g.Select(r=>r.InputCoedge).Distinct().Count()==2)
+            &&uses.Select(r=>r.Edge).Distinct().Count()==1,"one finite cutter edge must supply two separate events on both of its coedges");
+        var certified=uses.Count(r=>consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge
+            &&x.StartEvent==r.StartEvent&&x.Witness==r.Witness));
+        Require(certified==uses.Length,$"cutter edge stations must transfer to both published ICurve charts; proved {certified}/{uses.Length}");
+        Console.WriteLine($"CUTTER CHART WITNESSES events={events.Length} certified_coedges={certified}");
+    }
     return result;
 }
 static int CutWithoutSpatialReuse(int body,int tool)

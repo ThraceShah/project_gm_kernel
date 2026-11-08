@@ -51,6 +51,47 @@ internal static unsafe partial class KernelRuntime
         return certificate.Current;
     }
 
+    // These value records have alignment gaps. Byte equality can compare
+    // unrelated stack data when identical supports are compiled separately.
+    private static bool SameBlendSupportProgram(in NestedBlendProgram a,in NestedBlendProgram b)
+    {
+        if(a.Surfaces.Length!=b.Surfaces.Length||a.Spines.Length!=b.Spines.Length||a.Charts.Length!=b.Charts.Length
+            ||!a.Scalars.SequenceEqual(b.Scalars))return false;
+        for(var i=0;i<a.Surfaces.Length;i++)if(!SameBlendSupportInstruction(a.Surfaces[i],b.Surfaces[i]))return false;
+        for(var i=0;i<a.Spines.Length;i++)
+        {
+            ref readonly var x=ref a.Spines[i];ref readonly var y=ref b.Spines[i];
+            if(x.First!=y.First||x.Second!=y.Second||x.ChartOffset!=y.ChartOffset||x.ChartCount!=y.ChartCount
+                ||x.StartType!=y.StartType||x.EndType!=y.EndType||x.Sense!=y.Sense||x.ChordalError!=y.ChordalError||x.AngularError!=y.AngularError
+                ||x.Curve.Kind!=y.Curve.Kind||!ExactVector(x.Curve.Origin,y.Curve.Origin)||!ExactVector(x.Curve.First,y.Curve.First)
+                ||!ExactVector(x.Curve.Second,y.Curve.Second))return false;
+        }
+        for(var i=0;i<a.Charts.Length;i++)
+        {
+            ref readonly var x=ref a.Charts[i];ref readonly var y=ref b.Charts[i];
+            if(!ExactVector(x.Position,y.Position)||!ExactVector(x.Chord,y.Chord)||x.Parameter!=y.Parameter||x.Scale!=y.Scale
+                ||!x.FirstU.Equals(y.FirstU)||!x.FirstV.Equals(y.FirstV)||!x.SecondU.Equals(y.SecondU)||!x.SecondV.Equals(y.SecondV))return false;
+        }
+        return true;
+    }
+
+    private static bool SameBlendSupportInstruction(in BlendSurfaceInstruction a,in BlendSurfaceInstruction b)
+    {
+        if(a.IsBlend!=b.IsBlend||a.IsBSpline!=b.IsBSpline||a.NormalSense!=b.NormalSense)return false;
+        if(a.IsBlend)return a.First==b.First&&a.Second==b.Second&&a.Spine==b.Spine&&a.Range0==b.Range0&&a.Range1==b.Range1&&a.ReverseSection==b.ReverseSection;
+        if(a.IsBSpline)return a.SplineBasis==b.SplineBasis&&a.ScalarOffset==b.ScalarOffset&&a.UDegree==b.UDegree&&a.VDegree==b.VDegree
+            &&a.UCount==b.UCount&&a.VCount==b.VCount&&a.Dimension==b.Dimension&&a.Rational==b.Rational&&a.UPeriodic==b.UPeriodic
+            &&a.VPeriodic==b.VPeriodic&&a.Offset==b.Offset;
+        var x=a.Analytic;var y=b.Analytic;
+        return x.Kind==y.Kind&&ExactVector(x.Origin,y.Origin)&&ExactVector(x.Axis,y.Axis)&&ExactVector(x.X,y.X)&&ExactVector(x.Y,y.Y)
+            &&x.Radius==y.Radius&&x.Secondary==y.Secondary;
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static bool TestSameBlendSupportProgram(in NestedBlendProgram first,in NestedBlendProgram second)
+        =>SameBlendSupportProgram(first,second);
+#endif
+
     private static sbyte SignedPlaneAxis(in AnalyticSurface basis,in KernelVector3 direction)
     {
         var u=ExactDirection(basis.X,direction);return u!=0?(sbyte)u:(sbyte)(2*ExactDirection(basis.Y,direction));

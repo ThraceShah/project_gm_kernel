@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
@@ -112,6 +114,24 @@ public unsafe class BlendIntersectionTests:IDisposable
         var nodes=new SurfaceIntersectionNode[8192];var edges=new SurfaceIntersectionSegment[8192];var nn=0;var ne=0;
         Assert.Equal(AlgorithmStatus.Success,ParametricSurfaceIntersection.FindProcedural(first,second,nodes,ref nn,edges,ref ne));Assert.True(ne>0);
         for(var i=0;i<nn;i++)Assert.InRange(Math.Abs(nodes[i].Point.Y-.5),0,1e-8);
+    }
+
+    [Fact]
+    public void IndependentBlendProgramsIgnorePaddingButRequireIdenticalGeometry()
+    {
+        var surfaces=NestedBlendSeriesTests.Surfaces();var copy=NestedBlendSeriesTests.Surfaces();
+        var spines=NestedBlendSeriesTests.Spines();var charts=NestedBlendSeriesTests.Charts();
+        var original=new NestedBlendProgram(surfaces,spines,charts);
+        var duplicate=new NestedBlendProgram(copy,spines,charts);
+        var index=Array.FindIndex(copy,surface=>surface.IsBlend);Assert.True(index>=0);
+        ref var record=ref copy[index];ref var start=ref Unsafe.As<BlendSurfaceInstruction,byte>(ref record);
+        var flag=Unsafe.ByteOffset(ref start,ref Unsafe.As<bool,byte>(ref record.ReverseSection));
+        var sense=Unsafe.ByteOffset(ref start,ref Unsafe.As<double,byte>(ref record.NormalSense));
+        Assert.True(sense>flag+1);
+        MemoryMarshal.AsBytes(copy.AsSpan(index,1))[checked((int)(flag+1))]^=0xff;
+        Assert.True(KernelRuntime.TestSameBlendSupportProgram(original,duplicate));
+        record.Range0=Math.BitIncrement(record.Range0);
+        Assert.False(KernelRuntime.TestSameBlendSupportProgram(original,duplicate));
     }
 
     [Fact]

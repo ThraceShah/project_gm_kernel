@@ -20,11 +20,7 @@ internal static unsafe partial class KernelRuntime
         {
             var x=BlendedEdgeDataPool[Surfaces[a].DataIndex];var y=BlendedEdgeDataPool[Surfaces[b].DataIndex];
             var xp=GetNestedBlendProgram(x);var yp=GetNestedBlendProgram(y);
-            return x.ProgramRoot==y.ProgramRoot
-                &&System.Runtime.InteropServices.MemoryMarshal.AsBytes(xp.Surfaces).SequenceEqual(System.Runtime.InteropServices.MemoryMarshal.AsBytes(yp.Surfaces))
-                &&System.Runtime.InteropServices.MemoryMarshal.AsBytes(xp.Spines).SequenceEqual(System.Runtime.InteropServices.MemoryMarshal.AsBytes(yp.Spines))
-                &&System.Runtime.InteropServices.MemoryMarshal.AsBytes(xp.Charts).SequenceEqual(System.Runtime.InteropServices.MemoryMarshal.AsBytes(yp.Charts))
-                &&xp.Scalars.SequenceEqual(yp.Scalars);
+            return x.ProgramRoot==y.ProgramRoot&&SameBlendSupportProgram(xp,yp);
         }
         if(Surfaces[a].Class!=SurfaceClass.BSurface)return false;
         var av=GetBSurfaceView(BSurfaceDataStore[Surfaces[a].DataIndex]);var bv=GetBSurfaceView(BSurfaceDataStore[Surfaces[b].DataIndex]);

@@ -14,6 +14,8 @@ internal static unsafe partial class KernelRuntime
         parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
         if(root.Certified==ExplicitPlaneCertificate)
             return LocateCertifiedLineCut(cut,root,ref parameter,ref isolation,out handled);
+        if(root.Certified==PlanePairBlendLineCertificate)
+            return LocateCertifiedBladeCut(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified!=NativePlaneCertificate||root.Root.Vertex>=0||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
         var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
         if(source.Class!=CurveClass.ICurve||(target.Class!=CurveClass.ICurve&&target.Class!=CurveClass.Line)
@@ -72,6 +74,31 @@ internal static unsafe partial class KernelRuntime
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }
 
+    private static int LocateCertifiedBladeCut(in SheetCutCurve cut,in RegularBoundaryRoot root,
+        ref double parameter,ref IntervalNumber isolation,out bool handled)
+    {
+        handled=false;
+        var target=Curves[GetCurveSlotByTag(cut.Curve)];
+        if(target.Class!=CurveClass.ICurve||!root.BlendStation.Finite)return 0;
+        var data=ICurveDataPool[target.DataIndex];
+        if(data.ProgramBlock<=0||data.IsBlendContact!=0)return 0;
+        var first=SameSheetSupport(data.Surface0Tag,root.CuttingSurface)&&TryCertifySupportChart(data.Surface1Tag,root.ContactSurface,out _);
+        if(!first&&!(SameSheetSupport(data.Surface1Tag,root.CuttingSurface)&&TryCertifySupportChart(data.Surface0Tag,root.ContactSurface,out _)))return 0;
+        var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+        var definition=program.Spines[data.ProgramSpine];
+        var blend=program.Surfaces[first?definition.First:definition.Second];var plane=program.Surfaces[first?definition.Second:definition.First];
+        if(SpineParameterMap.Explicit(definition)||!blend.IsBlend||plane.IsBlend||plane.IsBSpline||plane.Analytic.Kind!=SurfaceClass.Plane)return 0;
+        var spine=program.Spines[blend.Spine];
+        if(!SpineParameterMap.Explicit(spine))return 0;
+        handled=true;
+        var status=SpineParameterMap.Interval(spine.Curve,new(root.BlendStation,0),out var center,out _);
+        if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+        var point=root.Root.Point;var error=root.Root.SpatialError;var radius=new IntervalNumber(-error,error);
+        Span<IntervalNumber> witness=stackalloc IntervalNumber[7]{point.X+radius,point.Y+radius,point.Z+radius,
+            center.X.Value,center.Y.Value,center.Z.Value,root.BlendStation};
+        return LocateCertifiedChart(cut,program,data.ProgramSpine,witness,out parameter,out isolation,point);
+    }
+
     private static int LocateCertifiedLineCut(in SheetCutCurve cut,in RegularBoundaryRoot root,ref double parameter,ref IntervalNumber isolation,out bool handled)
     {
         handled=false;
@@ -114,7 +141,8 @@ internal static unsafe partial class KernelRuntime
         return cut.LineConstruction==CutLineConstruction.AnalyticPlanePair&&BoundRoundedPlaneLine(cut,line,first,second);
     }
 
-    private static bool BoundRoundedPlaneLine(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface first,in AnalyticSurface second)
+    private static bool BoundRoundedPlaneLine(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface first,in AnalyticSurface second,
+        Span<IntervalNumber> poles=default)
     {
         var domain=new IntervalNumber(cut.First,cut.Last);
         if(!domain.Finite)return false;
@@ -123,18 +151,36 @@ internal static unsafe partial class KernelRuntime
         var origin=new IntervalVector(line.Origin);var direction=new IntervalVector(line.First);
         var alignment=IntervalVector.Dot(q,direction).Value;
         if(!(qq.Lower>0)||!qq.Finite||!alignment.Finite||alignment.ContainsZero)return false;
-        var ra=IntervalVector.Dot(a,new IntervalVector(first.Origin)-origin).Value-IntervalVector.Dot(a,direction).Value*domain;
-        var rb=IntervalVector.Dot(b,new IntervalVector(second.Origin)-origin).Value-IntervalVector.Dot(b,direction).Value*domain;
+        var offsetA=IntervalVector.Dot(a,new IntervalVector(first.Origin)-origin).Value;var slopeA=IntervalVector.Dot(a,direction).Value;
+        var offsetB=IntervalVector.Dot(b,new IntervalVector(second.Origin)-origin).Value;var slopeB=IntervalVector.Dot(b,direction).Value;
         // Minimum transverse correction from the represented point to the
         // unique analytic line. Keep the gauge by adding the component
         // along q that makes the correction orthogonal to the stored axis.
-        var correction=(IntervalVector.Cross(b,q)*new IntervalDual(ra,0)+IntervalVector.Cross(q,a)*new IntervalDual(rb,0))/new IntervalDual(qq,0);
-        var gaugeCorrection=correction-q*(IntervalVector.Dot(correction,direction)/new IntervalDual(alignment,0));
-        var error=gaugeCorrection.Norm().Value;
+        var error=Correction(domain).Norm().Value;
         var scale=origin.Norm().Value+new IntervalVector(first.Origin).Norm().Value+new IntervalVector(second.Origin).Norm().Value
             +direction.Norm().Value*domain.Magnitude;
         var roundoff=(64*SmallLinearSolve.MachineEpsilon*scale).Upper;
-        return error.Finite&&error.Upper<=Math.Min(roundoff,OperationIntersection.DistanceTolerance/16);
+        if(!error.Finite||error.Upper>Math.Min(roundoff,OperationIntersection.DistanceTolerance/16))return false;
+        if(!poles.IsEmpty)
+        {
+            // An affine span, not a fit: these are the two exact endpoints
+            // of the corrected line in the original carrier gauge.
+            for(var end=0;end<2;end++)
+            {
+                IntervalNumber station=end==0?cut.First:cut.Last;
+                var point=origin+direction*new IntervalDual(station,0)+Correction(station);
+                if(!point.Finite)return false;
+                poles[4*end]=point.X.Value;poles[4*end+1]=point.Y.Value;poles[4*end+2]=point.Z.Value;poles[4*end+3]=1;
+            }
+        }
+        return true;
+
+        IntervalVector Correction(IntervalNumber station)
+        {
+            var ra=offsetA-slopeA*station;var rb=offsetB-slopeB*station;
+            var transverse=(IntervalVector.Cross(b,q)*new IntervalDual(ra,0)+IntervalVector.Cross(q,a)*new IntervalDual(rb,0))/new IntervalDual(qq,0);
+            return transverse-q*(IntervalVector.Dot(transverse,direction)/new IntervalDual(alignment,0));
+        }
     }
 
     private static bool TryCertifiedGeneratorSide(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface cylinder,in AnalyticSurface plane,
@@ -221,9 +267,18 @@ internal static unsafe partial class KernelRuntime
         Span<IntervalNumber> witness=stackalloc IntervalNumber[sourceSupport.IsBlend?7:3];
         if(JointNestedBlendEvaluation.BoundSharedSpineWitness(sourceProgram,sourceSpine,new(root.Root.Lower,root.Root.Upper,0,0),bounds,capture:witness)!=AlgorithmStatus.Success)
             return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        return LocateCertifiedChart(cut,program,cutSpine,witness,out parameter,out isolation);
+    }
+
+    private static int LocateCertifiedChart(in SheetCutCurve cut,in NestedBlendProgram program,BlendSpineIndex cutSpine,
+        ReadOnlySpan<IntervalNumber> witness,out double parameter,out IntervalNumber isolation,KernelVector3? representative=null)
+    {
+        parameter=0;isolation=UncertifiedStation;
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        var definition=program.Spines[cutSpine];
         var position=new IntervalVector(witness[0],witness[1],witness[2]);
         var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
-        var found=false;var native=default(IntervalNumber);var covered=cut.First;
+        var found=false;var native=default(IntervalNumber);var covered=cut.First;var station=0.0;
         for(var chart=0;chart<charts.Length-1;chart++)
         {
             ref readonly var frame=ref charts[chart];
@@ -245,10 +300,12 @@ internal static unsafe partial class KernelRuntime
                 ||JointNestedBlendEvaluation.BoundSharedSpineWitness(program,cutSpine,new(lo,hi,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
                 return ParasolidConstants.PK_ERROR_cant_do_intersect;
             native=enclosure;found=true;
+            station=representative.HasValue?Math.Clamp(frame.Parameter+frame.Scale*Dot(frame.Chord,Sub(representative.Value,frame.Position)),lo,hi)
+                :enclosure.Midpoint;
         }
         if(covered!=cut.Last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         if(!found)return ParasolidConstants.PK_ERROR_not_on_curve;
-        parameter=native.Midpoint;isolation=native;
+        parameter=station;isolation=native;
         return 0;
 
         static bool Separated(IntervalNumber a,IntervalNumber b)=>a.Upper<b.Lower||b.Upper<a.Lower;

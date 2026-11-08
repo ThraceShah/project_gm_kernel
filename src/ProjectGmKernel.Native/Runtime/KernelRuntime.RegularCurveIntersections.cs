@@ -133,50 +133,75 @@ internal static unsafe partial class KernelRuntime
         return AlgorithmStatus.Success;
     }
 
-    private static bool TryIsolateFiniteBlendLine(in ModelingEdge edge,SurfaceSlot surface,Span<OperationIntersectionPoint> output,
-        Span<ScalarRootIsolation> lineParameters,Span<double> spatialErrors,out BufferCount count)
+    private static AlgorithmStatus IsolateFiniteBlendLine(in ModelingEdge edge,SurfaceSlot surface,Span<OperationIntersectionPoint> output,
+        Span<ScalarRootIsolation> lineParameters,Span<double> spatialErrors,out BufferCount count,
+        scoped ReadOnlySpan<IntervalNumber> linePoles,Span<IntervalNumber> blendStations)
     {
-        count=0;if(!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(edge.Curve)],out var line)||!(edge.End>edge.Start))return false;
-        if(RegularSurfaceExtent(surface,out var extent)!=AlgorithmStatus.Success)return false;
+        count=0;if(!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(edge.Curve)],out var line))return AlgorithmStatus.Unsupported;
+        if(!(edge.End>edge.Start))return AlgorithmStatus.InvalidInput;
+        var extentStatus=RegularSurfaceExtent(surface,out var extent);if(extentStatus!=AlgorithmStatus.Success)return extentStatus;
         Span<BlendSpineInstruction> spine=stackalloc BlendSpineInstruction[1]{new(){Curve=line,ChartCount=2}};
         Span<BlendChartInstruction> domain=stackalloc BlendChartInstruction[2]{new(){Parameter=edge.Start},new(){Parameter=edge.End}};
-        var program=new NestedBlendProgram(default,spine,domain);var path=new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
+        var program=new NestedBlendProgram(default,spine,domain);
+        var corrected=!linePoles.IsEmpty;
+        var path=corrected?new SurfaceIntersectionPatch(new BezierSurfacePatch(linePoles,1,0,new(edge.Start,edge.End,0,1)))
+            :new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
+        Span<OperationIntersectionPoint> nominal=stackalloc OperationIntersectionPoint[corrected?output.Length:0];
+        Span<ScalarRootIsolation> nominalParameters=stackalloc ScalarRootIsolation[nominal.Length];
+        Span<double> nominalErrors=stackalloc double[nominal.Length];
+        var nominalCount=0;
+        if(corrected&&IsolateFiniteBlendLine(edge,surface,nominal,nominalParameters,nominalErrors,out nominalCount,default,default)!=AlgorithmStatus.Success)nominalCount=0;
         Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
+        Span<IntervalNumber> enclosure=stackalloc IntervalNumber[9];
         Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
         Span<IsolatedRootCertificate> certificates=stackalloc IsolatedRootCertificate[64],accepted=stackalloc IsolatedRootCertificate[output.Length];
-        for(var i=0;i<RegularSurfacePatchCount(surface);i++)
+        var patches=RegularSurfacePatchCount(surface);if(patches==0)return AlgorithmStatus.Unsupported;
+        for(var i=0;i<patches;i++)
         {
-            var status=RegularSurfacePatch(surface,i,extent,poles,out var patch);if(status!=AlgorithmStatus.Success)return false;
+            var status=RegularSurfacePatch(surface,i,extent,poles,out var patch);if(status!=AlgorithmStatus.Success)return status;
             var box=patch.Domain;if(!(box.U1>box.U0&&box.V1>box.V0))continue;
             var search=new ParameterCell{Lower=new(){U=box.U0,V=box.V0,S=edge.Start},Upper=new(){U=box.U1,V=box.V1,S=edge.End}};
-            status=ParametricSurfaceIntersection.Isolate(patch,path,search,3,roots,out var n,certificates);if(status!=AlgorithmStatus.Success)return false;
+            status=ParametricSurfaceIntersection.Isolate(patch,path,search,3,roots,out var n,certificates);if(status!=AlgorithmStatus.Success)return status;
             for(var r=0;r<n;r++)
             {
                 var proof=certificates[r];var interval=new IntervalNumber(proof.Second.U0,proof.Second.U1);
-                if(!(interval.Lower>edge.Start&&interval.Upper<edge.End))return false;
+                if(!(interval.Lower>edge.Start&&interval.Upper<edge.End))return AlgorithmStatus.NotConverged;
                 var duplicate=false;
                 for(var k=0;k<count;k++)
                 {
                     var previous=lineParameters[k].Root;if(previous.Upper<interval.Lower||interval.Upper<previous.Lower)continue;
-                    if(!proof.MayShareRoot(accepted[k])||!proof.ProvesSameRoot(accepted[k]))return false;
+                    if(!proof.MayShareRoot(accepted[k])||!proof.ProvesSameRoot(accepted[k]))return AlgorithmStatus.NotConverged;
                     duplicate=true;break;
                 }
                 if(duplicate)continue;
-                if(count==output.Length)return false;
+                if(count==output.Length)return AlgorithmStatus.OutputTooSmall;
                 var t=Math.Clamp(roots[r].S,interval.Lower,interval.Upper);
-                if(SpineParameterMap.Series(line,new(t,0),out var point,out _)!=AlgorithmStatus.Success
-                    ||SpineParameterMap.Interval(line,new(interval,0),out var bound,out _)!=AlgorithmStatus.Success)return false;
+                // The represented edge's root is only a point estimate.
+                // Keep it if it lies in the independently proved box.
+                for(var k=0;k<nominalCount;k++)
+                    if(nominal[k].First>=interval.Lower&&nominal[k].First<=interval.Upper){t=nominal[k].First;break;}
+                status=SpineParameterMap.Series(line,new(t,0),out var point,out _);if(status!=AlgorithmStatus.Success)return status;
+                IntervalVector bound;
+                if(corrected)
+                {
+                    status=path.Bound(new(interval.Lower,interval.Upper,0,0),enclosure);if(status!=AlgorithmStatus.Success)return status;
+                    bound=new(enclosure[0],enclosure[1],enclosure[2]);
+                }
+                else
+                {status=SpineParameterMap.Interval(line,new(interval,0),out bound,out _);if(status!=AlgorithmStatus.Success)return status;}
                 var error=(bound-new IntervalVector(point.Value)).Norm().Value.Upper;
-                if(!double.IsFinite(error)||error>OperationIntersection.DistanceTolerance)return false;
+                if(!double.IsFinite(error)||error>OperationIntersection.DistanceTolerance)return AlgorithmStatus.NotConverged;
                 var at=count++;
                 while(at>0&&interval.Lower<lineParameters[at-1].Root.Lower)
-                {accepted[at]=accepted[at-1];lineParameters[at]=lineParameters[at-1];output[at]=output[at-1];spatialErrors[at]=spatialErrors[at-1];at--;}
+                {accepted[at]=accepted[at-1];lineParameters[at]=lineParameters[at-1];output[at]=output[at-1];spatialErrors[at]=spatialErrors[at-1];
+                    if(corrected)blendStations[at]=blendStations[at-1];at--;}
                 accepted[at]=proof;lineParameters[at]=new(){Root=interval};spatialErrors[at]=error;
+                if(corrected)blendStations[at]=new(proof.First.U0,proof.First.U1);
                 output[at]=new(){Point=point.Value,First=t,U=Math.Clamp(roots[r].U,proof.First.U0,proof.First.U1),
                     V=Math.Clamp(roots[r].V,proof.First.V0,proof.First.V1),Kind=IntersectionVectorKind.Simple};
             }
         }
-        return true;
+        return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus IntersectRegularICurveSurface(SurfaceSlot surface,CurveSlot curve,double first,double last,

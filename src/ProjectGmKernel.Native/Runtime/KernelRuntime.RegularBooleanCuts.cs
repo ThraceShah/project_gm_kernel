@@ -14,6 +14,7 @@ internal static unsafe partial class KernelRuntime
     private const byte NativePlaneCertificate=2;
     private const byte LineSurfaceCertificate=3;
     private const byte ExplicitPlaneCertificate=4;
+    private const byte PlanePairBlendLineCertificate=5;
     private struct RegularBoundaryRoot
     {
         internal CurveTag Curve;
@@ -21,6 +22,7 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag TangentSupport;
         internal SurfTag ContactSurface,ContactSupport,CuttingSurface;
         internal FiniteCurveSurfaceRoot Root;
+        internal IntervalNumber BlendStation;
         internal BufferOffset InputCoedge;
         internal BoundaryRootWitnessId Witness;
         internal byte Certified;
@@ -104,6 +106,7 @@ internal static unsafe partial class KernelRuntime
         var record=input.Faces[face];Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
         Span<ScalarRootIsolation> nativeRoots=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
         Span<double> spatialErrors=stackalloc double[IntersectionPointCapacity];
+        Span<IntervalNumber> linePoles=stackalloc IntervalNumber[8],blendStations=stackalloc IntervalNumber[IntersectionPointCapacity];
         for(var l=0;l<record.LoopCount;l++)
         {
             var loop=input.Loops[record.FirstLoop+l];
@@ -132,8 +135,17 @@ internal static unsafe partial class KernelRuntime
                 var conicProof=!known&&rollingSurface&&curveClass==CurveClass.Ellipse&&cylinder;
                 var lineProof=!known&&certificates.IsEmpty&&curveClass==CurveClass.Line&&cylinder
                     &&TryIsolateInteriorLineCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n);
+                var planePairLine=false;
                 if(!known&&certificates.IsEmpty&&curveClass==CurveClass.Line&&surfaceClass==SurfaceClass.BlendSurface)
-                    lineProof=TryIsolateFiniteBlendLine(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n);
+                {
+                    var blend=BlendedEdgeDataPool[Surfaces[surfaceSlot].DataIndex];
+                    planePairLine=TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(blend.SpineTag)],out _)
+                        &&TryPlanePairBlendLine(input,face,inputCoedge,edge,linePoles);
+                    var isolated=IsolateFiniteBlendLine(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n,
+                        planePairLine?linePoles:default,blendStations);
+                    lineProof=isolated==AlgorithmStatus.Success;
+                    if(planePairLine&&!lineProof){LastSheetAlgorithmStatus=isolated;return IntersectionError(isolated);}
+                }
                 var conicPlaneProof=!known&&certificates.IsEmpty&&surfaceClass==SurfaceClass.Plane&&(curveClass is CurveClass.Circle or CurveClass.Ellipse)
                     &&TryPrepareSurface(Surfaces[surfaceSlot],out var plane)
                     &&IsolateFiniteExplicitLevelSet(edge,plane,roots,nativeRoots,spatialErrors,out n)==AlgorithmStatus.Success
@@ -164,13 +176,41 @@ internal static unsafe partial class KernelRuntime
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
-                            Certified=linePlane||conicPlaneProof?ExplicitPlaneCertificate:nativeProof?NativePlaneCertificate:lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
+                            Certified=linePlane||conicPlaneProof?ExplicitPlaneCertificate:nativeProof?NativePlaneCertificate:planePairLine?PlanePairBlendLineCertificate
+                                :lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
+                            BlendStation=planePairLine?blendStations[r]:default,
                             Witness=cached||conicProof||lineProof||linePlane||conicPlaneProof||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
                     }
                 }
             }
         }
         return 0;
+    }
+
+    private static bool TryPlanePairBlendLine(in RegularBoundaryView input,BufferOffset face,BufferOffset coedge,in ModelingEdge edge,Span<IntervalNumber> poles)
+    {
+        if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(input.Faces[face].Surface)],out var first)||first.Kind!=SurfaceClass.Plane
+            ||!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(edge.Curve)],out var line))return false;
+        var source=input.Coedges[coedge];var mate=-1;
+        for(var f=0;f<input.Faces.Length;f++)
+        {
+            if(f==face)continue;
+            var candidate=input.Faces[f];
+            for(var l=0;l<candidate.LoopCount;l++)
+            {
+                var loop=input.Loops[candidate.FirstLoop+l];
+                foreach(ref readonly var use in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+                {
+                    if(use.Edge!=source.Edge)continue;
+                    if(mate>=0||use.Forward==source.Forward)return false;
+                    mate=f;
+                }
+            }
+        }
+        if(mate<0||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(input.Faces[mate].Surface)],out var second)||second.Kind!=SurfaceClass.Plane)return false;
+        var window=new SheetCutCurve{Curve=edge.Curve,First=edge.Start,Last=edge.End};
+        // Both coedges produce the same bounded equations in the same order.
+        return face<mate?BoundRoundedPlaneLine(window,line,first,second,poles):BoundRoundedPlaneLine(window,line,second,first,poles);
     }
 
     private static bool TryIsolateInteriorLineCylinder(in ModelingEdge edge,SurfTag cylinder,Span<OperationIntersectionPoint> roots,
@@ -537,7 +577,7 @@ internal static unsafe partial class KernelRuntime
                         if(anchorCount==anchors.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                         anchors[anchorCount++]=new(){Carrier=root.Curve,Generation=carrier.Header.Generation,Surface=root.CuttingSurface,
                             Witness=root.Witness,Lower=root.Root.Lower,Upper=root.Root.Upper};
-                        lineSurfaceWitness|=root.Certified==LineSurfaceCertificate;
+                        lineSurfaceWitness|=root.Certified is LineSurfaceCertificate or PlanePairBlendLineCertificate;
                     }
                     status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(cut.Curve)],end==0?cut.First:cut.Last,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                     VertexSlot sourceVertex=-1;var sourcePoint=point[0];
