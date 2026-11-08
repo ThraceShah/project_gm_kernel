@@ -394,6 +394,7 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
     var roots=new List<KernelRuntime.BoundaryTrace>();
     var cutterRoots=new List<KernelRuntime.BoundaryTrace>();
     var conicRoots=new List<KernelRuntime.BoundaryTrace>();
+    var cylinderRoots=new List<KernelRuntime.BoundaryTrace>();
     var arranged=new List<KernelRuntime.BoundaryTrace>();
     var published=new HashSet<(int Carrier,int Event)>();
     var productUses=new List<(KernelRuntime.BoundaryTrace Trace,EdgeSlot Edge,FinSlot Fin,char Sense)>();
@@ -405,13 +406,18 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
         {
             roots.Add(trace);
-            if(requireCutterChartWitness&&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class==CurveClass.Line
-                &&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)].Class==SurfaceClass.Plane)
+            if(requireCutterChartWitness)
             {
+                var source=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class;
                 var kind=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.ProductCurve)].Class;
+                var contact=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)].Class;
                 var support=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.OtherSurface)].Class;
-                if(kind==CurveClass.ICurve&&support==SurfaceClass.BlendSurface)cutterRoots.Add(trace);
-                if(kind is CurveClass.Circle or CurveClass.Ellipse&&support==SurfaceClass.Cylinder)conicRoots.Add(trace);
+                if(source==CurveClass.Line&&contact==SurfaceClass.Plane)
+                {
+                    if(kind==CurveClass.ICurve&&support==SurfaceClass.BlendSurface)cutterRoots.Add(trace);
+                    if(kind is CurveClass.Circle or CurveClass.Ellipse&&support==SurfaceClass.Cylinder)conicRoots.Add(trace);
+                }
+                if(source==CurveClass.ICurve&&contact==SurfaceClass.Cylinder&&kind is CurveClass.Circle or CurveClass.Ellipse)cylinderRoots.Add(trace);
             }
         }
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)spatialReuses++;
@@ -449,8 +455,7 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
             &&published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
         var coedges=uses.Select(r=>r.InputCoedge).Distinct().Count();
         Require(coedges==2,$"short ICurve {edge.Curve} must reach the published cut on both incident coedges; found {coedges}");
-        var proved=uses.Where(r=>consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge
-            &&x.StartEvent==r.StartEvent&&x.Witness==r.Witness)).ToArray();
+        var proved=uses.Where(Transferred).ToArray();
         Require(proved.Length==uses.Length,$"short ICurve {edge.Curve} must transfer every published coedge station; proved {proved.Length}/{uses.Length}");
         certifiedCoedges+=coedges;
         var evidence=proved.Select(r=>r.StartEvent).Distinct().ToArray();
@@ -464,8 +469,20 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
     {
         CheckCutterCharts(cutterRoots,"CHART");
         CheckCutterCharts(conicRoots,"CONIC");
+        var cylinderTrimRoots=cylinderRoots.Where(r=>published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
+        foreach(var root in cylinderTrimRoots)
+        {
+            var uses=roots.Where(r=>r.Curve==root.Curve&&r.Generation==root.Generation&&r.Edge==root.Edge&&r.Witness==root.Witness
+                &&r.StartEvent==root.StartEvent&&published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
+            Require(uses.Select(r=>r.InputCoedge).Distinct().Count()==2&&uses.All(Transferred),
+                $"inherited cylinder ICurve event {root.StartEvent} must transfer its certified root on both coedges");
+        }
+        if(cylinderTrimRoots.Length>0)Console.WriteLine($"CYLINDER TRIM WITNESSES events={cylinderTrimRoots.Select(r=>r.StartEvent).Distinct().Count()}");
     }
     return result;
+
+    bool Transferred(KernelRuntime.BoundaryTrace root)=>consumed.Any(w=>w.Curve==root.Curve&&w.Generation==root.Generation
+        &&w.ProductCurve==root.ProductCurve&&w.InputCoedge==root.InputCoedge&&w.StartEvent==root.StartEvent&&w.Witness==root.Witness);
 
     bool PublishedOnBothFaces(KernelRuntime.BoundaryTrace witness)
     {
@@ -510,8 +527,7 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
         Require(cutterEdges.Length>0&&cutterEdges.All(g=>g.Count()==2)
             &&events.All(g=>g.Select(r=>r.Edge).Distinct().Count()==1&&g.Select(r=>r.InputCoedge).Distinct().Count()==2),
             $"each intersected finite cutter edge must supply two separate {kind} events on both of its coedges");
-        var certified=uses.Count(r=>consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge
-            &&x.StartEvent==r.StartEvent&&x.Witness==r.Witness));
+        var certified=uses.Count(Transferred);
         Require(certified==uses.Length,$"cutter edge stations must transfer to both published {kind} cuts; proved {certified}/{uses.Length}");
         Console.WriteLine($"CUTTER {kind} WITNESSES events={events.Length} certified_coedges={certified} cutter_edges={cutterEdges.Length}");
     }

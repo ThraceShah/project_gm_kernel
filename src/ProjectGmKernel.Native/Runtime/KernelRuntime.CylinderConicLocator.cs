@@ -13,10 +13,25 @@ internal static unsafe partial class KernelRuntime
     {
         handled=false;
         if(cut.Construction!=CutConstruction.AnalyticCylinderPlaneConic)return 0;
+        var nativeTrim=root.Certified==NativePlaneCertificate;
+        var planeTag=nativeTrim?root.CuttingSurface:root.ContactSurface;
+        var cylinderTag=nativeTrim?root.ContactSurface:root.CuttingSurface;
         var record=Curves[GetCurveSlotByTag(cut.Curve)];
         if(!TryGetIntersectionConic(record,out var native)||!TryReadExplicitSpineCurve(record,out var conic)
-            ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.ContactSurface)],out var plane)||plane.Kind!=SurfaceClass.Plane
-            ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.CuttingSurface)],out var cylinder)||cylinder.Kind!=SurfaceClass.Cylinder)return 0;
+            ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(planeTag)],out var plane)||plane.Kind!=SurfaceClass.Plane
+            ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(cylinderTag)],out var cylinder)||cylinder.Kind!=SurfaceClass.Cylinder)return 0;
+        if(nativeTrim)
+        {
+            var source=Curves[GetCurveSlotByTag(root.Curve)];
+            if(source.Class!=CurveClass.ICurve||root.Root.Vertex>=0||root.Root.Kind!=IntersectionVectorKind.Simple
+                ||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
+            // The finite CHART solver proves the cutting plane equation.
+            // The other equation follows from the exact cylinder support,
+            // not from the root's proximity to the stored ellipse.
+            var data=ICurveDataPool[source.DataIndex];
+            if(data.ProgramBlock<=0||data.IsBlendContact!=0
+                ||!(TryCertifySupportChart(data.Surface0Tag,cylinderTag,out _)||TryCertifySupportChart(data.Surface1Tag,cylinderTag,out _)))return 0;
+        }
         handled=true;
         if(!BoundCylinderPlaneConic(conic,plane,cylinder))return ParasolidConstants.PK_ERROR_cant_do_intersect;
 

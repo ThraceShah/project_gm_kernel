@@ -16,7 +16,8 @@ internal static unsafe partial class KernelRuntime
             return LocateCertifiedLineCut(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified==PlanePairBlendLineCertificate)
             return LocateCertifiedBladeCut(cut,root,ref parameter,ref isolation,out handled);
-        if(root.Certified==PlanePairCylinderLineCertificate)
+        if(root.Certified==PlanePairCylinderLineCertificate
+            ||root.Certified==NativePlaneCertificate&&cut.Construction==CutConstruction.AnalyticCylinderPlaneConic)
             return LocateCertifiedCylinderConic(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified!=NativePlaneCertificate||root.Root.Vertex>=0||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
         var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
