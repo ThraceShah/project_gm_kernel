@@ -36,19 +36,30 @@ internal static unsafe partial class KernelRuntime
     internal static AlgorithmStatus IsolateFiniteExplicitCylinder(in ModelingEdge edge,SurfTag cylinderTag,Span<OperationIntersectionPoint> roots,
         Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
     {
-        count=0;var record=Curves[GetCurveSlotByTag(edge.Curve)];
-        if(!TryReadExplicitSpineCurve(record,out var geometry)||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(cylinderTag)],out var cylinder)
-            ||cylinder.Kind!=SurfaceClass.Cylinder)
+        count=0;
+        if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(cylinderTag)],out var cylinder)||cylinder.Kind!=SurfaceClass.Cylinder)
             return AlgorithmStatus.Unsupported;
-        // In the native curve parameter, solve |(C(t)-O) x axis|²-r²=0.
-        // Interval position and derivative bounds cover the entire trim;
-        // non-simple or unresolved roots cannot certify branch identity.
+        return IsolateFiniteExplicitLevelSet(edge,cylinder,roots,isolation,spatialErrors,out count);
+    }
+
+    internal static AlgorithmStatus IsolateFiniteExplicitLevelSet(in ModelingEdge edge,in AnalyticSurface surface,
+        Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
+    {
+        count=0;
+        if(isolation.IsEmpty||!(edge.End>edge.Start))return AlgorithmStatus.InvalidInput;
+        var record=Curves[GetCurveSlotByTag(edge.Curve)];
+        if(!TryReadExplicitSpineCurve(record,out var geometry)||surface.Kind is not (SurfaceClass.Plane or SurfaceClass.Cylinder))
+            return AlgorithmStatus.Unsupported;
+        // In native t, a plane uses n·(C(t)-O)=0 and a cylinder uses
+        // |(C(t)-O) x axis|²-r²=0. Keep the full finite branch and do
+        // not promote an unresolved stationary cell to an empty result.
         Span<BlendSpineInstruction> spine=stackalloc BlendSpineInstruction[1]{new(){Curve=geometry,ChartCount=2}};
         Span<BlendChartInstruction> domain=stackalloc BlendChartInstruction[2]{new(){Parameter=edge.Start},new(){Parameter=edge.End}};
         var program=new NestedBlendProgram(default,spine,domain);
         var patch=new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
-        var status=SurfaceIsoPlaneRoots.Find(patch,cylinder,edge.Start,edge.End,roots,ref count,strictSeparation:true,isolation:isolation);
+        var status=SurfaceIsoPlaneRoots.Find(patch,surface,edge.Start,edge.End,roots,ref count,strictSeparation:true,isolation:isolation);
         if(status!=AlgorithmStatus.Success)return status;
+        if(count>spatialErrors.Length)return AlgorithmStatus.OutputTooSmall;
         for(var i=1;i<count;i++)for(var j=i;j>0&&isolation[j].Root.Lower<isolation[j-1].Root.Lower;j--)
         {
             (roots[j],roots[j-1])=(roots[j-1],roots[j]);

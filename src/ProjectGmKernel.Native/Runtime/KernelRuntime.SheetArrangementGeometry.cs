@@ -158,12 +158,17 @@ internal static unsafe partial class KernelRuntime
         var vertical=BlendWindingPrefersVertical(surface,edges,loop,query);var error=0;winding=0;
         for(var attempt=0;attempt<6;attempt++)
         {
-            var du=attempt switch{0=>vertical?0:1,1=>vertical?1:0,4=>.4142135623730951,5=>-.7320508075688772,_=>1};
-            var dv=attempt switch{0=>vertical?1:0,1=>vertical?0:1,2=>.3819660112501051,3=>-.6180339887498949,_=>1};
+            SheetWindingDirection(attempt,vertical,out var du,out var dv);
             error=SheetLoopWindingRay(surface,edges,loop,query,du,dv,out winding,sectionCharts);
             if(error==0||error is not (ParasolidConstants.PK_ERROR_cant_do_intersect or ParasolidConstants.PK_ERROR_eval_failure))return error;
         }
         return error;
+    }
+
+    private static void SheetWindingDirection(BufferOffset attempt,bool vertical,out double du,out double dv)
+    {
+        du=attempt switch{0=>vertical?0:1,1=>vertical?1:0,4=>.4142135623730951,5=>-.7320508075688772,_=>1};
+        dv=attempt switch{0=>vertical?1:0,1=>vertical?0:1,2=>.3819660112501051,3=>-.6180339887498949,_=>1};
     }
 
     // A local jet chooses a promising ray direction only. Root isolation and

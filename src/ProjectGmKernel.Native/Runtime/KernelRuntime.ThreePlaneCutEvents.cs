@@ -59,18 +59,10 @@ internal static unsafe partial class KernelRuntime
         var b=Surfaces[GetSurfaceSlotByTag(input.Faces[pair.Second].Surface)];
         if(!TryPrepareSurface(a,out var first)||!TryPrepareSurface(b,out var second)||first.Kind!=SurfaceClass.Plane||second.Kind!=SurfaceClass.Plane
             ||IntervalVector.Cross(new(first.Axis),new(second.Axis)).Norm().Value.Lower<=0
-            ||!LineExactlyOnPlane(line,first)||!LineExactlyOnPlane(line,second))return false;
+            ||!ExplicitCurveExactlyOnPlane(line,first)||!ExplicitCurveExactlyOnPlane(line,second))return false;
         var edge=new ModelingEdge{Curve=pair.Cut.Curve,Start=pair.Cut.First,End=pair.Cut.Last};
         if(!TryFiniteLinePlaneEvent(edge,-1,input.Faces[third].Surface,out var result))return false;
         crosses=result.Count==1;root=result.FirstRoot;return true;
-    }
-
-    private static bool LineExactlyOnPlane(in ParametricSpineCurve line,in AnalyticSurface plane)
-    {
-        var normal=new IntervalVector(plane.Axis);
-        var offset=IntervalVector.Dot(new IntervalVector(line.Origin)-new IntervalVector(plane.Origin),normal).Value;
-        var tangent=IntervalVector.Dot(new IntervalVector(line.First),normal).Value;
-        return offset.Lower==0&&offset.Upper==0&&tangent.Lower==0&&tangent.Upper==0;
     }
 
     private static BoundaryParameter ThreePlaneCutAnchor(in RegularBoundaryView input,in RegularFaceCut pair,BufferOffset third,

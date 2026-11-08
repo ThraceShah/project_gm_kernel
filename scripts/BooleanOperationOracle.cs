@@ -13,7 +13,8 @@ using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
-var threePlaneOnly=args.Contains("--three-plane-events");
+var thirdFaceHole=args.Contains("--three-plane-hole");
+var threePlaneOnly=args.Contains("--three-plane-events")||thirdFaceHole;
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
 Directory.CreateDirectory(output);var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -27,7 +28,7 @@ try
         {
             var failures=0;var count=0;
             foreach(var mode in threePlaneOnly?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in threePlaneOnly?["three-plane-cuts","guarded-three-plane-cuts"]:new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
+            foreach(var fixture in threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
                 try
@@ -100,16 +101,18 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var y=fixture=="overlap-two-axes"?.5:0;
     var offset=fixture=="translated-large"?100.0:0;
     var outer=fixture is "nested" or "closed-cavity" or "through-hole"?4:fixture=="two-tools"?10:2;
-    var threePlane=fixture is "three-plane-cuts" or "guarded-three-plane-cuts";
+    var holed=fixture=="guarded-three-plane-hole";
+    var threePlane=holed||fixture is "three-plane-cuts" or "guarded-three-plane-cuts";
     int target;
     if(threePlane)Check(own?KernelRuntime.BodyCreateSolidCyl(4,4,null,&target):PK_BODY_create_solid_cyl(4,4,null,&target),"cylindrical target");
     else target=Block(own,offset,0,0,outer,outer,outer,0);
+    if(holed)target=ThroughBore(own,target);
     var nt=fixture=="two-tools"||threePlane?2:1;var tools=stackalloc int[nt];
     if(threePlane)
     {
         tools[0]=Block(own,0,0,3,2,2,2,0);
         tools[1]=Block(own,1,1,2.75,2,2,2.5,0);
-        if(fixture=="guarded-three-plane-cuts")(tools[0],tools[1])=(tools[1],tools[0]);
+        if(fixture!="three-plane-cuts")(tools[0],tools[1])=(tools[1],tools[0]);
     }
     else
     {
@@ -124,10 +127,13 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         {
             var certified=new HashSet<(int Event,int Curve)>();
             var published=new HashSet<(int Event,int Curve)>();
-            KernelRuntime.ForbidSpatialBoundaryReuse=fixture=="guarded-three-plane-cuts";
+            KernelRuntime.ForbidSpatialBoundaryReuse=fixture!="three-plane-cuts";
+            var excluded=0;
             KernelRuntime.TraceFiniteBoundary=trace=>
             {
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceStation)certified.Add((trace.StartEvent,trace.Curve));
+                if(trace.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceOutsideTrim&&trace.Source>=0
+                    &&KernelRuntime.Faces[trace.Source].LoopCount>1&&double.IsFinite(trace.First)&&double.IsFinite(trace.Last)&&trace.Last>=trace.First)excluded++;
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product)
                 {published.Add((trace.StartEvent,trace.Curve));published.Add((trace.EndEvent,trace.Curve));}
             };
@@ -137,7 +143,8 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                 Check(error,$"{fixture} Boolean at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}, curve {KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}");
                 var joined=certified.Where(published.Contains).GroupBy(x=>x.Event).Count(x=>x.Count()==3);
                 Require(joined>0,"a three-plane event must retain all three native stations on published edges");
-                Console.WriteLine($"THIRD FACE published_three_station_events={joined}");
+                if(holed)Require(excluded>0,"a carrier root inside the planar bore must be excluded by the actual trim");
+                Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded}");
             }
             finally{KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;}
         }
@@ -151,6 +158,26 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         Check(PK_BODY_boolean_2(target,nt,tools,&o,&tracking,&result),"PK Boolean");
         status=result.result;var bodies=new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray();
         Check(PK_TOPOL_track_r_f(&tracking),"PK tracking free");Check(PK_boolean_r_f(&result),"PK result free");return bodies;
+    }
+}
+static unsafe int ThroughBore(bool own,int body)
+{
+    var tool=Block(own,1,0,-1,.5,.5,6,0);
+    var o=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c};
+    if(own)
+    {
+        var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);
+        M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
+        Check(KernelRuntime.BodyBoolean2(body,1,&tool,&options,&tracking,&result),"own through bore");
+        try{Require(result.n_bodies==1,"own through bore body");return result.bodies[0];}
+        finally{Check(KernelRuntime.TopolTrackResultFree(&tracking),"own bore tracking");Check(KernelRuntime.BooleanResultFree(&result),"own bore result");}
+    }
+    else
+    {
+        PK_TOPOL_track_r_t tracking=default;PK_boolean_r_t result=default;
+        Check(PK_BODY_boolean_2(body,1,&tool,&o,&tracking,&result),"PK through bore");
+        try{Require(result.n_bodies==1,"PK through bore body");return result.bodies[0];}
+        finally{Check(PK_TOPOL_track_r_f(&tracking),"PK bore tracking");Check(PK_boolean_r_f(&result),"PK bore result");}
     }
 }
 static unsafe int Block(bool own,double x,double y,double z,double dx,double dy,double dz,double angle)

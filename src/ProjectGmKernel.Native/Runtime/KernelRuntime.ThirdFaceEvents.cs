@@ -42,16 +42,25 @@ internal static unsafe partial class KernelRuntime
                 var point=roots[i].Point;var error=spatialErrors[i];
                 var radius=new IntervalNumber(-error,error);
                 var x=new IntervalNumber(point.X)+radius;var y=new IntervalNumber(point.Y)+radius;var z=new IntervalNumber(point.Z)+radius;
-                if(havePlane&&ThirdFaceBoxesDisjoint(new(x.Lower,x.Upper,y.Lower,y.Upper,z.Lower,z.Upper),faceBox,margin))continue;
+                var rootBox=new IntervalBox3(x.Lower,x.Upper,y.Lower,y.Upper,z.Lower,z.Upper);
+                if(havePlane&&ThirdFaceBoxesDisjoint(rootBox,faceBox,margin))continue;
                 if(canJoin)
                 {
                     var errorJoin=JoinThreePlaneCutRoots(input,face,cuts,cutIndex,ref model,out var joined);
                     if(errorJoin!=0)return errorJoin;if(joined)continue;
                 }
+                var insideTrim=false;
+                var ownership=havePlane?CertifiedPlanarRootOwnership(input,face,surfaceRecord,point,rootBox,margin,out insideTrim):AlgorithmStatus.Unsupported;
+                if(ownership==AlgorithmStatus.Success&&!insideTrim)
+                {
+                    TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.ThirdFaceOutsideTrim,Curve=cut.Curve,Generation=curve.Header.Generation,
+                        Surface=surface,Source=source,Face=face,First=isolation[i].Root.Lower,Last=isolation[i].Root.Upper,SpatialError=error});
+                    continue;
+                }
                 // No uncorrelated point is admitted to a guarded graph.
                 LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetParameter=roots[i].First;
-                LastSheetAlgorithmStatus=AlgorithmStatus.Unsupported;
-                return ParasolidConstants.PK_ERROR_not_implemented;
+                LastSheetAlgorithmStatus=ownership==AlgorithmStatus.Success?AlgorithmStatus.Unsupported:ownership;
+                return IntersectionError(LastSheetAlgorithmStatus);
             }
             return 0;
         }
@@ -104,8 +113,12 @@ internal static unsafe partial class KernelRuntime
             count=result.Count;if(count==0)return AlgorithmStatus.Success;
             var root=result.FirstRoot;
             roots[0]=new(){Point=root.Point,First=root.Parameter,Kind=root.Kind};spatialErrors[0]=root.SpatialError;
+            isolation[0]=new(){Root=new(root.Lower,root.Upper),MonotoneDomain=new(edge.Start,edge.End),Certified=true,
+                Increasing=IntervalVector.Dot(new(spine.First),new(plane.Axis)).Value.Lower>0};
             return AlgorithmStatus.Success;
         }
+        if(curve.Class is CurveClass.Circle or CurveClass.Ellipse)
+            return IsolateFiniteExplicitLevelSet(new(){Curve=cut.Curve,Start=cut.First,End=cut.Last},plane,roots,isolation,spatialErrors,out count);
         if(curve.Class!=CurveClass.ICurve)return AlgorithmStatus.Unsupported;
         var data=ICurveDataPool[curve.DataIndex];
         if(data.ProgramBlock<=0||data.IsBlendContact!=0||RegularCoincidentSupports(surface,data.Surface0Tag)
@@ -149,12 +162,22 @@ internal static unsafe partial class KernelRuntime
         =>firstHigh<(new IntervalNumber(secondLow)-tolerance).Lower||(new IntervalNumber(secondHigh)+tolerance).Upper<firstLow;
 
 #if KERNEL_TEST_HOOKS
-    internal static int TestFiniteThirdFaceEvents(FaceSlot face,CurveTag carrier,double first,double last,out BufferCount events)
+    internal static int TestFiniteThirdFaceEvents(BodyTag body,FaceSlot face,CurveTag carrier,double first,double last,out BufferCount events)
     {
-        Span<ModelingFace> faces=stackalloc ModelingFace[1]{new(){Surface=Faces[face].SurfTag}};
+        events=0;
+        Span<BodyTag> bodies=stackalloc BodyTag[1]{body};
+        Span<KernelVector3> points=stackalloc KernelVector3[64];Span<VertexSlot> vertices=stackalloc VertexSlot[64];
+        Span<ModelingEdge> edges=stackalloc ModelingEdge[64];Span<EdgeSlot> originalEdges=stackalloc EdgeSlot[64];
+        Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[128];Span<ModelingLoop> loops=stackalloc ModelingLoop[64];
+        Span<ModelingFace> faces=stackalloc ModelingFace[64];Span<FaceSlot> originals=stackalloc FaceSlot[64];
+        Span<BufferOffset> owners=stackalloc BufferOffset[64],offsets=stackalloc BufferOffset[2];
+        var error=ReadRegularBoundaries(bodies,points,vertices,edges,originalEdges,coedges,loops,faces,originals,owners,offsets,
+            out _,out var ne,out var nc,out var nl,out var nf);
+        if(error!=0)return error;
+        var occurrence=originals[..nf].IndexOf(face);if(occurrence<0)return ParasolidConstants.PK_ERROR_bad_loop;
         var model=new SheetArrangement{Points=stackalloc KernelVector3[2],OriginalVertices=stackalloc VertexSlot[2],Tolerance=1e-9};
         Span<RegularFaceCut> cuts=stackalloc RegularFaceCut[1]{new(){First=-1,Second=-1,Cut=new(){Curve=carrier,First=first,Last=last}}};
-        var error=ReadThirdFaceEvents(new(default,default,default,faces),0,face,cuts,0,ref model,requireProof:true);
+        error=ReadThirdFaceEvents(new(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]),occurrence,face,cuts,0,ref model,requireProof:true);
         events=model.NP;return error;
     }
 #endif

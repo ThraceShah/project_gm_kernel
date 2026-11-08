@@ -71,8 +71,39 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         var line=new PK_LINE_sf_s();var diagonal=1/Math.Sqrt(2);
         Write(&line.basis_set.axis,Vector(diagonal,-diagonal,0));Write(&line.basis_set.location,Vector(0,y,1));
         CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
-        Assert.Equal(expected,KernelRuntime.TestFiniteThirdFaceEvents(side,carrier,0,end,out var events));
+        Assert.Equal(expected,KernelRuntime.TestFiniteThirdFaceEvents(body,side,carrier,0,end,out var events));
         Assert.Equal(0,events);
+    }
+
+    [Theory]
+    [InlineData(0,0)]
+    [InlineData(.75,ParasolidConstants.PK_ERROR_not_implemented)]
+    [InlineData(.5,ParasolidConstants.PK_ERROR_cant_do_intersect)]
+    public void ThirdFaceWindingExcludesARootInsideAnActualInnerLoop(double x,int expected)
+    {
+        BodyTag body,tool;
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidBlock(4,4,2,null,&body));
+        var basis=new PK_AXIS2_sf_s();
+        Write(&basis.location,Vector(0,0,-1));Write(&basis.axis,Vector(0,0,1));Write(&basis.ref_direction,Vector(1,0,0));
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidBlock(1,1,4,&basis,&tool));
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
+        PK_TOPOL_track_r_s track=default;PK_boolean_r_s result=default;
+        Assert.Equal(0,KernelRuntime.BodyBoolean2(body,1,&tool,&options,&track,&result));
+        Assert.Equal(1,result.n_bodies);
+        body=result.bodies[0];KernelRuntime.TopolTrackResultFree(&track);KernelRuntime.BooleanResultFree(&result);
+
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];FaceSlot top=-1;
+        var face=record.FirstFaceBody;
+        for(var i=0;i<record.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var occurrence=KernelRuntime.Faces[face];PK_PLANE_sf_s plane;Assert.Equal(0,KernelRuntime.PlaneAsk(occurrence.SurfTag,&plane));
+            if(occurrence.LoopCount==2&&plane.basis_set.location.coord[2]==2&&Math.Abs(plane.basis_set.axis.coord[2])==1){top=face;break;}
+        }
+        Assert.True(top>=0);
+        var line=new PK_LINE_sf_s();Write(&line.basis_set.axis,Vector(0,0,1));Write(&line.basis_set.location,Vector(x,0,1));
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var error=KernelRuntime.TestFiniteThirdFaceEvents(body,top,carrier,0,2,out var events);
+        Assert.Equal(expected,error);Assert.Equal(0,events);
     }
 
     [Theory]
@@ -319,6 +350,30 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         {
             Assert.True(isolation[i].Certified);Assert.InRange(exact[i],isolation[i].Root.Lower,isolation[i].Root.Upper);
             if(i>0)Assert.True(isolation[i-1].Root.Upper<isolation[i].Root.Lower);
+        }
+    }
+
+    [Theory]
+    [InlineData(.75,.1,6,2,false)]
+    [InlineData(.75,.1,3,1,false)]
+    [InlineData(.75,1.5,4.5,0,false)]
+    [InlineData(-2,.1,6,0,true)]
+    public void FiniteEllipsePlaneRootsKeepNativeBranchAndReportTangency(double x,double first,double last,int expected,bool tangent)
+    {
+        var ellipse=new PK_ELLIPSE_sf_s{R1=2,R2=1};ellipse.basis_set.axis.coord[2]=1;ellipse.basis_set.ref_direction.coord[0]=1;
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.EllipseCreate(&ellipse,&carrier));
+        var plane=new AnalyticSurface(SurfaceClass.Plane,Vector(x,0,0),Vector(1,0,0),Vector(0,1,0));
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[4];Span<ScalarRootIsolation> intervals=stackalloc ScalarRootIsolation[4];
+        Span<double> errors=stackalloc double[4];
+        var status=KernelRuntime.IsolateFiniteExplicitLevelSet(new(){Curve=carrier,Start=first,End=last},plane,roots,intervals,errors,out var count);
+        Assert.Equal(tangent?AlgorithmStatus.NotConverged:AlgorithmStatus.Success,status);
+        if(tangent)return;
+        Assert.Equal(expected,count);
+        if(count>0)Assert.InRange(Math.Acos(x/2),intervals[0].Root.Lower,intervals[0].Root.Upper);
+        if(count>1)
+        {
+            Assert.InRange(Math.Tau-Math.Acos(x/2),intervals[1].Root.Lower,intervals[1].Root.Upper);
+            Assert.True(intervals[0].Root.Upper<intervals[1].Root.Lower);
         }
     }
 

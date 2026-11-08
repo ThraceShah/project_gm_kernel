@@ -1,3 +1,4 @@
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
@@ -23,4 +24,13 @@ internal static unsafe partial class KernelRuntime
             default:return false;
         }
     }
+    private static bool ExplicitCurveExactlyOnPlane(in ParametricSpineCurve curve,in AnalyticSurface plane)
+    {
+        var normal=new IntervalVector(plane.Axis);
+        var offset=IntervalVector.Dot(new IntervalVector(curve.Origin)-new IntervalVector(plane.Origin),normal).Value;
+        var first=IntervalVector.Dot(new IntervalVector(curve.First),normal).Value;
+        var second=IntervalVector.Dot(new IntervalVector(curve.Second),normal).Value;
+        return offset.Magnitude==0&&first.Magnitude==0&&(curve.Kind==CurveClass.Line||second.Magnitude==0);
+    }
+
 }
