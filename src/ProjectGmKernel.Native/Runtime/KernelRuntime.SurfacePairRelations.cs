@@ -71,6 +71,8 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
+    internal static bool TestCoincidentSupports(SurfTag first,SurfTag second)=>RegularCoincidentSupports(first,second);
+
     internal static int TestFiniteBoundaryCarrier(CurveTag curve,double first,double last,in KernelVector3 point,out bool on)
     {
         Span<ModelingEdge> edges=stackalloc ModelingEdge[1]{new(){Curve=curve,Start=first,End=last}};
@@ -85,8 +87,18 @@ internal static unsafe partial class KernelRuntime
     {
         if(SameSheetSupport(first,second))return true;
         var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);
-        if(RegularPlanarSupport(a,out var p,out _)&&RegularPlanarSupport(b,out var q,out _))
-            return OperationIntersection.Norm(ProfileCross(p.Axis,q.Axis))==0&&Dot(Sub(p.Origin,q.Origin),p.Axis)==0;
+        if(RegularPlanarSupport(a,out var p,out var deviationA)&&RegularPlanarSupport(b,out var q,out var deviationB))
+        {
+            // A nonzero control-hull deviation only bounds proximity. It
+            // cannot replace an SSI with coincident-domain material rules.
+            if(deviationA!=0||deviationB!=0)return false;
+            if(!ExactVector(p.Axis,q.Axis)&&!ExactVector(p.Axis,Scale(q.Axis,-1)))
+            {
+                var cross=IntervalVector.Cross(new(p.Axis),new(q.Axis));
+                if(cross.X.Value.Magnitude!=0||cross.Y.Value.Magnitude!=0||cross.Z.Value.Magnitude!=0)return false;
+            }
+            return ExactVector(p.Origin,q.Origin)||ExactProjectionEqual(p.Origin,q.Origin,p.Axis);
+        }
         if(!TryPrepareSurface(Surfaces[a],out p)||!TryPrepareSurface(Surfaces[b],out q)||p.Kind!=q.Kind)return false;
         if(p.Kind==SurfaceClass.Sphere)return p.Origin.X==q.Origin.X&&p.Origin.Y==q.Origin.Y&&p.Origin.Z==q.Origin.Z&&p.Radius==q.Radius;
         if(p.Kind==SurfaceClass.Cylinder)

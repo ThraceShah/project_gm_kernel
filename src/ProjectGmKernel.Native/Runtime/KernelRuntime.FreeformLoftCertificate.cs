@@ -45,7 +45,7 @@ internal static unsafe partial class KernelRuntime
                 for (var e = 1; e < vertices; e++)
                 {
                     var point = FreeformTrajectoryPoint(trajectories, rows, e, k);
-                    if (!FreeformExactProjectionEqual(point, reference, normal)) return 0;
+                    if (!ExactProjectionEqual(point, reference, normal)) return 0;
                 }
                 if (k > 0)
                 {
@@ -154,7 +154,7 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    private static bool FreeformExactProjectionEqual(in KernelVector3 a, in KernelVector3 b, in KernelVector3 normal)
+    private static bool ExactProjectionEqual(in KernelVector3 a, in KernelVector3 b, in KernelVector3 normal)
     {
         Span<double> expansion = stackalloc double[24]; var length = 0;
         Span<double> positions = stackalloc double[6] { a.X, a.Y, a.Z, b.X, b.Y, b.Z };

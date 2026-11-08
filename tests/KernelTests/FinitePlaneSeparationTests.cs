@@ -19,6 +19,44 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     public FinitePlaneSeparationTests(){KernelRuntime.SessionStop();var start=new PK_SESSION_start_o_s{o_t_version=1};Assert.Equal(0,KernelRuntime.SessionStart(&start));}
     public void Dispose(){KernelRuntime.SessionStop();}
 
+    [Theory]
+    [InlineData(0,true)]
+    [InlineData(1e-13,false)]
+    [InlineData(-1e-13,false)]
+    public void APlaneRecognitionBoundDoesNotProveCoincidentSplineSupport(double centerHeight,bool coincident)
+    {
+        double* poles=stackalloc double[27];
+        for(var i=0;i<3;i++)for(var j=0;j<3;j++)
+        {
+            var k=3*(3*i+j);poles[k]=i*.5;poles[k+1]=j*.5;poles[k+2]=i==1&&j==1?centerHeight:0;
+        }
+        double* knots=stackalloc double[2]{-1,2};int* mult=stackalloc int[2]{3,3};
+        var surface=new PK_BSURF_sf_s{u_degree=2,v_degree=2,n_u_vertices=3,n_v_vertices=3,vertex_dim=3,vertex=poles,
+            n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=mult,v_knot_mult=mult,
+            form=ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=ParasolidConstants.PK_knot_non_uniform_c,
+            self_intersecting=ParasolidConstants.PK_self_intersect_false_c,convexity=ParasolidConstants.PK_convexity_unset_c};
+        SurfTag spline,plane;Assert.Equal(0,KernelRuntime.BSurfCreate(&surface,&spline));
+        var definition=new PK_PLANE_sf_s();definition.basis_set.location.coord[0]=.25;
+        definition.basis_set.axis.coord[2]=-1;definition.basis_set.ref_direction.coord[1]=1;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));
+        Assert.Equal(coincident,KernelRuntime.TestCoincidentSupports(spline,plane));
+        Assert.Equal(coincident,KernelRuntime.TestCoincidentSupports(plane,spline));
+    }
+
+    [Fact]
+    public void OppositeObliquePlaneAxesCanProveTheSameOffsetEquation()
+    {
+        var definition=new PK_PLANE_sf_s();Write(&definition.basis_set.axis,Vector(.6,.8,0));
+        definition.basis_set.ref_direction.coord[2]=1;
+        SurfTag first,same,near;Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&first));
+        Write(&definition.basis_set.axis,Vector(-.6,-.8,0));Write(&definition.basis_set.location,Vector(.8,-.6,0));
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&same));
+        definition.basis_set.location.coord[0]=Math.BitIncrement(.8);
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&near));
+        Assert.True(KernelRuntime.TestCoincidentSupports(first,same));
+        Assert.False(KernelRuntime.TestCoincidentSupports(first,near));
+    }
+
     [Fact]
     public void ObliqueCylinderConicCertificateRejectsSmallInPlaneDisplacement()
     {
