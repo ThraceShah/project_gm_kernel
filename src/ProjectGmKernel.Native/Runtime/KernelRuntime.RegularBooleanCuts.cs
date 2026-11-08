@@ -300,6 +300,27 @@ internal static unsafe partial class KernelRuntime
         ambiguousCut=graph.AddEdge(carrier,0,1,0,1,true,out _,exact:true);
         return 0;
     }
+
+    internal static int TestBoundedSourceStationOrder(CurveTag carrier,ReadOnlySpan<IntervalNumber> roots,out BufferCount fragments,out double middle)
+    {
+        fragments=0;middle=0;
+        Span<ModelingEdge> input=stackalloc ModelingEdge[1]{new(){Curve=carrier,Start=0,End=1,StartVertex=0,EndVertex=1}};
+        Span<EdgeSlot> original=stackalloc EdgeSlot[1]{-1};
+        Span<SheetSourceEdge> sources=stackalloc SheetSourceEdge[1];
+        var graph=new SheetArrangement{Edges=stackalloc ModelingEdge[3],CutEdges=stackalloc byte[3],
+            Points=stackalloc KernelVector3[4],Parameters=stackalloc BoundaryParameter[2],NP=roots.Length+2,RequireBoundaryAssociations=true};
+        graph.Points[1]=Vector(1,0,0);
+        for(var i=0;i<roots.Length;i++)
+        {
+            var bound=roots[i];graph.Points[i+2]=Vector(bound.Midpoint,0,0);
+            var error=graph.AssociateParameter(i+2,carrier,bound.Midpoint,bound.Lower,bound.Upper,witness:i+1);if(error!=0)return error;
+        }
+        var ownedCount=0;var split=SplitRegularSourceEdges(new(input,default,default,default),original,sources,default,ref ownedCount,ref graph);
+        if(split!=0)return split;
+        fragments=sources[0].Count;
+        if(fragments==3)middle=graph.Edges[1].End-graph.Edges[1].Start;
+        return 0;
+    }
 #endif
 
     private static int ClipRegularFacePair(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
@@ -572,10 +593,16 @@ internal static unsafe partial class KernelRuntime
         Span<SheetSourceEdge> sources,Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model,bool coincident=false)
     {
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<BufferOffset> vertices=stackalloc BufferOffset[SheetPointLimit+2];
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[SheetPointLimit+2];
         for(var e=0;e<input.Edges.Length;e++)
         {
             var edge=input.Edges[e];var slot=GetCurveSlotByTag(edge.Curve);var positive=LocalSenseSign(Curves[slot].Sense)>0;var ring=edge.StartVertex<0;var n=0;
-            if(!ring){parameters[n]=edge.Start;vertices[n++]=positive?edge.StartVertex:edge.EndVertex;parameters[n]=edge.End;vertices[n++]=positive?edge.EndVertex:edge.StartVertex;}
+            var lowerEvent=ring?-1:positive?edge.StartVertex:edge.EndVertex;var upperEvent=ring?-1:positive?edge.EndVertex:edge.StartVertex;
+            if(!ring)
+            {
+                bounds[n]=new(edge.Start);parameters[n]=edge.Start;vertices[n++]=lowerEvent;
+                bounds[n]=new(edge.End);parameters[n]=edge.End;vertices[n++]=upperEvent;
+            }
             for(var p=0;p<model.NP;p++)
             {
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);
@@ -583,8 +610,17 @@ internal static unsafe partial class KernelRuntime
                 if(!known&&(model.RequireBoundaryAssociations||otherOccurrence))continue;
                 var error=known?0:CurveParameteriseVectorCore(edge.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
-                LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
-                if(!OperationIntersection.InInterval(t,edge.Start,edge.End))continue;
+                var bound=UncertifiedStation;
+                if(known&&HasBoundedStation(anchor))
+                {
+                    error=LocateBoundedStation(edge.Curve,p,anchor,edge.Start,edge.End,lowerEvent,upperEvent,out t,out bound,out var inside);
+                    if(error!=0)return error;if(!inside)continue;
+                }
+                else
+                {
+                    LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
+                    if(!OperationIntersection.InInterval(t,edge.Start,edge.End))continue;
+                }
                 if(coincident&&!model.VertexPrecisions.IsEmpty&&model.OriginalVertices[p]>=0
                     &&Vertices[model.OriginalVertices[p]].Body!=Edges[original[e]].Body
                     &&t>edge.Start+1e-10&&t<edge.End-1e-10)
@@ -596,18 +632,13 @@ internal static unsafe partial class KernelRuntime
                 var duplicate=false;for(var k=0;k<n;k++)
                 {
                     if(vertices[k]==p){duplicate=true;break;}
+                    if(bound.Finite&&bounds[k].Finite)continue;
                     if(model.RequireBoundaryAssociations?parameters[k]!=t:Math.Abs(parameters[k]-t)>=1e-10)continue;
-                    if(anchor.Surface!=0&&model.KnownSourceBoundaryParameter(vertices[k],edge.Curve,e,out var other,out _)&&other.Surface!=0
-                        &&(other.Upper<anchor.Lower||anchor.Upper<other.Lower))
-                    {
-                        if(parameters[k]==t)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                        continue;
-                    }
                     duplicate=true;break;
                 }
-                if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=Math.Clamp(t,edge.Start,edge.End);vertices[n++]=p;}
+                if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;bounds[n]=bound;parameters[n]=Math.Clamp(t,edge.Start,edge.End);vertices[n++]=p;}
             }
-            for(var i=1;i<n;i++)for(var j=i;j>0&&parameters[j]<parameters[j-1];j--){(parameters[j],parameters[j-1])=(parameters[j-1],parameters[j]);(vertices[j],vertices[j-1])=(vertices[j-1],vertices[j]);}
+            var order=SortBoundaryStations(edge.Curve,parameters[..n],vertices[..n],bounds[..n]);if(order!=0)return order;
             var start=model.NE;
             // Every original edge has its own contiguous fragment range.
             // Its coedges share that range; a different original edge must

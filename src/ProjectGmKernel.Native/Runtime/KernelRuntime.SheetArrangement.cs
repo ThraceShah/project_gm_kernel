@@ -404,6 +404,7 @@ internal static unsafe partial class KernelRuntime
         in RegularBoundaryView domain,BufferOffset domainFace)
     {
         Span<double> parameters=stackalloc double[SheetPointLimit];Span<BufferOffset> endpoints=stackalloc BufferOffset[SheetPointLimit];
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[SheetPointLimit];
         Span<OperationIntersectionPoint> coincidenceRoots=stackalloc OperationIntersectionPoint[checkAllBoundaries?IntersectionPointCapacity:0];
         for(var c=0;c<cuts.Length;c++)
         {
@@ -414,7 +415,8 @@ internal static unsafe partial class KernelRuntime
                 LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=cut.Curve;LastSheetParameter=cut.First;
                 if(cut.Closed!=0||!HasCutEnd(ref model,cut.Curve,lowerEvent,cut.First)||!HasCutEnd(ref model,cut.Curve,upperEvent,cut.Last))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                parameters[n]=cut.First;endpoints[n++]=lowerEvent;parameters[n]=cut.Last;endpoints[n++]=upperEvent;
+                bounds[n]=new(cut.First);parameters[n]=cut.First;endpoints[n++]=lowerEvent;
+                bounds[n]=new(cut.Last);parameters[n]=cut.Last;endpoints[n++]=upperEvent;
                 TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.NativeCutEndpoints,Source=face,Surface=surface,Curve=cut.Curve,
                     Face=domainFace,Generation=Curves[GetCurveSlotByTag(cut.Curve)].Header.Generation,
                     SurfaceGeneration=Surfaces[GetSurfaceSlotByTag(surface)].Header.Generation,StartEvent=lowerEvent,EndEvent=upperEvent,First=cut.First,Last=cut.Last});
@@ -423,30 +425,50 @@ internal static unsafe partial class KernelRuntime
             {
                 if(certified&&(i==lowerEvent||i==upperEvent))continue;
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[i]);double t=0;
-                var known=model.KnownParameter(i,cut.Curve,out t);var error=0;
+                var known=model.KnownBoundaryParameter(i,cut.Curve,out var anchor);t=anchor.Parameter;var error=0;
                 if(!known&&model.RequireBoundaryAssociations)
-                {error=AssociateCompatibleBoundaryEvent(ref model,i,cut.Curve,cut.First,cut.Last,out known);if(error!=0)return error;if(!known)continue;model.KnownParameter(i,cut.Curve,out t);}
+                {
+                    error=AssociateCompatibleBoundaryEvent(ref model,i,cut.Curve,cut.First,cut.Last,out known);if(error!=0)return error;
+                    if(!known)continue;model.KnownBoundaryParameter(i,cut.Curve,out anchor);t=anchor.Parameter;
+                }
                 else if(!known)error=CurveParameteriseVectorCore(cut.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
-                LiftPeriodicEdgeParameter(cut.Curve,cut.First,cut.Last,ref t);
-                if(!OperationIntersection.InInterval(t,cut.First,cut.Last))continue;
-                if(certified&&(t<cut.First||t>cut.Last))continue;
+                var bound=UncertifiedStation;
+                if(known&&HasBoundedStation(anchor))
+                {
+                    error=LocateBoundedStation(cut.Curve,i,anchor,cut.First,cut.Last,lowerEvent,upperEvent,out t,out bound,out var inside);
+                    if(error!=0)return error;if(!inside)continue;
+                }
+                else
+                {
+                    LiftPeriodicEdgeParameter(cut.Curve,cut.First,cut.Last,ref t);
+                    if(!OperationIntersection.InInterval(t,cut.First,cut.Last))continue;
+                    if(certified&&(t<cut.First||t>cut.Last))continue;
+                }
                 var duplicate=false;
                 for(var j=0;j<n;j++)
                 {
+                    if(endpoints[j]!=i&&bound.Finite&&bounds[j].Finite)continue;
                     if(certified&&known&&parameters[j]==t&&endpoints[j]!=i)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     if(model.RequireBoundaryAssociations||certified&&known?endpoints[j]==i:Math.Abs(parameters[j]-t)<1e-10)duplicate=true;
                 }
                 if(duplicate)continue;
-                if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n]=t;endpoints[n++]=i;
+                if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;bounds[n]=bound;parameters[n]=t;endpoints[n++]=i;
             }
-            for(var i=1;i<n;i++)for(var j=i;j>0&&parameters[j]<parameters[j-1];j--)
-            { (parameters[j],parameters[j-1])=(parameters[j-1],parameters[j]);(endpoints[j],endpoints[j-1])=(endpoints[j-1],endpoints[j]); }
+            var order=SortBoundaryStations(cut.Curve,parameters[..n],endpoints[..n],bounds[..n]);if(order!=0)return order;
             if(cut.Closed==0&&!certified)
             {
                 if(n==0||Math.Abs(parameters[0]-cut.First)>1e-10)
-                { parameters[..n].CopyTo(parameters[1..]);endpoints[..n].CopyTo(endpoints[1..]);parameters[0]=cut.First;endpoints[0]=-1;n++; }
-                if(Math.Abs(parameters[n-1]-cut.Last)>1e-10){parameters[n]=cut.Last;endpoints[n++]=-1;}
+                {
+                    if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+                    parameters[..n].CopyTo(parameters[1..]);endpoints[..n].CopyTo(endpoints[1..]);bounds[..n].CopyTo(bounds[1..]);
+                    bounds[0]=new(cut.First);parameters[0]=cut.First;endpoints[0]=-1;n++;
+                }
+                if(Math.Abs(parameters[n-1]-cut.Last)>1e-10)
+                {
+                    if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+                    bounds[n]=new(cut.Last);parameters[n]=cut.Last;endpoints[n++]=-1;
+                }
             }
             var intervals=cut.Closed!=0?(n==0?1:n):n-1;
             for(var i=0;i<intervals;i++)
@@ -455,10 +477,20 @@ internal static unsafe partial class KernelRuntime
                 var first=closed?cut.First:parameters[i];var last=closed?cut.Last:parameters[j];
                 var span=wrap?cut.Last-first+last-cut.First:last-first;if(!(span>(model.RequireBoundaryAssociations||certified?0:1e-12)))continue;
                 if(certified&&Math.BitIncrement(first)>=last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                var witnessFirst=!closed&&bounds[i].Finite?bounds[i].Upper:first;
+                var witnessLast=!closed&&bounds[j].Finite?bounds[j].Lower:last;
                 var inside=false;var located=false;
                 for(var attempt=0;attempt<7;attempt++)
                 {
-                    var fraction=.3819660112501051+attempt*.037;var t=first+span*fraction;if(t>cut.Last)t=cut.First+t-cut.Last;
+                    var fraction=.3819660112501051+attempt*.037;double t;
+                    if(witnessFirst!=first||witnessLast!=last)
+                    {
+                        // Material must be sampled in the proved open gap
+                        // between root boxes, even for a seam-crossing arc.
+                        if(!TryInteriorBoundaryStation(witnessFirst,witnessLast,cut.First,cut.Last,wrap,fraction,out t))
+                            return UnresolvedBoundaryStation(cut.Curve,endpoints[j],last,new(witnessLast),first,new(witnessFirst));
+                    }
+                    else{t=first+span*fraction;if(t>cut.Last)t=cut.First+t-cut.Last;}
                     var error=SheetCurveUV(surface,cut.Curve,t,true,out var uv,out _,out var point,sectionCharts:model.SectionCharts[..model.SectionChartCount]);if(error!=0)return error;
                     var coincident=false;
                     if(face>=0){error=SheetPointOnCoincidentBoundary(face,sources,point,out coincident,checkAllBoundaries);if(error!=0)return error;}

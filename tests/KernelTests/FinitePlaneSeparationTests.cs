@@ -110,6 +110,66 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(2e-14,false)]
+    [InlineData(2e-13,true)]
+    public void CertifiedSourceStationsNeedDisjointBoxesToPublishFragments(double halfWidth,bool unresolved)
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        const double a=.5,b=.5+2e-13;
+        Span<IntervalNumber> roots=stackalloc IntervalNumber[2]{new(b-halfWidth,b+halfWidth),new(a-halfWidth,a+halfWidth)};
+        var result=KernelRuntime.TestBoundedSourceStationOrder(carrier,roots,out var fragments,out var middle);
+        Assert.Equal(unresolved?ParasolidConstants.PK_ERROR_cant_do_intersect:0,result);
+        Assert.Equal(unresolved?0:3,fragments);
+        if(!unresolved)Assert.InRange(middle,1.9e-13,2.1e-13);
+    }
+
+    [Theory]
+    [InlineData(-5e-11,-4e-11,0,1)]
+    [InlineData(-5e-11,5e-11,ParasolidConstants.PK_ERROR_cant_do_intersect,0)]
+    public void CertifiedSourceStationCannotBorrowTheTrimEndpoint(double lower,double upper,int expected,int expectedFragments)
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        Span<IntervalNumber> roots=stackalloc IntervalNumber[1]{new(lower,upper)};
+        Assert.Equal(expected,KernelRuntime.TestBoundedSourceStationOrder(carrier,roots,out var fragments,out _));
+        Assert.Equal(expectedFragments,fragments);
+    }
+
+    [Fact]
+    public void PeriodicStationUsesOneCertifiedLiftAndExplicitEndIdentity()
+    {
+        var circle=new PK_CIRCLE_sf_s{radius=1};circle.basis_set.axis.coord[2]=1;circle.basis_set.ref_direction.coord[0]=1;
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.CircleCreate(&circle,&carrier));
+        Assert.Equal(0,KernelRuntime.TestLocatePeriodicBoundaryStation(carrier,new(.039,.041),6.1,6.4,false,out var parameter,out var bound,out var inside));
+        Assert.True(inside);Assert.InRange(parameter,bound.Lower,bound.Upper);
+        Assert.InRange(Math.Tau+.04,bound.Lower,bound.Upper);
+
+        Assert.Equal(0,KernelRuntime.TestLocatePeriodicBoundaryStation(carrier,new(-.2,-.19),6.1,6.4,false,out _,out _,out inside));
+        Assert.False(inside);
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.TestLocatePeriodicBoundaryStation(carrier,new(-.02,-.01),0,13,false,out _,out _,out _));
+
+        var limit=Math.Tau+.05;
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.TestLocatePeriodicBoundaryStation(carrier,new(.049,.051),limit,6.4,false,out _,out _,out _));
+        Assert.Equal(0,KernelRuntime.TestLocatePeriodicBoundaryStation(carrier,new(.049,.051),limit,6.4,true,out parameter,out bound,out inside));
+        Assert.True(inside);Assert.Equal(limit,parameter);Assert.Equal(limit,bound.Lower);Assert.Equal(limit,bound.Upper);
+    }
+
+    [Fact]
+    public void MaterialWitnessStaysInTheOpenGapOnBothCharts()
+    {
+        Assert.True(KernelRuntime.TryInteriorBoundaryStation(.75,.9,0,1,false,.38,out var interior));
+        Assert.True(interior>.75&&interior<.9);
+        Assert.True(KernelRuntime.TryInteriorBoundaryStation(.95,.15,0,1,true,.2,out interior));
+        Assert.True(interior>.95&&interior<1);
+        Assert.True(KernelRuntime.TryInteriorBoundaryStation(.95,.15,0,1,true,.75,out interior));
+        Assert.True(interior>0&&interior<.15);
+        Assert.False(KernelRuntime.TryInteriorBoundaryStation(.75,Math.BitIncrement(.75),0,1,false,.38,out _));
+    }
+
+    [Theory]
     [InlineData(.2,.3,true)]
     [InlineData(2.2,2.3,true)]
     [InlineData(1,1,true)]
