@@ -24,12 +24,18 @@ internal static unsafe partial class KernelRuntime
         // named equation's complete result, shared by its coedge discoveries.
         internal BoundaryRootWitnessId Witness;
         internal double Parameter,Lower,Upper;
+
+        internal readonly BufferOffset SourceOccurrence=>Witness==0?-1:(Witness-1)/IntersectionPointCapacity;
     }
     private struct BoundaryCarrierSurface
     {
         internal CurveTag Carrier;
         internal SurfTag Surface;
         internal EntityGeneration CarrierGeneration,SurfaceGeneration;
+        internal BufferOffset InputEdge;
+        internal double First,Last;
+
+        internal readonly bool Covers(double first,double last)=>First<=first&&last<=Last;
     }
     private struct BoundaryTangency
     {

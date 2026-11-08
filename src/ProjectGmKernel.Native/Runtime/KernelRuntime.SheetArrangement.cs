@@ -117,6 +117,23 @@ internal static unsafe partial class KernelRuntime
             return false;
         }
 
+        internal bool KnownSourceBoundaryParameter(BoundaryEventId endpoint,CurveTag curve,BufferOffset inputEdge,
+            out BoundaryParameter parameter,out bool otherOccurrence)
+        {
+            parameter=default;otherOccurrence=false;
+            var unqualified=false;var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
+            foreach(ref readonly var known in Parameters[..ParameterCount])
+            {
+                if(known.Event!=endpoint||known.Carrier!=curve||known.Generation!=generation)continue;
+                if(known.SourceOccurrence==inputEdge){parameter=known;return true;}
+                if(known.Witness!=0){otherOccurrence=true;continue;}
+                if(!unqualified){parameter=known;unqualified=true;}
+            }
+            // A root of a different edge cannot fall through to an XYZ
+            // inverse just because that edge uses the same carrier.
+            return unqualified&&!otherOccurrence;
+        }
+
         internal int AssociateTangency(BoundaryEventId endpoint,CurveTag first,CurveTag second)
         {
             if(Tangencies.IsEmpty||first==second)return 0;
@@ -184,7 +201,7 @@ internal static unsafe partial class KernelRuntime
                 var exact=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower;
                 if(anchor.Witness!=0||known.Witness!=0)
                 {
-                    if(anchor.Witness!=0&&known.Witness!=0&&(anchor.Witness-1)/IntersectionPointCapacity==(known.Witness-1)/IntersectionPointCapacity)
+                    if(anchor.Witness!=0&&known.Witness!=0&&anchor.SourceOccurrence==known.SourceOccurrence)
                         same|=anchor.Surface==known.Surface?anchor.Witness==known.Witness
                             :exact||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface);
                     continue;

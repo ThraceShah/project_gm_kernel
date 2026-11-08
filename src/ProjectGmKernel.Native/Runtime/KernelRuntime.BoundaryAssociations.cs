@@ -9,14 +9,16 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private static int AssociateBoundaryCarrierSurface(ref SheetArrangement model,CurveTag carrier,SurfTag surface)
+    private static int AssociateBoundaryCarrierSurface(ref SheetArrangement model,CurveTag carrier,double first,double last,SurfTag surface,BufferOffset inputEdge=-1)
     {
         if(model.CarrierSurfaces.IsEmpty)return 0;
         var curveGeneration=Curves[GetCurveSlotByTag(carrier)].Header.Generation;var surfaceGeneration=Surfaces[GetSurfaceSlotByTag(surface)].Header.Generation;
         foreach(var use in model.CarrierSurfaces[..model.CarrierSurfaceCount])
-            if(use.Carrier==carrier&&use.Surface==surface&&use.CarrierGeneration==curveGeneration&&use.SurfaceGeneration==surfaceGeneration)return 0;
+            if(use.Carrier==carrier&&use.Surface==surface&&use.CarrierGeneration==curveGeneration&&use.SurfaceGeneration==surfaceGeneration&&use.InputEdge==inputEdge
+                &&use.Covers(first,last))return 0;
         if(model.CarrierSurfaceCount==model.CarrierSurfaces.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-        model.CarrierSurfaces[model.CarrierSurfaceCount++]=new(){Carrier=carrier,Surface=surface,CarrierGeneration=curveGeneration,SurfaceGeneration=surfaceGeneration};return 0;
+        model.CarrierSurfaces[model.CarrierSurfaceCount++]=new(){Carrier=carrier,Surface=surface,CarrierGeneration=curveGeneration,SurfaceGeneration=surfaceGeneration,
+            First=first,Last=last,InputEdge=inputEdge};return 0;
     }
 
     private static int AssociateBoundarySurfaceEvent(ref SheetArrangement model,BoundaryEventId endpoint,SurfTag surface)
@@ -53,14 +55,48 @@ internal static unsafe partial class KernelRuntime
             }
             foreach(var incidence in model.CarrierSurfaces[..model.CarrierSurfaceCount])
                 if(incidence.Carrier==use.Carrier&&incidence.CarrierGeneration==use.Generation
+                    &&incidence.Covers(use.Lower,use.Upper)
+                    &&(incidence.InputEdge<0||use.Witness==0||incidence.InputEdge==use.SourceOccurrence)
                     &&Surfaces[GetSurfaceSlotByTag(incidence.Surface)].Header.Generation==incidence.SurfaceGeneration
                     &&SameSheetSupport(incidence.Surface,surface))return true;
         }
         return false;
     }
 
-    private static int ReadRollingBoundaryAssociations(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,
-        ReadOnlySpan<RollingCutFamily> families,ReadOnlySpan<SheetCutCurve> curves,ref SheetArrangement model)
+#if KERNEL_TEST_HOOKS
+    internal static int TestBoundedCarrierIncidence(CurveTag curve,SurfTag surface,double lower,double upper,out bool incident)
+    {
+        incident=false;
+        var model=new SheetArrangement{Points=stackalloc KernelVector3[1],OriginalVertices=stackalloc VertexSlot[1],
+            Parameters=stackalloc BoundaryParameter[1],CarrierSurfaces=stackalloc BoundaryCarrierSurface[2]};
+        var error=AssociateBoundaryCarrierSurface(ref model,curve,0,1,surface);if(error!=0)return error;
+        error=AssociateBoundaryCarrierSurface(ref model,curve,2,3,surface);if(error!=0)return error;
+        error=model.AddPoint(default,-1,out var point,requireProof:true);if(error!=0)return error;
+        error=model.AssociateParameter(point,curve,lower+(upper-lower)*.5,lower,upper);if(error!=0)return error;
+        incident=BoundaryEventOnSurface(ref model,point,surface);return 0;
+    }
+
+    internal static int TestFiniteCutIncidence(CurveTag cut,ReadOnlySpan<CurveTag> witnesses,ReadOnlySpan<SurfTag> surfaces,
+        bool remoteUse,out bool associated,out double parameter)
+    {
+        associated=false;parameter=0;
+        var model=new SheetArrangement{Points=stackalloc KernelVector3[1],OriginalVertices=stackalloc VertexSlot[1],
+            Parameters=stackalloc BoundaryParameter[3],CarrierSurfaces=stackalloc BoundaryCarrierSurface[5],Tolerance=OperationIntersection.DistanceTolerance};
+        var error=model.AddPoint(Vector(.5,0,0),-1,out var point,requireProof:true);if(error!=0)return error;
+        for(var i=0;i<2;i++)
+        {
+            error=AssociateBoundaryCarrierSurface(ref model,cut,0,1,surfaces[i]);if(error!=0)return error;
+            error=AssociateBoundaryCarrierSurface(ref model,witnesses[i],-1,1,surfaces[i]);if(error!=0)return error;
+            error=model.AssociateParameter(point,witnesses[i],0);if(error!=0)return error;
+        }
+        error=AssociateBoundaryCarrierSurface(ref model,cut,remoteUse?2:0,remoteUse?3:1,surfaces[2]);if(error!=0)return error;
+        error=AssociateCompatibleBoundaryEvent(ref model,point,cut,0,1,out associated);
+        if(associated)model.KnownParameter(point,cut,out parameter);
+        return error;
+    }
+#endif
+
+    private static int ReadRollingBoundaryAssociations(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,ref SheetArrangement model)
     {
         for(var face=0;face<input.Faces.Length;face++)
         {
@@ -69,13 +105,11 @@ internal static unsafe partial class KernelRuntime
             {
                 var loop=input.Loops[record.FirstLoop+l];
                 foreach(var coedge in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
-                {var error=AssociateBoundaryCarrierSurface(ref model,input.Edges[coedge.Edge].Curve,record.Surface);if(error!=0)return error;}
+                {
+                    var edge=input.Edges[coedge.Edge];
+                    var error=AssociateBoundaryCarrierSurface(ref model,edge.Curve,edge.Start,edge.End,record.Surface,coedge.Edge);if(error!=0)return error;
+                }
             }
-        }
-        foreach(var family in families)foreach(var curve in curves.Slice(family.FirstCurve,family.Count))
-        {
-            var error=AssociateBoundaryCarrierSurface(ref model,curve.Curve,input.Faces[family.FirstFace].Surface);if(error!=0)return error;
-            error=AssociateBoundaryCarrierSurface(ref model,curve.Curve,input.Faces[family.SecondFace].Surface);if(error!=0)return error;
         }
         for(var e=0;e<input.Edges.Length;e++)if(original[e]<0)
         {
@@ -133,7 +167,8 @@ internal static unsafe partial class KernelRuntime
             var data=ICurveDataPool[record.DataIndex];firstSupport=data.Surface0Tag;independent=!SameSheetSupport(firstSupport,data.Surface1Tag);
             if(!BoundaryEventOnSurface(ref model,endpoint,firstSupport)||!BoundaryEventOnSurface(ref model,endpoint,data.Surface1Tag))return 0;
         }
-        foreach(var use in model.CarrierSurfaces[..model.CarrierSurfaceCount])if(use.Carrier==curve&&use.CarrierGeneration==record.Header.Generation)
+        foreach(var use in model.CarrierSurfaces[..model.CarrierSurfaceCount])if(use.Carrier==curve&&use.CarrierGeneration==record.Header.Generation
+            &&use.Covers(first,last)&&Surfaces[GetSurfaceSlotByTag(use.Surface)].Header.Generation==use.SurfaceGeneration)
         {
             if(!BoundaryEventOnSurface(ref model,endpoint,use.Surface))return 0;
             if(firstSupport==0)firstSupport=use.Surface;else if(!SameSheetSupport(firstSupport,use.Surface))independent=true;

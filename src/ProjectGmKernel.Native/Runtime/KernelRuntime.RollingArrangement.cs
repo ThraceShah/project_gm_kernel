@@ -19,7 +19,8 @@ internal static unsafe partial class KernelRuntime
         if(oldFaces+bands.Length>RegularInputFaces||Bodies[body].EdgeCountBody+4*bands.Length>RegularInputEdges
             ||loopCount+bands.Length>RegularInputLoops||2*Bodies[body].EdgeCountBody+4*bands.Length>RegularInputCoedges)return ParasolidConstants.PK_ERROR_not_implemented;
         var chartWords=(sizeof(FiniteSectionChart)*subdivisions.Length+sizeof(double)-1)/sizeof(double);
-        var scratch=CommandScratch.Current;var memory=scratch.Take(249000+2*SheetPointLimit+chartWords);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+        var incidenceExtraWords=(sizeof(BoundaryCarrierSurface)/sizeof(double)-2)*4*RegularInputEdges; // Base reservation included the two-word carrier/support header.
+        var scratch=CommandScratch.Current;var memory=scratch.Take(249000+2*SheetPointLimit+chartWords+incidenceExtraWords);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -53,7 +54,7 @@ internal static unsafe partial class KernelRuntime
             {error=AppendRollingPatchDomain(band,contacts,ref model,inputEdges,originalEdges,inputCoedges,inputLoops,inputFaces,ref ne,ref nc,ref nl,ref nf);if(error!=0)return error;}
             var view=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
             LastRollingNetworkStage=RollingNetworkStage.SourceAssociations;
-            error=ReadRollingBoundaryAssociations(view,originalEdges[..ne],families,curves,ref model);if(error!=0)return error;
+            error=ReadRollingBoundaryAssociations(view,originalEdges[..ne],ref model);if(error!=0)return error;
             LastRollingNetworkStage=RollingNetworkStage.BoundaryProofs;
             error=ReadRollingFiniteEvents(view,originalEdges[..ne],model.OriginalVertices[..model.NP],bands,subdivisions,contacts,certificates,out var certificateCount);if(error!=0)return error;
             LastRollingNetworkStage=RollingNetworkStage.Clip;

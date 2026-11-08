@@ -279,15 +279,20 @@ internal static unsafe partial class KernelRuntime
         associations=model.ParameterCount;return 0;
     }
 
-    internal static int TestCoincidentSourceFragments(CurveTag carrier,Span<BufferCount> counts,out int ambiguousCut)
+    internal static int TestCoincidentSourceFragments(CurveTag carrier,Span<BufferCount> counts,out int ambiguousCut,bool sourceRoot=false,bool requireProof=true)
     {
         ambiguousCut=0;
         var finite=new ModelingEdge{Curve=carrier,Start=0,End=1,StartVertex=0,EndVertex=1};
         Span<ModelingEdge> input=stackalloc ModelingEdge[2]{finite,finite};
         Span<EdgeSlot> original=stackalloc EdgeSlot[2]{-1,-1};
         Span<SheetSourceEdge> fragments=stackalloc SheetSourceEdge[2];
-        var graph=new SheetArrangement{Edges=stackalloc ModelingEdge[2],CutEdges=stackalloc byte[2],
-            Points=stackalloc KernelVector3[2]{default,Vector(1,0,0)},NP=2,RequireBoundaryAssociations=true};
+        var graph=new SheetArrangement{Edges=stackalloc ModelingEdge[3],CutEdges=stackalloc byte[3],
+            Points=stackalloc KernelVector3[3]{default,Vector(1,0,0),Vector(.5,0,0)},
+            Parameters=stackalloc BoundaryParameter[1],NP=sourceRoot?3:2,RequireBoundaryAssociations=requireProof};
+        if(sourceRoot)
+        {
+            var associate=graph.AssociateParameter(2,carrier,.5,witness:1);if(associate!=0)return associate;
+        }
         var ownedCount=0;
         var error=SplitRegularSourceEdges(new(input,default,default,default),original,fragments,default,ref ownedCount,ref graph);
         if(error!=0)return error;
@@ -412,8 +417,8 @@ internal static unsafe partial class KernelRuntime
                     if(ownedCount==owned.Length)return ParasolidConstants.PK_ERROR_not_implemented;owned[ownedCount++]=cut;
                 }
                 if(cutCount==cuts.Length)return ParasolidConstants.PK_ERROR_not_implemented;cuts[cutCount++]=new(){First=first,Second=second,Cut=cut};
-                error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,input.Faces[first].Surface);if(error!=0)return error;
-                error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,input.Faces[second].Surface);if(error!=0)return error;
+                error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,cut.First,cut.Last,input.Faces[first].Surface);if(error!=0)return error;
+                error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,cut.First,cut.Last,input.Faces[second].Surface);if(error!=0)return error;
                 if(cut.Closed==0)for(var end=0;end<2;end++)
                 {
                     LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=cut.Curve;
@@ -574,8 +579,8 @@ internal static unsafe partial class KernelRuntime
             for(var p=0;p<model.NP;p++)
             {
                 var vector=new PK_VECTOR_s();WriteVector(&vector,model.Points[p]);
-                var known=model.KnownBoundaryParameter(p,edge.Curve,out var anchor);var t=anchor.Parameter;
-                if(!known&&model.RequireBoundaryAssociations)continue;
+                var known=model.KnownSourceBoundaryParameter(p,edge.Curve,e,out var anchor,out var otherOccurrence);var t=anchor.Parameter;
+                if(!known&&(model.RequireBoundaryAssociations||otherOccurrence))continue;
                 var error=known?0:CurveParameteriseVectorCore(edge.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
@@ -592,7 +597,7 @@ internal static unsafe partial class KernelRuntime
                 {
                     if(vertices[k]==p){duplicate=true;break;}
                     if(model.RequireBoundaryAssociations?parameters[k]!=t:Math.Abs(parameters[k]-t)>=1e-10)continue;
-                    if(anchor.Surface!=0&&model.KnownBoundaryParameter(vertices[k],edge.Curve,out var other)&&other.Surface!=0
+                    if(anchor.Surface!=0&&model.KnownSourceBoundaryParameter(vertices[k],edge.Curve,e,out var other,out _)&&other.Surface!=0
                         &&(other.Upper<anchor.Lower||anchor.Upper<other.Lower))
                     {
                         if(parameters[k]==t)return ParasolidConstants.PK_ERROR_cant_do_intersect;

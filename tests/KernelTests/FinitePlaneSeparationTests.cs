@@ -99,6 +99,59 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(true)] [InlineData(false)]
+    public void AFiniteRootSplitsOnlyItsCertifiedSourceOccurrence(bool requireProof)
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        Span<BufferCount> fragmentCounts=stackalloc BufferCount[2];
+        Assert.Equal(0,KernelRuntime.TestCoincidentSourceFragments(carrier,fragmentCounts,out _,sourceRoot:true,requireProof:requireProof));
+        Assert.Equal(2,fragmentCounts[0]);Assert.Equal(1,fragmentCounts[1]);
+    }
+
+    [Theory]
+    [InlineData(.2,.3,true)]
+    [InlineData(2.2,2.3,true)]
+    [InlineData(1,1,true)]
+    [InlineData(1.25,1.5,false)]
+    [InlineData(.9,1.1,false)]
+    [InlineData(.9,2.1,false)]
+    public void CarrierSurfaceIncidenceRequiresTheWholeEventBoxOnOneFiniteUse(double lower,double upper,bool incident)
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[2]=1;plane.basis_set.ref_direction.coord[0]=1;
+        SurfTag surface;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&surface));
+        Assert.Equal(0,KernelRuntime.TestBoundedCarrierIncidence(carrier,surface,lower,upper,out var associated));
+        Assert.Equal(incident,associated);
+    }
+
+    [Theory]
+    [InlineData(true)] [InlineData(false)]
+    public void CutAssociationUsesOnlySupportsOnTheRequestedTrim(bool remoteUse)
+    {
+        Span<CurveTag> curves=stackalloc CurveTag[3];
+        for(var axis=0;axis<3;axis++)
+        {
+            var line=new PK_LINE_sf_s();line.basis_set.axis.coord[axis]=1;
+            if(axis!=0)line.basis_set.location.coord[0]=.5;
+            CurveTag curve;Assert.Equal(0,KernelRuntime.LineCreate(&line,&curve));curves[axis]=curve;
+        }
+        Span<SurfTag> surfaces=stackalloc SurfTag[3];
+        for(var i=0;i<3;i++)
+        {
+            var plane=new PK_PLANE_sf_s();plane.basis_set.ref_direction.coord[0]=1;
+            if(i==0)plane.basis_set.axis.coord[2]=1;
+            else if(i==1)plane.basis_set.axis.coord[1]=1;
+            else plane.basis_set.axis.coord[1]=plane.basis_set.axis.coord[2]=Math.Sqrt(.5);
+            SurfTag surface;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&surface));surfaces[i]=surface;
+        }
+        Assert.Equal(0,KernelRuntime.TestFiniteCutIncidence(curves[0],curves[1..],surfaces,remoteUse,out var associated,out var parameter));
+        Assert.Equal(remoteUse,associated);
+        if(associated)Assert.Equal(.5,parameter);
+    }
+
+    [Theory]
     [InlineData(false)] [InlineData(true)]
     public void RepeatedDiscoveryOfOneIsolatedRootCanJoinButAnotherBranchOrOccurrenceCannot(bool separateOccurrence)
     {
