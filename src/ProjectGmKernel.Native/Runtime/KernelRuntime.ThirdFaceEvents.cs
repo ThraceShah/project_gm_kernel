@@ -61,6 +61,12 @@ internal static unsafe partial class KernelRuntime
         if(requireProof)
         {
             LastSheetAlgorithmStatus=proofStatus;
+            if(proofStatus==AlgorithmStatus.NotConverged&&canJoin&&(cut.LowerEvent!=0||cut.UpperEvent!=0))
+            {
+                var endpointJoin=JoinThreePlaneCutRoots(input,face,cuts,cutIndex,ref model,out var joined);
+                if(endpointJoin!=0)return endpointJoin;
+                if(joined){LastSheetAlgorithmStatus=AlgorithmStatus.Success;relation=SurfacePairRelation.PointContact;return 0;}
+            }
             if(proofStatus!=AlgorithmStatus.Success)return IntersectionError(proofStatus);
             var resolved=SurfacePairRelation.Empty;
             for(var i=0;i<count;i++)

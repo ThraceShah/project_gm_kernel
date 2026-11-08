@@ -193,7 +193,8 @@ internal static unsafe partial class KernelRuntime
         return status==AlgorithmStatus.Success;
     }
 
-    private static bool TryFiniteLinePlaneEvent(in ModelingEdge edge,BufferOffset inputEdge,SurfTag surface,out FiniteCurveSurfaceResult result)
+    private static bool TryFiniteLinePlaneEvent(in ModelingEdge edge,BufferOffset inputEdge,SurfTag surface,out FiniteCurveSurfaceResult result,
+        bool allowExactEnd=false)
     {
         result=default;
         if(!double.IsFinite(edge.Start)||!double.IsFinite(edge.End)||edge.Start>=edge.End)return false;
@@ -208,14 +209,20 @@ internal static unsafe partial class KernelRuntime
         {result.State=FiniteIntersectionState.Empty;result.Relation=SurfacePairRelation.Empty;return true;}
         // A box that touches a trim limit needs an endpoint association.
         // A disjoint box has a finite-domain proof at any positive distance.
-        if(t.Lower<=edge.Start||t.Upper>=edge.End)return false;
+        var nativeEnd=FiniteNativeEnd.None;
+        if(t.Lower<=edge.Start||t.Upper>=edge.End)
+        {
+            if(!allowExactEnd||t.Lower!=t.Upper)return false;
+            nativeEnd=t.Lower==edge.Start?FiniteNativeEnd.First:FiniteNativeEnd.Last;
+        }
         var parameter=Math.Clamp(Dot(Sub(plane.Origin,line.Origin),plane.Axis)/Dot(line.First,plane.Axis),t.Lower,t.Upper);
         var point=Add(line.Origin,Scale(line.First,parameter));
         var enclosure=new IntervalVector(line.Origin)+axis*new IntervalDual(t,0);
         var error=(enclosure-new IntervalVector(point)).Norm().Value.Upper;
         if(!double.IsFinite(error))return false;
         result.State=FiniteIntersectionState.Complete;result.Relation=SurfacePairRelation.PointContact;result.Count=1;
-        result.FirstRoot=new(){Point=point,Vertex=-1,Kind=IntersectionVectorKind.Simple,Parameter=parameter,Lower=t.Lower,Upper=t.Upper,SpatialError=error};
+        result.FirstRoot=new(){Point=point,Vertex=-1,Kind=IntersectionVectorKind.Simple,NativeEnd=nativeEnd,
+            Parameter=parameter,Lower=t.Lower,Upper=t.Upper,SpatialError=error};
         return true;
     }
 

@@ -569,10 +569,10 @@ internal static unsafe partial class KernelRuntime
         var arrangementError=ExtractSheetCycles(surface,ref model,halfedges[..nh],cycleCoedges,cycles,out var cycleCount,out var coedgeCount);
         if(arrangementError!=0)return arrangementError;
         return PublishFiniteSheetCycles(surface,sense,face,reverse,ref model,cycleCoedges[..coedgeCount],cycles[..cycleCount],plane,borrowGeometry);
-
-        static bool HasCutEnd(ref SheetArrangement graph,CurveTag carrier,BoundaryEventId endpoint,double parameter)
-            =>endpoint>=0&&endpoint<graph.NP&&graph.KnownBoundaryParameter(endpoint,carrier,out var known)&&parameter>=known.Lower&&parameter<=known.Upper;
     }
+
+    private static bool HasCutEnd(ref SheetArrangement graph,CurveTag carrier,BoundaryEventId endpoint,double parameter)
+        =>endpoint>=0&&endpoint<graph.NP&&graph.KnownBoundaryParameter(endpoint,carrier,out var known)&&parameter>=known.Lower&&parameter<=known.Upper;
 
     private static int ExtractSheetCycles(SurfTag surface,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,
         scoped Span<ModelingCoedge> cycleCoedges,scoped Span<SheetCycle> cycles,out BufferCount cycleCount,out BufferCount coedgeCount)
