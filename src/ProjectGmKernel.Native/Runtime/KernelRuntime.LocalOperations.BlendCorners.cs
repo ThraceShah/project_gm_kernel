@@ -189,7 +189,7 @@ internal static unsafe partial class KernelRuntime
                 if(!analytic||!collapsed0||!collapsed1||!CornerZeroSection(curves[4*e+2],capPlanes[e],radius))return CornerReject(BlendCornerEvent.ShortEdge,ParasolidConstants.PK_ERROR_radius_too_large);
                 vanished[e]=1;
             }
-            if(RegularBlendAreaLoopCount(caps[e])>1&&!CornerCapLoopsClear(caps[e],far[e],farPoints[e],curves[4*e+3],lower[4*e+3],upper[4*e+3]))
+            if(RegularBlendAreaLoopCount(caps[e])>1&&!FiniteBlendCapLoopsClear(caps[e],far[e],farPoints[e],curves[4*e+3],lower[4*e+3],upper[4*e+3]))
                 return CornerReject(BlendCornerEvent.UncertifiedClearance,ParasolidConstants.PK_ERROR_cant_do_intersect);
         }
         LastBlendCornerStage=BlendCornerStage.Clearance;

@@ -17,6 +17,9 @@ var cutArg=args.SingleOrDefault(x=>x.StartsWith("--cut-x=",StringComparison.Ordi
 var cutX=cutArg==null?.5:double.Parse(cutArg[8..],CultureInfo.InvariantCulture);
 Require(cutX>0&&cutX<1,"the cut station must be inside the seed's X range");
 var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
+var remoteCapBore=args.Contains("--remote-cap-bore",StringComparer.Ordinal);
+Require(!remoteCapBore||args.Contains("plane-nurbs",StringComparer.Ordinal)&&!args.Contains("--remote-bore",StringComparer.Ordinal),
+    "cap bore uses the plane/NURBS seed and is separate from the side bore");
 Require(!requireCutSection||KernelRuntime.ForbidLegacyRegularBlendAssembly&&args.Any(x=>x is "affine-plane-nurbs" or "plane-nurbs")
     &&!args.Any(x=>x is "rounding-only" or "lifecycle-only" or "native-only"),"cut section check needs a guarded plane/NURBS fillet and Boolean");
 var sectionWitnesses=0;var traceCutSection=false;
@@ -73,9 +76,11 @@ using(host)unsafe
                 {
                     var own=Roof(true,bulge,wall,concave);var reference=Roof(false,bulge,wall,concave);CheckBody(reference,name+" reference input");
                     if(args.Contains("--remote-bore",StringComparer.Ordinal)){own=Bore(true,own);reference=Bore(false,reference);CheckBody(reference,name+" bored reference input");}
+                    if(remoteCapBore){own=Bore(true,own,true);reference=Bore(false,reference,true);CheckCapBoreRings(own,reference);}
                     var nativeBlend=Fillet(false,reference,radius,concave);CheckBody(reference,name+" reference fillet");
                     sectionWitnesses=0;
                     var ownBlend=Fillet(true,own,radius,concave);
+                    if(remoteCapBore)CheckCapBoreRings(own,reference);
                     if(name=="affine-plane-nurbs"&&KernelRuntime.ForbidLegacyRegularBlendAssembly)
                         Require(sectionWitnesses==2,"both affine cap boundaries have known native section limits");
                     if(!lifecycleOnly)
@@ -91,6 +96,11 @@ using(host)unsafe
                     {
                         try
                         {
+                            if(remoteCapBore)
+                            {
+                                var reloaded=ReceiveManaged(Transmit(own));Check(KernelRuntime.EntityDelete(1,&own),"delete the pre-reload bored fillet");own=reloaded;
+                                CheckCapBoreRings(own,reference);
+                            }
                             reference=Cut(false,reference,cutX);CheckBody(reference,name+" reference fillet cut");
                             var verifySection=requireCutSection&&(name is "affine-plane-nurbs" or "plane-nurbs");
                             traceCutSection=verifySection;
@@ -99,6 +109,7 @@ using(host)unsafe
                             if(verifySection)KernelRuntime.ForbidSpatialBoundaryReuse=true;
                             try{own=Cut(true,own,cutX);}
                             finally{KernelRuntime.ForbidSpatialBoundaryReuse=savedProofGuard;traceCutSection=false;}
+                            if(remoteCapBore)CheckCapBoreRings(own,reference);
                             if(verifySection)
                                 Require(cutCharts.Any(key=>cutCrossings.Contains(key)&&cutProducts.Contains(key)
                                     &&cutEnds.Count(end=>end.Curve==key.Curve)==2),
@@ -277,13 +288,37 @@ static unsafe int ContactParameters(int surface,M.PK_VECTOR_s point,out M.PK_UV_
     return Distance(*(PK_VECTOR_t*)&point,*(PK_VECTOR_t*)&evaluated)<1e-8?0:PK_ERROR_not_on_surface;
 }
 
-static unsafe int Bore(bool own,int body)
+static unsafe int Bore(bool own,int body,bool acrossCaps=false)
 {
-    var basis=new PK_AXIS2_sf_t{location=new(.3,-1,.35),axis=new(0,1,0),ref_direction=new(1,0,0)};int tool;
+    var basis=acrossCaps
+        ?new PK_AXIS2_sf_t{location=new(-1,.45,.35),axis=new(1,0,0),ref_direction=new(0,1,0)}
+        :new PK_AXIS2_sf_t{location=new(.3,-1,.35),axis=new(0,1,0),ref_direction=new(1,0,0)};
+    int tool;
     Check(own?KernelRuntime.BodyCreateSolidCyl(.06,3,(M.PK_AXIS2_sf_s*)&basis,&tool):PK_BODY_create_solid_cyl(.06,3,&basis,&tool),"remote bore tool");
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
     Check(own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies),"remote support bore");
     try{Require(n==1,"one bored input");return bodies[0];}finally{Free(own,bodies);}
+}
+
+static unsafe void CheckCapBoreRings(int own,int reference)
+{
+    foreach(var managed in new[]{true,false})
+    {
+        int count;int* faces;var body=managed?own:reference;
+        Check(managed?KernelRuntime.BodyAskFaces(body,&count,&faces):PK_BODY_ask_faces(body,&count,&faces),"cap bore faces");
+        var rings=0;
+        try{for(var i=0;i<count;i++)
+        {
+            int support,type;Check(managed?KernelRuntime.FaceAskSurf(faces[i],&support):PK_FACE_ask_surf(faces[i],&support),"cap bore support");
+            Check(managed?KernelRuntime.EntityAskClass(support,&type):PK_ENTITY_ask_class(support,&type),"cap bore support class");
+            if(type!=PK_CLASS_plane)continue;
+            PK_PLANE_sf_t plane;Check(managed?KernelRuntime.PlaneAsk(support,(M.PK_PLANE_sf_s*)&plane):PK_PLANE_ask(support,&plane),"cap bore plane");
+            if(Math.Abs(plane.basis_set.axis.coord[0])<.99)continue;
+            int loops;int* tags;Check(managed?KernelRuntime.FaceAskLoops(faces[i],&loops,&tags):PK_FACE_ask_loops(faces[i],&loops,&tags),"cap bore loops");
+            Free(managed,tags);rings+=loops-1;
+        }}finally{Free(managed,faces);}
+        Require(rings==2,"both finite cap bore rings are present");
+    }
 }
 
 static unsafe int Cut(bool own,int body,double x)

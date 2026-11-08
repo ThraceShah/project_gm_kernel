@@ -6,43 +6,6 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private static bool CornerCapLoopsClear(FaceSlot cap,VertexSlot corner,in KernelVector3 point,CurveTag section,double first,double last)
-    {
-        var face=Faces[cap];var slot=GetSurfaceSlotByTag(face.SurfTag);var curve=Curves[GetCurveSlotByTag(section)];
-        if(Surfaces[slot].Class!=SurfaceClass.Plane
-            ||!TryFiniteCarrierExtent(new(){Curve=section,First=Math.Min(first,last),Last=Math.Max(first,last)},curve,out var replaced))return false;
-        // The cut-off corner lies in the coordinate hull of the new
-        // section and the two straight retained rays to the old vertex.
-        replaced=Hull(replaced,new(point.X,point.X,point.Y,point.Y,point.Z,point.Z));
-        double precision=0;if(!TryThirdFacePrecision(cap,ref precision))return false;
-        var incident=0;var loop=face.FirstLoop;
-        for(var l=0;l<face.LoopCount;l++,loop=Loops[loop].NextInFace)
-        {
-            if(RegularVertexLoop(loop,out _))continue;
-            var fin=Loops[loop].FirstFin;BufferCount ends=0;
-            for(var f=0;f<Loops[loop].FinCount;f++,fin=Fins[fin].NextInLoop)
-            {
-                var edge=Edges[Fins[fin].Edge];if(edge.StartVertex!=corner&&edge.EndVertex!=corner)continue;
-                if(Curves[GetCurveSlotByTag(edge.CurveTag)].Class!=CurveClass.Line)return false;
-                ends++;
-            }
-            if(ends!=0){if(ends!=2)return false;incident++;continue;}
-            fin=Loops[loop].FirstFin;IntervalBox3 extent=default;
-            for(var f=0;f<Loops[loop].FinCount;f++,fin=Fins[fin].NextInLoop)
-            {
-                var edge=Edges[Fins[fin].Edge];
-                if(!TryProfileEdgeRange(edge,out var lo,out var hi)
-                    ||!TryFiniteCarrierExtent(new(){Curve=edge.CurveTag,First=lo,Last=hi},Curves[GetCurveSlotByTag(edge.CurveTag)],out var bound))return false;
-                extent=f==0?bound:Hull(extent,bound);
-            }
-            if(Loops[loop].FinCount==0||!ThirdFaceBoxesDisjoint(replaced,extent,precision))return false;
-        }
-        return incident==1;
-
-        static IntervalBox3 Hull(in IntervalBox3 a,in IntervalBox3 b)=>new(Math.Min(a.XLo,b.XLo),Math.Max(a.XHi,b.XHi),
-            Math.Min(a.YLo,b.YLo),Math.Max(a.YHi,b.YHi),Math.Min(a.ZLo,b.ZLo),Math.Max(a.ZHi,b.ZHi));
-    }
-
     private static bool CornerZeroSection(CurveTag section,SurfTag cap,double radius)
     {
         var curve=Curves[GetCurveSlotByTag(section)];if(curve.Class!=CurveClass.Circle||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(cap)],out var plane)||plane.Kind!=SurfaceClass.Plane)return false;

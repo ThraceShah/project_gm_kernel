@@ -36,7 +36,7 @@ internal static unsafe partial class KernelRuntime
             var support=Surfaces[GetSurfaceSlotByTag(Faces[supports[side]].SurfTag)];
             if(support.Class is not (SurfaceClass.Plane or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
             var error=RegularBlendEndFace(body,ends[side],fa,fb,out caps[side]);if(error!=0)return error;
-            if(RegularBlendAreaLoopCount(caps[side])!=1)return ParasolidConstants.PK_ERROR_not_implemented;
+            if(RegularBlendAreaLoopCount(caps[side])==0)return ParasolidConstants.PK_ERROR_not_implemented;
             capSurfaces[side]=Faces[caps[side]].SurfTag;
             if(Surfaces[GetSurfaceSlotByTag(capSurfaces[side])].Class!=SurfaceClass.Plane)
             {
@@ -166,6 +166,10 @@ internal static unsafe partial class KernelRuntime
         var window=Surfaces[GetSurfaceSlotByTag(blend)];var firstStation=window.UMin;var lastStation=window.UMax;
         error0=ValidateRegularEndSeparation(curves[2..],lo[2..],hi[2..],termination);if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Clearance;
+        for(var cap=0;cap<2;cap++)
+            if(RegularBlendAreaLoopCount(caps[cap])>1&&(direction>0
+                ||!FiniteBlendCapLoopsClear(caps[cap],ends[cap],cap==0?start:end,curves[2+cap],lo[2+cap],hi[2+cap])))
+                return ParasolidConstants.PK_ERROR_cant_do_intersect;
         error0=ValidateRegularBlendDomain(body,supports,caps,blend,firstStation,lastStation,direction<0);if(error0!=0)return error0;
         error0=ValidateRegularContactPlacement(edge,supports,curves[..2],lo[..2],hi[..2]);if(error0!=0)return error0;
         LastRegularBlendStage=RegularBlendStage.Reach;
