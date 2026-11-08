@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
+using ProjectGmKernel.Native.Geometry.Intersection;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -46,29 +47,69 @@ internal static unsafe partial class KernelRuntime
         handled=false;
         var target=Curves[GetCurveSlotByTag(cut)];
         if(target.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(target,out var line)
-            ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.ContactSurface)],out var common)||common.Kind!=SurfaceClass.Plane
+            ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.ContactSurface)],out var common)
             ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.CuttingSurface)],out var cutting)||cutting.Kind!=SurfaceClass.Plane
-            ||!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(root.Curve)],out var source)
-            ||!ExplicitCurveExactlyOnPlane(source,common)||!ExplicitCurveExactlyOnPlane(line,common)
+            ||!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(root.Curve)],out var source))return 0;
+        var station=new IntervalNumber(root.Root.Lower,root.Root.Upper);
+        if(common.Kind==SurfaceClass.Cylinder)
+        {
+            if(!ExplicitCurveExactlyOnCylinder(source,common)||!TryCertifiedGeneratorSide(line,common,cutting,out var side,out var positive))return 0;
+            handled=true;
+            var sourceSide=ProjectExplicitRoot(source,common.Origin,side,station);
+            if(!sourceSide.Finite||sourceSide.ContainsZero)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            if((sourceSide.Lower>0)!=positive)return ParasolidConstants.PK_ERROR_not_on_curve;
+        }
+        else if(common.Kind!=SurfaceClass.Plane||!ExplicitCurveExactlyOnPlane(source,common)||!ExplicitCurveExactlyOnPlane(line,common)
             ||!ExplicitCurveExactlyOnPlane(line,cutting))return 0;
-        // The source is transverse to the cutting plane and contained in
-        // the common plane. Their intersection is therefore precisely the
-        // target line. Transport the whole source native root enclosure.
+        // The selected branch and its represented carrier share the same
+        // axial gauge, even if a generator's radial anchor rounds.
         handled=true;
         var axis=new IntervalVector(line.First);
-        var offset=IntervalVector.Dot(new IntervalVector(source.Origin)-new IntervalVector(line.Origin),axis).Value;
-        var u=IntervalVector.Dot(new IntervalVector(source.First),axis).Value;
-        var station=new IntervalNumber(root.Root.Lower,root.Root.Upper);
-        if(source.Kind==CurveClass.Line)offset+=u*station;
-        else
-        {
-            IntervalDual.SinCos(new(station,0),out var sine,out var cosine);
-            offset+=u*cosine.Value+IntervalVector.Dot(new IntervalVector(source.Second),axis).Value*sine.Value;
-        }
-        isolation=offset/IntervalVector.Dot(axis,axis).Value;
+        isolation=ProjectExplicitRoot(source,line.Origin,axis,station)/IntervalVector.Dot(axis,axis).Value;
         if(!isolation.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         parameter=isolation.Midpoint;
         return 0;
+    }
+
+    private static bool TryCertifiedGeneratorSide(in ParametricSpineCurve line,in AnalyticSurface cylinder,in AnalyticSurface plane,
+        out IntervalVector side,out bool positive)
+    {
+        side=default;positive=false;
+        var axis=new IntervalVector(cylinder.Axis);var normal=new IntervalVector(plane.Axis);
+        var tilt=IntervalVector.Dot(axis,normal).Value;
+        var cross=IntervalVector.Cross(axis,new IntervalVector(line.First));
+        if(tilt.Magnitude!=0||IntervalVector.Dot(cross,cross).Value.Magnitude!=0)return false;
+        var nn=IntervalVector.Dot(normal,normal).Value;
+        if(!(nn.Lower>0))return false;
+        var h=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(cylinder.Origin),normal).Value;
+        var radius=new IntervalNumber(cylinder.Radius);
+        // With a unit normal, factor the radial discriminant to retain
+        // its small positive gap near tangency without subtracting squares.
+        var gap=nn.Lower==1&&nn.Upper==1?(radius-h)*(radius+h):(radius*radius-h*h/nn)/nn;
+        if(!gap.Finite||!(gap.Lower>0))return false;
+        side=IntervalVector.Cross(axis,normal);
+        var offset=new IntervalVector(line.Origin)-new IntervalVector(cylinder.Origin);
+        var branchSign=IntervalVector.Dot(offset,side).Value;
+        if(!branchSign.Finite||branchSign.ContainsZero)return false;
+        positive=branchSign.Lower>0;
+        // The exact radial solution is (h/nn)*n ± sqrt(gap)*(a × n).
+        // Require containment in its arithmetic enclosure before using
+        // the represented line. A proximity test cannot choose a branch.
+        var radial=offset-axis*IntervalVector.Dot(offset,axis);
+        var branch=normal*new IntervalDual(h/nn,0)+side*(IntervalDual.Sqrt(new(gap,0))*(positive?1:-1));
+        return branch.Finite&&Covers(branch.X.Value,radial.X.Value)&&Covers(branch.Y.Value,radial.Y.Value)&&Covers(branch.Z.Value,radial.Z.Value)
+            &&(radial-branch).Norm().Value.Upper<OperationIntersection.DistanceTolerance/16;
+
+        static bool Covers(IntervalNumber outer,IntervalNumber inner)=>inner.Lower>=outer.Lower&&inner.Upper<=outer.Upper;
+    }
+
+    private static IntervalNumber ProjectExplicitRoot(in ParametricSpineCurve source,in KernelVector3 origin,IntervalVector axis,IntervalNumber station)
+    {
+        var offset=IntervalVector.Dot(new IntervalVector(source.Origin)-new IntervalVector(origin),axis).Value;
+        var u=IntervalVector.Dot(new IntervalVector(source.First),axis).Value;
+        if(source.Kind==CurveClass.Line)return offset+u*station;
+        IntervalDual.SinCos(new(station,0),out var sine,out var cosine);
+        return offset+u*cosine.Value+IntervalVector.Dot(new IntervalVector(source.Second),axis).Value*sine.Value;
     }
 
     private static int LocateInCertifiedCutChart(in SheetCutCurve cut,in RegularBoundaryRoot root,
@@ -131,12 +172,22 @@ internal static unsafe partial class KernelRuntime
 
 #if KERNEL_TEST_HOOKS
     internal static int TestLocateCertifiedLineCut(CurveTag source,CurveTag target,SurfTag support,SurfTag plane,double first,double last,
-        out IntervalNumber bound,out bool certified,out bool inside)
+        out IntervalNumber bound,out bool certified,out bool inside,double sourceFirst=0,double sourceLast=1)
     {
         bound=UncertifiedStation;certified=inside=false;
-        var edge=new ModelingEdge{Curve=source,Start=0,End=1};
-        if(!TryFiniteLinePlaneEvent(edge,0,plane,out var proof)||proof.Count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=plane,Certified=ExplicitPlaneCertificate,Witness=1,Root=proof.FirstRoot};
+        var edge=new ModelingEdge{Curve=source,Start=sourceFirst,End=sourceLast};
+        FiniteCurveSurfaceRoot witness;
+        if(TryFiniteLinePlaneEvent(edge,0,plane,out var proof)&&proof.Count==1)witness=proof.FirstRoot;
+        else
+        {
+            Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[1];
+            Span<ScalarRootIsolation> boxes=stackalloc ScalarRootIsolation[1];Span<double> errors=stackalloc double[1];
+            if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(plane)],out var prepared)
+                ||IsolateFiniteExplicitLevelSet(edge,prepared,roots,boxes,errors,out var n)!=AlgorithmStatus.Success
+                ||n!=1||!AllStrictlyInterior(edge,boxes))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            witness=ThirdFiniteRoot(roots[0],boxes[0],errors[0]);
+        }
+        var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=plane,Certified=ExplicitPlaneCertificate,Witness=1,Root=witness};
         var cut=new SheetCutCurve{Curve=target,First=first,Last=last};
         var error=LocateCertifiedCut(cut,root,out var station,out var projected,out certified);
         if(error!=0||!certified)return error;
