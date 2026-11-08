@@ -35,6 +35,19 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(.4999,true)]
+    [InlineData(.5000000000001,true)]
+    [InlineData(.500000000001,false)]
+    public void FiniteBoundaryMeasuresEndpointClearanceInSpace(double station,bool on)
+    {
+        var ellipse=new PK_ELLIPSE_sf_s{R1=1e5,R2=1};ellipse.basis_set.axis.coord[2]=1;ellipse.basis_set.ref_direction.coord[0]=1;
+        CurveTag curve;Assert.Equal(0,KernelRuntime.EllipseCreate(&ellipse,&curve));
+        var point=Vector(1e5*Math.Cos(station),Math.Sin(station),0);
+        Assert.Equal(0,KernelRuntime.TestFiniteBoundaryCarrier(curve,.25,.5,point,out var found));
+        Assert.Equal(on,found);
+    }
+
+    [Theory]
     [InlineData(false)] [InlineData(true)]
     public void NearParallelInfiniteIntersectionDoesNotObscureCertifiedFiniteSeparation(bool separated)
     {

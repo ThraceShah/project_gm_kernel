@@ -41,7 +41,7 @@ internal static unsafe partial class KernelRuntime
             if(!cutBounds.Checked)
             {
                 cutBounds.Checked=true;
-                cutBounds.Available=TryThirdFaceCurveExtent(cut,curve,out cutBounds.Box);
+                cutBounds.Available=TryFiniteCarrierExtent(cut,curve,out cutBounds.Box);
             }
             if(cutBounds.Available&&ThirdFaceBoxesDisjoint(cutBounds.Box,faceBounds.Box,margin))
             {
@@ -174,7 +174,7 @@ internal static unsafe partial class KernelRuntime
         return IntersectFiniteIntersectionCurvePlane(cut.Curve,cut.First,cut.Last,plane,roots,out count,isolation,spatialErrors);
     }
 
-    private static bool TryThirdFaceCurveExtent(in SheetCutCurve cut,in CurveRecord curve,out IntervalBox3 extent)
+    private static bool TryFiniteCarrierExtent(in SheetCutCurve cut,in CurveRecord curve,out IntervalBox3 extent)
     {
         extent=default;
         if(curve.Class==CurveClass.ICurve)

@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
@@ -49,11 +50,36 @@ internal static unsafe partial class KernelRuntime
             {
                 var edge=input.Edges[input.Coedges[loop.FirstCoedge+k].Edge];double t=0;var error=CurveParameteriseVectorCore(edge.Curve,vector,&t);
                 if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;LiftPeriodicEdgeParameter(edge.Curve,edge.Start,edge.End,ref t);
-                if(OperationIntersection.InInterval(t,edge.Start,edge.End)){on=true;return 0;}
+                if(!double.IsFinite(t))continue;
+                if(t>=edge.Start&&t<=edge.End||RegularFiniteEndpointWithinResolution(edge.Curve,edge.Start,point)
+                    ||RegularFiniteEndpointWithinResolution(edge.Curve,edge.End,point)){on=true;return 0;}
             }
         }
         return 0;
     }
+
+    private static bool RegularFiniteEndpointWithinResolution(CurveTag carrier,double parameter,in KernelVector3 point)
+    {
+        // The inverse located the untrimmed carrier. An exterior station
+        // can qualify only through an actual finite endpoint in space.
+        var cut=new SheetCutCurve{Curve=carrier,First=parameter,Last=parameter};
+        if(!TryFiniteCarrierExtent(cut,Curves[GetCurveSlotByTag(carrier)],out var end))return false;
+        var delta=new IntervalVector(new IntervalNumber(end.XLo,end.XHi)-point.X,new IntervalNumber(end.YLo,end.YHi)-point.Y,
+            new IntervalNumber(end.ZLo,end.ZHi)-point.Z);
+        var distance=delta.Norm().Value;
+        return distance.Finite&&distance.Upper<=OperationIntersection.DistanceTolerance;
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static int TestFiniteBoundaryCarrier(CurveTag curve,double first,double last,in KernelVector3 point,out bool on)
+    {
+        Span<ModelingEdge> edges=stackalloc ModelingEdge[1]{new(){Curve=curve,Start=first,End=last}};
+        Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[1]{new(){Edge=0,Forward=1}};
+        Span<ModelingLoop> loops=stackalloc ModelingLoop[1]{new(){FirstCoedge=0,CoedgeCount=1}};
+        Span<ModelingFace> faces=stackalloc ModelingFace[1]{new(){FirstLoop=0,LoopCount=1}};
+        return RegularPointOnFiniteBoundary(new(edges,coedges,loops,faces),0,point,out on);
+    }
+#endif
 
     private static bool RegularCoincidentSupports(SurfTag first,SurfTag second)
     {
