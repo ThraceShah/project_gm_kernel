@@ -31,7 +31,7 @@ try
         {
             var failures=0;var count=0;
             foreach(var mode in specialized?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
+            foreach(var fixture in conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
@@ -111,7 +111,8 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var threePlane=holed||mixed||fixture is "three-plane-cuts" or "guarded-three-plane-cuts";
     var trimmedConic=fixture=="guarded-trimmed-conic-cut";
     var obliqueConic=fixture=="guarded-oblique-conic-cut";
-    var conicCut=trimmedConic||obliqueConic||fixture=="guarded-plane-conic-cut";
+    var tiltedConic=fixture=="guarded-tilted-conic-cut";
+    var conicCut=trimmedConic||obliqueConic||tiltedConic||fixture=="guarded-plane-conic-cut";
     int target;
     if(threePlane||conicCut)
     {
@@ -127,6 +128,12 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         tools[0]=mixed?Block(own,0,-.5,1,12,7,2,0):Block(own,0,0,3,2,2,2,0);
         tools[1]=mixed?Block(own,0,.5,2,14,7,2,0):Block(own,1,1,2.75,2,2,2.5,0);
         if(guarded)(tools[0],tools[1])=(tools[1],tools[0]);
+    }
+    else if(tiltedConic)
+    {
+        var tilt=Math.ScaleB(1,-47);
+        var basis=new PK_AXIS2_sf_t(new(3.5+tilt,0,-1+3.5*tilt),new(-tilt,0,1),new(1,0,tilt));
+        tools[0]=BlockWithBasis(own,basis,4,12,6);
     }
     else if(conicCut)
     {
@@ -225,8 +232,11 @@ static unsafe int SubtractSeedTool(bool own,int body,int tool)
     }
 }
 static unsafe int Block(bool own,double x,double y,double z,double dx,double dy,double dz,double angle)
+    =>BlockWithBasis(own,new PK_AXIS2_sf_t(new(x,y,z),new(0,0,1),new(Math.Cos(angle),Math.Sin(angle),0)),dx,dy,dz);
+
+static unsafe int BlockWithBasis(bool own,PK_AXIS2_sf_t axis,double dx,double dy,double dz)
 {
-    var axis=new PK_AXIS2_sf_t(new(x,y,z),new(0,0,1),new(Math.Cos(angle),Math.Sin(angle),0));int body=0;
+    int body=0;
     if(own){var a=Unsafe.BitCast<PK_AXIS2_sf_t,M.PK_AXIS2_sf_s>(axis);Check(KernelRuntime.BodyCreateSolidBlock(dx,dy,dz,&a,&body),"own block");}
     else Check(PK_BODY_create_solid_block(dx,dy,dz,&axis,&body),"PK block");return body;
 }

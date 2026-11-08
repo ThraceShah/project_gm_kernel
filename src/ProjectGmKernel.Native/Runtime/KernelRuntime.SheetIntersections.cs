@@ -10,6 +10,8 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    private enum CutLineConstruction:byte { None, AnalyticPlanePair, FiniteCylinderPlane }
+
     private struct SheetCutCurve
     {
         internal CurveTag Curve;
@@ -21,8 +23,7 @@ internal static unsafe partial class KernelRuntime
         internal byte Closed;
         internal byte KeepImprint;
         internal byte NativeLocatorEnds;
-        // The line was constructed by the analytic SSI of these two planes.
-        internal byte AnalyticPlaneLine;
+        internal CutLineConstruction LineConstruction;
     }
 
     private static int PrepareSheetCutCurves(SurfTag surface, SurfTag plane, Span<SheetCutCurve> cuts, out BufferCount count)
@@ -106,7 +107,8 @@ internal static unsafe partial class KernelRuntime
                 if(turn==0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 Curves[slot].Sense=turn<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
                 cuts[i]=new(){Curve=curve,First=branches[i].Start,Last=branches[i].End,
-                    AnalyticPlaneLine=branches[i].Class==CurveClass.Line&&firstSupport.Kind==SurfaceClass.Plane&&secondSupport.Kind==SurfaceClass.Plane?(byte)1:(byte)0,
+                    LineConstruction=branches[i].Class==CurveClass.Line&&firstSupport.Kind==SurfaceClass.Plane&&secondSupport.Kind==SurfaceClass.Plane
+                        ?CutLineConstruction.AnalyticPlanePair:CutLineConstruction.None,
                     Closed=branches[i].Class is CurveClass.Circle or CurveClass.Ellipse&&branches[i].End-branches[i].Start>=Math.Tau-1e-10?(byte)1:(byte)0};
             }
             count=nc;return 0;

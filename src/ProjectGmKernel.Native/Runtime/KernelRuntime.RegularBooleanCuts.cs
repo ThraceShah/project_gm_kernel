@@ -66,7 +66,8 @@ internal static unsafe partial class KernelRuntime
             if(branches[i].Kind!=IntersectionCurveKind.Simple)return ParasolidConstants.PK_ERROR_not_implemented;
             CurveTag curve=0;var error=CreateIntersectionBranch(branches[i],&curve);if(error!=0)return error;
             cuts[count++]=new(){Curve=curve,First=branches[i].Start,Last=branches[i].End,
-                AnalyticPlaneLine=branches[i].Class==CurveClass.Line&&Surfaces[a].Class==SurfaceClass.Plane&&Surfaces[b].Class==SurfaceClass.Plane?(byte)1:(byte)0,
+                LineConstruction=branches[i].Class==CurveClass.Line&&Surfaces[a].Class==SurfaceClass.Plane&&Surfaces[b].Class==SurfaceClass.Plane
+                    ?CutLineConstruction.AnalyticPlanePair:CutLineConstruction.None,
                 Closed=branches[i].Class is CurveClass.Circle or CurveClass.Ellipse&&(branches[i].End-branches[i].Start)>=Math.Tau-1e-10?(byte)1:(byte)0};
         }
         return 0;

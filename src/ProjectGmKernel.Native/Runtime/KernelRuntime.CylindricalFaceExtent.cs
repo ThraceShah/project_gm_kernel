@@ -114,7 +114,7 @@ internal static unsafe partial class KernelRuntime
             ref var record=ref Curves[GetCurveSlotByTag(curve)];record.Sense=senses[i];
             ref var line=ref LineDataPool[record.DataIndex];
             line.AxisX=cylinder.Axis.X;line.AxisY=cylinder.Axis.Y;line.AxisZ=cylinder.Axis.Z;
-            cuts[count++]=new(){Curve=curve,First=delta.Lower,Last=delta.Upper};
+            cuts[count++]=new(){Curve=curve,First=delta.Lower,Last=delta.Upper,LineConstruction=CutLineConstruction.FiniteCylinderPlane};
         }
         return 0;
     }

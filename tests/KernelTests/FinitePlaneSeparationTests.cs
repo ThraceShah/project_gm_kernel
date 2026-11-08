@@ -162,6 +162,39 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(true)] [InlineData(false)]
+    public void TiltedCylinderStationRequiresFiniteGeneratorProvenanceAndDriftBound(bool boundedTilt)
+    {
+        var ring=new PK_CIRCLE_sf_s{radius=4};
+        ring.basis_set.location.coord[2]=2;ring.basis_set.axis.coord[2]=1;ring.basis_set.ref_direction.coord[0]=1;
+        CurveTag source;Assert.Equal(0,KernelRuntime.CircleCreate(&ring,&source));
+        var cylinder=new PK_CYL_sf_s{radius=4,basis_set=ring.basis_set};
+        SurfTag support;Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&support));
+        var tilt=boundedTilt?Math.ScaleB(1,-47):1e-6;
+        var plane=new PK_PLANE_sf_s();plane.basis_set.location.coord[0]=1.5;
+        Write(&plane.basis_set.axis,Vector(1,0,tilt));plane.basis_set.ref_direction.coord[1]=1;
+        SurfTag cutting;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&cutting));
+
+        // The line uses the radial anchor at z=3 over the finite z window [1,5].
+        var x=1.5-3*tilt;var y=Math.Sqrt((4-x)*(4+x));var target=Generator(x,y);
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(source,target,support,cutting,0,4,out _,out var handled,out var inside,.1,2));
+        Assert.False(handled);Assert.False(inside);
+        Assert.Equal(0,KernelRuntime.TestLocateCertifiedLineCut(source,target,support,cutting,0,4,out var station,out handled,out inside,.1,2,fromFiniteGenerator:true));
+        Assert.Equal(boundedTilt,handled);Assert.Equal(boundedTilt,inside);
+        if(!boundedTilt)return;
+        Assert.Equal(3,station.Lower);Assert.Equal(3,station.Upper);
+        Assert.Equal(ParasolidConstants.PK_ERROR_not_on_curve,
+            KernelRuntime.TestLocateCertifiedLineCut(source,Generator(x,-y),support,cutting,0,4,out _,out handled,out inside,.1,2,fromFiniteGenerator:true));
+        Assert.True(handled);Assert.False(inside);
+
+        static CurveTag Generator(double x,double y)
+        {
+            var line=new PK_LINE_sf_s();Write(&line.basis_set.location,Vector(x,y,5));line.basis_set.axis.coord[2]=-1;
+            CurveTag result;Assert.Equal(0,KernelRuntime.LineCreate(&line,&result));return result;
+        }
+    }
+
+    [Theory]
     [InlineData(2.5,3,0)] // The exact plane crossing misses the finite side.
     [InlineData(1.5,.5,0)] // The actual curve trim ends before the plane.
     [InlineData(1.5,3,ParasolidConstants.PK_ERROR_not_implemented)]

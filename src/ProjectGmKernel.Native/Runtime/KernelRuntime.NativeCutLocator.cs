@@ -53,7 +53,7 @@ internal static unsafe partial class KernelRuntime
         var station=new IntervalNumber(root.Root.Lower,root.Root.Upper);
         if(common.Kind==SurfaceClass.Cylinder)
         {
-            if(!ExplicitCurveExactlyOnCylinder(source,common)||!TryCertifiedGeneratorSide(line,common,cutting,out var side,out var positive))return 0;
+            if(!ExplicitCurveExactlyOnCylinder(source,common)||!TryCertifiedGeneratorSide(cut,line,common,cutting,out var side,out var positive))return 0;
             handled=true;
             var sourceSide=ProjectExplicitRoot(source,common.Origin,side,station);
             if(!sourceSide.Finite||sourceSide.ContainsZero)return ParasolidConstants.PK_ERROR_cant_do_intersect;
@@ -63,7 +63,7 @@ internal static unsafe partial class KernelRuntime
         {
             if(common.Kind!=SurfaceClass.Plane||!ExplicitCurveExactlyOnPlane(source,common))return 0;
             if(!(ExplicitCurveExactlyOnPlane(line,common)&&ExplicitCurveExactlyOnPlane(line,cutting))
-                &&(cut.AnalyticPlaneLine==0||!BoundRoundedPlaneLine(cut,line,common,cutting)))return 0;
+                &&(cut.LineConstruction!=CutLineConstruction.AnalyticPlanePair||!BoundRoundedPlaneLine(cut,line,common,cutting)))return 0;
         }
         // Use the represented carrier's gauge for the selected true
         // branch; a rounded representation must have been bounded above.
@@ -98,34 +98,52 @@ internal static unsafe partial class KernelRuntime
         return error.Finite&&error.Upper<=Math.Min(roundoff,OperationIntersection.DistanceTolerance/16);
     }
 
-    private static bool TryCertifiedGeneratorSide(in ParametricSpineCurve line,in AnalyticSurface cylinder,in AnalyticSurface plane,
+    private static bool TryCertifiedGeneratorSide(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface cylinder,in AnalyticSurface plane,
         out IntervalVector side,out bool positive)
     {
         side=default;positive=false;
         var axis=new IntervalVector(cylinder.Axis);var normal=new IntervalVector(plane.Axis);
         var tilt=IntervalVector.Dot(axis,normal).Value;
-        var cross=IntervalVector.Cross(axis,new IntervalVector(line.First));
-        if(tilt.Magnitude!=0||IntervalVector.Dot(cross,cross).Value.Magnitude!=0)return false;
+        var direction=new IntervalVector(line.First);var cross=IntervalVector.Cross(axis,direction);
+        var tilted=tilt.Magnitude!=0;
+        if(!tilt.Finite||tilted&&cut.LineConstruction!=CutLineConstruction.FiniteCylinderPlane
+            ||IntervalVector.Dot(cross,cross).Value.Magnitude!=0)return false;
+        side=IntervalVector.Cross(axis,normal);
+        var origin=new IntervalVector(cylinder.Origin);var planeOrigin=new IntervalVector(plane.Origin);
+        var offset=new IntervalVector(line.Origin)-origin;var axial=IntervalVector.Dot(offset,axis);
+        var h=IntervalVector.Dot(planeOrigin-origin,normal).Value;
+        var height=axial.Value;
+        if(tilted)
+        {
+            // The published generator uses the cylinder's axial gauge.
+            // Reconstruct its true radial branch at every represented
+            // station in the finite window, not just at the anchor.
+            var domain=new IntervalNumber(cut.First,cut.Last);
+            if(!domain.Finite)return false;
+            height+=IntervalVector.Dot(axis,direction).Value*domain;
+            if(!height.Finite)return false;
+            h-=tilt*height;
+            normal-=axis*new IntervalDual(tilt,0);
+        }
         var nn=IntervalVector.Dot(normal,normal).Value;
         if(!(nn.Lower>0))return false;
-        var h=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(cylinder.Origin),normal).Value;
         var radius=new IntervalNumber(cylinder.Radius);
         // With a unit normal, factor the radial discriminant to retain
         // its small positive gap near tangency without subtracting squares.
         var gap=nn.Lower==1&&nn.Upper==1?(radius-h)*(radius+h):(radius*radius-h*h/nn)/nn;
         if(!gap.Finite||!(gap.Lower>0))return false;
-        side=IntervalVector.Cross(axis,normal);
-        var offset=new IntervalVector(line.Origin)-new IntervalVector(cylinder.Origin);
         var branchSign=IntervalVector.Dot(offset,side).Value;
         if(!branchSign.Finite||branchSign.ContainsZero)return false;
         positive=branchSign.Lower>0;
-        // The exact radial solution is (h/nn)*n ± sqrt(gap)*(a × n).
-        // Require containment in its arithmetic enclosure before using
-        // the represented line. A proximity test cannot choose a branch.
-        var radial=offset-axis*IntervalVector.Dot(offset,axis);
+        // The exact radial solution is (h/nn)*n_perp ± sqrt(gap)*(a × n).
+        var radial=offset-axis*axial;
         var branch=normal*new IntervalDual(h/nn,0)+side*(IntervalDual.Sqrt(new(gap,0))*(positive?1:-1));
-        return branch.Finite&&Covers(branch.X.Value,radial.X.Value)&&Covers(branch.Y.Value,radial.Y.Value)&&Covers(branch.Z.Value,radial.Z.Value)
-            &&(radial-branch).Norm().Value.Upper<OperationIntersection.DistanceTolerance/16;
+        if(!branch.Finite)return false;
+        var error=(radial-branch).Norm().Value;
+        if(!error.Finite||!(error.Upper<OperationIntersection.DistanceTolerance/16))return false;
+        if(!tilted)return Covers(branch.X.Value,radial.X.Value)&&Covers(branch.Y.Value,radial.Y.Value)&&Covers(branch.Z.Value,radial.Z.Value);
+        var roundoff=(64*SmallLinearSolve.MachineEpsilon*(origin.Norm().Value+planeOrigin.Norm().Value+height.Magnitude+radius)).Upper;
+        return error.Upper<roundoff;
 
         static bool Covers(IntervalNumber outer,IntervalNumber inner)=>inner.Lower>=outer.Lower&&inner.Upper<=outer.Upper;
     }
@@ -199,7 +217,7 @@ internal static unsafe partial class KernelRuntime
 
 #if KERNEL_TEST_HOOKS
     internal static int TestLocateCertifiedLineCut(CurveTag source,CurveTag target,SurfTag support,SurfTag plane,double first,double last,
-        out IntervalNumber bound,out bool certified,out bool inside,double sourceFirst=0,double sourceLast=1,bool fromPlanePair=false)
+        out IntervalNumber bound,out bool certified,out bool inside,double sourceFirst=0,double sourceLast=1,bool fromPlanePair=false,bool fromFiniteGenerator=false)
     {
         bound=UncertifiedStation;certified=inside=false;
         var edge=new ModelingEdge{Curve=source,Start=sourceFirst,End=sourceLast};
@@ -215,7 +233,8 @@ internal static unsafe partial class KernelRuntime
             witness=ThirdFiniteRoot(roots[0],boxes[0],errors[0]);
         }
         var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=plane,Certified=ExplicitPlaneCertificate,Witness=1,Root=witness};
-        var cut=new SheetCutCurve{Curve=target,First=first,Last=last,AnalyticPlaneLine=fromPlanePair?(byte)1:(byte)0};
+        var cut=new SheetCutCurve{Curve=target,First=first,Last=last,LineConstruction=fromPlanePair?CutLineConstruction.AnalyticPlanePair
+            :fromFiniteGenerator?CutLineConstruction.FiniteCylinderPlane:CutLineConstruction.None};
         var error=LocateCertifiedCut(cut,root,out var station,out var projected,out certified);
         if(error!=0||!certified)return error;
         var anchor=new BoundaryParameter{Parameter=station,Lower=projected.Lower,Upper=projected.Upper};
