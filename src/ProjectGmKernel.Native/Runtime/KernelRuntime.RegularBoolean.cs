@@ -58,6 +58,8 @@ internal static unsafe partial class KernelRuntime
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
                 if(RegularCylinderFaceSeparatedFromPlane(sources[a],second,model.Tolerance)
                     ||RegularCylinderFaceSeparatedFromPlane(sources[b],first,model.Tolerance))continue;
+                error=ClipExistingAffineCylinderRing(input,sources[..nf],originalEdges[..ne],a,b,cuts,ref cutCount,ref model,out var reusedRing);
+                if(error!=0)return error;if(reusedRing)continue;
                 for(var i=0;i<familyCount;i++)if(families[i].First==first&&families[i].Second==second){family=i;break;}
                 if(family<0)
                 {
@@ -102,7 +104,7 @@ internal static unsafe partial class KernelRuntime
                 }
                 if(data.Relation==SurfacePairRelation.CoincidentArea)
                 {
-                    error=ArrangeRegularCoincidentDomains(input,a,b,cuts,ref cutCount,ref model);if(error!=0)return error;
+                    error=ArrangeRegularCoincidentDomains(input,sources[..nf],a,b,cuts,ref cutCount,ref model);if(error!=0)return error;
                     continue;
                 }
                 if(data.Count==0)continue;

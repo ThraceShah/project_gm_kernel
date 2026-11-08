@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -8,11 +9,11 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private static bool TryAffineSphereCircle(SurfaceSlot slot,in AnalyticSurface sphere,
-        Span<OperationIntersectionBranch> branches,out BufferCount count)
+    private static bool TryAffineRoundCircle(SurfaceSlot slot,in AnalyticSurface round,
+        Span<OperationIntersectionBranch> branches,out BufferCount count,out AnalyticSurface plane)
     {
-        count=0;
-        if(sphere.Kind!=SurfaceClass.Sphere||!TryAffinePlanarSurface(slot,out var plane,out _,out _))return false;
+        count=0;plane=default;
+        if(round.Kind is not (SurfaceClass.Sphere or SurfaceClass.Cylinder)||!TryAffinePlanarSurface(slot,out plane,out _,out _))return false;
         var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[slot].DataIndex]);var poles=view.Vertices;
         var origin=new IntervalVector(plane.Origin);
         var u=new IntervalVector(ProfileEuclideanPole(poles,3,(view.UVertexCount-1)*view.VVertexCount))-origin;
@@ -20,11 +21,20 @@ internal static unsafe partial class KernelRuntime
         var normal=new IntervalVector(plane.Axis);
         if((IntervalVector.Dot(normal,normal).Value-1).Magnitude!=0
             ||IntervalVector.Dot(u,normal).Value.Magnitude!=0||IntervalVector.Dot(v,normal).Value.Magnitude!=0)return false;
-        var d=new IntervalVector(sphere.Origin)-origin;
+        var d=new IntervalVector(round.Origin)-origin;
         var height=IntervalVector.Dot(d,normal).Value;
-        var radius2=IntervalNumber.Square(sphere.Radius)-IntervalNumber.Square(height);
-        if(!radius2.Finite||radius2.Lower<=0)return false;
-        var radius=IntervalDual.Sqrt(new(radius2,0)).Value;
+        IntervalNumber radius;
+        if(round.Kind==SurfaceClass.Sphere)
+        {
+            var radius2=IntervalNumber.Square(round.Radius)-IntervalNumber.Square(height);
+            if(!radius2.Finite||radius2.Lower<=0)return false;
+            radius=IntervalDual.Sqrt(new(radius2,0)).Value;
+        }
+        else
+        {
+            if(!ExactVector(plane.Axis,round.Axis)&&!ExactVector(plane.Axis,Scale(round.Axis,-1)))return false;
+            radius=round.Radius;
+        }
         if(!radius.Finite)return false;
 
         // Bound the entire analytic section in the actual finite affine
@@ -37,19 +47,95 @@ internal static unsafe partial class KernelRuntime
         var a=IntervalVector.Dot(footprint,u).Value;var b=IntervalVector.Dot(footprint,v).Value;
         if(!Inside((a*vv-b*uv)/determinant)||!Inside((b*uu-a*uv)/determinant))return false;
         Span<KernelVector3> isolated=stackalloc KernelVector3[1];
-        if(OperationIntersection.Surfaces(plane,sphere,branches,out var found,isolated,out var points)!=AlgorithmStatus.Success
+        if(OperationIntersection.Surfaces(plane,round,branches,out var found,isolated,out var points)!=AlgorithmStatus.Success
             ||found!=1||points!=0||branches[0].Class!=CurveClass.Circle||branches[0].Kind!=IntersectionCurveKind.Simple)return false;
         count=found;return true;
 
         static bool Inside(IntervalNumber range)=>range.Finite&&range.Lower>0&&range.Upper<1;
     }
 
+    private static int ClipExistingAffineCylinderRing(in RegularBoundaryView input,scoped ReadOnlySpan<FaceSlot> sources,
+        scoped ReadOnlySpan<EdgeSlot> original,BufferOffset first,BufferOffset second,Span<RegularFaceCut> cuts,ref BufferCount cutCount,
+        ref SheetArrangement model,out bool handled)
+    {
+        handled=false;var a=GetSurfaceSlotByTag(input.Faces[first].Surface);var b=GetSurfaceSlotByTag(input.Faces[second].Surface);
+        var cylinder=Surfaces[a].Class==SurfaceClass.Cylinder?first:second;var affine=cylinder==first?second:first;
+        var curved=cylinder==first?a:b;var flat=cylinder==first?b:a;
+        if(Surfaces[curved].Class!=SurfaceClass.Cylinder||Surfaces[flat].Class!=SurfaceClass.BSurface)return 0;
+        Span<OperationIntersectionBranch> sections=stackalloc OperationIntersectionBranch[1];
+        if(!TryPrepareSurface(Surfaces[curved],out var analytic)||!TryAffineRoundCircle(flat,analytic,sections,out _,out var plane))return 0;
+        BufferOffset existing=-1;
+        var wall=input.Faces[cylinder];
+        for(var l=0;l<wall.LoopCount;l++)
+        {
+            var loop=input.Loops[wall.FirstLoop+l];
+            foreach(var use in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+            {
+                var edge=input.Edges[use.Edge];var source=Curves[GetCurveSlotByTag(edge.Curve)];
+                if(source.Class!=CurveClass.Circle||edge.StartVertex>=0||edge.EndVertex>=0
+                    ||(new IntervalNumber(edge.End)-edge.Start-Math.Tau).Magnitude!=0
+                    ||!CircleOnAxialSection(CircleDataPool[source.DataIndex],analytic,plane))continue;
+                if(existing>=0)return 0;existing=use.Edge;
+            }
+        }
+        if(existing<0)return 0;
+        var ring=input.Edges[existing];var cut=new SheetCutCurve{Curve=ring.Curve,First=ring.Start,Last=ring.End,Closed=1};
+        var record=Curves[GetCurveSlotByTag(ring.Curve)];double precision=model.Tolerance;
+        if(!TryFiniteCarrierExtent(cut,record,out var footprint)
+            ||!TryThirdFacePrecision(sources[first],ref precision)||!TryThirdFacePrecision(sources[second],ref precision))return 0;
+        for(var side=0;side<2;side++)
+        {
+            var face=side==0?cylinder:affine;var domain=input.Faces[face];
+            for(var l=0;l<domain.LoopCount;l++)
+            {
+                var loop=input.Loops[domain.FirstLoop+l];
+                foreach(var use in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+                {
+                    if(face==cylinder&&use.Edge==existing)continue;
+                    var edge=input.Edges[use.Edge];var source=Curves[GetCurveSlotByTag(edge.Curve)];
+                    if(!TryFiniteCarrierExtent(new(){Curve=edge.Curve,First=edge.Start,Last=edge.End},source,out var trim)
+                        ||!ThirdFaceBoxesDisjoint(footprint,trim,precision))return 0;
+                }
+            }
+        }
+        // With every other trim disjoint, finite winding at one station
+        // classifies the entire connected ring on the affine face.
+        Span<KernelVector3> point=stackalloc KernelVector3[1];var station=ring.Start+(ring.End-ring.Start)*.5;
+        var status=EvaluateCurveCore(in record,station,0,false,point,out _);
+        if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+        var surface=input.Faces[affine].Surface;
+        var error=FiniteBoundarySurfaceParameters(surface,cut,station,point[0],default,out var uv);if(error!=0)return error;
+        error=RegularFaceContains(input,affine,uv,out var inside);if(error!=0)return error;
+        handled=true;if(!inside)return 0;
+        if(cutCount==cuts.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+        cuts[cutCount++]=new(){First=first,Second=second,Cut=cut};
+        error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,cut.First,cut.Last,surface);if(error!=0)return error;
+        error=AssociateBoundaryCarrierSurface(ref model,cut.Curve,cut.First,cut.Last,input.Faces[cylinder].Surface,existing);if(error!=0)return error;
+        TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CarrierReuse,Source=sources[affine],Surface=surface,OtherSurface=input.Faces[cylinder].Surface,
+            Curve=cut.Curve,Generation=record.Header.Generation,SurfaceGeneration=Surfaces[flat].Header.Generation,SourceEdge=original[existing],
+            ProductCurve=cut.Curve,Edge=existing,First=cut.First,Last=cut.Last,StartEvent=-1,EndEvent=-1});
+        return 0;
+
+        static bool CircleOnAxialSection(in CircleData ring,in AnalyticSurface cylinder,in AnalyticSurface plane)
+        {
+            var axis=Vector(ring.AxisX,ring.AxisY,ring.AxisZ);
+            if(ring.Radius!=cylinder.Radius||!ExactVector(axis,cylinder.Axis)&&!ExactVector(axis,Scale(cylinder.Axis,-1)))return false;
+            var center=Vector(ring.CenterX,ring.CenterY,ring.CenterZ);
+            if(!ExactProjectionEqual(center,plane.Origin,plane.Axis))return false;
+            var normal=new IntervalVector(axis);
+            var radial=IntervalVector.Cross(new IntervalVector(center)-new IntervalVector(cylinder.Origin),normal);
+            if(radial.X.Value.Magnitude!=0||radial.Y.Value.Magnitude!=0||radial.Z.Value.Magnitude!=0)return false;
+            var reference=new IntervalVector(Vector(ring.RefDirX,ring.RefDirY,ring.RefDirZ));
+            return (IntervalVector.Dot(reference,reference).Value-1).Magnitude==0&&IntervalVector.Dot(normal,reference).Value.Magnitude==0;
+        }
+    }
+
 #if KERNEL_TEST_HOOKS
-    internal static bool TestAffineSphereCircle(SurfTag patch,SurfTag sphere)
+    internal static bool TestAffineRoundCircle(SurfTag patch,SurfTag surface)
     {
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[1];
-        return TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(sphere)],out var round)
-            &&TryAffineSphereCircle(GetSurfaceSlotByTag(patch),round,branches,out _);
+        return TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(surface)],out var round)
+            &&TryAffineRoundCircle(GetSurfaceSlotByTag(patch),round,branches,out _,out _);
     }
 #endif
 

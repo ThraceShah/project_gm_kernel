@@ -109,10 +109,13 @@ internal static unsafe partial class KernelRuntime
         return false;
     }
 
-    private static int ArrangeRegularCoincidentDomains(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
+    private static int ArrangeRegularCoincidentDomains(in RegularBoundaryView input,scoped ReadOnlySpan<FaceSlot> sources,BufferOffset first,BufferOffset second,
         Span<RegularFaceCut> cuts,ref BufferCount cutCount,ref SheetArrangement model)
     {
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
+        var guarded=ForbidSpatialBoundaryReuse||model.RequireBoundaryAssociations;var precision=model.Tolerance;
+        if(guarded&&(!TryThirdFacePrecision(sources[first],ref precision)||!TryThirdFacePrecision(sources[second],ref precision)))
+            return ParasolidConstants.PK_ERROR_cant_do_intersect;
         var a=input.Faces[first];var b=input.Faces[second];
         for(var al=0;al<a.LoopCount;al++)
         {
@@ -139,8 +142,13 @@ internal static unsafe partial class KernelRuntime
                             }
                             continue;
                         }
-                        if(ForbidSpatialBoundaryReuse||model.RequireBoundaryAssociations)
+                        if(guarded)
+                        {
+                            if(TryFiniteCarrierExtent(new(){Curve=edgeA.Curve,First=edgeA.Start,Last=edgeA.End},Curves[GetCurveSlotByTag(edgeA.Curve)],out var extentA)
+                                &&TryFiniteCarrierExtent(new(){Curve=edgeB.Curve,First=edgeB.Start,Last=edgeB.End},Curves[GetCurveSlotByTag(edgeB.Curve)],out var extentB)
+                                &&ThirdFaceBoxesDisjoint(extentA,extentB,precision))continue;
                             return ParasolidConstants.PK_ERROR_not_implemented;
+                        }
                         var intervalB=new PK_INTERVAL_s();intervalB.value[0]=edgeB.Start;intervalB.value[1]=edgeB.End;
                         error=ResolveIntersectionCurve(edgeB.Curve,intervalB,out var spanB);if(error!=0)return error;
                         var status=IntersectCurveSpans(spanA,spanB,roots,out var nr);if(status!=AlgorithmStatus.Success)return IntersectionError(status);

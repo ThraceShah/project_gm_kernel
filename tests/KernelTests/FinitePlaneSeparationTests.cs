@@ -338,11 +338,14 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
-    [InlineData(1,0,.3,true)]
-    [InlineData(.625,0,.3,false)] // The circle extends past the actual U trim.
-    [InlineData(1,1e-10,.3,false)] // One non-affine control point.
-    [InlineData(1,0,.1,false)] // Point tangency is not a regular circle.
-    public void AffineSphereCircleRequiresTheWholeFiniteChart(double width,double perturbation,double radius,bool expected)
+    [InlineData(1,0,.3,false,0,true)]
+    [InlineData(.625,0,.3,false,0,false)] // The circle extends past the actual U trim.
+    [InlineData(1,1e-10,.3,false,0,false)] // One non-affine control point.
+    [InlineData(1,0,.1,false,0,false)] // Point tangency is not a regular circle.
+    [InlineData(1,0,.3,true,0,true)]
+    [InlineData(.625,0,.3,true,0,false)]
+    [InlineData(1,0,.3,true,.01,false)] // Oblique cylinders have a different section.
+    public void AffineRoundCircleRequiresTheWholeFiniteChart(double width,double perturbation,double radius,bool cylinder,double axisX,bool expected)
     {
         double* poles=stackalloc double[27];
         for(var u=0;u<3;u++)for(var v=0;v<3;v++)
@@ -356,10 +359,18 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
             form=ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=ParasolidConstants.PK_knot_non_uniform_c,
             v_knot_type=ParasolidConstants.PK_knot_non_uniform_c,self_intersecting=ParasolidConstants.PK_self_intersect_false_c,
             convexity=ParasolidConstants.PK_convexity_unset_c};
-        var round=new PK_SPHERE_sf_s{radius=radius};
-        Write(&round.basis_set.location,Vector(.5,.5,.1));round.basis_set.axis.coord[2]=1;round.basis_set.ref_direction.coord[0]=1;
-        SurfTag a,b;Assert.Equal(0,KernelRuntime.BSurfCreate(&patch,&a));Assert.Equal(0,KernelRuntime.SphereCreate(&round,&b));
-        Assert.Equal(expected,KernelRuntime.TestAffineSphereCircle(a,b));
+        var basis=new PK_AXIS2_sf_s();Write(&basis.location,Vector(.5,.5,.1));
+        Write(&basis.axis,Vector(axisX,0,Math.Sqrt(1-axisX*axisX)));basis.ref_direction.coord[1]=1;
+        SurfTag a,b;Assert.Equal(0,KernelRuntime.BSurfCreate(&patch,&a));
+        if(cylinder)
+        {
+            var round=new PK_CYL_sf_s{radius=radius,basis_set=basis};Assert.Equal(0,KernelRuntime.CylCreate(&round,&b));
+        }
+        else
+        {
+            var round=new PK_SPHERE_sf_s{radius=radius,basis_set=basis};Assert.Equal(0,KernelRuntime.SphereCreate(&round,&b));
+        }
+        Assert.Equal(expected,KernelRuntime.TestAffineRoundCircle(a,b));
     }
 
     [Theory]

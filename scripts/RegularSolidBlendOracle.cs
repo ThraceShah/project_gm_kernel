@@ -18,17 +18,22 @@ var cutX=cutArg==null?.5:double.Parse(cutArg[8..],CultureInfo.InvariantCulture);
 Require(cutX>0&&cutX<1,"the cut station must be inside the seed's X range");
 var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
 var remoteCapBore=args.Contains("--remote-cap-bore",StringComparer.Ordinal);
+var coincidentCylinderWell=args.Contains("--coincident-cylinder-well",StringComparer.Ordinal);
 Require(!remoteCapBore||args.Contains("plane-nurbs",StringComparer.Ordinal)&&!args.Contains("--remote-bore",StringComparer.Ordinal),
     "cap bore uses the plane/NURBS seed and is separate from the side bore");
+Require(!coincidentCylinderWell||KernelRuntime.ForbidLegacyRegularBlendAssembly&&args.Contains("affine-plane-nurbs",StringComparer.Ordinal),
+    "the coincident cylindrical well needs the guarded affine fixture");
 Require(!requireCutSection||KernelRuntime.ForbidLegacyRegularBlendAssembly&&args.Any(x=>x is "affine-plane-nurbs" or "plane-nurbs")
     &&!args.Any(x=>x is "rounding-only" or "lifecycle-only" or "native-only"),"cut section check needs a guarded plane/NURBS fillet and Boolean");
 var sectionWitnesses=0;var traceCutSection=false;
+var wellTrace=coincidentCylinderWell?new List<KernelRuntime.BoundaryTrace>():null;
 var cutCharts=new HashSet<(int Curve,int Generation)>();var cutCrossings=new HashSet<(int Curve,int Generation)>();
 var cutProducts=new HashSet<(int Curve,int Generation)>();var cutEnds=new HashSet<(int Curve,int Event)>();
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.AnalyticSectionEnds)sectionWitnesses++;
+        if(wellTrace!=null&&trace.Stage is KernelRuntime.BoundaryTraceStage.CarrierReuse or KernelRuntime.BoundaryTraceStage.Product)wellTrace.Add(trace);
         if(traceCutSection)
         {
             var key=(trace.Curve,trace.Generation);
@@ -52,7 +57,8 @@ using(host)unsafe
     var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"own session");
     try
     {
-        if(args.Contains("native-only",StringComparer.Ordinal))
+        if(wellTrace!=null)CheckCoincidentCylinderWell(directory,wellTrace);
+        else if(args.Contains("native-only",StringComparer.Ordinal))
         {
             var concave=args.Contains("concave",StringComparer.Ordinal);var wall=args.Contains("wall",StringComparer.Ordinal);
             var native=Roof(false,.4,wall,concave);CheckBody(native,"native input");var blend=Fillet(false,native,.1,concave);CheckBody(native,"native fillet");
@@ -286,6 +292,46 @@ static unsafe int ContactParameters(int surface,M.PK_VECTOR_s point,out M.PK_UV_
     if(uv.param[0]<0||uv.param[0]>1||uv.param[1]<0||uv.param[1]>1)return PK_ERROR_not_on_surface;
     M.PK_VECTOR_s evaluated;error=KernelRuntime.SurfEval(surface,uv,0,0,0,&evaluated);if(error!=0)return error;
     return Distance(*(PK_VECTOR_t*)&point,*(PK_VECTOR_t*)&evaluated)<1e-8?0:PK_ERROR_not_on_surface;
+}
+
+static unsafe void CheckCoincidentCylinderWell(string directory,List<KernelRuntime.BoundaryTrace> trace)
+{
+    foreach(var (name,x,y,bottom,radius,phase) in new[]{("centered",.5,.5,.25,.18,false),("offset",.375,.625,.375,.125,true)})
+    {
+        var label="affine-cylinder-well-"+name;var own=Roof(true,0);var reference=Roof(false,0);
+        var basis=new PK_AXIS2_sf_t{location=new(x,y,bottom),axis=new(0,0,1),ref_direction=phase?new(0,1,0):new(1,0,0)};
+        int ownTool,nativeTool;Check(KernelRuntime.BodyCreateSolidCyl(radius,1-bottom,(M.PK_AXIS2_sf_s*)&basis,&ownTool),"self well tool");
+        Check(PK_BODY_create_solid_cyl(radius,1-bottom,&basis,&nativeTool),"independent well tool");
+        if(phase){own=Reload(own);ownTool=Reload(ownTool);}
+        var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+        Check(PK_BODY_boolean(reference,1,&nativeTool,&options,&n,&bodies),"independent well subtraction");Require(n==1,"one native well");
+        reference=bodies[0];Free(false,bodies);
+        trace.Clear();var guard=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        try{Check(KernelRuntime.BodyBoolean(own,1,&ownTool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies),"guarded self well subtraction");}
+        finally{KernelRuntime.ForbidSpatialBoundaryReuse=guard;}
+        Require(n==1&&KernelRuntime.LastRegularBooleanStage==KernelRuntime.RegularBooleanStage.Publish,"one arranged well");
+        own=bodies[0];Free(true,bodies);
+        var reuse=trace.Single(t=>t.Stage==KernelRuntime.BoundaryTraceStage.CarrierReuse&&t.SourceEdge>=0&&t.StartEvent<0&&t.EndEvent<0);
+        var uses=trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product&&t.Curve==reuse.Curve&&t.Generation==reuse.Generation
+            &&t.First==reuse.First&&t.Last==reuse.Last&&t.StartEvent<0&&t.EndEvent<0).ToArray();
+        Require(uses.Length==2&&uses[0].ProductCurve>0&&uses[0].ProductCurve==uses[1].ProductCurve
+            &&uses[0].Forward!=uses[1].Forward&&uses.Any(t=>t.Source==reuse.Source),"two opposite published uses of the original vertexless ring");
+        CompareFresh(own,reference,label,directory);
+        foreach(var (z,classification) in new[]{((1+bottom)*.5,PK_enclosure_outside_c),(bottom*.5,PK_enclosure_inside_c)})
+        {
+            var query=new PK_VECTOR_t(x,y,z);int expected,actual,entity;
+            Check(PK_BODY_contains_vector(reference,query,&expected,&entity),"native well material");
+            Check(KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&query,&actual,&entity),"self well material");
+            Require(expected==classification&&actual==expected,"well material above and below the floor");
+        }
+        Check(KernelRuntime.EntityDelete(1,&own),"delete self well");Check(PK_ENTITY_delete(1,&reference),"delete native well");
+        Console.WriteLine("PASS "+label);
+    }
+
+    static int Reload(int body)
+    {
+        var received=ReceiveManaged(Transmit(body));Check(KernelRuntime.EntityDelete(1,&body),"delete the pre-reload well input");return received;
+    }
 }
 
 static unsafe int Bore(bool own,int body,bool acrossCaps=false)

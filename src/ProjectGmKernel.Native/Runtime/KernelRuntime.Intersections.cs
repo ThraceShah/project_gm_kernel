@@ -499,7 +499,8 @@ internal static unsafe partial class KernelRuntime
         nc=np=0;
         var analyticA=TryPrepareSurface(Surfaces[sa],out var a);var analyticB=TryPrepareSurface(Surfaces[sb],out var b);
         if(analyticA&&analyticB)return OperationIntersection.Surfaces(a,b,branches,out nc,isolated,out np);
-        if(analyticA&&TryAffineSphereCircle(sb,a,branches,out nc)||analyticB&&TryAffineSphereCircle(sa,b,branches,out nc))
+        if(analyticA&&a.Kind==SurfaceClass.Sphere&&TryAffineRoundCircle(sb,a,branches,out nc,out _)
+            ||analyticB&&b.Kind==SurfaceClass.Sphere&&TryAffineRoundCircle(sa,b,branches,out nc,out _))
             return AlgorithmStatus.Success;
         else if(analyticA&&a.Kind==SurfaceClass.Plane&&Surfaces[sb].Class==SurfaceClass.BSurface)
             return RuledBSurfacePlaneIntersection.Find(GetBSurfaceView(BSurfaceDataStore[Surfaces[sb].DataIndex]),a,branches,out nc,isolated,out np);

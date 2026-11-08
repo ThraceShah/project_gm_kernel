@@ -266,13 +266,14 @@ internal static unsafe partial class KernelRuntime
             if(TraceFiniteBoundary!=null)
                 for(var i=0;i<indices.Length;i++)
                 {
-                    var index=indices[i];var face=model.Faces[index];
+                    var index=indices[i];var face=model.Faces[index];var reverse=reversed[index]!=0;
                     for(var l=0;l<face.LoopCount;l++)
                     {
                         var loop=model.Loops[face.FirstLoop+l];
                         foreach(var coedge in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
                         {
-                            var use=FiniteBoundaryUse.Create(face.Surface,model.Edges[coedge.Edge],coedge.Edge,coedge.Forward,model.Sources[index],faceSense:face.Sense);
+                            var use=FiniteBoundaryUse.Create(face.Surface,model.Edges[coedge.Edge],coedge.Edge,(byte)(coedge.Forward^(reverse?1:0)),
+                                model.Sources[index],faceSense:faces[i].Sense);
                             TraceBoundary(BoundaryTraceStage.Product,use,index,products[i],Edges[builtEdges[edgeMap[coedge.Edge]]].CurveTag);
                         }
                     }
