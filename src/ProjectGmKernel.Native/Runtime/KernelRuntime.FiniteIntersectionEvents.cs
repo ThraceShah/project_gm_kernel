@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -43,7 +44,8 @@ internal static unsafe partial class KernelRuntime
     }
 
     internal static AlgorithmStatus IsolateFiniteExplicitLevelSet(in ModelingEdge edge,in AnalyticSurface surface,
-        Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
+        Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count,
+        scoped ReadOnlySpan<IntervalNumber> linePoles=default,BufferCount estimateCount=0)
     {
         count=0;
         if(isolation.IsEmpty||!(edge.End>edge.Start))return AlgorithmStatus.InvalidInput;
@@ -56,7 +58,11 @@ internal static unsafe partial class KernelRuntime
         Span<BlendSpineInstruction> spine=stackalloc BlendSpineInstruction[1]{new(){Curve=geometry,ChartCount=2}};
         Span<BlendChartInstruction> domain=stackalloc BlendChartInstruction[2]{new(){Parameter=edge.Start},new(){Parameter=edge.End}};
         var program=new NestedBlendProgram(default,spine,domain);
-        var patch=new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
+        var corrected=!linePoles.IsEmpty;
+        var patch=corrected?new SurfaceIntersectionPatch(new BezierSurfacePatch(linePoles,1,0,new(edge.Start,edge.End,0,1)))
+            :new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
+        Span<double> estimates=stackalloc double[estimateCount];
+        for(var i=0;i<estimates.Length;i++)estimates[i]=roots[i].First;
         var status=SurfaceIsoPlaneRoots.Find(patch,surface,edge.Start,edge.End,roots,ref count,strictSeparation:true,isolation:isolation);
         if(status!=AlgorithmStatus.Success)return status;
         if(count>spatialErrors.Length)return AlgorithmStatus.OutputTooSmall;
@@ -65,13 +71,22 @@ internal static unsafe partial class KernelRuntime
             (roots[j],roots[j-1])=(roots[j-1],roots[j]);
             (isolation[j],isolation[j-1])=(isolation[j-1],isolation[j]);
         }
+        Span<IntervalNumber> enclosure=stackalloc IntervalNumber[9];
         for(var i=0;i<count;i++)
         {
             var root=isolation[i].Root;var at=roots[i].First;
             if(i>0&&isolation[i-1].Root.Upper>=root.Lower)return AlgorithmStatus.NotConverged;
+            foreach(var estimate in estimates)if(estimate>=root.Lower&&estimate<=root.Upper){at=estimate;break;}
             status=SpineParameterMap.Series(geometry,new(at,0),out var point,out _);if(status!=AlgorithmStatus.Success)return status;
-            status=SpineParameterMap.Interval(geometry,new(root,0),out var box,out _);if(status!=AlgorithmStatus.Success)return status;
-            roots[i].Point=point.Value;spatialErrors[i]=(box-new IntervalVector(roots[i].Point)).Norm().Value.Upper;
+            IntervalVector box;
+            if(corrected)
+            {
+                status=patch.Bound(new(root.Lower,root.Upper,0,0),enclosure);if(status!=AlgorithmStatus.Success)return status;
+                box=new(enclosure[0],enclosure[1],enclosure[2]);
+            }
+            else
+            {status=SpineParameterMap.Interval(geometry,new(root,0),out box,out _);if(status!=AlgorithmStatus.Success)return status;}
+            roots[i].First=at;roots[i].Point=point.Value;spatialErrors[i]=(box-new IntervalVector(roots[i].Point)).Norm().Value.Upper;
             if(!double.IsFinite(spatialErrors[i]))return AlgorithmStatus.NotConverged;
         }
         return status;

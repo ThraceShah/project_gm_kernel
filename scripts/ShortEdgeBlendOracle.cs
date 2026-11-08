@@ -388,6 +388,7 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
     var witnesses=new List<KernelRuntime.BoundaryTrace>();
     var roots=new List<KernelRuntime.BoundaryTrace>();
     var cutterRoots=new List<KernelRuntime.BoundaryTrace>();
+    var conicRoots=new List<KernelRuntime.BoundaryTrace>();
     var arranged=new HashSet<(int Carrier,int Event)>();
     var published=new HashSet<(int Carrier,int Event)>();
     var spatialReuses=0;
@@ -399,9 +400,13 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
         {
             roots.Add(trace);
             if(requireCutterChartWitness&&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class==CurveClass.Line
-                &&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.ProductCurve)].Class==CurveClass.ICurve
-                &&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)].Class==SurfaceClass.Plane
-                &&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.OtherSurface)].Class==SurfaceClass.BlendSurface)cutterRoots.Add(trace);
+                &&KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)].Class==SurfaceClass.Plane)
+            {
+                var kind=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.ProductCurve)].Class;
+                var support=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.OtherSurface)].Class;
+                if(kind==CurveClass.ICurve&&support==SurfaceClass.BlendSurface)cutterRoots.Add(trace);
+                if(kind is CurveClass.Circle or CurveClass.Ellipse&&support==SurfaceClass.Cylinder)conicRoots.Add(trace);
+            }
         }
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.SpatialEndpointReuse)spatialReuses++;
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutEndpoints)
@@ -435,16 +440,22 @@ static int CutWithNativeWitness(int body,int tool,double unitScale,bool requireC
     Console.WriteLine($"NATIVE CUT WITNESSES short_occurrences={shortEdges.Count} published_events={shortEvents.Count} spatial_reuses={spatialReuses} certified_coedges={certifiedCoedges}");
     if(requireCutterChartWitness)
     {
-        var uses=cutterRoots.Where(r=>published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
-        var events=uses.GroupBy(r=>r.StartEvent).ToArray();
-        Require(events.Length==2&&events.All(g=>g.Select(r=>r.InputCoedge).Distinct().Count()==2)
-            &&uses.Select(r=>r.Edge).Distinct().Count()==1,"one finite cutter edge must supply two separate events on both of its coedges");
-        var certified=uses.Count(r=>consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge
-            &&x.StartEvent==r.StartEvent&&x.Witness==r.Witness));
-        Require(certified==uses.Length,$"cutter edge stations must transfer to both published ICurve charts; proved {certified}/{uses.Length}");
-        Console.WriteLine($"CUTTER CHART WITNESSES events={events.Length} certified_coedges={certified}");
+        CheckCutterCharts(cutterRoots,"CHART");
+        CheckCutterCharts(conicRoots,"CONIC");
     }
     return result;
+
+    void CheckCutterCharts(List<KernelRuntime.BoundaryTrace> candidates,string kind)
+    {
+        var uses=candidates.Where(r=>published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
+        var events=uses.GroupBy(r=>r.StartEvent).ToArray();
+        Require(events.Length==2&&events.All(g=>g.Select(r=>r.InputCoedge).Distinct().Count()==2)
+            &&uses.Select(r=>r.Edge).Distinct().Count()==1,$"one finite cutter edge must supply two separate {kind} events on both of its coedges");
+        var certified=uses.Count(r=>consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge
+            &&x.StartEvent==r.StartEvent&&x.Witness==r.Witness));
+        Require(certified==uses.Length,$"cutter edge stations must transfer to both published {kind} cuts; proved {certified}/{uses.Length}");
+        Console.WriteLine($"CUTTER {kind} WITNESSES events={events.Length} certified_coedges={certified}");
+    }
 }
 static int CutWithoutSpatialReuse(int body,int tool)
 {

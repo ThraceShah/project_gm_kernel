@@ -10,7 +10,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private enum CutLineConstruction:byte { None, AnalyticPlanePair, FiniteCylinderPlane }
+    private enum CutConstruction:byte { None, AnalyticPlanePair, FiniteCylinderPlane, AnalyticCylinderPlaneConic }
 
     private struct SheetCutCurve
     {
@@ -23,7 +23,7 @@ internal static unsafe partial class KernelRuntime
         internal byte Closed;
         internal byte KeepImprint;
         internal byte NativeLocatorEnds;
-        internal CutLineConstruction LineConstruction;
+        internal CutConstruction Construction;
     }
 
     private static int PrepareSheetCutCurves(SurfTag surface, SurfTag plane, Span<SheetCutCurve> cuts, out BufferCount count)
@@ -107,8 +107,11 @@ internal static unsafe partial class KernelRuntime
                 if(turn==0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 Curves[slot].Sense=turn<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
                 cuts[i]=new(){Curve=curve,First=branches[i].Start,Last=branches[i].End,
-                    LineConstruction=branches[i].Class==CurveClass.Line&&firstSupport.Kind==SurfaceClass.Plane&&secondSupport.Kind==SurfaceClass.Plane
-                        ?CutLineConstruction.AnalyticPlanePair:CutLineConstruction.None,
+                    Construction=branches[i].Class==CurveClass.Line&&firstSupport.Kind==SurfaceClass.Plane&&secondSupport.Kind==SurfaceClass.Plane
+                        ?CutConstruction.AnalyticPlanePair:branches[i].Class is CurveClass.Circle or CurveClass.Ellipse
+                            &&(firstSupport.Kind==SurfaceClass.Plane&&secondSupport.Kind==SurfaceClass.Cylinder
+                                ||firstSupport.Kind==SurfaceClass.Cylinder&&secondSupport.Kind==SurfaceClass.Plane)
+                        ?CutConstruction.AnalyticCylinderPlaneConic:CutConstruction.None,
                     Closed=branches[i].Class is CurveClass.Circle or CurveClass.Ellipse&&branches[i].End-branches[i].Start>=Math.Tau-1e-10?(byte)1:(byte)0};
             }
             count=nc;return 0;

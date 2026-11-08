@@ -16,6 +16,8 @@ internal static unsafe partial class KernelRuntime
             return LocateCertifiedLineCut(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified==PlanePairBlendLineCertificate)
             return LocateCertifiedBladeCut(cut,root,ref parameter,ref isolation,out handled);
+        if(root.Certified==PlanePairCylinderLineCertificate)
+            return LocateCertifiedCylinderConic(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified!=NativePlaneCertificate||root.Root.Vertex>=0||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
         var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
         if(source.Class!=CurveClass.ICurve||(target.Class!=CurveClass.ICurve&&target.Class!=CurveClass.Line)
@@ -138,7 +140,7 @@ internal static unsafe partial class KernelRuntime
             var cross=IntervalVector.Cross(new IntervalVector(first.Axis),new IntervalVector(second.Axis));
             return IntervalVector.Dot(cross,cross).Value.Lower>0;
         }
-        return cut.LineConstruction==CutLineConstruction.AnalyticPlanePair&&BoundRoundedPlaneLine(cut,line,first,second);
+        return cut.Construction==CutConstruction.AnalyticPlanePair&&BoundRoundedPlaneLine(cut,line,first,second);
     }
 
     private static bool BoundRoundedPlaneLine(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface first,in AnalyticSurface second,
@@ -191,7 +193,7 @@ internal static unsafe partial class KernelRuntime
         var tilt=IntervalVector.Dot(axis,normal).Value;
         var direction=new IntervalVector(line.First);var cross=IntervalVector.Cross(axis,direction);
         var tilted=tilt.Magnitude!=0;
-        if(!tilt.Finite||tilted&&cut.LineConstruction!=CutLineConstruction.FiniteCylinderPlane
+        if(!tilt.Finite||tilted&&cut.Construction!=CutConstruction.FiniteCylinderPlane
             ||IntervalVector.Dot(cross,cross).Value.Magnitude!=0)return false;
         side=IntervalVector.Cross(axis,normal);
         var origin=new IntervalVector(cylinder.Origin);var planeOrigin=new IntervalVector(plane.Origin);
@@ -329,8 +331,8 @@ internal static unsafe partial class KernelRuntime
             witness=ThirdFiniteRoot(roots[0],boxes[0],errors[0]);
         }
         var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=plane,Certified=ExplicitPlaneCertificate,Witness=1,Root=witness};
-        var cut=new SheetCutCurve{Curve=target,First=first,Last=last,LineConstruction=fromPlanePair?CutLineConstruction.AnalyticPlanePair
-            :fromFiniteGenerator?CutLineConstruction.FiniteCylinderPlane:CutLineConstruction.None};
+        var cut=new SheetCutCurve{Curve=target,First=first,Last=last,Construction=fromPlanePair?CutConstruction.AnalyticPlanePair
+            :fromFiniteGenerator?CutConstruction.FiniteCylinderPlane:CutConstruction.None};
         var error=LocateCertifiedCut(cut,root,out var station,out var projected,out certified);
         if(error!=0||!certified)return error;
         var anchor=new BoundaryParameter{Parameter=station,Lower=projected.Lower,Upper=projected.Upper};

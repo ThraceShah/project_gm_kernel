@@ -19,6 +19,21 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     public FinitePlaneSeparationTests(){KernelRuntime.SessionStop();var start=new PK_SESSION_start_o_s{o_t_version=1};Assert.Equal(0,KernelRuntime.SessionStart(&start));}
     public void Dispose(){KernelRuntime.SessionStop();}
 
+    [Fact]
+    public void ObliqueCylinderConicCertificateRejectsSmallInPlaneDisplacement()
+    {
+        var cylinder=new PK_CYL_sf_s{radius=1};cylinder.basis_set.axis.coord[2]=1;cylinder.basis_set.ref_direction.coord[0]=1;
+        SurfTag cylindrical;Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&cylindrical));
+        var plane=new PK_PLANE_sf_s();Write(&plane.basis_set.axis,Vector(.6,0,.8));Write(&plane.basis_set.ref_direction,Vector(-.8,0,.6));
+        SurfTag planar;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&planar));
+        var ellipse=new PK_ELLIPSE_sf_s{basis_set=plane.basis_set,R1=1.25,R2=1};
+        CurveTag exact;Assert.Equal(0,KernelRuntime.EllipseCreate(&ellipse,&exact));
+        Assert.True(KernelRuntime.TestCylinderPlaneConic(exact,planar,cylindrical));
+        ellipse.basis_set.location.coord[1]=1e-11;
+        CurveTag shifted;Assert.Equal(0,KernelRuntime.EllipseCreate(&ellipse,&shifted));
+        Assert.False(KernelRuntime.TestCylinderPlaneConic(shifted,planar,cylindrical));
+    }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void NearParallelInfiniteIntersectionDoesNotObscureCertifiedFiniteSeparation(bool separated)
