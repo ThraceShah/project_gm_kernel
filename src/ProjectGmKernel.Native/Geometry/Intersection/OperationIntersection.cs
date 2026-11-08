@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -322,18 +323,7 @@ internal static class OperationIntersection
         nc=0;np=0;
         if(a.Kind==SurfaceClass.Plane)return PlaneSurface(a,b,curves,out nc,points,out np);
         if(b.Kind==SurfaceClass.Plane)return PlaneSurface(b,a,curves,out nc,points,out np);
-        if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Sphere)
-        {
-            var delta=Sub(b.Origin,a.Origin);var distance=Norm(delta);
-            if(!double.IsFinite(distance))return AlgorithmStatus.NumericalFailure;
-            if(distance<=DistanceTolerance)
-                return distance==0?AlgorithmStatus.Success:AlgorithmStatus.NumericalFailure;
-            if(distance>a.Radius+b.Radius+DistanceTolerance||distance<Math.Abs(a.Radius-b.Radius)-DistanceTolerance)return AlgorithmStatus.Success;
-            var normal=Scale(delta,1/distance);var h=(distance*distance+(a.Radius-b.Radius)*(a.Radius+b.Radius))/(2*distance);
-            var center=Add(a.Origin,Scale(normal,h));var rr=(a.Radius-h)*(a.Radius+h);
-            if(rr<=DistanceTolerance*DistanceTolerance){points[np++]=center;return AlgorithmStatus.Success;}
-            curves[nc++]=Circle(center,normal,Reference(normal),Math.Sqrt(rr));return AlgorithmStatus.Success;
-        }
+        if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Sphere)return SpherePair(a,b,curves,out nc,points,out np);
         if(a.Kind==SurfaceClass.Cylinder&&b.Kind==SurfaceClass.Cylinder)
         {
             if(Norm(Cross(a.Axis,b.Axis))>0)return AlgorithmStatus.Unsupported;
@@ -353,6 +343,41 @@ internal static class OperationIntersection
         if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(a,b,curves,out nc);
         if(b.Kind==SurfaceClass.Sphere&&a.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(b,a,curves,out nc);
         return AlgorithmStatus.Unsupported;
+    }
+
+    private static AlgorithmStatus SpherePair(in AnalyticSurface a,in AnalyticSurface b,
+        Span<OperationIntersectionBranch> curves,out BufferCount nc,Span<KernelVector3> points,out BufferCount np)
+    {
+        nc=np=0;
+        var centerDelta=new IntervalVector(b.Origin)-new IntervalVector(a.Origin);
+        var distance2=IntervalVector.Dot(centerDelta,centerDelta).Value;
+        if(distance2.Magnitude==0)return AlgorithmStatus.Success;
+        if(!distance2.Finite||distance2.Lower<=0)return AlgorithmStatus.NotConverged;
+        var sum=new IntervalNumber(a.Radius)+b.Radius;var difference=new IntervalNumber(a.Radius)-b.Radius;
+        var outer=sum*sum-distance2;var inner=distance2-difference*difference;
+        if(!outer.Finite||!inner.Finite)return AlgorithmStatus.NotConverged;
+        if(outer.Upper<0||inner.Upper<0)return AlgorithmStatus.Success;
+        var external=outer.Magnitude==0&&inner.Lower>0;
+        var internalContact=inner.Magnitude==0&&outer.Lower>0;
+        var delta=Sub(b.Origin,a.Origin);var distance=Norm(delta);
+        if(!(distance>0)||!double.IsFinite(distance))return AlgorithmStatus.NotConverged;
+        var normal=Scale(delta,1/distance);
+        if(external||internalContact)
+        {
+            if(points.IsEmpty)return AlgorithmStatus.OutputTooSmall;
+            var height=internalContact&&a.Radius<b.Radius?-a.Radius:a.Radius;
+            points[np++]=Add(a.Origin,Scale(normal,height));return AlgorithmStatus.Success;
+        }
+        if(outer.Lower<=0||inner.Lower<=0)return AlgorithmStatus.NotConverged;
+        // Factored discriminant avoids subtracting the almost equal radius
+        // and section height. Its strict positivity proves a real circle.
+        var radius2=outer*inner/(4*distance2);
+        if(!radius2.Finite||radius2.Lower<=0)return AlgorithmStatus.NotConverged;
+        if(curves.IsEmpty)return AlgorithmStatus.OutputTooSmall;
+        var h=(distance2.Midpoint+(a.Radius-b.Radius)*(a.Radius+b.Radius))/(2*distance);
+        var center=Add(a.Origin,Scale(normal,h));
+        if(!IsFinite(center))return AlgorithmStatus.NotConverged;
+        curves[nc++]=Circle(center,normal,Reference(normal),Math.Sqrt(radius2.Midpoint));return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus CoaxialSphereTorus(in AnalyticSurface sphere,in AnalyticSurface torus,

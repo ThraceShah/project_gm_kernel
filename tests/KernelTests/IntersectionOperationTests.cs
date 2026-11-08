@@ -110,6 +110,24 @@ public unsafe class IntersectionOperationTests:IDisposable
         using(var result=SS(a,a)){Assert.Equal(0,result.CurveCount);Assert.Equal(0,result.PointCount);}
     }
 
+    [Theory]
+    [InlineData(false,-1,0,1)] [InlineData(false,0,1,0)] [InlineData(false,1,0,0)]
+    [InlineData(true,-1,0,0)] [InlineData(true,0,1,0)] [InlineData(true,1,0,1)]
+    public void SphereContactDoesNotConsumeAProvedGapOrPositiveCircle(bool internalContact,int side,int points,int curves)
+    {
+        var small=Math.ScaleB(1,-10);var large=internalContact?2*small:small;
+        var distance=(internalContact?large-small:large+small)+side*Math.ScaleB(1,-59);
+        var a=Sphere(0,0,0,large);var b=Sphere(distance,0,0,small);
+        using var result=SS(a,b);
+        Assert.Equal(points,result.PointCount);Assert.Equal(curves,result.CurveCount);
+        if(curves!=0)
+        {
+            PK_CIRCLE_sf_s circle;Assert.Equal(0,KernelRuntime.CircleAsk(result.Curves[0],&circle));
+            Assert.True(circle.radius>0&&circle.radius<1e-8);
+        }
+        if(points!=0)Assert.Equal(large,result.Points[0].coord[0]);
+    }
+
     [Fact]
     public void PlaneTorus_FindsBothClosedBranchesAndExplicitSeedSelectsOne()
     {
