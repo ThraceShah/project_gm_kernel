@@ -16,6 +16,8 @@ using static parasolid;
 var thirdFaceHole=args.Contains("--three-plane-hole");
 var thirdFaceCylinder=args.Contains("--three-face-cylinder");
 var threePlaneOnly=args.Contains("--three-plane-events")||thirdFaceHole||thirdFaceCylinder;
+var conicCutOnly=args.Contains("--plane-conic-cut");
+var specialized=threePlaneOnly||conicCutOnly;
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
 Directory.CreateDirectory(output);var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -28,8 +30,8 @@ try
         try
         {
             var failures=0;var count=0;
-            foreach(var mode in threePlaneOnly?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
+            foreach(var mode in specialized?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
+            foreach(var fixture in conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
@@ -50,14 +52,14 @@ try
                         CheckReferenceBody(reference[b],label+" baseline",Log);
                         File.WriteAllBytes(Path.Combine(output,$"{label}-{b}-reference.x_t"),TransmitReference(reference[b]));
                         for(var k=0;k<5;k++)Require(OracleCount(reference[b],k)==OracleCount(received[b],k),$"kind{k}: expected{OracleCount(reference[b],k)} received{OracleCount(received[b],k)}");
-                        if(threePlaneOnly)ParasolidBodyCompare.AssertEquivalent(reference[b],received[b],label);
+                        if(specialized)ParasolidBodyCompare.AssertEquivalent(reference[b],received[b],label);
                         else CompareBodies(reference[b],received[b],label,Log);
                     }
                     Log("PASS "+label);
                 }
                 catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
             }
-            foreach(var fixture in threePlaneOnly?[]:new[]{"imprint","oblique-imprint","trim-keep","trim-remove","section-both","section-front","section-back","section-miss","section-coincident"})
+            foreach(var fixture in specialized?[]:new[]{"imprint","oblique-imprint","trim-keep","trim-remove","section-both","section-front","section-back","section-miss","section-coincident"})
             {
                 count++;
                 try
@@ -80,7 +82,7 @@ try
             // PK's default size box is [-500,500]^3. A 10000-unit fixture is
             // intentionally invalid on both producers, not a geometry failure
             // to suppress in the positive Boolean gate.
-            if(!threePlaneOnly)try
+            if(!specialized)try
             {
                 count++;
                 var actual=ReceiveOracle(TransmitManaged(Block(true,10000,0,0,2,2,2,0)));
@@ -107,14 +109,17 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var mixed=fixture is "cylindrical-third-face" or "guarded-cylindrical-third-face";
     var guarded=fixture.StartsWith("guarded-",StringComparison.Ordinal);
     var threePlane=holed||mixed||fixture is "three-plane-cuts" or "guarded-three-plane-cuts";
+    var trimmedConic=fixture=="guarded-trimmed-conic-cut";
+    var conicCut=trimmedConic||fixture=="guarded-plane-conic-cut";
     int target;
-    if(threePlane)
+    if(threePlane||conicCut)
     {
         var radius=mixed?5:4;var height=mixed?6:4;
         Check(own?KernelRuntime.BodyCreateSolidCyl(radius,height,null,&target):PK_BODY_create_solid_cyl(radius,height,null,&target),"cylindrical target");
     }
     else target=Block(own,offset,0,0,outer,outer,outer,0);
-    if(holed)target=ThroughBore(own,target);
+    if(holed)target=SubtractSeedTool(own,target,Block(own,1,0,-1,.5,.5,6,0));
+    if(trimmedConic)target=SubtractSeedTool(own,target,Block(own,0,4,-1,12,6,6,0));
     var nt=fixture=="two-tools"||threePlane?2:1;var tools=stackalloc int[nt];
     if(threePlane)
     {
@@ -122,6 +127,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         tools[1]=mixed?Block(own,0,.5,2,14,7,2,0):Block(own,1,1,2.75,2,2,2.5,0);
         if(guarded)(tools[0],tools[1])=(tools[1],tools[0]);
     }
+    else if(conicCut)tools[0]=Block(own,3.5,0,-1,4,12,6,0);
     else
     {
         tools[0]=Block(own,offset+(fixture=="two-tools"?-3:x),y,fixture is "nested" or "closed-cavity"?1:0,2,2,fixture is "two-tools" or "through-hole"?outer:2,fixture=="crossing-rotated"?.37:0);
@@ -131,10 +137,11 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     if(own)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
-        if(threePlane)
+        if(threePlane||conicCut)
         {
             var certified=new HashSet<(int Event,int Curve)>();
             var transferredLines=new HashSet<(int Event,int Curve)>();
+            var transferredConics=new HashSet<(int Event,int Curve)>();
             var published=new HashSet<(int Event,int Curve)>();
             KernelRuntime.ForbidSpatialBoundaryReuse=guarded;
             var excluded=0;
@@ -142,9 +149,12 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
             {
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceStation)certified.Add((trace.StartEvent,trace.Curve));
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator&&trace.Witness!=0&&trace.Curve!=trace.ProductCurve
-                    &&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class==CurveClass.Line
                     &&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.ProductCurve)].Class==CurveClass.Line)
-                    transferredLines.Add((trace.StartEvent,trace.ProductCurve));
+                {
+                    var source=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trace.Curve)].Class;
+                    if(source==CurveClass.Line)transferredLines.Add((trace.StartEvent,trace.ProductCurve));
+                    if(source is CurveClass.Circle or CurveClass.Ellipse)transferredConics.Add((trace.StartEvent,trace.ProductCurve));
+                }
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceOutsideTrim&&trace.Source>=0
                     &&KernelRuntime.Faces[trace.Source].LoopCount>1&&double.IsFinite(trace.First)&&double.IsFinite(trace.Last)&&trace.Last>=trace.First)excluded++;
                 if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product)
@@ -156,10 +166,17 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                 Check(error,$"{fixture} Boolean at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}, curve {KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}");
                 var joined=certified.Where(published.Contains).GroupBy(x=>x.Event).Count(x=>x.Count()==3);
                 var publishedTransfers=transferredLines.Count(published.Contains);
-                Require(joined>0,"a three-plane event must retain all three native stations on published edges");
+                if(threePlane)Require(joined>0,"a three-plane event must retain all three native stations on published edges");
                 if(holed)Require(excluded>0,"a carrier root inside the planar bore must be excluded by the actual trim");
-                if(!holed&&!mixed)Require(publishedTransfers>0,"a transferred source line root must reach an actual published cut edge");
-                Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
+                if(threePlane&&!holed&&!mixed)Require(publishedTransfers>0,"a transferred source line root must reach an actual published cut edge");
+                if(conicCut)
+                {
+                    var crossings=transferredConics.Count(published.Contains);
+                    var expected=trimmedConic?2:4;
+                    Require(crossings==expected,$"expected {expected} cap-curve roots on the published cut lines; found {crossings}");
+                    Console.WriteLine($"CONIC CUT published_line_transfers={crossings}");
+                }
+                else Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
             }
             finally{KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;}
         }
@@ -175,24 +192,23 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         Check(PK_TOPOL_track_r_f(&tracking),"PK tracking free");Check(PK_boolean_r_f(&result),"PK result free");return bodies;
     }
 }
-static unsafe int ThroughBore(bool own,int body)
+static unsafe int SubtractSeedTool(bool own,int body,int tool)
 {
-    var tool=Block(own,1,0,-1,.5,.5,6,0);
     var o=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c};
     if(own)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);
         M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
-        Check(KernelRuntime.BodyBoolean2(body,1,&tool,&options,&tracking,&result),"own through bore");
-        try{Require(result.n_bodies==1,"own through bore body");return result.bodies[0];}
-        finally{Check(KernelRuntime.TopolTrackResultFree(&tracking),"own bore tracking");Check(KernelRuntime.BooleanResultFree(&result),"own bore result");}
+        Check(KernelRuntime.BodyBoolean2(body,1,&tool,&options,&tracking,&result),"own seed subtraction");
+        try{Require(result.n_bodies==1,"own seed subtraction body");return result.bodies[0];}
+        finally{Check(KernelRuntime.TopolTrackResultFree(&tracking),"own seed tracking");Check(KernelRuntime.BooleanResultFree(&result),"own seed result");}
     }
     else
     {
         PK_TOPOL_track_r_t tracking=default;PK_boolean_r_t result=default;
-        Check(PK_BODY_boolean_2(body,1,&tool,&o,&tracking,&result),"PK through bore");
-        try{Require(result.n_bodies==1,"PK through bore body");return result.bodies[0];}
-        finally{Check(PK_TOPOL_track_r_f(&tracking),"PK bore tracking");Check(PK_boolean_r_f(&result),"PK bore result");}
+        Check(PK_BODY_boolean_2(body,1,&tool,&o,&tracking,&result),"PK seed subtraction");
+        try{Require(result.n_bodies==1,"PK seed subtraction body");return result.bodies[0];}
+        finally{Check(PK_TOPOL_track_r_f(&tracking),"PK seed tracking");Check(PK_boolean_r_f(&result),"PK seed result");}
     }
 }
 static unsafe int Block(bool own,double x,double y,double z,double dx,double dy,double dz,double angle)

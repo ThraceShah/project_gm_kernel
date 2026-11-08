@@ -10,7 +10,7 @@ internal static unsafe partial class KernelRuntime
     private static int LocateCertifiedCut(in SheetCutCurve cut,in RegularBoundaryRoot root,out double parameter,out IntervalNumber isolation,out bool handled)
     {
         parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
-        if(root.Certified==LinePlaneCertificate)
+        if(root.Certified==ExplicitPlaneCertificate)
             return LocateCertifiedLineCut(cut.Curve,root,ref parameter,ref isolation,out handled);
         // Project the entire source ICurve root box into the target's
         // finite CHART cells on the same two supports. Only one connected
@@ -57,8 +57,15 @@ internal static unsafe partial class KernelRuntime
         handled=true;
         var axis=new IntervalVector(line.First);
         var offset=IntervalVector.Dot(new IntervalVector(source.Origin)-new IntervalVector(line.Origin),axis).Value;
-        var slope=IntervalVector.Dot(new IntervalVector(source.First),axis).Value;
-        isolation=(offset+slope*new IntervalNumber(root.Root.Lower,root.Root.Upper))/IntervalVector.Dot(axis,axis).Value;
+        var u=IntervalVector.Dot(new IntervalVector(source.First),axis).Value;
+        var station=new IntervalNumber(root.Root.Lower,root.Root.Upper);
+        if(source.Kind==CurveClass.Line)offset+=u*station;
+        else
+        {
+            IntervalDual.SinCos(new(station,0),out var sine,out var cosine);
+            offset+=u*cosine.Value+IntervalVector.Dot(new IntervalVector(source.Second),axis).Value*sine.Value;
+        }
+        isolation=offset/IntervalVector.Dot(axis,axis).Value;
         if(!isolation.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         parameter=isolation.Midpoint;
         return 0;
@@ -129,7 +136,7 @@ internal static unsafe partial class KernelRuntime
         bound=UncertifiedStation;certified=inside=false;
         var edge=new ModelingEdge{Curve=source,Start=0,End=1};
         if(!TryFiniteLinePlaneEvent(edge,0,plane,out var proof)||proof.Count!=1)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=plane,Certified=LinePlaneCertificate,Witness=1,Root=proof.FirstRoot};
+        var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=plane,Certified=ExplicitPlaneCertificate,Witness=1,Root=proof.FirstRoot};
         var cut=new SheetCutCurve{Curve=target,First=first,Last=last};
         var error=LocateCertifiedCut(cut,root,out var station,out var projected,out certified);
         if(error!=0||!certified)return error;

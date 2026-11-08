@@ -13,7 +13,7 @@ internal static unsafe partial class KernelRuntime
     private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;internal byte SecondIsBoundary;}
     private const byte NativePlaneCertificate=2;
     private const byte LineSurfaceCertificate=3;
-    private const byte LinePlaneCertificate=4;
+    private const byte ExplicitPlaneCertificate=4;
     private struct RegularBoundaryRoot
     {
         internal CurveTag Curve;
@@ -132,8 +132,12 @@ internal static unsafe partial class KernelRuntime
                     &&TryIsolateInteriorLineCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n);
                 if(!known&&certificates.IsEmpty&&curveClass==CurveClass.Line&&surfaceClass==SurfaceClass.BlendSurface)
                     lineProof=TryIsolateFiniteBlendLine(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n);
-                var nativeProof=!known&&!lineProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n);
-                var status=known||nativeProof||lineProof?AlgorithmStatus.Success:conicProof?IsolateFiniteExplicitCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n)
+                var conicPlaneProof=!known&&certificates.IsEmpty&&surfaceClass==SurfaceClass.Plane&&(curveClass is CurveClass.Circle or CurveClass.Ellipse)
+                    &&TryPrepareSurface(Surfaces[surfaceSlot],out var plane)
+                    &&IsolateFiniteExplicitLevelSet(edge,plane,roots,nativeRoots,spatialErrors,out n)==AlgorithmStatus.Success
+                    &&AllStrictlyInterior(edge,nativeRoots[..n]);
+                var nativeProof=!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n);
+                var status=known||nativeProof||lineProof||conicPlaneProof?AlgorithmStatus.Success:conicProof?IsolateFiniteExplicitCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n)
                     :IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out n);
                 LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 for(var r=0;r<n;r++)
@@ -144,7 +148,7 @@ internal static unsafe partial class KernelRuntime
                     // own support and provenance even when the event joins.
                     var duplicate=false;for(var i=count-1;i>=0&&points[i].InputCoedge==inputCoedge;i--)
                         duplicate|=points[i].Root.Parameter==roots[r].First;
-                    if(duplicate&&(known||nativeProof||conicProof||lineProof))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    if(duplicate&&(known||nativeProof||conicProof||lineProof||conicPlaneProof))return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     if(!duplicate)
                     {
                         if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -153,13 +157,13 @@ internal static unsafe partial class KernelRuntime
                         {contactSupport=certificate.Surface;break;}
                         var witness=known?(r==0?proof.FirstRoot:proof.SecondRoot):new FiniteCurveSurfaceRoot
                             {Point=roots[r].Point,Vertex=-1,Parameter=roots[r].First,Kind=roots[r].Kind};
-                        if(nativeProof||conicProof||lineProof)
+                        if(nativeProof||conicProof||lineProof||conicPlaneProof)
                         {
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
-                            Certified=linePlane?LinePlaneCertificate:nativeProof?NativePlaneCertificate:lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
-                            Witness=cached||conicProof||lineProof||linePlane||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
+                            Certified=linePlane||conicPlaneProof?ExplicitPlaneCertificate:nativeProof?NativePlaneCertificate:lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
+                            Witness=cached||conicProof||lineProof||linePlane||conicPlaneProof||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
                     }
                 }
             }
@@ -171,10 +175,14 @@ internal static unsafe partial class KernelRuntime
         Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
     {
         var status=IsolateFiniteExplicitCylinder(edge,cylinder,roots,isolation,spatialErrors,out count);
-        if(status!=AlgorithmStatus.Success||count==0)return false;
+        return status==AlgorithmStatus.Success&&count!=0&&AllStrictlyInterior(edge,isolation[..count]);
+    }
+
+    private static bool AllStrictlyInterior(in ModelingEdge edge,ReadOnlySpan<ScalarRootIsolation> isolation)
+    {
         // A real or uncertain root on an original endpoint still needs its
         // vertex occurrence or a contact proof. Certify the interior only.
-        for(var i=0;i<count;i++)if(!(isolation[i].Root.Lower>edge.Start&&isolation[i].Root.Upper<edge.End))return false;
+        foreach(ref readonly var root in isolation)if(!root.Certified||!(root.Root.Lower>edge.Start&&root.Root.Upper<edge.End))return false;
         return true;
     }
 
