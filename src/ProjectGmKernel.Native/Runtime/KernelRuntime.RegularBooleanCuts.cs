@@ -196,22 +196,19 @@ internal static unsafe partial class KernelRuntime
     private static bool TryFiniteLinePlaneEvent(in ModelingEdge edge,BufferOffset inputEdge,SurfTag surface,out FiniteCurveSurfaceResult result)
     {
         result=default;
+        if(!double.IsFinite(edge.Start)||!double.IsFinite(edge.End)||edge.Start>=edge.End)return false;
         var record=Curves[GetCurveSlotByTag(edge.Curve)];var planeSlot=GetSurfaceSlotByTag(surface);
         if(record.Class!=CurveClass.Line||Surfaces[planeSlot].Class!=SurfaceClass.Plane
             ||!TryReadExplicitSpineCurve(record,out var line)||!TryPrepareSurface(Surfaces[planeSlot],out var plane))return false;
         if(!TryLinePlaneRatio(line,plane,out var numerator,out var denominator))return false;
         var axis=new IntervalVector(line.First);
         var t=numerator/denominator;if(!t.Finite)return false;
-        var speed=axis.Norm().Value;
-        if(!(speed.Lower>0))return false;
-        var endpointBand=(new IntervalNumber(OperationIntersection.DistanceTolerance)/speed).Upper;
         result=NewFiniteEventResult(edge,inputEdge,surface);
-        if(t.Upper<edge.Start-endpointBand||t.Lower>edge.End+endpointBand)
+        if(t.Upper<edge.Start||t.Lower>edge.End)
         {result.State=FiniteIntersectionState.Empty;result.Relation=SurfacePairRelation.Empty;return true;}
-        // Endpoints with an overlapping uncertainty interval require the
-        // source-vertex association path. This provider certifies a unique
-        // interior root in the original native edge interval.
-        if(t.Lower<=edge.Start+endpointBand||t.Upper>=edge.End-endpointBand)return false;
+        // A box that touches a trim limit needs an endpoint association.
+        // A disjoint box has a finite-domain proof at any positive distance.
+        if(t.Lower<=edge.Start||t.Upper>=edge.End)return false;
         var parameter=Math.Clamp(Dot(Sub(plane.Origin,line.Origin),plane.Axis)/Dot(line.First,plane.Axis),t.Lower,t.Upper);
         var point=Add(line.Origin,Scale(line.First,parameter));
         var enclosure=new IntervalVector(line.Origin)+axis*new IntervalDual(t,0);

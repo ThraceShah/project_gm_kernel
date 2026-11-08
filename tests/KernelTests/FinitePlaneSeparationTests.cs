@@ -108,8 +108,16 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
-    [InlineData(false,false)] [InlineData(true,false)] [InlineData(false,true)]
-    public void ThreePlaneCutsShareOneEventOnlyWhenAllFiniteCarriersProveIt(bool truncate,bool displaced)
+    [InlineData(false,false,.25,0)]
+    [InlineData(true,false,.25,ParasolidConstants.PK_ERROR_not_implemented)]
+    [InlineData(false,true,.25,ParasolidConstants.PK_ERROR_not_implemented)]
+    [InlineData(false,false,1.0/(1L<<42),0)]
+    [InlineData(false,false,1-1.0/(1L<<42),0)]
+    [InlineData(false,false,0,ParasolidConstants.PK_ERROR_cant_do_intersect)]
+    [InlineData(false,false,1,ParasolidConstants.PK_ERROR_cant_do_intersect)]
+    [InlineData(false,false,-1.0/(1L<<42),ParasolidConstants.PK_ERROR_not_implemented)]
+    [InlineData(false,false,1+1.0/(1L<<42),ParasolidConstants.PK_ERROR_not_implemented)]
+    public void ThreePlaneCutsShareOneEventOnlyWhenAllFiniteCarriersProveIt(bool truncate,bool displaced,double station,int expected)
     {
         Span<SurfTag> surfaces=stackalloc SurfTag[3];
         Span<CurveTag> carriers=stackalloc CurveTag[3];
@@ -120,7 +128,7 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
             Write(&plane.basis_set.axis,axes[i]);Write(&plane.basis_set.ref_direction,axes[(i+1)%3]);
             SurfTag tag;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&tag));surfaces[i]=tag;
         }
-        Span<KernelVector3> origins=stackalloc KernelVector3[3]{Vector(0,0,-.25),Vector(displaced?.125:0,.375,0),Vector(-.625,0,0)};
+        Span<KernelVector3> origins=stackalloc KernelVector3[3]{Vector(0,0,-station),Vector(displaced?.125:0,.375,0),Vector(-.625,0,0)};
         for(var i=0;i<3;i++)
         {
             var line=new PK_LINE_sf_s();Write(&line.basis_set.location,origins[i]);
@@ -129,12 +137,8 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         }
         Span<double> stations=stackalloc double[3];
         var error=KernelRuntime.TestThreePlaneCutEvents(surfaces,carriers,truncate,stations,out var events);
-        if(truncate||displaced)
-        {
-            Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,error);Assert.Equal(0,events);return;
-        }
-        Assert.Equal(0,error);Assert.Equal(1,events);
-        Assert.Equal(.25,stations[0]);Assert.Equal(.375,stations[1]);Assert.Equal(.625,stations[2]);
+        Assert.Equal(expected,error);Assert.Equal(expected==0?1:0,events);
+        if(expected==0){Assert.Equal(station,stations[0]);Assert.Equal(.375,stations[1]);Assert.Equal(.625,stations[2]);}
     }
 
     [Fact]
