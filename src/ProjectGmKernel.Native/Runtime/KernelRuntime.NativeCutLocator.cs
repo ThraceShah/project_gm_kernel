@@ -3,6 +3,7 @@ using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -13,16 +14,26 @@ internal static unsafe partial class KernelRuntime
         parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
         if(root.Certified==ExplicitPlaneCertificate)
             return LocateCertifiedLineCut(cut,root,ref parameter,ref isolation,out handled);
-        // Project the entire source ICurve root box into the target's
-        // finite CHART cells on the same two supports. Only one connected
-        // chart occurrence may supply the station.
         if(root.Certified!=NativePlaneCertificate||root.Root.Vertex>=0||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
         var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
-        if(source.Class!=CurveClass.ICurve||target.Class!=CurveClass.ICurve
+        if(source.Class!=CurveClass.ICurve||(target.Class!=CurveClass.ICurve&&target.Class!=CurveClass.Line)
             ||Surfaces[GetSurfaceSlotByTag(root.CuttingSurface)].Class!=SurfaceClass.Plane)return 0;
-        var from=ICurveDataPool[source.DataIndex];var to=ICurveDataPool[target.DataIndex];
-        if(from.ProgramBlock<=0||to.ProgramBlock<=0||from.IsBlendContact!=0||to.IsBlendContact!=0
-            ||!(SameSheetSupport(from.Surface0Tag,root.ContactSurface)||SameSheetSupport(from.Surface1Tag,root.ContactSurface))
+        var from=ICurveDataPool[source.DataIndex];
+        if(from.ProgramBlock<=0||from.IsBlendContact!=0)return 0;
+        var straight=target.Class==CurveClass.Line;
+        var line=default(ParametricSpineCurve);
+        var to=straight?default:ICurveDataPool[target.DataIndex];
+        var sourceFirst=SameSheetSupport(from.Surface0Tag,root.ContactSurface);
+        if(straight)
+        {
+            if(!TryReadExplicitSpineCurve(target,out line)
+                ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.ContactSurface)],out var common)||common.Kind!=SurfaceClass.Plane
+                ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(root.CuttingSurface)],out var cutting)
+                ||!(TryCertifySupportChart(from.Surface0Tag,root.ContactSurface,out _)||TryCertifySupportChart(from.Surface1Tag,root.ContactSurface,out _))
+                ||!PlanePairLineCertified(cut,line,common,cutting))return 0;
+        }
+        else if(to.ProgramBlock<=0||to.IsBlendContact!=0
+            ||!(sourceFirst||SameSheetSupport(from.Surface1Tag,root.ContactSurface))
             ||!(SameSheetSupport(to.Surface0Tag,root.ContactSurface)&&SameSheetSupport(to.Surface1Tag,root.CuttingSurface)
                 ||SameSheetSupport(to.Surface1Tag,root.ContactSurface)&&SameSheetSupport(to.Surface0Tag,root.CuttingSurface)))return 0;
         var checkpoint=CommandScratch.ThreadArenaOffset;
@@ -35,8 +46,27 @@ internal static unsafe partial class KernelRuntime
             if(!compiler.Ready){handled=true;return ParasolidConstants.PK_ERROR_memory_full;}
             var status=compiler.Spine(root.Curve,out var sourceSpine);
             if(status!=AlgorithmStatus.Success){handled=true;return IntersectionError(status);}
+            if(straight)
+            {
+                // Both exact plane equations hold at the certified root.
+                // They select one analytic line; bound its station in the
+                // stored line's gauge using the entire source CHART box.
+                handled=true;
+                Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+                status=JointNestedBlendEvaluation.BoundSpine(compiler.View,sourceSpine,new(root.Root.Lower,root.Root.Upper,0,0),bounds);
+                if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                var offset=new IntervalVector(bounds[0],bounds[1],bounds[2])-new IntervalVector(line.Origin);
+                var axis=new IntervalVector(line.First);
+                isolation=IntervalVector.Dot(offset,axis).Value/IntervalVector.Dot(axis,axis).Value;
+                if(!isolation.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                // The forward point of the isolated source root is the
+                // best available representative. The box decides the
+                // occurrence and order, never the projected point.
+                parameter=Math.Clamp(Dot(Sub(root.Root.Point,line.Origin),line.First),isolation.Lower,isolation.Upper);
+                return 0;
+            }
             var program=GetNestedBlendProgram(to.ProgramBlock,to.ProgramSurfaceCount,to.ProgramSpineCount,to.ProgramChartCount,to.ProgramScalarCount);
-            return LocateInCertifiedCutChart(cut,root,compiler.View,sourceSpine,SameSheetSupport(from.Surface0Tag,root.ContactSurface),
+            return LocateInCertifiedCutChart(cut,root,compiler.View,sourceSpine,sourceFirst,
                 program,to.ProgramSpine,SameSheetSupport(to.Surface0Tag,root.ContactSurface),out parameter,out isolation,out handled);
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
@@ -62,8 +92,7 @@ internal static unsafe partial class KernelRuntime
         else
         {
             if(common.Kind!=SurfaceClass.Plane||!ExplicitCurveExactlyOnPlane(source,common))return 0;
-            if(!(ExplicitCurveExactlyOnPlane(line,common)&&ExplicitCurveExactlyOnPlane(line,cutting))
-                &&(cut.LineConstruction!=CutLineConstruction.AnalyticPlanePair||!BoundRoundedPlaneLine(cut,line,common,cutting)))return 0;
+            if(!PlanePairLineCertified(cut,line,common,cutting))return 0;
         }
         // Use the represented carrier's gauge for the selected true
         // branch; a rounded representation must have been bounded above.
@@ -73,6 +102,16 @@ internal static unsafe partial class KernelRuntime
         if(!isolation.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         parameter=isolation.Midpoint;
         return 0;
+    }
+
+    private static bool PlanePairLineCertified(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface first,in AnalyticSurface second)
+    {
+        if(ExplicitCurveExactlyOnPlane(line,first)&&ExplicitCurveExactlyOnPlane(line,second))
+        {
+            var cross=IntervalVector.Cross(new IntervalVector(first.Axis),new IntervalVector(second.Axis));
+            return IntervalVector.Dot(cross,cross).Value.Lower>0;
+        }
+        return cut.LineConstruction==CutLineConstruction.AnalyticPlanePair&&BoundRoundedPlaneLine(cut,line,first,second);
     }
 
     private static bool BoundRoundedPlaneLine(in SheetCutCurve cut,in ParametricSpineCurve line,in AnalyticSurface first,in AnalyticSurface second)

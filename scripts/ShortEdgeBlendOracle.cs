@@ -400,17 +400,24 @@ static int CutWithNativeWitness(int body,int tool,double unitScale)
     var consumed=witnesses.Where(x=>arranged.Contains((x.ProductCurve,x.StartEvent))&&published.Contains((x.ProductCurve,x.StartEvent))
         &&double.IsFinite(x.First)&&double.IsFinite(x.Last)&&x.Last>=x.First&&x.SpatialError>0).ToArray();
     var shortEvents=new HashSet<int>();
+    var certifiedCoedges=0;
     foreach(var edge in shortEdges)
     {
-        var evidence=roots.Where(r=>r.Curve==edge.Curve&&r.Generation==edge.Generation&&r.First>edge.First&&r.Last<edge.Last
-            &&consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge&&x.StartEvent==r.StartEvent&&x.Witness==r.Witness))
-            .Select(r=>r.StartEvent).Distinct().ToArray();
+        var uses=roots.Where(r=>r.Curve==edge.Curve&&r.Generation==edge.Generation&&r.First>edge.First&&r.Last<edge.Last
+            &&published.Contains((r.ProductCurve,r.StartEvent))).ToArray();
+        var coedges=uses.Select(r=>r.InputCoedge).Distinct().Count();
+        Require(coedges==2,$"short ICurve {edge.Curve} must reach the published cut on both incident coedges; found {coedges}");
+        var proved=uses.Where(r=>consumed.Any(x=>x.ProductCurve==r.ProductCurve&&x.InputCoedge==r.InputCoedge
+            &&x.StartEvent==r.StartEvent&&x.Witness==r.Witness)).ToArray();
+        Require(proved.Length==uses.Length,$"short ICurve {edge.Curve} must transfer every published coedge station; proved {proved.Length}/{uses.Length}");
+        certifiedCoedges+=coedges;
+        var evidence=proved.Select(r=>r.StartEvent).Distinct().ToArray();
         Require(evidence.Length==1,$"short ICurve {edge.Curve} must have one interior root reaching a published cut edge; found {evidence.Length}");
         shortEvents.Add(evidence[0]);
     }
     Require(shortEvents.Count==2,"the two actual short ICurves must contribute distinct published cut events");
     Require(spatialReuses==0,$"the guarded self cut must use certified endpoint joins; found {spatialReuses} position-only reuses");
-    Console.WriteLine($"NATIVE CUT WITNESSES short_occurrences={shortEdges.Count} published_events={shortEvents.Count} spatial_reuses={spatialReuses}");
+    Console.WriteLine($"NATIVE CUT WITNESSES short_occurrences={shortEdges.Count} published_events={shortEvents.Count} spatial_reuses={spatialReuses} certified_coedges={certifiedCoedges}");
     return result;
 }
 static int CutWithoutSpatialReuse(int body,int tool)
