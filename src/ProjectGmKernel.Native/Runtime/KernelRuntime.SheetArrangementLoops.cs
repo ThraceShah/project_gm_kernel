@@ -27,8 +27,8 @@ internal static unsafe partial class KernelRuntime
             var a=uv;var b=uv;
             a.param[0]-=epsilon*tangent.param[1]/length;a.param[1]+=epsilon*tangent.param[0]/length;
             b.param[0]+=epsilon*tangent.param[1]/length;b.param[1]-=epsilon*tangent.param[0]/length;
-            error=SheetLoopWinding(surface,edges,loop,a,out var wa);if(error!=0)continue;
-            error=SheetLoopWinding(surface,edges,loop,b,out var wb);if(error!=0)continue;
+            error=SheetLoopWinding(surface,edges,loop,a,out var wa,sectionCharts);if(error!=0)continue;
+            error=SheetLoopWinding(surface,edges,loop,b,out var wb,sectionCharts);if(error!=0)continue;
             if(wa==1&&wb==0){left=a;positive=1;return 0;}
             if(wa==0&&wb==-1){left=a;positive=0;return 0;}
         }
@@ -45,12 +45,13 @@ internal static unsafe partial class KernelRuntime
     private static int PublishFiniteSheetCycles(SurfTag surface,KernelSense sense,FaceSlot source,bool reverse,scoped ref SheetArrangement model,
         scoped ReadOnlySpan<ModelingCoedge> coedges,scoped Span<SheetCycle> cycles,SurfTag plane=0,bool borrowGeometry=true)
     {
+        var sectionCharts=model.SectionCharts[..model.SectionChartCount];
         for(var i=0;i<cycles.Length;i++)if(cycles[i].Positive!=0)
         {
             var depth=0;
             for(var j=0;j<cycles.Length;j++)if(i!=j&&cycles[j].Positive!=0)
             {
-                var other=cycles[j];var error=SheetLoopWinding(surface,model.Edges[..model.NE],coedges.Slice(other.First,other.Count),cycles[i].Left,out var winding);if(error!=0)return error;
+                var other=cycles[j];var error=SheetLoopWinding(surface,model.Edges[..model.NE],coedges.Slice(other.First,other.Count),cycles[i].Left,out var winding,sectionCharts);if(error!=0)return error;
                 if(winding!=0)depth++;
             }
             cycles[i].Depth=depth;
@@ -60,7 +61,7 @@ internal static unsafe partial class KernelRuntime
             var parent=-1;var depth=-1;
             for(var j=0;j<cycles.Length;j++)if(cycles[j].Positive!=0)
             {
-                var outer=cycles[j];var error=SheetLoopWinding(surface,model.Edges[..model.NE],coedges.Slice(outer.First,outer.Count),cycles[i].Left,out var winding);if(error!=0)return error;
+                var outer=cycles[j];var error=SheetLoopWinding(surface,model.Edges[..model.NE],coedges.Slice(outer.First,outer.Count),cycles[i].Left,out var winding,sectionCharts);if(error!=0)return error;
                 if(winding!=0&&outer.Depth>depth){depth=outer.Depth;parent=j;}
             }
             if(parent<0){LastSheetPartitionStage=SheetPartitionStage.CycleNesting;LastSheetParameter=i;return ParasolidConstants.PK_ERROR_bad_loop;}cycles[i].Parent=parent;
@@ -83,7 +84,7 @@ internal static unsafe partial class KernelRuntime
             var valid=true;
             for(var j=0;j<cycles.Length;j++)if(cycles[j].Parent==i)
             {
-                error=SheetLoopWinding(surface,model.Edges[..model.NE],coedges.Slice(cycles[j].First,cycles[j].Count),uv,out var winding);if(error!=0)return error;
+                error=SheetLoopWinding(surface,model.Edges[..model.NE],coedges.Slice(cycles[j].First,cycles[j].Count),uv,out var winding,sectionCharts);if(error!=0)return error;
                 if(winding!=0)valid=false;
             }
             if(!valid)return ParasolidConstants.PK_ERROR_eval_failure;

@@ -145,7 +145,7 @@ internal static unsafe partial class KernelRuntime
     // Exact isoparametric rays reduce UV winding to existing bounded curve
     // intersection. No polygonal sampling decides face/loop containment.
     private static int SheetLoopWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
-        PK_UV_s query,out BufferCount winding)
+        PK_UV_s query,out BufferCount winding,ReadOnlySpan<FiniteSectionChart> sectionCharts=default)
     {
         ModelingPerformance.Winding();
         var kind=Surfaces[GetSurfaceSlotByTag(surface)].Class;
@@ -160,7 +160,7 @@ internal static unsafe partial class KernelRuntime
         {
             var du=attempt switch{0=>vertical?0:1,1=>vertical?1:0,4=>.4142135623730951,5=>-.7320508075688772,_=>1};
             var dv=attempt switch{0=>vertical?1:0,1=>vertical?0:1,2=>.3819660112501051,3=>-.6180339887498949,_=>1};
-            error=SheetLoopWindingRay(surface,edges,loop,query,du,dv,out winding);
+            error=SheetLoopWindingRay(surface,edges,loop,query,du,dv,out winding,sectionCharts);
             if(error==0||error is not (ParasolidConstants.PK_ERROR_cant_do_intersect or ParasolidConstants.PK_ERROR_eval_failure))return error;
         }
         return error;
@@ -207,7 +207,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int SheetLoopWindingRay(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> loop,
-        PK_UV_s query,double du,double dv,out BufferCount winding)
+        PK_UV_s query,double du,double dv,out BufferCount winding,ReadOnlySpan<FiniteSectionChart> sectionCharts)
     {
         winding=0;var record=Surfaces[GetSurfaceSlotByTag(surface)];
         LastSheetRayU=query.param[0];LastSheetRayV=query.param[1];
@@ -220,6 +220,12 @@ internal static unsafe partial class KernelRuntime
             ref readonly var edge=ref edges[coedge.Edge];
             LastSheetPartitionStage=SheetPartitionStage.RayIntersections;
             LastSheetCurve=edge.Curve;LastSheetParameter=edge.Start;
+            if(TryFiniteSectionChart(sectionCharts,surface,edge.Curve,edge.Start,edge.End,out var sectionChart))
+            {
+                var sectionError=WindFiniteSectionChart(sectionChart,edge,coedge.Forward,query,du,dv,out var crossing);
+                if(sectionError!=0)return sectionError;
+                winding+=crossing;continue;
+            }
             var status=IntersectParametricBoundaryRay(surface,query,du,dv,edge,roots,out var count);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
             for(var i=0;i<count;i++)
             {
