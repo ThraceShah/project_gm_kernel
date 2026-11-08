@@ -154,13 +154,18 @@ internal static unsafe partial class KernelRuntime
                 var carrierSlot=GetCurveSlotByTag(edge.CurveTag);if(carrierSlot<0)return AlgorithmStatus.Unsupported;
                 if(Curves[carrierSlot].Class==CurveClass.ICurve)
                 {
-                    var owns=EnsureCommandScratch();IntervalBox3 box;AlgorithmStatus certified;
-                    try{certified=CertifiedIntersectionCurveExtent(edge.CurveTag,lo,hi,out box);}
+                    var owns=EnsureCommandScratch();IntervalNumber value;
+                    try
+                    {
+                        var certified=CertifiedIntersectionCurveExtent(edge.CurveTag,lo,hi,out var box);
+                        if(certified==AlgorithmStatus.Success)
+                            value=((new IntervalNumber(box.XLo,box.XHi)-cylinder.Origin.X)*nx
+                                +(new IntervalNumber(box.YLo,box.YHi)-cylinder.Origin.Y)*ny
+                                +(new IntervalNumber(box.ZLo,box.ZHi)-cylinder.Origin.Z)*nz)/denominator;
+                        else if(certified!=AlgorithmStatus.NotConverged
+                            ||!TryNativeCylinderChartHeight(edge.CurveTag,lo,hi,Faces[face].SurfTag,cylinder,out value))return certified;
+                    }
                     finally{if(owns)ReleaseCommandScratch(State.Session);}
-                    if(certified!=AlgorithmStatus.Success)return certified;
-                    var value=((new IntervalNumber(box.XLo,box.XHi)-cylinder.Origin.X)*nx
-                        +(new IntervalNumber(box.YLo,box.YHi)-cylinder.Origin.Y)*ny
-                        +(new IntervalNumber(box.ZLo,box.ZHi)-cylinder.Origin.Z)*nz)/denominator;
                     if(!value.Finite)return AlgorithmStatus.NotConverged;
                     height=first?value:IntervalNumber.Hull(height,value);first=false;haveCurve=true;continue;
                 }
@@ -186,5 +191,44 @@ internal static unsafe partial class KernelRuntime
         var margin=new IntervalNumber(tolerance)*Math.BitIncrement(Math.Sqrt(normalSquare.Upper))/denominator;
         if(!margin.Finite)return AlgorithmStatus.NotConverged;height+=new IntervalNumber(-margin.Upper,margin.Upper);
         return height.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+    }
+
+    private static bool TryNativeCylinderChartHeight(CurveTag carrier,double first,double last,SurfTag surface,
+        in AnalyticSurface cylinder,out IntervalNumber height)
+    {
+        height=default;var data=ICurveDataPool[Curves[GetCurveSlotByTag(carrier)].DataIndex];
+        if(data.ProgramBlock<=0||data.IsBlendContact!=0
+            ||!(TryCertifySupportChart(data.Surface0Tag,surface,out _)||TryCertifySupportChart(data.Surface1Tag,surface,out _)))return false;
+        var checkpoint=CommandScratch.ThreadArenaOffset;
+        try
+        {
+            var compiler=new NestedProgramCompiler();
+            if(!compiler.Ready||compiler.Spine(carrier,out var spine)!=AlgorithmStatus.Success)return false;
+            var program=compiler.View;var definition=program.Spines[spine];
+            if(SpineParameterMap.Explicit(definition))return false;
+            var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);var covered=first;var any=false;
+            var origin=new IntervalVector(cylinder.Origin);var axis=new IntervalVector(cylinder.Axis);
+            var x=new IntervalVector(cylinder.X);var y=new IntervalVector(cylinder.Y);
+            for(var i=0;i<charts.Length-1;i++)
+            {
+                var chart=charts[i];var lo=Math.Max(first,chart.Parameter);var hi=Math.Min(last,charts[i+1].Parameter);
+                if(!(hi>lo))continue;
+                if(lo!=covered||!(chart.Scale>0))return false;
+                // The ICurve chart requires c·(P-anchor)=(t-t0)/scale.
+                // Substitute the certified cylinder support P=O+A*v+r*(X cos u+Y sin u).
+                // Bounding the whole radial disk encloses every possible v,
+                // independently of how tightly the coupled curve tube converges.
+                var chord=new IntervalVector(chart.Chord);var slope=IntervalVector.Dot(chord,axis).Value;
+                if(!slope.Finite||slope.ContainsZero)return false;
+                var cx=IntervalVector.Dot(chord,x).Value;var cy=IntervalVector.Dot(chord,y).Value;
+                var radial=(cylinder.Radius*IntervalDual.Sqrt(new IntervalDual(IntervalNumber.Square(cx)+IntervalNumber.Square(cy),0)).Value).Upper;
+                var station=IntervalVector.Dot(chord,new IntervalVector(chart.Position)-origin).Value+(new IntervalNumber(lo,hi)-chart.Parameter)/chart.Scale;
+                var value=(station+new IntervalNumber(-radial,radial))/slope;
+                if(!value.Finite)return false;
+                height=any?IntervalNumber.Hull(height,value):value;any=true;covered=hi;
+            }
+            return any&&covered==last;
+        }
+        finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }
 }
