@@ -33,7 +33,12 @@ internal static unsafe partial class KernelRuntime
         }
         for(var i=0;i<nc;i++)
         {
-            if(SpineParameterMap.Explicit(spines[i]))
+            if(spines[i].Curve.Kind==CurveClass.BCurve)
+            {
+                var spine=spines[i];var poles=(spine.ChartCount-1)*spine.SpineDegree+1;
+                var error=TransformPoles(scalars.Slice(spine.SpineScalarOffset,4*poles),4,true,matrix);if(error!=0)return error;
+            }
+            else if(SpineParameterMap.Explicit(spines[i]))
             {
                 ref var curve=ref spines[i].Curve;curve.Origin=matrix.TransformPoint(curve.Origin);
                 curve.First=matrix.TransformUnitDirection(curve.First,curve.Kind==CurveClass.Line?scale:1);

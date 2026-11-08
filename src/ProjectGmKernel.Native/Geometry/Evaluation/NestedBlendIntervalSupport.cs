@@ -153,7 +153,7 @@ internal static partial class JointNestedBlendEvaluation
             if(SpineParameterMap.Explicit(spine))
             {
                 var explicitParameter=i==0?parameter:variables[node.Offset+3];
-                var found=SpineParameterMap.Interval(spine.Curve,explicitParameter,out var exact,out var tangent);if(found!=AlgorithmStatus.Success)return found;
+                var found=SpineParameterMap.Interval(program,spine,explicitParameter,out var exact,out var tangent);if(found!=AlgorithmStatus.Success)return found;
                 var delta=point-exact;residual[node.Offset]=delta.X;residual[node.Offset+1]=delta.Y;residual[node.Offset+2]=delta.Z;
                 if(i>0)residual[node.Offset+3]=IntervalVector.Dot(IntervalPoint(variables,nodes[node.Parent].Offset)-point,tangent);
                 continue;

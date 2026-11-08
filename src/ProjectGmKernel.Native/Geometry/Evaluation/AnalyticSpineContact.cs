@@ -10,7 +10,8 @@ internal static class AnalyticSpineContact
 {
     internal static AlgorithmStatus Curve(in ParametricSpineCurve spine,in BlendSurfaceInstruction support,double range,out ParametricSpineCurve contact)
     {
-        contact=spine;if(support.IsBlend||support.IsBSpline)return AlgorithmStatus.Unsupported;
+        contact=spine;if(support.IsBlend||support.IsBSpline||spine.Kind is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse))
+            return AlgorithmStatus.Unsupported;
         var surface=support.Analytic;var offset=range*support.NormalSense;
         if(surface.Kind==SurfaceClass.Plane)
         {contact.Origin=Sub(spine.Origin,Scale(surface.Axis,offset));return AlgorithmStatus.Success;}

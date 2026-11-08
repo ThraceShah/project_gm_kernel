@@ -42,6 +42,16 @@ internal static class SpineParameterMap
         return bound<=tolerance*(2*surface.Radius-tolerance)?AlgorithmStatus.Success:AlgorithmStatus.InvalidInput;
     }
 
+    internal static AlgorithmStatus Series(in NestedBlendProgram program,in BlendSpineInstruction spine,TaylorJet t,
+        out TaylorVector point,out TaylorVector tangent)
+        =>spine.Curve.Kind==CurveClass.BCurve?RationalSpine.Series(program.SplineSpine(spine),t,out point,out tangent)
+            :Series(spine.Curve,t,out point,out tangent);
+
+    internal static AlgorithmStatus Interval(in NestedBlendProgram program,in BlendSpineInstruction spine,IntervalDual t,
+        out IntervalVector point,out IntervalVector tangent)
+        =>spine.Curve.Kind==CurveClass.BCurve?RationalSpine.Bound(program.SplineSpine(spine),t,out point,out tangent)
+            :Interval(spine.Curve,t,out point,out tangent);
+
     internal static AlgorithmStatus Series(in ParametricSpineCurve curve,TaylorJet t,out TaylorVector point,out TaylorVector tangent)
     {
         var origin=TaylorVector.Constant(curve.Origin,t.Order);var first=TaylorVector.Constant(curve.First,t.Order);

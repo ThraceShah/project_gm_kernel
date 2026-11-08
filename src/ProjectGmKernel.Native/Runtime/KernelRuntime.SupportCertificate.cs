@@ -62,6 +62,7 @@ internal static unsafe partial class KernelRuntime
         {
             ref readonly var x=ref a.Spines[i];ref readonly var y=ref b.Spines[i];
             if(x.First!=y.First||x.Second!=y.Second||x.ChartOffset!=y.ChartOffset||x.ChartCount!=y.ChartCount
+                ||x.SpineScalarOffset!=y.SpineScalarOffset||x.SpineDegree!=y.SpineDegree
                 ||x.StartType!=y.StartType||x.EndType!=y.EndType||x.Sense!=y.Sense||x.ChordalError!=y.ChordalError||x.AngularError!=y.AngularError
                 ||x.Curve.Kind!=y.Curve.Kind||!ExactVector(x.Curve.Origin,y.Curve.Origin)||!ExactVector(x.Curve.First,y.Curve.First)
                 ||!ExactVector(x.Curve.Second,y.Curve.Second))return false;

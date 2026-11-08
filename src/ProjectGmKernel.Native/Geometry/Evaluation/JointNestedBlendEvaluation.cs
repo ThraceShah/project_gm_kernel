@@ -292,7 +292,7 @@ internal static partial class JointNestedBlendEvaluation
             {
                 var parameterValue=i==0&&!nearest?parameter:state[node.Offset+3];
                 if(!InChartDomain(program,node.Spine,parameterValue,i!=0||nearest))return AlgorithmStatus.InvalidInput;
-                var found=AssembleExplicit(spine.Curve,node,parameterValue,state,residual,matrix,i!=0||nearest,i==0?target:Point(state,nodes[node.Parent].Offset),i==0?-1:nodes[node.Parent].Offset);
+                var found=AssembleExplicit(program,spine,node,parameterValue,state,residual,matrix,i!=0||nearest,i==0?target:Point(state,nodes[node.Parent].Offset),i==0?-1:nodes[node.Parent].Offset);
                 if(found!=AlgorithmStatus.Success)return found;continue;
             }
             var status=Partial(program,spine.First,nodes,i,state,out var a,out var firstChild,out var uv0,out var contact0);if(status!=AlgorithmStatus.Success)return status;
@@ -398,7 +398,7 @@ internal static partial class JointNestedBlendEvaluation
             {
                 var parameterValue=i==0&&!nearest?parameter:variables[node.Offset+3];
                 if(!InChartDomain(program,node.Spine,parameterValue[0],i!=0||nearest))return AlgorithmStatus.InvalidInput;
-                var found=SpineParameterMap.Series(spine.Curve,parameterValue,out var exact,out var tangent);if(found!=AlgorithmStatus.Success)return found;
+                var found=SpineParameterMap.Series(program,spine,parameterValue,out var exact,out var tangent);if(found!=AlgorithmStatus.Success)return found;
                 var delta=Point(variables,node.Offset)-exact;residual[node.Offset]=delta.X;residual[node.Offset+1]=delta.Y;residual[node.Offset+2]=delta.Z;
                 if(i!=0||nearest)residual[node.Offset+3]=TaylorVector.Dot((i==0?target:Point(variables,nodes[node.Parent].Offset))-Point(variables,node.Offset),tangent);
                 continue;
@@ -469,7 +469,7 @@ internal static partial class JointNestedBlendEvaluation
         if(!SpineParameterMap.Periodic(program.Spines[spine])&&(t<charts[0].Parameter||t>charts[^1].Parameter))return false;
         if(SpineParameterMap.Explicit(program.Spines[spine]))
         {
-            var status=SpineParameterMap.Series(program.Spines[spine].Curve,new(t,0),out var exact,out _);point=exact.Value;return status==AlgorithmStatus.Success;
+            var status=SpineParameterMap.Series(program,program.Spines[spine],new(t,0),out var exact,out _);point=exact.Value;return status==AlgorithmStatus.Success;
         }
         var segment=0;while(segment<charts.Length-2&&charts[segment+1].Parameter<=t)segment++;
         var fraction=(t-charts[segment].Parameter)/(charts[segment+1].Parameter-charts[segment].Parameter);

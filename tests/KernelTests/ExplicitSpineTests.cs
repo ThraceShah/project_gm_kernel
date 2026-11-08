@@ -14,6 +14,29 @@ public unsafe class ExplicitSpineTests:IDisposable
     public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
 
     [Fact]
+    public void PositiveRationalSpineUsesNativeKnotsAndCertifiesTheWholeArc()
+    {
+        var w=Math.Sqrt(.5);
+        Span<double> poles=stackalloc double[20]{1,0,0,1,w,w,0,w,0,1,0,1,-w,w,0,w,-1,0,0,1};
+        Span<double> knots=stackalloc double[8]{0,0,0,.4,.4,1,1,1};
+        var spine=new BCurveView(2,4,true,false,poles,knots);
+        var cylinder=new AnalyticSurface(SurfaceClass.Cylinder,default,new(){Z=1},new(){X=1},1);
+        Assert.Equal(2,RationalSpine.SpanCount(spine));
+        Assert.Equal(AlgorithmStatus.Success,RationalSpine.CertifyRegular(spine,2));
+        Assert.Equal(AlgorithmStatus.Success,RationalSpine.Certify(spine,cylinder));
+        Assert.Equal(AlgorithmStatus.Success,RationalSpine.Series(spine,TaylorJet.Variable(.2,2),out var point,out var tangent));
+        Assert.InRange(Math.Abs(point.X[0]-w)+Math.Abs(point.Y[0]-w),0,1e-14);
+        Assert.InRange(Math.Abs(point.X[1]-tangent.X[0])+Math.Abs(point.Y[2]*2-tangent.Y[1]),0,1e-13);
+        Assert.Equal(AlgorithmStatus.Success,RationalSpine.Bound(spine,new(new(.19,.21),1),out var box,out var derivative));
+        Assert.InRange(point.X[0],box.X.Value.Lower,box.X.Value.Upper);
+        Assert.InRange(point.X[1],box.X.Derivative.Lower,box.X.Derivative.Upper);
+        Assert.InRange(point.Y[2]*2,derivative.Y.Derivative.Lower,derivative.Y.Derivative.Upper);
+        Assert.Equal(AlgorithmStatus.NotConverged,RationalSpine.Bound(spine,new(new(.39,.41),1),out _,out _));
+        poles[4]+=1e-5; // Same finite end points, different interior carrier.
+        Assert.Equal(AlgorithmStatus.InvalidInput,RationalSpine.Certify(spine,cylinder));
+    }
+
+    [Fact]
     public void NativeShortEdgeProductIsEditableAndFreshXtRetainsSpineAndTrueLimits()
     {
         var body=Import();BooleanOperationTests.Counts(body,10,23,15);

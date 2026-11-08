@@ -197,7 +197,8 @@ internal static unsafe partial class KernelRuntime
         {
             index=-1;var slot=GetCurveSlotByTag(tag);if(slot<0)return AlgorithmStatus.InvalidInput;
             if(Curves[slot].Class==CurveClass.ICurve)return Spine(tag,out index);
-            var source=Curves[slot];if(!TryReadExplicitSpineCurve(source,out var curve))return AlgorithmStatus.Unsupported;
+            var source=Curves[slot];var splineSpine=source.Class==CurveClass.BCurve;
+            if(!TryReadExplicitSpineCurve(source,out var curve)&&!splineSpine)return AlgorithmStatus.Unsupported;
             if(double.IsNaN(first))first=source.TMin;if(double.IsNaN(last))last=source.TMax;
             if(!double.IsFinite(first)||!double.IsFinite(last)||!(last>first))return AlgorithmStatus.InvalidInput;
             if(ns+2>surfaces.Length)return AlgorithmStatus.OutputTooSmall;
@@ -206,6 +207,7 @@ internal static unsafe partial class KernelRuntime
             var status=OffsetAnalyticBlendSupport(left.Analytic,r0*left.NormalSense,out var offset0);if(status!=AlgorithmStatus.Success)return status;
             status=OffsetAnalyticBlendSupport(right.Analytic,r1*right.NormalSense,out var offset1);if(status!=AlgorithmStatus.Success)return status;
             left.Analytic=offset0;right.Analytic=offset1;var ca=ns++;var cb=ns++;surfaces[ca]=left;surfaces[cb]=right;surfaceTags[ca]=surfaceTags[cb]=0;
+            if(splineSpine)return CompileRationalSpine(tag,source,first,last,ca,cb,offset0,offset1,out index);
             status=SpineParameterMap.Certify(curve,offset0,first,last);if(status!=AlgorithmStatus.Success)return status;
             status=SpineParameterMap.Certify(curve,offset1,first,last);if(status!=AlgorithmStatus.Success)return status;
             // Witnesses only seed inverse searches. The exact parameter map
@@ -221,6 +223,30 @@ internal static unsafe partial class KernelRuntime
                 charts[nh++]=new(){Position=position.Value,Parameter=parameter,Chord=Unit(tangent.Value),Scale=1};
             }
             if(closed)charts[nh-1].Position=charts[startChart].Position;
+            return AlgorithmStatus.Success;
+        }
+
+        private AlgorithmStatus CompileRationalSpine(CurveTag tag,in CurveRecord source,double first,double last,
+            BlendSurfaceIndex a,BlendSurfaceIndex b,in AnalyticSurface left,in AnalyticSurface right,out BlendSpineIndex index)
+        {
+            index=-1;var spline=GetBCurveView(BCurveDataStore[source.DataIndex]);var count=RationalSpine.SpanCount(spline);
+            if(count==0||first!=spline.Start||last!=spline.End)return AlgorithmStatus.Unsupported;
+            if(nc==spines.Length||nh+count+1>charts.Length)return AlgorithmStatus.OutputTooSmall;
+            if(nd+spline.Vertices.Length+spline.Knots.Length>scalars.Length)return AlgorithmStatus.WorkspaceTooSmall;
+            var status=RationalSpine.Certify(spline,left);if(status!=AlgorithmStatus.Success)return status;
+            status=RationalSpine.Certify(spline,right);if(status!=AlgorithmStatus.Success)return status;
+            status=RationalSpine.CertifyRegular(spline,count);if(status!=AlgorithmStatus.Success)return status;
+            var offset=nd;spline.Vertices.CopyTo(scalars[nd..]);nd+=spline.Vertices.Length;
+            spline.Knots.CopyTo(scalars[nd..]);nd+=spline.Knots.Length;
+            index=nc++;spineTags[index]=tag;spines[index]=new(){Curve=new(){Kind=CurveClass.BCurve},First=a,Second=b,
+                ChartOffset=nh,ChartCount=count+1,StartType=LimitType.Terminator,EndType=LimitType.Terminator,Sense=source.Sense,
+                SpineScalarOffset=offset,SpineDegree=spline.Degree};
+            for(var i=0;i<=count;i++)
+            {
+                var parameter=RationalSpine.Boundary(spline,i);
+                status=RationalSpine.Series(spline,new(parameter,0),out var position,out var tangent);if(status!=AlgorithmStatus.Success)return status;
+                charts[nh++]=new(){Position=position.Value,Parameter=parameter,Chord=Unit(tangent.Value),Scale=1};
+            }
             return AlgorithmStatus.Success;
         }
 

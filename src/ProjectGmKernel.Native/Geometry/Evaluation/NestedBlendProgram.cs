@@ -32,6 +32,8 @@ internal struct BlendSpineInstruction
     internal LimitType StartType,EndType;
     internal KernelSense Sense;
     internal double ChordalError,AngularError;
+    internal BufferOffset SpineScalarOffset;
+    internal SplineDegree SpineDegree;
 }
 
 // Explicit parameter maps and implicit CHART maps share the rolling
@@ -58,6 +60,11 @@ internal readonly ref struct NestedBlendProgram(ReadOnlySpan<BlendSurfaceInstruc
     internal ReadOnlySpan<BlendChartInstruction> Charts{get;}=charts;
     internal ReadOnlySpan<double> Scalars{get;}=scalars;
     internal Span<double> Workspace{get;}=workspace;
+    internal BCurveView SplineSpine(in BlendSpineInstruction node)
+    {
+        var count=(node.ChartCount-1)*node.SpineDegree+1;var data=Scalars[node.SpineScalarOffset..];
+        return new(node.SpineDegree,4,true,false,data[..(4*count)],data.Slice(4*count,count+node.SpineDegree+1));
+    }
     internal BSurfaceView Spline(in BlendSurfaceInstruction node)
     {
         var poles=node.UCount*node.VCount*node.Dimension;var nu=node.UCount+node.UDegree+1;var nv=node.VCount+node.VDegree+1;

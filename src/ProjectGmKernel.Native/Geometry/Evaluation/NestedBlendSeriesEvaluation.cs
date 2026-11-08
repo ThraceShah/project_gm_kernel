@@ -54,7 +54,7 @@ internal static class NestedBlendSeriesEvaluation
         if(depth>MaxDepth||order>TaylorJet.MaxOrder||order<0)return AlgorithmStatus.Unsupported;
         var node=program.Spines[index];var charts=program.Charts.Slice(node.ChartOffset,node.ChartCount);
         if(!SpineParameterMap.Periodic(node)&&(parameter<charts[0].Parameter||parameter>charts[^1].Parameter))return AlgorithmStatus.InvalidInput;
-        if(SpineParameterMap.Explicit(node))return SpineParameterMap.Series(node.Curve,TaylorJet.Variable(parameter,order),out result,out _);
+        if(SpineParameterMap.Explicit(node))return SpineParameterMap.Series(program,node,TaylorJet.Variable(parameter,order),out result,out _);
         var segment=0;while(segment<charts.Length-2&&charts[segment+1].Parameter<=parameter)segment++;
         var chart=charts[segment];var e=chart.Chord;
         var fraction=(parameter-chart.Parameter)/(charts[segment+1].Parameter-chart.Parameter);

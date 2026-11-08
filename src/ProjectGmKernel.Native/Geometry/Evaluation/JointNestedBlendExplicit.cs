@@ -11,10 +11,10 @@ internal static partial class JointNestedBlendEvaluation
     // equations loses rank when their gradients coincide, although E(t)
     // can remain regular. The fourth row is the exact nearest-station
     // equation; its Schur complement certifies a local distance minimum.
-    private static AlgorithmStatus AssembleExplicit(in ParametricSpineCurve curve,in Occurrence node,double parameter,
+    private static AlgorithmStatus AssembleExplicit(in NestedBlendProgram program,in BlendSpineInstruction spine,in Occurrence node,double parameter,
         ReadOnlySpan<double> state,Span<double> residual,Span<double> matrix,bool nearest,in KernelVector3 target,BufferOffset parentOffset)
     {
-        var status=SpineParameterMap.Series(curve,TaylorJet.Variable(parameter,2),out var exact,out var derivative);if(status!=AlgorithmStatus.Success)return status;
+        var status=SpineParameterMap.Series(program,spine,TaylorJet.Variable(parameter,2),out var exact,out var derivative);if(status!=AlgorithmStatus.Success)return status;
         var point=Point(state,node.Offset);var delta=Sub(point,exact.Value);var tangent=derivative.Value;var n=state.Length;
         residual[node.Offset]=delta.X;residual[node.Offset+1]=delta.Y;residual[node.Offset+2]=delta.Z;
         if(!matrix.IsEmpty)

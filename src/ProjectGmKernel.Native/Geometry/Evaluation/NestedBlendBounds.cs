@@ -89,7 +89,7 @@ internal static partial class JointNestedBlendEvaluation
         // Like the implicit tube bound, this encloses the mathematical
         // extension used by boundary-root existence certificates. Finite T
         // limits remain in the patch domain and public evaluation contract.
-        var status=SpineParameterMap.Interval(definition.Curve,new(new(domain.U0,domain.U1),1),out var center,out _);if(status!=AlgorithmStatus.Success)return status;
+        var status=SpineParameterMap.Interval(program,definition,new(new(domain.U0,domain.U1),1),out var center,out _);if(status!=AlgorithmStatus.Success)return status;
         if(surface<0)
         {
             output[0]=center.X.Value;output[1]=center.Y.Value;output[2]=center.Z.Value;

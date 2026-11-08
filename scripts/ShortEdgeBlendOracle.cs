@@ -990,14 +990,20 @@ static unsafe void GeometryOnNativeCharts(int ownSurface,int nativeFace,int nati
     var box=new PK_UVBOX_t();Check(PK_FACE_find_uvbox(nativeFace,&box),"finite UV box");
     var sf=new M.PK_BLENDSF_sf_s();Check(KernelRuntime.BlendSfAsk(ownSurface,&sf),"spine definition");
     var nativeDefinition=new PK_BLENDSF_sf_t();Check(PK_BLENDSF_ask(nativeSurface,&nativeDefinition),"native roundtrip spine definition");
-    var ownEllipse=new M.PK_ELLIPSE_sf_s();Check(KernelRuntime.EllipseAsk(sf.spine,&ownEllipse),"imported ellipse");
-    var nativeEllipse=new PK_ELLIPSE_sf_t();Check(PK_ELLIPSE_ask(nativeDefinition.spine,&nativeEllipse),"native ellipse");
-    for(var axis=0;axis<3;axis++)
-        Require(Math.Abs(ownEllipse.basis_set.location.coord[axis]-nativeEllipse.basis_set.location.coord[axis])<1e-12
-            &&Math.Abs(ownEllipse.basis_set.axis.coord[axis]-nativeEllipse.basis_set.axis.coord[axis])<1e-12
-            &&Math.Abs(ownEllipse.basis_set.ref_direction.coord[axis]-nativeEllipse.basis_set.ref_direction.coord[axis])<1e-12,"imported spine retains native chart frame");
-    Require(Math.Abs(ownEllipse.R1-nativeEllipse.R1)<1e-12&&Math.Abs(ownEllipse.R2-nativeEllipse.R2)<1e-12
-        &&Math.Abs(sf.radii[0]-nativeDefinition.radii[0])<1e-12&&Math.Abs(sf.radii[1]-nativeDefinition.radii[1])<1e-12,"imported spine retains native section and dimensions");
+    int nativeClass;Check(PK_ENTITY_ask_class(nativeDefinition.spine,&nativeClass),"native spine class");
+    if(nativeClass==PK_CLASS_bcurve)CompareImportedSplineSpine(sf.spine,nativeDefinition.spine);
+    else
+    {
+        var ownEllipse=new M.PK_ELLIPSE_sf_s();Check(KernelRuntime.EllipseAsk(sf.spine,&ownEllipse),"imported ellipse");
+        var nativeEllipse=new PK_ELLIPSE_sf_t();Check(PK_ELLIPSE_ask(nativeDefinition.spine,&nativeEllipse),"native ellipse");
+        for(var axis=0;axis<3;axis++)
+            Require(Math.Abs(ownEllipse.basis_set.location.coord[axis]-nativeEllipse.basis_set.location.coord[axis])<1e-12
+                &&Math.Abs(ownEllipse.basis_set.axis.coord[axis]-nativeEllipse.basis_set.axis.coord[axis])<1e-12
+                &&Math.Abs(ownEllipse.basis_set.ref_direction.coord[axis]-nativeEllipse.basis_set.ref_direction.coord[axis])<1e-12,"imported spine retains native chart frame");
+        Require(Math.Abs(ownEllipse.R1-nativeEllipse.R1)<1e-12&&Math.Abs(ownEllipse.R2-nativeEllipse.R2)<1e-12,"imported ellipse retains native dimensions");
+    }
+    Require(Math.Abs(sf.radii[0]-nativeDefinition.radii[0])<1e-12&&Math.Abs(sf.radii[1]-nativeDefinition.radii[1])<1e-12,
+        "imported spine retains native rolling radii");
     PK_VECTOR_t* a=stackalloc PK_VECTOR_t[9];PK_VECTOR_t* b=stackalloc PK_VECTOR_t[9];PK_VECTOR_t* supportJet=stackalloc PK_VECTOR_t[4];
     PK_VECTOR_t* plus=stackalloc PK_VECTOR_t[4];PK_VECTOR_t* minus=stackalloc PK_VECTOR_t[4];PK_VECTOR_t* finePlus=stackalloc PK_VECTOR_t[4];PK_VECTOR_t* fineMinus=stackalloc PK_VECTOR_t[4];
     double d0=0,d1=0,d2=0,d2Math=0,radiusError=0,g1=0;var timer=Stopwatch.GetTimestamp();
@@ -1034,6 +1040,28 @@ static unsafe void GeometryOnNativeCharts(int ownSurface,int nativeFace,int nati
     }
     Console.WriteLine($"GEOMETRY samples=27 D0={d0:R} D1={d1:R} raw_PK_D2_diagnostic={d2:R} D2_Richardson_normalized={d2Math:R} radius={radiusError:R} G1={g1:R} ms={Stopwatch.GetElapsedTime(timer).TotalMilliseconds:F3}");
     Require(d0<1e-10&&d1<1e-8&&d2Math<1e-6&&radiusError<1e-10&&g1<1e-10,"geometry correspondence");
+}
+static unsafe void CompareImportedSplineSpine(int own,int native)
+{
+    var a=new M.PK_BCURVE_sf_s();Check(KernelRuntime.BCurveAsk(own,&a),"imported spline spine");
+    try
+    {
+        var b=new PK_BCURVE_sf_t();Check(PK_BCURVE_ask(native,&b),"native spline spine");
+        try
+        {
+            var expected=*(M.PK_BCURVE_sf_s*)&b;
+            Require(a.degree==expected.degree&&a.n_vertices==expected.n_vertices&&a.vertex_dim==expected.vertex_dim
+                &&a.is_rational==expected.is_rational&&a.is_periodic==expected.is_periodic&&a.is_closed==expected.is_closed
+                &&a.n_knots==expected.n_knots,"imported spline spine representation");
+            for(var k=0;k<a.n_knots;k++)Require(a.knot[k]==expected.knot[k]&&a.knot_mult[k]==expected.knot_mult[k],
+                "imported spline spine native knot and multiplicity");
+            for(var k=0;k<a.n_vertices*a.vertex_dim;k++)
+                Require(Math.Abs(a.vertex[k]-expected.vertex[k])<=1e-12,"imported spline spine homogeneous coefficient");
+            Console.WriteLine($"GEOMETRY native spline spine degree={a.degree} poles={a.n_vertices} distinct_knots={a.n_knots}");
+        }
+        finally{Free(false,b.vertex);Free(false,b.knot);Free(false,b.knot_mult);}
+    }
+    finally{Free(true,a.vertex);Free(true,a.knot);Free(true,a.knot_mult);}
 }
 static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativeBytes,bool diagnostics)
 {
