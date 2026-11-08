@@ -92,21 +92,34 @@ internal static unsafe partial class KernelRuntime
             // A nonzero control-hull deviation only bounds proximity. It
             // cannot replace an SSI with coincident-domain material rules.
             if(deviationA!=0||deviationB!=0)return false;
-            if(!ExactVector(p.Axis,q.Axis)&&!ExactVector(p.Axis,Scale(q.Axis,-1)))
-            {
-                var cross=IntervalVector.Cross(new(p.Axis),new(q.Axis));
-                if(cross.X.Value.Magnitude!=0||cross.Y.Value.Magnitude!=0||cross.Z.Value.Magnitude!=0)return false;
-            }
+            if(!ExactParallelSupportAxes(p.Axis,q.Axis))return false;
             return ExactVector(p.Origin,q.Origin)||ExactProjectionEqual(p.Origin,q.Origin,p.Axis);
         }
         if(!TryPrepareSurface(Surfaces[a],out p)||!TryPrepareSurface(Surfaces[b],out q)||p.Kind!=q.Kind)return false;
         if(p.Kind==SurfaceClass.Sphere)return p.Origin.X==q.Origin.X&&p.Origin.Y==q.Origin.Y&&p.Origin.Z==q.Origin.Z&&p.Radius==q.Radius;
         if(p.Kind==SurfaceClass.Cylinder)
         {
-            if(p.Radius!=q.Radius||OperationIntersection.Norm(ProfileCross(p.Axis,q.Axis))!=0)return false;
-            var offset=Sub(p.Origin,q.Origin);return OperationIntersection.Norm(ProfileCross(offset,p.Axis))==0;
+            if(p.Radius!=q.Radius||!ExactParallelSupportAxes(p.Axis,q.Axis))return false;
+            return ExactCommonCylinderCenterLine(p,q);
         }
         return false;
+    }
+
+    private static bool ExactParallelSupportAxes(in KernelVector3 first,in KernelVector3 second)
+    {
+        if(ExactVector(first,second)||ExactVector(first,Scale(second,-1)))return true;
+        var cross=IntervalVector.Cross(new(first),new(second));
+        return cross.X.Value.Magnitude==0&&cross.Y.Value.Magnitude==0&&cross.Z.Value.Magnitude==0;
+    }
+
+    private static bool ExactCommonCylinderCenterLine(in AnalyticSurface first,in AnalyticSurface second)
+    {
+        if(ExactVector(first.Origin,second.Origin))return true;
+        // Evaluate (P-Q) × A without rounding the center subtraction first.
+        var axis=first.Axis;
+        return ExactProjectionEqual(first.Origin,second.Origin,Vector(0,axis.Z,-axis.Y))
+            &&ExactProjectionEqual(first.Origin,second.Origin,Vector(-axis.Z,0,axis.X))
+            &&ExactProjectionEqual(first.Origin,second.Origin,Vector(axis.Y,-axis.X,0));
     }
 
     private static int ArrangeRegularCoincidentDomains(in RegularBoundaryView input,scoped ReadOnlySpan<FaceSlot> sources,BufferOffset first,BufferOffset second,

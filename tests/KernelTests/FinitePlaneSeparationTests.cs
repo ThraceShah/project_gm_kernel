@@ -58,6 +58,28 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Fact]
+    public void CylinderAxisCoincidenceDoesNotUseRoundedCenterSubtraction()
+    {
+        var cylinder=new PK_CYL_sf_s{radius=2};Write(&cylinder.basis_set.axis,Vector(.6,.8,0));
+        cylinder.basis_set.ref_direction.coord[2]=1;
+        SurfTag first,same,near;Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&first));
+        Write(&cylinder.basis_set.location,Vector(-.6,-.8,0));Write(&cylinder.basis_set.ref_direction,Vector(.8,-.6,0));
+        Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&same));
+        Write(&cylinder.basis_set.location,Vector(Math.ScaleB(1,-57),0,0));
+        Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&near));
+        Assert.True(KernelRuntime.TestCoincidentSupports(first,same));
+        Assert.False(KernelRuntime.TestCoincidentSupports(near,same));
+        Assert.False(KernelRuntime.TestCoincidentSupports(same,near));
+        var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_pline_c};
+        int points,curves;PK_VECTOR_s* positions;int* tags;PK_INTERVAL_s* intervals;int* kinds;
+        Assert.Equal(0,KernelRuntime.SurfIntersectSurf(first,same,&options,&points,&positions,&curves,&tags,&intervals,&kinds));
+        Assert.Equal(0,points);Assert.Equal(0,curves);
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.SurfIntersectSurf(near,same,&options,&points,&positions,&curves,&tags,&intervals,&kinds));
+        Assert.Equal(0,points);Assert.Equal(0,curves);Assert.True(positions==null&&tags==null&&intervals==null&&kinds==null);
+    }
+
+    [Fact]
     public void ObliqueCylinderConicCertificateRejectsSmallInPlaneDisplacement()
     {
         var cylinder=new PK_CYL_sf_s{radius=1};cylinder.basis_set.axis.coord[2]=1;cylinder.basis_set.ref_direction.coord[0]=1;

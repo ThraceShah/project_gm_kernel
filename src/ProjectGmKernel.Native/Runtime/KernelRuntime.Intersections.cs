@@ -498,7 +498,19 @@ internal static unsafe partial class KernelRuntime
     {
         nc=np=0;
         var analyticA=TryPrepareSurface(Surfaces[sa],out var a);var analyticB=TryPrepareSurface(Surfaces[sb],out var b);
-        if(analyticA&&analyticB)return OperationIntersection.Surfaces(a,b,branches,out nc,isolated,out np);
+        if(analyticA&&analyticB)
+        {
+            if(a.Kind==SurfaceClass.Cylinder&&b.Kind==SurfaceClass.Cylinder&&OperationIntersection.Norm(ProfileCross(a.Axis,b.Axis))==0)
+            {
+                if(!ExactParallelSupportAxes(a.Axis,b.Axis))return AlgorithmStatus.Unsupported;
+                // The Boolean consumer handles a proved coincident area
+                // separately. The public SSI retains its no-curve result.
+                if(ExactCommonCylinderCenterLine(a,b))return AlgorithmStatus.Success;
+                var offset=Sub(b.Origin,a.Origin);var radial=Sub(offset,Scale(a.Axis,Dot(offset,a.Axis)));
+                if(OperationIntersection.Norm(radial)<=OperationIntersection.DistanceTolerance)return AlgorithmStatus.NotConverged;
+            }
+            return OperationIntersection.Surfaces(a,b,branches,out nc,isolated,out np);
+        }
         if(analyticA&&a.Kind==SurfaceClass.Sphere&&TryAffineRoundCircle(sb,a,branches,out nc,out _)
             ||analyticB&&b.Kind==SurfaceClass.Sphere&&TryAffineRoundCircle(sa,b,branches,out nc,out _))
             return AlgorithmStatus.Success;

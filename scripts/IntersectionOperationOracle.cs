@@ -61,6 +61,7 @@ try
             SS("tensor-rational-transposed-isocurves",TensorPatch(0,true,true),Plane(0,0,0,0,0,1));
             SS("general-near-isoparametric-three-branches",TensorPatch(5,false,false),Plane(0,0,0,0,0,1));
             SS("general-skew-cylinders",Cylinder(1),Cylinder(.6,0,.1,.2,1,0,0));
+            SS("coaxial-cylinder-shifted-origin-empty",Cylinder(1,0,3,0,0,1,0),Cylinder(.75,0,-.25,0,0,1,0));
             SS("general-eccentric-sphere-cylinder",Sphere(.2,.1,.3,1),Cylinder(.6));
             SS("general-sphere-torus",Torus(1,.4),Sphere(.2,0,0,1));
             SS("general-eccentric-torus-cylinder",Torus(2,.6),Cylinder(.5,2));
