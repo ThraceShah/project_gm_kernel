@@ -230,9 +230,11 @@ internal static unsafe partial class KernelRuntime
             var status=IntersectParametricBoundaryRay(surface,query,du,dv,edge,roots,out var count);LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
             for(var i=0;i<count;i++)
             {
-                var root=roots[i];if(root.Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_eval_failure;
+                var root=roots[i];if(root.Kind!=IntersectionVectorKind.Simple)
+                {LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
                 if(root.First< -1e-10)continue;
-                if(Math.Abs(root.First)<1e-10)return ParasolidConstants.PK_ERROR_eval_failure;
+                if(Math.Abs(root.First)<1e-10)
+                {LastSheetPartitionStage=SheetPartitionStage.RayOrigin;LastSheetParameter=root.Second;return ParasolidConstants.PK_ERROR_eval_failure;}
                 var duplicate=false;for(var j=0;j<i;j++)if(Math.Abs(roots[j].First-root.First)<1e-10)duplicate=true;if(duplicate)continue;
                 var epsilon=1e-10*Math.Max(1,edge.End-edge.Start);
                 if(edge.StartVertex>=0&&(Math.Abs(root.Second-edge.Start)<epsilon||Math.Abs(root.Second-edge.End)<epsilon))
@@ -242,7 +244,8 @@ internal static unsafe partial class KernelRuntime
                 // into a second surface chart to obtain the crossing sign.
                 var hit=new PK_UV_s();
                 hit.param[0]=Math.FusedMultiplyAdd(root.First,du,query.param[0]);hit.param[1]=Math.FusedMultiplyAdd(root.First,dv,query.param[1]);
-                if(hit.param[0]<record.UMin||hit.param[0]>record.UMax||hit.param[1]<record.VMin||hit.param[1]>record.VMax)return ParasolidConstants.PK_ERROR_eval_failure;
+                if(hit.param[0]<record.UMin||hit.param[0]>record.UMax||hit.param[1]<record.VMin||hit.param[1]>record.VMax)
+                {LastSheetPartitionStage=SheetPartitionStage.RayOutsideChart;LastSheetParameter=root.Second;return ParasolidConstants.PK_ERROR_eval_failure;}
                 var carrier=Curves[GetCurveSlotByTag(edge.Curve)];
                 status=EvaluateCurveCore(in carrier,root.Second,1,false,curveJet,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 var error=SheetUvTangent(surface,hit,curveJet[1],(coedge.Forward!=0)==(LocalSenseSign(carrier.Sense)>0),out var tangent);if(error!=0)return error;

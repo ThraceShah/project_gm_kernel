@@ -5,7 +5,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum SheetPartitionStage:byte { None,BoundaryIntersections,BoundaryFragment,CurveDiscovery,CutClip,CurveEvaluation,SurfaceInverse,UVTangent,RayIntersections,RayEndpoint,RayTangency,CycleTrace,CycleWitness,CycleNesting,CellClassification,TopologyBuild,BoundaryAssociation,PeriodicArc }
+    internal enum SheetPartitionStage:byte { None,BoundaryIntersections,BoundaryFragment,CurveDiscovery,CutClip,CurveEvaluation,SurfaceInverse,UVTangent,RayIntersections,RayEndpoint,RayTangency,CycleTrace,CycleWitness,CycleNesting,CellClassification,TopologyBuild,BoundaryAssociation,PeriodicArc,RayOrigin,RayOutsideChart }
     [ThreadStatic] internal static SheetPartitionStage LastSheetPartitionStage;
     [ThreadStatic] internal static CurveTag LastSheetCurve;
     [ThreadStatic] internal static double LastSheetParameter;

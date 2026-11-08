@@ -115,27 +115,32 @@ var requireNativeCutWitness=args.Contains("--require-native-cut-witness");
 var requireCutterChartWitness=args.Contains("--require-cutter-chart-witness");
 var proofOnlyLifecycle=args.Contains("--proof-only-lifecycle");
 var reloadBeforeLocalCut=args.Contains("--reload-before-local-cut");
+var savedProbes=args.Contains("--saved-probes");
+var selfSavedProbes=args.Contains("--self-saved-probes");
+var replayProbes=savedProbes||selfSavedProbes;
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
-Require(floor==0&&phase==0&&!splitRemote&&!splitSelected&&!splitEllipse||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"modified seeds cannot replace fixed fixtures or probes");
+Require(floor==0&&phase==0&&!splitRemote&&!splitSelected&&!splitEllipse||!args.Contains("--record-fixtures")&&!replayProbes,"modified seeds cannot replace fixed fixtures or probes");
 M.PK_TRANSF_sf_s inputTransform;double inputScale;bool mappedInput;
 unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
 Require(!args.Contains("--record-fixtures")||!args.Contains("--matrix")&&!args.Contains("--both-updates"),"record fixtures uses the single default seed");
-Require(!args.Contains("--saved-probes")||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
+Require(!replayProbes||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
+Require(!selfSavedProbes||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!savedProbes&&!args.Contains("--import-only")&&!args.Contains("--record-fixtures"),
+    "self probe replay requires guarded independent construction and a separate run from imported probes");
 Require(!args.Contains("--native-only")||!args.Any(x=>x is "--import-only" or "--probes" or "--geometry" or "--lifecycle"),"managed checks require a managed-import mode");
 Require(!materialOwnership||!args.Contains("--native-only")&&!args.Contains("--import-only"),"material ownership checks the self-constructed product");
 Require(!requireNativeFinBoxes||!args.Contains("--native-only")&&!args.Contains("--import-only"),"native fin UV boxes check the fresh self-constructed product");
-Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"local cutter requires lifecycle mode");
+Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!replayProbes,"local cutter requires lifecycle mode");
 Require(!requireNativeCutWitness||transverseCut&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only"),
     "native cut witness requires the guarded transverse self lifecycle");
 Require(!requireCutterChartWitness||requireNativeCutWitness,"cutter chart witness requires the guarded native cut witness");
 Require(!proofOnlyLifecycle||args.Contains("--lifecycle")&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only")
-    &&!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"proof-only cuts require a guarded self lifecycle");
+    &&!replayProbes&&!args.Contains("--record-fixtures"),"proof-only cuts require a guarded self lifecycle");
 Require(!reloadBeforeLocalCut||requireNativeCutWitness,"early XT reload requires a guarded transverse cut with native witnesses");
-Require(!mappedInput||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"transformed inputs cannot replace fixed fixtures or historical probe inputs");
+Require(!mappedInput||!args.Contains("--record-fixtures")&&!replayProbes,"transformed inputs cannot replace fixed fixtures or historical probe inputs");
 Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
-    ||!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"parameter overrides cannot replace fixed fixtures or historical probe inputs");
+    ||!replayProbes&&!args.Contains("--record-fixtures"),"parameter overrides cannot replace fixed fixtures or historical probe inputs");
 if(!ParasolidScriptHost.TryStartSession("Generated short-edge fillet",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
@@ -233,7 +238,7 @@ using(host)unsafe
                     Mass(reference,reloaded,"native via managed");
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
-                    if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
+                    if(savedProbes)SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
                     if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
@@ -247,6 +252,12 @@ using(host)unsafe
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
                     CompareFiniteIntersections(reference,received,"independent fillet",inputScale);
                     if(requireNativeFinBoxes)CompareNativeBlendFinBoxes(reference,received,"independent fillet",required:true);
+                    if(selfSavedProbes)
+                    {
+                        Console.WriteLine("SAVED PROBE PRODUCT self-constructed-product");
+                        try{SavedProbes(reference,own,received,result,args.Contains("--diagnostics"));}
+                        catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product fixed probes: "+ex.Message);}
+                    }
                     if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,"self-constructed-product",inputScale);
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
@@ -1045,6 +1056,7 @@ static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativ
             if(results[0]!=results[1]||results[0]!=results[2]||results[0]!=results[3])
             {
                 failures++;Console.WriteLine($"SAVED PROBE DIFF row={i} p=({p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R}) native/roundtrip/self/fresh={results[0]}/{results[1]}/{results[2]}/{results[3]} error={error} stage={KernelRuntime.LastRegularClassificationStage} entity={KernelRuntime.LastRegularClassificationEntity} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+                if(error!=0)Console.WriteLine($"SAVED PROBE STATION row={i} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R}");
                 evidence?.Add((p,i));
             }
         }
