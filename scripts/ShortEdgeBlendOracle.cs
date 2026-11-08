@@ -98,6 +98,7 @@ var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
 var materialOwnership=args.Contains("--material-ownership");
 var requireNativeCutWitness=args.Contains("--require-native-cut-witness");
+var proofOnlyLifecycle=args.Contains("--proof-only-lifecycle");
 var reloadBeforeLocalCut=args.Contains("--reload-before-local-cut");
 Require(double.IsFinite(floor)&&floor<=0,"seed floor must be finite and no higher than the original floor");
 Require(double.IsFinite(phase),"support phase must be finite");
@@ -112,6 +113,8 @@ Require(!materialOwnership||!args.Contains("--native-only")&&!args.Contains("--i
 Require(!localCut||args.Contains("--lifecycle")&&!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"local cutter requires lifecycle mode");
 Require(!requireNativeCutWitness||transverseCut&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only"),
     "native cut witness requires the guarded transverse self lifecycle");
+Require(!proofOnlyLifecycle||args.Contains("--lifecycle")&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only")
+    &&!args.Contains("--saved-probes")&&!args.Contains("--record-fixtures"),"proof-only cuts require a guarded self lifecycle");
 Require(!reloadBeforeLocalCut||requireNativeCutWitness,"early XT reload requires a guarded transverse cut with native witnesses");
 Require(!mappedInput||!args.Contains("--record-fixtures")&&!args.Contains("--saved-probes"),"transformed inputs cannot replace fixed fixtures or historical probe inputs");
 Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
@@ -142,6 +145,7 @@ using(host)unsafe
             if(rotateMarks!=0)name+=$"-marks{rotateMarks:R}";
             if(localCut)name+=transverseCut?"-transverse-local-cut":"-local-cut";
             if(reloadBeforeLocalCut)name+="-reload-before-cut";
+            if(proofOnlyLifecycle)name+="-proof-only-cuts";
             if(phase!=0)name+=$"-support-phase{phase:R}";
             if(mappedInput)name+=$"-input-{(args.Contains("--input-mirror")?"mirror":"rigid")}-s{inputScale:R}";
                 if(researchPrecision!=0)name+=$"-pk-precision{researchPrecision:R}";
@@ -225,7 +229,7 @@ using(host)unsafe
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"));
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -286,7 +290,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -323,16 +327,16 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
             native=Cut(false,native,pkTool);CheckBody(native,name+" native local cut");
             File.WriteAllBytes(Path.Combine(output,name+"-independent-local-reference.x_t"),Transmit(false,native));
             if(KernelRuntime.TraceFiniteBoundary!=null)ProductEdges(native,"native-local-cut");
-            own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool):Cut(true,own,ownTool);
+            own=requireNativeCutWitness?CutWithNativeWitness(own,ownTool):proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
         }
-        else{own=Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
+        else{own=proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);native=Cut(false,native,pkTool);}
         failures+=CompareFresh(own,native,output,name+"-copy-reflected-cut",s*inputScale,materialOwnership,checkNativeTrims);
         ReloadEditable(ref own,name+" before second cut");
         var secondAxis=new PK_AXIS2_sf_t(new PK_VECTOR_t(0,2.5,-1),new PK_VECTOR1_t(0,0,1),new PK_VECTOR1_t(1,0,0));
         Check(KernelRuntime.BodyCreateSolidBlock(10,1,10,(M.PK_AXIS2_sf_s*)&secondAxis,&ownTool),"self reload cutter");Check(PK_BODY_create_solid_block(10,1,10,&secondAxis,&pkTool),"PK reload cutter");
         if(input!=null){ApplyInput(true,ownTool,*input);ApplyInput(false,pkTool,*input);}
         Move(true,ownTool,selfTransform);Move(false,pkTool,pkTransform);
-        own=requireNativeCutWitness?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
+        own=requireNativeCutWitness||proofOnly?CutWithoutSpatialReuse(own,ownTool):Cut(true,own,ownTool);
         native=Cut(false,native,pkTool);failures+=CompareFresh(own,native,output,name+"-reloaded-second-cut",s*inputScale,materialOwnership,checkNativeTrims);
     }
     finally
@@ -536,16 +540,44 @@ static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,
 static unsafe void Mass(int reference,int actual,string label)
 {
     var options=new PK_TOPOL_eval_mass_props_o_t();double* a=stackalloc double[15];double* b=stackalloc double[15];
-    var error=double.PositiveInfinity;
+    ReadOnlySpan<string> properties=["volume","mass","centroid.x","centroid.y","centroid.z","inertia.xx","inertia.xy","inertia.xz",
+        "inertia.yx","inertia.yy","inertia.yz","inertia.zx","inertia.zy","inertia.zz","area"];
+    var error=double.PositiveInfinity;var worst=0;
     foreach(var accuracy in new[]{.99999999,.99999999999})
     {
         Check(PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+1,a+2,a+5,a+14),"reference mass");
         Check(PK_TOPOL_eval_mass_props(1,&actual,accuracy,&options,b,b+1,b+2,b+5,b+14),"actual mass");
-        error=0;for(var i=0;i<15;i++)error=Math.Max(error,Math.Abs(a[i]-b[i])/(1+Math.Abs(a[i])));
-        Console.WriteLine($"MASS {label} accuracy={accuracy:R} volume={a[0]:R}/{b[0]:R} area={a[14]:R}/{b[14]:R} normalized15={error:R}");
+        error=0;worst=0;
+        for(var i=0;i<15;i++)
+        {
+            var residual=Math.Abs(a[i]-b[i])/(1+Math.Abs(a[i]));
+            if(residual>error||double.IsNaN(residual))worst=i;
+            error=Math.Max(error,residual);
+        }
+        Console.WriteLine($"MASS {label} accuracy={accuracy:R} volume={a[0]:R}/{b[0]:R} area={a[14]:R}/{b[14]:R} normalized15={error:R} worst={properties[worst]} points={a[worst]:R}/{b[worst]:R}");
         if(error<1e-7)break;
     }
+    if(!(error<1e-7))ReportMassBounds(reference,actual,label,properties[worst],worst);
     Require(error<1e-7,"mass mismatch");
+}
+static unsafe void ReportMassBounds(int reference,int actual,string label,string worst,int index)
+{
+    // This second call reports the native integration's own uncertainty.
+    // Its estimates and bounds do not enter the original point gate.
+    var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c};
+    double* a=stackalloc double[20];double* b=stackalloc double[20];
+    var first=PK_TOPOL_eval_mass_props(1,&reference,.99999999999,&options,a,a+2,a+4,a+8,a+18);
+    var second=PK_TOPOL_eval_mass_props(1,&actual,.99999999999,&options,b,b+2,b+4,b+8,b+18);
+    if(first!=0||second!=0){Console.WriteLine($"MASS BOUNDS {label} native errors={first}/{second}");return;}
+    var overlap=0;
+    for(var i=0;i<15;i++)
+    {
+        var value=i==0?0:i==1?2:i<5?i+2:i<14?i+3:18;
+        var bound=i==0?1:i==1?3:i<5?7:i<14?17:19;
+        if(Math.Abs(a[value]-b[value])<=a[bound]+b[bound])overlap++;
+        if(i==index)Console.WriteLine($"MASS BOUNDS {label} worst_raw={worst} estimates={a[value]:R}/{b[value]:R} moduli={a[bound]:R}/{b[bound]:R}");
+    }
+    Console.WriteLine($"MASS BOUNDS {label} overlap={overlap}/15 (diagnostic only)");
 }
 static unsafe void Probes(int reference,int imported,int fresh,byte[] nativeBytes,string output,string name)
 {
