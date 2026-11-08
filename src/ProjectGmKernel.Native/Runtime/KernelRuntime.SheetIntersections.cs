@@ -24,8 +24,12 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int PrepareSheetCutCurves(SurfTag surface, SurfTag plane, Span<SheetCutCurve> cuts, out BufferCount count)
+        =>PrepareSheetCutCurves(surface,plane,cuts,out count,out _);
+
+    private static int PrepareSheetCutCurves(SurfTag surface,SurfTag plane,Span<SheetCutCurve> cuts,
+        out BufferCount count,out FiniteSectionChart section)
     {
-        count = 0;
+        count=0;section=default;
         var orderedFirst=surface;var orderedSecond=plane;
         var a = GetSurfaceSlotByTag(surface); var b = GetSurfaceSlotByTag(plane);
         // Exact ruled/iso construction below expects the parametric support
@@ -36,7 +40,7 @@ internal static unsafe partial class KernelRuntime
         { (surface,plane)=(plane,surface);(a,b)=(b,a); }
         if(Surfaces[a].Class==SurfaceClass.BlendSurface&&Surfaces[b].Class==SurfaceClass.Plane)
         {
-            var exact=TryPrepareBlendPlaneIsocut(surface,plane,cuts,out count,out var handled);
+            var exact=TryPrepareBlendPlaneIsocut(surface,plane,cuts,out count,out var handled,out section);
             if(exact!=0||handled)return exact;
         }
         Span<OperationIntersectionBranch> branches = stackalloc OperationIntersectionBranch[64];

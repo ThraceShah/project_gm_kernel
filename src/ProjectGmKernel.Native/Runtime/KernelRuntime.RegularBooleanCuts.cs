@@ -45,17 +45,18 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
-    private static int PrepareRegularSupportCuts(SurfTag first,SurfTag second,Span<SheetCutCurve> cuts,out BufferCount count)
+    private static int PrepareRegularSupportCuts(SurfTag first,SurfTag second,Span<SheetCutCurve> cuts,
+        out BufferCount count,out FiniteSectionChart section)
     {
-        count=0;var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);
-        if(!RegularPlanarSupport(a,out var av,out var errorA)||!RegularPlanarSupport(b,out var bv,out var errorB))return PrepareSheetCutCurves(first,second,cuts,out count);
+        count=0;section=default;var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);
+        if(!RegularPlanarSupport(a,out var av,out var errorA)||!RegularPlanarSupport(b,out var bv,out var errorB))return PrepareSheetCutCurves(first,second,cuts,out count,out section);
         // Geometrically planar NURBS need not have an affine parameter map.
         // Preserve their real intersection support instead of replacing the
         // resulting native ICurve by a line on two surrogate planes.
         if(Surfaces[a].Class==SurfaceClass.BSurface&&!TryAffinePlanarSurface(a,out _,out _,out _)
-            ||Surfaces[b].Class==SurfaceClass.BSurface&&!TryAffinePlanarSurface(b,out _,out _,out _))return PrepareSheetCutCurves(first,second,cuts,out count);
+            ||Surfaces[b].Class==SurfaceClass.BSurface&&!TryAffinePlanarSurface(b,out _,out _,out _))return PrepareSheetCutCurves(first,second,cuts,out count,out section);
         var sine=OperationIntersection.Norm(ProfileCross(av.Axis,bv.Axis));
-        if(errorA+errorB>0&&(sine<=1e-14||(errorA+errorB)/(sine-1e-14)>1e-10))return PrepareSheetCutCurves(first,second,cuts,out count);
+        if(errorA+errorB>0&&(sine<=1e-14||(errorA+errorB)/(sine-1e-14)>1e-10))return PrepareSheetCutCurves(first,second,cuts,out count,out section);
         Span<OperationIntersectionBranch> branches=stackalloc OperationIntersectionBranch[64];Span<KernelVector3> points=stackalloc KernelVector3[64];
         var status=OperationIntersection.Surfaces(av,bv,branches,out var n,points,out var np);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         if(np!=0||n>cuts.Length)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -388,9 +389,10 @@ internal static unsafe partial class KernelRuntime
                 var at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;
                 var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
-                error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve.Curve,at,point[0],out var a);
+                var sectionCharts=model.SectionCharts[..model.SectionChartCount];
+                error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve,at,point[0],sectionCharts,out var a);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
-                error=FiniteBoundarySurfaceParameters(input.Faces[second].Surface,curve.Curve,at,point[0],out var b);
+                error=FiniteBoundarySurfaceParameters(input.Faces[second].Surface,curve,at,point[0],sectionCharts,out var b);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
                 error=RegularFiniteFaceContains(input,first,a,point[0],out var insideA,out var boundaryA);if(error!=0)return error;if(!insideA)continue;
                 error=RegularFiniteFaceContains(input,second,b,point[0],out var insideB,out var boundaryB);if(error!=0)return error;if(!insideB)continue;
@@ -530,9 +532,13 @@ internal static unsafe partial class KernelRuntime
         return parameter.Finite;
     }
 
-    private static int FiniteBoundarySurfaceParameters(SurfTag surface,CurveTag curve,double parameter,in KernelVector3 point,out PK_UV_s uv)
+    private static int FiniteBoundarySurfaceParameters(SurfTag surface,in SheetCutCurve cut,double parameter,in KernelVector3 point,
+        ReadOnlySpan<FiniteSectionChart> sectionCharts,out PK_UV_s uv)
     {
+        var curve=cut.Curve;
         var record=Curves[GetCurveSlotByTag(curve)];
+        if(TryFiniteSectionChart(sectionCharts,surface,curve,cut.First,cut.Last,out var section))
+            return EvaluateFiniteSectionChart(section,record,parameter,true,out uv,out _,out _);
         if(TryAnalyticBlendContactMap(surface,record,record.TMin,record.TMax,out _,out _,out _)
             ||record.Class==CurveClass.ICurve&&(TryCertifySupportChart(ICurveDataPool[record.DataIndex].Surface0Tag,surface,out _)
                 ||TryCertifySupportChart(ICurveDataPool[record.DataIndex].Surface1Tag,surface,out _)))

@@ -12,11 +12,23 @@ using System.Diagnostics;
 using M=ProjectGmKernel.Native.Generated;
 
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
-var sectionWitnesses=0;
+var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
+Require(!requireCutSection||KernelRuntime.ForbidLegacyRegularBlendAssembly&&args.Any(x=>x is "affine-plane-nurbs" or "plane-nurbs")
+    &&!args.Any(x=>x is "rounding-only" or "lifecycle-only" or "native-only"),"cut section check needs a guarded plane/NURBS fillet and Boolean");
+var sectionWitnesses=0;var traceCutSection=false;
+var cutCharts=new HashSet<(int Curve,int Generation)>();var cutCrossings=new HashSet<(int Curve,int Generation)>();
+var cutProducts=new HashSet<(int Curve,int Generation)>();
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.AnalyticSectionEnds)sectionWitnesses++;
+        if(traceCutSection)
+        {
+            var key=(trace.Curve,trace.Generation);
+            if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionChart)cutCharts.Add(key);
+            if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeSectionWinding)cutCrossings.Add(key);
+            if(trace.Stage==KernelRuntime.BoundaryTraceStage.Product&&trace.ProductCurve>0)cutProducts.Add(key);
+        }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
     };
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle");Directory.CreateDirectory(directory);
@@ -72,7 +84,19 @@ using(host)unsafe
                     }
                     if(!roundingOnly&&!lifecycleOnly)
                     {
-                        try{reference=Cut(false,reference);CheckBody(reference,name+" reference fillet cut");own=Cut(true,own);CompareFresh(own,reference,name+"-fillet-cut",directory);}
+                        try
+                        {
+                            reference=Cut(false,reference);CheckBody(reference,name+" reference fillet cut");
+                            var verifySection=requireCutSection&&(name is "affine-plane-nurbs" or "plane-nurbs");
+                            traceCutSection=verifySection;
+                            if(traceCutSection){cutCharts.Clear();cutCrossings.Clear();cutProducts.Clear();}
+                            try{own=Cut(true,own);}
+                            finally{traceCutSection=false;}
+                            if(verifySection)
+                                Require(cutCharts.Any(key=>cutCrossings.Contains(key)&&cutProducts.Contains(key)),
+                                    "the managed Boolean cut must use the same generated section chart for halfedges, winding and the published product");
+                            CompareFresh(own,reference,name+"-fillet-cut",directory);
+                        }
                         catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" subsequent cut: "+ex.Message);}
                     }
                 }

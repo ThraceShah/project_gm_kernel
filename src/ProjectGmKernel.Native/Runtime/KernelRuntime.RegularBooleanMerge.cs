@@ -74,7 +74,8 @@ internal static unsafe partial class KernelRuntime
                     var length=nc-begin;if(nl==loops.Length||length>normalized.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                     var reverse=LocalSenseSign(face.Sense)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(face.Surface)].Sense)<0;
                     for(var i=0;i<length;i++){var value=coedges[begin+(reverse?length-1-i:i)];value.Forward^=reverse?(byte)1:(byte)0;normalized[i]=value;}
-                    var error=SheetCycleWitness(face.Surface,model.Edges[..model.NE],normalized[..length],out _,out var positive);if(error!=0)return error;
+                    var error=SheetCycleWitness(face.Surface,model.Edges[..model.NE],normalized[..length],out _,out var positive,
+                        model.SectionCharts[..model.SectionChartCount]);if(error!=0)return error;
                     if(positive!=0){if(outer>=0)return ParasolidConstants.PK_ERROR_bad_loop;outer=nl;}
                     loops[nl++]=new(){FirstCoedge=begin,CoedgeCount=length};
                 }

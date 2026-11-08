@@ -20,7 +20,7 @@ internal static unsafe partial class KernelRuntime
         if(options->merge_imprinted!=0||options->tracking!=0)return ParasolidConstants.PK_ERROR_not_implemented;
         var scratch=CommandScratch.Current;var memory=scratch.Take(213000+2*SheetPointLimit);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         ModelingPerformance.Context performance=default;using var measurement=new ModelingPerformance.Scope(&performance,immutableGeometry:true);ModelingPerformance.Stage(RegularBooleanStage.Read);
-        var ownedCount=0;
+        var ownedCount=0;Span<double> sectionChartMemory=default;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -62,13 +62,14 @@ internal static unsafe partial class KernelRuntime
                 if(family<0)
                 {
                     var relation=RegularCoincidentSupports(first,second)?SurfacePairRelation.CoincidentArea:SurfacePairRelation.Unresolved;var n=0;var npContact=0;
+                    FiniteSectionChart section=default;
                     if(relation!=SurfacePairRelation.CoincidentArea)
                     {
                         error=TryPrepareRegularContactSupportCuts(first,second,supportCuts,out n,supportPoints,out npContact,out relation,out var handled);if(error!=0)return error;
                         if(!handled)
                         {
                             error=TryPrepareFiniteCylinderPlaneGenerators(inputFaces[..nf],sources[..nf],first,second,supportCuts,out n,out handled);if(error!=0)return error;
-                            if(!handled){error=PrepareRegularSupportCuts(first,second,supportCuts,out n);if(error!=0)return error;}
+                            if(!handled){error=PrepareRegularSupportCuts(first,second,supportCuts,out n,out section);if(error!=0)return error;}
                             relation=n==0?SurfacePairRelation.Empty:SurfacePairRelation.RegularCurves;
                         }
                     }
@@ -76,6 +77,16 @@ internal static unsafe partial class KernelRuntime
                     family=familyCount;families[familyCount++]=new(){First=first,Second=second,Start=ownedCount,Count=n,PointStart=contactPointCount,PointCount=npContact,Relation=relation};
                     supportPoints[..npContact].CopyTo(contactPoints[contactPointCount..]);contactPointCount+=npContact;
                     supportCuts[..n].CopyTo(owned[ownedCount..]);ownedCount+=n;
+                    if(section.Curve!=0)
+                    {
+                        if(sectionChartMemory.IsEmpty)
+                        {
+                            sectionChartMemory=scratch.Take((RegularCurveLimit*sizeof(FiniteSectionChart)+sizeof(double)-1)/sizeof(double));
+                            if(sectionChartMemory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+                            model.SectionCharts=MemoryMarshal.Cast<double,FiniteSectionChart>(sectionChartMemory);
+                        }
+                        model.SectionCharts[model.SectionChartCount++]=section;
+                    }
                 }
                 var data=families[family];
                 if(data.Relation==SurfacePairRelation.PointContact)
@@ -189,6 +200,6 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<ownedCount;i++){var curve=owned[i].Curve;error=EntityDelete(1,&curve);if(error!=0)return error;}
             return 0;
         }
-        finally{scratch.Return(memory);}
+        finally{scratch.Return(sectionChartMemory);scratch.Return(memory);}
     }
 }

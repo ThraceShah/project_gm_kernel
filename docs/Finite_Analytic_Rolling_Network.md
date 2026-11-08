@@ -78,6 +78,8 @@ The section carries its constructed station and finite native angular limits int
 
 For a UV ray `q + s*d`, a fixed-U section gives at most one transverse crossing: `s = (station−q.u)/d.u` and `v = q.v+s*d.v`. Outward arithmetic compares the result with the V bounds of the *actual clipped arc*. A hit inside both intervals contributes the sign of `d.u` times the directed section's V sign. A separated interval proves a miss; an unresolved endpoint or coincident ray requests another direction. This does not use the 3D curve inverse or suppress a positive arc below a modeling threshold.
 
+The regular Boolean's existing Blend/plane circular cut provider also hands the locator to the common graph. It remains available for the finite trim tests, halfedge ordering, material witnesses and cell merge. The cutter's planar side keeps its own chart. This transfers the known arc parameters; it does not yet certify every source-to-cut endpoint association.
+
 The geometry of a band interaction is independent of mark order. At a shared source junction, the directed carrier convention also accounts for a mark from the other band interrupting a chain traversed in decreasing native parameter. The curve's sense changes without changing its intersection locus or material cells. Independent PK permutations exercise the interrupted and uninterrupted orders for both carrier classes.
 
 The cylinder scalar equation still uses the original radial projection `(I−aaᵀ)·(x−o)` and the same tolerances. `AnalyticLevelSet` now applies that projection as a single interval linear map. This avoids enclosing the same coordinate twice under an oblique frame before taking the norm, and lets the finite graph complete on a larger mirrored radius that previously exhausted its cell budget.

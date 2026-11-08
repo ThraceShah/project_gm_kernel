@@ -78,12 +78,13 @@ internal static unsafe partial class KernelRuntime
         offsets[bodies.Length]=nf;return 0;
     }
 
-    private static int RegularFaceContains(in RegularBoundaryView view,BufferOffset face,PK_UV_s query,out bool inside)
+    private static int RegularFaceContains(in RegularBoundaryView view,BufferOffset face,PK_UV_s query,out bool inside,
+        ReadOnlySpan<FiniteSectionChart> sectionCharts=default)
     {
         inside=false;var record=view.Faces[face];var winding=0;
         for(var i=0;i<record.LoopCount;i++)
         {
-            var loop=view.Loops[record.FirstLoop+i];var error=SheetLoopWinding(record.Surface,view.Edges,view.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount),query,out var w);
+            var loop=view.Loops[record.FirstLoop+i];var error=SheetLoopWinding(record.Surface,view.Edges,view.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount),query,out var w,sectionCharts);
             if(error!=0)return error;winding+=w;
         }
         inside=winding!=0;return 0;

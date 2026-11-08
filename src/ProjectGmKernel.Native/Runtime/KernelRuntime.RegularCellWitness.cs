@@ -11,12 +11,13 @@ internal static unsafe partial class KernelRuntime
     {
         uv=default;var face=model.Faces[cell];if(face.LoopCount==0)return false;
         var outer=model.Loops[face.FirstLoop];if(outer.CoedgeCount==0)return false;var count=0;
+        var sectionCharts=model.SectionCharts[..model.SectionChartCount];
         for(var k=0;k<outer.CoedgeCount;k++)
         {
             var coedge=model.Coedges[outer.FirstCoedge+k];
             for(var sample=0;sample<4;sample++)
             {
-                var error=SheetCoedgePoint(face.Surface,model.Edges[coedge.Edge],coedge.Forward,(sample+.375)/4,out var point,out _,out _);if(error!=0)return false;
+                var error=SheetCoedgePoint(face.Surface,model.Edges[coedge.Edge],coedge.Forward,(sample+.375)/4,sectionCharts,out var point,out _,out _);if(error!=0)return false;
                 if(Surfaces[GetSurfaceSlotByTag(face.Surface)].Class==SurfaceClass.Cylinder&&!model.Witnesses.IsEmpty)
                     point.param[0]+=Math.Tau*Math.Round((model.Witnesses[cell].param[0]-point.param[0])/Math.Tau);
                 count++;uv.param[0]+=(point.param[0]-uv.param[0])/count;uv.param[1]+=(point.param[1]-uv.param[1])/count;
@@ -24,6 +25,6 @@ internal static unsafe partial class KernelRuntime
         }
         if(!double.IsFinite(uv.param[0])||!double.IsFinite(uv.param[1]))return false;
         var view=new RegularBoundaryView(model.Edges[..model.NE],model.Coedges[..model.NC],model.Loops[..model.NL],model.Faces[..model.NF]);
-        return RegularFaceContains(view,cell,uv,out var inside)==0&&inside;
+        return RegularFaceContains(view,cell,uv,out var inside,sectionCharts)==0&&inside;
     }
 }

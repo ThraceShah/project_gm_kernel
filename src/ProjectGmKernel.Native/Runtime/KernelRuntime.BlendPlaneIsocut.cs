@@ -18,9 +18,9 @@ internal static unsafe partial class KernelRuntime
     // station at both contacts and strict u monotonicity over the whole strip.
     // Other regular branches continue through the general SSI implementation.
     private static int TryPrepareBlendPlaneIsocut(SurfTag surface,SurfTag planeTag,Span<SheetCutCurve> cuts,
-        out BufferCount count,out bool handled)
+        out BufferCount count,out bool handled,out FiniteSectionChart section)
     {
-        count=0;handled=false;LastBlendPlaneCutStage=BlendPlaneCutStage.Bounds;LastBlendPlaneCutPlane=planeTag;
+        count=0;handled=false;section=default;LastBlendPlaneCutStage=BlendPlaneCutStage.Bounds;LastBlendPlaneCutPlane=planeTag;
         LastBlendPlaneFirstRoots=LastBlendPlaneSecondRoots=0;
         var slot=GetSurfaceSlotByTag(surface);var record=Surfaces[slot];
         TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(planeTag)],out var plane);
@@ -51,7 +51,9 @@ internal static unsafe partial class KernelRuntime
         // PK's circular cut boundary uses a negative curve use. The sheet
         // arrangement maps its endpoints/coedges through that use sense.
         Curves[GetCurveSlotByTag(circle)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
-        cuts[0]=new(){Curve=circle,First=lower,Last=upper};count=1;handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Ready;return 0;
+        cuts[0]=new(){Curve=circle,First=lower,Last=upper};
+        section=MakeFiniteSectionChart(surface,circle,u,lower,upper,record.VMin,record.VMax);
+        count=1;handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Ready;return 0;
     }
 
     private static bool CertifyExplicitRollingBallPlaneSeparation(in SurfaceRecord surface,in AnalyticSurface plane)
