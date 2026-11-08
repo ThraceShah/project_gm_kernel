@@ -101,6 +101,10 @@ var rotateMarks=NumberOption(args,"--rotate-marks=",0);
 Require(rotateMarks is 0 or 1 or 2&&(rotateMarks==0||splitSelected||splitEllipse),"mark rotation requires a split and a rotation of zero, one or two");
 var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
+const double defaultTransverseOffset=3.8e-5;
+var transverseOffset=NumberOption(args,"--transverse-offset=",defaultTransverseOffset);
+Require(double.IsFinite(transverseOffset)&&transverseOffset>0&&(transverseOffset==defaultTransverseOffset||transverseCut),
+    "transverse offset must be positive and requires the transverse cutter");
 var materialOwnership=args.Contains("--material-ownership");
 var requireNativeCutWitness=args.Contains("--require-native-cut-witness");
 var proofOnlyLifecycle=args.Contains("--proof-only-lifecycle");
@@ -149,6 +153,7 @@ using(host)unsafe
             if(splitFraction!=.5)name+=$"-at{splitFraction:R}";
             if(rotateMarks!=0)name+=$"-marks{rotateMarks:R}";
             if(localCut)name+=transverseCut?"-transverse-local-cut":"-local-cut";
+            if(transverseOffset!=defaultTransverseOffset)name+=$"-offset{transverseOffset:R}";
             if(reloadBeforeLocalCut)name+="-reload-before-cut";
             if(proofOnlyLifecycle)name+="-proof-only-cuts";
             if(phase!=0)name+=$"-support-phase{phase:R}";
@@ -218,7 +223,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(args.Contains("--saved-probes"))SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transverseOffset);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
@@ -234,7 +239,7 @@ using(host)unsafe
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transverseOffset,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -295,7 +300,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transverseOffset,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false)
 {
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
@@ -318,7 +323,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         var width=localCut?.2:2;var depth=10.0;var height=10.0;int ownTool,pkTool;
         if(transverseCut)
         {
-            var q=1/Math.Sqrt(2);var center=(-7-3.8e-5)*q-.075;
+            var q=1/Math.Sqrt(2);var center=(-7-transverseOffset)*q-.075;
             toolAxis=new(new PK_VECTOR_t(-1.5,(1+center)*q,(1-center)*q),
                 new PK_VECTOR1_t(0,q,q),new PK_VECTOR1_t(0,q,-q));
             width=.15;depth=.4;height=2.5;
@@ -534,8 +539,10 @@ static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,
             var length=ParasolidBodyCompare.FiniteLength(curve,range,1).Value;
             if(length/unitScale>=1e-3)continue;
             double precision;Check(PK_EDGE_ask_precision(edges[e],&precision),"material edge precision");
-            var offset=Math.Min(length/32,64*Math.Max(precision,5e-9*unitScale));
-            if(!(offset>16*Math.Max(precision,5e-9*unitScale)))continue;
+            var resolution=Math.Max(precision,5e-9*unitScale);
+            var preferred=Math.Min(length/32,64*resolution);
+            if(preferred<=16*resolution)preferred=64*resolution;
+            var before=tested;
             int adjacent;int* faces;Check(PK_EDGE_ask_faces(edges[e],&adjacent,&faces),"material edge face occurrences");
             try
             {
@@ -543,6 +550,12 @@ static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,
                 foreach(var fraction in new[]{.25,.5,.75})
                 {
                     PK_VECTOR_t p;Check(PK_CURVE_eval(curve,range.value[0]+fraction*(range.value[1]-range.value[0]),0,&p),"material edge witness");
+                    // Use the actual clearance of this native station. On
+                    // a very short remnant the midpoint can have room even
+                    // when the whole-edge offset heuristic finds none.
+                    var clearance=Math.Min(Distance(p,ends[0]),Distance(p,ends[1]));
+                    var offset=Math.Min(preferred,clearance/4);
+                    if(!(offset>16*resolution))continue;
                     var n=new PK_VECTOR_t();
                     for(var i=0;i<adjacent;i++)
                     {
@@ -569,6 +582,7 @@ static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,
                 }
             }
             finally{Free(false,faces);}
+            Require(tested>before,$"{label} edge={edges[e]} material probes with finite separation from both endpoints");
         }
     }
     finally{Free(false,edges);}
