@@ -25,7 +25,7 @@ internal static unsafe partial class KernelRuntime
         var tolerance=1e-9*Math.Max(1,radius);var point=new PK_VECTOR_s();var material=center;
         if(vanished.Contains((byte)1)){var radial=Sub(Add(Add(contacts[0],contacts[1]),contacts[2]),Scale(center,3));if(!ProfileNormalize(ref radial))return CornerReject(BlendCornerEvent.UncertifiedClearance);material=Add(center,Scale(radial,radius*.5));}
         WriteVector(&point,material);int enclosure;EntityTag topology;var visited=0;
-        LastCornerCertificate=CornerCertificateStage.FiniteContact;var finiteError=CornerContactsInFaces(body,supports,contacts);if(finiteError!=0)return finiteError;
+        LastCornerCertificate=CornerCertificateStage.FiniteContact;var finiteError=CornerContactsInFaces(body,faces,supports,contacts);if(finiteError!=0)return finiteError;
         LastCornerCertificate=CornerCertificateStage.CenterMaterial;
         var error=BodyContainsVectorCore(Bodies[body].Header.Tag,point,&enclosure,&topology);if(error!=0)return error;
         if(enclosure!=ParasolidConstants.PK_enclosure_inside_c)return CornerReject(BlendCornerEvent.UncertifiedClearance,ParasolidConstants.PK_ERROR_radius_too_large);
@@ -165,11 +165,12 @@ internal static unsafe partial class KernelRuntime
         tangent=Scale(jet[1],direction);return ProfileNormalize(ref tangent)?0:CornerReject(BlendCornerEvent.OverlappingBands);
     }
 
-    private static int CornerContactsInFaces(BodySlot body,ReadOnlySpan<FaceSlot> supports,ReadOnlySpan<KernelVector3> contacts)
+    private static int CornerContactsInFaces(BodySlot body,ReadOnlySpan<FaceSlot> sourceFaces,ReadOnlySpan<FaceSlot> supports,ReadOnlySpan<KernelVector3> contacts)
     {
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=Bodies[body].FaceCountBody;
         Span<KernelVector3> points=stackalloc KernelVector3[nv];Span<VertexSlot> vertices=stackalloc VertexSlot[nv];Span<ModelingEdge> edges=stackalloc ModelingEdge[ne];Span<EdgeSlot> originals=stackalloc EdgeSlot[ne];
-        Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[2*ne];Span<ModelingLoop> loops=stackalloc ModelingLoop[nf];Span<ModelingFace> faces=stackalloc ModelingFace[nf];Span<FaceSlot> sources=stackalloc FaceSlot[nf];Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];
+        BufferCount loopCapacity=0;foreach(var face in sourceFaces)loopCapacity+=Faces[face].LoopCount;
+        Span<ModelingCoedge> coedges=stackalloc ModelingCoedge[2*ne];Span<ModelingLoop> loops=stackalloc ModelingLoop[loopCapacity];Span<ModelingFace> faces=stackalloc ModelingFace[nf];Span<FaceSlot> sources=stackalloc FaceSlot[nf];Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];
         Span<BodyTag> inputs=stackalloc BodyTag[1]{Bodies[body].Header.Tag};var error=ReadRegularBoundaries(inputs,points,vertices,edges,originals,coedges,loops,faces,sources,owners,offsets,out _,out var ec,out var cc,out var lc,out var fc);if(error!=0)return error;
         var view=new RegularBoundaryView(edges[..ec],coedges[..cc],loops[..lc],faces[..fc]);
         for(var f=0;f<3;f++)

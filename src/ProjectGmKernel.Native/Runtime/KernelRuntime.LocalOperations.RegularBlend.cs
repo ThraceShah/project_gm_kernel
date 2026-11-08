@@ -36,6 +36,7 @@ internal static unsafe partial class KernelRuntime
             var support=Surfaces[GetSurfaceSlotByTag(Faces[supports[side]].SurfTag)];
             if(support.Class is not (SurfaceClass.Plane or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
             var error=RegularBlendEndFace(body,ends[side],fa,fb,out caps[side]);if(error!=0)return error;
+            if(RegularBlendAreaLoopCount(caps[side])!=1)return ParasolidConstants.PK_ERROR_not_implemented;
             capSurfaces[side]=Faces[caps[side]].SurfTag;
             if(Surfaces[GetSurfaceSlotByTag(capSurfaces[side])].Class!=SurfaceClass.Plane)
             {
@@ -195,7 +196,7 @@ internal static unsafe partial class KernelRuntime
             if(a!=first&&a!=second){if(cap>=0&&cap!=a)return ParasolidConstants.PK_ERROR_not_implemented;cap=a;}
             if(b!=first&&b!=second){if(cap>=0&&cap!=b)return ParasolidConstants.PK_ERROR_not_implemented;cap=b;}
         }
-        if(incident!=3||cap<0||RegularBlendAreaLoopCount(cap)!=1
+        if(incident!=3||cap<0
             ||!RegularPlanarSupport(GetSurfaceSlotByTag(Faces[cap].SurfTag),out _,out _))return ParasolidConstants.PK_ERROR_not_implemented;
         return 0;
     }

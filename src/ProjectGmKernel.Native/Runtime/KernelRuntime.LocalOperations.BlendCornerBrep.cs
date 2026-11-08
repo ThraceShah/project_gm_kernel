@@ -11,15 +11,16 @@ internal static unsafe partial class KernelRuntime
     {
         var collapsed=vanished.Contains((byte)1);
         var nv=Bodies[body].VertexCountBody;var ne=Bodies[body].EdgeCountBody;var nf=sourceFaces.Length;
+        BufferCount loopCapacity=0;foreach(var face in sourceFaces)loopCapacity+=Faces[face].LoopCount;
         Span<ModelingEdge> edges=stackalloc ModelingEdge[ne+12];Span<ModelingCoedge> inputCoedges=stackalloc ModelingCoedge[2*ne];
-        Span<ModelingLoop> inputLoops=stackalloc ModelingLoop[nf];Span<ModelingFace> inputFaces=stackalloc ModelingFace[nf];
+        Span<ModelingLoop> inputLoops=stackalloc ModelingLoop[loopCapacity];Span<ModelingFace> inputFaces=stackalloc ModelingFace[nf];
         Span<EdgeSlot> originals=stackalloc EdgeSlot[ne];Span<FaceSlot> sources=stackalloc FaceSlot[nf];Span<BufferOffset> owners=stackalloc BufferOffset[nf],offsets=stackalloc BufferOffset[2];
         var model=new SheetArrangement{Points=stackalloc KernelVector3[nv+9],OriginalVertices=stackalloc VertexSlot[nv+9],Edges=edges,
-            Coedges=stackalloc ModelingCoedge[2*ne+24],Loops=stackalloc ModelingLoop[nf+4],Faces=stackalloc ModelingFace[nf+4],Sources=stackalloc FaceSlot[nf+4],Witnesses=stackalloc PK_UV_s[nf+4],Tolerance=1e-9};
+            Coedges=stackalloc ModelingCoedge[2*ne+24],Loops=stackalloc ModelingLoop[loopCapacity+4],Faces=stackalloc ModelingFace[nf+4],Sources=stackalloc FaceSlot[nf+4],Witnesses=stackalloc PK_UV_s[nf+4],Tolerance=1e-9};
         Span<BodyTag> bodies=stackalloc BodyTag[1]{Bodies[body].Header.Tag};
         var error=ReadRegularBoundaries(bodies,model.Points,model.OriginalVertices,edges,originals,inputCoedges,inputLoops,inputFaces,sources,owners,offsets,
             out model.NP,out model.NE,out _,out var nl,out var count);if(error!=0)return error;
-        if(nl!=nf||count!=nf)return CornerReject(BlendCornerEvent.UnsupportedGraph);
+        if(nl!=loopCapacity||count!=nf||collapsed&&nl!=nf)return CornerReject(BlendCornerEvent.UnsupportedGraph);
         Span<BufferOffset> nearVertices=stackalloc BufferOffset[3],farVertices=stackalloc BufferOffset[6],newEdges=stackalloc BufferOffset[12];
         for(var i=0;i<9;i++)
         {
@@ -54,43 +55,49 @@ internal static unsafe partial class KernelRuntime
             }
         }
         Span<ModelingCoedge> bandLoops=stackalloc ModelingCoedge[12],sphereLoop=stackalloc ModelingCoedge[3],boundary=stackalloc ModelingCoedge[2*ne+24];
+        Span<FinSlot> sourceFins=stackalloc FinSlot[boundary.Length];
         Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[boundary.Length];Span<ModelingCoedge> arranged=stackalloc ModelingCoedge[boundary.Length];
-        Span<SheetCycle> cycles=stackalloc SheetCycle[nf+4];Span<byte> seen=stackalloc byte[12];seen.Clear();
+        Span<SheetCycle> cycles=stackalloc SheetCycle[loopCapacity+4];Span<byte> seen=stackalloc byte[12];seen.Clear();
         for(var f=0;f<nf;f++)
         {
-            var source=sources[f];if(Faces[source].LoopCount!=1)return CornerReject(BlendCornerEvent.UnsupportedGraph);
-            var face=inputFaces[f];var loop=inputLoops[face.FirstLoop];var n=0;
-            for(var k=0;k<loop.CoedgeCount;k++)
+            var source=sources[f];var face=inputFaces[f];var n=0;var sourceLoop=Faces[source].FirstLoop;
+            for(var l=0;l<face.LoopCount;l++,sourceLoop=Loops[sourceLoop].NextInFace)
             {
-                var coedge=inputCoedges[loop.FirstCoedge+k];var old=Edges[originals[coedge.Edge]];var selectedIndex=selected.IndexOf(originals[coedge.Edge]);
-                if(selectedIndex>=0)
+                var loop=inputLoops[face.FirstLoop+l];var fin=Loops[sourceLoop].FirstFin;
+                for(var k=0;k<loop.CoedgeCount;k++,fin=Fins[fin].NextInLoop)
                 {
-                    var e=selectedIndex;var side=pairs[2*e]==source?0:pairs[2*e+1]==source?1:-1;if(side<0)return ParasolidConstants.PK_ERROR_bad_loop;
-                    var oldStart=coedge.Forward!=0?old.StartVertex:old.EndVertex;
-                    var vertex=oldStart==corner?nearVertices[supports.IndexOf(source)]:farVertices[2*e+side];var edge=newEdges[4*e+side];
-                    var replacement=new ModelingCoedge{Edge=edge,Forward=edges[edge].StartVertex==vertex?(byte)1:(byte)0};
-                    if(Curves[GetCurveSlotByTag(edges[edge].Curve)].Class==CurveClass.Line&&replacement.Forward==0)
+                    var coedge=inputCoedges[loop.FirstCoedge+k];var original=originals[coedge.Edge];
+                    if(fin<0||Fins[fin].Edge!=original)return ParasolidConstants.PK_ERROR_bad_loop;
+                    var old=Edges[original];var selectedIndex=selected.IndexOf(original);
+                    if(selectedIndex>=0)
                     {
-                        // Analytic contact carriers inherit the source edge's
-                        // natural tangent; their positive use is the original
-                        // supporting face boundary, independently of slots.
-                        Curves[GetCurveSlotByTag(edges[edge].Curve)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
-                        (edges[edge].StartVertex,edges[edge].EndVertex)=(edges[edge].EndVertex,edges[edge].StartVertex);replacement.Forward=1;
+                        var e=selectedIndex;var side=pairs[2*e]==source?0:pairs[2*e+1]==source?1:-1;if(side<0)return ParasolidConstants.PK_ERROR_bad_loop;
+                        var oldStart=coedge.Forward!=0?old.StartVertex:old.EndVertex;
+                        var vertex=oldStart==corner?nearVertices[supports.IndexOf(source)]:farVertices[2*e+side];var edge=newEdges[4*e+side];
+                        var replacement=new ModelingCoedge{Edge=edge,Forward=edges[edge].StartVertex==vertex?(byte)1:(byte)0};
+                        if(Curves[GetCurveSlotByTag(edges[edge].Curve)].Class==CurveClass.Line&&replacement.Forward==0)
+                        {
+                            // Analytic contact carriers inherit the source edge's
+                            // natural tangent; their positive use is the original
+                            // supporting face boundary, independently of slots.
+                            Curves[GetCurveSlotByTag(edges[edge].Curve)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
+                            (edges[edge].StartVertex,edges[edge].EndVertex)=(edges[edge].EndVertex,edges[edge].StartVertex);replacement.Forward=1;
+                        }
+                        sourceFins[n]=-1;boundary[n++]=replacement;bandLoops[4*e+side]=new(){Edge=edge,Forward=(byte)(replacement.Forward^1)};seen[4*e+side]++;continue;
                     }
-                    boundary[n++]=replacement;bandLoops[4*e+side]=new(){Edge=edge,Forward=(byte)(replacement.Forward^1)};seen[4*e+side]++;continue;
-                }
-                boundary[n++]=coedge;var oldEnd=coedge.Forward!=0?old.EndVertex:old.StartVertex;
-                for(var e=0;e<3;e++)if(source==caps[e]&&oldEnd==far[e])
-                {
-                    var next=inputCoedges[loop.FirstCoedge+(k+1)%loop.CoedgeCount];var from=coedge.Forward!=0?edges[coedge.Edge].EndVertex:edges[coedge.Edge].StartVertex;
-                    var to=next.Forward!=0?edges[next.Edge].StartVertex:edges[next.Edge].EndVertex;var edge=newEdges[4*e+3];
-                    var forward=edges[edge].StartVertex==from&&edges[edge].EndVertex==to;
-                    if(!forward&&(edges[edge].EndVertex!=from||edges[edge].StartVertex!=to))return ParasolidConstants.PK_ERROR_bad_loop;
-                    var replacement=new ModelingCoedge{Edge=edge,Forward=forward?(byte)1:(byte)0};boundary[n++]=replacement;
-                    bandLoops[4*e+3]=new(){Edge=edge,Forward=(byte)(replacement.Forward^1)};seen[4*e+3]++;
+                    sourceFins[n]=fin;boundary[n++]=coedge;var oldEnd=coedge.Forward!=0?old.EndVertex:old.StartVertex;
+                    for(var e=0;e<3;e++)if(oldEnd>=0&&source==caps[e]&&oldEnd==far[e])
+                    {
+                        var next=inputCoedges[loop.FirstCoedge+(k+1)%loop.CoedgeCount];var from=coedge.Forward!=0?edges[coedge.Edge].EndVertex:edges[coedge.Edge].StartVertex;
+                        var to=next.Forward!=0?edges[next.Edge].StartVertex:edges[next.Edge].EndVertex;var edge=newEdges[4*e+3];
+                        var forward=edges[edge].StartVertex==from&&edges[edge].EndVertex==to;
+                        if(!forward&&(edges[edge].EndVertex!=from||edges[edge].StartVertex!=to))return ParasolidConstants.PK_ERROR_bad_loop;
+                        var replacement=new ModelingCoedge{Edge=edge,Forward=forward?(byte)1:(byte)0};sourceFins[n]=-1;boundary[n++]=replacement;
+                        bandLoops[4*e+3]=new(){Edge=edge,Forward=(byte)(replacement.Forward^1)};seen[4*e+3]++;
+                    }
                 }
             }
-            error=PublishCornerBoundary(face.Surface,face.Sense,source,boundary[..n],collapsed,ref model,halfedges,arranged,cycles);if(error!=0)return error;
+            error=PublishCornerBoundary(face.Surface,face.Sense,source,boundary[..n],collapsed,ref model,halfedges,arranged,cycles,sourceFins[..n]);if(error!=0)return error;
         }
         for(var e=0;e<3;e++)
         {
@@ -157,12 +164,13 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int PublishCornerBoundary(SurfTag surface,KernelSense sense,FaceSlot source,scoped ReadOnlySpan<ModelingCoedge> boundary,
-        bool collapsed,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,scoped Span<ModelingCoedge> arranged,scoped Span<SheetCycle> cycles)
+        bool collapsed,scoped ref SheetArrangement model,scoped Span<SheetHalfedge> halfedges,scoped Span<ModelingCoedge> arranged,scoped Span<SheetCycle> cycles,
+        scoped ReadOnlySpan<FinSlot> sourceFins=default)
     {
         if(!collapsed)
         {
             var count=model.NF;
-            var error=ArrangeFiniteReplacementFace(surface,sense,source,boundary,ref model,halfedges,arranged,cycles);if(error!=0)return error;
+            var error=ArrangeFiniteReplacementFace(surface,sense,source,boundary,ref model,halfedges,arranged,cycles,sourceFins);if(error!=0)return error;
             return model.NF==count+1?0:ParasolidConstants.PK_ERROR_bad_loop;
         }
         // Extinction first collects the oriented boundary chain so its

@@ -36,6 +36,56 @@ public unsafe class TrivalentSolidBlendTests:IDisposable
         var nc=KernelRuntime.Curves.AliveCount;var ns=KernelRuntime.Surfaces.AliveCount;Assert.NotEqual(0,Fix(body));
         Assert.Equal(KernelRuntime.BlendCornerEvent.UnequalRadius,KernelRuntime.LastBlendCornerEvent);BooleanOperationTests.Counts(body,6,12,8);Assert.Equal(nc,KernelRuntime.Curves.AliveCount);Assert.Equal(ns,KernelRuntime.Surfaces.AliveCount);
     }
+
+    [Theory]
+    [InlineData(.3,.35,.06,false)]
+    [InlineData(.05,.96,.035,true)]
+    public void BoredCornerPreservesRemoteRingsAndRejectsAnUnresolvedCapInteraction(double x,double z,double boreRadius,bool intersects)
+    {
+        var body=RegularSolidBlendTests.Roof(.4);
+        var axis=new PK_AXIS2_sf_s();axis.location.coord[0]=x;axis.location.coord[1]=-1;axis.location.coord[2]=z;
+        axis.axis.coord[1]=1;axis.ref_direction.coord[0]=1;int tool;
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(boreRadius,3,&axis,&tool));
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int n;int* output;
+        Assert.Equal(0,KernelRuntime.BodyBoolean(body,1,&tool,&options,&n,&output));Assert.Equal(1,n);body=output[0];KernelRuntime.MemoryFree(output);
+        Span<int> selected=stackalloc int[3];Select(body,selected);Mark(selected,.1);
+        var caps=PlanarBoreFaces(body);var bodySlot=KernelRuntime.ResolveTagRecord(body).Slot;var before=KernelRuntime.Bodies[bodySlot];
+        var marks=selected.ToArray().Select(tag=>KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(tag).Slot]).ToArray();
+        var pools=(KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Bodies.AliveCount,KernelRuntime.BlocksLiveBytes);
+        var error=Fix(body);
+        if(intersects)
+        {
+            Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,error);
+            Assert.Equal(KernelRuntime.BlendCornerEvent.UncertifiedClearance,KernelRuntime.LastBlendCornerEvent);
+            Assert.Equal(before,KernelRuntime.Bodies[bodySlot]);Assert.Equal(caps,PlanarBoreFaces(body));
+            for(var i=0;i<selected.Length;i++)
+            {
+                Assert.True(KernelRuntime.IsValidTag(selected[i]));
+                Assert.Equal(marks[i],KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(selected[i]).Slot]);
+            }
+            Assert.Equal(pools,(KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Bodies.AliveCount,KernelRuntime.BlocksLiveBytes));
+        }
+        else
+        {
+            Assert.True(error==0,$"corner={error}, stage={KernelRuntime.LastBlendCornerStage}/{KernelRuntime.LastBlendCornerEvent}, cert={KernelRuntime.LastCornerCertificate}");
+            Assert.Equal(caps,PlanarBoreFaces(body));
+        }
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);
+    }
+
+    private static (int near,int far) PlanarBoreFaces(int body)
+    {
+        Assert.True(KernelRuntime.TryResolveBodySlot(body,out var bs));var face=KernelRuntime.Bodies[bs].FirstFaceBody;var near=0;var far=0;
+        for(var f=0;f<KernelRuntime.Bodies[bs].FaceCountBody;f++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var record=KernelRuntime.Faces[face];if(record.LoopCount!=2||KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(record.SurfTag)].Class!=SurfaceClass.Plane)continue;
+            PK_PLANE_sf_s plane;Assert.Equal(0,KernelRuntime.PlaneAsk(record.SurfTag,&plane));
+            if(Math.Abs(plane.basis_set.axis.coord[1])<.99)continue;
+            if(plane.basis_set.location.coord[1]<.5)near=record.Header.Tag;else far=record.Header.Tag;
+        }
+        Assert.NotEqual(0,near);Assert.NotEqual(0,far);return(near,far);
+    }
+
     [Theory]
     [InlineData(2,2,7,14,9,3)]
     [InlineData(1,2,5,9,6,2)]

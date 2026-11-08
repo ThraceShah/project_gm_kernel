@@ -20,7 +20,7 @@ unsafe
         if(trace.Stage is KernelRuntime.BoundaryTraceStage.Input or KernelRuntime.BoundaryTraceStage.Arrangement or KernelRuntime.BoundaryTraceStage.Product)
         {
             cornerTrace.Add(trace);
-            Console.WriteLine($"CORNER BOUNDARY {trace.Stage} source={trace.Source} surface={trace.Surface} edge={trace.Edge}/{trace.Curve}/{trace.Generation} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} product={trace.Product}");
+            Console.WriteLine($"CORNER BOUNDARY {trace.Stage} source={trace.Source} source_fin={trace.SourceFin} surface={trace.Surface} edge={trace.Edge}/{trace.Curve}/{trace.Generation} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} product={trace.Product}");
         }
     };
  if(!ParasolidScriptHost.TryStartSession("trivalent equal radius corner",out var host,out var message))throw new Exception(message);
@@ -41,7 +41,7 @@ unsafe
     Require(KernelRuntime.Bodies.AliveCount==0&&KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0,"refillet input geometry lifecycle");Console.WriteLine("PASS strict re-fillet from independently saved inputs");
     return;
    }
-   var consumer=args.Contains("--consumer");var refillet=args.Contains("--refillet");var lifecycle=args.Contains("--lifecycle");var orderText=args.FirstOrDefault(a=>a.StartsWith("--order=",StringComparison.Ordinal));var permutation=orderText==null?0:int.Parse(orderText.AsSpan(8));Require(permutation>=0&&permutation<6,"six three-edge permutations");var filtered=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();var cases=filtered.Length==0?new[]{"base","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","uv-scaled","tilted","extended-tilted","skew-base","skew-rigid","skew-mirror-scale","skew-tilted","zero-single","zero-double","zero-all","zero-near","zero-single-mirror-scale","zero-double-tilted","zero-all-mirror-scale"}:filtered;
+   var consumer=args.Contains("--consumer");var refillet=args.Contains("--refillet");var lifecycle=args.Contains("--lifecycle");var orderText=args.FirstOrDefault(a=>a.StartsWith("--order=",StringComparison.Ordinal));var permutation=orderText==null?0:int.Parse(orderText.AsSpan(8));Require(permutation>=0&&permutation<6,"six three-edge permutations");var filtered=args.Where(a=>!a.StartsWith("--",StringComparison.Ordinal)).ToArray();var cases=filtered.Length==0?new[]{"base","bored","rigid","mirror-scale","extended-base","extended-rigid","extended-mirror-scale","uv-reversed","uv-scaled","tilted","extended-tilted","skew-base","skew-rigid","skew-mirror-scale","skew-tilted","zero-single","zero-double","zero-all","zero-near","zero-single-mirror-scale","zero-double-tilted","zero-all-mirror-scale"}:filtered;
    foreach(var name in cases)
    {
     foreach(var authorOwn in args.Contains("--native-author")?new[]{false}:args.Contains("--self-author")?new[]{true}:new[]{false,true})
@@ -49,7 +49,7 @@ unsafe
     var label=name+(permutation==0?"":"-order"+permutation)+(authorOwn?"-self-author":"-native-author");var author=name.StartsWith("zero-",StringComparison.Ordinal)?Block(authorOwn,.5,name.StartsWith("zero-single",StringComparison.Ordinal)?1:.5,0,1,name.StartsWith("zero-single",StringComparison.Ordinal)?2:1,name.StartsWith("zero-all",StringComparison.Ordinal)||name.StartsWith("zero-near",StringComparison.Ordinal)?1:2):name.StartsWith("skew-",StringComparison.Ordinal)?SkewPrism(authorOwn):Roof(authorOwn,name.StartsWith("extended-",StringComparison.Ordinal),name=="uv-reversed",name=="uv-scaled");var source=authorOwn?Transmit(author):TransmitNative(author);Check(authorOwn?KernelRuntime.EntityDelete(1,&author):PK_ENTITY_delete(1,&author),"delete unmodified author");
     File.WriteAllBytes(Path.Combine(directory,label+"-source.x_t"),source);
     var native=Corner(false,name,source,permutation);CheckBody(native,label+" native");File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitNative(native));
-    cornerTrace?.Clear();var own=Corner(true,name,source,permutation);
+    var own=Corner(true,name,source,permutation,cornerTrace);
     if(cornerTrace!=null)
     {
         var products=cornerTrace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product).ToArray();
@@ -57,13 +57,21 @@ unsafe
         foreach(var p in products)
             Require(cornerTrace.Any(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement&&t.Source==p.Source&&t.Edge==p.Edge&&t.Curve==p.Curve
                 &&t.Generation==p.Generation&&t.StartEvent==p.StartEvent&&t.EndEvent==p.EndEvent&&t.First==p.First&&t.Last==p.Last),"corner product preserves arrangement provenance");
+        if(name=="bored")
+        {
+            var rings=cornerTrace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Input&&t.SourceFin>=0&&t.StartEvent<0&&t.EndEvent<0).ToArray();
+            Require(rings.Length==4&&rings.Select(t=>t.Curve).Distinct().Count()==2
+                &&rings.All(t=>products.Any(p=>p.Source==t.Source&&p.Edge==t.Edge&&p.Curve==t.Curve&&p.Generation==t.Generation&&p.First==t.First&&p.Last==t.Last)),
+                "both uses of both original bore rings reach the published corner with their native limits");
+        }
         Console.WriteLine($"PASS common arrangement provenance uses={products.Length}");
     }
     var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,label+"-self.x_t"),bytes);var received=Receive(bytes);CheckBody(received,label+" received");Compare(native,received,label);
     ValidateCorner(own,native,(name.StartsWith("zero-near",StringComparison.Ordinal)?.999999:name.StartsWith("zero-",StringComparison.Ordinal)?1:.1)*(name.EndsWith("mirror-scale",StringComparison.Ordinal)?1.7:1));
     if(lifecycle){Require(name=="base","base lifecycle fixture");CheckCornerLifecycle(own,native,label,directory);}
     if(name is "zero-single" or "zero-double" or "zero-all")CheckExtinctionReload(ref own,native,name);
-    if(consumer){Require(name=="base"||name=="extended-base","consumer probe uses untransformed source");ConsumeCorner(ref own,ref native,label,directory,refillet);}
+    if(consumer){Require(name is "base" or "extended-base" or "bored","consumer probe uses untransformed source");ConsumeCorner(ref own,ref native,label,directory,refillet);}
+    if(name=="bored"){Require(BoreRingCount(true,own)==2&&BoreRingCount(false,native)==2,"both planar bore rings survive");}
     Check(PK_ENTITY_delete(1,&received),"delete received");Check(PK_ENTITY_delete(1,&native),"delete reference");Check(KernelRuntime.EntityDelete(1,&own),"delete self corner");
     Require(KernelRuntime.Bodies.AliveCount==0&&KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0,"corner construction geometry lifecycle");
     Console.WriteLine("PASS "+label);
@@ -73,14 +81,36 @@ unsafe
   finally{Check(KernelRuntime.SessionStop(),"stop self session");}
  }
 }
-static unsafe int Corner(bool own,string name,byte[] source,int permutation)
+static unsafe int Corner(bool own,string name,byte[] source,int permutation,List<KernelRuntime.BoundaryTrace>? trace=null)
 {
  var height=name.StartsWith("zero-",StringComparison.Ordinal)&&!name.StartsWith("zero-all",StringComparison.Ordinal)&&!name.StartsWith("zero-near",StringComparison.Ordinal)?2:1;var radius=name.StartsWith("zero-near",StringComparison.Ordinal)?.999999:name.StartsWith("zero-",StringComparison.Ordinal)?1:.1;var expectedProducts=name.StartsWith("zero-single",StringComparison.Ordinal)?3:name.StartsWith("zero-double",StringComparison.Ordinal)?2:name.StartsWith("zero-all",StringComparison.Ordinal)?1:4;
- var body=own?ReceiveManaged(source):Receive(source);int n;int* vertices;Check(own?KernelRuntime.BodyAskVertices(body,&n,&vertices):PK_BODY_ask_vertices(body,&n,&vertices),"source vertices");var corner=0;
+ var body=own?ReceiveManaged(source):Receive(source);
+ if(name=="bored")
+ {
+  var basis=new PK_AXIS2_sf_t{location=new(.3,-1,.35),axis=new(0,1,0),ref_direction=new(1,0,0)};int tool;
+  Check(own?KernelRuntime.BodyCreateSolidCyl(.06,3,(M.PK_AXIS2_sf_s*)&basis,&tool):PK_BODY_create_solid_cyl(.06,3,&basis,&tool),"remote bore tool");
+  body=CutCorner(own,body,tool);Require(BoreRingCount(own,body)==2,"two planar input bore rings");
+ }
+ int n;int* vertices;Check(own?KernelRuntime.BodyAskVertices(body,&n,&vertices):PK_BODY_ask_vertices(body,&n,&vertices),"source vertices");var corner=0;
  var best=double.NegativeInfinity;
  try{for(var i=0;i<n;i++){int tag;PK_POINT_sf_t p;Check(own?KernelRuntime.VertexAskPoint(vertices[i],&tag):PK_VERTEX_ask_point(vertices[i],&tag),"vertex geometry");Check(own?KernelRuntime.PointAsk(tag,(M.PK_POINT_sf_s*)&p):PK_POINT_ask(tag,&p),"vertex position");if(name.StartsWith("skew-",StringComparison.Ordinal)){var score=p.position.coord[0]-.01*p.position.coord[1];if(Math.Abs(p.position.coord[2]-1)<1e-10&&score>best){best=score;corner=vertices[i];}}else if(Math.Abs(p.position.coord[0])+Math.Abs(p.position.coord[1])+Math.Abs(p.position.coord[2]-height)<1e-10)corner=vertices[i];}}finally{Free(own,vertices);}
  Require(corner!=0,"manufactured selected vertex");int* edges;Check(own?KernelRuntime.BodyAskEdges(body,&n,&edges):PK_BODY_ask_edges(body,&n,&edges),"source edges");int* ends=stackalloc int[2];int* selected=stackalloc int[3];var count=0;
  try{for(var i=0;i<n;i++){Check(own?KernelRuntime.EdgeAskVertices(edges[i],ends):PK_EDGE_ask_vertices(edges[i],ends),"incident graph");if(ends[0]==corner||ends[1]==corner){Require(count<3,"trivalent fixture");selected[count++]=edges[i];}}}finally{Free(own,edges);}Require(count==3,"three selected incident edges");
+ if(name=="bored")
+ {
+  var affected=false;
+  for(var e=0;e<count&&!affected;e++)
+  {
+   int* fins;Check(own?KernelRuntime.EdgeAskFins(selected[e],&n,&fins):PK_EDGE_ask_fins(selected[e],&n,&fins),"selected edge support fins");
+   try{for(var f=0;f<n;f++)
+   {
+    int face,loops;int* tags;Check(own?KernelRuntime.FinAskFace(fins[f],&face):PK_FIN_ask_face(fins[f],&face),"actual selected support");
+    Check(own?KernelRuntime.FaceAskLoops(face,&loops,&tags):PK_FACE_ask_loops(face,&loops,&tags),"actual selected support loops");Free(own,tags);
+    affected|=loops>1;
+   }}finally{Free(own,fins);}
+  }
+  Require(affected,"a selected edge has a bored supporting face");
+ }
  // Explicit geometric source order shared by both kernels before pose.
  PK_VECTOR_t* remote=stackalloc PK_VECTOR_t[3];for(var i=0;i<3;i++)
  {
@@ -103,6 +133,7 @@ static unsafe int Corner(bool own,string name,byte[] source,int permutation)
   Check(own?KernelRuntime.EntityDelete(1,&transform):PK_ENTITY_delete(1,&transform),"delete transform");
  }
  var set=new PK_EDGE_set_blend_constant_o_t();set.properties.tolerance=1e-7;int* marked;Check(own?KernelRuntime.EdgeSetBlendConstant(3,selected,radius*scale,(M.PK_EDGE_set_blend_constant_o_s*)&set,&n,&marked):PK_EDGE_set_blend_constant(3,selected,radius*scale,&set,&n,&marked),"set three equal radii");Free(own,marked);
+ trace?.Clear();
  var began=Stopwatch.GetTimestamp();
  if(own)
  {
@@ -188,6 +219,18 @@ static unsafe int CutCorner(bool own,int target,int tool)
  }
  Console.WriteLine($"TIME {(own?"self":"PK")} Sphere/Blend cut {Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1}ms,error={error},stage={KernelRuntime.LastRegularBooleanStage},face={KernelRuntime.LastRegularBooleanFace},sheet={KernelRuntime.LastSheetPartitionStage}");Check(error,"Sphere/Blend crossing subtract");
  try{Require(n==1,"one connected corner cut result");return results[0];}finally{Free(own,results);}
+}
+static unsafe int BoreRingCount(bool own,int body)
+{
+ int count;int* faces;Check(own?KernelRuntime.BodyAskFaces(body,&count,&faces):PK_BODY_ask_faces(body,&count,&faces),"bore support faces");var rings=0;
+ try{for(var i=0;i<count;i++)
+ {
+  int surface,type;Check(own?KernelRuntime.FaceAskSurf(faces[i],&surface):PK_FACE_ask_surf(faces[i],&surface),"bore support");
+  Check(own?KernelRuntime.EntityAskClass(surface,&type):PK_ENTITY_ask_class(surface,&type),"bore support class");if(type!=PK_CLASS_plane)continue;
+  PK_PLANE_sf_t plane;Check(own?KernelRuntime.PlaneAsk(surface,(M.PK_PLANE_sf_s*)&plane):PK_PLANE_ask(surface,&plane),"bore plane");
+  if(Math.Abs(plane.basis_set.axis.coord[1])<.99)continue;
+  int loops;int* tags;Check(own?KernelRuntime.FaceAskLoops(faces[i],&loops,&tags):PK_FACE_ask_loops(faces[i],&loops,&tags),"finite bore loops");Free(own,tags);rings+=loops-1;
+ }}finally{Free(own,faces);}return rings;
 }
 static unsafe int ReceiveManaged(byte[] source)
 {
