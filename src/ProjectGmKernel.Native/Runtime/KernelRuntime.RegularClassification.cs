@@ -47,7 +47,11 @@ internal static unsafe partial class KernelRuntime
                 if(RegularPointAwayFromIntersectionCurve(edges[e].Curve,point))continue;
                 double t=0;error=CurveParameteriseVectorCore(edges[e].Curve,vector,&t);if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(edges[e].Curve,edges[e].Start,edges[e].End,ref t);
-                if(t>=edges[e].Start-1e-10&&t<=edges[e].End+1e-10){*enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Edges[sourceEdges[e]].Header.Tag;return 0;}
+                if(t>=edges[e].Start-1e-10&&t<=edges[e].End+1e-10)
+                {
+                    if(RegularPointOutsideRollingCurve(edges[e].Curve,point,t))continue;
+                    *enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Edges[sourceEdges[e]].Header.Tag;return 0;
+                }
             }
             var view=new RegularBoundaryView(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]);
             LastRegularClassificationStage=RegularClassificationStage.Faces;
@@ -100,11 +104,33 @@ internal static unsafe partial class KernelRuntime
     private static bool RegularPointOutsideRollingCarrier(SurfTag support,in KernelVector3 point,double station)
     {
         var surface=Surfaces[GetSurfaceSlotByTag(support)];if(surface.Class!=SurfaceClass.BlendSurface)return false;
-        var blend=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(blend);var root=program.Surfaces[blend.ProgramRoot];
-        var radius=Math.Abs(root.Range0);
-        return radius==Math.Abs(root.Range1)
-            &&ConicTubeSeparation.ProvesOutside(program.Spines[root.Spine].Curve,point,radius,OperationIntersection.DistanceTolerance,station);
+        var blend=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(blend);
+        return RegularPointOutsideConicTube(program,program.Surfaces[blend.ProgramRoot],point,station);
     }
+
+    // The finite edge inverse only proposes a member. Its own CHART
+    // supplies the paired station of a supporting rolling carrier, without
+    // projecting the query into a new chart or assigning another owner.
+    private static bool RegularPointOutsideRollingCurve(CurveTag curve,in KernelVector3 point,double station)
+    {
+        var record=Curves[GetCurveSlotByTag(curve)];if(record.Class!=CurveClass.ICurve)return false;
+        var data=ICurveDataPool[record.DataIndex];if(data.ProgramBlock<=0||data.IsBlendContact!=0)return false;
+        var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+        var spine=program.Spines[data.ProgramSpine];if(SpineParameterMap.Explicit(spine))return false;
+        var first=program.Surfaces[spine.First];var second=program.Surfaces[spine.Second];
+        if(!IsConicRollingCarrier(program,first)&&!IsConicRollingCarrier(program,second))return false;
+        Span<double> uv=stackalloc double[4];Span<KernelVector3> sample=stackalloc KernelVector3[1];
+        if(JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,station,0,sample,uv)!=AlgorithmStatus.Success)return false;
+        return RegularPointOutsideConicTube(program,first,point,uv[0])||RegularPointOutsideConicTube(program,second,point,uv[2]);
+    }
+
+    private static bool IsConicRollingCarrier(in NestedBlendProgram program,in BlendSurfaceInstruction root)
+        =>root.IsBlend&&Math.Abs(root.Range0)==Math.Abs(root.Range1)
+            &&program.Spines[root.Spine].Curve.Kind is CurveClass.Circle or CurveClass.Ellipse;
+
+    private static bool RegularPointOutsideConicTube(in NestedBlendProgram program,in BlendSurfaceInstruction root,in KernelVector3 point,double station)
+        =>IsConicRollingCarrier(program,root)
+            &&ConicTubeSeparation.ProvesOutside(program.Spines[root.Spine].Curve,point,Math.Abs(root.Range0),OperationIntersection.DistanceTolerance,station);
 
     // An intersection curve is a subset of each of its defining supports.
     // A certified plane residual excludes a point before an unnecessary

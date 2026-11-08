@@ -61,14 +61,16 @@ public unsafe class RollingNetworkTests:IDisposable
         finally{KernelRuntime.MemoryFree(products);}
         Assert.Equal(KernelRuntime.RollingNetworkStage.Publish,KernelRuntime.LastRollingNetworkStage);
         BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body);NativeSupportIncidence(body);
-        AssertSavedOriginProbeOutside(body);
+        AssertSavedProbeOutside(body,-1.499999667811987,-2.500000004201637,4.50007614662344); // row 289, ambiguous face ray
+        AssertSavedProbeOutside(body,-1.4999999169520075,-2.500000008550392,4.500038073674117); // row 391, false edge ownership
         foreach(var product in trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product))
             Assert.Contains(trace,t=>t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement&&t.Source==product.Source&&t.Edge==product.Edge
                 &&t.Curve==product.Curve&&t.Generation==product.Generation&&t.First==product.First&&t.Last==product.Last
                 &&t.StartEvent==product.StartEvent&&t.EndEvent==product.EndEvent);
         var text=Transmit(body);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
         Assert.Equal(0,XtBrepImportTests.Receive(text,out var restored));ShortIntervals(restored);NativeSupportIncidence(restored);
-        AssertSavedOriginProbeOutside(restored);
+        AssertSavedProbeOutside(restored,-1.499999667811987,-2.500000004201637,4.50007614662344);
+        AssertSavedProbeOutside(restored,-1.4999999169520075,-2.500000008550392,4.500038073674117);
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
@@ -301,11 +303,9 @@ public unsafe class RollingNetworkTests:IDisposable
         fixed(EdgeTag* edges=selected)Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(selected.Length,edges,radius,&options,&count,null));
         Assert.Equal(selected.Length,count);
     }
-    private static void AssertSavedOriginProbeOutside(BodyTag body)
+    private static void AssertSavedProbeOutside(BodyTag body,double x,double y,double z)
     {
-        // Immutable historical probe 289. Its inverse lands near the
-        // short Blend/plane trim; the original native class is outside.
-        var p=new PK_VECTOR_s();p.coord[0]=-1.499999667811987;p.coord[1]=-2.500000004201637;p.coord[2]=4.50007614662344;
+        var p=new PK_VECTOR_s();p.coord[0]=x;p.coord[1]=y;p.coord[2]=z;
         int enclosure;EntityTag topology;
         Assert.Equal(0,KernelRuntime.BodyContainsVector(body,p,&enclosure,&topology));
         Assert.Equal(ParasolidConstants.PK_enclosure_outside_c,enclosure);
