@@ -65,7 +65,7 @@ internal static unsafe partial class KernelRuntime
         internal bool LiveBoundaryPoint(BoundaryEventId point)=>OriginalVertices.IsEmpty||OriginalVertices[point]!=RetiredBoundaryVertex;
 
         internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN,
-            SurfTag equation=0,BoundaryRootWitnessId witness=0)
+            SurfTag equation=0,BoundaryRootWitnessId witness=0,BufferOffset lineOccurrence=-1)
         {
             if(Parameters.IsEmpty)return 0;
             if(double.IsNaN(lower)){lower=parameter;upper=parameter;}
@@ -83,26 +83,28 @@ internal static unsafe partial class KernelRuntime
                 }
                 if(upper<known.Lower||lower>known.Upper)
                     return UnresolvedBoundaryStation(curve,endpoint,parameter,new(lower,upper),known.Parameter,new(known.Lower,known.Upper));
-                hasCertificate|=known.Surface!=0;
-                if(known.Surface==equation&&known.Witness==witness||known.Surface==0&&known.Witness==0)match=i;
+                hasCertificate|=known.Surface!=0||known.LineOccurrence!=0;
+                if(known.Surface==equation&&known.Witness==witness&&known.LineOccurrence==lineOccurrence+1
+                    ||known.Surface==0&&known.Witness==0&&known.LineOccurrence==0)match=i;
             }
-            if(equation==0&&hasCertificate)return 0;
+            if(equation==0&&witness==0&&lineOccurrence<0&&hasCertificate)return 0;
             if(match>=0)
             {
                 ref var known=ref Parameters[match];
-                if(known.Surface==equation&&known.Witness==witness)
+                if(known.Surface==equation&&known.Witness==witness&&known.LineOccurrence==lineOccurrence+1)
                 {
                     known.Lower=Math.Max(lower,known.Lower);known.Upper=Math.Min(upper,known.Upper);
                     known.Parameter=Math.Clamp(known.Parameter,known.Lower,known.Upper);
                 }
-                else {known.Surface=equation;known.Witness=witness;known.Lower=lower;known.Upper=upper;known.Parameter=parameter;}
+                else {known.Surface=equation;known.Witness=witness;known.LineOccurrence=lineOccurrence+1;known.Lower=lower;known.Upper=upper;known.Parameter=parameter;}
                 return 0;
             }
             // A joined event may have been proved by a different common
             // participant. Retain each native root equation so a later
             // pair can join through any one of them.
             if(ParameterCount==Parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Surface=equation,Witness=witness,Parameter=parameter,Lower=lower,Upper=upper};return 0;
+            Parameters[ParameterCount++]=new(){Event=endpoint,Carrier=curve,Generation=generation,Surface=equation,Witness=witness,
+                LineOccurrence=lineOccurrence+1,Parameter=parameter,Lower=lower,Upper=upper};return 0;
         }
 
         internal bool KnownParameter(BoundaryEventId endpoint,CurveTag curve,out double parameter)
@@ -131,7 +133,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if(known.Event!=endpoint||known.Carrier!=curve||known.Generation!=generation)continue;
                 if(known.SourceOccurrence==inputEdge){ConstrainBoundaryStation(ref parameter,ref selected,known);continue;}
-                if(known.Witness!=0){otherOccurrence=true;continue;}
+                if(known.SourceOccurrence>=0){otherOccurrence=true;continue;}
                 ConstrainBoundaryStation(ref fallback,ref unqualified,known);
             }
             if(selected)return true;
@@ -245,6 +247,12 @@ internal static unsafe partial class KernelRuntime
                 if(known.Upper<anchor.Lower||known.Lower>anchor.Upper)return true;
                 shared=true;
                 var exact=anchor.Lower==anchor.Upper&&known.Lower==known.Upper&&known.Lower==anchor.Lower;
+                if(anchor.LineOccurrence!=0||known.LineOccurrence!=0)
+                {
+                    if(anchor.SourceOccurrence>=0&&known.SourceOccurrence>=0)
+                    {certified=true;same|=exact&&anchor.SourceOccurrence==known.SourceOccurrence;}
+                    continue;
+                }
                 if(anchor.Witness!=0||known.Witness!=0)
                 {
                     if(anchor.Witness!=0&&known.Witness!=0)
@@ -649,7 +657,8 @@ internal static unsafe partial class KernelRuntime
             }
             if(next<0)return ParasolidConstants.PK_ERROR_bad_loop;h.Next=next;
             TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.Successor,Surface=surface,Curve=edge.Curve,Edge=h.Edge,NextEdge=halfedges[next].Edge,
-                StartEvent=h.StartEvent,EndEvent=h.EndEvent,Forward=h.Forward,StartAngle=h.StartAngle,EndAngle=h.EndAngle});
+                StartEvent=h.StartEvent,EndEvent=h.EndEvent,Forward=h.Forward,StartAngle=h.StartAngle,EndAngle=h.EndAngle,
+                StartPoint=h.StartEvent>=0?model.Points[h.StartEvent]:default,EndPoint=model.Points[h.EndEvent]});
         }
         for(var seed=0;seed<nh;seed++)
         {

@@ -8,7 +8,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RegularBooleanStage:byte{None,Read,Cuts,Clip,Split,Arrange,Classify,Components,Assemble,Publish}
+    internal enum RegularBooleanStage:byte{None,Read,Cuts,Clip,Split,Arrange,Classify,Components,Assemble,Publish,ThirdFace}
     [ThreadStatic] internal static RegularBooleanStage LastRegularBooleanStage;
     [ThreadStatic] internal static BufferOffset LastRegularBooleanFace;
     [ThreadStatic] internal static BufferOffset LastRegularBooleanOtherFace;
@@ -123,12 +123,18 @@ internal static unsafe partial class KernelRuntime
                     {
                         if(owners[f]==owners[cut.First]||owners[f]==owners[cut.Second])continue;
                         error=ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model,ForbidSpatialBoundaryReuse,out _);
-                        if(error!=0)return error;
+                        if(error!=0)
+                        {
+                            LastRegularBooleanStage=RegularBooleanStage.ThirdFace;
+                            LastRegularBooleanFace=cut.First;LastRegularBooleanOtherFace=f;
+                            return error;
+                        }
                     }
                 }
             }
             LastRegularBooleanStage=RegularBooleanStage.Split;ModelingPerformance.Stage(RegularBooleanStage.Split);
             var coincident=false;for(var i=0;i<familyCount;i++)coincident|=families[i].Relation==SurfacePairRelation.CoincidentArea;
+            if(coincident){error=ConnectCoincidentLineCuts(input,cuts[..cutCount],ref model);if(error!=0)return error;}
             error=SplitRegularSourceEdges(input,originalEdges[..ne],sourceEdges,owned,ref ownedCount,ref model,coincident);if(error!=0)return error;
             Span<SheetCutCurve> faceCuts=stackalloc SheetCutCurve[RegularCutLimit];
             for(var f=0;f<nf;f++)

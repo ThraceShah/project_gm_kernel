@@ -53,6 +53,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.CoincidentLineStation)
+        {Console.WriteLine($"COINCIDENT LINE event={trace.StartEvent} curve={trace.Curve}/{trace.Generation} occurrence={trace.Edge} t={trace.First:R}");return;}
         var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)];
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Successor)
         {Console.WriteLine($"SUCCESSOR surface={trace.Surface} edge={trace.Edge} forward={trace.Forward} end={trace.EndEvent} next={trace.NextEdge} angles={trace.StartAngle:R}/{trace.EndAngle:R}");return;}

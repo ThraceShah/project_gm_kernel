@@ -23,9 +23,12 @@ internal static unsafe partial class KernelRuntime
         // named equation's complete result, shared by its coedge discoveries.
         // Accepted cut uses occupy a separate occurrence range after input edges.
         internal BoundaryRootWitnessId Witness;
+        // A transferred line station names its finite occurrence without
+        // using the original curve/surface root ordinal.
+        internal BufferOffset LineOccurrence;
         internal double Parameter,Lower,Upper;
 
-        internal readonly BufferOffset SourceOccurrence=>Witness==0?-1:(Witness-1)/IntersectionPointCapacity;
+        internal readonly BufferOffset SourceOccurrence=>Witness==0?LineOccurrence-1:(Witness-1)/IntersectionPointCapacity;
     }
     private struct BoundaryCarrierSurface
     {
@@ -81,7 +84,7 @@ internal static unsafe partial class KernelRuntime
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
     [ThreadStatic] internal static bool ForbidSpatialBoundaryReuse;
-    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding,ThirdFaceStation,ThirdFaceOutsideTrim}
+    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding,ThirdFaceStation,ThirdFaceOutsideTrim,CoincidentLineStation}
     internal struct BoundaryTrace
     {
         internal PK_UV_s UvStart,UvEnd;

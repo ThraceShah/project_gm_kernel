@@ -8,7 +8,7 @@ internal static unsafe partial class KernelRuntime
     private static readonly IntervalNumber UncertifiedStation=new(double.NaN,double.NaN);
 
     private static bool HasBoundedStation(in BoundaryParameter anchor)
-        =>anchor.Surface!=0||anchor.Witness!=0||anchor.Lower!=anchor.Upper;
+        =>anchor.Surface!=0||anchor.SourceOccurrence>=0||anchor.Lower!=anchor.Upper;
 
     private static int LocateBoundedStation(CurveTag carrier,BoundaryEventId endpoint,in BoundaryParameter anchor,
         double first,double last,BoundaryEventId lowerEvent,BoundaryEventId upperEvent,

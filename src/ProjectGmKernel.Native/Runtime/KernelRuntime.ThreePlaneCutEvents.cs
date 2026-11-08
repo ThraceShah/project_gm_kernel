@@ -23,13 +23,14 @@ internal static unsafe partial class KernelRuntime
         // transverse root on the third. The independent first pair
         // therefore has exactly one common point with the third plane.
         // These are three gauges of that root, not three nearby XYZ hits.
-        var error=JoinProvenThreePlaneEndpoints(input,cuts,ends,roots[0].Point,ref model,out var endpoint);
+        var error=JoinProvenBoundaryEndpoints(input,cuts,ends,roots[0].Point,ref model,out var endpoint);
         if(error!=0)return error;
         return AssociateThirdFaceStations(anchors,roots,ref model,out joined,endpoint);
     }
 
-    private static int JoinProvenThreePlaneEndpoints(in RegularBoundaryView input,scoped Span<RegularFaceCut> cuts,
-        scoped ReadOnlySpan<BoundaryEventId> ends,in KernelVector3 point,ref SheetArrangement model,out BoundaryEventId endpoint)
+    private static int JoinProvenBoundaryEndpoints(in RegularBoundaryView input,scoped Span<RegularFaceCut> cuts,
+        scoped ReadOnlySpan<BoundaryEventId> ends,in KernelVector3 point,ref SheetArrangement model,out BoundaryEventId endpoint,
+        BoundaryEventId original=-1)
     {
         endpoint=-1;var separate=false;
         foreach(var end in ends)if(end>=0)
@@ -37,17 +38,19 @@ internal static unsafe partial class KernelRuntime
             if(endpoint<0)endpoint=end;else separate|=endpoint!=end;
         }
         if(!separate)return 0;
+        if(original>=0)endpoint=original;
         LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;
         if(model.NE!=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         foreach(var end in ends)
         {
             if(end<0)continue;
-            // Only synthetic cut endpoints may be joined here. Input
-            // topology and already assembled edge identities are immutable.
-            if(model.OriginalVertices[end]>=0||!model.LiveBoundaryPoint(end)||!(ProfileDistance(model.Points[end],point)<=model.Tolerance))
+            // Only synthetic endpoints can be retired. A provider can
+            // retain one explicitly named source endpoint.
+            if(end!=original&&model.OriginalVertices[end]>=0||!model.LiveBoundaryPoint(end)||!(ProfileDistance(model.Points[end],point)<=model.Tolerance))
                 return ParasolidConstants.PK_ERROR_cant_do_intersect;
-            foreach(ref readonly var edge in input.Edges)if(edge.StartVertex==end||edge.EndVertex==end)
-                return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            if(end!=original)
+                foreach(ref readonly var edge in input.Edges)if(edge.StartVertex==end||edge.EndVertex==end)
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
 
         var parameters=model.Parameters[..model.ParameterCount];

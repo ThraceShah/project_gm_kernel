@@ -277,6 +277,29 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(-2,4,0,(int)SurfacePairRelation.CurveContact,2)]
+    [InlineData(-.5,1,0,(int)SurfacePairRelation.CurveContact,0)]
+    [InlineData(-2,1,0,(int)SurfacePairRelation.PointContact,1)]
+    [InlineData(-2,.75,0,(int)SurfacePairRelation.Empty,0)]
+    [InlineData(-2,4,1,(int)SurfacePairRelation.CurveContact,0)]
+    public void CoplanarThirdLineDistinguishesFiniteTrimContact(double x,double length,double y,int relation,int events)
+    {
+        BodyTag body;Assert.Equal(0,KernelRuntime.BodyCreateSolidBlock(2,2,2,null,&body));
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];FaceSlot top=-1;
+        var face=record.FirstFaceBody;
+        for(var i=0;i<record.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            PK_PLANE_sf_s plane;Assert.Equal(0,KernelRuntime.PlaneAsk(KernelRuntime.Faces[face].SurfTag,&plane));
+            if(plane.basis_set.location.coord[2]==2&&Math.Abs(plane.basis_set.axis.coord[2])==1){top=face;break;}
+        }
+        Assert.True(top>=0);
+        var line=new PK_LINE_sf_s();Write(&line.basis_set.axis,Vector(1,0,0));Write(&line.basis_set.location,Vector(x,y,2));
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        Assert.Equal(0,KernelRuntime.TestFiniteThirdFaceEvents(body,top,carrier,0,length,out var n,out var actual));
+        Assert.Equal((SurfacePairRelation)relation,actual);Assert.Equal(events,n);
+    }
+
+    [Theory]
     [InlineData(false,false,.25,0,false,false,false)]
     [InlineData(true,false,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
     [InlineData(false,true,.25,ParasolidConstants.PK_ERROR_not_implemented,false,false,false)]
@@ -438,6 +461,35 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(0,KernelRuntime.TestCoincidentSourceFragments(carrier,fragmentCounts,out var ambiguousCut));
         Assert.Equal(1,fragmentCounts[0]);Assert.Equal(1,fragmentCounts[1]);
         Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,ambiguousCut);
+    }
+
+    [Theory]
+    [InlineData(-1,0)]
+    [InlineData(0,1)]
+    [InlineData(1,2)]
+    public void ExactCoincidentLinesKeepShortOverlapAndReversedStations(int side,int count)
+    {
+        var a=new PK_LINE_sf_s();a.basis_set.axis.coord[0]=1;
+        var b=new PK_LINE_sf_s();b.basis_set.location.coord[0]=2;b.basis_set.axis.coord[0]=-1;
+        CurveTag first,second;Assert.Equal(0,KernelRuntime.LineCreate(&a,&first));Assert.Equal(0,KernelRuntime.LineCreate(&b,&second));
+        var delta=Math.ScaleB(1,-42);var end=1+side*delta;
+        Assert.True(KernelRuntime.TestExactCoincidentLineOverlap(first,second,1,end,out var roots,out var lastA,out var lastB));
+        Assert.Equal(count,roots);
+        if(count!=0){Assert.Equal(end,lastA);Assert.Equal(2-end,lastB);}
+    }
+
+    [Theory]
+    [InlineData(false,0)]
+    [InlineData(true,ParasolidConstants.PK_ERROR_cant_do_intersect)]
+    public void CoplanarLineOccurrenceAdoptsSyntheticEventButNotAnotherOriginalVertex(bool differentOriginal,int expected)
+    {
+        var a=new PK_LINE_sf_s();a.basis_set.axis.coord[0]=1;
+        var b=new PK_LINE_sf_s();b.basis_set.location.coord[1]=-.25;b.basis_set.axis.coord[1]=1;
+        CurveTag first,second;Assert.Equal(0,KernelRuntime.LineCreate(&a,&first));Assert.Equal(0,KernelRuntime.LineCreate(&b,&second));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[1]=1;plane.basis_set.ref_direction.coord[0]=1;
+        SurfTag equation;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&equation));
+        Assert.Equal(expected,KernelRuntime.TestAdoptCoincidentLineRoot(first,second,equation,differentOriginal,out var adopted,out var twoUses));
+        Assert.Equal(!differentOriginal,adopted&&twoUses);
     }
 
     [Theory]

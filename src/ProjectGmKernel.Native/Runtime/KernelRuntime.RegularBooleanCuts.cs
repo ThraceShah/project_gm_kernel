@@ -809,7 +809,8 @@ internal static unsafe partial class KernelRuntime
                 {
                     // A planar vertex-on-edge imprint is a local-precision
                     // merge only if surviving cells use both source bodies.
-                    if(RegularPlanarImprintJunction(input,p,e))model.VertexMergeCandidates[p]=1;
+                    if(RegularPlanarImprintJunction(input,p,e)&&!ExactCoincidentImprintStation(ref model,p,edge.Curve,e,t))
+                        model.VertexMergeCandidates[p]=1;
                 }
                 var duplicate=false;for(var k=0;k<n;k++)
                 {

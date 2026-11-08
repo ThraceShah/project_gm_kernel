@@ -107,7 +107,8 @@ internal static unsafe partial class KernelRuntime
             var loopA=input.Loops[a.FirstLoop+al];
             for(var ai=0;ai<loopA.CoedgeCount;ai++)
             {
-                var edgeA=input.Edges[input.Coedges[loopA.FirstCoedge+ai].Edge];
+                var indexA=input.Coedges[loopA.FirstCoedge+ai].Edge;
+                var edgeA=input.Edges[indexA];
                 var intervalA=new PK_INTERVAL_s();intervalA.value[0]=edgeA.Start;intervalA.value[1]=edgeA.End;
                 var error=ResolveIntersectionCurve(edgeA.Curve,intervalA,out var spanA);if(error!=0)return error;
                 for(var bl=0;bl<b.LoopCount;bl++)
@@ -115,7 +116,19 @@ internal static unsafe partial class KernelRuntime
                     var loopB=input.Loops[b.FirstLoop+bl];
                     for(var bi=0;bi<loopB.CoedgeCount;bi++)
                     {
-                        var edgeB=input.Edges[input.Coedges[loopB.FirstCoedge+bi].Edge];
+                        var indexB=input.Coedges[loopB.FirstCoedge+bi].Edge;
+                        var edgeB=input.Edges[indexB];
+                        if(TryExactCoincidentLineRoots(edgeA,edgeB,roots,out var exactCount))
+                        {
+                            for(var r=0;r<exactCount;r++)
+                            {
+                                error=AssociateCoincidentLineRoot(input,cuts[..cutCount],indexA,indexB,roots[r],ref model);
+                                if(error!=0)return error;
+                            }
+                            continue;
+                        }
+                        if(ForbidSpatialBoundaryReuse||model.RequireBoundaryAssociations)
+                            return ParasolidConstants.PK_ERROR_not_implemented;
                         var intervalB=new PK_INTERVAL_s();intervalB.value[0]=edgeB.Start;intervalB.value[1]=edgeB.End;
                         error=ResolveIntersectionCurve(edgeB.Curve,intervalB,out var spanB);if(error!=0)return error;
                         var status=IntersectCurveSpans(spanA,spanB,roots,out var nr);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
@@ -132,9 +145,19 @@ internal static unsafe partial class KernelRuntime
                 var loop=input.Loops[face.FirstLoop+l];
                 for(var k=0;k<loop.CoedgeCount;k++)
                 {
-                    var edge=input.Edges[input.Coedges[loop.FirstCoedge+k].Edge];
+                    var edgeIndex=input.Coedges[loop.FirstCoedge+k].Edge;
+                    var edge=input.Edges[edgeIndex];
                     if(cutCount==cuts.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-                    cuts[cutCount++]=new(){First=first,Second=second,Cut=new(){Curve=edge.Curve,First=edge.Start,Last=edge.End,Closed=edge.StartVertex<0?(byte)1:(byte)0,KeepImprint=1}};
+                    var cut=new SheetCutCurve{Curve=edge.Curve,First=edge.Start,Last=edge.End,Closed=edge.StartVertex<0?(byte)1:(byte)0,KeepImprint=1};
+                    if(Curves[GetCurveSlotByTag(edge.Curve)].Class==CurveClass.Line)
+                    {
+                        var lower=NativeLineEnd(edge,edge.Start);var upper=NativeLineEnd(edge,edge.End);
+                        cut.LowerEvent=lower+1;cut.UpperEvent=upper+1;
+                        if(lower>=0){var error=model.AssociateParameter(lower,edge.Curve,edge.Start,lineOccurrence:edgeIndex);if(error!=0)return error;}
+                        if(upper>=0){var error=model.AssociateParameter(upper,edge.Curve,edge.End,lineOccurrence:edgeIndex);if(error!=0)return error;}
+                        if(lower>=0&&upper>=0)cut.NativeLocatorEnds=3;
+                    }
+                    cuts[cutCount++]=new(){First=first,Second=second,Cut=cut};
                 }
             }
         }
@@ -166,13 +189,20 @@ internal static unsafe partial class KernelRuntime
         var opposite=edge.StartVertex==previous.EndVertex&&edge.EndVertex==previous.StartVertex;if(!same&&!opposite)return 0;
         var ia=new PK_INTERVAL_s();ia.value[0]=edge.Start;ia.value[1]=edge.End;
         var ib=new PK_INTERVAL_s();ib.value[0]=previous.Start;ib.value[1]=previous.End;
-        if(ResolveIntersectionCurve(edge.Curve,ia,out var a)!=0||ResolveIntersectionCurve(previous.Curve,ib,out var b)!=0)return 0;
-        var status=IntersectCurveSpans(a,b,roots,out var n);if(status==AlgorithmStatus.Unsupported||status==AlgorithmStatus.NotConverged)return 0;
-        if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+        var aFirst=edge.Start;var aLast=edge.End;var bFirst=previous.Start;var bLast=previous.End;
+        var exact=TryExactCoincidentLineRoots(edge,previous,roots,out var n);
+        if(!exact)
+        {
+            if(ResolveIntersectionCurve(edge.Curve,ia,out var a)!=0||ResolveIntersectionCurve(previous.Curve,ib,out var b)!=0)return 0;
+            var status=IntersectCurveSpans(a,b,roots,out n);if(status==AlgorithmStatus.Unsupported||status==AlgorithmStatus.NotConverged)return 0;
+            if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            aFirst=a.Lower;aLast=a.Upper;bFirst=b.Lower;bLast=b.Upper;
+        }
         if(n!=2||roots[0].Kind!=IntersectionVectorKind.Start||roots[1].Kind!=IntersectionVectorKind.End)return 0;
-        var epsilon=1e-10*Math.Max(1,Math.Max(a.Upper-a.Lower,b.Upper-b.Lower));
-        if(Math.Abs(roots[0].First-a.Lower)>epsilon||Math.Abs(roots[1].First-a.Upper)>epsilon
-            ||Math.Abs(Math.Min(roots[0].Second,roots[1].Second)-b.Lower)>epsilon||Math.Abs(Math.Max(roots[0].Second,roots[1].Second)-b.Upper)>epsilon)return 0;
+        var epsilon=exact?0:1e-10*Math.Max(1,Math.Max(aLast-aFirst,bLast-bFirst));
+        if(Math.Abs(roots[0].First-aFirst)>epsilon||Math.Abs(roots[1].First-aLast)>epsilon
+            ||Math.Abs(Math.Min(roots[0].Second,roots[1].Second)-bFirst)>epsilon
+            ||Math.Abs(Math.Max(roots[0].Second,roots[1].Second)-bLast)>epsilon)return 0;
         var parameterDirection=roots[1].Second-roots[0].Second;if(parameterDirection==0)return 0;
         var flip=parameterDirection*LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)*LocalSenseSign(Curves[GetCurveSlotByTag(previous.Curve)].Sense)<0;
         if(edge.StartVertex>=0&&edge.StartVertex!=edge.EndVertex&&flip==same)return ParasolidConstants.PK_ERROR_bad_loop;
