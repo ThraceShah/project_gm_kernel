@@ -39,26 +39,37 @@ internal static unsafe partial class KernelRuntime
                 var data=ICurveDataPool[Curves[curve].DataIndex];
                 if(SameSheetSupport(data.Surface0Tag,surface)||SameSheetSupport(data.Surface1Tag,surface))return true;
             }
-            foreach(var incidence in model.CarrierSurfaces[..model.CarrierSurfaceCount])
-                if(incidence.Carrier==use.Carrier&&incidence.CarrierGeneration==use.Generation
-                    &&incidence.Covers(use.Lower,use.Upper)
-                    &&(incidence.InputEdge<0||use.Witness==0||incidence.InputEdge==use.SourceOccurrence)
-                    &&Surfaces[GetSurfaceSlotByTag(incidence.Surface)].Header.Generation==incidence.SurfaceGeneration
-                    &&SameSheetSupport(incidence.Surface,surface))return true;
+        }
+        foreach(ref readonly var incidence in model.CarrierSurfaces[..model.CarrierSurfaceCount])
+        {
+            var curve=GetCurveSlotByTag(incidence.Carrier);if(curve<0||Curves[curve].Header.Generation!=incidence.CarrierGeneration)continue;
+            // Intersect only the witnesses eligible for this finite use.
+            // A different source edge using the carrier cannot refine its box.
+            var known=incidence.InputEdge<0?model.KnownBoundaryParameter(endpoint,incidence.Carrier,out var station)
+                :model.KnownSourceBoundaryParameter(endpoint,incidence.Carrier,incidence.InputEdge,out station,out _);
+            if(!known||!incidence.Covers(station.Lower,station.Upper))continue;
+            var support=GetSurfaceSlotByTag(incidence.Surface);
+            if(support>=0&&Surfaces[support].Header.Generation==incidence.SurfaceGeneration&&SameSheetSupport(incidence.Surface,surface))return true;
         }
         return false;
     }
 
 #if KERNEL_TEST_HOOKS
-    internal static int TestBoundedCarrierIncidence(CurveTag curve,SurfTag surface,double lower,double upper,out bool incident)
+    internal static int TestBoundedCarrierIncidence(CurveTag curve,SurfTag surface,double lower,double upper,out bool incident,
+        IntervalNumber? refinement=null,bool sameOccurrence=true)
     {
         incident=false;
         var model=new SheetArrangement{Points=stackalloc KernelVector3[1],OriginalVertices=stackalloc VertexSlot[1],
-            Parameters=stackalloc BoundaryParameter[1],CarrierSurfaces=stackalloc BoundaryCarrierSurface[2]};
-        var error=AssociateBoundaryCarrierSurface(ref model,curve,0,1,surface);if(error!=0)return error;
+            Parameters=stackalloc BoundaryParameter[2],CarrierSurfaces=stackalloc BoundaryCarrierSurface[2]};
+        var error=AssociateBoundaryCarrierSurface(ref model,curve,0,1,surface,refinement.HasValue?0:-1);if(error!=0)return error;
         error=AssociateBoundaryCarrierSurface(ref model,curve,2,3,surface);if(error!=0)return error;
         error=model.AddPoint(default,-1,out var point,requireProof:true);if(error!=0)return error;
-        error=model.AssociateParameter(point,curve,lower+(upper-lower)*.5,lower,upper);if(error!=0)return error;
+        error=model.AssociateParameter(point,curve,lower+(upper-lower)*.5,lower,upper,witness:refinement.HasValue?1:0);if(error!=0)return error;
+        if(refinement is IntervalNumber bound)
+        {
+            error=model.AssociateParameter(point,curve,bound.Midpoint,bound.Lower,bound.Upper,witness:sameOccurrence?2:1+IntersectionPointCapacity);
+            if(error!=0)return error;
+        }
         incident=BoundaryEventOnSurface(ref model,point,surface);return 0;
     }
 

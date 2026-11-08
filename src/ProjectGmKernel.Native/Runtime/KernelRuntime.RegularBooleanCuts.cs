@@ -394,20 +394,26 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
-    internal static int TestBoundedSourceStationOrder(CurveTag carrier,ReadOnlySpan<IntervalNumber> roots,out BufferCount fragments,out double middle)
+    internal static int TestBoundedSourceStationOrder(CurveTag carrier,ReadOnlySpan<IntervalNumber> roots,out BufferCount fragments,out double middle,
+        IntervalNumber? firstRefinement=null,double? declaredEnd=null)
     {
         fragments=0;middle=0;
         Span<ModelingEdge> input=stackalloc ModelingEdge[1]{new(){Curve=carrier,Start=0,End=1,StartVertex=0,EndVertex=1}};
         Span<EdgeSlot> original=stackalloc EdgeSlot[1]{-1};
         Span<SheetSourceEdge> sources=stackalloc SheetSourceEdge[1];
         var graph=new SheetArrangement{Edges=stackalloc ModelingEdge[3],CutEdges=stackalloc byte[3],
-            Points=stackalloc KernelVector3[4],Parameters=stackalloc BoundaryParameter[2],NP=roots.Length+2,RequireBoundaryAssociations=true};
+            Points=stackalloc KernelVector3[4],Parameters=stackalloc BoundaryParameter[3],NP=roots.Length+2,RequireBoundaryAssociations=true};
         graph.Points[1]=Vector(1,0,0);
         for(var i=0;i<roots.Length;i++)
         {
             var bound=roots[i];graph.Points[i+2]=Vector(bound.Midpoint,0,0);
             var error=graph.AssociateParameter(i+2,carrier,bound.Midpoint,bound.Lower,bound.Upper,witness:i+1);if(error!=0)return error;
         }
+        if(firstRefinement is IntervalNumber refinement)
+        {
+            var error=graph.AssociateParameter(2,carrier,refinement.Midpoint,refinement.Lower,refinement.Upper,witness:roots.Length+1);if(error!=0)return error;
+        }
+        if(declaredEnd is double end&&!HasCutEnd(ref graph,carrier,2,end))return ParasolidConstants.PK_ERROR_cant_do_intersect;
         var ownedCount=0;var split=SplitRegularSourceEdges(new(input,default,default,default),original,sources,default,ref ownedCount,ref graph);
         if(split!=0)return split;
         fragments=sources[0].Count;

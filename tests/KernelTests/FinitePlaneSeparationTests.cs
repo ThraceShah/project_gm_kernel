@@ -405,6 +405,20 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         if(!unresolved)Assert.InRange(middle,1.9e-13,2.1e-13);
     }
 
+    [Fact]
+    public void RejoinedSourceStationUsesAllCompatibleRootEnclosures()
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        Span<IntervalNumber> roots=stackalloc IntervalNumber[2]{new(.1,.5),new(.44,.46)};
+        IntervalNumber refinement=new(.25,.35);
+        Assert.Equal(0,KernelRuntime.TestBoundedSourceStationOrder(carrier,roots,out var fragments,out var middle,refinement));
+        Assert.Equal(3,fragments);Assert.InRange(middle,.149,.151);
+        Assert.Equal(0,KernelRuntime.TestBoundedSourceStationOrder(carrier,roots[..1],out _,out _,refinement,.3));
+        Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,
+            KernelRuntime.TestBoundedSourceStationOrder(carrier,roots[..1],out _,out _,refinement,.45));
+    }
+
     [Theory]
     [InlineData(-5e-11,-4e-11,0,1)]
     [InlineData(-5e-11,5e-11,ParasolidConstants.PK_ERROR_cant_do_intersect,0)]
@@ -496,6 +510,18 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         SurfTag surface;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&surface));
         Assert.Equal(0,KernelRuntime.TestBoundedCarrierIncidence(carrier,surface,lower,upper,out var associated));
         Assert.Equal(incident,associated);
+    }
+
+    [Theory]
+    [InlineData(true)] [InlineData(false)]
+    public void JoinedBoundsProveTrimIncidenceOnlyOnTheirSourceOccurrence(bool sameOccurrence)
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[0]=1;CurveTag carrier;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[2]=1;plane.basis_set.ref_direction.coord[0]=1;SurfTag surface;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&surface));
+        Assert.Equal(0,KernelRuntime.TestBoundedCarrierIncidence(carrier,surface,-.2,.6,out var incident,new(.4,1.2),sameOccurrence));
+        Assert.Equal(sameOccurrence,incident);
     }
 
     [Theory]

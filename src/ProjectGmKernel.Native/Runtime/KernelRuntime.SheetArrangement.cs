@@ -109,30 +109,42 @@ internal static unsafe partial class KernelRuntime
 
         internal bool KnownBoundaryParameter(BoundaryEventId endpoint,CurveTag curve,out BoundaryParameter parameter)
         {
-            parameter=default;var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
+            parameter=default;var found=false;var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
             for(var i=0;i<ParameterCount;i++)
             {
                 var known=Parameters[i];if(known.Event!=endpoint||known.Carrier!=curve||known.Generation!=generation)continue;
-                parameter=known;return true;
+                ConstrainBoundaryStation(ref parameter,ref found,known);
             }
-            return false;
+            return found;
         }
 
         internal bool KnownSourceBoundaryParameter(BoundaryEventId endpoint,CurveTag curve,BufferOffset inputEdge,
             out BoundaryParameter parameter,out bool otherOccurrence)
         {
             parameter=default;otherOccurrence=false;
-            var unqualified=false;var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
+            var selected=false;var unqualified=false;var fallback=default(BoundaryParameter);
+            var generation=Curves[GetCurveSlotByTag(curve)].Header.Generation;
             foreach(ref readonly var known in Parameters[..ParameterCount])
             {
                 if(known.Event!=endpoint||known.Carrier!=curve||known.Generation!=generation)continue;
-                if(known.SourceOccurrence==inputEdge){parameter=known;return true;}
+                if(known.SourceOccurrence==inputEdge){ConstrainBoundaryStation(ref parameter,ref selected,known);continue;}
                 if(known.Witness!=0){otherOccurrence=true;continue;}
-                if(!unqualified){parameter=known;unqualified=true;}
+                ConstrainBoundaryStation(ref fallback,ref unqualified,known);
             }
+            if(selected)return true;
             // A root of a different edge cannot fall through to an XYZ
             // inverse just because that edge uses the same carrier.
+            if(unqualified&&!otherOccurrence)parameter=fallback;
             return unqualified&&!otherOccurrence;
+        }
+
+        private static void ConstrainBoundaryStation(ref BoundaryParameter station,ref bool found,in BoundaryParameter next)
+        {
+            if(!found){station=next;found=true;return;}
+            // Registration already checked the intersection is nonempty.
+            // Keep individual witnesses for rediscovery; readers use their conjunction.
+            station.Lower=Math.Max(station.Lower,next.Lower);station.Upper=Math.Min(station.Upper,next.Upper);
+            station.Parameter=Math.Clamp(station.Parameter,station.Lower,station.Upper);
         }
 
         internal int AssociateTangency(BoundaryEventId endpoint,CurveTag first,CurveTag second)
