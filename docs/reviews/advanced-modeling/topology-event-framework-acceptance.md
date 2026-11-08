@@ -20,6 +20,10 @@ All commands below use `MSBUILDDISABLENODEREUSE=1`. Test exit codes are saved be
 | M0 focused | `dotnet test tests/KernelTests -c Release -m:1 -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true --filter 'FullyQualifiedName~BlendSupportChainTests\|FullyQualifiedName~RegularSolidBlendTests\|FullyQualifiedName~ExplicitSpineTests' --logger 'console;verbosity=normal'` | `temp_docs/topology-event-framework/m0-focused.log` | exit 0, 61/61 |
 | M0 plane-nurbs | `dotnet run scripts/RegularSolidBlendOracle.cs -c Release -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true -- plane-nurbs` | `temp_docs/topology-event-framework/m0-plane-nurbs.log` | exit 0 |
 
+The current ordinary short-edge failure is reproduced with
+`dotnet run scripts/ShortEdgeBlendOracle.cs -c Release -- --event-arrangement --geometry --lifecycle --proof-only-lifecycle --material-ownership`.
+It uses the unblended 1° seed, radius .5 and mark/fix tolerance `1e-7`. The guards are active on the self Fix and both self Booleans. The native and self modeling operations succeed; the command reports only the original raw mass point failures and exits 134 after completing the lifecycle. The transverse witness variant replaces `--proof-only-lifecycle` with `--require-native-cut-witness --reload-before-local-cut --transverse-local-cut`. The independently modeled cylindrical junction fixture is `dotnet run scripts/BooleanOperationOracle.cs -c Release -- --three-face-cylinder`.
+
 ## M0 independent states (historical)
 
 - M0 focused tests: exit 0, 61 passed, zero failed/skipped.
@@ -526,4 +530,24 @@ The initial curved-third fixture independently produced one valid native body bu
 
 `BooleanOperationOracle.cs --three-face-cylinder` independently constructs the cylindrical target and both overlapping tools. Ordinary and reversed guarded calls each publish four junctions; all three station witnesses per junction reach actual result edges, and fresh XT, complete BODY_check and strict native comparison pass. A nearby radius whose carrier equalities cannot be proved is rejected in the guarded path; the regression checks original XT, generations, geometry pools and returned buffers for all three bodies. Other nonlinear third-support representations and uncertified trim endpoints retain their unresolved/unsupported boundary.
 
-`m4-curved-third-face-verified.log`: **2/2** independent products, exit 0. `m5-curved-third-face-regression.log`: **109/109** affected tests; `m5-curved-third-face-final.log`: **48/48** on the final proof statuses (both exit 0), catalog **175**, allocation guard CLEAN across **2663** methods. The independent ordinary Boolean suite (**43**), three-plane pair (**2**) and finite bore (**1**) also pass (`m5-curved-third-face-{regular,plane,hole}-oracle.log`). The full managed replay is running as `m5-curved-third-face-all.log`.
+`m4-curved-third-face-verified.log`: **2/2** independent products, exit 0. `m5-curved-third-face-regression.log`: **109/109** affected tests; `m5-curved-third-face-final.log`: **48/48** on the final proof statuses (both exit 0), catalog **175**, allocation guard CLEAN across **2663** methods. The independent ordinary Boolean suite (**43**), three-plane pair (**2**) and finite bore (**1**) also pass (`m5-curved-third-face-{regular,plane,hole}-oracle.log`). The full managed replay on `b31efbb` passed **1743/1743** (`m5-curved-third-face-all.log`, exit 0).
+
+
+On `b31efbb`, the guarded default short-edge lifecycle still publishes both cuts and passes full/strict/finite checks plus all 48 material probes (`m4-curved-third-face-short-default.log`). The command exits 134 on the original four raw `yz` comparisons. In the separate finite-trim integral diagnostic, the worst case in the untransformed matrix differs by `1.39e-10` at eight slices, with final refinement changes below `9.49e-13` (`m4-final-matrix-worst-trim-integral.log`). The reflected self copy in the ordinary default lifecycle differs by `5.30e-10` in that diagnostic, with final refinement changes below `5.03e-10` (`m4-final-ordinary-copy-trim-integral.log`). Both diagnostics exit 0. They are numerical cross-checks on the finite trim, not replacements for the original raw point gate.
+
+A separate real-PK diagnostic on the saved reflected-copy pair requests `accuracy=1.0` with each of the no-bound, modulus and interval return modes. All three give exactly the same normalized point residual, `1.6578616453917745e-6`, on the same `yz` component (`m4-final-native-bound-modes-clean.log`). Together with the native-only repartition control and the official accuracy contract, this isolates the remaining verification limitation: a supported request for higher accuracy or a different error return mode has not produced a raw pass. No threshold, baseline, strict comparator or production representation was changed to obtain one.
+
+The final producer also passes the pre-Fix mirror, radius .6, ellipse split .61, reverse order and both proof-only lifecycle cuts (`m4-curved-third-face-short-mirror.log`, exit 0). With a pre-Fix scale of 1.7, the mapped geometry, full/strict, finite and all 48 material checks pass, and the command exits 134 on two raw checks (copy and first cut, `m4-curved-third-face-short-scale.log`).
+
+The native-only numerical control can be repeated after generating the .25°/.6 independent product. The existing diagnostic expects the fresh native XT in the oracle output directory.
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ShortEdgeProductDiagnostic.cs -c Release -- \
+  a0.25-r0.6-t1E-07-reverseFalse-default --native-partition-only --full-accuracy \
+  --imprint-x=-2.2 --imprint-x=-2 --imprint-x=-1.8 --imprint-x=-1.6 --imprint-x=-1.4 \
+  --imprint-y=-2.49 --imprint-y=-2.25 --imprint-y=-2.05 --imprint-z=4.75 --imprint-z=4.95
+```
+
+Its exit 1 is an observation of the original point threshold on two real-native representations of the same material, not a new acceptance criterion.
+
+The default ordinary trace certifies the two actual band-pair native ranges `[0, 0.7846365131289719]` and `[7.614953207667128e-5, 0.7853551335059695]` against the four third source occurrences. The guarded transverse proof in `m4-third-face-hole-transverse.log` keeps the native root boxes `[0.04287839236691892, 0.042878392367073234]` and `[3.8001576795425696e-5, 3.80015769221062e-5]` on the two different actual short source occurrences. Their paired cut-chart stations are also enclosed, with forward spatial errors below `3.03e-13`. Both events reach the published cut edges, with no position-only reuse. These intervals are run evidence, not production dispatch inputs. The remaining default failure occurs after publication and independent geometry checks, at numerical verification of the original mass point values.
