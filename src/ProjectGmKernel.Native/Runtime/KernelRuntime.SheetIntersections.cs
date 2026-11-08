@@ -92,20 +92,14 @@ internal static unsafe partial class KernelRuntime
             // finite intervals are subsequently clipped to both face loops.
             TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(orderedFirst)],out var firstSupport);
             TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(orderedSecond)],out var secondSupport);
-            var firstSense=LocalSenseSign(Surfaces[GetSurfaceSlotByTag(orderedFirst)].Sense);
-            var secondSense=LocalSenseSign(Surfaces[GetSurfaceSlotByTag(orderedSecond)].Sense);
-            Span<KernelVector3> jet=stackalloc KernelVector3[2];
+            var firstSense=Surfaces[GetSurfaceSlotByTag(orderedFirst)].Sense;
+            var secondSense=Surfaces[GetSurfaceSlotByTag(orderedSecond)].Sense;
             for(var i=0;i<nc;i++)
             {
                 if(branches[i].Kind!=IntersectionCurveKind.Simple)return ParasolidConstants.PK_ERROR_not_implemented;
                 CurveTag curve=0;var error=CreateIntersectionBranch(branches[i],&curve);if(error!=0)return error;
-                var slot=GetCurveSlotByTag(curve);var at=branches[i].Start+(branches[i].End-branches[i].Start)*.5;
-                status=EvaluateCurveCore(in Curves[slot],at,1,false,jet,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                status=AnalyticImplicitEvaluation.Evaluate(firstSupport,jet[0],1,out var firstJet);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                status=AnalyticImplicitEvaluation.Evaluate(secondSupport,jet[0],1,out var secondJet);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                var turn=Dot(ProfileCross(firstJet.Gradient,secondJet.Gradient),jet[1])*firstSense*secondSense;
-                if(turn==0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                Curves[slot].Sense=turn<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+                error=OrientAnalyticIntersectionCurve(curve,branches[i].Start,branches[i].End,firstSupport,secondSupport,firstSense,secondSense);
+                if(error!=0)return error;
                 cuts[i]=new(){Curve=curve,First=branches[i].Start,Last=branches[i].End,
                     Construction=branches[i].Class==CurveClass.Line&&firstSupport.Kind==SurfaceClass.Plane&&secondSupport.Kind==SurfaceClass.Plane
                         ?CutConstruction.AnalyticPlanePair:branches[i].Class is CurveClass.Circle or CurveClass.Ellipse

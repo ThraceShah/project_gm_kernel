@@ -37,6 +37,9 @@ try
             SC("nurbs-plane-three-roots",xy,Cubic(false),0,1);SC("rational-nurbs-plane-three-roots",xy,Cubic(true),0,1);
             CC("line-nurbs-three-roots",x,0,1,Cubic(false),0,1);
             SS("plane-plane",xy,Plane(0,0,0,1,0,0,0,1,0));SS("plane-sphere",xy,sphere);
+            SS("sphere-plane-directed-circle",Sphere(0,0,0,2),Plane(0,0,0,0,0,1),circleDirection:true);
+            SS("cylinder-plane-directed-circle",Cylinder(2),Plane(0,0,0,0,0,-1),circleDirection:true);
+            SS("torus-plane-directed-inner-outer",Torus(3,1),Plane(0,0,0,0,0,1),circleDirection:true);
             SS("sphere-sphere",sphere,Sphere(2,0,0,2));SS("sphere-tangent",sphere,Sphere(4,0,0,2));SS("coincident-surfaces",sphere,sphere);
             SS("oblique-plane-cylinder",Plane(0,0,0,Math.Sqrt(.5),0,Math.Sqrt(.5),0,1,0),Cylinder(2));
             SS("plane-torus-two-circles",xy,torus);SS("plane-torus-tangent-circle",Plane(0,0,1,0,0,1),torus);
@@ -100,8 +103,8 @@ unsafe void CC(string label,GeometryPair a,double al,double ah,GeometryPair b,do
 {try{CCCore(label,a,al,ah,b,bl,bh);}catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}}
 unsafe void SC(string label,GeometryPair surface,GeometryPair curve,double lo,double hi)
 {try{SCCore(label,surface,curve,lo,hi);}catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}}
-unsafe void SS(string label,GeometryPair a,GeometryPair b)
-{try{SSCore(label,a,b);}catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}}
+unsafe void SS(string label,GeometryPair a,GeometryPair b,bool circleDirection=false)
+{try{SSCore(label,a,b,circleDirection);}catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}}
 unsafe void ExtremeTensorScaleBoundary(string label,double homogeneousScale,int expectedNativeCreateError)
 {
     var surface=CreateTensorPatch(0,true,false,homogeneousScale,out var nativeCreateError);var plane=Plane(0,0,0,0,0,1);
@@ -253,7 +256,7 @@ unsafe void SCCore(string label,GeometryPair surface,GeometryPair curve,double l
     }
     finally{FreeManaged(mp);FreeManaged(mt);FreeManaged(muv);FreeManaged(mk);FreeOracle(pp);FreeOracle(pt);FreeOracle(puv);FreeOracle(pk);}
 }
-unsafe void SSCore(string label,GeometryPair a,GeometryPair b)
+unsafe void SSCore(string label,GeometryPair a,GeometryPair b,bool circleDirection=false)
 {
     var mo=new M.PK_SURF_intersect_surf_o_s{o_t_version=3,mixed_curve_category=M.ParasolidConstants.PK_mixed_intersection_pline_c,tolerance=1e-5};var po=new PK_SURF_intersect_surf_o_t();
     int mnp=0,pnp=0,mnc=0,pnc=0;M.PK_VECTOR_s* mp=null;PK_VECTOR_t* pp=null;int* mc=null;int* pc=null;M.PK_INTERVAL_s* mr=null;PK_INTERVAL_t* pr=null;int* mk=null;int* pk=null;
@@ -291,13 +294,13 @@ unsafe void SSCore(string label,GeometryPair a,GeometryPair b)
                 Require(KernelRuntime.TryIntersectionPairedParameters(a.Managed,b.Managed,kp,out _,out _)==ProjectGmKernel.Native.Computation.AlgorithmStatus.Success,label+" independent support UV mapping");
             }
             Require(deviation<3e-8,$"{label}: branch deviation {deviation:R}");
-            CompareWire(label+"-branch"+i,mc[i],mr[i],pc[index],pr[index]);Log($"{label}: branch {i} samples max deviation={deviation:R}");
+            CompareWire(label+"-branch"+i,mc[i],mr[i],pc[index],pr[index],circleDirection);Log($"{label}: branch {i} samples max deviation={deviation:R}");
         }
         Log($"PASS {label}: isolated={mnp}, curves={mnc}, complete branch set and independent self-XT wire comparisons");cases++;
     }
     finally{FreeManaged(mp);FreeManaged(mc);FreeManaged(mr);FreeManaged(mk);FreeOracle(pp);FreeOracle(pc);FreeOracle(pr);FreeOracle(pk);}
 }
-unsafe void CompareWire(string label,int managedCurve,M.PK_INTERVAL_s managedRange,int pkCurve,PK_INTERVAL_t pkRange)
+unsafe void CompareWire(string label,int managedCurve,M.PK_INTERVAL_s managedRange,int pkCurve,PK_INTERVAL_t pkRange,bool circleDirection=false)
 {
     int managedBody=0,referenceBody=0;
     Check(KernelRuntime.CurveMakeWireBody(managedCurve,managedRange,&managedBody),label+" managed wire");
@@ -322,8 +325,40 @@ unsafe void CompareWire(string label,int managedCurve,M.PK_INTERVAL_s managedRan
         }
         Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&(result.local_result==PK_DEBUG_local_res_no_diffs_c||chartOnly&&chartDifference),label+" body comparison failed");
         ParasolidBodyCompare.AssertWireGeometry(referenceBody,received,label);
+        if(circleDirection)CheckCircleTraversal(referenceBody,received,label);
     }
     finally{Check(PK_DEBUG_BODY_compare_r_f(&result),label+" free compare");}
+}
+unsafe void CheckCircleTraversal(int reference,int actual,string label)
+{
+    var a=CircleWire(reference);var b=CircleWire(actual);
+    PK_VECTOR_t* first=stackalloc PK_VECTOR_t[2];PK_VECTOR_t* second=stackalloc PK_VECTOR_t[2];
+    var t=a.First+(a.Last-a.First)*.371;
+    Check(PK_CURVE_eval(a.Curve,t,1,first),label+" reference circle tangent");
+    Check(PK_CURVE_parameterise_vector(b.Curve,first[0],&t),label+" actual circle parameter");
+    Check(PK_CURVE_eval(b.Curve,t,1,second),label+" actual circle tangent");
+    var signedDot=0.0;var squaredDistance=0.0;
+    for(var d=0;d<3;d++)
+    {
+        signedDot+=first[1].coord[d]*second[1].coord[d]*a.Sign*b.Sign;
+        var gap=first[0].coord[d]-second[0].coord[d];squaredDistance+=gap*gap;
+    }
+    Require(signedDot>0&&squaredDistance<4e-16,label+" oriented tangents disagree");
+    Log($"{label}: oriented tangents agree at the same spatial point");
+
+    static (PK_CURVE_t Curve,double First,double Last,int Sign) CircleWire(PK_BODY_t body)
+    {
+        int count;PK_EDGE_t* edges;Check(PK_BODY_ask_edges(body,&count,&edges),"circle wire edges");
+        try
+        {
+            Require(count==1,"one edge in circle wire");
+            PK_CURVE_t curve;PK_CLASS_t kind;PK_INTERVAL_t interval;PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];PK_LOGICAL_t sense;
+            Check(PK_EDGE_ask_geometry(edges[0],PK_LOGICAL_true,&curve,&kind,ends,&interval,&sense),"bounded circle geometry");
+            Require(kind==PK_CLASS_circle,"expected an analytic circle");
+            return(curve,interval.value[0],interval.value[1],sense==PK_LOGICAL_true?1:-1);
+        }
+        finally{FreeOracle(edges);}
+    }
 }
 unsafe void ProjectionContracts()
 {
@@ -422,7 +457,7 @@ unsafe void BlendCase(string label,bool spherePair,bool sphereFirst,double radiu
         }
         var ma=a.Managed;var mb=b.Managed;Check(KernelRuntime.EntityDelete(1,&ma),label+" delete first support");Check(KernelRuntime.EntityDelete(1,&mb),label+" delete second support");
         var tool=spherePair?Plane(0,0,.2,0,0,1):Plane(0,.37,0,0,1,0,1,0,0);
-        SSCore(label+"-intersection",new(m,p),tool);Log("PASS "+label+": same public create API, native jets, independent support lifetime and intersection wire");
+        SSCore(label+"-intersection",new(m,p),tool,circleDirection:true);Log("PASS "+label+": same public create API, native jets, independent support lifetime and intersection wire");
     }
     catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
 }

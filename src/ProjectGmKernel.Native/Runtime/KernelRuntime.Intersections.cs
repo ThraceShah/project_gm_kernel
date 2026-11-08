@@ -431,9 +431,19 @@ internal static unsafe partial class KernelRuntime
         else
         {
             for(var i=0;i<np;i++)WriteVector(vectors+i,isolated[i]);
+            var analyticFirst=TryPrepareSurface(Surfaces[sa],out var firstSupport);
+            var analyticSecond=TryPrepareSurface(Surfaces[sb],out var secondSupport);
+            var firstSense=Surfaces[sa].Sense;var secondSense=Surfaces[sb].Sense;
             for(var i=0;i<nc;i++)
             {
-                tags[i]=0;error=CreateIntersectionBranch(branches[i],tags+i);if(error!=0)break;
+                var branch=branches[i];
+                var oriented=analyticFirst&&analyticSecond&&PrepareOrientedPlanarCircle(firstSupport,secondSupport,ref branch);
+                tags[i]=0;error=CreateIntersectionBranch(branch,tags+i);if(error!=0)break;
+                if(oriented)
+                {
+                    error=OrientAnalyticIntersectionCurve(tags[i],branch.Start,branch.End,firstSupport,secondSupport,firstSense,secondSense);
+                    if(error!=0)break;
+                }
                 if(ba>=0){error=TryRegisterConstructionGeometry(ba,tags[i]);if(error!=0)break;}
                 ranges[i].value[0]=branches[i].Start;ranges[i].value[1]=branches[i].End;types[i]=(int)branches[i].Kind;
             }
@@ -441,6 +451,40 @@ internal static unsafe partial class KernelRuntime
         if(error!=0)
         {State.Session->Returns.TryFree(vectors);State.Session->Returns.TryFree(tags);State.Session->Returns.TryFree(ranges);State.Session->Returns.TryFree(types);return error;}
         *points=vectors;*pointCount=np;*curves=tags;*intervals=ranges;*kinds=types;*curveCount=nc;return 0;
+    }
+
+    private static bool PrepareOrientedPlanarCircle(in AnalyticSurface first,in AnalyticSurface second,ref OperationIntersectionBranch branch)
+    {
+        if(branch.Class!=CurveClass.Circle||branch.Kind!=IntersectionCurveKind.Simple)return false;
+        if(first.Kind!=SurfaceClass.Plane&&second.Kind!=SurfaceClass.Plane)return false;
+        ref readonly var plane=ref (first.Kind==SurfaceClass.Plane?ref first:ref second);
+        ref readonly var round=ref (first.Kind==SurfaceClass.Plane?ref second:ref first);
+        if(round.Kind==SurfaceClass.Sphere)return true;
+        if(round.Kind is not(SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Torus)
+            ||OperationIntersection.Norm(ProfileCross(plane.Axis,round.Axis))!=0)return false;
+        // On an axial torus section the inner radial normal is opposite
+        // the outer one. Use the opposite native chart axis on that branch
+        // before assigning the traversal sense for the ordered surfaces.
+        if(round.Kind==SurfaceClass.Torus&&branch.Radius<round.Radius)
+        {branch.Axis=Scale(branch.Axis,-1);branch.Reference=Scale(branch.Reference,-1);}
+        return true;
+    }
+
+    private static int OrientAnalyticIntersectionCurve(CurveTag curve,double first,double last,in AnalyticSurface a,
+        in AnalyticSurface b,KernelSense senseA,KernelSense senseB)
+    {
+        var slot=GetCurveSlotByTag(curve);
+        Span<KernelVector3> jet=stackalloc KernelVector3[2];
+        var status=EvaluateCurveCore(in Curves[slot],first+(last-first)*.5,1,false,jet,out _);
+        if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+        status=AnalyticImplicitEvaluation.Evaluate(a,jet[0],1,out var ja);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+        status=AnalyticImplicitEvaluation.Evaluate(b,jet[0],1,out var jb);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+        // The provider already established the connected regular branch;
+        // its oriented tangent cannot change sign without a singularity.
+        var turn=Dot(ProfileCross(ja.Gradient,jb.Gradient),jet[1])*LocalSenseSign(senseA)*LocalSenseSign(senseB);
+        if(!double.IsFinite(turn)||turn==0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        Curves[slot].Sense=turn<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+        return 0;
     }
 
     private static bool ValidIntersectionUVBox(PK_UVBOX_s box)
