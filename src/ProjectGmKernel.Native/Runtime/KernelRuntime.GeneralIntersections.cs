@@ -448,7 +448,13 @@ internal static unsafe partial class KernelRuntime
                 var compiler=new NestedProgramCompiler();if(!compiler.Ready)return ParasolidConstants.PK_ERROR_memory_full;
                 status=compiler.Surface(first,out var firstInstruction);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
                 status=compiler.Surface(second,out var secondInstruction);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                status=compiler.ChartSpine(firstInstruction,secondInstruction,MemoryMarshal.Cast<double,KernelVector3>(chart),0,1,Math.Max(chordalError,1e-12),angularError,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spine,knownUv:uv);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                var positions=MemoryMarshal.Cast<double,KernelVector3>(chart);
+                status=compiler.ChartSpine(firstInstruction,secondInstruction,positions,0,1,Math.Max(chordalError,1e-12),angularError,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spine,knownUv:uv);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                if(!closed)
+                {
+                    status=compiler.RefinePlaneRollingChart(ref spine,positions,uv);
+                    if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                }
                 CurveTag created=0;var error=BindNestedBlendSpine(first,second,compiler.View,spine,&created,uv);if(error!=0)return error;
                 ICurveDataPool[Curves[GetCurveSlotByTag(created)].DataIndex].OwnsSupportSurfaces=ownsSupports?(byte)1:(byte)0;curve=created;return 0;
             }

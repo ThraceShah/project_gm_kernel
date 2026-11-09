@@ -159,6 +159,54 @@ internal static unsafe partial class KernelRuntime
             return AlgorithmStatus.Success;
         }
 
+        internal AlgorithmStatus RefinePlaneRollingChart(ref BlendSpineIndex index,scoped Span<KernelVector3> positions,scoped Span<double> uv)
+        {
+            var definition=spines[index];var a=surfaces[definition.First];var b=surfaces[definition.Second];
+            if(!a.IsBlend)(a,b)=(b,a);
+            if(!a.IsBlend||b.IsBlend||b.IsBSpline||b.Analytic.Kind!=SurfaceClass.Plane
+                ||Math.Abs(a.Range0)!=Math.Abs(a.Range1)
+                ||spines[a.Spine].Curve.Kind is not (CurveClass.Circle or CurveClass.Ellipse))return AlgorithmStatus.Success;
+            if(index!=nc-1||definition.ChartOffset+definition.ChartCount!=nh)return AlgorithmStatus.InvalidInput;
+
+            // A small plane residual can conceal a large tangential station
+            // error on a shallow cut. XT consumers may return a stored row
+            // directly. Certify the joint root in its original chart gauge
+            // before replacing a seed; terminal events remain fixed.
+            var program=View;var chart=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+            Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+            Span<KernelVector3> point=stackalloc KernelVector3[1];Span<double> contacts=stackalloc double[4];
+            var motion=0.0;
+            for(var i=1;i+1<chart.Length;i++)
+            {
+                var t=chart[i].Parameter;
+                var status=JointNestedBlendEvaluation.BoundSpine(program,index,new(t,t,0,0),bounds);
+                if(status!=AlgorithmStatus.Success)return status;
+                var root=new IntervalVector(bounds[0],bounds[1],bounds[2]);
+                var previous=(root-new IntervalVector(positions[i])).Norm().Value;
+                if(!previous.Finite)return AlgorithmStatus.NotConverged;
+                var accuracy=JointNestedBlendEvaluation.ResidualAccuracy(program,index,positions[i]);
+                if(previous.Lower<=accuracy)continue;
+                status=JointNestedBlendEvaluation.EvaluateSpine(program,index,t,0,point,contacts);
+                if(status!=AlgorithmStatus.Success)return status;
+                var corrected=(root-new IntervalVector(point[0])).Norm().Value;
+                if(!corrected.Finite||corrected.Upper>=previous.Lower)return AlgorithmStatus.NotConverged;
+                var moved=(new IntervalVector(point[0])-new IntervalVector(positions[i])).Norm().Value;
+                if(!moved.Finite||moved.Upper>OperationIntersection.DistanceTolerance)return AlgorithmStatus.NotConverged;
+                positions[i]=point[0];contacts.CopyTo(uv.Slice(4*i,4));motion=Math.Max(motion,moved.Upper);
+            }
+            if(motion==0)return AlgorithmStatus.Success;
+            for(var i=0;i+1<chart.Length;i++)
+            {
+                var chord=new IntervalVector(chart[i].Chord);
+                var separation=IntervalVector.Dot(new IntervalVector(positions[i+1])-new IntervalVector(positions[i]),chord).Value;
+                if(!separation.Finite||separation.Lower<=0)return AlgorithmStatus.NotConverged;
+            }
+            nc=index;nh=definition.ChartOffset;
+            var error=(new IntervalNumber(definition.ChordalError)+motion).Upper;
+            return ChartSpine(definition.First,definition.Second,positions,0,1,error,definition.AngularError,
+                definition.StartType,definition.EndType,out index,knownUv:uv);
+        }
+
         private static AlgorithmStatus ChartSupportWitness(in NestedBlendProgram program,BlendSurfaceIndex surface,SurfTag tag,
             in KernelVector3 point,double u,double v,out TaylorJet distance,out TaylorVector normal)
         {
