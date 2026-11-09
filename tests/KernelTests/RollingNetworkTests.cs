@@ -401,8 +401,9 @@ public unsafe class RollingNetworkTests:IDisposable
             int plane;Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));
             try
             {
-                Assert.Equal(0,KernelRuntime.TestNativePlaneEdge(matched,plane,out var roots,out var vertex,out var station));
+                Assert.Equal(0,KernelRuntime.TestNativePlaneEdge(matched,plane,out var roots,out var vertex,out var station,out var transverseStationary));
                 Assert.Equal(delta<0?0:1,roots);Assert.Equal(delta==0?shared:-1,vertex);
+                Assert.Equal(delta==0,transverseStationary);
                 if(delta==0)Assert.True(station.Lower==station.Upper&&(station.Lower==use.ParameterStart||station.Lower==use.ParameterEnd));
                 if(delta>0)Assert.True(station.Lower>use.ParameterStart&&station.Upper<use.ParameterEnd);
             }

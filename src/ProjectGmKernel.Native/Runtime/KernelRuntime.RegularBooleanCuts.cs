@@ -731,7 +731,12 @@ internal static unsafe partial class KernelRuntime
                             else error=model.AssociateParameter(endpoint,root.Curve,root.Root.Parameter);
                             if(error!=0)return error;
                         }
-                        if(root.Certified!=0&&root.Root.Kind==IntersectionVectorKind.Tangent&&root.TangentSupport!=0
+                        // Start/End describes incidence. A transverse
+                        // stationary section also supplies the common ray
+                        // of the two curves on the rolling face.
+                        var stationary=root.Root.TransverseStationary!=0&&OtherBoundarySupport(root.ContactSurface,cut.Curve,out var sectionSupport)
+                            &&SameSheetSupport(sectionSupport,root.CuttingSurface);
+                        if(stationary||root.Certified!=0&&root.Root.Kind==IntersectionVectorKind.Tangent&&root.TangentSupport!=0
                             &&input.Faces[first].Surface!=root.TangentSupport&&input.Faces[second].Surface!=root.TangentSupport)
                         {error=model.AssociateTangency(endpoint,root.Curve,cut.Curve);if(error!=0)return error;}
                         if(root.ContactSupport!=0)

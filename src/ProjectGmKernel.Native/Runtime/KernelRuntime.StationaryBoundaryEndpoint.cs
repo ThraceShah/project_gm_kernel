@@ -43,7 +43,7 @@ internal static unsafe partial class KernelRuntime
             var gauge=frame.Parameter+frame.Scale*IntervalVector.Dot(new IntervalVector(frame.Chord),p-new IntervalVector(frame.Position)).Value;
             if(!gauge.Finite||at<gauge.Lower||at>gauge.Upper)continue;
             if(JointNestedBlendEvaluation.BoundSharedSpineWitness(program,data.ProgramSpine,new(at,at,0,0),bounds,capture:witness)!=AlgorithmStatus.Success
-                ||!TryExactStationaryContact(program,rolling,centerSpine.Curve,p,support.Analytic,cutting,witness[6],exact))continue;
+                ||!TryExactStationaryContact(program,rolling,centerSpine.Curve,p,support.Analytic,cutting,witness[6],exact,out var transverse))continue;
             var junctionError=(new IntervalVector(bounds[0],bounds[1],bounds[2])-p).Norm().Value.Upper;
             if(!double.IsFinite(junctionError))continue;
             var interior=upper?Math.Max(edge.Start,frame.Parameter):Math.Min(edge.End,charts[chart+1].Parameter);
@@ -60,7 +60,7 @@ internal static unsafe partial class KernelRuntime
             if(count>=roots.Length||count>=stations.Length||count>=errors.Length){count=0;return false;}
             var kind=upper?IntersectionVectorKind.End:IntersectionVectorKind.Start;
             endpoint=new(){Point=vertex,Vertex=originals[source],Kind=kind,NativeEnd=upper?FiniteNativeEnd.Last:FiniteNativeEnd.First,
-                Parameter=at,Lower=at,Upper=at,SpatialError=junctionError};
+                TransverseStationary=transverse?(byte)1:(byte)0,Parameter=at,Lower=at,Upper=at,SpatialError=junctionError};
             var i=count++;
             if(!upper)
             {
@@ -77,8 +77,9 @@ internal static unsafe partial class KernelRuntime
         =>IntervalVector.Dot(point-new IntervalVector(plane.Origin),new IntervalVector(plane.Axis)).Value.Magnitude==0;
 
     private static bool TryExactStationaryContact(in NestedBlendProgram program,in BlendSurfaceInstruction rolling,in ParametricSpineCurve spine,
-        in IntervalVector point,in AnalyticSurface section,in AnalyticSurface cutting,IntervalNumber rollingStation,Span<IntervalNumber> witness)
+        in IntervalVector point,in AnalyticSurface section,in AnalyticSurface cutting,IntervalNumber rollingStation,Span<IntervalNumber> witness,out bool transverse)
     {
+        transverse=false;
         var pi=new IntervalNumber(Math.BitDecrement(Math.PI),Math.BitIncrement(Math.PI));
         if(!rollingStation.Finite||rollingStation.Upper-rollingStation.Lower>=Math.PI/2)return false;
         for(var side=0;side<2;side++)
@@ -113,6 +114,8 @@ internal static unsafe partial class KernelRuntime
                 if(station.Lower<rollingStation.Lower||station.Upper>rollingStation.Upper)continue;
                 witness[0]=point.X.Value;witness[1]=point.Y.Value;witness[2]=point.Z.Value;
                 witness[3]=center.X.Value;witness[4]=center.Y.Value;witness[5]=center.Z.Value;witness[6]=station;
+                var cutTangent=IntervalVector.Cross(normal,new IntervalVector(cutting.Axis));
+                transverse=IntervalVector.Dot(cutTangent,cutTangent).Value.Lower>0;
                 return true;
             }
         }
@@ -129,9 +132,10 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
-    internal static int TestNativePlaneEdge(EdgeSlot edge,SurfTag plane,out BufferCount count,out VertexSlot vertex,out IntervalNumber station)
+    internal static int TestNativePlaneEdge(EdgeSlot edge,SurfTag plane,out BufferCount count,out VertexSlot vertex,out IntervalNumber station,
+        out bool transverseStationary)
     {
-        count=0;vertex=-1;station=UncertifiedStation;
+        count=0;vertex=-1;station=UncertifiedStation;transverseStationary=false;
         var record=Edges[edge];if(!TryProfileEdgeRange(record,out var a,out var b))return ParasolidConstants.PK_ERROR_bad_parameter;
         var use=new ModelingEdge{Curve=record.CurveTag,Start=a,End=b,StartVertex=0,EndVertex=1};
         Span<VertexSlot> originals=stackalloc VertexSlot[2]{record.StartVertex,record.EndVertex};
@@ -145,7 +149,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if(!TryStationaryNativePlaneEnd(use,plane,originals,roots,stations,errors,out count,out var endpoint))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                vertex=endpoint.Vertex;
+                vertex=endpoint.Vertex;transverseStationary=endpoint.TransverseStationary!=0;
             }
             if(count==1)station=stations[0].Root;
             return 0;

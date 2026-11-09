@@ -18,6 +18,7 @@ internal static unsafe partial class KernelRuntime
         internal VertexSlot Vertex;
         internal IntersectionVectorKind Kind;
         internal FiniteNativeEnd NativeEnd;
+        internal byte TransverseStationary;
         internal double Parameter,Lower,Upper,SpatialError;
     }
     private struct FiniteCurveSurfaceResult
