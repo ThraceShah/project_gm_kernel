@@ -87,13 +87,13 @@ Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluati
 
 | 门禁代号 / 项 | 当前状态 | 阻塞条件 / 隔离行为 |
 |---|---|---|
-| **GATE-T** (Terminator $t_E$ vs PK) | **OPEN** | 生产入口在规则未指定时返回 `CompatibilityGateOpen`，不猜参数 |
+| **GATE-T** (Terminator $t_E$ vs PK) | **部分开放** | 真实 PK 的有限端参数按未缩放弦长推进。本轮仅对通过仿射证书的样条面/平面端段启用；其他生产入口保持原门禁。 |
 | **GATE-B** (BlendBound 角色映射) | **OPEN** | 距离函数组合未接入公开求值；不支持非解析 BlendBound 支持面 |
 | **GATE-A** (Blend 弧段极值验证) | **OPEN** | Envelope/Joint 求解器保留在内部；生产 Auto 开放解析面及本阶段带 UV 的正则 B-surface 支持面，不开放嵌套 blend |
 | **GATE-D** (二阶兼容与高阶公开契约) | **OPEN** | 当前 D2 为严格参数二阶导数；真实 PK 38.0.150 的弦段样例省略切向加速度，完整 D2 向量 Oracle 尚未通过。公开入口仍限制 `order <= 2`，更高阶直接拒绝 |
 | **过程面 / 偏置面 / 扫掠面支持** | **Unsupported** | `PrepareICurveView` 精确返回 `Unsupported` |
 | **B-surface 缺 UV / 不足 knot 连续度 / UV 分辨率丢失** | **Unsupported / NotConverged** | 不猜全局逆投影、导数侧或不可分辨的参数分支；失败不发布结果 |
-| **B-surface terminator / 实际扩展域** | **Unsupported** | 本阶段只开放原始 knot 域内的正则 chart 区间 |
+| **B-surface terminator / 实际扩展域** | **部分支持** | 非有理单跨 B-surface 和平面的公共仿射直线，可从双侧 UV 与有限端点区间界恢复，终止参数使用真实 PK 验证的未缩放弦长。曲线型终止段和扩展域仍不支持。 |
 | **一般 B-rep 的 ICurve XT 物化** | **Unsupported** | 可执行物化限定开放单边 wire；其他合法图继续按既有 opaque 方式保存 |
 | **Spindle / Apple Torus** | **Unsupported** | 当 $a \le b$ 时精确拒绝 |
 | **伪弧长作为公开曲线参数** | **Forbidden** | 严格禁止在公开接口暴露内部伪弧长参数 |

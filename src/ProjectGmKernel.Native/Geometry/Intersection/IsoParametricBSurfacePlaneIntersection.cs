@@ -5,6 +5,12 @@ using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace ProjectGmKernel.Native.Geometry.Intersection;
 
+internal readonly struct PlaneIsoBranch(bool fixedU,double parameter,double first,double last,bool startSingular,bool endSingular)
+{
+    internal readonly bool FixedU=fixedU,StartSingular=startSingular,EndSingular=endSingular;
+    internal readonly double Fixed=parameter,First=first,Last=last;
+}
+
 /// <summary>
 /// Exact isoparametric loci on a positive-weight tensor Bezier patch. A rank-one
 /// homogeneous plane numerator factors as f(u)g(v), so isolating all roots of
@@ -15,7 +21,7 @@ internal static unsafe class IsoParametricBSurfacePlaneIntersection
 {
     internal static AlgorithmStatus Find(in BSurfaceView surface,in AnalyticSurface plane,
         Span<OperationIntersectionBranch> branches,out BufferCount curveCount,
-        Span<KernelVector3> isolated,out BufferCount pointCount)
+        Span<KernelVector3> isolated,out BufferCount pointCount,Span<PlaneIsoBranch> occurrences=default)
     {
         curveCount=0;pointCount=0;
         if(surface.UDegree is <1 or >16||surface.VDegree is <1 or >16
@@ -58,18 +64,14 @@ internal static unsafe class IsoParametricBSurfacePlaneIntersection
         }
         if(numerator[pivot]==0)return AlgorithmStatus.Success; // coincident area
         Span<double> u=stackalloc double[17];Span<double> v=stackalloc double[17];
-        var factored=false;
-        for(var attempt=0;attempt<2&&!factored;attempt++)
-        {
-            var row=pivot/nv;var column=pivot%nv;var scale=numerator[pivot];
-            for(var i=0;i<nu;i++)u[i]=attempt==0?numerator[i*nv+column]/scale:numerator[i*nv+column];
-            for(var j=0;j<nv;j++)v[j]=attempt==0?numerator[row*nv+j]:numerator[row*nv+j]/scale;
-            factored=true;
-            for(var i=0;i<nu;i++)for(var j=0;j<nv;j++)
-                if(!double.IsFinite(u[i])||!double.IsFinite(v[j])
-                    ||Math.FusedMultiplyAdd(u[i],v[j],-numerator[i*nv+j])!=0)factored=false;
-        }
-        if(!factored)return AlgorithmStatus.Unsupported;
+        var row=pivot/nv;var column=pivot%nv;var scale=numerator[pivot];
+        for(var i=0;i<nu;i++)u[i]=numerator[i*nv+column];
+        for(var j=0;j<nv;j++)v[j]=numerator[row*nv+j];
+        // Only the roots of the two factors matter. Keep their unscaled
+        // coefficients and compare exact cross-products; dividing by the
+        // pivot could round a genuinely rank-one net before the proof.
+        for(var i=0;i<nu;i++)for(var j=0;j<nv;j++)
+            if(!EqualProducts(u[i],v[j],numerator[i*nv+j],scale))return AlgorithmStatus.Unsupported;
         Span<double> up=stackalloc double[17];Span<double> vp=stackalloc double[17];
         BernsteinToPower(u[..nu],up);BernsteinToPower(v[..nv],vp);
         Span<double> ur=stackalloc double[16];Span<double> vr=stackalloc double[16];
@@ -84,7 +86,7 @@ internal static unsafe class IsoParametricBSurfacePlaneIntersection
             for(var i=0;i<roots.Length;i++)
             {
                 status=RootKind(polynomial,roots[i],out var kind);if(status!=AlgorithmStatus.Success)return status;
-                status=AppendIsocurve(normalized,plane,direction==0,roots[i],splits,kind,branches,ref curveCount,isolated,ref pointCount);
+                status=AppendIsocurve(normalized,plane,direction==0,roots[i],splits,kind,branches,ref curveCount,isolated,ref pointCount,occurrences);
                 if(status!=AlgorithmStatus.Success)return status;
             }
         }
@@ -103,6 +105,16 @@ internal static unsafe class IsoParametricBSurfacePlaneIntersection
             if(onCurve){isolated[(i+1)..pointCount].CopyTo(isolated[i..]);pointCount--;}
         }
         return AlgorithmStatus.Success;
+    }
+
+    private static bool EqualProducts(double a,double b,double c,double d)
+    {
+        var x=a*b;var y=c*d;
+        // Leave room for all product bits in the FMA residual, including
+        // a rounded product immediately above a binade boundary.
+        return x==y&&double.IsFinite(x)
+            &&(x!=0?Math.ILogB(x)>=-968:(a==0||b==0)&&(c==0||d==0))
+            &&Math.FusedMultiplyAdd(a,b,-x)==Math.FusedMultiplyAdd(c,d,-y);
     }
 
     private static bool Clamped(ReadOnlySpan<double> knots,SplineDegree degree)
@@ -136,7 +148,7 @@ internal static unsafe class IsoParametricBSurfacePlaneIntersection
 
     private static AlgorithmStatus AppendIsocurve(in BSurfaceView surface,in AnalyticSurface plane,bool fixedU,double parameter,
         ReadOnlySpan<double> splitParameters,IntersectionCurveKind kind,Span<OperationIntersectionBranch> branches,ref BufferCount count,
-        Span<KernelVector3> isolated,ref BufferCount pointCount)
+        Span<KernelVector3> isolated,ref BufferCount pointCount,Span<PlaneIsoBranch> occurrences)
     {
         var degree=fixedU?surface.VDegree:surface.UDegree;var fixedDegree=fixedU?surface.UDegree:surface.VDegree;
         Span<double> poles=stackalloc double[68];Span<double> work=stackalloc double[68];
@@ -191,6 +203,14 @@ internal static unsafe class IsoParametricBSurfacePlaneIntersection
                 var status=RuledBSurfacePlaneIntersection.CreateRational(polynomial,degree,start,end,domainStart,domainEnd,branches,ref count);
                 if(status!=AlgorithmStatus.Success)return status;
                 branches[count-1].Kind=kind;
+                if(!occurrences.IsEmpty)
+                {
+                    if(count>occurrences.Length)return AlgorithmStatus.OutputTooSmall;
+                    var fixedLo=fixedU?surface.UStart:surface.VStart;var fixedHi=fixedU?surface.UEnd:surface.VEnd;
+                    occurrences[count-1]=new(fixedU,fixedLo+(fixedHi-fixedLo)*parameter,
+                        Math.FusedMultiplyAdd(start,domainEnd-domainStart,domainStart),
+                        Math.FusedMultiplyAdd(end,domainEnd-domainStart,domainStart),i>0,i<splitParameters.Length);
+                }
             }
             start=end;
         }

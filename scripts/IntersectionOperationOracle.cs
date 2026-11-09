@@ -55,6 +55,8 @@ try
             SS("plane-bilinear-nurbs-hyperbola",Plane(0,0,.25,0,0,1),Bilinear(false));
             SS("bilinear-nurbs-hyperbola-different-trim",Bilinear(false),Plane(0,0,.125,0,0,1));
             SS("bilinear-nurbs-crossing",Bilinear(true),xy);
+            SS("plane-bilinear-nurbs-crossing",Plane(0,0,0,0,0,1),Bilinear(true));
+            SS("bilinear-nurbs-crossing-off-center",Bilinear(true,.25,.625,.375,-.25),Plane(0,0,0,0,0,1));
             // Native ICURVE wire creation adopts its support geometry. Each
             // subsequent case therefore needs fresh orphan supports.
             SS("cubic-ruled-two-components",CubicRuled(false,false),Plane(0,0,0,0,0,1));
@@ -629,9 +631,10 @@ static unsafe GeometryPair GeneralPatch(int kind,double width=1,double x0=0,doub
     if(kind==5){sf.n_u_knots=3;sf.u_knot=uk;sf.u_knot_mult=um;}
     int m=0,p=0;Check(KernelRuntime.BSurfCreate(&sf,&m),"self general patch");Check(PK_BSURF_create((PK_BSURF_sf_t*)&sf,&p),"PK general patch");return new(m,p);
 }
-static unsafe GeometryPair Bilinear(bool saddle)
+static unsafe GeometryPair Bilinear(bool saddle,double zeroU=.5,double zeroV=.5,double dx=0,double dy=0)
 {
-    double* vertices=stackalloc double[12];for(var u=0;u<2;u++)for(var v=0;v<2;v++){var at=(u*2+v)*3;vertices[at]=saddle?2*u-1:u;vertices[at+1]=saddle?2*v-1:v;vertices[at+2]=vertices[at]*vertices[at+1];}
+    double* vertices=stackalloc double[12];for(var u=0;u<2;u++)for(var v=0;v<2;v++)
+    {var at=(u*2+v)*3;var x=saddle?2*(u-zeroU):u;var y=saddle?2*(v-zeroV):v;vertices[at]=x+dx;vertices[at+1]=y+dy;vertices[at+2]=x*y;}
     double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2]{2,2};
     var sf=new M.PK_BSURF_sf_s{u_degree=1,v_degree=1,n_u_vertices=2,n_v_vertices=2,vertex_dim=3,vertex=vertices,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=mult,v_knot_mult=mult,
         form=M.ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=M.ParasolidConstants.PK_knot_non_uniform_c,

@@ -41,9 +41,26 @@ internal static class ParametricICurveEvaluation
 
         if (t < parameters[0] || t > parameters[^1])
         {
-            var terminator = t < parameters[0] ? view.HasStartTerminator : view.HasEndTerminator;
+            var isEnd=t>parameters[^1];
+            var terminator = isEnd?view.HasEndTerminator:view.HasStartTerminator;
             if (!terminator) return AlgorithmStatus.InvalidInput;
-            var kind = t < parameters[0] ? ICurveQueryKind.StartTerminatorInterval : ICurveQueryKind.EndTerminatorInterval;
+            var kind = isEnd?ICurveQueryKind.EndTerminatorInterval:ICurveQueryKind.StartTerminatorInterval;
+            var limit=isEnd?view.EndTerminator:view.StartTerminator;
+            var boundary=isEnd?parameters[^1]:parameters[0];
+            if(AffineSplineTerminator.TryParameter(limit,boundary,isEnd,out var end))
+            {
+                if(isEnd?t>end:t<end)return AlgorithmStatus.InvalidInput;
+                var legalPlan=ICurveConstraintPlanRules.ValidateEnumerator(plan);
+                if(legalPlan!=AlgorithmStatus.Success)return legalPlan;
+                var direction=Sub(limit.Endpoint,limit.BranchPoint);
+                var span=end-boundary;
+                derivatives[0]=t==end?limit.Endpoint:Add(limit.BranchPoint,Scale(direction,(t-boundary)/span));
+                if(order>=1)derivatives[1]=Scale(direction,1/span);
+                if(order>=2)derivatives[2]=default;
+                report=new ICurveEvalReport(t==end?ICurveQueryKind.ExactTerminator:kind,AlgorithmStatus.Success,plan,
+                    side,isEnd?parameters.Length-2:0,0,0);
+                return AlgorithmStatus.Success;
+            }
             report = new ICurveEvalReport(kind, AlgorithmStatus.Unsupported, plan,
                 side, -1, 0, 0, detail: ICurveEvalDetail.CompatibilityGateOpen);
             return AlgorithmStatus.Unsupported;

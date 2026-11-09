@@ -98,12 +98,14 @@ internal readonly struct TerminatorLimit
     internal readonly LimitTermUse TermUse;
     internal readonly KernelVector3 Endpoint;     // terminator position (limit hvec[0])
     internal readonly KernelVector3 BranchPoint;  // branch point (limit hvec[1])
+    internal readonly bool CertifiedAffine;      // recovered from actual support and paired chart, never from XT type alone
 
-    internal TerminatorLimit(LimitTermUse termUse, in KernelVector3 endpoint, in KernelVector3 branchPoint)
+    internal TerminatorLimit(LimitTermUse termUse, in KernelVector3 endpoint, in KernelVector3 branchPoint,bool certifiedAffine=false)
     {
         TermUse = termUse;
         Endpoint = endpoint;
         BranchPoint = branchPoint;
+        CertifiedAffine = certifiedAffine;
     }
 }
 

@@ -191,9 +191,9 @@ internal static unsafe partial class KernelRuntime
             if (error != 0) return error;
             var start=segment.Start;var endVertex=segment.End;
             ref readonly var carrier=ref Curves[GetCurveSlotByTag(clone)];
-            // Limits are in the increasing native gauge. Analytic traversal
-            // can reverse the endpoint uses without replacing the interval.
-            if(carrier.Class is CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse
+            // Limits are in the increasing native gauge. A reversed
+            // traversal swaps endpoint uses without changing that interval.
+            if(carrier.Class is CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse or CurveClass.ICurve
                 &&LocalSenseSign(carrier.Sense)<0)(start,endVertex)=(endVertex,start);
             var edge = AddProfileEdge(bodySlot, clone, periodicRing ? -1 : vertices[start],
                 periodicRing ? -1 : vertices[endVertex], segment.T0, segment.T1);

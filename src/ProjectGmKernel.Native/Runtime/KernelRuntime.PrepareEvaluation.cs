@@ -13,7 +13,7 @@ namespace ProjectGmKernel.Native.Runtime;
 /// command-scratch spans and returns a borrowed <see cref="ICurveView"/> that
 /// must not outlive the scratch checkpoint. Analytic and B-surface supports
 /// share the prepared support interface. B-surface charts require finite UV
-/// correspondence; their terminators and procedural supports remain unsupported.
+/// correspondence; only certified affine mixed-support termini are enabled.
 /// </summary>
 internal static unsafe partial class KernelRuntime
 {
@@ -82,6 +82,9 @@ internal static unsafe partial class KernelRuntime
 
             curve.TMin = view.ChartParameters[0];
             curve.TMax = view.ChartParameters[^1];
+            if(view.StartTerminator.CertifiedAffine&&!AffineSplineTerminator.TryParameter(view.StartTerminator,curve.TMin,false,out curve.TMin)
+                ||view.EndTerminator.CertifiedAffine&&!AffineSplineTerminator.TryParameter(view.EndTerminator,curve.TMax,true,out curve.TMax))
+            {Curves.Free(curveSlot);return AlgorithmStatus.NotConverged;}
             var allocated = AllocateTag(EntityClass.Curve, PoolKind.Curve, curveSlot, curve.Header.Generation);
             if (allocated <= 0)
             {
@@ -126,8 +129,11 @@ internal static unsafe partial class KernelRuntime
         if (prepare0 != AlgorithmStatus.Success) return prepare0;
         var prepare1 = TryPrepareICurveSupport(in surf1, out var support1);
         if (prepare1 != AlgorithmStatus.Success) return prepare1;
-        if ((support0.IsBSurface || support1.IsBSurface)
-            && (data.StartLimit.Type == LimitType.Terminator || data.EndLimit.Type == LimitType.Terminator))
+        var terminatesAtStart=data.StartLimit.Type==LimitType.Terminator;
+        var terminatesAtEnd=data.EndLimit.Type==LimitType.Terminator;
+        var splineTerminator=(support0.IsBSurface||support1.IsBSurface)&&(terminatesAtStart||terminatesAtEnd);
+        if(splineTerminator&&(terminatesAtStart==terminatesAtEnd||support0.IsBSurface==support1.IsBSurface
+            ||(support0.IsBSurface?support1.Analytic.Kind:support0.Analytic.Kind)!=SurfaceClass.Plane))
             return AlgorithmStatus.Unsupported;
 
         var chartCount = data.ChartCount;
@@ -167,6 +173,10 @@ internal static unsafe partial class KernelRuntime
             positions[i] = Vector(hvecs[o], hvecs[o + 1], hvecs[o + 2]);
             if (!TryReadChartUv(in data, i, out var u0, out var v0, out var u1, out var v1))
                 return AlgorithmStatus.InvalidInput;
+            // Native terminal charts can omit the analytic plane's witness
+            // as a zero pair. Its inverse is injective; keep the spline UV.
+            if(splineTerminator&&!support0.IsBSurface&&u0==0&&v0==0)u0=v0=double.NaN;
+            if(splineTerminator&&!support1.IsBSurface&&u1==0&&v1==0)u1=v1=double.NaN;
             var uv0Status = PrepareChartUv(in support0, in positions[i], pointOnSurfaceTolerance,
                 ref u0, ref v0, out var hasUv0);
             if (uv0Status != AlgorithmStatus.Success) return uv0Status;
@@ -198,6 +208,16 @@ internal static unsafe partial class KernelRuntime
         {
             endTerminator = ReadTerminator(hvecs, data.EndLimit.HvecIndex, data.EndLimit.TermUse);
             hasEnd = true;
+        }
+        if(splineTerminator)
+        {
+            var end=terminatesAtEnd;var at=end?chartCount-1:0;var prior=end?at-1:1;
+            var limit=end?endTerminator:startTerminator;
+            if(!AffineSplineTerminator.Certify(support0,support1,limit,positions[at],witnesses[at],witnesses[prior]))
+                return AlgorithmStatus.Unsupported;
+            limit=new TerminatorLimit(limit.TermUse,limit.Endpoint,limit.BranchPoint,true);
+            if(!AffineSplineTerminator.TryParameter(limit,parameterScratch[at],end,out _))return AlgorithmStatus.NotConverged;
+            if(end)endTerminator=limit;else startTerminator=limit;
         }
 
         view = new ICurveView(support0, surf0.Sense, support1, surf1.Sense,

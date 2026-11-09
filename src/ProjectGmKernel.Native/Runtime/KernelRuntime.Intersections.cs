@@ -414,6 +414,12 @@ internal static unsafe partial class KernelRuntime
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         if(np==0&&HasSeparatePlaneSections(sa,sb,branches[..nc]))
             return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds,planeSections:branches[..nc]);
+        if(np==0&&nc>0&&options->have_vector==0)
+        {
+            Span<PlaneIsoBranch> crossing=stackalloc PlaneIsoBranch[nc];
+            if(TryAffinePlaneCrossing(sa,sb,crossing,out var spline,out var flat))
+                return PublishAffinePlaneCrossing(spline,flat,sa==spline,ba,crossing,curveCount,curves,intervals,kinds);
+        }
         if(options->have_vector!=0)
         {
             var seed=Vector(options->vector.coord[0],options->vector.coord[1],options->vector.coord[2]);if(!IsFinite(seed))return ParasolidConstants.PK_ERROR_bad_parameter;

@@ -117,6 +117,19 @@ internal static unsafe partial class KernelRuntime
             {
                 var status = TryPrepareICurveView(record, out var view, out _); if (status != AlgorithmStatus.Success) return IntersectionError(status);
                 Span<KernelVector3> result = stackalloc KernelVector3[1];
+                for(var end=0;end<2;end++)
+                {
+                    var limit=end==0?view.StartTerminator:view.EndTerminator;
+                    var boundary=end==0?view.ChartParameters[0]:view.ChartParameters[^1];
+                    if(!AffineSplineTerminator.TryParameter(limit,boundary,end!=0,out var terminal))continue;
+                    var chord=Sub(limit.Endpoint,limit.BranchPoint);
+                    var fraction=Dot(Sub(point,limit.BranchPoint),chord)/Dot(chord,chord);
+                    if(!(fraction>=0&&fraction<=1))continue;
+                    value=boundary+(terminal-boundary)*fraction;
+                    status=ICurveEvaluation.Evaluate(view,value,0,result,out _);
+                    if(status==AlgorithmStatus.Success&&OperationIntersection.Norm(Sub(result[0],point))<=OperationIntersection.DistanceTolerance)
+                    {*parameter=value;return 0;}
+                }
                 for (var i = 0; i < view.ChartScales.Length; i++)
                 {
                     value = OriginalChartParameterMap.InverseParameter(view.ChartPositions, view.ChartParameters, view.ChartScales, view.ChartChordUnits, i, point);

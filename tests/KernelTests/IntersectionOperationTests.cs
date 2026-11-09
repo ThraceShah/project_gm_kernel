@@ -221,15 +221,84 @@ public unsafe class IntersectionOperationTests:IDisposable
         }
     }
 
-    [Fact]
-    public void BilinearSaddlePlane_SplitsFourHalfBranchesAtTheSingularCrossing()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BilinearSaddlePlane_PublishesFourOwnedHalfBranchesWithFiniteTermini(bool reverse)
     {
         var surface=Bilinear(true);var plane=Plane(0,0,0,0,0,1);
-        using(var result=SS(surface,plane))
+        using(var result=SS(reverse?plane:surface,reverse?surface:plane))
         {
             Assert.Equal(4,result.CurveCount);Assert.Equal(0,result.PointCount);
-            for(var i=0;i<4;i++)for(var j=0;j<=4;j++)CheckPaired(surface,plane,result.Curves[i],result.Intervals[i].value[0]+(result.Intervals[i].value[1]-result.Intervals[i].value[0])*j/4);
+            var values=stackalloc PK_VECTOR_s[3];
+            for(var i=0;i<4;i++)
+            {
+                var curve=result.Curves[i];var record=KernelRuntime.GetCurveByTag(curve);
+                Assert.Equal(CurveClass.ICurve,record.Class);
+                var data=KernelRuntime.ICurveDataPool[record.DataIndex];
+                Assert.Equal(LimitType.Terminator,data.EndLimit.Type);Assert.Equal(IntersectionUvType.Both,data.UvType);
+                Assert.Equal(4*(data.ChartCount+1),data.UvValueCount);
+                var lo=result.Intervals[i].value[0];var hi=result.Intervals[i].value[1];
+                Near(1,hi-lo);Assert.Equal(record.TMax,hi);
+                var position=(double*)KernelRuntime.DereferenceBlock(data.HvecBlock);
+                var terminal=position+3*data.EndLimit.HvecIndex;
+                var length=Math.Sqrt(terminal[3]*terminal[3]+terminal[4]*terminal[4]+terminal[5]*terminal[5]);
+                Assert.True(length>0&&length<hi-lo);
+                var t=hi-length*.5;
+                Assert.Equal(0,KernelRuntime.CurveEval(curve,t,2,values));
+                for(var axis=0;axis<3;axis++)
+                {Near(terminal[axis+3]*.5,values[0].coord[axis]);Near(-terminal[axis+3]/length,values[1].coord[axis]);Near(0,values[2].coord[axis]);}
+                double recovered=0;Assert.Equal(0,KernelRuntime.CurveParameteriseVector(curve,values[0],&recovered));Near(t,recovered);
+                Assert.Equal(0,KernelRuntime.CurveEval(curve,hi,0,values));Near(0,SquareNorm(values[0]));
+                Assert.NotEqual(0,KernelRuntime.CurveEval(curve,Math.BitIncrement(hi),0,values));
+                for(var j=0;j<=4;j++)CheckPaired(surface,plane,curve,lo+(hi-lo)*j/4);
+                // A point on the other arm belongs to both surfaces but
+                // cannot serve as this occurrence's terminal hull point.
+                var otherAxis=terminal[3]==0?0:1;var saved=terminal[otherAxis];
+                try{terminal[otherAxis]=.125;Assert.NotEqual(0,KernelRuntime.CurveEval(curve,hi,0,values));}
+                finally{terminal[otherAxis]=saved;}
+            }
+            int wire=0;Assert.Equal(0,KernelRuntime.CurveMakeWireBody(result.Curves[0],result.Intervals[0],&wire));
+            var options=new PK_PART_transmit_o_s{o_t_version=1,transmit_format=ParasolidConstants.PK_transmit_format_text_c};
+            var block=new PK_MEMORY_block_s();Assert.Equal(0,KernelRuntime.PartTransmitB(1,&wire,&options,&block));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&wire));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&surface));Assert.Equal(0,KernelRuntime.EntityDelete(1,&plane));
+            var receive=new PK_PART_receive_o_s{o_t_version=1,receive_user_fields=1,transmit_format=ParasolidConstants.PK_transmit_format_text_c};
+            int count=0;int* bodies=null;
+            try{Assert.Equal(0,KernelRuntime.PartReceiveB(block,&receive,&count,&bodies));}
+            finally{Assert.Equal(0,KernelRuntime.MemoryBlockFree(&block));}
+            Assert.Equal(1,count);var reloaded=bodies[0];Free(bodies);
+            Assert.True(KernelRuntime.TryResolveBodySlot(reloaded,out var slot));Assert.False(KernelRuntime.Xt.IsOpaque(slot));
+            var reloadedCurve=KernelRuntime.GetEdgeRecord(KernelRuntime.GetBodyRecord(slot).FirstEdgeBody).CurveTag;
+            var point=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(reloadedCurve,result.Intervals[0].value[1],0,&point));
+            Near(0,SquareNorm(point));
         }
+    }
+
+    [Fact]
+    public void TerminalHalfBranchAllocationFailuresRestoreCurveAndSupportOwnership()
+    {
+        var surface=Bilinear(true);var plane=Plane(0,0,0,0,0,1);
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        var charts=KernelRuntime.ICurveDataPool.AliveCount;var blocks=KernelRuntime.ReturnOutstandingBlocks;
+        var completed=false;
+        for(var budget=0;budget<=96&&!completed;budget++)
+        {
+            var options=SurfaceOptions();var result=new SurfaceResult();
+            KernelRuntime.InjectAllocationFailure(budget);
+            var error=KernelRuntime.SurfIntersectSurf(surface,plane,&options,&result.PointCount,&result.Points,&result.CurveCount,&result.Curves,&result.Intervals,&result.Kinds);
+            KernelRuntime.InjectAllocationFailure(-1);
+            if(error==0){Assert.Equal(4,result.CurveCount);result.Dispose();completed=true;}
+            else
+            {
+                Assert.Equal(0,result.PointCount);Assert.Equal(0,result.CurveCount);
+                Assert.True(result.Points==null&&result.Curves==null&&result.Intervals==null&&result.Kinds==null);
+            }
+            Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+            Assert.Equal(charts,KernelRuntime.ICurveDataPool.AliveCount);Assert.Equal(blocks,KernelRuntime.ReturnOutstandingBlocks);
+            Assert.True(KernelRuntime.IsValidTag(surface)&&KernelRuntime.IsValidTag(plane));
+        }
+        Assert.True(completed);
     }
 
     [Theory]
