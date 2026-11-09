@@ -10,6 +10,41 @@ internal static unsafe partial class KernelRuntime
     private static bool HasBoundedStation(in BoundaryParameter anchor)
         =>anchor.Surface!=0||anchor.SourceOccurrence>=0||anchor.Lower!=anchor.Upper;
 
+    private static void ChooseClosedConicCutWindow(ref SheetCutCurve cut,ReadOnlySpan<IntervalNumber> roots)
+    {
+        if(cut.Closed==0||cut.Last-cut.First!=Math.Tau
+            ||Curves[GetCurveSlotByTag(cut.Curve)].Class is not (CurveClass.Circle or CurveClass.Ellipse)
+            ||Fits(cut.First,cut.Last,roots,strict:false))return;
+        // A full analytic period has no physical endpoint. Pick a different
+        // seam only if every certified enclosure has one lift inside it.
+        // Partial finite uses still require their actual endpoint evidence.
+        for(var i=1;i<=roots.Length;i++)
+        {
+            var first=cut.First+Math.Tau*(i/(roots.Length+1.0));var last=first+Math.Tau;
+            if(!Fits(first,last,roots,strict:true))continue;
+            cut.First=first;cut.Last=last;return;
+        }
+
+        static bool Fits(double first,double last,ReadOnlySpan<IntervalNumber> roots,bool strict)
+        {
+            var period=new IntervalNumber(Math.Tau,Math.BitIncrement(Math.Tau));
+            foreach(var root in roots)
+            {
+                if(!root.Finite)continue;
+                var lift=root;
+                if(root.Upper<first||root.Lower>last)
+                {
+                    var candidates=(new IntervalNumber(first,last)-root)/period;
+                    var turns=Math.Ceiling(candidates.Lower);
+                    if(!candidates.Finite||turns!=Math.Floor(candidates.Upper))return false;
+                    lift+=period*turns;
+                }
+                if(!lift.Finite||(strict?lift.Lower<=first||lift.Upper>=last:lift.Lower<first||lift.Upper>last))return false;
+            }
+            return true;
+        }
+    }
+
     private static int LocateBoundedStation(CurveTag carrier,BoundaryEventId endpoint,in BoundaryParameter anchor,
         double first,double last,BoundaryEventId lowerEvent,BoundaryEventId upperEvent,
         out double parameter,out IntervalNumber bound,out bool inside)
@@ -92,6 +127,21 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
+    internal static int TestClosedConicCutWindow(CurveTag carrier,bool closed,ReadOnlySpan<IntervalNumber> roots,
+        Span<IntervalNumber> lifted,out double first)
+    {
+        var cut=new SheetCutCurve{Curve=carrier,First=0,Last=Math.Tau,Closed=closed?(byte)1:(byte)0};
+        ChooseClosedConicCutWindow(ref cut,roots);first=cut.First;
+        for(var i=0;i<roots.Length;i++)
+        {
+            var anchor=new BoundaryParameter{Parameter=roots[i].Midpoint,Lower=roots[i].Lower,Upper=roots[i].Upper};
+            var error=LocateBoundedStation(carrier,-1,anchor,cut.First,cut.Last,-1,-1,out _,out lifted[i],out var inside);
+            if(error!=0)return error;
+            if(!inside)return ParasolidConstants.PK_ERROR_not_on_curve;
+        }
+        return 0;
+    }
+
     internal static int TestLocatePeriodicBoundaryStation(CurveTag carrier,IntervalNumber root,double first,double last,
         bool isLowerEvent,out double parameter,out IntervalNumber bound,out bool inside)
     {

@@ -661,6 +661,29 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.True(inside);Assert.Equal(limit,parameter);Assert.Equal(limit,bound.Lower);Assert.Equal(limit,bound.Upper);
     }
 
+    [Theory]
+    [InlineData(true,0)]
+    [InlineData(false,ParasolidConstants.PK_ERROR_cant_do_intersect)]
+    public void OnlyAClosedConicMovesTheSeamAwayFromCertifiedRoots(bool closed,int expected)
+    {
+        var circle=new PK_CIRCLE_sf_s{radius=1};circle.basis_set.axis.coord[2]=1;circle.basis_set.ref_direction.coord[0]=1;
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.CircleCreate(&circle,&carrier));
+        var epsilon=Math.ScaleB(1,-41);
+        // The first trial seam is occupied too. The second close-to-zero
+        // root is physically distinct and must retain its separate lift.
+        var firstTrial=Math.Tau*.25;
+        Span<IntervalNumber> roots=stackalloc IntervalNumber[3]
+            {new(-epsilon,epsilon),new(3*epsilon,4*epsilon),new(firstTrial-epsilon,firstTrial+epsilon)};
+        Span<IntervalNumber> lifted=stackalloc IntervalNumber[3];
+        Assert.Equal(expected,KernelRuntime.TestClosedConicCutWindow(carrier,closed,roots,lifted,out var first));
+        if(!closed){Assert.Equal(0,first);return;}
+        Assert.True(first>firstTrial);
+        Assert.InRange(Math.Tau,lifted[0].Lower,lifted[0].Upper);
+        Assert.True(lifted[0].Upper<lifted[1].Lower);
+        Assert.InRange(Math.Tau+firstTrial,lifted[2].Lower,lifted[2].Upper);
+        foreach(var root in lifted)Assert.True(root.Lower>first&&root.Upper<first+Math.Tau);
+    }
+
     [Fact]
     public void MaterialWitnessStaysInTheOpenGapOnBothCharts()
     {

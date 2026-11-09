@@ -35,7 +35,7 @@ try
         {
             var failures=0;var count=0;
             foreach(var mode in specialized?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
-            foreach(var fixture in axialImprintOnly?["guarded-axial-imprint","guarded-axial-imprint-negative","guarded-axial-imprint-yside","guarded-axial-imprint-mapped","guarded-axial-imprint-axis-reversed"]:axialContactOnly?["guarded-axial-contact-outside","guarded-axial-contact-mapped"]:coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
+            foreach(var fixture in axialImprintOnly?["guarded-axial-imprint","guarded-axial-imprint-negative","guarded-axial-imprint-yside","guarded-axial-imprint-mapped","guarded-axial-imprint-axis-reversed"]:axialContactOnly?["guarded-axial-contact-outside","guarded-axial-contact-mapped"]:coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut","guarded-periodic-seam-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";count++;
@@ -118,6 +118,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var obliqueConic=fixture=="guarded-oblique-conic-cut";
     var tiltedConic=fixture=="guarded-tilted-conic-cut";
     var conicCut=trimmedConic||obliqueConic||tiltedConic||fixture=="guarded-plane-conic-cut";
+    var seamCut=fixture=="guarded-periodic-seam-cut";
     var conicCorner=fixture=="guarded-conic-corner";
     var mappedTools=fixture=="guarded-coplanar-tools-mapped";
     var coplanarTools=mappedTools||fixture is "guarded-coplanar-tools" or "guarded-coplanar-tools-reversed";
@@ -126,7 +127,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     var mappedContact=fixture is "guarded-axial-contact-mapped" or "guarded-axial-imprint-mapped";
     var axialContact=axialImprint||mappedContact||fixture=="guarded-axial-contact-outside";
     int target;
-    if(threePlane||conicCut||conicCorner||coplanarTools||axialContact)
+    if(threePlane||conicCut||conicCorner||coplanarTools||axialContact||seamCut)
     {
         var radius=mixed||conicCorner||coplanarTools?5:4;var height=mixed?6:4;
         if(mappedTools||mappedContact||reversedContact)
@@ -140,6 +141,15 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     else target=Block(own,offset,0,0,outer,outer,outer,0);
     if(holed)target=SubtractSeedTool(own,target,Block(own,1,0,-1,.5,.5,6,0));
     if(trimmedConic)target=SubtractSeedTool(own,target,Block(own,0,4,-1,12,6,6,0));
+    if(seamCut)
+    {
+        // The first cut crosses the cylinder meridian at its arbitrary
+        // angle zero. The second cut consumes that new finite trim.
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;
+        KernelRuntime.ForbidSpatialBoundaryReuse=own;
+        try{target=SubtractSeedTool(own,target,Block(own,0,3,-1,12,6,6,0));}
+        finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
+    }
     var nt=fixture=="two-tools"||threePlane||coplanarTools?2:1;var tools=stackalloc int[nt];
     if(axialImprint)
     {
@@ -187,6 +197,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         var basis=new PK_AXIS2_sf_t(new(3.5+tilt,0,-1+3.5*tilt),new(-tilt,0,1),new(1,0,tilt));
         tools[0]=BlockWithBasis(own,basis,4,12,6);
     }
+    else if(seamCut)tools[0]=Block(own,3.5,0,2,3,4,3,0);
     else if(conicCut)
     {
         var angle=obliqueConic?.37:0;
@@ -201,7 +212,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     if(own)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
-        if(threePlane||conicCut||conicCorner||coplanarTools||axialContact)
+        if(threePlane||conicCut||conicCorner||coplanarTools||axialContact||seamCut)
         {
             var certified=new HashSet<(int Event,int Curve)>();
             var transferredLines=new HashSet<(int Event,int Curve)>();
@@ -282,6 +293,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                     var edge=KernelRuntime.Edges[contactEdge];
                     Require(edge.FinCount==2&&edge.ParameterEnd>edge.ParameterStart,"positive native contact with two uses");
                 }
+                else if(seamCut)Require(publishedTransfers>0,"the meridian cut must retain an actual source-root transfer");
                 else if(!axialContact)Console.WriteLine($"THIRD FACE published_three_station_events={joined} finite_trim_exclusions={excluded} published_line_transfers={publishedTransfers}");
             }
             finally{KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;}
@@ -368,7 +380,7 @@ static unsafe int SubtractSeedTool(bool own,int body,int tool)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);
         M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
-        Check(KernelRuntime.BodyBoolean2(body,1,&tool,&options,&tracking,&result),"own seed subtraction");
+        Check(KernelRuntime.BodyBoolean2(body,1,&tool,&options,&tracking,&result),$"own seed subtraction at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}");
         try{Require(result.n_bodies==1,"own seed subtraction body");return result.bodies[0];}
         finally{Check(KernelRuntime.TopolTrackResultFree(&tracking),"own seed tracking");Check(KernelRuntime.BooleanResultFree(&result),"own seed result");}
     }

@@ -466,8 +466,9 @@ internal static unsafe partial class KernelRuntime
         Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[IntersectionPointCapacity];
         var sectionCharts=model.SectionCharts[..model.SectionChartCount];
         var firstSurface=input.Faces[first].Surface;var secondSurface=input.Faces[second].Surface;
-        foreach(ref readonly var curve in curves)
+        foreach(var provider in curves)
         {
+            var curve=provider;
             var n=0;
             var hasSection=TryFiniteSectionChart(sectionCharts,firstSurface,curve.Curve,curve.First,curve.Last,out var section)
                 ||TryFiniteSectionChart(sectionCharts,secondSurface,curve.Curve,curve.First,curve.Last,out section);
@@ -493,7 +494,15 @@ internal static unsafe partial class KernelRuntime
                     {handled=true;t=sectionEnd;cutLocators[i]=new(t);}
                     if(!handled)error=CurveParameteriseVectorCore(curve.Curve,p,&t);
                 }
-                if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
+                if(error==ParasolidConstants.PK_ERROR_not_on_curve){cutLocators[i]=UncertifiedStation;continue;}
+                if(error!=0)return error;
+                rootParameters[i]=t;
+            }
+            ChooseClosedConicCutWindow(ref curve,cutLocators);
+            for(var i=0;i<nRoots;i++)
+            {
+                var t=rootParameters[i];if(double.IsNaN(t))continue;
+                rootParameters[i]=double.NaN;
                 if(cutLocators[i].Finite)
                 {
                     var anchor=new BoundaryParameter{Parameter=t,Lower=cutLocators[i].Lower,Upper=cutLocators[i].Upper};
