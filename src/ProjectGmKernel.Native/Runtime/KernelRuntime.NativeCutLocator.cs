@@ -311,7 +311,7 @@ internal static unsafe partial class KernelRuntime
         var definition=program.Spines[cutSpine];
         var position=new IntervalVector(witness[0],witness[1],witness[2]);
         var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
-        var found=false;var native=default(IntervalNumber);var covered=cut.First;var station=0.0;
+        BufferOffset foundChart=-1;var paired=false;var native=default(IntervalNumber);var covered=cut.First;var station=0.0;
         for(var chart=0;chart<charts.Length-1;chart++)
         {
             ref readonly var frame=ref charts[chart];
@@ -329,22 +329,50 @@ internal static unsafe partial class KernelRuntime
             // the target's contraction box, including the nearest station
             // of a shared explicit rolling spine. Overlap alone is not a
             // correspondence; this proves uniqueness in the same branch.
-            if(found||projected.Lower<first||projected.Upper>last
+            if(projected.Lower<first||projected.Upper>last
                 ||JointNestedBlendEvaluation.BoundSharedSpineWitness(program,cutSpine,new(lo,hi,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
                 return ParasolidConstants.PK_ERROR_cant_do_intersect;
-            native=enclosure;found=true;
+            if(foundChart>=0)
+            {
+                // Adjacent affine gauges can assign different native t to
+                // one position on the same explicit rolling branch. Both
+                // contractions must contain the entire position/center/U
+                // witness and stay regularly oriented up to the shared knot.
+                if(paired||witness.Length!=7||chart!=foundChart+1
+                    ||!SameRollingChartContinuation(program,cutSpine,native.Lower,frame.Parameter,enclosure.Upper,witness,bounds))
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                paired=true;continue;
+            }
+            native=enclosure;foundChart=chart;
             station=representative.HasValue?Math.Clamp(frame.Parameter+frame.Scale*Dot(frame.Chord,Sub(representative.Value,frame.Position)),lo,hi)
                 :enclosure.Midpoint;
         }
         if(covered!=cut.Last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        if(!found)return ParasolidConstants.PK_ERROR_not_on_curve;
+        if(foundChart<0)return ParasolidConstants.PK_ERROR_not_on_curve;
         parameter=station;isolation=native;
         return 0;
 
         static bool Separated(IntervalNumber a,IntervalNumber b)=>a.Upper<b.Lower||b.Upper<a.Lower;
     }
 
+    private static bool SameRollingChartContinuation(in NestedBlendProgram program,BlendSpineIndex spine,
+        double first,double knot,double last,ReadOnlySpan<IntervalNumber> witness,Span<IntervalNumber> bounds)
+    {
+        if(!(first<knot&&knot<last)
+            ||JointNestedBlendEvaluation.BoundSharedSpineWitness(program,spine,new(first,knot,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
+            return false;
+        var left=new IntervalVector(bounds[3],bounds[4],bounds[5]);
+        if(JointNestedBlendEvaluation.BoundSharedSpineWitness(program,spine,new(knot,last,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
+            return false;
+        var right=new IntervalVector(bounds[3],bounds[4],bounds[5]);
+        return IntervalVector.Dot(left,right).Value.Lower>0;
+    }
+
 #if KERNEL_TEST_HOOKS
+    internal static int TestLocateSharedChart(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
+        ReadOnlySpan<IntervalNumber> witness,out IntervalNumber station)
+        =>LocateCertifiedChart(new(){First=first,Last=last},program,spine,witness,out _,out station);
+
     internal static int TestRoundTripBladeWitness(CurveTag curve,double first,double last,double at,bool reversePair,out IntervalNumber station,out bool handled)
     {
         station=UncertifiedStation;handled=false;

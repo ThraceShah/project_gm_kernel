@@ -1,5 +1,9 @@
+using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace KernelTests;
 
@@ -56,6 +60,53 @@ public unsafe class FiniteNativeBoundaryRayTests:IDisposable
             checkedCurves++;
         }
         Assert.True(checkedCurves>0);
+    }
+
+    [Fact]
+    public void AdjacentGaugesShareAnOrientedRollingRootButAReversedGaugeDoesNot()
+    {
+        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var body));
+        Assert.True(KernelRuntime.TryResolveBodySlot(body,out var slot));
+        var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;
+        Span<IntervalNumber> witness=stackalloc IntervalNumber[7],bounds=stackalloc IntervalNumber[9];
+        Span<double> contacts=stackalloc double[4];
+        for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var use=KernelRuntime.Edges[edge];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(use.CurveTag)];
+            if(curve.Class!=CurveClass.ICurve)continue;
+            var data=KernelRuntime.ICurveDataPool[curve.DataIndex];
+            var a=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(data.Surface0Tag)].Class;
+            var b=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(data.Surface1Tag)].Class;
+            if(!(a==SurfaceClass.BlendSurface&&b==SurfaceClass.Plane||a==SurfaceClass.Plane&&b==SurfaceClass.BlendSurface))continue;
+            var source=KernelRuntime.GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+            var spine=data.ProgramSpine;var definition=source.Spines[spine];
+            var frames=source.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+            var first=Math.Max(frames[0].Parameter,use.ParameterStart);var last=Math.Min(frames[1].Parameter,use.ParameterEnd);
+            if(!(last>first))continue;
+            var at=(first+last)*.5;
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(source,spine,new(at,at,0,0),bounds,capture:witness));
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineAnchor(source,spine,at,bounds,contacts));
+            var point=Vector(witness[0].Midpoint,witness[1].Midpoint,witness[2].Midpoint);
+            var instructions=source.Spines.ToArray();var chartOffset=source.Charts.Length;
+            instructions[spine].ChartOffset=chartOffset;instructions[spine].ChartCount=3;
+            // Two different affine station maps for the same physical tube.
+            var allCharts=new BlendChartInstruction[chartOffset+3];source.Charts.CopyTo(allCharts);var charts=allCharts.AsSpan(chartOffset);
+            charts[0]=charts[1]=frames[0];charts[2]=frames[1];
+            var delta=1e-11;var displacement=Scale(charts[0].Chord,delta/(charts[0].Scale*Dot(charts[0].Chord,charts[0].Chord)));
+            charts[0].Position=Add(charts[0].Position,displacement);
+            charts[1].Parameter=at;charts[1].Position=Sub(point,displacement);
+            charts[1].FirstU=contacts[0];charts[1].FirstV=contacts[1];charts[1].SecondU=contacts[2];charts[1].SecondV=contacts[3];
+            var target=new NestedBlendProgram(source.Surfaces,instructions,allCharts,source.Scalars,source.Workspace);
+            Assert.Equal(0,KernelRuntime.TestLocateSharedChart(target,spine,first,last,witness,out var both));
+            Assert.True(both.Upper<at);
+            Assert.Equal(0,KernelRuntime.TestLocateSharedChart(target,spine,at,last,witness,out var right));
+            Assert.True(right.Lower>at);
+            charts[1].Scale=-charts[1].Scale;charts[1].Position=Add(point,displacement);
+            Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,KernelRuntime.TestLocateSharedChart(target,spine,first,last,witness,out _));
+            return;
+        }
+        Assert.Fail("No finite Blend/plane chart for the witness test");
     }
 
     // Unmodified historical probe rows 56, 58, 68 and 109. Independent PK
