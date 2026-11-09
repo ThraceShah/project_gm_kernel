@@ -157,6 +157,10 @@ public unsafe class MemoryReviewTests
     public void MetadataGrowsPastFormerPartitionAndThreadLimits()
     {
         Start();
+        var workers = new Thread?[140];
+        var failures = new Exception?[workers.Length];
+        using var registered = new CountdownEvent(workers.Length);
+        using var release = new ManualResetEventSlim();
         try
         {
             var firstContext = KernelRuntime.ThreadContext();
@@ -169,27 +173,40 @@ public unsafe class MemoryReviewTests
                 Assert.Equal(0, KernelRuntime.PointCreate(&data, &point));
                 Assert.Equal(partition, KernelRuntime.GetEntityPartition(point));
             }
-            for (var i = 0; i < 140; i++)
+            for (var i = 0; i < workers.Length; i++)
             {
-                Exception? failure = null;
-                var worker = new Thread(() =>
+                var index = i;
+                var worker = workers[index] = new Thread(() =>
                 {
                     try
                     {
                         int partition;
                         Assert.Equal(0, KernelRuntime.SessionAskCurrentPartition(&partition));
                     }
-                    catch (Exception error) { failure = error; }
+                    catch (Exception error) { failures[index] = error; }
+                    finally { registered.Signal(); }
+                    // Keep the contexts live simultaneously. Managed thread
+                    // IDs can be recycled after a joined thread is collected.
+                    release.Wait();
                 });
                 worker.Start();
-                Assert.True(worker.Join(TimeSpan.FromSeconds(10)));
-                Assert.Null(failure);
             }
+            Assert.True(registered.Wait(TimeSpan.FromSeconds(10)));
+            Assert.All(failures, Assert.Null);
             Assert.True(firstContext == KernelRuntime.ThreadContext());
             Assert.True(KernelRuntime.State.Session->ThreadCount > 128);
             Assert.Equal(301, KernelRuntime.State.Session->PartitionCount);
         }
-        finally { KernelRuntime.SessionStop(); }
+        finally
+        {
+            release.Set();
+            try
+            {
+                foreach (var worker in workers)
+                    if (worker?.IsAlive == true) Assert.True(worker.Join(TimeSpan.FromSeconds(10)));
+            }
+            finally { KernelRuntime.SessionStop(); }
+        }
     }
 
     [Fact]
