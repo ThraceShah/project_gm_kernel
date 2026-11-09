@@ -103,7 +103,7 @@ internal static unsafe partial class KernelRuntime
 
     private static int RegularBoundarySurfaceRoots(in RegularBoundaryView input,BufferOffset face,SurfTag surface,
         Span<RegularBoundaryRoot> points,ref BufferCount count,ReadOnlySpan<FiniteCurveSurfaceResult> certificates=default,bool rollingSurface=false,
-        bool transferCylinderConic=false)
+        bool transferCylinderConic=false,scoped ReadOnlySpan<VertexSlot> originals=default)
     {
         var record=input.Faces[face];Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
         Span<ScalarRootIsolation> nativeRoots=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
@@ -165,6 +165,9 @@ internal static unsafe partial class KernelRuntime
                     &&IsolateFiniteExplicitLevelSet(edge,plane,roots,nativeRoots,spatialErrors,out n)==AlgorithmStatus.Success
                     &&AllStrictlyInterior(edge,nativeRoots[..n]);
                 var nativeProof=!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n);
+                FiniteCurveSurfaceRoot endpoint=default;
+                if(!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty&&curveClass==CurveClass.ICurve)
+                    nativeProof=TryStationaryNativePlaneEnd(edge,surface,originals,roots,nativeRoots,spatialErrors,out n,out endpoint);
                 var status=known||nativeProof||lineProof||conicPlaneProof?AlgorithmStatus.Success:conicProof?IsolateFiniteExplicitCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n)
                     :IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out n);
                 LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
@@ -189,6 +192,7 @@ internal static unsafe partial class KernelRuntime
                         {
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
+                        if(endpoint.NativeEnd!=FiniteNativeEnd.None&&endpoint.Parameter==witness.Parameter)witness=endpoint;
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
                             Certified=linePlane||conicPlaneProof?ExplicitPlaneCertificate:nativeProof?NativePlaneCertificate:planePairLine?PlanePairBlendLineCertificate
                                 :planePairCylinder?PlanePairCylinderLineCertificate
@@ -455,10 +459,11 @@ internal static unsafe partial class KernelRuntime
         Span<RegularBoundaryRoot> roots=stackalloc RegularBoundaryRoot[SheetPointLimit];var nRoots=0;
         var transferCylinderConic=false;
         foreach(ref readonly var curve in curves)transferCylinderConic|=curve.Construction==CutConstruction.AnalyticCylinderPlaneConic;
+        var originals=model.OriginalVertices[..model.NP];
         var error=RegularBoundarySurfaceRoots(input,first,input.Faces[second].Surface,roots,ref nRoots,certificates,
-            firstRollingFace>=0&&first<firstRollingFace&&second>=firstRollingFace,transferCylinderConic);if(error!=0)return error;
+            firstRollingFace>=0&&first<firstRollingFace&&second>=firstRollingFace,transferCylinderConic,originals);if(error!=0)return error;
         error=RegularBoundarySurfaceRoots(input,second,input.Faces[first].Surface,roots,ref nRoots,certificates,
-            firstRollingFace>=0&&second<firstRollingFace&&first>=firstRollingFace,transferCylinderConic);if(error!=0)return error;
+            firstRollingFace>=0&&second<firstRollingFace&&first>=firstRollingFace,transferCylinderConic,originals);if(error!=0)return error;
         LastSheetPartitionStage=SheetPartitionStage.CutClip;
         Span<double> parameters=stackalloc double[SheetPointLimit+2];Span<double> rootParameters=stackalloc double[SheetPointLimit];Span<KernelVector3> point=stackalloc KernelVector3[1];
         Span<IntervalNumber> cutLocators=stackalloc IntervalNumber[nRoots];

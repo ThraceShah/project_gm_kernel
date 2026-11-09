@@ -61,6 +61,7 @@ public unsafe class RollingNetworkTests:IDisposable
         finally{KernelRuntime.MemoryFree(products);}
         Assert.Equal(KernelRuntime.RollingNetworkStage.Publish,KernelRuntime.LastRollingNetworkStage);
         BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body);NativeSupportIncidence(body);
+        if(!reverse)VerifyStationaryShortEnd(body);
         AssertSavedProbeOutside(body,-1.499999667811987,-2.500000004201637,4.50007614662344); // row 289, ambiguous face ray
         AssertSavedProbeOutside(body,-1.4999999169520075,-2.500000008550392,4.500038073674117); // row 391, false edge ownership
         foreach(var product in trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product))
@@ -345,6 +346,39 @@ public unsafe class RollingNetworkTests:IDisposable
         fixed(EdgeTag* edges=selected)Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(selected.Length,edges,radius,&options,&count,null));
         Assert.Equal(selected.Length,count);
     }
+    private static void VerifyStationaryShortEnd(BodyTag body)
+    {
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var current=record.FirstEdgeBody;
+        var matched=-1;var shared=-1;
+        for(var i=0;i<record.EdgeCountBody;i++,current=KernelRuntime.Edges[current].NextInBody)
+        {
+            var edge=KernelRuntime.Edges[current];
+            if(KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)].Class!=CurveClass.ICurve)continue;
+            foreach(var vertex in new[]{edge.StartVertex,edge.EndVertex})
+            {
+                var point=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[vertex].PointTag)].Position;
+                if(point.X!=-1.5||point.Y!=-2||point.Z!=5)continue;
+                Assert.Equal(-1,matched);matched=current;shared=vertex;
+            }
+        }
+        Assert.True(matched>=0);
+        var use=KernelRuntime.Edges[matched];
+        foreach(var delta in new[]{-1e-8,0d,1e-8})
+        {
+            var definition=new PK_PLANE_sf_s();definition.basis_set.location.coord[0]=-1.5+delta;
+            definition.basis_set.axis.coord[0]=1;definition.basis_set.ref_direction.coord[1]=1;
+            int plane;Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));
+            try
+            {
+                Assert.Equal(0,KernelRuntime.TestNativePlaneEdge(matched,plane,out var roots,out var vertex,out var station));
+                Assert.Equal(delta<0?0:1,roots);Assert.Equal(delta==0?shared:-1,vertex);
+                if(delta==0)Assert.True(station.Lower==station.Upper&&(station.Lower==use.ParameterStart||station.Lower==use.ParameterEnd));
+                if(delta>0)Assert.True(station.Lower>use.ParameterStart&&station.Upper<use.ParameterEnd);
+            }
+            finally{Assert.Equal(0,KernelRuntime.EntityDelete(1,&plane));}
+        }
+    }
+
     private static void AssertSavedProbeOutside(BodyTag body,double x,double y,double z)
     {
         var p=new PK_VECTOR_s();p.coord[0]=x;p.coord[1]=y;p.coord[2]=z;
