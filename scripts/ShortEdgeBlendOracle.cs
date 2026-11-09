@@ -108,6 +108,7 @@ Require(rotateMarks is 0 or 1 or 2&&(rotateMarks==0||splitSelected||splitEllipse
 var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
 var overlappingTools=args.Contains("--overlapping-tools");
+var singleToolJunction=args.Contains("--overlapping-tools-single");
 const double defaultTransverseOffset=3.8e-5;
 var transverseOffset=NumberOption(args,"--transverse-offset=",defaultTransverseOffset);
 Require(double.IsFinite(transverseOffset)&&transverseOffset>0&&(transverseOffset==defaultTransverseOffset||transverseCut),
@@ -130,7 +131,7 @@ unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
 Require(!args.Contains("--record-fixtures")||!args.Contains("--matrix")&&!args.Contains("--both-updates"),"record fixtures uses the single default seed");
 Require(!replayProbes||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
-Require(!overlappingTools||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!mappedInput&&!replayProbes&&!splitRemote&&!splitSelected&&!splitEllipse
+Require(!(overlappingTools||singleToolJunction)||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!mappedInput&&!replayProbes&&!splitRemote&&!splitSelected&&!splitEllipse
     &&floor==0&&phase==0&&!args.Any(x=>x is "--native-only" or "--import-only" or "--matrix" or "--record-fixtures"),
     "overlapping tools require the guarded independent construction of the original seed");
 Require(!selfSavedProbes||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!savedProbes&&!args.Contains("--import-only")&&!args.Contains("--record-fixtures"),
@@ -272,7 +273,8 @@ using(host)unsafe
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools");
+                    if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false);
+                    if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true);
                     if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness,requireNativeFinBoxes,requireNativeFaceDomains);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
@@ -601,7 +603,8 @@ static unsafe int Cut(bool own,int body,int tool)
     Check(error,"cut fillet product");
     try{Require(n==1,"one cut result");return bodies[0];}finally{Free(own,bodies);}
 }
-static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale,bool materialOwnership,bool checkNativeTrims,bool requireNativeFinBoxes,bool requireNativeFaceDomains)
+static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale,bool materialOwnership,bool checkNativeTrims,bool requireNativeFinBoxes,bool requireNativeFaceDomains,
+    KernelRuntime.BoundaryTrace? projected=null)
 {
     var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),fresh);var received=Receive(false,fresh);
     var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,name+"-native.x_t"),referenceBytes);
@@ -616,6 +619,7 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         if(requireNativeFaceDomains)CompareNativeFaceDomains(reference,received,name,unitScale);
         if(checkNativeTrims)CheckSelfNativeTrims(own,name,unitScale);
         if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,name,unitScale);
+        if(projected.HasValue)CheckProjectedMaterial(reference,own,received,projected.Value,name);
         var failures=0;
         try{Mass(reference,received,name);}
         catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);failures++;}
@@ -625,23 +629,27 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
     finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");}
 }
 
-static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,string directory,string name)
+static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,string directory,string name,bool projectedCell)
 {
     int own,native;Check(KernelRuntime.EntityCopy(selfSource,&own),"copy live self Fix for overlapping tools");
     Check(PK_ENTITY_copy(nativeSource,&native),"copy independent PK Fix for overlapping tools");
     var q=1/Math.Sqrt(2);var center=(-7-3.8e-5)*q-.075;
     var first=new PK_AXIS2_sf_t(new(-1.5,(1+center)*q,(1-center)*q),new(0,q,q),new(0,q,-q));
-    var second=new PK_AXIS2_sf_t(new(-1.60,-2.03,4.8),new(0,0,1),new(1,0,0));
+    var second=new PK_AXIS2_sf_t(new(projectedCell?-1.55:-1.60,-2.03,4.8),new(0,0,1),new(1,0,0));
+    var width=projectedCell?.10:.14;
     int* ownTools=stackalloc int[2];int* nativeTools=stackalloc int[2];
     Check(KernelRuntime.BodyCreateSolidBlock(.15,.4,2.5,(M.PK_AXIS2_sf_s*)&first,ownTools),"self transverse tool");
-    Check(KernelRuntime.BodyCreateSolidBlock(.14,.16,1.3,(M.PK_AXIS2_sf_s*)&second,ownTools+1),"self overlapping tool");
+    Check(KernelRuntime.BodyCreateSolidBlock(width,.16,1.3,(M.PK_AXIS2_sf_s*)&second,ownTools+1),"self overlapping tool");
+    var firstWalls=ToolPlanes(ownTools[0]);var secondWalls=ToolPlanes(ownTools[1]);
     Check(PK_BODY_create_solid_block(.15,.4,2.5,&first,nativeTools),"native transverse tool");
-    Check(PK_BODY_create_solid_block(.14,.16,1.3,&second,nativeTools+1),"native overlapping tool");
+    Check(PK_BODY_create_solid_block(width,.16,1.3,&second,nativeTools+1),"native overlapping tool");
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c};
     PK_TOPOL_track_r_t track=default;PK_boolean_r_t result=default;
     M.PK_TOPOL_track_r_s ownTrack=default;M.PK_boolean_r_s ownResult=default;
     var previous=KernelRuntime.TraceFiniteBoundary;var oldGuard=KernelRuntime.ForbidSpatialBoundaryReuse;
     var stations=new Dictionary<int,int>();var rolling=new HashSet<int>();
+    var transfers=new List<(KernelRuntime.BoundaryTrace Trace,int Tool)>();var products=new List<KernelRuntime.BoundaryTrace>();
+    var arranged=new List<KernelRuntime.BoundaryTrace>();var projected=new List<KernelRuntime.BoundaryTrace>();
     try
     {
         Check(PK_BODY_boolean_2(native,2,nativeTools,&options,&track,&result),"native overlapping subtraction");
@@ -656,14 +664,41 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
                 if(support>=0&&KernelRuntime.Surfaces[support].Class==SurfaceClass.BlendSurface)
                     rolling.Add(t.StartEvent);
             }
+            if(t.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator&&SurfaceKind(t.OtherSurface)==SurfaceClass.BlendSurface
+                &&SurfaceKind(t.Surface)==SurfaceClass.Plane&&KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(t.Curve)].Class==CurveClass.Line)
+            {
+                var wall=KernelRuntime.PlaneDataPool[KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(t.Surface)].DataIndex];
+                var owner=(firstWalls.Any(p=>SamePlane(p,wall))?1:0)|(secondWalls.Any(p=>SamePlane(p,wall))?2:0);
+                transfers.Add((t,owner));
+            }
+            if(t.Stage==KernelRuntime.BoundaryTraceStage.Arrangement)arranged.Add(t);
+            if(t.Stage==KernelRuntime.BoundaryTraceStage.Product)products.Add(t);
+            if(t.Stage==KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement)projected.Add(t);
             previous?.Invoke(t);
         };
         var error=KernelRuntime.BodyBoolean2(own,2,ownTools,(M.PK_BODY_boolean_o_s*)&options,&ownTrack,&ownResult);
-        Console.WriteLine($"OVERLAPPING TOOLS self={error} stage={KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage} rolling_events={rolling.Count}");
         Check(error,"guarded self overlapping subtraction");
         Require(ownResult.n_bodies==1,"one self two-tool product");own=ownResult.bodies[0];
-        Require(rolling.Count==2&&rolling.All(e=>stations[e]==3),"two rolling junctions, each shared by three finite cut occurrences");
-        return CompareFresh(own,native,directory,name,1,false,true,true,true);
+        foreach(var group in transfers.GroupBy(t=>(t.Trace.StartEvent,t.Trace.Curve)))
+        {
+            // After tool union the common finite line is a source edge.
+            // Both wall coedges must transfer the same root into distinct
+            // rolling cuts, and the product must retain all three uses.
+            if(!group.Any(t=>t.Tool==1)||!group.Any(t=>t.Tool==2)||group.Select(t=>t.Trace.Surface).Distinct().Count()!=2
+                ||group.Select(t=>t.Trace.ProductCurve).Distinct().Count()!=2)continue;
+            var incident=products.Where(t=>t.StartEvent==group.Key.StartEvent||t.EndEvent==group.Key.StartEvent).ToArray();
+            if(incident.Select(t=>t.Edge).Distinct().Count()==3&&group.All(t=>incident.Any(p=>p.Curve==t.Trace.ProductCurve)))rolling.Add(group.Key.StartEvent);
+        }
+        Console.WriteLine($"OVERLAPPING TOOLS self={error} stage={KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage} rolling_events={rolling.Count} projected_cells={projected.Count}");
+        Require(rolling.Count==(projectedCell?1:2)&&rolling.All(e=>!stations.TryGetValue(e,out var n)||n==3),"each surviving rolling junction is shared by three finite occurrences");
+        Require(projected.Count==(projectedCell?1:0),"only the certified projected cell is replaced");
+        foreach(var change in projected)
+        {
+            var uses=products.Where(t=>t.Edge==change.Edge&&t.Curve==change.ProductCurve).ToArray();
+            Require(uses.Length==2&&uses[0].Forward!=uses[1].Forward&&uses.All(use=>arranged.Any(a=>a.Edge==use.Edge&&a.Curve==use.Curve&&a.Surface==use.Surface)),
+                "projected boundary reaches two opposite product uses through shared arrangement");
+        }
+        return CompareFresh(own,native,directory,name,1,false,true,true,true,projectedCell?projected[0]:null);
     }
     finally
     {
@@ -672,6 +707,80 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
         Check(KernelRuntime.TopolTrackResultFree(&ownTrack),"free self overlapping tracking");Check(KernelRuntime.BooleanResultFree(&ownResult),"free self overlapping result");
         Check(PK_ENTITY_delete(1,&native),"delete native overlapping copy");Check(KernelRuntime.EntityDelete(1,&own),"delete self overlapping copy");
     }
+
+    static SurfaceClass SurfaceKind(int surface)
+    {
+        var slot=KernelRuntime.GetSurfaceSlotByTag(surface);
+        return slot<0?default:KernelRuntime.Surfaces[slot].Class;
+    }
+
+    static PlaneData[] ToolPlanes(int body)
+    {
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var face=record.FirstFaceBody;
+        var planes=new PlaneData[record.FaceCountBody];
+        for(var i=0;i<planes.Length;i++,face=KernelRuntime.Faces[face].NextInBody)
+            planes[i]=KernelRuntime.PlaneDataPool[KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(KernelRuntime.Faces[face].SurfTag)].DataIndex];
+        return planes;
+    }
+
+    static bool SamePlane(PlaneData a,PlaneData b)
+    {
+        const double arithmetic=5e-13;
+        var sense=a.NormalX*b.NormalX+a.NormalY*b.NormalY+a.NormalZ*b.NormalZ>0?1:-1;
+        return Math.Abs(a.NormalX-sense*b.NormalX)+Math.Abs(a.NormalY-sense*b.NormalY)+Math.Abs(a.NormalZ-sense*b.NormalZ)<arithmetic
+            &&Math.Abs((a.LocationX-b.LocationX)*a.NormalX+(a.LocationY-b.LocationY)*a.NormalY+(a.LocationZ-b.LocationZ)*a.NormalZ)<arithmetic;
+    }
+}
+
+static unsafe void CheckProjectedMaterial(int native,int own,int received,in KernelRuntime.BoundaryTrace trace,string label)
+{
+    var start=new PK_VECTOR_t(trace.StartPoint.X,trace.StartPoint.Y,trace.StartPoint.Z);
+    var end=new PK_VECTOR_t(trace.EndPoint.X,trace.EndPoint.Y,trace.EndPoint.Z);
+    int n;int* edges;Check(PK_BODY_ask_edges(native,&n,&edges),"projected native edges");
+    var match=0;var ends=stackalloc PK_VECTOR_t[2];
+    try
+    {
+        for(var i=0;i<n;i++)
+        {
+            int curve,kind;PK_INTERVAL_t range;PK_LOGICAL_t sense;
+            Check(PK_EDGE_ask_geometry(edges[i],PK_LOGICAL_true,&curve,&kind,ends,&range,&sense),"projected native edge use");
+            if(kind!=PK_CLASS_line||!Pair(start,end,ends[0],ends[1],5e-9))continue;
+            Require(match==0,"unique independent projected edge");match=edges[i];
+        }
+    }
+    finally{Free(false,edges);}
+    Require(match!=0,"independent projected line is present");
+    int count;int* faces;Check(PK_EDGE_ask_faces(match,&count,&faces),"projected native adjacent faces");
+    var midpoint=new PK_VECTOR_t((start.coord[0]+end.coord[0])*.5,(start.coord[1]+end.coord[1])*.5,(start.coord[2]+end.coord[2])*.5);
+    var outward=new PK_VECTOR_t();var jet=stackalloc PK_VECTOR_t[4];
+    try
+    {
+        Require(count==2,"projected line has two native uses");
+        for(var i=0;i<count;i++)
+        {
+            int support;PK_LOGICAL_t sense;PK_UV_t uv;
+            Check(PK_FACE_ask_oriented_surf(faces[i],&support,&sense),"projected material support");
+            Check(PK_SURF_parameterise_vector(support,midpoint,&uv),"projected material parameter");
+            Check(PK_SURF_eval(support,uv,1,1,PK_LOGICAL_false,jet),"projected material support normal");
+            var normal=Cross(jet[1],jet[2]);var scale=(sense==PK_LOGICAL_true?1:-1)/Math.Sqrt(Dot(normal,normal));
+            for(var axis=0;axis<3;axis++)outward.coord[axis]+=normal.coord[axis]*scale;
+        }
+    }
+    finally{Free(false,faces);}
+    var length=Distance(start,end);var magnitude=Math.Sqrt(Dot(outward,outward));
+    Require(length>64*5e-9&&magnitude>0,"projected material witness is separated from the endpoints");
+    foreach(var fraction in new[]{.25,.5,.75})foreach(var side in new[]{-1,1})
+    {
+        var point=new PK_VECTOR_t();var displacement=side*Math.Min(length/32,64*5e-9)/magnitude;
+        for(var axis=0;axis<3;axis++)point.coord[axis]=start.coord[axis]+fraction*(end.coord[axis]-start.coord[axis])+displacement*outward.coord[axis];
+        int expected,actual,fresh,entity;
+        Check(PK_BODY_contains_vector(native,point,&expected,&entity),"projected native material");
+        Check(KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&point,&actual,&entity),"projected self material");
+        Check(PK_BODY_contains_vector(received,point,&fresh,&entity),"projected fresh material");
+        var enclosure=side<0?PK_enclosure_inside_c:PK_enclosure_outside_c;
+        Require(expected==enclosure&&actual==enclosure&&fresh==enclosure,$"{label} projected material native/self/fresh={expected}/{actual}/{fresh}");
+    }
+    Console.WriteLine($"PROJECTED MATERIAL {label} probes=6 native/self/fresh agree");
 }
 
 static unsafe void CompareNativeFaceDomains(PK_BODY_t reference,PK_BODY_t actual,string label,double unitScale)

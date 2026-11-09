@@ -94,6 +94,50 @@ public unsafe class RollingNetworkTests:IDisposable
     }
 
     [Fact]
+    public void ProjectedRollingCellFailureRestoresTargetAndBothToolsAfterUnion()
+    {
+        var target=Seed();Span<EdgeTag> selected=stackalloc EdgeTag[2];Selection(target,selected);Mark(selected);
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;
+        Assert.Equal(0,KernelRuntime.BodyFixBlends(target,&fix,&count,null,null,null,&fault,&edgeFault,&topolFault));
+        var q=1/Math.Sqrt(2);var center=(-7-3.8e-5)*q-.075;
+        var oblique=new PK_AXIS2_sf_s();oblique.location.coord[0]=-1.5;
+        oblique.location.coord[1]=(1+center)*q;oblique.location.coord[2]=(1-center)*q;
+        oblique.axis.coord[1]=oblique.axis.coord[2]=q;oblique.ref_direction.coord[1]=q;oblique.ref_direction.coord[2]=-q;
+        var meridian=new PK_AXIS2_sf_s();meridian.location.coord[0]=-1.55;meridian.location.coord[1]=-2.03;meridian.location.coord[2]=4.8;
+        meridian.axis.coord[2]=meridian.ref_direction.coord[0]=1;
+        BodyTag* tools=stackalloc BodyTag[2];
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidBlock(.15,.4,2.5,&oblique,tools));
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidBlock(.10,.16,1.3,&meridian,tools+1));
+        var secondTool=tools[1];var inputs=new[]{target,tools[0],secondTool};var before=inputs.Select(Transmit).ToArray();
+        var generations=inputs.Select(b=>KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(b).Slot].Header.Generation).ToArray();
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
+        PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+        var old=KernelRuntime.ForbidSpatialBoundaryReuse;var entered=false;var consumed=false;
+        KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        KernelRuntime.TraceFiniteBoundary=t=>
+        {
+            if(t.Stage!=KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement)return;
+            entered=true;consumed=!KernelRuntime.IsValidTag(secondTool);
+            KernelRuntime.InjectAllocationFailure(0);
+        };
+        try
+        {
+            Assert.Equal(ParasolidConstants.PK_ERROR_memory_full,KernelRuntime.BodyBoolean2(target,2,tools,&options,&tracking,&result));
+        }
+        finally{KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.ForbidSpatialBoundaryReuse=old;KernelRuntime.TraceFiniteBoundary=null;}
+        Assert.True(entered&&consumed);Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);Assert.True(tracking.track_records==null);
+        Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+        Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);
+        for(var i=0;i<inputs.Length;i++)
+        {
+            Assert.Equal(generations[i],KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(inputs[i]).Slot].Header.Generation);
+            Assert.Equal(before[i],Transmit(inputs[i]));
+        }
+    }
+
+    [Fact]
     public void RigidlyMovedRollingSeedPublishesBothShortIntervals()
     {
         var body=Seed("generated-short-edge-phase-input.x_t");

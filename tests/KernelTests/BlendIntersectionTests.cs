@@ -149,7 +149,10 @@ public unsafe class BlendIntersectionTests:IDisposable
             Assert.Equal(1,nc);var data=KernelRuntime.ICurveDataPool[KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(curves[0])].DataIndex];
             var program=KernelRuntime.GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
             Span<IntervalNumber> result=stackalloc IntervalNumber[2];
+            Span<IntervalNumber> supportUv=stackalloc IntervalNumber[4];
+            Span<KernelVector3> point=stackalloc KernelVector3[1];Span<double> contacts=stackalloc double[4];
             Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportU(program,data.ProgramSpine,intervals[0].value[0],intervals[0].value[1],0,result));
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportUv(program,data.ProgramSpine,intervals[0].value[0],intervals[0].value[1],0,supportUv));
             PK_VECTOR_s* jets=stackalloc PK_VECTOR_s[2];
             for(var sample=0;sample<=8;sample++)
             {
@@ -159,8 +162,12 @@ public unsafe class BlendIntersectionTests:IDisposable
                 Assert.InRange(jets[1].coord[1],result[1].Lower,result[1].Upper);
                 Assert.InRange(Math.Abs(jets[0].coord[1]+jets[0].coord[0]/4-.5),0,1e-12);
                 Assert.InRange(Math.Abs(jets[1].coord[1]+jets[1].coord[0]/4),0,1e-12);
+                Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,parameter,0,point,contacts));
+                Assert.InRange(contacts[0],supportUv[0].Lower,supportUv[0].Upper);
+                Assert.InRange(contacts[1],supportUv[2].Lower,supportUv[2].Upper);
             }
             Assert.Equal(AlgorithmStatus.Unsupported,JointNestedBlendEvaluation.BoundSpineSupportU(program,data.ProgramSpine,intervals[0].value[0],intervals[0].value[1],1,result));
+            Assert.Equal(AlgorithmStatus.Unsupported,JointNestedBlendEvaluation.BoundSpineSupportUv(program,data.ProgramSpine,intervals[0].value[0],intervals[0].value[1],1,supportUv));
         }
         finally{if(points!=null)KernelRuntime.MemoryFree(points);if(curves!=null)KernelRuntime.MemoryFree(curves);if(intervals!=null)KernelRuntime.MemoryFree(intervals);if(kinds!=null)KernelRuntime.MemoryFree(kinds);}
     }

@@ -219,12 +219,12 @@ internal static partial class JointNestedBlendEvaluation
             if(n!=captureWitness.Length)return AlgorithmStatus.Unsupported;
             boxes[..n].CopyTo(captureWitness);
         }
-        var parameterIndex=-1;
+        var parameterIndex=-1;BufferOffset parameterChild=-1;
         if(!supportParameter.IsEmpty)
         {
-            var child=parameterSide==0?nodes[0].FirstChild:nodes[0].SecondChild;
-            if(child<0)return AlgorithmStatus.Unsupported;
-            parameterIndex=nodes[child].Offset+3;supportParameter[0]=boxes[parameterIndex];
+            parameterChild=parameterSide==0?nodes[0].FirstChild:nodes[0].SecondChild;
+            if(parameterChild<0)return AlgorithmStatus.Unsupported;
+            parameterIndex=nodes[parameterChild].Offset+3;supportParameter[0]=boxes[parameterIndex];
         }
         if(!reachBudget.IsEmpty)
         {
@@ -247,7 +247,17 @@ internal static partial class JointNestedBlendEvaluation
         status=IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
-        if(parameterIndex>=0){supportParameter[1]=image[parameterIndex];return AlgorithmStatus.Success;}
+        if(parameterIndex>=0)
+        {
+            supportParameter[1]=image[parameterIndex];
+            if(supportParameter.Length==2)return AlgorithmStatus.Success;
+            for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
+            var root=program.Spines[spine];var support=program.Surfaces[parameterSide==0?root.First:root.Second];
+            status=BoundSpineSupportSection(program,nodes,variables[..n],parameterChild,support,splineCache,out var section);
+            if(status!=AlgorithmStatus.Success)return status;
+            supportParameter[2]=section.Value;supportParameter[3]=section.Derivative;
+            return AlgorithmStatus.Success;
+        }
         if(!curvature.IsEmpty||!acceleration.IsEmpty)
         {
             for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);

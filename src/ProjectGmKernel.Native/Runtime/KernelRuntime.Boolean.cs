@@ -135,6 +135,9 @@ internal static unsafe partial class KernelRuntime
             {
                 if(error!=ParasolidConstants.PK_ERROR_not_implemented)return error;
                 scratch.Return(memory);memory=default;
+                if(options->function==ParasolidConstants.PK_boolean_subtract_c&&toolCount>1&&options->tracking==0
+                    &&options->merge_imprinted==0&&HaveRollingBooleanBoundary(inputs[0])&&HavePlanarBooleanTools(inputs[1..]))
+                    return RegularCurvedSubtractPlanarTools(inputs,options,tracking,result);
                 return RegularCurvedBoolean(inputs,options,tracking,result);
             }
             faces = faces[..nf]; loops = loops[..nl]; points = points[..np];
@@ -234,6 +237,56 @@ internal static unsafe partial class KernelRuntime
             return 0;
         }
         finally { scratch.Return(memory); }
+    }
+
+    private static bool HavePlanarBooleanTools(ReadOnlySpan<BodyTag> tools)
+    {
+        foreach(var tool in tools)
+        {
+            var body=Bodies[TagRec(tool).Slot];var face=body.FirstFaceBody;
+            for(var i=0;i<body.FaceCountBody;i++,face=Faces[face].NextInBody)
+            {
+                var surface=GetSurfaceSlotByTag(Faces[face].SurfTag);
+                if(surface<0||Surfaces[surface].Class!=SurfaceClass.Plane)return false;
+            }
+        }
+        return true;
+    }
+
+    private static bool HaveRollingBooleanBoundary(BodyTag target)
+    {
+        var body=Bodies[TagRec(target).Slot];var face=body.FirstFaceBody;
+        for(var i=0;i<body.FaceCountBody;i++,face=Faces[face].NextInBody)
+        {
+            var surface=GetSurfaceSlotByTag(Faces[face].SurfTag);
+            if(surface>=0&&Surfaces[surface].Class==SurfaceClass.BlendSurface)return true;
+        }
+        return false;
+    }
+
+    // The union's finite exterior is the cutting domain. Internal tool
+    // faces must not generate target intersections. The nested operation
+    // stays inside the outer command journal, including any consumed tags.
+    private static int RegularCurvedSubtractPlanarTools(ReadOnlySpan<BodyTag> inputs,PK_BODY_boolean_o_s* options,
+        PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
+    {
+        var unite=*options;unite.function=ParasolidConstants.PK_boolean_unite_c;
+        PK_TOPOL_track_r_s temporaryTracking=default;PK_boolean_r_s toolUnion=default;
+        try
+        {
+            int error;
+            fixed(BodyTag* remaining=inputs[2..])
+                error=BodyBooleanCore(inputs[1],inputs.Length-2,remaining,&unite,&temporaryTracking,&toolUnion);
+            if(error!=0)return error;
+            if(toolUnion.n_bodies<=0||toolUnion.n_bodies>=inputs.Length||toolUnion.bodies==null)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            Span<BodyTag> united=stackalloc BodyTag[toolUnion.n_bodies+1];united[0]=inputs[0];
+            new ReadOnlySpan<BodyTag>(toolUnion.bodies,toolUnion.n_bodies).CopyTo(united[1..]);
+            return RegularCurvedBoolean(united,options,tracking,result);
+        }
+        finally
+        {
+            TopolTrackResultFree(&temporaryTracking);BooleanResultFree(&toolUnion);
+        }
     }
 
     private static bool BooleanMaterial(ReadOnlySpan<bool> bodies, int function)

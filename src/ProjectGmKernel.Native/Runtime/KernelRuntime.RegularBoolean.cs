@@ -226,6 +226,11 @@ internal static unsafe partial class KernelRuntime
             {
                 LastRegularBooleanStage=RegularBooleanStage.Components;ModelingPerformance.Stage(RegularBooleanStage.Components);
                 error=MergeRegularBooleanCells(ref model,selected,reversed,coincident);if(error!=0)return error;
+                if(options->function==ParasolidConstants.PK_boolean_subtract_c)
+                {
+                    error=ReduceProjectedRollingCells(TagRec(inputs[0]).Slot,input,sources[..nf],ref model,selected,reversed,owned,ref ownedCount,
+                        halfedges,cycleCoedges,cycles);if(error!=0)return error;
+                }
                 error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],options,result);if(error!=0)return error;
                 if(!targetClash)result->result=ParasolidConstants.PK_boolean_result_no_clash_c;
             }

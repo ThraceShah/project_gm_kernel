@@ -12,14 +12,23 @@ internal static partial class JointNestedBlendEvaluation
     // nearest-branch certificate as the spatial tube.
     internal static AlgorithmStatus BoundSpineSupportU(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
         BufferOffset side,Span<IntervalNumber> result)
+        =>result.Length==2?BoundSpineSupportParameters(program,spine,first,last,side,result):AlgorithmStatus.InvalidInput;
+
+    // Output is (u, du/dt, v, dv/dt) in the actual supporting Blend chart.
+    internal static AlgorithmStatus BoundSpineSupportUv(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
+        BufferOffset side,Span<IntervalNumber> result)
+        =>result.Length==4?BoundSpineSupportParameters(program,spine,first,last,side,result):AlgorithmStatus.InvalidInput;
+
+    private static AlgorithmStatus BoundSpineSupportParameters(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
+        BufferOffset side,Span<IntervalNumber> result)
     {
-        if(spine<0||spine>=program.Spines.Length||side is <0 or >1||last<first||result.Length!=2)return AlgorithmStatus.InvalidInput;
+        if(spine<0||spine>=program.Spines.Length||side is <0 or >1||last<first)return AlgorithmStatus.InvalidInput;
         var definition=program.Spines[spine];var support=program.Surfaces[side==0?definition.First:definition.Second];
         if(SpineParameterMap.Explicit(definition)||!support.IsBlend||SpineParameterMap.Periodic(program.Spines[support.Spine]))return AlgorithmStatus.Unsupported;
         var charts=Chart(program,spine);if(first<charts[0].Parameter||last>charts[^1].Parameter)return AlgorithmStatus.InvalidInput;
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[64];Span<BufferCount> depths=stackalloc BufferCount[64];
-        Span<IntervalNumber> output=stackalloc IntervalNumber[9],parameter=stackalloc IntervalNumber[2];
-        var hull=new IntervalNumber(double.PositiveInfinity,double.NegativeInfinity);var derivative=hull;var covered=first;var visited=0;
+        Span<IntervalNumber> output=stackalloc IntervalNumber[9],parameter=stackalloc IntervalNumber[result.Length];
+        result.Fill(new(double.PositiveInfinity,double.NegativeInfinity));var covered=first;var visited=0;
         for(var chart=0;chart<charts.Length-1;chart++)
         {
             var lo=Math.Max(first,charts[chart].Parameter);var hi=Math.Min(last,charts[chart+1].Parameter);if(hi<lo||hi==lo&&first!=last)continue;
@@ -28,7 +37,8 @@ internal static partial class JointNestedBlendEvaluation
             {
                 if(++visited>8192)return AlgorithmStatus.NotConverged;var index=--count;var box=pending[index];var depth=depths[index];
                 var status=BoundSegment(program,-1,spine,box,output,supportParameter:parameter,parameterSide:side);
-                if(status==AlgorithmStatus.Success){hull=IntervalNumber.Hull(hull,parameter[0]);derivative=IntervalNumber.Hull(derivative,parameter[1]);continue;}
+                if(status==AlgorithmStatus.Success)
+                {for(var k=0;k<result.Length;k++)result[k]=IntervalNumber.Hull(result[k],parameter[k]);continue;}
                 if(status!=AlgorithmStatus.NotConverged)return status;
                 if(depth>=28||count+2>pending.Length)return AlgorithmStatus.NotConverged;
                 var middle=box.U0+(box.U1-box.U0)*.5;if(!(middle>box.U0&&middle<box.U1))return AlgorithmStatus.NotConverged;
@@ -36,7 +46,31 @@ internal static partial class JointNestedBlendEvaluation
                 pending[count]=new(middle,box.U1,0,0);depths[count++]=depth+1;
             }
         }
-        if(covered!=last||!hull.Finite||!derivative.Finite)return AlgorithmStatus.NotConverged;
-        result[0]=hull;result[1]=derivative;return AlgorithmStatus.Success;
+        if(covered!=last)return AlgorithmStatus.NotConverged;
+        foreach(var value in result)if(!value.Finite)return AlgorithmStatus.NotConverged;
+        return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus BoundSpineSupportSection(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
+        ReadOnlySpan<IntervalDual> variables,BufferOffset child,in BlendSurfaceInstruction support,ReadOnlySpan<IntervalSplineContact> cache,
+        out IntervalDual v)
+    {
+        v=default;
+        var status=IntervalNormal(program,support.First,nodes,child,variables,out _,out var n0,cache);if(status!=AlgorithmStatus.Success)return status;
+        status=IntervalNormal(program,support.Second,nodes,child,variables,out _,out var n1,cache);if(status!=AlgorithmStatus.Success)return status;
+        var radius=Math.Abs(support.Range0);if(!(radius>0))return AlgorithmStatus.Unsupported;
+        var start=n1*(-support.Range1/radius);var end=n0*(-support.Range0/radius);if(support.ReverseSection)(start,end)=(end,start);
+        var cosine=IntervalVector.Dot(start,end);var transverse=end-start*cosine;var sine=transverse.Norm();
+        if(!(sine.Value.Lower>0))return AlgorithmStatus.NotConverged;
+        var offset=IntervalPoint(variables,0)-IntervalPoint(variables,nodes[child].Offset);
+        var longitudinal=IntervalVector.Dot(offset,start);var lateral=IntervalVector.Dot(offset,transverse/sine);
+        // In this half-plane atan(lateral/longitudinal) covers a finite
+        // endpoint at v=0 without crossing the angular branch cut.
+        if(!(longitudinal.Value.Lower>0))return AlgorithmStatus.NotConverged;
+        var ratio=lateral/longitudinal;if(!ratio.Finite)return AlgorithmStatus.NotConverged;
+        var angle=new IntervalDual(new(Math.BitDecrement(Math.BitDecrement(Math.Atan(ratio.Value.Lower))),
+            Math.BitIncrement(Math.BitIncrement(Math.Atan(ratio.Value.Upper)))),ratio.Derivative/(1+IntervalNumber.Square(ratio.Value)));
+        v=angle/IntervalDual.Atan2(sine,cosine);
+        return v.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 }
