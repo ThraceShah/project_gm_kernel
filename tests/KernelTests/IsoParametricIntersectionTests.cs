@@ -74,13 +74,32 @@ public unsafe class IsoParametricIntersectionTests:IDisposable
         using var ordinary=Intersect(Patch(0,true,false),Plane());
         using var scaled=Intersect(Patch(0,true,false,scale),Plane());
         Assert.Equal(3,scaled.CurveCount);Assert.Equal(0,scaled.PointCount);
-        for(var i=0;i<3;i++)for(var sample=0;sample<=4;sample++)
+        var used=0;
+        for(var i=0;i<3;i++)
         {
-            var a=new PK_VECTOR_s();var b=new PK_VECTOR_s();var t=sample/4.0;
-            Assert.Equal(0,KernelRuntime.CurveEval(ordinary.Curves[i],t,0,&a));
-            Assert.Equal(0,KernelRuntime.CurveEval(scaled.Curves[i],t,0,&b));
-            for(var c=0;c<3;c++)Assert.InRange(Math.Abs(a.coord[c]-b.coord[c]),0,1e-10);
+            var lo=ordinary.Intervals[i].value[0];var hi=ordinary.Intervals[i].value[1];
+            var start=Evaluate(ordinary.Curves[i],lo);var end=Evaluate(ordinary.Curves[i],hi);
+            var match=-1;
+            for(var j=0;j<3;j++)
+            {
+                if(!SamePoint(start,Evaluate(scaled.Curves[j],scaled.Intervals[j].value[0]))
+                    ||!SamePoint(end,Evaluate(scaled.Curves[j],scaled.Intervals[j].value[1])))continue;
+                Assert.True(match<0&&(used&(1<<j))==0);match=j;
+            }
+            Assert.True(match>=0);used|=1<<match;
+            for(var sample=0;sample<=4;sample++)
+            {
+                var a=Evaluate(ordinary.Curves[i],lo+(hi-lo)*sample/4);double t=0;
+                Assert.Equal(0,KernelRuntime.CurveParameteriseVector(scaled.Curves[match],a,&t));
+                Assert.InRange(t,scaled.Intervals[match].value[0],scaled.Intervals[match].value[1]);
+                Assert.True(SamePoint(a,Evaluate(scaled.Curves[match],t)));
+            }
         }
+
+        static PK_VECTOR_s Evaluate(int curve,double t)
+        {var p=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(curve,t,0,&p));return p;}
+        static bool SamePoint(PK_VECTOR_s a,PK_VECTOR_s b)
+        {for(var c=0;c<3;c++)if(!(Math.Abs(a.coord[c]-b.coord[c])<=1e-10))return false;return true;}
     }
 
     [Fact]
@@ -109,7 +128,8 @@ public unsafe class IsoParametricIntersectionTests:IDisposable
     [Fact]
     public void ExactBranchesOwnTheirGeometryAndFailuresRollbackAllAllocations()
     {
-        var surface=Patch(0,true,false);var plane=Plane();var baseline=KernelRuntime.Curves.AliveCount;var blocks=KernelRuntime.ReturnOutstandingBlocks;
+        var surface=Patch(0,true,false);var plane=Plane();var baseline=KernelRuntime.Curves.AliveCount;
+        var surfaces=KernelRuntime.Surfaces.AliveCount;var charts=KernelRuntime.ICurveDataPool.AliveCount;var blocks=KernelRuntime.ReturnOutstandingBlocks;
         for(var fault=0;fault<20;fault++)
         {
             var result=new Result();var options=Options();KernelRuntime.InjectAllocationFailure(fault);
@@ -118,9 +138,11 @@ public unsafe class IsoParametricIntersectionTests:IDisposable
             if(error==0){for(var i=0;i<result.CurveCount;i++)Assert.Equal(0,KernelRuntime.EntityDelete(1,result.Curves+i));result.Dispose();}
             else{Assert.Equal(0,result.CurveCount);Assert.Equal(0,result.PointCount);Assert.True(result.Points==null&&result.Curves==null&&result.Intervals==null&&result.Kinds==null);}
             Assert.Equal(baseline,KernelRuntime.Curves.AliveCount);Assert.Equal(blocks,KernelRuntime.ReturnOutstandingBlocks);
+            Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);Assert.Equal(charts,KernelRuntime.ICurveDataPool.AliveCount);
         }
         using var owned=Intersect(surface,plane);Assert.Equal(0,KernelRuntime.EntityDelete(1,&surface));Assert.Equal(0,KernelRuntime.EntityDelete(1,&plane));
-        var p=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(owned.Curves[0],.4,0,&p));Assert.InRange(Math.Abs(p.coord[2]),0,1e-10);
+        var middle=owned.Intervals[0].value[0]/2+owned.Intervals[0].value[1]/2;
+        var p=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(owned.Curves[0],middle,0,&p));Assert.InRange(Math.Abs(p.coord[2]),0,1e-10);
     }
 
     private static int Patch(int mode,bool rational,bool transpose,double homogeneousScale=1)

@@ -52,6 +52,8 @@ try
             SS("oblique-plane-cylinder",Plane(0,0,0,Math.Sqrt(.5),0,Math.Sqrt(.5),0,1,0),Cylinder(2));
             SS("plane-torus-two-circles",xy,torus);SS("plane-torus-tangent-circle",Plane(0,0,1,0,0,1),torus);
             SS("bilinear-nurbs-hyperbola",Bilinear(false),Plane(0,0,.25,0,0,1));
+            SS("plane-bilinear-nurbs-hyperbola",Plane(0,0,.25,0,0,1),Bilinear(false));
+            SS("bilinear-nurbs-hyperbola-different-trim",Bilinear(false),Plane(0,0,.125,0,0,1));
             SS("bilinear-nurbs-crossing",Bilinear(true),xy);
             // Native ICURVE wire creation adopts its support geometry. Each
             // subsequent case therefore needs fresh orphan supports.
@@ -139,9 +141,14 @@ unsafe void ExtremeTensorScaleBoundary(string label,double homogeneousScale,int 
         var seen=new bool[3];
         for(var i=0;i<mnc;i++)
         {
-            Equal(mr[i].value[0],0,label+" managed interval start");Equal(mr[i].value[1],1,label+" managed interval end");
+            var lo=mr[i].value[0];var hi=mr[i].value[1];
+            Require(double.IsFinite(lo)&&double.IsFinite(hi)&&lo<hi,label+" managed finite interval");
             Require(mk[i]==M.ParasolidConstants.PK_intersect_curve_simple_c,label+" managed classification");
-            var startPoint=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(mc[i],0,0,&startPoint),label+" managed start");
+            var startPoint=new M.PK_VECTOR_s();var endPoint=new M.PK_VECTOR_s();
+            Check(KernelRuntime.CurveEval(mc[i],lo,0,&startPoint),label+" managed start");
+            Check(KernelRuntime.CurveEval(mc[i],hi,0,&endPoint),label+" managed end");
+            if(startPoint.coord[0]>endPoint.coord[0])(startPoint,endPoint)=(endPoint,startPoint);
+            Equal(startPoint.coord[0],0,label+" managed x start");Equal(endPoint.coord[0],1,label+" managed x end");
             var rootIndex=-1;var baseY=0.0;
             for(var root=0;root<3;root++)
             {
@@ -151,8 +158,12 @@ unsafe void ExtremeTensorScaleBoundary(string label,double homogeneousScale,int 
             Require(rootIndex>=0&&!seen[rootIndex],label+" managed missing/duplicate isocurve");seen[rootIndex]=true;
             for(var sample=0;sample<=4;sample++)
             {
-                var u=sample/4.0;var point=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(mc[i],u,0,&point),label+" managed sample");
-                Equal(point.coord[0],u,label+" managed x");Equal(point.coord[1],baseY+.25*u*u,label+" managed y");Equal(point.coord[2],0,label+" managed z");
+                var u=sample/4.0;var expected=new M.PK_VECTOR_s();
+                expected.coord[0]=u;expected.coord[1]=baseY+.25*u*u;
+                double t=0;Check(KernelRuntime.CurveParameteriseVector(mc[i],expected,&t),label+" managed finite inverse");
+                Require(t>=lo&&t<=hi,label+" managed sample outside returned interval");
+                var point=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(mc[i],t,0,&point),label+" managed sample");
+                Equal(point.coord[0],u,label+" managed x");Equal(point.coord[1],expected.coord[1],label+" managed y");Equal(point.coord[2],0,label+" managed z");
             }
             int body=0;Check(KernelRuntime.CurveMakeWireBody(mc[i],mr[i],&body),label+" managed wire");
             var bytes=Transmit(body);File.WriteAllBytes(Path.Combine(output,label+"-self-branch"+i+".x_t"),bytes);var received=Receive(bytes);

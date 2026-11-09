@@ -191,20 +191,33 @@ public unsafe class IntersectionOperationTests:IDisposable
         using(var result=SS(plane,torus,options)){Assert.Equal(1,result.CurveCount);var sf=new PK_CIRCLE_sf_s();Assert.Equal(0,KernelRuntime.CircleAsk(result.Curves[0],&sf));Near(2,sf.radius);}
     }
 
-    [Fact]
-    public void NonplanarBilinearNurbsPlane_CreatesExactBoundedRationalBranch()
+    [Theory]
+    [InlineData(false,.25)]
+    [InlineData(true,.25)]
+    [InlineData(false,.125)]
+    public void NonplanarBilinearNurbsPlane_PublishesPairedFiniteBranch(bool reverse,double height)
     {
-        var surface=Bilinear(false);var plane=Plane(0,0,.25,0,0,1);
-        using(var result=SS(surface,plane))
+        var surface=Bilinear(false);var plane=Plane(0,0,height,0,0,1);
+        var first=reverse?plane:surface;var second=reverse?surface:plane;
+        using(var result=SS(first,second))
         {
-            Assert.Equal(1,result.CurveCount);Assert.Equal(0,result.PointCount);var sf=new PK_BCURVE_sf_s();Assert.Equal(0,KernelRuntime.BCurveAsk(result.Curves[0],&sf));
-            try{Assert.Equal(2,sf.degree);Assert.Equal((byte)1,sf.is_rational);}finally{Free(sf.vertex);Free(sf.knot);Free(sf.knot_mult);}
-            Near(.25,result.Intervals[0].value[0]);Near(1,result.Intervals[0].value[1]);
+            Assert.Equal(1,result.CurveCount);Assert.Equal(0,result.PointCount);
+            var curve=result.Curves[0];var data=PairedPlaneChart(curve,reverse);
+            Assert.NotEqual(first,data.Surface0Tag);Assert.NotEqual(second,data.Surface1Tag);
+            var uv=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(data.UvValueBlock),data.UvValueCount);
+            var splineOffset=reverse?2:0;var end=4*(data.ChartCount-1);
+            Near(reverse?height:1,uv[splineOffset]);Near(reverse?1:height,uv[splineOffset+1]);
+            Near(reverse?1:height,uv[end+splineOffset]);Near(reverse?height:1,uv[end+splineOffset+1]);
+            var lo=result.Intervals[0].value[0];var hi=result.Intervals[0].value[1];
+            var record=KernelRuntime.GetCurveByTag(curve);Assert.Equal(record.TMin,lo);Assert.Equal(record.TMax,hi);Assert.True(lo<hi);
             for(var i=0;i<=16;i++)
             {
-                var t=.25+.75*i/16;var p=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[0],t,0,&p));
-                Near(.25,p.coord[0]*p.coord[1]);Near(.25,p.coord[2]);CheckPaired(surface,plane,result.Curves[0],t);
+                var t=lo+(hi-lo)*i/16;var p=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(curve,t,0,&p));
+                Near(height,p.coord[0]*p.coord[1]);Near(height,p.coord[2]);CheckPaired(first,second,curve,t);
             }
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&surface));Assert.Equal(0,KernelRuntime.EntityDelete(1,&plane));
+            var after=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(curve,(lo+hi)*.5,0,&after));
+            Near(height,after.coord[0]*after.coord[1]);Near(height,after.coord[2]);
         }
     }
 
@@ -232,12 +245,33 @@ public unsafe class IntersectionOperationTests:IDisposable
         {
             Assert.Equal(twoSpans?4:2,result.CurveCount);Assert.Equal(0,result.PointCount);
             double[] starts=twoSpans?[0,.5,1.2,1.8]:[0,.5];double[] ends=twoSpans?[.2,.8,1.5,2]:[.2,.8];
+            var seen=0;
             for(var i=0;i<result.CurveCount;i++)
             {
-                Near(starts[i],result.Intervals[i].value[0]);Near(ends[i],result.Intervals[i].value[1]);
-                for(var sample=0;sample<=10;sample++)CheckPaired(surface,plane,result.Curves[i],starts[i]+(ends[i]-starts[i])*sample/10);
+                var lo=result.Intervals[i].value[0];var hi=result.Intervals[i].value[1];var a=lo;var b=hi;
+                if(!twoSpans)
+                {
+                    var data=PairedPlaneChart(result.Curves[i],false);
+                    var uv=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(data.UvValueBlock),data.UvValueCount);
+                    a=uv[transpose?1:0];b=uv[4*(data.ChartCount-1)+(transpose?1:0)];
+                    if(a>b)(a,b)=(b,a);
+                }
+                var index=0;while(index<starts.Length&&Math.Abs(starts[index]-a)>2e-9)index++;
+                Assert.True(index<starts.Length&&(seen&(1<<index))==0);
+                seen|=1<<index;Near(starts[index],a);Near(ends[index],b);
+                for(var sample=0;sample<=10;sample++)CheckPaired(surface,plane,result.Curves[i],lo+(hi-lo)*sample/10);
             }
         }
+    }
+
+    private static ICurveData PairedPlaneChart(int curve,bool planeFirst)
+    {
+        var record=KernelRuntime.GetCurveByTag(curve);Assert.Equal(CurveClass.ICurve,record.Class);
+        var data=KernelRuntime.ICurveDataPool[record.DataIndex];
+        Assert.Equal(planeFirst?SurfaceClass.Plane:SurfaceClass.BSurface,KernelRuntime.GetSurfaceByTag(data.Surface0Tag).Class);
+        Assert.Equal(planeFirst?SurfaceClass.BSurface:SurfaceClass.Plane,KernelRuntime.GetSurfaceByTag(data.Surface1Tag).Class);
+        Assert.Equal(IntersectionUvType.Both,data.UvType);Assert.True(data.ChartCount>=2);
+        Assert.Equal(4*data.ChartCount,data.UvValueCount);Assert.Equal((byte)1,data.OwnsSupportSurfaces);return data;
     }
 
     [Theory]

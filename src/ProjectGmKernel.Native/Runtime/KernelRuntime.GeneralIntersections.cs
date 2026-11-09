@@ -286,7 +286,7 @@ internal static unsafe partial class KernelRuntime
 
     private static int GeneralSurfIntersectSurf(SurfaceSlot first, SurfaceSlot second, BodySlot owner,
         PK_SURF_intersect_surf_o_s* options, BufferCount* curveCount, CurveTag** curves, PK_INTERVAL_s** intervals, int** kinds,
-        bool publishNativeSection=false)
+        bool publishNativeSection=false,ReadOnlySpan<OperationIntersectionBranch> planeSections=default)
     {
         // Store graph order as indices. A second maximum-sized node array
         // would reserve certificate storage twice and exhaust the command
@@ -310,7 +310,7 @@ internal static unsafe partial class KernelRuntime
             // cannot certify completeness of the continuation beyond it.
             var unboundedBlendPair=Surfaces[first].Class==SurfaceClass.BlendSurface&&Surfaces[second].Class==SurfaceClass.BlendSurface
                 &&(options->have_uvbox_1==0||options->have_uvbox_2==0)&&(BlendHasArtificialLimit(first)||BlendHasArtificialLimit(second));
-            if (ne == 0) return unboundedBlendPair?ParasolidConstants.PK_ERROR_cant_do_intersect:0;
+            if (ne == 0) return unboundedBlendPair||!planeSections.IsEmpty?ParasolidConstants.PK_ERROR_cant_do_intersect:0;
             LastGeneralIntersectionStage=GeneralIntersectionStage.Order;
             status = OrderGeneralIntersectionGraph(nodes[..nn], edges[..ne], ordered, branches, out var nb);LastGeneralIntersectionStatus=status;
             if (status != AlgorithmStatus.Success)return IntersectionError(status);
@@ -325,6 +325,8 @@ internal static unsafe partial class KernelRuntime
                     || !GeneralIntersectionBoundary(first, second, nodes[ordered[branch.First + branch.Count - 1]],options))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;
             }
+            if(!planeSections.IsEmpty&&!MatchFinitePlaneSections(planeSections,nodes,ordered,branches[..nb]))
+                return ParasolidConstants.PK_ERROR_cant_do_intersect;
             if (options->have_vector != 0)
             {
                 var seed = Vector(options->vector.coord[0], options->vector.coord[1], options->vector.coord[2]);
@@ -356,6 +358,8 @@ internal static unsafe partial class KernelRuntime
             {
                 var clone=TryCloneEntityCore(Surfaces[first].Header.Tag,out a);if(clone!=0)return clone;
                 clone=TryCloneEntityCore(Surfaces[second].Header.Tag,out b);if(clone!=0)return clone;
+                if(!planeSections.IsEmpty&&!NormalizePlaneSectionSupport(Surfaces[first].Class==SurfaceClass.BSurface?a:b))
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
             }
             var tags = AllocateReturnSlice(nb);
             var ranges = (PK_INTERVAL_s*)State.Session->Returns.TryAllocate((nuint)(nb * sizeof(PK_INTERVAL_s)));
@@ -394,6 +398,50 @@ internal static unsafe partial class KernelRuntime
             *curveCount = nb; *curves = tags; *intervals = ranges; *kinds = types; return 0;
         }
         finally { scratch.Return(memory); }
+    }
+
+    private static bool NormalizePlaneSectionSupport(SurfTag support)
+    {
+        var data=BSurfaceDataStore[Surfaces[GetSurfaceSlotByTag(support)].DataIndex];
+        if(data.IsRational==0)return true;
+        var poles=data.PolesSpan();var weight=0.0;
+        for(var i=3;i<poles.Length;i+=4)weight=Math.Max(weight,poles[i]);
+        if(!(weight>0)||!double.IsFinite(weight))return false;
+        var exponent=Math.ILogB(weight);
+        if(exponent==0)return true;
+        // The new curve owns this copy. Normalize its common homogeneous
+        // gauge exactly, so XT retains the support even for tiny input weights.
+        for(var i=0;i<poles.Length;i++)
+        {
+            var scaled=Math.ScaleB(poles[i],-exponent);
+            if(!double.IsFinite(scaled)||Math.ScaleB(scaled,exponent)!=poles[i])return false;
+            poles[i]=scaled;
+        }
+        return true;
+    }
+
+    private static bool MatchFinitePlaneSections(ReadOnlySpan<OperationIntersectionBranch> sections,
+        ReadOnlySpan<SurfaceIntersectionNode> nodes,ReadOnlySpan<BufferOffset> order,ReadOnlySpan<GeneralIntersectionBranch> branches)
+    {
+        if(sections.Length!=branches.Length)return false;
+        ulong used=0;
+        foreach(ref readonly var branch in branches)
+        {
+            if(branch.Closed!=0)return false;
+            var first=nodes[order[branch.First]].Point;var last=nodes[order[branch.First+branch.Count-1]].Point;var match=-1;
+            for(var i=0;i<sections.Length;i++)
+            {
+                var a=PlaneSectionEndpoint(sections[i],false);var b=PlaneSectionEndpoint(sections[i],true);
+                if(!(SameEnd(first,a)&&SameEnd(last,b)||SameEnd(first,b)&&SameEnd(last,a)))continue;
+                if(match>=0||(used&(1UL<<i))!=0)return false;
+                match=i;
+            }
+            if(match<0)return false;
+            used|=1UL<<match;
+        }
+        return true;
+
+        static bool SameEnd(in KernelVector3 a,in KernelVector3 b)=>GeneralAnchorMotionUpper(a,b)<=OperationIntersection.DistanceTolerance;
     }
 
     private static bool GeneralIntersectionBoundary(SurfaceSlot first, SurfaceSlot second, in SurfaceIntersectionNode node,PK_SURF_intersect_surf_o_s* options=null)

@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
@@ -411,6 +412,8 @@ internal static unsafe partial class KernelRuntime
         if(status==AlgorithmStatus.Unsupported)
             return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds,publishNativeSection:true);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+        if(np==0&&HasSeparatePlaneSections(sa,sb,branches[..nc]))
+            return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds,planeSections:branches[..nc]);
         if(options->have_vector!=0)
         {
             var seed=Vector(options->vector.coord[0],options->vector.coord[1],options->vector.coord[2]);if(!IsFinite(seed))return ParasolidConstants.PK_ERROR_bad_parameter;
@@ -493,6 +496,43 @@ internal static unsafe partial class KernelRuntime
     private static bool ValidIntersectionUVBox(PK_UVBOX_s box)
         =>double.IsFinite(box.param[0])&&double.IsFinite(box.param[1])&&double.IsFinite(box.param[2])&&double.IsFinite(box.param[3])
             &&box.param[2]>=box.param[0]&&box.param[3]>=box.param[1];
+
+    private static bool HasSeparatePlaneSections(SurfaceSlot first,SurfaceSlot second,ReadOnlySpan<OperationIntersectionBranch> sections)
+    {
+        if(sections.IsEmpty)return false;
+        var spline=Surfaces[first].Class==SurfaceClass.BSurface?first:second;
+        var plane=spline==first?second:first;
+        if(Surfaces[spline].Class!=SurfaceClass.BSurface||Surfaces[plane].Class!=SurfaceClass.Plane)return false;
+        var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[spline].DataIndex]);
+        // The regular chart provider here does not cross span junctions.
+        if(view.UVertexCount!=view.UDegree+1||view.VVertexCount!=view.VDegree+1)return false;
+        Span<KernelVector3> ends=stackalloc KernelVector3[2*sections.Length];var n=0;
+        var minimum=IntervalNumber.Square(new(OperationIntersection.DistanceTolerance)).Upper;
+        foreach(ref readonly var section in sections)
+        {
+            if(section.Class!=CurveClass.BCurve||section.Kind!=IntersectionCurveKind.Simple)return false;
+            for(var end=0;end<2;end++)
+            {
+                var p=PlaneSectionEndpoint(section,end!=0);
+                // A shared (or unresolved) endpoint can be a crossing or a
+                // tangency. Keep the existing algebraic decomposition.
+                for(var i=0;i<n;i++)
+                {
+                    var x=new IntervalNumber(p.X)-ends[i].X;var y=new IntervalNumber(p.Y)-ends[i].Y;var z=new IntervalNumber(p.Z)-ends[i].Z;
+                    var squared=IntervalNumber.Square(x)+IntervalNumber.Square(y)+IntervalNumber.Square(z);
+                    if(!squared.Finite||squared.Lower<=minimum)return false;
+                }
+                ends[n++]=p;
+            }
+        }
+        return true;
+    }
+
+    private static KernelVector3 PlaneSectionEndpoint(in OperationIntersectionBranch section,bool last)
+    {
+        var i=last?4*section.Degree:0;var w=section.Poles[i+3];
+        return Vector(section.Poles[i]/w,section.Poles[i+1]/w,section.Poles[i+2]/w);
+    }
 
     // Modeling callers intersect supports across bodies; public ownership checks
     // stay in SurfIntersectSurfCore. Discovery itself never publishes geometry.
