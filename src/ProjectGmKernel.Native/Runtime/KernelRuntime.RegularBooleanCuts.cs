@@ -558,13 +558,13 @@ internal static unsafe partial class KernelRuntime
                         distinct=true;
                     }
                     if(distinct)continue;
-                    if(model.RequireBoundaryAssociations&&roots[i].Certified!=0&&parameters[j]!=t)
+                    if(roots[i].Certified!=0&&parameters[j]!=t)
                     {
-                        if(!CertifiedRootMatchesCutAnchor(roots[i],curve.Curve,parameters[j],point))continue;
-                        // Keep the source-root proof on the retained native
-                        // anchor. Losing it leaves a rounded tangent looking
-                        // like a transverse halfedge in the arrangement.
-                        rootParameters[i]=parameters[j];
+                        // Retaining the native anchor must also retain the
+                        // certified source occurrence that reaches it.
+                        if(CertifiedRootMatchesCutAnchor(roots[i],curve.Curve,parameters[j],point))
+                            rootParameters[i]=parameters[j];
+                        else if(model.RequireBoundaryAssociations||ForbidSpatialBoundaryReuse)continue;
                     }
                     duplicate=true;break;
                 }

@@ -55,6 +55,8 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     {
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.CoincidentLineStation)
         {Console.WriteLine($"COINCIDENT LINE event={trace.StartEvent} curve={trace.Curve}/{trace.Generation} occurrence={trace.Edge} t={trace.First:R}");return;}
+        if(trace.Stage is KernelRuntime.BoundaryTraceStage.ThirdFaceStation or KernelRuntime.BoundaryTraceStage.ThirdFaceOutsideTrim)
+        {Console.WriteLine($"BOUNDARY {trace.Stage} event={trace.StartEvent} curve={trace.Curve}/{trace.Generation} support={trace.Surface}/{trace.OtherSurface} t=[{trace.First:R},{trace.Last:R}] witness={trace.Witness}");return;}
         var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(trace.Surface)];
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.Successor)
         {Console.WriteLine($"SUCCESSOR surface={trace.Surface} edge={trace.Edge} forward={trace.Forward} end={trace.EndEvent} next={trace.NextEdge} angles={trace.StartAngle:R}/{trace.EndAngle:R}");return;}
@@ -105,6 +107,7 @@ var rotateMarks=NumberOption(args,"--rotate-marks=",0);
 Require(rotateMarks is 0 or 1 or 2&&(rotateMarks==0||splitSelected||splitEllipse),"mark rotation requires a split and a rotation of zero, one or two");
 var transverseCut=args.Contains("--transverse-local-cut");
 var localCut=args.Contains("--local-cut")||transverseCut;
+var overlappingTools=args.Contains("--overlapping-tools");
 const double defaultTransverseOffset=3.8e-5;
 var transverseOffset=NumberOption(args,"--transverse-offset=",defaultTransverseOffset);
 Require(double.IsFinite(transverseOffset)&&transverseOffset>0&&(transverseOffset==defaultTransverseOffset||transverseCut),
@@ -127,6 +130,9 @@ unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
 Require(!args.Contains("--record-fixtures")||!args.Contains("--matrix")&&!args.Contains("--both-updates"),"record fixtures uses the single default seed");
 Require(!replayProbes||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
+Require(!overlappingTools||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!mappedInput&&!replayProbes&&!splitRemote&&!splitSelected&&!splitEllipse
+    &&floor==0&&phase==0&&!args.Any(x=>x is "--native-only" or "--import-only" or "--matrix" or "--record-fixtures"),
+    "overlapping tools require the guarded independent construction of the original seed");
 Require(!selfSavedProbes||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!savedProbes&&!args.Contains("--import-only")&&!args.Contains("--record-fixtures"),
     "self probe replay requires guarded independent construction and a separate run from imported probes");
 Require(!args.Contains("--native-only")||!args.Any(x=>x is "--import-only" or "--probes" or "--geometry" or "--lifecycle"),"managed checks require a managed-import mode");
@@ -266,6 +272,7 @@ using(host)unsafe
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
+                    if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools");
                     if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness,requireNativeFinBoxes,requireNativeFaceDomains);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
@@ -616,6 +623,55 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         return failures;
     }
     finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");}
+}
+
+static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,string directory,string name)
+{
+    int own,native;Check(KernelRuntime.EntityCopy(selfSource,&own),"copy live self Fix for overlapping tools");
+    Check(PK_ENTITY_copy(nativeSource,&native),"copy independent PK Fix for overlapping tools");
+    var q=1/Math.Sqrt(2);var center=(-7-3.8e-5)*q-.075;
+    var first=new PK_AXIS2_sf_t(new(-1.5,(1+center)*q,(1-center)*q),new(0,q,q),new(0,q,-q));
+    var second=new PK_AXIS2_sf_t(new(-1.60,-2.03,4.8),new(0,0,1),new(1,0,0));
+    int* ownTools=stackalloc int[2];int* nativeTools=stackalloc int[2];
+    Check(KernelRuntime.BodyCreateSolidBlock(.15,.4,2.5,(M.PK_AXIS2_sf_s*)&first,ownTools),"self transverse tool");
+    Check(KernelRuntime.BodyCreateSolidBlock(.14,.16,1.3,(M.PK_AXIS2_sf_s*)&second,ownTools+1),"self overlapping tool");
+    Check(PK_BODY_create_solid_block(.15,.4,2.5,&first,nativeTools),"native transverse tool");
+    Check(PK_BODY_create_solid_block(.14,.16,1.3,&second,nativeTools+1),"native overlapping tool");
+    var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c};
+    PK_TOPOL_track_r_t track=default;PK_boolean_r_t result=default;
+    M.PK_TOPOL_track_r_s ownTrack=default;M.PK_boolean_r_s ownResult=default;
+    var previous=KernelRuntime.TraceFiniteBoundary;var oldGuard=KernelRuntime.ForbidSpatialBoundaryReuse;
+    var stations=new Dictionary<int,int>();var rolling=new HashSet<int>();
+    try
+    {
+        Check(PK_BODY_boolean_2(native,2,nativeTools,&options,&track,&result),"native overlapping subtraction");
+        Require(result.n_bodies==1,"one independent two-tool product");native=result.bodies[0];
+        KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        KernelRuntime.TraceFiniteBoundary=t=>
+        {
+            if(t.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceStation)
+            {
+                stations[t.StartEvent]=stations.GetValueOrDefault(t.StartEvent)+1;
+                var support=KernelRuntime.GetSurfaceSlotByTag(t.OtherSurface);
+                if(support>=0&&KernelRuntime.Surfaces[support].Class==SurfaceClass.BlendSurface)
+                    rolling.Add(t.StartEvent);
+            }
+            previous?.Invoke(t);
+        };
+        var error=KernelRuntime.BodyBoolean2(own,2,ownTools,(M.PK_BODY_boolean_o_s*)&options,&ownTrack,&ownResult);
+        Console.WriteLine($"OVERLAPPING TOOLS self={error} stage={KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage} rolling_events={rolling.Count}");
+        Check(error,"guarded self overlapping subtraction");
+        Require(ownResult.n_bodies==1,"one self two-tool product");own=ownResult.bodies[0];
+        Require(rolling.Count==2&&rolling.All(e=>stations[e]==3),"two rolling junctions, each shared by three finite cut occurrences");
+        return CompareFresh(own,native,directory,name,1,false,true,true,true);
+    }
+    finally
+    {
+        KernelRuntime.TraceFiniteBoundary=previous;KernelRuntime.ForbidSpatialBoundaryReuse=oldGuard;
+        Check(PK_TOPOL_track_r_f(&track),"free native overlapping tracking");Check(PK_boolean_r_f(&result),"free native overlapping result");
+        Check(KernelRuntime.TopolTrackResultFree(&ownTrack),"free self overlapping tracking");Check(KernelRuntime.BooleanResultFree(&ownResult),"free self overlapping result");
+        Check(PK_ENTITY_delete(1,&native),"delete native overlapping copy");Check(KernelRuntime.EntityDelete(1,&own),"delete self overlapping copy");
+    }
 }
 
 static unsafe void CompareNativeFaceDomains(PK_BODY_t reference,PK_BODY_t actual,string label,double unitScale)
