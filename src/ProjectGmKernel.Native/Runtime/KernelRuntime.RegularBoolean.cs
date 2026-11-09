@@ -117,7 +117,8 @@ internal static unsafe partial class KernelRuntime
                 }
                 if(data.Count==0)continue;
                 LastRegularBooleanStage=RegularBooleanStage.Clip;ModelingPerformance.Stage(RegularBooleanStage.Clip);
-                error=ClipRegularFacePair(input,a,b,owned.Slice(data.Start,data.Count),cuts,ref cutCount,owned,ref ownedCount,ref model);if(error!=0)return error;
+                error=ClipRegularFacePair(input,a,b,owned.Slice(data.Start,data.Count),cuts,ref cutCount,owned,ref ownedCount,ref model,
+                    sourceFaces:sources[..nf]);if(error!=0)return error;
             }
             LastRegularBooleanOtherFace=-1;
             // With several tools, intersections of three different bodies

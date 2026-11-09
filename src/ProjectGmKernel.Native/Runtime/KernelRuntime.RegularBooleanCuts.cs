@@ -450,7 +450,7 @@ internal static unsafe partial class KernelRuntime
     private static int ClipRegularFacePair(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
         ReadOnlySpan<SheetCutCurve> curves,Span<RegularFaceCut> cuts,ref BufferCount cutCount,
         Span<SheetCutCurve> owned,ref BufferCount ownedCount,ref SheetArrangement model,ReadOnlySpan<FiniteCurveSurfaceResult> certificates=default,
-        BufferOffset firstRollingFace=-1)
+        BufferOffset firstRollingFace=-1,scoped ReadOnlySpan<FaceSlot> sourceFaces=default)
     {
         Span<RegularBoundaryRoot> roots=stackalloc RegularBoundaryRoot[SheetPointLimit];var nRoots=0;
         var transferCylinderConic=false;
@@ -596,8 +596,10 @@ internal static unsafe partial class KernelRuntime
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
                 error=FiniteBoundarySurfaceParameters(input.Faces[second].Surface,curve,at,point[0],sectionCharts,out var b);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
-                error=RegularFiniteFaceContains(input,first,a,point[0],out var insideA,out var boundaryA);if(error!=0)return error;if(!insideA)continue;
-                error=RegularFiniteFaceContains(input,second,b,point[0],out var insideB,out var boundaryB);if(error!=0)return error;if(!insideB)continue;
+                error=RegularClipFaceContains(input,first,a,point[0],curve.Curve,at,sourceFaces,model.Tolerance,out var insideA,out var boundaryA);
+                if(error!=0)return error;if(!insideA)continue;
+                error=RegularClipFaceContains(input,second,b,point[0],curve.Curve,at,sourceFaces,model.Tolerance,out var insideB,out var boundaryB);
+                if(error!=0)return error;if(!insideB)continue;
                 if(boundaryA&&boundaryB)continue;
                 var cut=curve;cut.First=lo;cut.Last=hi;cut.Closed=closed?(byte)1:(byte)0;
                 WrappedCutCharts wrappedCharts=default;
@@ -729,6 +731,21 @@ internal static unsafe partial class KernelRuntime
             }
         }
         return 0;
+    }
+
+    private static int RegularClipFaceContains(in RegularBoundaryView input,BufferOffset face,PK_UV_s uv,in KernelVector3 point,
+        CurveTag cut,double station,ReadOnlySpan<FaceSlot> sources,double precision,out bool inside,out bool boundary)
+    {
+        var error=RegularFiniteFaceContains(input,face,uv,point,out inside,out boundary);
+        if(error is not (ParasolidConstants.PK_ERROR_eval_failure or ParasolidConstants.PK_ERROR_cant_do_intersect)||sources.IsEmpty)return error;
+        var surface=Surfaces[GetSurfaceSlotByTag(input.Faces[face].Surface)];
+        if(surface.Class!=SurfaceClass.Cylinder||sources[face]<0||!TryThirdFacePrecision(sources[face],ref precision))return error;
+        // An increasing meridian can run into a finite trim vertex or
+        // follow a generator. Test the opposite ray using the same cut
+        // station enclosure; a sample offset could move across the trim.
+        if(!TryFiniteCarrierExtent(new(){Curve=cut,First=station,Last=station},Curves[GetCurveSlotByTag(cut)],out var box)
+            ||CertifyCylindricalRootOutsideTrim(input,face,surface,box,precision,increasing:false)!=AlgorithmStatus.Success)return error;
+        inside=false;return 0;
     }
 
     private static bool CertifiedRootMatchesCutAnchor(in RegularBoundaryRoot root,CurveTag cut,double parameter,Span<KernelVector3> point)

@@ -6,12 +6,12 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    // A ray in the increasing axial direction starts outside if it cannot
+    // A ray in either axial direction starts outside if it cannot
     // meet any trim. Prove that for the whole isolated spatial root box.
     // A ray that can meet a trim is left unresolved; this is not a winding
     // approximation and does not classify roots in the interior.
     private static AlgorithmStatus CertifyCylindricalRootOutsideTrim(in RegularBoundaryView input,BufferOffset face,
-        in SurfaceRecord surface,in IntervalBox3 root,double precision)
+        in SurfaceRecord surface,in IntervalBox3 root,double precision,bool increasing=true)
     {
         var record=input.Faces[face];
         if(record.LoopCount==0||!TryPrepareSurface(surface,out var cylinder)||cylinder.Kind!=SurfaceClass.Cylinder)
@@ -45,7 +45,7 @@ internal static unsafe partial class KernelRuntime
                     {
                         var q=Box(bound,margin)-origin;
                         var qh=IntervalVector.Dot(q,h).Value;
-                        if(qh.Upper<ph.Lower)continue;
+                        if(increasing?qh.Upper<ph.Lower:qh.Lower>ph.Upper)continue;
                         var qu=IntervalVector.Dot(q,u).Value;var qv=IntervalVector.Dot(q,v).Value;
                         var cross=pu*qv-pv*qu;var radial=pu*qu+pv*qv;
                         if(cross.Finite&&!cross.ContainsZero||radial.Upper<0)continue;

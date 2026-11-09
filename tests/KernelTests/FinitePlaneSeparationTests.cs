@@ -346,6 +346,31 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     [InlineData(0,false)]
     public void ThirdFaceCylinderExcludesAnEmptyAxialRayButRetainsAnInteriorRoot(double y,bool outside)
     {
+        var (body,face)=ReadShortEdgeCylinder();
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[2]=1;
+        Write(&line.basis_set.location,Vector(-1.53,y,4.99));
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var error=KernelRuntime.TestFiniteThirdFaceEvents(body,face,carrier,0,.02,out var events,out var relation);
+        Assert.Equal(0,events);
+        if(outside){Assert.Equal(0,error);Assert.Equal(SurfacePairRelation.Empty,relation);}
+        else{Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,error);Assert.Equal(SurfacePairRelation.Unresolved,relation);}
+    }
+
+    [Theory]
+    [InlineData(-2.0679837387624884,false)]
+    [InlineData(-2,true)]
+    public void ClipOnTheCylinderMeridianDistinguishesItsExtensionFromItsVertex(double y,bool onVertex)
+    {
+        var (body,face)=ReadShortEdgeCylinder();
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[1]=1;
+        Write(&line.basis_set.location,Vector(-1.5,y,5));
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        Assert.Equal(0,KernelRuntime.TestFiniteThirdFaceEvents(body,face,carrier,0,1,out var events,out var relation,clipWitness:true));
+        Assert.Equal(0,events);Assert.Equal(onVertex?SurfacePairRelation.PointContact:SurfacePairRelation.Empty,relation);
+    }
+
+    private static (BodyTag Body,FaceSlot Face) ReadShortEdgeCylinder()
+    {
         var xt=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
         Assert.Equal(0,XtBrepImportTests.Receive(xt,out var body));
         var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];FaceSlot matched=-1;
@@ -360,13 +385,7 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
             Assert.Equal(-1,matched);matched=face;
         }
         Assert.True(matched>=0);
-        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[2]=1;
-        Write(&line.basis_set.location,Vector(-1.53,y,4.99));
-        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
-        var error=KernelRuntime.TestFiniteThirdFaceEvents(body,matched,carrier,0,.02,out var events,out var relation);
-        Assert.Equal(0,events);
-        if(outside){Assert.Equal(0,error);Assert.Equal(SurfacePairRelation.Empty,relation);}
-        else{Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,error);Assert.Equal(SurfacePairRelation.Unresolved,relation);}
+        return (body,matched);
     }
 
     [Theory]

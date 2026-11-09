@@ -233,7 +233,7 @@ internal static unsafe partial class KernelRuntime
         =>TestFiniteThirdFaceEvents(body,face,carrier,first,last,out events,out _);
 
     internal static int TestFiniteThirdFaceEvents(BodyTag body,FaceSlot face,CurveTag carrier,double first,double last,
-        out BufferCount events,out SurfacePairRelation relation)
+        out BufferCount events,out SurfacePairRelation relation,bool clipWitness=false)
     {
         events=0;relation=SurfacePairRelation.Unresolved;
         Span<BodyTag> bodies=stackalloc BodyTag[1]{body};
@@ -246,11 +246,23 @@ internal static unsafe partial class KernelRuntime
             out var np,out var ne,out var nc,out var nl,out var nf);
         if(error!=0)return error;
         var occurrence=originals[..nf].IndexOf(face);if(occurrence<0)return ParasolidConstants.PK_ERROR_bad_loop;
+        var view=new RegularBoundaryView(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]);
+        if(clipWitness)
+        {
+            Span<KernelVector3> point=stackalloc KernelVector3[1];
+            var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(carrier)],first,0,false,point,out _);
+            if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            status=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(faces[occurrence].Surface)],point[0],out var uv);
+            if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            error=RegularClipFaceContains(view,occurrence,uv,point[0],carrier,first,originals[..nf],1e-9,out var inside,out var boundary);
+            if(error==0)relation=boundary?SurfacePairRelation.PointContact:inside?SurfacePairRelation.RegularCurves:SurfacePairRelation.Empty;
+            return error;
+        }
         var model=new SheetArrangement{Points=points,OriginalVertices=vertices,NP=np,
             Parameters=stackalloc BoundaryParameter[128],Tolerance=1e-9};
         Span<RegularFaceCut> cuts=stackalloc RegularFaceCut[1]{new(){First=-1,Second=-1,Cut=new(){Curve=carrier,First=first,Last=last}}};
         ThirdFaceBounds cutBounds=default,faceBounds=default;
-        error=ReadThirdFaceEvents(new(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]),occurrence,face,cuts,0,
+        error=ReadThirdFaceEvents(view,occurrence,face,cuts,0,
             ref cutBounds,ref faceBounds,ref model,requireProof:true,out relation);
         events=model.NP-np;return error;
     }
