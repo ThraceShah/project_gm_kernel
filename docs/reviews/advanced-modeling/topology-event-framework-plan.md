@@ -20,6 +20,7 @@
 After an explicit goal resume, follow the recovery order, research rules and issue table in `docs/reviews/advanced-modeling/topology-event-framework-execution.md`. Use its **当前恢复检查点** for the exact full regression command and first remaining probe hypothesis; the earlier Shutdown checkpoint records the historical baseline. The original M0–M5 gates remain in force.
 
 The current results and remaining gates are maintained in `docs/reviews/advanced-modeling/topology-event-framework-acceptance.md`. The analytic rolling equations, finite station proofs and persistent chart handling are in `docs/Finite_Analytic_Rolling_Network.md`.
+For the latest pause and model handoff, start with [求交与圆角拓扑交接](topology-event-framework-handoff.md).
 
 ## Investigated baseline call chain
 
