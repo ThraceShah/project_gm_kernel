@@ -1127,3 +1127,30 @@ Reproduce with `MSBUILDDISABLENODEREUSE=1 dotnet run temp_docs/topology-event-fr
 ## Resumed managed regression
 
 The clean `ec7c28f` snapshot, with implementation `c4a7e09`, passes **1824/1824** `KernelTests` in Release, exit 0. The exact command is the full replay in `docs/reviews/advanced-modeling/topology-event-framework-execution.md`; `m5-resume-current-full.{head,status,log,exit}` records the source snapshot, clean start and original test exit before testhost cleanup. No testhost remained. Function catalog: 175; allocation IL guard: CLEAN across 2809 methods. This is the latest complete managed baseline, not an independent Parasolid or matrix acceptance result.
+
+## Reproducible inertia discrimination controls
+
+`scripts/ShortEdgeNativeChartControl.cs` now has opt-in `--finite-controls` and `--finite-pair` diagnostic modes. The existing one-argument CHART control still runs as before. The new modes evaluate both receives with real PK fin limits, native ICurve CHART cell boundaries, and real PK surface and curve jets. The supported surfaces are Plane, Cylinder and Blend with directed finite loops; a missing fin carrier or a periodic Blend fin box that does not isolate a lift is an error. The method uses oriented surface flux and Green's theorem to compute volume, centroid, central inertia and area. Both bodies use the same nearby origin, taken from the native reference box midpoint; the centroid is then expressed in world coordinates and the inertia about the computed centroid. Unit-density mass duplicates volume, and the inertia tensor is symmetric, so these 11 independent quantities account for the original 15 components. The original gate in `scripts/ShortEdgeBlendOracle.cs` is unchanged.
+
+The diagnostic uses the same normalized `1e-7` point comparison at 4 and 8 subdivisions of each original cell, and reports both changes on the sequence 2 → 4 → 8. Both successive changes for each body must be below `1e-9` to describe the result as stable. This is a numerical consistency check, not a certified enclosure. Native error moduli are recorded independently; the Functional Description v38, Mass Properties §31.4.1, recommends retaining them for model comparisons. Overlap cannot establish geometric equivalence or substitute for a finite comparison.
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ShortEdgeNativeChartControl.cs -c Release \
+  -p:UseSharedCompilation=false -- \
+  a1-r0.5-t1E-07-reverseFalse-default-proof-only-cuts-self-constructed-product-copy-reflected-native.x_t \
+  --finite-controls
+```
+
+The two equivalent controls retain original geometry and only insert native CHART samples. Their unchanged strict comparison and full native checks pass. At native `accuracy=1.0` their raw point residuals are `2.991e-7` and `5.700e-7`, while the centered finite residuals are `3.076e-13` and `1.114e-13`. Three negatives apply actual real-PK uniform transforms to a separate receive, fresh transmit/receive, keep topology counts, and pass full native checks. The finite moments follow the physical scaling laws for area, volume, centroid and central inertia; the maximum discrepancy from those laws is below `2.7e-12`. The strict comparator rejects all three. The smallest error illustrates why mass alone cannot replace the strict comparator.
+
+| Actual size error | Native raw normalized | Finite normalized at 8 subdivisions | Native modulus overlap |
+| --- | ---: | ---: | ---: |
+| Scale `1+2^-22` | `1.192e-6` | `1.192e-6` | 7/15 |
+| Scale `1+2^-25` | `1.490e-7` | `1.490e-7` | 9/15 |
+| Scale `1+2^-27` | `3.725e-8` | `3.725e-8` | 14/15 |
+
+The initial world-origin diagnostic on the eight fresh guarded pairs reported the two first-cut pairs unstable (`m5-native-moment-guarded-pairs/`, six exits 0 and two exits 134). Refining to 32 slices did not fix that instability (`m5-native-moment-cut-refinements/`, exit 0 for the unthresholded experiment); the volume and area stayed nearly constant while the central mixed moment jitter increased. Moving the moment origin reduced cancellation without changing the two bodies, cell ranges, or either threshold. The centered version passes both last refinements on **all eight** fresh pairs, with a maximum final normalized residual `4.116e-12`, and all five controls. Logs, exit codes, script and input digests: `m5-native-moment-centered/`, all exit 0. The final controls are in `controls.log` there. These exit codes describe the diagnostic only.
+
+The eight pairs come from the current `870c807` guarded default transverse replay. The original command recorded self Fix success, both self Booleans, source deletion and editable XT reload, strict fresh PK comparison, complete BODY_check, 48 material probes, and native fin boxes `3/3/5/5` on each side. It exited **134** on the same four live `inertia.yz` checks, with reported PK modulus overlap on all 15 components in all four cases (`m5-current-guarded-transverse.{head,status,log,exit}`). The finite diagnostic uses fresh receives of both products; its raw point log does not replace the live oracle log.
+
+Proposed for user adjudication: on a supported short-edge case where the original raw gate fails, keep that failure in the report. Only consider a separate mass result when the unchanged strict comparison, full native checks, finite geometry, material ownership and lifecycle checks pass; real PK moduli must be finite and overlap on all 15 components; the independent centered finite comparison must meet `1e-7` at both 4 and 8 subdivisions and meet the above stability condition on each body. A missing representation, failed strict comparison, non-overlap, or unresolved finite integration fails the candidate condition. The `1+2^-25` negative fails finite moments and strict geometry; the `1+2^-27` negative fails strict geometry even though it is below the moment threshold. No candidate condition is enabled in the acceptance oracle. The original probe gate and all its failures also remain unchanged.

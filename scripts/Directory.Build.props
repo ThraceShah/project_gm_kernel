@@ -6,6 +6,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidScriptHost.cs" Link="ParasolidScriptHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidBodyCompare.cs" Link="ParasolidBodyCompare.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(UseShortEdgeNativeTrimIntegral)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ShortEdgeNativeTrimIntegral.cs" Link="ShortEdgeNativeTrimIntegral.cs" />
+  </ItemGroup>
   <ItemGroup Condition="'$(UseParasolidMarkOracle)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidMarkOracleStorage.cs" Link="ParasolidMarkOracleStorage.cs" />
   </ItemGroup>
