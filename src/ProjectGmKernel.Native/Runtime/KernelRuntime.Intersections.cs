@@ -417,8 +417,8 @@ internal static unsafe partial class KernelRuntime
         if(np==0&&nc>0&&options->have_vector==0)
         {
             Span<PlaneIsoBranch> crossing=stackalloc PlaneIsoBranch[nc];
-            if(TryAffinePlaneCrossing(sa,sb,crossing,out var spline,out var flat))
-                return PublishAffinePlaneCrossing(spline,flat,sa==spline,ba,crossing,curveCount,curves,intervals,kinds);
+            if(TrySplinePlaneCrossing(sa,sb,crossing,out var spline,out var flat))
+                return PublishSplinePlaneCrossing(spline,flat,sa==spline,ba,crossing,curveCount,curves,intervals,kinds);
         }
         if(options->have_vector!=0)
         {

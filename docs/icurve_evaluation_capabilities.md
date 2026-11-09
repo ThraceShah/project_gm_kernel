@@ -30,7 +30,7 @@ Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluati
 | 强制求解计划 P4/P2/I3 | §7 / Analytic supports | **生产已接入 + 制造解通过** | 单元测试全覆盖；输出严格基于 $x_0$，无中点误差折中 |
 | B-surface / 解析面交线，两种支持顺序 | §7 / P2、P4 | **生产已接入 + 制造解通过 + 真实 PK D0/D1 通过** | 原始有限 UV 的正则区间，Auto 选 P2；P4 独立位置校验和严格参数 D0–D2；两种 cylinder 支持顺序的实时 Oracle 已运行，完整 D2 向量兼容仍未通过 GATE-D |
 | B-surface / B-surface 交线 | §7.1 / P4 | **生产已接入 + 制造解通过 + 真实 PK D0/D1 通过** | 双 UV 状态、双原始端点独立追踪、完整 Jacobian 物理修正与 UV 预像一致性验证；实时双曲面样例 D0/D1 通过，完整 D2 兼容仍受 GATE-D 限制；不宣称全局唯一根或区间认证 |
-| B-曲面严格参数域与连续度守卫 | §7.2 / §15.4 / B-surface domain | **生产已接入 + 制造解通过** | 求交只用 `EvaluateInDomain`；拒绝非周期越域与不足阶数的 knot jet；周期 UV 使用真实 knot period；缺失 B-surface UV、实际扩展域和 B-surface terminator 明确拒绝 |
+| B-曲面严格参数域与连续度守卫 | §7.2 / §15.4 / B-surface domain | **生产已接入 + 制造解通过** | 求交只用 `EvaluateInDomain`；拒绝非周期越域与不足阶数的 knot jet；周期 UV 使用真实 knot period；缺失 B-surface UV 和实际扩展域明确拒绝；已知人工端的舍入 UV 只在原边界与存储点相符时恢复 |
 | 节点与区间一侧导数 (D0–D2) | §16 / Knot evaluation | **生产已接入 + 制造解通过** | 显式传递 `ChartSide.Left` / `Right`；避免跨节点平均平滑 |
 | 诊断型 Auto 计划动态切换 | §7.7 / Stagnation | **生产已接入 + 制造解通过** | 仅在 Auto 模式下触发；强制计划绝不静默切换；记录 `PlanSwitched` |
 | 参数延拓 (Continuation) | §17.3 / Native parameter | **生产已接入 + 制造解通过** | 原生参数递增，步长受控，安全拒绝无分辨率步长与分支歧义，多 seed 后备受 SameLocalBranch 严格约束 |
@@ -62,7 +62,7 @@ Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluati
 | 能力项 | 范围 / 契约 | 状态 | 说明 |
 |---|---|---|---|
 | Terminator 1-面 / 2-平面区间构造 | §6 / TerminatorAnchor | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 导数在根点求值；正交双平面方程对；以分支点 $B$ 切向（结合曲面 sense 与曲线 sense 定向）一阶预测初始化 $\mu$ 并按局部弦尺度校验分支位移；受 GATE-T 隔离 |
-| Terminator 参数化 2×2 求解 | §6.3 / SolveParametricTwoByTwo | **内部入口可用 + 制造解通过 + 受 GATE-T 限制** | 求解弦向与法向两正交平面方程对，残差阈值按局部弦长与曲面尺度自适应缩放；生产入口受 GATE-T 隔离 |
+| Terminator 参数化 2×2 求解 | §6.3 / selected support | **单跨样条面/平面已接入** | 用整段区间收缩与空间根误差认证选定样条面上的两平面方程。其余通用终止求解仍受 GATE-T 限制。 |
 | Terminator 构造性支持面选面 (p.49 规则) | §6.2 / SelectSupportSurface | **内部入口可用 + 制造解通过 + 受 GATE-B 限制** | 已引入类型化 `SurfaceSupportRef`（区分 `PublicSurface` 与 `BlendBoundConstructive`）并接入 `ICurveView` 与 `TerminatorEvaluation.Prepare`；公开创建入口受 GATE-B 隔离 |
 | 滚动球 Blend 接触标架与解析链式 Jet | §10.2 / §10.3 / BlendContactFrame | **内部入口可用 + 制造解通过 + 受 GATE-A 限制** | 支持 `previousArc` 连续 $2\pi$ 周期展开及 `TryBuildFrameJet` 全解析一阶/二阶链式求导（无有限差分近似） |
 | 滚动球 Blend 4×4 / 3×3 求解器 | §10.4 / BlendEnvelopeSolve | **内部入口可用 + 制造解通过 + 受 GATE-A 限制** | RV-TUBE 制造解收敛；§10.6 `BlendArcBounds` 支持自定义截面参考轴与起止角过滤伪装根，贯穿 `TryRecoverAfterLocalSingular` 恢复梯与 Joint 出口 |
@@ -87,13 +87,13 @@ Updated: 2026-11-01. B-surface increment evidence: `docs/reviews/icurve-evaluati
 
 | 门禁代号 / 项 | 当前状态 | 阻塞条件 / 隔离行为 |
 |---|---|---|
-| **GATE-T** (Terminator $t_E$ vs PK) | **部分开放** | 真实 PK 的有限端参数按未缩放弦长推进。本轮仅对通过仿射证书的样条面/平面端段启用；其他生产入口保持原门禁。 |
+| **GATE-T** (Terminator $t_E$ vs PK) | **部分开放** | 真实 PK 的有限端参数按未缩放弦长推进。对有证书的单跨样条面/平面端段启用；其他生产入口保持原门禁。 |
 | **GATE-B** (BlendBound 角色映射) | **OPEN** | 距离函数组合未接入公开求值；不支持非解析 BlendBound 支持面 |
 | **GATE-A** (Blend 弧段极值验证) | **OPEN** | Envelope/Joint 求解器保留在内部；生产 Auto 开放解析面及本阶段带 UV 的正则 B-surface 支持面，不开放嵌套 blend |
 | **GATE-D** (二阶兼容与高阶公开契约) | **OPEN** | 当前 D2 为严格参数二阶导数；真实 PK 38.0.150 的弦段样例省略切向加速度，完整 D2 向量 Oracle 尚未通过。公开入口仍限制 `order <= 2`，更高阶直接拒绝 |
 | **过程面 / 偏置面 / 扫掠面支持** | **Unsupported** | `PrepareICurveView` 精确返回 `Unsupported` |
 | **B-surface 缺 UV / 不足 knot 连续度 / UV 分辨率丢失** | **Unsupported / NotConverged** | 不猜全局逆投影、导数侧或不可分辨的参数分支；失败不发布结果 |
-| **B-surface terminator / 实际扩展域** | **部分支持** | 非有理单跨 B-surface 和平面的公共仿射直线，可从双侧 UV 与有限端点区间界恢复，终止参数使用真实 PK 验证的未缩放弦长。曲线型终止段和扩展域仍不支持。 |
+| **B-surface terminator / 实际扩展域** | **部分支持** | 非有理单跨 B-surface 和平面的已证实分支使用未缩放的终止弦长。选平面时为弦；选样条面时用区间收缩认证整段的一面两平面求解，支持 D0/D1/D2 和有限反求。其他终止表示和扩展域仍不支持。 |
 | **一般 B-rep 的 ICurve XT 物化** | **Unsupported** | 可执行物化限定开放单边 wire；其他合法图继续按既有 opaque 方式保存 |
 | **Spindle / Apple Torus** | **Unsupported** | 当 $a \le b$ 时精确拒绝 |
 | **伪弧长作为公开曲线参数** | **Forbidden** | 严格禁止在公开接口暴露内部伪弧长参数 |

@@ -99,13 +99,17 @@ internal readonly struct TerminatorLimit
     internal readonly KernelVector3 Endpoint;     // terminator position (limit hvec[0])
     internal readonly KernelVector3 BranchPoint;  // branch point (limit hvec[1])
     internal readonly bool CertifiedAffine;      // recovered from actual support and paired chart, never from XT type alone
+    internal readonly SplineTerminalProof SplineProof;
+    internal bool HasCertifiedSplineEnd=>CertifiedAffine||SplineProof.IsPresent;
 
-    internal TerminatorLimit(LimitTermUse termUse, in KernelVector3 endpoint, in KernelVector3 branchPoint,bool certifiedAffine=false)
+    internal TerminatorLimit(LimitTermUse termUse, in KernelVector3 endpoint, in KernelVector3 branchPoint,
+        bool certifiedAffine=false,SplineTerminalProof splineProof=default)
     {
         TermUse = termUse;
         Endpoint = endpoint;
         BranchPoint = branchPoint;
         CertifiedAffine = certifiedAffine;
+        SplineProof = splineProof;
     }
 }
 

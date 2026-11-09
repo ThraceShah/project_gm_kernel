@@ -121,7 +121,7 @@ internal static unsafe partial class KernelRuntime
                 {
                     var limit=end==0?view.StartTerminator:view.EndTerminator;
                     var boundary=end==0?view.ChartParameters[0]:view.ChartParameters[^1];
-                    if(!AffineSplineTerminator.TryParameter(limit,boundary,end!=0,out var terminal))continue;
+                    if(!SplineTerminalSection.TryParameter(limit,boundary,end!=0,out var terminal))continue;
                     var chord=Sub(limit.Endpoint,limit.BranchPoint);
                     var fraction=Dot(Sub(point,limit.BranchPoint),chord)/Dot(chord,chord);
                     if(!(fraction>=0&&fraction<=1))continue;

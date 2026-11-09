@@ -13,7 +13,7 @@ namespace ProjectGmKernel.Native.Runtime;
 /// command-scratch spans and returns a borrowed <see cref="ICurveView"/> that
 /// must not outlive the scratch checkpoint. Analytic and B-surface supports
 /// share the prepared support interface. B-surface charts require finite UV
-/// correspondence; only certified affine mixed-support termini are enabled.
+/// correspondence; only certified mixed spline/plane termini are enabled.
 /// </summary>
 internal static unsafe partial class KernelRuntime
 {
@@ -82,8 +82,8 @@ internal static unsafe partial class KernelRuntime
 
             curve.TMin = view.ChartParameters[0];
             curve.TMax = view.ChartParameters[^1];
-            if(view.StartTerminator.CertifiedAffine&&!AffineSplineTerminator.TryParameter(view.StartTerminator,curve.TMin,false,out curve.TMin)
-                ||view.EndTerminator.CertifiedAffine&&!AffineSplineTerminator.TryParameter(view.EndTerminator,curve.TMax,true,out curve.TMax))
+            if(view.StartTerminator.HasCertifiedSplineEnd&&!SplineTerminalSection.TryParameter(view.StartTerminator,curve.TMin,false,out curve.TMin)
+                ||view.EndTerminator.HasCertifiedSplineEnd&&!SplineTerminalSection.TryParameter(view.EndTerminator,curve.TMax,true,out curve.TMax))
             {Curves.Free(curveSlot);return AlgorithmStatus.NotConverged;}
             var allocated = AllocateTag(EntityClass.Curve, PoolKind.Curve, curveSlot, curve.Header.Generation);
             if (allocated <= 0)
@@ -177,6 +177,22 @@ internal static unsafe partial class KernelRuntime
             // as a zero pair. Its inverse is injective; keep the spline UV.
             if(splineTerminator&&!support0.IsBSurface&&u0==0&&v0==0)u0=v0=double.NaN;
             if(splineTerminator&&!support1.IsBSurface&&u1==0&&v1==0)u1=v1=double.NaN;
+            if(splineTerminator&&(terminatesAtEnd?i==0:i==chartCount-1))
+            {
+                var boundary=terminatesAtEnd?data.StartLimit:data.EndLimit;var p=boundary.HvecIndex*3;
+                // An L limit is an explicit end occurrence. Repair a
+                // rounded UV only at that same stored hull point.
+                if(boundary.Type==LimitType.Artificial&&boundary.HvecCount==1
+                    &&positions[i].X==hvecs[p]&&positions[i].Y==hvecs[p+1]&&positions[i].Z==hvecs[p+2])
+                {
+                    if(support0.IsBSurface&&!ICurveSupportEvaluation.IsInDomain(support0,u0,v0)
+                        &&!SplineTerminalSection.RestoreBoundaryWitness(support0,support1.Analytic,positions[i],ref u0,ref v0))
+                        return AlgorithmStatus.InvalidInput;
+                    if(support1.IsBSurface&&!ICurveSupportEvaluation.IsInDomain(support1,u1,v1)
+                        &&!SplineTerminalSection.RestoreBoundaryWitness(support1,support0.Analytic,positions[i],ref u1,ref v1))
+                        return AlgorithmStatus.InvalidInput;
+                }
+            }
             var uv0Status = PrepareChartUv(in support0, in positions[i], pointOnSurfaceTolerance,
                 ref u0, ref v0, out var hasUv0);
             if (uv0Status != AlgorithmStatus.Success) return uv0Status;
@@ -213,10 +229,12 @@ internal static unsafe partial class KernelRuntime
         {
             var end=terminatesAtEnd;var at=end?chartCount-1:0;var prior=end?at-1:1;
             var limit=end?endTerminator:startTerminator;
-            if(!AffineSplineTerminator.Certify(support0,support1,limit,positions[at],witnesses[at],witnesses[prior]))
+            var affine=AffineSplineTerminator.Certify(support0,support1,limit,positions[at],witnesses[at],witnesses[prior]);
+            var proof=default(SplineTerminalProof);
+            if(!affine&&!SplineTerminalSection.Certify(support0,support1,limit,positions[at],witnesses[at],witnesses[prior],out proof))
                 return AlgorithmStatus.Unsupported;
-            limit=new TerminatorLimit(limit.TermUse,limit.Endpoint,limit.BranchPoint,true);
-            if(!AffineSplineTerminator.TryParameter(limit,parameterScratch[at],end,out _))return AlgorithmStatus.NotConverged;
+            limit=new TerminatorLimit(limit.TermUse,limit.Endpoint,limit.BranchPoint,affine,proof);
+            if(!SplineTerminalSection.TryParameter(limit,parameterScratch[at],end,out _))return AlgorithmStatus.NotConverged;
             if(end)endTerminator=limit;else startTerminator=limit;
         }
 

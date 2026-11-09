@@ -83,6 +83,8 @@ try
             SS("coaxial-offset-sphere-torus-tangent-circle",Sphere(0,0,4,6),Torus(3,1,nz:-1),circleDirection:true);
             SS("coaxial-offset-torus-sphere-tangent-circle",Torus(3,1,nz:-1),Sphere(0,0,4,6),circleDirection:true);
             SS("tensor-quadratic-crossing",TensorPatch(1,false,false),Plane(0,0,0,0,0,1));
+            SS("plane-tensor-quadratic-crossing",Plane(0,0,0,0,0,1),TensorPatch(1,false,false));
+            SS("tensor-quadratic-crossing-transposed",TensorPatch(1,false,true),Plane(0,0,0,0,0,1));
             SS("tensor-tangent-isocurve",TensorPatch(2,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-disjoint",TensorPatch(3,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-coincident-area",TensorPatch(4,false,false),Plane(0,0,0,0,0,1));

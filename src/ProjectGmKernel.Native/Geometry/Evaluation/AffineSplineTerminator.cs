@@ -52,7 +52,7 @@ internal static class AffineSplineTerminator
             &&BoundEndpoint(patch,plane.Analytic,u,v,limit.BranchPoint,tolerance);
     }
 
-    private static bool BoundEndpoint(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,
+    internal static bool BoundEndpoint(in SurfaceIntersectionPatch patch,in AnalyticSurface plane,
         double u,double v,in KernelVector3 point,double tolerance)
     {
         Span<IntervalNumber> jet=stackalloc IntervalNumber[9];
@@ -63,14 +63,4 @@ internal static class AffineSplineTerminator
         return squared.Upper<=IntervalNumber.Square(new(tolerance)).Lower&&height.Magnitude<=tolerance;
     }
 
-    internal static bool TryParameter(in TerminatorLimit limit,double branchParameter,bool end,out double t)
-    {
-        t=branchParameter;
-        if(!limit.CertifiedAffine)return false;
-        // The native terminal span uses the physical chord length, even
-        // when the preceding regular chart uses a non-unit scale.
-        var length=OperationIntersection.Norm(Sub(limit.Endpoint,limit.BranchPoint));
-        t=branchParameter+(end?length:-length);
-        return double.IsFinite(t)&&(end?t>branchParameter:t<branchParameter);
-    }
 }

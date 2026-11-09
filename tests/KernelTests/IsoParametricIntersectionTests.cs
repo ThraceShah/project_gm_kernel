@@ -36,17 +36,55 @@ public unsafe class IsoParametricIntersectionTests:IDisposable
         }
     }
 
-    [Fact]
-    public void TensorSaddle_SplitsBothQuadraticCurvesAtTheCrossing()
+    [Theory]
+    [InlineData(false,false)]
+    [InlineData(true,false)]
+    [InlineData(false,true)]
+    public void TensorSaddle_KeepsTheSelectedSupportAndTheFiniteTerminator(bool reverse,bool transpose)
     {
-        using var result=Intersect(Patch(1,false,false),Plane());Assert.Equal(4,result.CurveCount);Assert.Equal(0,result.PointCount);
+        var spline=Patch(1,false,transpose);var plane=Plane();
+        using var result=Intersect(reverse?plane:spline,reverse?spline:plane);
+        Assert.Equal(4,result.CurveCount);Assert.Equal(0,result.PointCount);
         var center=new[]{.5625,.5625,0};
+        var jets=stackalloc PK_VECTOR_s[3];var curved=0;var straight=0;var boundaryControls=0;
         for(var i=0;i<4;i++)
         {
-            var endpoint=new PK_VECTOR_s();var start=result.Intervals[i].value[0];var end=result.Intervals[i].value[1];
-            var crossing=start>0?start:end;Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[i],crossing,0,&endpoint));
-            for(var c=0;c<3;c++)Assert.InRange(Math.Abs(endpoint.coord[c]-center[c]),0,1e-10);
+            var curve=result.Curves[i];var record=KernelRuntime.GetCurveByTag(curve);
+            Assert.Equal(CurveClass.ICurve,record.Class);
+            var data=KernelRuntime.ICurveDataPool[record.DataIndex];
+            Assert.Equal(LimitType.Terminator,data.EndLimit.Type);Assert.True(data.ChordalError>0);
+            var start=result.Intervals[i].value[0];var end=result.Intervals[i].value[1];
+            Assert.Equal(0,KernelRuntime.CurveEval(curve,end,0,jets));
+            for(var c=0;c<3;c++)Assert.InRange(Math.Abs(jets[0].coord[c]-center[c]),0,1e-10);
+            var limit=(double*)KernelRuntime.DereferenceBlock(data.HvecBlock)+3*data.EndLimit.HvecIndex;
+            var x=limit[3]-limit[0];var y=limit[4]-limit[1];var z=limit[5]-limit[2];
+            var length=Math.Sqrt(x*x+y*y+z*z);Assert.InRange(length,double.Epsilon,end-start);
+            var t=end-length*.5;Assert.Equal(0,KernelRuntime.CurveEval(curve,t,2,jets));
+            var direction=(x*jets[1].coord[0]+y*jets[1].coord[1]+z*jets[1].coord[2])/length;
+            var acceleration=(x*jets[2].coord[0]+y*jets[2].coord[1]+z*jets[2].coord[2])/length;
+            Assert.InRange(Math.Abs(direction+1),0,1e-10);Assert.InRange(Math.Abs(acceleration),0,1e-10);
+            if(KernelRuntime.GetSurfaceByTag(data.Surface0Tag).Class==SurfaceClass.BSurface)
+            {Assert.True(Math.Abs(jets[2].coord[2])>1e-8);curved++;}
+            else{Assert.Equal(0,jets[2].coord[0]);Assert.Equal(0,jets[2].coord[1]);Assert.Equal(0,jets[2].coord[2]);straight++;}
+            double recovered;Assert.Equal(0,KernelRuntime.CurveParameteriseVector(curve,jets[0],&recovered));
+            Assert.InRange(Math.Abs(t-recovered),0,1e-12);
+            // Exercise the explicit L-boundary witness, without changing
+            // the singular LIMIT, chart points, or curve geometry.
+            var firstUv=(double*)KernelRuntime.DereferenceBlock(data.UvValueBlock)
+                +(KernelRuntime.GetSurfaceByTag(data.Surface0Tag).Class==SurfaceClass.BSurface?0:2);
+            for(var axis=0;axis<2;axis++)
+            {
+                if(firstUv[axis]!=0)continue;
+                try
+                {
+                    firstUv[axis]=-6e-15;Assert.Equal(0,KernelRuntime.CurveEval(curve,start,0,jets));
+                    firstUv[axis]=-1e-6;Assert.NotEqual(0,KernelRuntime.CurveEval(curve,start,0,jets));
+                    boundaryControls++;
+                }
+                finally{firstUv[axis]=0;}
+            }
         }
+        Assert.Equal(2,curved);Assert.Equal(2,straight);Assert.Equal(2,boundaryControls);
     }
 
     [Fact]
