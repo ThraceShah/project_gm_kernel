@@ -135,7 +135,7 @@ internal static unsafe partial class KernelRuntime
         h=IntervalVector.Dot(new IntervalVector(plane.Origin)-new IntervalVector(conic.Origin),normal).Value;
     }
 
-    private static bool SameCertifiedExplicitCutRoot(CurveTag cut,in RegularBoundaryRoot first,in RegularBoundaryRoot second)
+    private static bool SameCertifiedExplicitCutRoot(CurveTag cut,in RegularBoundaryRoot first,in RegularBoundaryRoot second,IntervalNumber common)
     {
         if(first.Certified!=ExplicitPlaneCertificate||second.Certified!=ExplicitPlaneCertificate||first.Witness==0||second.Witness==0)return false;
         var target=GetCurveSlotByTag(cut);var a=GetCurveSlotByTag(first.Curve);var b=GetCurveSlotByTag(second.Curve);
@@ -145,15 +145,18 @@ internal static unsafe partial class KernelRuntime
         ref readonly var curved=ref (aLine?ref second:ref first);
         ref readonly var straightRecord=ref Curves[aLine?a:b];
         ref readonly var curvedRecord=ref Curves[aLine?b:a];
-        if(!TrySingleLineRootPoint(straightRecord,straight.Root,out var point))return false;
-        // Both original locators map to the same injective finite line.
-        // Exact spatial equality lets both native intervals describe one
-        // station without merging either original edge occurrence.
-        if(curvedRecord.Class==CurveClass.Line)
+        if(aLine&&Curves[b].Class==CurveClass.Line)
         {
-            if(!TrySingleLineRootPoint(curvedRecord,curved.Root,out var otherPoint))return false;
-            return ZeroVector(point-otherPoint);
+            if(TrySingleLineRootPoint(straightRecord,straight.Root,out var p)
+                &&TrySingleLineRootPoint(curvedRecord,curved.Root,out var q)&&ZeroVector(p-q))return true;
+            // A single target station can be exact in XYZ even when an
+            // original line's native parameter is not representable.
+            if(common.Lower!=common.Upper||!TryReadExplicitSpineCurve(Curves[target],out var targetLine))return false;
+            p=new IntervalVector(targetLine.Origin)+new IntervalVector(targetLine.First)*common.Lower;
+            return Exact(p.X.Value)&&Exact(p.Y.Value)&&Exact(p.Z.Value)
+                &&CertifiedLineContainsPoint(straightRecord,straight,p)&&CertifiedLineContainsPoint(curvedRecord,curved,p);
         }
+        if(!TrySingleLineRootPoint(straightRecord,straight.Root,out var point))return false;
         var bound=new IntervalNumber(curved.Root.Lower,curved.Root.Upper);
         var plane=GetSurfaceSlotByTag(curved.CuttingSurface);
         if(curvedRecord.Class is not (CurveClass.Circle or CurveClass.Ellipse)||!(bound.Upper-bound.Lower<Math.PI)
@@ -181,7 +184,18 @@ internal static unsafe partial class KernelRuntime
         return false;
 
         static IntervalNumber Coordinate(in IntervalVector value,int axis)=>axis==0?value.X.Value:axis==1?value.Y.Value:value.Z.Value;
+        static bool Exact(IntervalNumber value)=>value.Finite&&value.Lower==value.Upper;
         static bool ZeroVector(in IntervalVector value)=>value.X.Value.Magnitude==0&&value.Y.Value.Magnitude==0&&value.Z.Value.Magnitude==0;
+        static bool CertifiedLineContainsPoint(in CurveRecord record,in RegularBoundaryRoot root,in IntervalVector point)
+        {
+            var surface=GetSurfaceSlotByTag(root.CuttingSurface);
+            if(surface<0||!TryReadExplicitSpineCurve(record,out var line)||!TryPrepareSurface(Surfaces[surface],out var plane)
+                ||plane.Kind!=SurfaceClass.Plane||!TryLinePlaneRatio(line,plane,out _,out _)||!ExactPointOnPlaneLevel(point,plane))return false;
+            var offset=point-new IntervalVector(line.Origin);var axis=new IntervalVector(line.First);
+            if(!ZeroVector(IntervalVector.Cross(offset,axis)))return false;
+            var station=IntervalVector.Dot(offset,axis).Value/IntervalVector.Dot(axis,axis).Value;
+            return IntersectStationBounds(station,new(root.Root.Lower,root.Root.Upper)).Finite;
+        }
         static bool TrySingleLineRootPoint(in CurveRecord record,in FiniteCurveSurfaceRoot root,out IntervalVector point)
         {
             point=default;

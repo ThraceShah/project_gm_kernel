@@ -262,7 +262,8 @@ internal static unsafe partial class KernelRuntime
                         certified=true;
                         if(anchor.SourceOccurrence==known.SourceOccurrence)
                             same|=anchor.Surface==known.Surface?anchor.Witness==known.Witness
-                                :exact||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface)||SameCertifiedConicPlaneRoot(anchor,known);
+                                :exact||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface)
+                                    ||SameCertifiedConicPlaneRoot(anchor,known)||SameCertifiedLineCylinderPlaneRoot(anchor,known);
                     }
                     continue;
                 }

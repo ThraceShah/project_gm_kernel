@@ -614,6 +614,26 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         }
     }
 
+    [Fact]
+    public void TwoSourceLinesCanShareAnExactCutPointWithoutExactSourceParameters()
+    {
+        const double y=-1.9499999999999997;
+        var a=new PK_PLANE_sf_s();a.basis_set.location.coord[2]=1;a.basis_set.axis.coord[2]=1;a.basis_set.ref_direction.coord[0]=1;
+        var b=new PK_PLANE_sf_s();b.basis_set.location.coord[1]=y;b.basis_set.axis.coord[1]=1;b.basis_set.ref_direction.coord[0]=1;
+        SurfTag first,second;Assert.Equal(0,KernelRuntime.PlaneCreate(&a,&first));Assert.Equal(0,KernelRuntime.PlaneCreate(&b,&second));
+        Span<SurfTag> supports=stackalloc SurfTag[2]{first,second};
+        Span<CurveTag> sources=stackalloc CurveTag[2]{Line(Vector(0,1.5,1),Vector(0,-1,0)),Line(Vector(0,y,.8),Vector(0,0,1))};
+        var target=Line(Vector(0,y,1),Vector(1,0,0));
+        Assert.Equal(0,KernelRuntime.TestTwoFiniteLinesOnCommonCut(target,sources,supports,out var joined,out var left,out var right));
+        Assert.True(joined);Assert.Equal(0,left);Assert.Equal(0,right);
+
+        static CurveTag Line(KernelVector3 origin,KernelVector3 direction)
+        {
+            var definition=new PK_LINE_sf_s();Write(&definition.basis_set.location,origin);Write(&definition.basis_set.axis,direction);
+            CurveTag tag;Assert.Equal(0,KernelRuntime.LineCreate(&definition,&tag));return tag;
+        }
+    }
+
     [Theory]
     [InlineData(.4995,.5005,1e-10,true,false,0,1)]
     [InlineData(.4995,.5005,.1,true,false,ParasolidConstants.PK_ERROR_cant_do_intersect,1)]
@@ -641,6 +661,24 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(0,KernelRuntime.TestCoincidentSourceFragments(carrier,fragmentCounts,out var ambiguousCut));
         Assert.Equal(1,fragmentCounts[0]);Assert.Equal(1,fragmentCounts[1]);
         Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,ambiguousCut);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void IsolatedCylinderAndPlaneRootsOnOneLineNeedExactEquality(bool displaced)
+    {
+        var line=new PK_LINE_sf_s();line.basis_set.location.coord[2]=.8;line.basis_set.axis.coord[2]=1;
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var cylinder=new PK_CYL_sf_s{radius=1};cylinder.basis_set.axis.coord[1]=1;cylinder.basis_set.ref_direction.coord[0]=1;
+        SurfTag round;Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&round));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.location.coord[2]=1;
+        plane.basis_set.location.coord[1]=displaced?Math.ScaleB(1,-56):0;
+        var diagonal=1/Math.Sqrt(2);plane.basis_set.axis.coord[1]=diagonal;plane.basis_set.axis.coord[2]=diagonal;
+        plane.basis_set.ref_direction.coord[0]=1;
+        SurfTag flat;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&flat));
+        Assert.Equal(!displaced,KernelRuntime.TestSameCertifiedLineCylinderPlaneRoot(carrier,round,flat,out var overlapping));
+        Assert.True(overlapping);
     }
 
     [Theory]

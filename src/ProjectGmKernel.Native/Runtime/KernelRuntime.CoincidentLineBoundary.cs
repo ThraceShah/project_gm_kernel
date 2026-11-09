@@ -9,6 +9,29 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    private static bool SameCertifiedLineCylinderPlaneRoot(in BoundaryParameter a,in BoundaryParameter b)
+    {
+        var carrier=GetCurveSlotByTag(a.Carrier);var first=GetSurfaceSlotByTag(a.Surface);var second=GetSurfaceSlotByTag(b.Surface);
+        if(carrier<0||first<0||second<0||Curves[carrier].Class!=CurveClass.Line)return false;
+        if(Surfaces[first].Class==SurfaceClass.Cylinder)(first,second)=(second,first);
+        if(Surfaces[first].Class!=SurfaceClass.Plane||Surfaces[second].Class!=SurfaceClass.Cylinder
+            ||!TryReadExplicitSpineCurve(Curves[carrier],out var line)||!TryPrepareSurface(Surfaces[first],out var plane)
+            ||!TryPrepareSurface(Surfaces[second],out var cylinder)||!TryLinePlaneRatio(line,plane,out var n,out var d))return false;
+        var overlap=IntersectStationBounds(n/d,new(Math.Max(a.Lower,b.Lower),Math.Min(a.Upper,b.Upper)));
+        if(!overlap.Finite)return false;
+        var origin=new IntervalVector(line.Origin);var axis=new IntervalVector(line.First);
+        // Both equations already have an isolated root on this occurrence.
+        // A representable station satisfying both exactly identifies that
+        // root. The small search budget never turns overlap into equality.
+        var station=overlap.Lower;
+        for(var i=0;i<32&&station<=overlap.Upper;i++,station=Math.BitIncrement(station))
+        {
+            var point=origin+axis*station;
+            if(ExactPointOnPlaneLevel(point,plane)&&ExactCylinderRadial(point,cylinder,0,out _))return true;
+        }
+        return false;
+    }
+
     private static bool TryExactCoincidentLineRoots(in ModelingEdge a,in ModelingEdge b,
         Span<OperationIntersectionPoint> roots,out BufferCount count)
     {
@@ -303,6 +326,20 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
+    internal static bool TestSameCertifiedLineCylinderPlaneRoot(CurveTag curve,SurfTag cylinder,SurfTag plane,out bool overlapping)
+    {
+        overlapping=false;
+        var edge=new ModelingEdge{Curve=curve,Start=0,End=1};
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[2];
+        Span<ScalarRootIsolation> intervals=stackalloc ScalarRootIsolation[2];Span<double> errors=stackalloc double[2];
+        if(!TryFiniteLinePlaneEvent(edge,0,plane,out var flat)||flat.Count!=1
+            ||IsolateFiniteExplicitCylinder(edge,cylinder,roots,intervals,errors,out var count)!=AlgorithmStatus.Success||count!=1)return false;
+        var a=flat.FirstRoot;var b=intervals[0].Root;
+        overlapping=IntersectStationBounds(new(a.Lower,a.Upper),b).Finite;
+        return SameCertifiedLineCylinderPlaneRoot(new(){Carrier=curve,Surface=plane,Lower=a.Lower,Upper=a.Upper},
+            new(){Carrier=curve,Surface=cylinder,Lower=b.Lower,Upper=b.Upper});
+    }
+
     internal static bool TestExactCoincidentLineOverlap(CurveTag first,CurveTag second,double length,double end,
         out BufferCount count,out double lastFirst,out double lastSecond)
     {

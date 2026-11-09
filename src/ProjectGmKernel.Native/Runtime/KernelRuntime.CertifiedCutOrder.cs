@@ -26,9 +26,9 @@ internal static unsafe partial class KernelRuntime
             var sameEnd=root.Root.Vertex>=0&&root.Root.Vertex==other.Root.Vertex
                 &&root.Root.NativeEnd!=FiniteNativeEnd.None&&other.Root.NativeEnd!=FiniteNativeEnd.None
                 &&incoming.Lower==incoming.Upper&&previous.Lower==previous.Upper&&incoming.Lower==previous.Lower;
-            var overlap=IntersectStationBounds(incoming,previous).Finite;
+            var common=IntersectStationBounds(incoming,previous);var overlap=common.Finite;
             if(!sameSource&&!overlap)continue;
-            var samePoint=overlap&&!sameSource&&!sameEnd&&SameCertifiedExplicitCutRoot(carrier,root,other);
+            var samePoint=overlap&&!sameSource&&!sameEnd&&SameCertifiedExplicitCutRoot(carrier,root,other,common);
             joint=IntersectStationBounds(joint,previous);
             if(!sameSource&&!sameEnd&&!samePoint||!joint.Finite
                 ||sameSource&&(root.Root.Lower>other.Root.Upper||other.Root.Lower>root.Root.Upper)

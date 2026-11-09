@@ -35,7 +35,7 @@ internal static unsafe partial class KernelRuntime
             var source=(upper==nativePositive)?edge.EndVertex:edge.StartVertex;
             if(source<0||source>=originals.Length||originals[source]<0||SheetOriginalVertex(originals[source],out var vertex)!=0)continue;
             var p=new IntervalVector(vertex);
-            if(!ExactStationaryPlanePoint(p,cutting)||!ExactStationaryPlanePoint(p,support.Analytic))continue;
+            if(!ExactPointOnPlaneLevel(p,cutting)||!ExactPointOnPlaneLevel(p,support.Analytic))continue;
             var at=upper?edge.End:edge.Start;var chart=0;
             while(chart<charts.Length-2&&(charts[chart+1].Parameter<at||!upper&&charts[chart+1].Parameter==at))chart++;
             ref readonly var frame=ref charts[chart];
@@ -73,7 +73,7 @@ internal static unsafe partial class KernelRuntime
         return false;
     }
 
-    private static bool ExactStationaryPlanePoint(in IntervalVector point,in AnalyticSurface plane)
+    private static bool ExactPointOnPlaneLevel(in IntervalVector point,in AnalyticSurface plane)
         =>IntervalVector.Dot(point-new IntervalVector(plane.Origin),new IntervalVector(plane.Axis)).Value.Magnitude==0;
 
     private static bool TryExactStationaryContact(in NestedBlendProgram program,in BlendSurfaceInstruction rolling,in ParametricSpineCurve spine,
