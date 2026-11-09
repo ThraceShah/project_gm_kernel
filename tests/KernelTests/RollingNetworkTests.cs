@@ -91,6 +91,31 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
+    [Fact]
+    public void RigidlyMovedRollingSeedPublishesBothShortIntervals()
+    {
+        var body=Seed("generated-short-edge-phase-input.x_t");
+        var ca=Math.Cos(.37);var sa=Math.Sin(.37);var cb=Math.Cos(-.29);var sb=Math.Sin(-.29);
+        var cc=Math.Cos(.23);var sc=Math.Sin(.23);
+        var move=new PK_TRANSF_sf_s();
+        move.matrix[0]=ca*cb;move.matrix[1]=ca*sb*sc-sa*cc;move.matrix[2]=ca*sb*cc+sa*sc;move.matrix[3]=-.7;
+        move.matrix[4]=sa*cb;move.matrix[5]=sa*sb*sc+ca*cc;move.matrix[6]=sa*sb*cc-ca*sc;move.matrix[7]=1.1;
+        move.matrix[8]=-sb;move.matrix[9]=cb*sc;move.matrix[10]=cb*cc;move.matrix[11]=2.3;move.matrix[15]=1;
+        int transform,count;int* replaced;byte* exact;
+        Assert.Equal(0,KernelRuntime.TransfCreate(&move,&transform));
+        Assert.Equal(0,KernelRuntime.BodyTransform(body,transform,0,&count,&replaced,&exact));
+        if(replaced!=null)Assert.Equal(0,KernelRuntime.MemoryFree(replaced));
+        if(exact!=null)Assert.Equal(0,KernelRuntime.MemoryFree(exact));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&transform));
+        Span<EdgeTag> selected=stackalloc EdgeTag[2];Selection(body,selected);Mark(selected,.6);
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7,local_check=1};int fault,edgeFault,topolFault;
+        var error=KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&edgeFault,&topolFault);
+        Assert.True(error==0,$"error={error} stage={KernelRuntime.LastRollingNetworkStage}");
+        Assert.Equal(2,count);Assert.Equal(KernelRuntime.RollingNetworkStage.Publish,KernelRuntime.LastRollingNetworkStage);
+        BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body,9.13e-5,9.15e-5);NativeSupportIncidence(body);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+    }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void SubdividedSelectedCarrierRetainsTheSharedSectionAndProductProvenance(bool ellipse)

@@ -191,7 +191,18 @@ internal static unsafe partial class KernelRuntime
                 status=JointNestedBlendEvaluation.EvaluateSpine(program,index,t,0,point,contacts);
                 if(status!=AlgorithmStatus.Success)return status;
                 var corrected=(root-new IntervalVector(point[0])).Norm().Value;
-                if(!corrected.Finite||corrected.Upper>=previous.Lower)return AlgorithmStatus.NotConverged;
+                if(!corrected.Finite||corrected.Upper>=previous.Lower)
+                {
+                    // In a shallow intersection a small equation residual
+                    // does not guarantee a better point along the surfaces.
+                    status=JointNestedBlendEvaluation.BoundSpineAnchor(program,index,t,bounds,contacts);
+                    if(status!=AlgorithmStatus.Success)return status;
+                    root=new(bounds[0],bounds[1],bounds[2]);
+                    previous=(root-new IntervalVector(positions[i])).Norm().Value;
+                    point[0]=new(){X=bounds[0].Midpoint,Y=bounds[1].Midpoint,Z=bounds[2].Midpoint};
+                    corrected=(root-new IntervalVector(point[0])).Norm().Value;
+                    if(!previous.Finite||!corrected.Finite||corrected.Upper>=previous.Lower)return AlgorithmStatus.NotConverged;
+                }
                 var seed=new IntervalVector(chart[i].Position);
                 var left=(seed-new IntervalVector(chart[i-1].Position)).Norm().Value;
                 var right=(seed-new IntervalVector(chart[i+1].Position)).Norm().Value;

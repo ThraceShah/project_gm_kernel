@@ -21,6 +21,17 @@ internal static partial class JointNestedBlendEvaluation
         return BoundGeometry(program,-1,spine,domain,output);
     }
 
+    // At one station, report both support locators from the midpoint of the
+    // same certified joint state that supplies the position enclosure.
+    internal static AlgorithmStatus BoundSpineAnchor(in NestedBlendProgram program,BlendSpineIndex spine,double parameter,
+        Span<IntervalNumber> output,Span<double> contacts)
+    {
+        var domain=new SurfaceParameterBox(parameter,parameter,0,0);
+        if(!domain.Valid||output.Length<9||contacts.Length<4||spine<0||spine>=program.Spines.Length)return AlgorithmStatus.InvalidInput;
+        if(SpineParameterMap.Explicit(program.Spines[spine]))return AlgorithmStatus.Unsupported;
+        return BoundSegment(program,-1,spine,domain,output,anchorContacts:contacts);
+    }
+
     // Shared root witnesses for an implicit intersection with analytic
     // supports, or one analytic support and one explicit rolling spine.
     // Both occurrences must use the same shared support equations.
@@ -110,7 +121,8 @@ internal static partial class JointNestedBlendEvaluation
 
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
-        Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1)
+        Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
+        Span<double> anchorContacts=default)
     {
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
@@ -236,6 +248,15 @@ internal static partial class JointNestedBlendEvaluation
         }
         if(surface<0)
         {
+            if(!anchorContacts.IsEmpty)
+            {
+                for(var i=0;i<n;i++)snapshot[i]=new(boxes[i].Midpoint,0);
+                for(var side=0;side<2;side++)
+                {
+                    status=SpineSupportParameters(program,nodes,snapshot[..n],side,u,out anchorContacts[2*side],out anchorContacts[2*side+1]);
+                    if(status!=AlgorithmStatus.Success)return status;
+                }
+            }
             for(var i=0;i<3;i++){output[i]=boxes[i];output[3+i]=image[i];output[6+i]=0;}return AlgorithmStatus.Success;
         }
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
