@@ -9,6 +9,96 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    private static bool TryNativeAffineTorusEquator(SurfaceSlot first,SurfaceSlot second,ReadOnlySpan<SurfaceIntersectionNode> nodes,
+        ReadOnlySpan<BufferOffset> order,in GeneralIntersectionBranch branch,out OperationIntersectionBranch circle,
+        out AnalyticSurface firstSupport,out AnalyticSurface secondSupport)
+    {
+        circle=default;firstSupport=secondSupport=default;
+        var torusFirst=Surfaces[first].Class==SurfaceClass.Torus;
+        var flat=torusFirst?second:first;var round=torusFirst?first:second;
+        if(Surfaces[round].Class!=SurfaceClass.Torus||!TryPrepareSurface(Surfaces[round],out var torus)
+            ||!TryAffinePlanarSurface(flat,out var plane,out _,out _)
+            ||!ExactVector(plane.Axis,torus.Axis)&&!ExactVector(plane.Axis,Scale(torus.Axis,-1))
+            ||!ExactProjectionEqual(torus.Origin,plane.Origin,torus.Axis))return false;
+        var radius=new IntervalNumber(torus.Radius)-torus.Secondary;
+        var axis=new IntervalVector(torus.Axis);var x=new IntervalVector(torus.X);
+        if(radius.Lower<=0||radius.Lower!=radius.Upper||!radius.Finite
+            ||(IntervalVector.Dot(axis,axis).Value-1).Magnitude!=0||(IntervalVector.Dot(x,x).Value-1).Magnitude!=0
+            ||IntervalVector.Dot(axis,x).Value.Magnitude!=0)return false;
+        var uAxis=torusFirst?0:2;
+        // The exact center plane cuts the torus at two separated equators.
+        // The ordered graph's paired torus chart identifies the inner one.
+        // Each graph edge was discovered in one analytic torus quarter patch.
+        // Its angular lift is therefore the short one, including across a seam.
+        var initial=nodes[order[0]].Parameter(uAxis);var previous=initial;var end=initial;
+        var firstStep=0.0;var lastStep=0.0;
+        foreach(var id in order)
+        {
+            var v=nodes[id].Parameter(uAxis+1);
+            if(!(Math.Abs(v)>Math.PI*.5))return false;
+        }
+        for(var i=1;i<order.Length;i++)
+        {
+            var next=nodes[order[i]].Parameter(uAxis);var step=Math.IEEERemainder(next-previous,Math.Tau);
+            if(!(Math.Abs(step)>0&&Math.Abs(step)<Math.PI)||i>1&&Math.Sign(step)!=Math.Sign(firstStep))return false;
+            if(i==1)firstStep=step;
+            lastStep=step;end+=step;previous=next;
+        }
+        if(firstStep==0)return false;
+        var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[flat].DataIndex]);var poles=view.Vertices;
+        var uEnd=ProfileEuclideanPole(poles,3,(view.UVertexCount-1)*view.VVertexCount);
+        var vEnd=ProfileEuclideanPole(poles,3,view.VVertexCount-1);
+        if(!ExactProjectionEqual(uEnd,plane.Origin,torus.Axis)||!ExactProjectionEqual(vEnd,plane.Origin,torus.Axis))return false;
+        var u=new IntervalVector(uEnd)-new IntervalVector(plane.Origin);var vEdge=new IntervalVector(vEnd)-new IntervalVector(plane.Origin);
+        var inwardU=IntervalVector.Cross(vEdge,new(plane.Axis));var inwardV=IntervalVector.Cross(new(plane.Axis),u);
+        Span<IntervalVector> inward=stackalloc IntervalVector[4]{inwardU,inwardU*(-1),inwardV,inwardV*(-1)};
+        Span<KernelVector3> sides=stackalloc KernelVector3[4]{plane.Origin,uEnd,plane.Origin,vEnd};
+        var conic=new ParametricSpineCurve{Kind=CurveClass.Circle,Origin=torus.Origin,
+            First=Scale(torus.X,radius.Lower),Second=Scale(ProfileCross(torus.Axis,torus.X),radius.Lower)};
+        Span<IntervalNumber> roots=stackalloc IntervalNumber[8];var count=0;
+        for(var side=0;side<4;side++)
+        {
+            if(!TryIsolateConicSectionRoots(conic,new(sides[side]),inward[side],roots[count..],out var found))return false;
+            count+=found;
+        }
+        circle=OperationIntersection.Circle(torus.Origin,torus.Axis,torus.X,radius.Lower);
+        if(branch.Closed!=0)
+        {
+            if(count!=0)return false;
+        }
+        else
+        {
+            var lo=Math.Min(initial,end);var hi=Math.Max(initial,end);var middle=lo+(hi-lo)*.5;
+            var lowerWidth=Math.Abs(firstStep<0?lastStep:firstStep)*.5;var upperWidth=Math.Abs(firstStep<0?firstStep:lastStep)*.5;
+            if(!(hi-lo+lowerWidth+upperWidth<Math.Tau))return false;
+            var lower=-1;var upper=-1;
+            for(var i=0;i<count;i++)
+            {
+                var root=roots[i];var turn=Math.Round((middle-root.Midpoint)/Math.Tau);
+                root+=turn*new IntervalNumber(Math.BitDecrement(Math.Tau),Math.BitIncrement(Math.Tau));
+                roots[i]=root;
+                if(root.Lower>lo-lowerWidth&&root.Upper<lo+lowerWidth){if(lower>=0)return false;lower=i;}
+                else if(root.Lower>hi-upperWidth&&root.Upper<hi+upperWidth){if(upper>=0)return false;upper=i;}
+            }
+            if(lower<0||upper<0||roots[lower].Upper>=roots[upper].Lower)return false;
+            for(var i=0;i<count;i++)
+                if(i!=lower&&i!=upper&&roots[i].Upper>=roots[lower].Lower&&roots[i].Lower<=roots[upper].Upper)return false;
+            circle.Start=roots[lower].Midpoint;circle.End=roots[upper].Midpoint;
+            var lowNode=nodes[order[firstStep>0?0:order.Length-1]];
+            var highNode=nodes[order[firstStep>0?order.Length-1:0]];
+            if(!(GeneralAnchorMotionUpper(lowNode.Point,OperationIntersection.ConicPoint(circle,circle.Start))<=OperationIntersection.DistanceTolerance)
+                ||!(GeneralAnchorMotionUpper(highNode.Point,OperationIntersection.ConicPoint(circle,circle.End))<=OperationIntersection.DistanceTolerance))return false;
+        }
+        // Complete, transverse side roots and one strictly interior witness
+        // classify the entire open arc (or the whole ring when there are none).
+        IntervalDual.SinCos(new(circle.Start+(circle.End-circle.Start)*.5,0),out var sin,out var cos);
+        var sample=new IntervalVector(conic.Origin)+new IntervalVector(conic.First)*cos+new IntervalVector(conic.Second)*sin;
+        for(var side=0;side<4;side++)
+            if(IntervalVector.Dot(sample-new IntervalVector(sides[side]),inward[side]).Value.Lower<=0)return false;
+        firstSupport=torusFirst?torus:plane;secondSupport=torusFirst?plane:torus;
+        return true;
+    }
+
     private static bool TryAffineRoundCircle(SurfaceSlot slot,in AnalyticSurface round,
         Span<OperationIntersectionBranch> branches,out BufferCount count,out AnalyticSurface plane)
     {

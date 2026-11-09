@@ -96,7 +96,7 @@ internal static unsafe partial class KernelRuntime
         for(var branch=0;branch<2;branch++)
         {
             var curve=branch==0?contact:alternate;var center=branch==0?spine:other;
-            if(!TryIsolateRollingCapRoots(curve,vertex,tangent,roots,out var n))return false;
+            if(!TryIsolateConicSectionRoots(curve,vertex,tangent,roots,out var n))return false;
             for(var i=0;i<n;i++)
             {
                 var station=roots[i];
@@ -121,7 +121,7 @@ internal static unsafe partial class KernelRuntime
     // A*cos(t)+B*sin(t)+C=0 has exactly two simple roots per turn
     // when A^2+B^2-C^2 is positive. Isolate both by signs; an estimate
     // only proposes a bracket. A tangent/unordered pair stays unresolved.
-    private static bool TryIsolateRollingCapRoots(in ParametricSpineCurve curve,in IntervalVector vertex,in IntervalVector tangent,
+    private static bool TryIsolateConicSectionRoots(in ParametricSpineCurve curve,in IntervalVector vertex,in IntervalVector tangent,
         Span<IntervalNumber> roots,out BufferCount count)
     {
         count=0;

@@ -96,6 +96,10 @@ try
             SS("general-nurbs-cylinder",GeneralPatch(0),Cylinder(.5));
             SS("general-nurbs-cone",GeneralPatch(0),Cone(.5,.3));
             SS("general-nurbs-torus",GeneralPatch(2),Torus(.6,.2));
+            SS("affine-translated-torus-equator",GeneralPatch(2,x0:.125,y0:.125),Torus(.625,.25));
+            SS("affine-translated-torus-equator-reverse",Torus(.625,.25),GeneralPatch(2,x0:.125,y0:.125));
+            SS("affine-torus-only-outer-arc",GeneralPatch(2,x0:.5),Torus(.625,.25));
+            SS("affine-torus-off-equator",GeneralPatch(2,z0:.125),Torus(.625,.25));
             SC("general-nurbs-line",GeneralPatch(0),Line(.5,.5,0,0,0,1),-1,1);
             CC("general-bcurve-bcurve-three-crossings",Cubic(false),0,1,StraightBCurve(),0,1);
             ProjectionContracts();
@@ -595,7 +599,7 @@ static unsafe GeometryPair StraightBCurve()
         form=M.ParasolidConstants.PK_BCURVE_form_arbitrary_c,knot_type=M.ParasolidConstants.PK_knot_bezier_ends_c,self_intersecting=M.ParasolidConstants.PK_self_intersect_false_c};
     int m=0,p=0;Check(KernelRuntime.BCurveCreate(&sf,&m),"self straight B-curve");Check(PK_BCURVE_create((PK_BCURVE_sf_t*)&sf,&p),"PK straight B-curve");return new(m,p);
 }
-static unsafe GeometryPair GeneralPatch(int kind,double width=1)
+static unsafe GeometryPair GeneralPatch(int kind,double width=1,double x0=0,double y0=0,double z0=0)
 {
     var rational=kind==4;var dim=rational?4:3;double* poles=stackalloc double[36];double* z=stackalloc double[3]{.25,-.25,.25};
     var nu=kind==5?4:3;double* xs=stackalloc double[4]{0,.25,.75,1};double* zs=stackalloc double[4]{.25,0,0,.25};
@@ -603,6 +607,7 @@ static unsafe GeometryPair GeneralPatch(int kind,double width=1)
     {
         var at=(u*3+v)*dim;var w=rational?1+.2*u+.3*v:1;
         poles[at]=(kind==5?xs[u]:u*.5)*w*width;poles[at+1]=v*.5*w;poles[at+2]=(kind==1?.08*u*.5*v*.5:kind==2?0:(kind==5?zs[u]:z[u])+z[v]-.0625+(kind==3?10:0))*w;if(rational)poles[at+3]=w;
+        if(kind==2&&(x0!=0||y0!=0||z0!=0)){poles[at]+=x0;poles[at+1]+=y0;poles[at+2]+=z0;}
     }
     double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2]{3,3};
     double* uk=stackalloc double[3]{0,.5,1};int* um=stackalloc int[3]{3,1,3};

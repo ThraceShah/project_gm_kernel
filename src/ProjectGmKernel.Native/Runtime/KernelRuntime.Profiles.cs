@@ -191,9 +191,10 @@ internal static unsafe partial class KernelRuntime
             if (error != 0) return error;
             var start=segment.Start;var endVertex=segment.End;
             ref readonly var carrier=ref Curves[GetCurveSlotByTag(clone)];
-            // The finite limits remain in native order; an oriented LINE
-            // returned by SSI can traverse them in reverse.
-            if(carrier.Class==CurveClass.Line&&LocalSenseSign(carrier.Sense)<0)(start,endVertex)=(endVertex,start);
+            // Limits are in the increasing native gauge. Analytic traversal
+            // can reverse the endpoint uses without replacing the interval.
+            if(carrier.Class is CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse
+                &&LocalSenseSign(carrier.Sense)<0)(start,endVertex)=(endVertex,start);
             var edge = AddProfileEdge(bodySlot, clone, periodicRing ? -1 : vertices[start],
                 periodicRing ? -1 : vertices[endVertex], segment.T0, segment.T1);
             if (edge < 0) return ParasolidConstants.PK_ERROR_memory_full;

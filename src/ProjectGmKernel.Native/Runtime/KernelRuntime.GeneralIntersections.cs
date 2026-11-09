@@ -285,7 +285,8 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int GeneralSurfIntersectSurf(SurfaceSlot first, SurfaceSlot second, BodySlot owner,
-        PK_SURF_intersect_surf_o_s* options, BufferCount* curveCount, CurveTag** curves, PK_INTERVAL_s** intervals, int** kinds)
+        PK_SURF_intersect_surf_o_s* options, BufferCount* curveCount, CurveTag** curves, PK_INTERVAL_s** intervals, int** kinds,
+        bool publishNativeSection=false)
     {
         // Store graph order as indices. A second maximum-sized node array
         // would reserve certificate storage twice and exhaust the command
@@ -348,8 +349,14 @@ internal static unsafe partial class KernelRuntime
                 branches[0] = branches[selected]; nb = 1;
             }
             LastGeneralIntersectionStage=GeneralIntersectionStage.Bind;
-            var error = TryCloneEntityCore(Surfaces[first].Header.Tag, out var a); if (error != 0) return error;
-            error = TryCloneEntityCore(Surfaces[second].Header.Tag, out var b); if (error != 0) return error;
+            var preferEquator=publishNativeSection&&(Surfaces[first].Class==SurfaceClass.BSurface&&Surfaces[second].Class==SurfaceClass.Torus
+                ||Surfaces[first].Class==SurfaceClass.Torus&&Surfaces[second].Class==SurfaceClass.BSurface);
+            SurfTag a=0,b=0;
+            if(!preferEquator)
+            {
+                var clone=TryCloneEntityCore(Surfaces[first].Header.Tag,out a);if(clone!=0)return clone;
+                clone=TryCloneEntityCore(Surfaces[second].Header.Tag,out b);if(clone!=0)return clone;
+            }
             var tags = AllocateReturnSlice(nb);
             var ranges = (PK_INTERVAL_s*)State.Session->Returns.TryAllocate((nuint)(nb * sizeof(PK_INTERVAL_s)));
             var types = AllocateReturnSlice(nb);
@@ -358,11 +365,30 @@ internal static unsafe partial class KernelRuntime
             for (var i = 0; i < nb; i++)
             {
                 ref readonly var branch = ref branches[i];
-                error = CreateGeneralIntersectionCurve(a, b, nodes[..nn],ordered.Slice(branch.First, branch.Count), branch.Closed != 0, out tags[i],branch.ChordalError);
+                var order=ordered.Slice(branch.First,branch.Count);int error;
+                OperationIntersectionBranch circle=default;AnalyticSurface firstSupport=default,secondSupport=default;
+                var exact=preferEquator&&TryNativeAffineTorusEquator(first,second,nodes,order,branch,out circle,out firstSupport,out secondSupport);
+                if(exact)
+                {
+                    error=CreateIntersectionBranch(circle,tags+i);
+                    if(error==0)error=OrientAnalyticIntersectionCurve(tags[i],circle.Start,circle.End,firstSupport,secondSupport,
+                        Surfaces[first].Sense,Surfaces[second].Sense);
+                }
+                else
+                {
+                    error=0;
+                    if(a==0)
+                    {
+                        error=TryCloneEntityCore(Surfaces[first].Header.Tag,out a);
+                        if(error==0)error=TryCloneEntityCore(Surfaces[second].Header.Tag,out b);
+                    }
+                    if(error==0)error=CreateGeneralIntersectionCurve(a,b,nodes[..nn],order,branch.Closed!=0,out tags[i],branch.ChordalError);
+                }
                 if (error == 0 && owner >= 0) error = TryRegisterConstructionGeometry(owner, tags[i]);
                 if (error != 0)
                 { State.Session->Returns.TryFree(tags); State.Session->Returns.TryFree(ranges); State.Session->Returns.TryFree(types); return error; }
-                var record = Curves[GetCurveSlotByTag(tags[i])]; ranges[i].value[0] = record.TMin; ranges[i].value[1] = record.TMax;
+                var record = Curves[GetCurveSlotByTag(tags[i])];
+                ranges[i].value[0]=exact?circle.Start:record.TMin;ranges[i].value[1]=exact?circle.End:record.TMax;
                 types[i] = ParasolidConstants.PK_intersect_curve_simple_c;
             }
             *curveCount = nb; *curves = tags; *intervals = ranges; *kinds = types; return 0;

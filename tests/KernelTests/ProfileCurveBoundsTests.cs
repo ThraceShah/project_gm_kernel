@@ -32,6 +32,34 @@ public unsafe class ProfileCurveBoundsTests:IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void NegativeConicWireKeepsItsIntervalAndUsesTheUpperEndpointFirst(bool ellipse)
+    {
+        var basis=new PK_AXIS2_sf_s();basis.axis.coord[2]=1;basis.ref_direction.coord[0]=1;
+        int curve=0;
+        if(ellipse)
+        {
+            var sf=new PK_ELLIPSE_sf_s{basis_set=basis,R1=2,R2=1};
+            Assert.Equal(0,KernelRuntime.EllipseCreate(&sf,&curve));
+        }
+        else
+        {
+            var sf=new PK_CIRCLE_sf_s{basis_set=basis,radius=2};
+            Assert.Equal(0,KernelRuntime.CircleCreate(&sf,&curve));
+        }
+        KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(curve)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
+        int body=0;Assert.Equal(0,KernelRuntime.CurveMakeWireBody(curve,Range(.25,1.25),&body));
+        var edge=KernelRuntime.Edges[Record(body).FirstEdgeBody];
+        Assert.Equal(.25,edge.ParameterStart);Assert.Equal(1.25,edge.ParameterEnd);
+        Assert.Equal(ParasolidConstants.PK_TOPOL_sense_negative_c,KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)].Sense);
+        var start=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[edge.StartVertex].PointTag)].Position;
+        var end=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[edge.EndVertex].PointTag)].Position;
+        Assert.Equal(2*Math.Cos(1.25),start.X,14);Assert.Equal(2*Math.Cos(.25),end.X,14);
+        Assert.Equal((ellipse?1:2)*Math.Sin(1.25),start.Y,14);Assert.Equal((ellipse?1:2)*Math.Sin(.25),end.Y,14);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void NonG1KnotsProduceThreeEdgesAndMapEveryEdgeToItsInput(bool rational)
     {
         var curve=Spline(0,rational);var options=Options();var interval=Range(0,3);int body=0,n=0;int* edges=null;int* indices=null;

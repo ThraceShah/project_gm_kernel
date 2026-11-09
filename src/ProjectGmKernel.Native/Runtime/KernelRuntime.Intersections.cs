@@ -409,7 +409,7 @@ internal static unsafe partial class KernelRuntime
             }
         }
         if(status==AlgorithmStatus.Unsupported)
-            return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds);
+            return GeneralSurfIntersectSurf(sa,sb,ba,options,curveCount,curves,intervals,kinds,publishNativeSection:true);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         if(options->have_vector!=0)
         {
