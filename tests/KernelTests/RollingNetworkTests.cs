@@ -74,6 +74,23 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
+    [Fact]
+    public void ShallowRollingPlaneCutsPreserveBothShortIntervalsThroughXt()
+    {
+        var body=Seed("generated-short-edge-shallow-input.x_t");
+        Span<EdgeTag> selected=stackalloc EdgeTag[2];Selection(body,selected);Mark(selected);
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;
+        var error=KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&edgeFault,&topolFault);
+        Assert.True(error==0,$"error={error} stage={KernelRuntime.LastRollingNetworkStage}");
+        Assert.Equal(2,count);
+        Assert.Equal(KernelRuntime.RollingNetworkStage.Publish,KernelRuntime.LastRollingNetworkStage);
+        BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body,1.90e-5,1.91e-5);NativeSupportIncidence(body);
+        var text=Transmit(body);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var restored));
+        BooleanOperationTests.Counts(restored,10,23,15);ShortIntervals(restored,1.90e-5,1.91e-5);NativeSupportIncidence(restored);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+    }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void SubdividedSelectedCarrierRetainsTheSharedSectionAndProductProvenance(bool ellipse)
@@ -206,9 +223,9 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.Equal(0,count);Assert.True(products==null);Assert.Equal(before,Topology(body));Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);
     }
 
-    private static int Seed()
+    private static int Seed(string fixture="generated-short-edge-input.x_t")
     {
-        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-input.x_t"));
+        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures",fixture));
         Assert.Equal(0,XtBrepImportTests.Receive(text,out var body));return body;
     }
     private static string Transmit(int body)
@@ -312,7 +329,7 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.True(topology>0);
     }
 
-    private static void ShortIntervals(int body)
+    private static void ShortIntervals(int body,double min=7.6e-5,double max=7.7e-5)
     {
         var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var count=0;
         PK_VECTOR_s* point=stackalloc PK_VECTOR_s[2];
@@ -324,7 +341,7 @@ public unsafe class RollingNetworkTests:IDisposable
             Assert.Equal(1,record.HasParameterRange);Assert.True(record.ParameterEnd>record.ParameterStart);
             Assert.Equal(0,KernelRuntime.CurveEval(record.CurveTag,record.ParameterStart,0,point));Assert.Equal(0,KernelRuntime.CurveEval(record.CurveTag,record.ParameterEnd,0,point+1));
             var squared=0.0;for(var i=0;i<3;i++){var d=point[0].coord[i]-point[1].coord[i];squared+=d*d;}
-            if(squared<1e-6){Assert.InRange(Math.Sqrt(squared),7.6e-5,7.7e-5);count++;}
+            if(squared<1e-6){Assert.InRange(Math.Sqrt(squared),min,max);count++;}
         }
         Assert.Equal(2,count);
     }

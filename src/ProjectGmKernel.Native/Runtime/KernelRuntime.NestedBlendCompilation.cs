@@ -185,13 +185,22 @@ internal static unsafe partial class KernelRuntime
                 var previous=(root-new IntervalVector(positions[i])).Norm().Value;
                 if(!previous.Finite)return AlgorithmStatus.NotConverged;
                 var accuracy=JointNestedBlendEvaluation.ResidualAccuracy(program,index,positions[i]);
-                if(previous.Lower<=accuracy)continue;
+                // A certified roundoff-sized displacement needs no repair.
+                // Use the upper bound so an uncertain root cannot qualify.
+                if(previous.Upper<=8*accuracy)continue;
                 status=JointNestedBlendEvaluation.EvaluateSpine(program,index,t,0,point,contacts);
                 if(status!=AlgorithmStatus.Success)return status;
                 var corrected=(root-new IntervalVector(point[0])).Norm().Value;
                 if(!corrected.Finite||corrected.Upper>=previous.Lower)return AlgorithmStatus.NotConverged;
-                var moved=(new IntervalVector(point[0])-new IntervalVector(positions[i])).Norm().Value;
-                if(!moved.Finite||moved.Upper>OperationIntersection.DistanceTolerance)return AlgorithmStatus.NotConverged;
+                var seed=new IntervalVector(chart[i].Position);
+                var left=(seed-new IntervalVector(chart[i-1].Position)).Norm().Value;
+                var right=(seed-new IntervalVector(chart[i+1].Position)).Norm().Value;
+                // Keep the entire certified root and its representative in
+                // the seed's own neighborhood. Half the shorter adjacent
+                // chord makes neighboring repair neighborhoods disjoint.
+                var local=(.5*new IntervalNumber(Math.Min(left.Lower,right.Lower))).Lower;
+                var moved=(new IntervalVector(point[0])-seed).Norm().Value;
+                if(!left.Finite||!right.Finite||!moved.Finite||Math.Max(previous.Upper,moved.Upper)>=local)return AlgorithmStatus.NotConverged;
                 positions[i]=point[0];contacts.CopyTo(uv.Slice(4*i,4));motion=Math.Max(motion,moved.Upper);
             }
             if(motion==0)return AlgorithmStatus.Success;
