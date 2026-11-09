@@ -164,6 +164,23 @@ public unsafe class IntersectionOperationTests:IDisposable
         Near(2,first.coord[2]);Near(-2,second.coord[2]);
     }
 
+    [Theory]
+    [InlineData(3,4)] [InlineData(-3,4)] [InlineData(4,3)] [InlineData(-4,3)]
+    public void AxialCylinderPlanePreservesExactlyRepresentableGeneratorAnchors(double y,double transverse)
+    {
+        var definition=new PK_CYL_sf_s{basis_set=Axis(),radius=5};SurfTag cylinder;
+        Assert.Equal(0,KernelRuntime.CylCreate(&definition,&cylinder));
+        var plane=Plane(0,y,0,0,1,0,1,0,0);
+        using var result=SS(plane,cylinder);
+        Assert.Equal(2,result.CurveCount);
+        PK_VECTOR_s a,b;
+        Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[0],0,0,&a));
+        Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[1],0,0,&b));
+        Assert.Equal(y,a.coord[1]);Assert.Equal(y,b.coord[1]);
+        Assert.Equal(-transverse,Math.Min(a.coord[0],b.coord[0]));
+        Assert.Equal(transverse,Math.Max(a.coord[0],b.coord[0]));
+    }
+
     [Fact]
     public void PlaneTorus_FindsBothClosedBranchesAndExplicitSeedSelectsOne()
     {

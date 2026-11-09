@@ -514,9 +514,10 @@ internal static class OperationIntersection
         if(discriminant.Upper<0)return AlgorithmStatus.Success;
         var tangent=discriminant.Magnitude==0;
         if(!tangent&&discriminant.Lower<=0)return AlgorithmStatus.NotConverged;
-        var height=-h/radius;
-        var split=tangent?new IntervalNumber(0):IntervalDual.Sqrt(new(discriminant,0)).Value/radius;
-        var first=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,split);
+        // Solve for length-valued radial coefficients directly. Dividing
+        // by radius and scaling back would round even exact generators.
+        var split=tangent?new IntervalNumber(0):IntervalDual.Sqrt(new(discriminant,0)).Value;
+        var first=GeneratorAnchor(origin,x,y,radial2,dx,dy,-h,split);
         var a=Representative(first);
         if(!first.Finite||!IsFinite(a))return AlgorithmStatus.NotConverged;
         if(tangent)
@@ -525,7 +526,7 @@ internal static class OperationIntersection
             contactAnchor=first;curves[count++]=Line(a,cylinder.Axis);curves[0].Kind=IntersectionCurveKind.Tangent;
             return AlgorithmStatus.Success;
         }
-        var second=GeneratorAnchor(origin,x,y,radius,radial2,dx,dy,height,-split);
+        var second=GeneratorAnchor(origin,x,y,radial2,dx,dy,-h,-split);
         var b=Representative(second);
         if(!second.Finite||!IsFinite(b))return AlgorithmStatus.NotConverged;
         var separation=IntervalVector.Cross(new IntervalVector(a)-new IntervalVector(b),new(cylinder.Axis));
@@ -541,10 +542,10 @@ internal static class OperationIntersection
             =>Vector(point.X.Value.Midpoint,point.Y.Value.Midpoint,point.Z.Value.Midpoint);
 
         static IntervalVector GeneratorAnchor(IntervalVector origin,IntervalVector x,IntervalVector y,
-            IntervalNumber radius,IntervalNumber radial2,IntervalNumber dx,IntervalNumber dy,IntervalNumber height,IntervalNumber split)
+            IntervalNumber radial2,IntervalNumber dx,IntervalNumber dy,IntervalNumber height,IntervalNumber split)
         {
             var radialX=(height*dx-split*dy)/radial2;var radialY=(height*dy+split*dx)/radial2;
-            return origin+(x*radialX+y*radialY)*radius;
+            return origin+(x*radialX+y*radialY);
         }
     }
 }
