@@ -27,6 +27,7 @@ internal static unsafe partial class KernelRuntime
         internal BufferOffset InputCoedge;
         internal BoundaryRootWitnessId Witness;
         internal byte Certified;
+        internal byte ExactPositionAxes;
     }
 
     private static int ClipRegularContactPoints(in RegularBoundaryView input,BufferOffset first,BufferOffset second,
@@ -135,7 +136,7 @@ internal static unsafe partial class KernelRuntime
                 var curveClass=Curves[GetCurveSlotByTag(edge.Curve)].Class;
                 var surfaceSlot=GetSurfaceSlotByTag(surface);var surfaceClass=Surfaces[surfaceSlot].Class;var cylinder=surfaceClass==SurfaceClass.Cylinder;
                 var conicProof=!known&&rollingSurface&&curveClass==CurveClass.Ellipse&&cylinder;
-                var lineProof=false;var planePairLine=false;var planePairCylinder=false;
+                var lineProof=false;var planePairLine=false;var planePairCylinder=false;byte exactPositionAxes=0;
                 if(!known&&certificates.IsEmpty&&curveClass==CurveClass.Line&&cylinder)
                 {
                     lineProof=TryIsolateInteriorLineCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n);
@@ -159,6 +160,7 @@ internal static unsafe partial class KernelRuntime
                         planePairLine?linePoles:default,blendStations);
                     lineProof=isolated==AlgorithmStatus.Success;
                     if(planePairLine&&!lineProof){LastSheetAlgorithmStatus=isolated;return IntersectionError(isolated);}
+                    if(planePairLine)exactPositionAxes=ExactCutLineCoordinateMask(edge.Curve,linePoles);
                 }
                 var conicPlaneProof=!known&&certificates.IsEmpty&&surfaceClass==SurfaceClass.Plane&&(curveClass is CurveClass.Circle or CurveClass.Ellipse)
                     &&TryPrepareSurface(Surfaces[surfaceSlot],out var plane)
@@ -198,6 +200,7 @@ internal static unsafe partial class KernelRuntime
                                 :planePairCylinder?PlanePairCylinderLineCertificate
                                 :lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
                             BlendStation=planePairLine?blendStations[r]:default,
+                            ExactPositionAxes=exactPositionAxes,
                             Witness=cached||conicProof||lineProof||linePlane||conicPlaneProof||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
                     }
                 }

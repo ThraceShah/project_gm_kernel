@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using EdgeTag=System.Int32;
@@ -61,7 +62,7 @@ public unsafe class RollingNetworkTests:IDisposable
         finally{KernelRuntime.MemoryFree(products);}
         Assert.Equal(KernelRuntime.RollingNetworkStage.Publish,KernelRuntime.LastRollingNetworkStage);
         BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body);NativeSupportIncidence(body);
-        if(!reverse)VerifyStationaryShortEnd(body);
+        if(!reverse){VerifyStationaryShortEnd(body);VerifyRollingMeridianLine(body);}
         AssertSavedProbeOutside(body,-1.499999667811987,-2.500000004201637,4.50007614662344); // row 289, ambiguous face ray
         AssertSavedProbeOutside(body,-1.4999999169520075,-2.500000008550392,4.500038073674117); // row 391, false edge ownership
         foreach(var product in trace.Where(t=>t.Stage==KernelRuntime.BoundaryTraceStage.Product))
@@ -346,6 +347,36 @@ public unsafe class RollingNetworkTests:IDisposable
         fixed(EdgeTag* edges=selected)Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(selected.Length,edges,radius,&options,&count,null));
         Assert.Equal(selected.Length,count);
     }
+    private static void VerifyRollingMeridianLine(BodyTag body)
+    {
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var face=record.FirstFaceBody;var surface=0;
+        for(var i=0;i<record.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var tag=KernelRuntime.Faces[face].SurfTag;var item=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(tag)];
+            if(item.Class!=SurfaceClass.BlendSurface)continue;
+            var data=KernelRuntime.BlendedEdgeDataPool[item.DataIndex];
+            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(data.Surface0Tag)].Class!=SurfaceClass.Cylinder
+                ||KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(data.Surface1Tag)].Class!=SurfaceClass.Cylinder)continue;
+            Assert.Equal(0,surface);surface=tag;
+        }
+        Assert.NotEqual(0,surface);
+        foreach(var delta in new[]{0d,-1e-4,1e-4})
+        {
+            var definition=new PK_LINE_sf_s();definition.basis_set.location.coord[0]=-1.5+delta;
+            definition.basis_set.location.coord[1]=-2.11;definition.basis_set.location.coord[2]=4.8;definition.basis_set.axis.coord[2]=1;
+            int line;Assert.Equal(0,KernelRuntime.LineCreate(&definition,&line));
+            try
+            {
+                var status=KernelRuntime.TestRollingMeridianLine(surface,line,0,1.3,out var count,out var native,out var rolling);
+                if(delta!=0){Assert.Equal(AlgorithmStatus.Unsupported,status);continue;}
+                Assert.Equal(AlgorithmStatus.Success,status);Assert.Equal(1,count);
+                Assert.InRange(Math.Abs(native.Midpoint-.187749935930289),0,5e-13);
+                Assert.InRange(Math.Tau*Math.Round(rolling.Midpoint/Math.Tau),rolling.Lower,rolling.Upper);
+            }
+            finally{Assert.Equal(0,KernelRuntime.EntityDelete(1,&line));}
+        }
+    }
+
     private static void VerifyStationaryShortEnd(BodyTag body)
     {
         var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var current=record.FirstEdgeBody;

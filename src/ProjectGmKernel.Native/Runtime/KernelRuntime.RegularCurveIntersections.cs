@@ -141,13 +141,17 @@ internal static unsafe partial class KernelRuntime
     {
         count=0;if(!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(edge.Curve)],out var line))return AlgorithmStatus.Unsupported;
         if(!(edge.End>edge.Start))return AlgorithmStatus.InvalidInput;
-        var extentStatus=RegularSurfaceExtent(surface,out var extent);if(extentStatus!=AlgorithmStatus.Success)return extentStatus;
         Span<BlendSpineInstruction> spine=stackalloc BlendSpineInstruction[1]{new(){Curve=line,ChartCount=2}};
         Span<BlendChartInstruction> domain=stackalloc BlendChartInstruction[2]{new(){Parameter=edge.Start},new(){Parameter=edge.End}};
         var program=new NestedBlendProgram(default,spine,domain);
         var corrected=!linePoles.IsEmpty;
         var path=corrected?new SurfaceIntersectionPatch(new BezierSurfacePatch(linePoles,1,0,new(edge.Start,edge.End,0,1)))
             :new SurfaceIntersectionPatch(program,0,edge.Start,edge.End);
+        var meridian=IsolateRollingMeridianLine(Surfaces[surface],line,path,linePoles,edge.Start,edge.End,output,lineParameters,spatialErrors,
+            blendStations,out count);
+        if(meridian is AlgorithmStatus.Success or AlgorithmStatus.OutputTooSmall)return meridian;
+        count=0;
+        var extentStatus=RegularSurfaceExtent(surface,out var extent);if(extentStatus!=AlgorithmStatus.Success)return extentStatus;
         Span<OperationIntersectionPoint> nominal=stackalloc OperationIntersectionPoint[corrected?output.Length:0];
         Span<ScalarRootIsolation> nominalParameters=stackalloc ScalarRootIsolation[nominal.Length];
         Span<double> nominalErrors=stackalloc double[nominal.Length];

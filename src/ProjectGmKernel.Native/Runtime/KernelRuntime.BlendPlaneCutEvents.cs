@@ -57,12 +57,14 @@ internal static unsafe partial class KernelRuntime
             points,stations,errors,out var count,poles,blendStations);
         LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[3];Span<FiniteCurveSurfaceRoot> roots=stackalloc FiniteCurveSurfaceRoot[3];
+        var exactPositionAxes=ExactCutLineCoordinateMask(cut.Curve,poles);
         for(var i=0;i<count;i++)
         {
             LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetParameter=points[i].First;
             roots[0]=ThirdFiniteRoot(points[i],stations[i],errors[i]);
             anchors[0]=ThirdCutAnchor(input,pair,third,current,i,roots[0]);
-            var sourceRoot=new RegularBoundaryRoot{Curve=cut.Curve,Root=roots[0],ContactSurface=blend,BlendStation=blendStations[i],Certified=PlanePairBlendLineCertificate};
+            var sourceRoot=new RegularBoundaryRoot{Curve=cut.Curve,Root=roots[0],ContactSurface=blend,BlendStation=blendStations[i],
+                Certified=PlanePairBlendLineCertificate,ExactPositionAxes=exactPositionAxes};
             status=FindBlendPlaneJointArc(input,cuts,third,pair.First,pair.Second,b,sourceRoot,out anchors[1],out roots[1]);
             if(status==AlgorithmStatus.Success)
                 status=FindBlendPlaneJointArc(input,cuts,third,pair.Second,pair.First,a,sourceRoot,out anchors[2],out roots[2]);

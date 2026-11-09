@@ -105,9 +105,31 @@ internal static unsafe partial class KernelRuntime
         var status=SpineParameterMap.Interval(spine.Curve,new(root.BlendStation,0),out var center,out _);
         if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         var point=root.Root.Point;var error=root.Root.SpatialError;var radius=new IntervalNumber(-error,error);
-        Span<IntervalNumber> witness=stackalloc IntervalNumber[7]{point.X+radius,point.Y+radius,point.Z+radius,
+        var x=point.X+radius;var y=point.Y+radius;var z=point.Z+radius;
+        if(root.ExactPositionAxes!=0&&TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(root.Curve)],out var line))
+        {
+            if((root.ExactPositionAxes&1)!=0)x=line.Origin.X;
+            if((root.ExactPositionAxes&2)!=0)y=line.Origin.Y;
+            if((root.ExactPositionAxes&4)!=0)z=line.Origin.Z;
+        }
+        Span<IntervalNumber> witness=stackalloc IntervalNumber[7]{x,y,z,
             center.X.Value,center.Y.Value,center.Z.Value,root.BlendStation};
         return LocateCertifiedChart(cut,program,data.ProgramSpine,witness,out parameter,out isolation,point);
+    }
+
+    private static byte ExactCutLineCoordinateMask(CurveTag carrier,ReadOnlySpan<IntervalNumber> poles)
+    {
+        if(poles.Length!=8||!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(carrier)],out var line)||line.Kind!=CurveClass.Line)return 0;
+        byte axes=0;
+        for(var i=0;i<3;i++)
+        {
+            var coordinate=i==0?line.Origin.X:i==1?line.Origin.Y:line.Origin.Z;
+            // Both homogeneous endpoints must satisfy the same exact
+            // coordinate equation, including the correction of the line.
+            if((poles[i]-coordinate*poles[3]).Magnitude==0&&(poles[i+4]-coordinate*poles[7]).Magnitude==0)
+                axes|=(byte)(1<<i);
+        }
+        return axes;
     }
 
     private static int LocateCertifiedLineCut(in SheetCutCurve cut,in RegularBoundaryRoot root,ref double parameter,ref IntervalNumber isolation,out bool handled)
