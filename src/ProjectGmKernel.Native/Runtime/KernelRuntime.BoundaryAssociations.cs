@@ -91,6 +91,24 @@ internal static unsafe partial class KernelRuntime
         if(associated)model.KnownParameter(point,cut,out parameter);
         return error;
     }
+
+    internal static int TestFiniteParallelCutBranch(in KernelVector3 position,CurveTag source,CurveTag cut,
+        SurfTag first,SurfTag second,SurfTag equation,double limit,out bool associated,out double station)
+    {
+        associated=false;station=double.NaN;
+        var model=new SheetArrangement{Points=stackalloc KernelVector3[1],OriginalVertices=stackalloc VertexSlot[1],
+            Parameters=stackalloc BoundaryParameter[2],CarrierSurfaces=stackalloc BoundaryCarrierSurface[4],Tolerance=OperationIntersection.DistanceTolerance};
+        var error=model.AddPoint(position,-1,out var point,requireProof:true);if(error!=0)return error;
+        error=model.AssociateParameter(point,source,.5,.5,.5,equation,witness:1);if(error!=0)return error;
+        error=AssociateBoundaryCarrierSurface(ref model,source,0,1,first,inputEdge:0);if(error!=0)return error;
+        error=AssociateBoundaryCarrierSurface(ref model,source,0,1,second,inputEdge:0);if(error!=0)return error;
+        error=AssociateBoundaryCarrierSurface(ref model,cut,0,limit,first);if(error!=0)return error;
+        error=AssociateBoundaryCarrierSurface(ref model,cut,0,limit,second);if(error!=0)return error;
+        error=AssociateCompatibleBoundaryEvent(ref model,point,cut,0,limit,out associated);if(error!=0||!associated)return error;
+        if(!model.KnownBoundaryParameter(point,cut,out var anchor)||!HasBoundedStation(anchor)||anchor.Lower!=anchor.Upper)
+            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        station=anchor.Parameter;return 0;
+    }
 #endif
 
     private static int ReadRollingBoundaryAssociations(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,ref SheetArrangement model)
@@ -150,6 +168,7 @@ internal static unsafe partial class KernelRuntime
         double first,double last,out bool associated)
     {
         associated=false;SurfTag firstSupport=0;var independent=false;
+        AnalyticSurface plane=default,cylinder=default;
         ref readonly var record=ref Curves[GetCurveSlotByTag(curve)];
         if(record.Class==CurveClass.ICurve)
         {
@@ -161,9 +180,19 @@ internal static unsafe partial class KernelRuntime
         {
             if(!BoundaryEventOnSurface(ref model,endpoint,use.Surface))return 0;
             if(firstSupport==0)firstSupport=use.Surface;else if(!SameSheetSupport(firstSupport,use.Surface))independent=true;
+            if(record.Class==CurveClass.Line&&TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(use.Surface)],out var analytic))
+            {
+                if(analytic.Kind==SurfaceClass.Plane)plane=analytic;
+                if(analytic.Kind==SurfaceClass.Cylinder)cylinder=analytic;
+            }
         }
         if(!independent)return 0;
         LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=curve;LastSheetParameter=endpoint;
+        if(plane.Kind==SurfaceClass.Plane&&cylinder.Kind==SurfaceClass.Cylinder&&TryReadExplicitSpineCurve(record,out var line))
+        {
+            var error=AssociateExactCylinderPlaneBranch(ref model,endpoint,curve,line,plane,cylinder,first,last,out var handled,out associated);
+            if(error!=0||handled)return error;
+        }
         var point=model.Points[endpoint];var tolerance=model.VertexPrecisions.IsEmpty?model.Tolerance:Math.Max(model.Tolerance,model.VertexPrecisions[endpoint]);
         var px=new IntervalNumber(point.X)+new IntervalNumber(-tolerance,tolerance);
         var py=new IntervalNumber(point.Y)+new IntervalNumber(-tolerance,tolerance);
@@ -214,5 +243,48 @@ internal static unsafe partial class KernelRuntime
             if(OperationIntersection.Norm(Sub(point,value[0]))>tolerance)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
         var added=model.AssociateParameter(endpoint,curve,parameter);if(added!=0)return added;associated=true;return 0;
+    }
+
+    private static int AssociateExactCylinderPlaneBranch(ref SheetArrangement model,BoundaryEventId endpoint,CurveTag curve,
+        in ParametricSpineCurve target,in AnalyticSurface plane,in AnalyticSurface cylinder,double first,double last,
+        out bool handled,out bool associated)
+    {
+        handled=associated=false;
+        var axis=new IntervalVector(cylinder.Axis);
+        if((IntervalVector.Dot(axis,axis).Value-1).Magnitude!=0||!ExplicitCurveExactlyOnPlane(target,plane)
+            ||!TryCertifiedGeneratorSide(new(){Curve=curve,First=first,Last=last},target,cylinder,plane,out _,out var targetPositive))return 0;
+        var direction=new IntervalVector(target.First);var length=IntervalVector.Dot(direction,direction).Value;
+        if(!(length.Lower>0))return 0;
+        var station=UncertifiedStation;SurfTag equation=0;var different=false;
+        foreach(ref readonly var anchor in model.Parameters[..model.ParameterCount])
+        {
+            if(anchor.Event!=endpoint||anchor.Witness==0||anchor.Surface==0||anchor.Carrier==curve)continue;
+            var slot=GetCurveSlotByTag(anchor.Carrier);if(slot<0)continue;
+            ref readonly var record=ref Curves[slot];
+            if(record.Header.Generation!=anchor.Generation||record.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(record,out var source)
+                ||!ExplicitCurveExactlyOnPlane(source,plane)
+                ||!TryCertifiedGeneratorSide(new(){Curve=anchor.Carrier,First=anchor.Lower,Last=anchor.Upper},source,cylinder,plane,
+                    out _,out var sourcePositive))continue;
+            // Both native lines have a certified branch of the same
+            // cylinder/plane equation. Opposite transverse signs identify
+            // distinct branches even inside the spatial candidate radius.
+            if(sourcePositive!=targetPositive){different=true;continue;}
+            // For the same sign transfer the witnessed station only when
+            // the represented lines themselves agree exactly.
+            var offset=IntervalVector.Cross(new IntervalVector(source.Origin)-new IntervalVector(target.Origin),direction);
+            if(offset.X.Value.Magnitude!=0||offset.Y.Value.Magnitude!=0||offset.Z.Value.Magnitude!=0)continue;
+            var next=ProjectExplicitRoot(source,target.Origin,direction,new(anchor.Lower,anchor.Upper))/length;
+            if(!next.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            station=equation==0?next:new(Math.Max(station.Lower,next.Lower),Math.Min(station.Upper,next.Upper));
+            if(!station.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            equation=anchor.Surface;
+        }
+        handled=different||equation!=0;
+        if(different)return equation==0?0:ParasolidConstants.PK_ERROR_cant_do_intersect;
+        if(equation==0||station.Upper<first||station.Lower>last)return 0;
+        if(station.Lower<first||station.Upper>last)
+            return UnresolvedBoundaryStation(curve,endpoint,station.Midpoint,station,first,new(first,last));
+        var error=model.AssociateParameter(endpoint,curve,station.Midpoint,station.Lower,station.Upper,equation);
+        associated=error==0;return error;
     }
 }

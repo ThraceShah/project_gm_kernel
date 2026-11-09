@@ -759,6 +759,32 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(12,false,1,false)] [InlineData(12,true,1,true)] [InlineData(17,false,1,false)]
+    [InlineData(17,true,1,true)] [InlineData(17,true,.125,false)]
+    public void SharedCylinderPlaneSupportsDoNotIdentifyTwoCloseBranches(int exponent,bool sameBranch,double limit,bool expected)
+    {
+        // Exact dyadic Pythagorean triple: both generators really lie on
+        // the same plane and cylinder, with separation 2^-28 < 1e-8.
+        var k=1L<<exponent;var scale=Math.ScaleB(1,-30-exponent);
+        var x=(k*k-1)*scale;var y=2*k*scale;var radius=(k*k+1)*scale;
+        var cylinder=new PK_CYL_sf_s{radius=radius};cylinder.basis_set.axis.coord[2]=1;cylinder.basis_set.ref_direction.coord[0]=1;
+        SurfTag support;Assert.Equal(0,KernelRuntime.CylCreate(&cylinder,&support));
+        var plane=new PK_PLANE_sf_s();plane.basis_set.location.coord[0]=x;
+        plane.basis_set.axis.coord[0]=1;plane.basis_set.ref_direction.coord[1]=1;
+        SurfTag section;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&section));
+        plane=default;plane.basis_set.location.coord[2]=.5;plane.basis_set.axis.coord[2]=1;plane.basis_set.ref_direction.coord[0]=1;
+        SurfTag equation;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&equation));
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[2]=1;line.basis_set.location.coord[0]=x;line.basis_set.location.coord[1]=y;
+        CurveTag source,cut;Assert.Equal(0,KernelRuntime.LineCreate(&line,&source));
+        line.basis_set.axis.coord[2]=-1;line.basis_set.location.coord[2]=.75;
+        if(!sameBranch)line.basis_set.location.coord[1]=-y;
+        Assert.Equal(0,KernelRuntime.LineCreate(&line,&cut));Assert.NotEqual(source,cut);
+        Assert.Equal(0,KernelRuntime.TestFiniteParallelCutBranch(new(){X=x,Y=y,Z=.5},source,cut,support,section,equation,limit,out var associated,out var station));
+        Assert.Equal(expected,associated);
+        if(expected)Assert.Equal(.25,station);
+    }
+
+    [Theory]
     [InlineData(false)] [InlineData(true)]
     public void RepeatedDiscoveryOfOneIsolatedRootCanJoinButAnotherBranchOrOccurrenceCannot(bool separateOccurrence)
     {
