@@ -558,7 +558,13 @@ internal static unsafe partial class KernelRuntime
         var basis=new PK_AXIS2_sf_s();WriteVector(&basis.location,branch.Origin);
         basis.axis.coord[0]=branch.Axis.X;basis.axis.coord[1]=branch.Axis.Y;basis.axis.coord[2]=branch.Axis.Z;
         basis.ref_direction.coord[0]=branch.Reference.X;basis.ref_direction.coord[1]=branch.Reference.Y;basis.ref_direction.coord[2]=branch.Reference.Z;
-        if(branch.Class==CurveClass.Circle){var sf=new PK_CIRCLE_sf_s{basis_set=basis,radius=branch.Radius};return CircleCreate(&sf,tag);}
+        if(branch.Class==CurveClass.Circle)
+        {
+            var sf=new PK_CIRCLE_sf_s{basis_set=basis,radius=branch.Radius};
+            var error=CircleCreate(&sf,tag);
+            if(error==0&&branch.Sense!=0)Curves[GetCurveSlotByTag(*tag)].Sense=branch.Sense;
+            return error;
+        }
         var ellipse=new PK_ELLIPSE_sf_s{basis_set=basis,R1=branch.Radius,R2=branch.Minor};return EllipseCreate(&ellipse,tag);
     }
 

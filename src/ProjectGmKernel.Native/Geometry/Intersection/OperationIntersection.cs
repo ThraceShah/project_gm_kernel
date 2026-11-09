@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -19,6 +20,7 @@ internal struct OperationIntersectionPoint
 internal unsafe struct OperationIntersectionBranch
 {
     internal CurveClass Class;
+    internal KernelSense Sense;
     internal KernelVector3 Origin, Axis, Reference;
     internal double Radius, Minor, Start, End;
     internal IntersectionCurveKind Kind;
@@ -340,8 +342,8 @@ internal static class OperationIntersection
         if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Cylinder)return SphereCylinder(a,b,curves,out nc);
         if(b.Kind==SurfaceClass.Sphere&&a.Kind==SurfaceClass.Cylinder)return SphereCylinder(b,a,curves,out nc);
         if(a.Kind==SurfaceClass.Torus&&b.Kind==SurfaceClass.Torus)return CoaxialTori(a,b,curves,out nc);
-        if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(a,b,curves,out nc);
-        if(b.Kind==SurfaceClass.Sphere&&a.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(b,a,curves,out nc);
+        if(a.Kind==SurfaceClass.Sphere&&b.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(a,b,curves,out nc,reverse:true);
+        if(b.Kind==SurfaceClass.Sphere&&a.Kind==SurfaceClass.Torus)return CoaxialSphereTorus(b,a,curves,out nc,reverse:false);
         return AlgorithmStatus.Unsupported;
     }
 
@@ -381,13 +383,19 @@ internal static class OperationIntersection
     }
 
     private static AlgorithmStatus CoaxialSphereTorus(in AnalyticSurface sphere,in AnalyticSurface torus,
-        Span<OperationIntersectionBranch> curves,out BufferCount count)
+        Span<OperationIntersectionBranch> curves,out BufferCount count,bool reverse)
     {
         count=0;
         if(!(torus.Radius>torus.Secondary))return AlgorithmStatus.Unsupported;
         var offset=Sub(sphere.Origin,torus.Origin);var z=Dot(offset,torus.Axis);
         if(Norm(Sub(offset,Scale(torus.Axis,z)))!=0)return AlgorithmStatus.Unsupported;
-        return RevolvedCirclePair(torus,-torus.Radius,z,sphere.Radius,curves,out count);
+        var status=RevolvedCirclePair(torus,-torus.Radius,z,sphere.Radius,curves,out count);
+        // At tangency the normal cross product vanishes. The axial provider
+        // uses the torus chart for torus-first; swapping the supports reverses
+        // the traversal without changing the carrier or its native bounds.
+        if(status==AlgorithmStatus.Success&&count==1&&curves[0].Kind==IntersectionCurveKind.Tangent)
+            curves[0].Sense=reverse?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+        return status;
     }
 
     private static AlgorithmStatus CoaxialTori(in AnalyticSurface a,in AnalyticSurface b,

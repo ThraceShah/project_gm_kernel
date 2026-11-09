@@ -74,7 +74,10 @@ try
             SS("general-sphere-torus",Torus(1,.4),Sphere(.2,0,0,1));
             SS("general-eccentric-torus-cylinder",Torus(2,.6),Cylinder(.5,2));
             SS("general-translated-tori",Torus(2,.6),Torus(2,.6,.2));
-            SS("coaxial-sphere-torus-tangent-circle",Sphere(0,0,0,2),Torus(3,1));
+            SS("coaxial-sphere-torus-tangent-circle",Sphere(0,0,0,2),Torus(3,1),circleDirection:true);
+            SS("coaxial-torus-sphere-tangent-circle",Torus(3,1),Sphere(0,0,0,2),circleDirection:true);
+            SS("coaxial-offset-sphere-torus-tangent-circle",Sphere(0,0,4,6),Torus(3,1,nz:-1),circleDirection:true);
+            SS("coaxial-offset-torus-sphere-tangent-circle",Torus(3,1,nz:-1),Sphere(0,0,4,6),circleDirection:true);
             SS("tensor-quadratic-crossing",TensorPatch(1,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-tangent-isocurve",TensorPatch(2,false,false),Plane(0,0,0,0,0,1));
             SS("tensor-disjoint",TensorPatch(3,false,false),Plane(0,0,0,0,0,1));
@@ -574,8 +577,8 @@ static unsafe GeometryPair Cylinder(double radius,double x=0,double y=0,double z
 {var sf=new M.PK_CYL_sf_s{basis_set=Axis(x,y,z,nx,ny,nz,nx==1?0:1,nx==1?1:0,0),radius=radius};int m=0,p=0;Check(KernelRuntime.CylCreate(&sf,&m),"self cylinder");Check(PK_CYL_create((PK_CYL_sf_t*)&sf,&p),"PK cylinder");return new(m,p);}
 static unsafe GeometryPair Cone(double radius,double angle)
 {var sf=new M.PK_CONE_sf_s{basis_set=Axis(),radius=radius,semi_angle=angle};int m=0,p=0;Check(KernelRuntime.ConeCreate(&sf,&m),"self cone");Check(PK_CONE_create((PK_CONE_sf_t*)&sf,&p),"PK cone");return new(m,p);}
-static unsafe GeometryPair Torus(double a,double b,double z=0)
-{var sf=new M.PK_TORUS_sf_s{basis_set=Axis(0,0,z),major_radius=a,minor_radius=b};int m=0,p=0;Check(KernelRuntime.TorusCreate(&sf,&m),"self torus");Check(PK_TORUS_create((PK_TORUS_sf_t*)&sf,&p),"PK torus");return new(m,p);}
+static unsafe GeometryPair Torus(double a,double b,double z=0,double nz=1)
+{var sf=new M.PK_TORUS_sf_s{basis_set=Axis(0,0,z,nz:nz),major_radius=a,minor_radius=b};int m=0,p=0;Check(KernelRuntime.TorusCreate(&sf,&m),"self torus");Check(PK_TORUS_create((PK_TORUS_sf_t*)&sf,&p),"PK torus");return new(m,p);}
 static unsafe GeometryPair Cubic(bool rational)
 {
     var dim=rational?4:3;double* vertices=stackalloc double[4*dim];double* zs=stackalloc double[4]{-.08,.14,-.14,.08};
