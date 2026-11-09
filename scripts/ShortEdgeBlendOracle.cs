@@ -242,7 +242,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(savedProbes)SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,requireNativeFaceDomains:requireNativeFaceDomains);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}

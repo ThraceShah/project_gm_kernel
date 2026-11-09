@@ -317,20 +317,38 @@ public unsafe class IntersectionOperationTests:IDisposable
             var seen=0;
             for(var i=0;i<result.CurveCount;i++)
             {
-                var lo=result.Intervals[i].value[0];var hi=result.Intervals[i].value[1];var a=lo;var b=hi;
-                if(!twoSpans)
-                {
-                    var data=PairedPlaneChart(result.Curves[i],false);
-                    var uv=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(data.UvValueBlock),data.UvValueCount);
-                    a=uv[transpose?1:0];b=uv[4*(data.ChartCount-1)+(transpose?1:0)];
-                    if(a>b)(a,b)=(b,a);
-                }
+                var lo=result.Intervals[i].value[0];var hi=result.Intervals[i].value[1];
+                var data=PairedPlaneChart(result.Curves[i],false);
+                var uv=new ReadOnlySpan<double>(KernelRuntime.DereferenceBlock(data.UvValueBlock),data.UvValueCount);
+                var axis=transpose?1:0;var a=uv[axis];var b=uv[4*(data.ChartCount-1)+axis];
+                if(a>b)(a,b)=(b,a);
+                if(twoSpans)for(var station=0;station<data.ChartCount;station++)
+                    Assert.True(a<1?uv[4*station+axis]<1:uv[4*station+axis]>1);
                 var index=0;while(index<starts.Length&&Math.Abs(starts[index]-a)>2e-9)index++;
                 Assert.True(index<starts.Length&&(seen&(1<<index))==0);
                 seen|=1<<index;Near(starts[index],a);Near(ends[index],b);
                 for(var sample=0;sample<=10;sample++)CheckPaired(surface,plane,result.Curves[i],lo+(hi-lo)*sample/10);
             }
         }
+    }
+
+    [Fact]
+    public void RuledPlaneSectionAtNonSmoothJoinRetainsTheExactSpanCurves()
+    {
+        var surface=CubicRuled(true,true);var plane=Plane(0,0,.25,0,0,1);
+        using var result=SS(surface,plane);
+        Assert.Equal(2,result.CurveCount);Assert.Equal(0,result.PointCount);
+        var spans=0;
+        for(var i=0;i<result.CurveCount;i++)
+        {
+            Assert.Equal(CurveClass.BCurve,KernelRuntime.GetCurveByTag(result.Curves[i]).Class);
+            var lo=result.Intervals[i].value[0];var hi=result.Intervals[i].value[1];
+            Assert.True(lo==0&&hi==1||lo==1&&hi==2);
+            spans|=lo==0?1:2;
+            var point=new PK_VECTOR_s();Assert.Equal(0,KernelRuntime.CurveEval(result.Curves[i],1,0,&point));
+            Near(1,point.coord[0]);Near(.17,point.coord[1]);Near(.25,point.coord[2]);
+        }
+        Assert.Equal(3,spans);
     }
 
     private static ICurveData PairedPlaneChart(int curve,bool planeFirst)

@@ -20,7 +20,8 @@ internal static unsafe partial class KernelRuntime
     [ThreadStatic] internal static BufferCount LastGeneralIntersectionNodes,LastGeneralIntersectionSegments;
 
     private static AlgorithmStatus DiscoverGeneralSurfaceIntersections(SurfaceSlot first, SurfaceSlot second,
-        Span<SurfaceIntersectionNode> nodes, out BufferCount nn, Span<SurfaceIntersectionSegment> segments, out BufferCount ne,PK_SURF_intersect_surf_o_s* options=null)
+        Span<SurfaceIntersectionNode> nodes, out BufferCount nn, Span<SurfaceIntersectionSegment> segments, out BufferCount ne,
+        PK_SURF_intersect_surf_o_s* options=null,bool separatePlaneSections=false)
     {
         nn = ne = 0;
         if(Surfaces[first].Class==SurfaceClass.BlendSurface||Surfaces[second].Class==SurfaceClass.BlendSurface)
@@ -34,7 +35,10 @@ internal static unsafe partial class KernelRuntime
         var bv = b.Class == SurfaceClass.BSurface ? GetBSurfaceView(BSurfaceDataStore[b.DataIndex]) : default;
         var analytic = TryPrepareSurface(b, out var support);
         if (!analytic && b.Class != SurfaceClass.BSurface) return AlgorithmStatus.Unsupported;
-        if (av.UDegree > 16 || av.VDegree > 16 || !GeneralSurfaceContinuity(av)
+        // The paired plane publication path already excluded the plane
+        // from every internal join before sending its algebraic witnesses.
+        if (av.UDegree > 16 || av.VDegree > 16
+            || !GeneralSurfaceContinuity(av)&&!(separatePlaneSections&&analytic&&support.Kind==SurfaceClass.Plane)
             || !analytic && !GeneralSurfaceContinuity(bv)) return AlgorithmStatus.Unsupported;
         var extent = GeneralSurfaceExtent(av);
         if (analytic && !AnalyticBezierPatches.HasDomain(support, extent)) return AlgorithmStatus.Success;
@@ -303,7 +307,7 @@ internal static unsafe partial class KernelRuntime
             var ordered = ModelSpan<BufferOffset>(bytes, ref cursor, GeneralIntersectionNodeLimit + GeneralIntersectionBranchLimit);
             var branches = ModelSpan<GeneralIntersectionBranch>(bytes, ref cursor, GeneralIntersectionBranchLimit);
             LastGeneralIntersectionStage=GeneralIntersectionStage.Discovery;
-            var status = DiscoverGeneralSurfaceIntersections(first, second, nodes, out var nn, edges, out var ne,options);
+            var status = DiscoverGeneralSurfaceIntersections(first, second, nodes, out var nn, edges, out var ne,options,!planeSections.IsEmpty);
             LastGeneralIntersectionStatus=status;LastGeneralIntersectionNodes=nn;LastGeneralIntersectionSegments=ne;
             if (status != AlgorithmStatus.Success)return IntersectionError(status);
             // L limits describe an artificial chart extent. An open pair

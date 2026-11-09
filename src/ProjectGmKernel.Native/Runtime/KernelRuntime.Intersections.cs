@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -510,8 +511,8 @@ internal static unsafe partial class KernelRuntime
         var plane=spline==first?second:first;
         if(Surfaces[spline].Class!=SurfaceClass.BSurface||Surfaces[plane].Class!=SurfaceClass.Plane)return false;
         var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[spline].DataIndex]);
-        // The regular chart provider here does not cross span junctions.
-        if(view.UVertexCount!=view.UDegree+1||view.VVertexCount!=view.VDegree+1)return false;
+        if((view.UVertexCount!=view.UDegree+1||view.VVertexCount!=view.VDegree+1)
+            &&(!TryPrepareSurface(Surfaces[plane],out var support)||!PlaneSeparatesSplineJoins(view,support)))return false;
         Span<KernelVector3> ends=stackalloc KernelVector3[2*sections.Length];var n=0;
         var minimum=IntervalNumber.Square(new(OperationIntersection.DistanceTolerance)).Upper;
         foreach(ref readonly var section in sections)
@@ -532,6 +533,45 @@ internal static unsafe partial class KernelRuntime
             }
         }
         return true;
+    }
+
+    private static bool PlaneSeparatesSplineJoins(in BSurfaceView surface,in AnalyticSurface plane)
+    {
+        if(surface.UPeriodic||surface.VPeriodic||surface.UDegree>16||surface.VDegree>16)return false;
+        var p=surface.UDegree;var q=surface.VDegree;
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
+        for(var u=p;u<surface.UVertexCount;u++)for(var v=q;v<surface.VVertexCount;v++)
+        {
+            var u0=surface.UKnots[u];var u1=surface.UKnots[u+1];
+            var v0=surface.VKnots[v];var v1=surface.VKnots[v+1];
+            if(!(u1>u0&&v1>v0))continue;
+            if(BezierSurfaceBounds.Extract(surface,u,v,poles)!=AlgorithmStatus.Success)return false;
+            // Certify each incident side of every interior knot. Positive
+            // weights turn a strict Bernstein numerator sign into exclusion
+            // over the entire transverse knot interval, including corners.
+            var row=q+1;
+            if(u0>surface.UStart&&!SideExcludesPlane(poles,plane,0,1,q)
+                ||u1<surface.UEnd&&!SideExcludesPlane(poles,plane,p*row,1,q)
+                ||v0>surface.VStart&&!SideExcludesPlane(poles,plane,0,row,p)
+                ||v1<surface.VEnd&&!SideExcludesPlane(poles,plane,q,row,p))return false;
+        }
+        return true;
+    }
+
+    private static bool SideExcludesPlane(ReadOnlySpan<IntervalNumber> poles,in AnalyticSurface plane,
+        ControlPointIndex first,BufferOffset stride,SplineDegree degree)
+    {
+        var positive=true;var negative=true;
+        for(var i=0;i<=degree;i++)
+        {
+            var at=4*(first+i*stride);var w=poles[at+3];
+            if(!(w.Lower>0))return false;
+            var f=(poles[at]-w*plane.Origin.X)*plane.Axis.X+(poles[at+1]-w*plane.Origin.Y)*plane.Axis.Y
+                +(poles[at+2]-w*plane.Origin.Z)*plane.Axis.Z;
+            if(!f.Finite)return false;
+            positive&=f.Lower>0;negative&=f.Upper<0;
+        }
+        return positive||negative;
     }
 
     private static KernelVector3 PlaneSectionEndpoint(in OperationIntersectionBranch section,bool last)

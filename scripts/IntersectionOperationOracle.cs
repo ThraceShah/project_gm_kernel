@@ -62,6 +62,8 @@ try
             SS("cubic-ruled-two-components",CubicRuled(false,false),Plane(0,0,0,0,0,1));
             SS("rational-cubic-ruled-two-components",CubicRuled(true,false),Plane(0,0,0,0,0,1));
             SS("rational-multiple-spans-four-components",CubicRuled(true,true),Plane(0,0,0,0,0,1));
+            SS("plane-rational-multiple-spans-four-components",Plane(0,0,0,0,0,1),CubicRuled(true,true));
+            SS("rational-multiple-spans-shifted-plane",CubicRuled(true,true),Plane(0,0,1.0/256,0,0,1));
             SS("transposed-ruled-two-components",CubicRuled(false,false,true),Plane(0,0,0,0,0,1));
             SS("transposed-rational-ruled-two-components",CubicRuled(true,false,true),Plane(0,0,0,0,0,1));
             TransposedRuledBoundary();
