@@ -610,6 +610,8 @@ internal static unsafe partial class KernelRuntime
                 if(error!=0)return error;if(!insideB)continue;
                 if(boundaryA&&boundaryB)continue;
                 var cut=curve;cut.First=lo;cut.Last=hi;cut.Closed=closed?(byte)1:(byte)0;
+                if(!sourceFaces.IsEmpty&&(boundaryA||boundaryB)&&!wrap&&!closed)
+                    cut.InheritedSourceEdge=FiniteLineBoundarySource(input,boundaryA?first:second,cut)+1;
                 WrappedCutCharts wrappedCharts=default;
                 if(wrap)
                 {

@@ -44,6 +44,73 @@ internal static unsafe partial class KernelRuntime
         return TryExactFiniteLineRoots(la,a.Start,a.End,lb,b.Start,b.End,roots,out count);
     }
 
+    private static BufferOffset FiniteLineBoundarySource(in RegularBoundaryView input,BufferOffset face,in SheetCutCurve cut)
+    {
+        if(Curves[GetCurveSlotByTag(cut.Curve)].Class!=CurveClass.Line)return -1;
+        var domain=input.Faces[face];BufferOffset source=-1;
+        for(var l=0;l<domain.LoopCount;l++)
+        {
+            var loop=input.Loops[domain.FirstLoop+l];
+            foreach(var use in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+            {
+                var edge=input.Edges[use.Edge];
+                if(!BoundCoincidentLineStations(cut.Curve,edge.Curve,cut.First,cut.Last,out var first,out var last,out _)
+                    ||Math.Min(first.Lower,last.Lower)<edge.Start||Math.Max(first.Upper,last.Upper)>edge.End)continue;
+                if(source>=0&&source!=use.Edge)return -1;
+                source=use.Edge;
+            }
+        }
+        return source;
+    }
+
+    private static bool BoundCoincidentLineStations(CurveTag cut,CurveTag source,double first,double last,
+        out IntervalNumber firstOnSource,out IntervalNumber lastOnSource,out bool increasing)
+    {
+        firstOnSource=lastOnSource=default;increasing=false;
+        var a=Curves[GetCurveSlotByTag(cut)];var b=Curves[GetCurveSlotByTag(source)];
+        if(a.Class!=CurveClass.Line||b.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(a,out var from)||!TryReadExplicitSpineCurve(b,out var to)
+            ||!ExactParallelSupportAxes(from.First,to.First))return false;
+        var axis=to.First;
+        if(!ExactProjectionEqual(from.Origin,to.Origin,Vector(0,axis.Z,-axis.Y))
+            ||!ExactProjectionEqual(from.Origin,to.Origin,Vector(-axis.Z,0,axis.X))
+            ||!ExactProjectionEqual(from.Origin,to.Origin,Vector(axis.Y,-axis.X,0)))return false;
+        // One nonzero component gives an exact affine station relation;
+        // its two representatives need not be equal in floating point.
+        var x=Math.Abs(axis.X);var y=Math.Abs(axis.Y);var z=Math.Abs(axis.Z);
+        var coordinate=x>=y&&x>=z?0:y>=z?1:2;
+        var d=Component(axis,coordinate);var q=Component(from.First,coordinate);
+        if(d==0||q==0)return false;
+        var shift=new IntervalNumber(Component(from.Origin,coordinate))-Component(to.Origin,coordinate);
+        firstOnSource=At(first);lastOnSource=At(last);
+        increasing=(d>0)==(q>0);
+        return firstOnSource.Finite&&lastOnSource.Finite;
+
+        IntervalNumber At(double t)
+        {
+            var numerator=shift+new IntervalNumber(q)*t;
+            return d==-1?-numerator:numerator/d;
+        }
+        static double Component(in KernelVector3 p,BufferOffset i)=>i==0?p.X:i==1?p.Y:p.Z;
+    }
+
+    private static bool FindInheritedLineFragment(in SheetCutCurve cut,in SheetSourceEdge source,ReadOnlySpan<ModelingEdge> edges,
+        double first,double last,BoundaryEventId lower,BoundaryEventId upper,out BufferOffset fragment)
+    {
+        fragment=-1;if(lower<0||upper<0||lower==upper)return false;
+        for(var i=source.First;i<source.First+source.Count;i++)
+        {
+            ref readonly var edge=ref edges[i];
+            if(edge.StartVertex!=lower&&edge.EndVertex!=lower||edge.StartVertex!=upper&&edge.EndVertex!=upper)continue;
+            if(!BoundCoincidentLineStations(cut.Curve,edge.Curve,first,last,out var a,out var b,out var increasing))continue;
+            var same=increasing==(LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0);
+            var lo=increasing?edge.Start:edge.End;var hi=increasing?edge.End:edge.Start;
+            if(lower!=(same?edge.StartVertex:edge.EndVertex)||upper!=(same?edge.EndVertex:edge.StartVertex)
+                ||lo<a.Lower||lo>a.Upper||hi<b.Lower||hi>b.Upper)continue;
+            if(fragment>=0)return false;fragment=i;
+        }
+        return fragment>=0;
+    }
+
     private static bool TryExactFiniteLineRoots(in ParametricSpineCurve la,double aStart,double aEnd,
         in ParametricSpineCurve lb,double bStart,double bEnd,Span<OperationIntersectionPoint> roots,out BufferCount count)
     {
@@ -326,6 +393,13 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
+    internal static bool TestInheritedLineFragment(CurveTag cut,CurveTag source,double first,double last,
+        double sourceFirst,double sourceLast,bool sameEnd)
+    {
+        Span<ModelingEdge> edges=stackalloc ModelingEdge[1]{new(){Curve=source,Start=sourceFirst,End=sourceLast,StartVertex=1,EndVertex=0}};
+        return FindInheritedLineFragment(new(){Curve=cut},new(){Count=1},edges,first,last,0,sameEnd?1:2,out _);
+    }
+
     internal static bool TestSameCertifiedLineCylinderPlaneRoot(CurveTag curve,SurfTag cylinder,SurfTag plane,out bool overlapping)
     {
         overlapping=false;

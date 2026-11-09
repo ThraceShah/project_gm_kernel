@@ -20,6 +20,8 @@ internal static unsafe partial class KernelRuntime
         internal BoundaryEventId LowerEvent;
         internal double First, Last;
         internal BoundaryEventId UpperEvent;
+        // One-based input edge when a clipped line follows its finite use.
+        internal BufferOffset InheritedSourceEdge;
         internal byte Closed;
         internal byte KeepImprint;
         internal byte NativeLocatorEnds;

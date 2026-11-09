@@ -537,8 +537,31 @@ internal static unsafe partial class KernelRuntime
             {
                 var closed=cut.Closed!=0&&n==0;var j=n==0?0:(i+1)%n;var wrap=cut.Closed!=0&&n>0&&j==0;
                 var first=closed?cut.First:parameters[i];var last=closed?cut.Last:parameters[j];
-                var span=wrap?cut.Last-first+last-cut.First:last-first;if(!(span>(model.RequireBoundaryAssociations||certified?0:1e-12)))continue;
+                var span=wrap?cut.Last-first+last-cut.First:last-first;
+                if(!(span>(model.RequireBoundaryAssociations||certified||cut.InheritedSourceEdge!=0?0:1e-12)))continue;
                 if(certified&&Math.BitIncrement(first)>=last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                if(cut.InheritedSourceEdge!=0)
+                {
+                    var source=cut.InheritedSourceEdge-1;
+                    if(source>=sources.Length||sources[source].InputEdge!=source||closed||wrap
+                        ||!FindInheritedLineFragment(cut,sources[source],model.Edges[..model.NE],first,last,endpoints[i],endpoints[j],out var inherited))
+                    {
+                        LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;LastSheetCurve=cut.Curve;LastSheetParameter=first;
+                        return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    }
+                    // The cut has already been clipped on both faces. The
+                    // source face has its original use; only the other
+                    // face needs the two directions to form its cells.
+                    var present=false;for(var h=0;h<nh;h++)present|=halfedges[h].Edge==inherited;
+                    if(present)continue;
+                    ref readonly var inheritedEdge=ref model.Edges[inherited];
+                    TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CarrierReuse,Source=face,Surface=surface,
+                        Curve=cut.Curve,ProductCurve=inheritedEdge.Curve,SourceEdge=sources[source].Source,Edge=inherited,
+                        StartEvent=endpoints[i],EndEvent=endpoints[j],First=inheritedEdge.Start,Last=inheritedEdge.End});
+                    var added=AddSheetHalfedge(surface,ref model,inherited,1,halfedges,ref nh,face,faceSense:sense);if(added!=0)return added;
+                    added=AddSheetHalfedge(surface,ref model,inherited,0,halfedges,ref nh,face,faceSense:sense);if(added!=0)return added;
+                    continue;
+                }
                 var witnessFirst=!closed&&bounds[i].Finite?bounds[i].Upper:first;
                 var witnessLast=!closed&&bounds[j].Finite?bounds[j].Lower:last;
                 var inside=false;var located=false;

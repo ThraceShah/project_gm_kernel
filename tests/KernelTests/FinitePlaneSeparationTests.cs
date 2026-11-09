@@ -696,6 +696,21 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         if(count!=0){Assert.Equal(end,lastA);Assert.Equal(2-end,lastB);}
     }
 
+    [Fact]
+    public void InheritedLineUsesTheOriginalFragmentAcrossNonrepresentableGaugeTransfer()
+    {
+        var a=new PK_LINE_sf_s();a.basis_set.axis.coord[0]=1;
+        var b=new PK_LINE_sf_s();b.basis_set.location.coord[0]=2.5;b.basis_set.axis.coord[0]=-1;
+        CurveTag cut,source;Assert.Equal(0,KernelRuntime.LineCreate(&a,&cut));Assert.Equal(0,KernelRuntime.LineCreate(&b,&source));
+        const double first=-2,last=-1.9499999999999997;
+        const double nativeFirst=4.449999999999999,nativeLast=4.5;
+        Assert.True(KernelRuntime.TestInheritedLineFragment(cut,source,first,last,nativeFirst,nativeLast,true));
+        Assert.False(KernelRuntime.TestInheritedLineFragment(cut,source,first,last,nativeFirst,nativeLast,false));
+        Assert.False(KernelRuntime.TestInheritedLineFragment(cut,source,first,last,nativeFirst-1e-12,nativeLast,true));
+        b.basis_set.location.coord[1]=1e-13;CurveTag displaced;Assert.Equal(0,KernelRuntime.LineCreate(&b,&displaced));
+        Assert.False(KernelRuntime.TestInheritedLineFragment(cut,displaced,first,last,nativeFirst,nativeLast,true));
+    }
+
     [Theory]
     [InlineData(false,0)]
     [InlineData(true,ParasolidConstants.PK_ERROR_cant_do_intersect)]
