@@ -32,6 +32,32 @@ public unsafe class FiniteNativeBoundaryRayTests:IDisposable
         Assert.Equal(ParasolidConstants.PK_ERROR_eval_failure,KernelRuntime.FiniteSectionRay(2,first,last,true,query,0,1,out _,out _));
     }
 
+    [Fact]
+    public void RollingWitnessReturnsToTheSameFiniteBladeStationInBothSupportOrders()
+    {
+        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var body));
+        Assert.True(KernelRuntime.TryResolveBodySlot(body,out var slot));
+        var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;
+        var checkedCurves=0;
+        for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var use=KernelRuntime.Edges[edge];var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(use.CurveTag)];
+            if(curve.Class!=CurveClass.ICurve)continue;
+            var data=KernelRuntime.ICurveDataPool[curve.DataIndex];
+            var a=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(data.Surface0Tag)].Class;
+            var b=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(data.Surface1Tag)].Class;
+            if(!(a==SurfaceClass.BlendSurface&&b==SurfaceClass.Plane||a==SurfaceClass.Plane&&b==SurfaceClass.BlendSurface))continue;
+            var at=use.ParameterStart+(use.ParameterEnd-use.ParameterStart)*.5;
+            Assert.Equal(0,KernelRuntime.TestRoundTripBladeWitness(use.CurveTag,use.ParameterStart,use.ParameterEnd,at,false,out var bounds,out var handled));
+            Assert.True(handled);Assert.InRange(at,bounds.Lower,bounds.Upper);
+            Assert.Equal(0,KernelRuntime.TestRoundTripBladeWitness(use.CurveTag,use.ParameterStart,use.ParameterEnd,at,true,out var reversed,out handled));
+            Assert.True(handled);Assert.Equal(bounds,reversed);
+            checkedCurves++;
+        }
+        Assert.True(checkedCurves>0);
+    }
+
     // Unmodified historical probe rows 56, 58, 68 and 109. Independent PK
     // classifies each as on the finite product; untrimmed support SSI failed.
     [Theory]

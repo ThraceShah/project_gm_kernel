@@ -83,13 +83,21 @@ internal static unsafe partial class KernelRuntime
         handled=false;
         var target=Curves[GetCurveSlotByTag(cut.Curve)];
         if(target.Class!=CurveClass.ICurve||!root.BlendStation.Finite)return 0;
-        var data=ICurveDataPool[target.DataIndex];
+        return LocateCertifiedBladeCut(cut,root,ICurveDataPool[target.DataIndex],ref parameter,ref isolation,out handled);
+    }
+
+    private static int LocateCertifiedBladeCut(in SheetCutCurve cut,in RegularBoundaryRoot root,in ICurveData data,
+        ref double parameter,ref IntervalNumber isolation,out bool handled)
+    {
+        handled=false;
         if(data.ProgramBlock<=0||data.IsBlendContact!=0)return 0;
-        var first=SameSheetSupport(data.Surface0Tag,root.CuttingSurface)&&TryCertifySupportChart(data.Surface1Tag,root.ContactSurface,out _);
-        if(!first&&!(SameSheetSupport(data.Surface1Tag,root.CuttingSurface)&&TryCertifySupportChart(data.Surface0Tag,root.ContactSurface,out _)))return 0;
+        var planeFirst=SameSheetSupport(data.Surface0Tag,root.CuttingSurface)&&TryCertifySupportChart(data.Surface1Tag,root.ContactSurface,out _);
+        if(!planeFirst&&!(SameSheetSupport(data.Surface1Tag,root.CuttingSurface)&&TryCertifySupportChart(data.Surface0Tag,root.ContactSurface,out _)))return 0;
         var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
         var definition=program.Spines[data.ProgramSpine];
-        var blend=program.Surfaces[first?definition.First:definition.Second];var plane=program.Surfaces[first?definition.Second:definition.First];
+        // The compiled supports need not have the same order as the persisted ICurve pair.
+        var first=program.Surfaces[definition.First];var second=program.Surfaces[definition.Second];
+        var blend=first.IsBlend?first:second;var plane=first.IsBlend?second:first;
         if(SpineParameterMap.Explicit(definition)||!blend.IsBlend||plane.IsBlend||plane.IsBSpline||plane.Analytic.Kind!=SurfaceClass.Plane)return 0;
         var spine=program.Spines[blend.Spine];
         if(!SpineParameterMap.Explicit(spine))return 0;
@@ -315,6 +323,30 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
+    internal static int TestRoundTripBladeWitness(CurveTag curve,double first,double last,double at,bool reversePair,out IntervalNumber station,out bool handled)
+    {
+        station=UncertifiedStation;handled=false;
+        var record=Curves[GetCurveSlotByTag(curve)];var data=ICurveDataPool[record.DataIndex];
+        var support=data.Surface0Tag;var plane=data.Surface1Tag;
+        if(Surfaces[GetSurfaceSlotByTag(support)].Class!=SurfaceClass.BlendSurface)(support,plane)=(plane,support);
+        var scratch=EnsureCommandScratch();
+        try
+        {
+            var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+            Span<IntervalNumber> bounds=stackalloc IntervalNumber[9],witness=stackalloc IntervalNumber[7];
+            var status=JointNestedBlendEvaluation.BoundSharedSpineWitness(program,data.ProgramSpine,new(at,at,0,0),bounds,capture:witness);
+            if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            var point=Vector(witness[0].Midpoint,witness[1].Midpoint,witness[2].Midpoint);
+            var error=(new IntervalVector(witness[0],witness[1],witness[2])-new IntervalVector(point)).Norm().Value.Upper;
+            var root=new RegularBoundaryRoot{ContactSurface=support,CuttingSurface=plane,Certified=PlanePairBlendLineCertificate,
+                BlendStation=witness[6],Root=new(){Point=point,SpatialError=error}};
+            if(reversePair)(data.Surface0Tag,data.Surface1Tag)=(data.Surface1Tag,data.Surface0Tag);
+            var parameter=double.NaN;
+            return LocateCertifiedBladeCut(new(){Curve=curve,First=first,Last=last},root,data,ref parameter,ref station,out handled);
+        }
+        finally{if(scratch)ReleaseCommandScratch(State.Session);}
+    }
+
     internal static int TestLocateCertifiedLineCut(CurveTag source,CurveTag target,SurfTag support,SurfTag plane,double first,double last,
         out IntervalNumber bound,out bool certified,out bool inside,double sourceFirst=0,double sourceLast=1,bool fromPlanePair=false,bool fromFiniteGenerator=false)
     {
