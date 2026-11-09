@@ -304,6 +304,71 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(0,events);
     }
 
+    [Fact]
+    public void ThirdFaceExcludesAPlaneRootOutsideTheBoundOfItsProceduralTrim()
+    {
+        var xt=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
+        Assert.Equal(0,XtBrepImportTests.Receive(xt,out var body));
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];
+        var point=Vector(-1.53,-1.9995143480521524,5.000523651947846);FaceSlot matched=-1;
+        var face=record.FirstFaceBody;
+        for(var i=0;i<record.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var f=KernelRuntime.Faces[face];
+            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(f.SurfTag)].Class!=SurfaceClass.Plane)continue;
+            PK_PLANE_sf_s plane;Assert.Equal(0,KernelRuntime.PlaneAsk(f.SurfTag,&plane));
+            var basis=plane.basis_set;var distance=(point.X-basis.location.coord[0])*basis.axis.coord[0]
+                +(point.Y-basis.location.coord[1])*basis.axis.coord[1]+(point.Z-basis.location.coord[2])*basis.axis.coord[2];
+            if(Math.Abs(distance)>1e-12)continue;
+            var loop=f.FirstLoop;var procedural=false;
+            for(var l=0;l<f.LoopCount;l++,loop=KernelRuntime.Loops[loop].NextInFace)
+            {
+                var fin=KernelRuntime.Loops[loop].FirstFin;
+                for(var k=0;k<KernelRuntime.Loops[loop].FinCount;k++,fin=KernelRuntime.Fins[fin].NextInLoop)
+                {
+                    var edge=KernelRuntime.Edges[KernelRuntime.Fins[fin].Edge];
+                    procedural|=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)].Class==CurveClass.ICurve;
+                }
+            }
+            if(!procedural)continue;
+            Assert.Equal(-1,matched);matched=face;
+            var line=new PK_LINE_sf_s();line.basis_set.axis=basis.axis;
+            Write(&line.basis_set.location,Vector(point.X-.01*basis.axis.coord[0],point.Y-.01*basis.axis.coord[1],point.Z-.01*basis.axis.coord[2]));
+            CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+            Assert.Equal(0,KernelRuntime.TestFiniteThirdFaceEvents(body,face,carrier,0,.02,out var events,out var relation));
+            Assert.Equal(0,events);Assert.Equal(SurfacePairRelation.Empty,relation);
+        }
+        Assert.True(matched>=0);
+    }
+
+    [Theory]
+    [InlineData(-2.0004881012955873,true)]
+    [InlineData(0,false)]
+    public void ThirdFaceCylinderExcludesAnEmptyAxialRayButRetainsAnInteriorRoot(double y,bool outside)
+    {
+        var xt=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
+        Assert.Equal(0,XtBrepImportTests.Receive(xt,out var body));
+        var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];FaceSlot matched=-1;
+        var face=record.FirstFaceBody;
+        for(var i=0;i<record.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var tag=KernelRuntime.Faces[face].SurfTag;
+            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(tag)].Class!=SurfaceClass.Cylinder)continue;
+            PK_CYL_sf_s cylinder;Assert.Equal(0,KernelRuntime.CylAsk(tag,&cylinder));
+            var basis=cylinder.basis_set;
+            if(basis.axis.coord[1]!=1||basis.location.coord[0]!=-1.5||basis.location.coord[2]!=4)continue;
+            Assert.Equal(-1,matched);matched=face;
+        }
+        Assert.True(matched>=0);
+        var line=new PK_LINE_sf_s();line.basis_set.axis.coord[2]=1;
+        Write(&line.basis_set.location,Vector(-1.53,y,4.99));
+        CurveTag carrier;Assert.Equal(0,KernelRuntime.LineCreate(&line,&carrier));
+        var error=KernelRuntime.TestFiniteThirdFaceEvents(body,matched,carrier,0,.02,out var events,out var relation);
+        Assert.Equal(0,events);
+        if(outside){Assert.Equal(0,error);Assert.Equal(SurfacePairRelation.Empty,relation);}
+        else{Assert.Equal(ParasolidConstants.PK_ERROR_cant_do_intersect,error);Assert.Equal(SurfacePairRelation.Unresolved,relation);}
+    }
+
     [Theory]
     [InlineData(0,0,0)]
     [InlineData(.75,0,ParasolidConstants.PK_ERROR_not_implemented)]

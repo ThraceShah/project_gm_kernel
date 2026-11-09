@@ -126,13 +126,19 @@ internal static unsafe partial class KernelRuntime
             if(inputs.Length>2)
             {
                 Span<ThirdFaceBounds> faceBounds=stackalloc ThirdFaceBounds[nf];faceBounds.Clear();
+                // Prove rolling/plane triples on their shared finite line
+                // first. The two scalar passes then consume those identities.
+                for(var pass=ForbidSpatialBoundaryReuse?0:1;pass<2;pass++)
                 for(var c=0;c<cutCount;c++)
                 {
                     var cut=cuts[c];ThirdFaceBounds cutBounds=default;
                     for(var f=0;f<nf;f++)
                     {
                         if(owners[f]==owners[cut.First]||owners[f]==owners[cut.Second])continue;
-                        error=ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model,ForbidSpatialBoundaryReuse,out _);
+                        var joint=ForbidSpatialBoundaryReuse&&IsBlendPlaneLineTriple(input,cut,f);
+                        if(joint!=(pass==0))continue;
+                        error=joint?ReadBlendPlaneLineJoint(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model)
+                            :ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model,ForbidSpatialBoundaryReuse,out _);
                         if(error!=0)
                         {
                             LastRegularBooleanStage=RegularBooleanStage.ThirdFace;

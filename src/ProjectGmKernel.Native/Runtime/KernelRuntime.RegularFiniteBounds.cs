@@ -23,6 +23,16 @@ internal static unsafe partial class KernelRuntime
             for(var f=0;f<Loops[loop].FinCount;f++,fin=Fins[fin].NextInLoop)
             {
                 var edge=Edges[Fins[fin].Edge];if(!TryProfileEdgeRange(edge,out var lo,out var hi))return AlgorithmStatus.Unsupported;
+                var carrier=GetCurveSlotByTag(edge.CurveTag);if(carrier<0)return AlgorithmStatus.Unsupported;
+                if(Curves[carrier].Class==CurveClass.ICurve)
+                {
+                    var owns=EnsureCommandScratch();AlgorithmStatus status;IntervalBox3 trim;
+                    try{status=CertifiedIntersectionCurveExtent(edge.CurveTag,lo,hi,out trim);}
+                    finally{if(owns)ReleaseCommandScratch(State.Session);}
+                    if(status!=AlgorithmStatus.Success)return status;
+                    bounds[0]=new(trim.XLo,trim.XHi);bounds[1]=new(trim.YLo,trim.YHi);bounds[2]=new(trim.ZLo,trim.ZHi);
+                    IncludeRegularExtent(ref extent,ref first,bounds);continue;
+                }
                 var interval=new Generated.PK_INTERVAL_s();interval.value[0]=lo;interval.value[1]=hi;
                 if(ResolveIntersectionCurve(edge.CurveTag,interval,out var curve)!=0)return AlgorithmStatus.Unsupported;
                 var count=GeneralCurvePieceCount(curve);if(count<=0)return AlgorithmStatus.Unsupported;

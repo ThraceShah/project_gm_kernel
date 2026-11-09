@@ -32,11 +32,12 @@ internal static unsafe partial class KernelRuntime
         if(!faceBounds.Checked)
         {
             faceBounds.Checked=true;faceBounds.Margin=model.Tolerance;
-            faceBounds.Available=surfaceRecord.Class==SurfaceClass.Plane&&source>=0&&TryThirdFacePrecision(source,ref faceBounds.Margin)
+            faceBounds.Available=(surfaceRecord.Class==SurfaceClass.Plane||requireProof&&surfaceRecord.Class==SurfaceClass.Cylinder)&&source>=0&&TryThirdFacePrecision(source,ref faceBounds.Margin)
                 &&RegularFiniteFaceExtent(source,out faceBounds.Box)==AlgorithmStatus.Success;
         }
-        var havePlane=faceBounds.Available;var margin=faceBounds.Margin;
-        if(havePlane)
+        var havePlane=surfaceRecord.Class==SurfaceClass.Plane&&faceBounds.Available;
+        var haveCylinder=surfaceRecord.Class==SurfaceClass.Cylinder&&faceBounds.Available;var margin=faceBounds.Margin;
+        if(havePlane||haveCylinder)
         {
             if(!cutBounds.Checked)
             {
@@ -83,7 +84,9 @@ internal static unsafe partial class KernelRuntime
                 var radius=new IntervalNumber(-error,error);
                 var x=new IntervalNumber(point.X)+radius;var y=new IntervalNumber(point.Y)+radius;var z=new IntervalNumber(point.Z)+radius;
                 var rootBox=new IntervalBox3(x.Lower,x.Upper,y.Lower,y.Upper,z.Lower,z.Upper);
-                if(havePlane&&ThirdFaceBoxesDisjoint(rootBox,faceBounds.Box,margin))continue;
+                if((havePlane||haveCylinder)&&ThirdFaceBoxesDisjoint(rootBox,faceBounds.Box,margin))continue;
+                if(HasBlendPlaneLineJoint(input,cuts[cutIndex],face,cutIndex,i,isolation[i],ref model))
+                {resolved=SurfacePairRelation.PointContact;continue;}
                 if(canJoin)
                 {
                     var errorJoin=JoinThreePlaneCutRoots(input,face,cuts,cutIndex,ref model,out var joined);
@@ -98,14 +101,16 @@ internal static unsafe partial class KernelRuntime
                     if(mixedJoined){resolved=SurfacePairRelation.PointContact;continue;}
                 }
                 var insideTrim=false;
-                var ownership=havePlane?CertifiedPlanarRootOwnership(input,face,surfaceRecord,point,rootBox,margin,out insideTrim):AlgorithmStatus.Unsupported;
+                var ownership=havePlane?CertifiedPlanarRootOwnership(input,face,surfaceRecord,point,rootBox,margin,out insideTrim)
+                    :haveCylinder?CertifyCylindricalRootOutsideTrim(input,face,surfaceRecord,rootBox,margin)
+                    :AlgorithmStatus.Unsupported;
                 if(ownership==AlgorithmStatus.Success&&!insideTrim)
                 {
                     TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.ThirdFaceOutsideTrim,Curve=cut.Curve,Generation=curve.Header.Generation,
                         Surface=surface,Source=source,Face=face,First=isolation[i].Root.Lower,Last=isolation[i].Root.Upper,SpatialError=error});
                     continue;
                 }
-                if(ownership==AlgorithmStatus.Success&&insideTrim&&cut.KeepImprint!=0&&curve.Class==CurveClass.Line)
+                if(havePlane&&ownership==AlgorithmStatus.Success&&insideTrim&&cut.KeepImprint!=0&&curve.Class==CurveClass.Line)
                 {
                     var reuse=ReuseImprintThirdLineRoot(input,cuts,cutIndex,surface,roots[i],isolation[i],ref model,out var joined);
                     if(reuse!=0)return reuse;
