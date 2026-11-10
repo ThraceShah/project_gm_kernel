@@ -203,17 +203,28 @@ app.Map("/data", dataBranch =>
 });
 
 // 6. UI release at "/": index.html for the root, static files elsewhere.
+//    Retained previous releases keep their recorded asset namespace
+//    addressable so already-served HTML completes its hashed asset loads
+//    across switches and rollbacks; documents (index.html) and unknown paths
+//    never fall back.
 app.Run(async context =>
 {
     var roots = state.Current();
     if (roots is null) { context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable; await WriteTextAsync(context, "No active site\n"); return; }
     var path = context.Request.Path.Value ?? "/";
     var relative = path == "/" ? "index.html" : path.TrimStart('/');
-    if (!await SafeFiles.ServeAsync(context, roots.UiRoot, relative, CacheControl(isData: false, path, Path.GetFileName(relative))))
+    var cache = CacheControl(isData: false, path, Path.GetFileName(relative));
+    if (await SafeFiles.ServeAsync(context, roots.UiRoot, relative, cache)) return;
+    if (relative != "index.html")
     {
-        context.Response.StatusCode = StatusCodes.Status404NotFound;
-        await WriteTextAsync(context, "Not Found\n");
+        foreach (var release in roots.RetainedUi)
+        {
+            if (!release.Files.Contains(relative)) continue;
+            if (await SafeFiles.ServeAsync(context, release.Root, relative, cache)) return;
+        }
     }
+    context.Response.StatusCode = StatusCodes.Status404NotFound;
+    await WriteTextAsync(context, "Not Found\n");
 });
 
 app.Run();

@@ -72,7 +72,25 @@ internal sealed class SiteState
             if (!SafePaths.IsChainSafe(storeRoot) || !Directory.Exists(storeRoot)) return null;
             var runId = root.TryGetProperty("dataRunId", out var r) ? r.GetString() : null;
             var store = new GenerationStore(SiteRoot, generation);
-            return new SiteRoots(uiRoot, release, runId, generationDir, generation, store);
+            var retained = new List<RetainedRelease>();
+            foreach (var meta in Directory.EnumerateFiles(Path.Combine(SiteRoot, "ui-releases"), "*.meta.json").OrderDescending())
+            {
+                try
+                {
+                    using var releaseDoc = JsonDocument.Parse(File.ReadAllText(meta));
+                    var id = releaseDoc.RootElement.GetProperty("id").GetString();
+                    if (id is null || id == release || !SafePaths.IsSafeRequestPath("/" + id)) continue;
+                    var files = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (var file in releaseDoc.RootElement.GetProperty("files").EnumerateArray())
+                    {
+                        var name = file.GetProperty("path").GetString();
+                        if (name is not null && name != "index.html") files.Add(name);
+                    }
+                    retained.Add(new RetainedRelease(id, Path.Combine(SiteRoot, "ui-releases", id), files));
+                }
+                catch { /* incomplete release metadata: not addressable */ }
+            }
+            return new SiteRoots(uiRoot, release, runId, generationDir, generation, store, retained);
         }
         catch
         {
@@ -87,7 +105,17 @@ internal sealed record SiteRoots(
     string? DataRunId,
     string GenerationDir,
     string Generation,
-    GenerationStore Store);
+    GenerationStore Store,
+    IReadOnlyList<RetainedRelease> RetainedUi);
+
+/// <summary>
+/// A retained previous UI release's addressable asset namespace: only files
+/// recorded in its checksum manifest are ever served from it (never
+/// index.html, never unknown paths), and only when the active release does not
+/// provide the file. This lets an already-served HTML finish loading its
+/// hashed assets across a switch or rollback without serving stale documents.
+/// </summary>
+internal sealed record RetainedRelease(string ReleaseId, string Root, HashSet<string> Files);
 
 /// <summary>
 /// Resolves <c>/data/runs/&lt;runId&gt;/&lt;file&gt;</c> against the retained

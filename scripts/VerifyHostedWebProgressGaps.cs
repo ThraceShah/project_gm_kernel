@@ -426,6 +426,16 @@ if (Wanted("H3"))
     Check("H3: rollback keeps the rolled-away release's assets addressable",
         rollbackHtml.Body.Contains("OLD-HTML") && delayedNewAsset.Status == 200 && delayedNewAsset.Body.Contains("new-222.js payload"),
         $"asset http={delayedNewAsset.Status}");
+    // Data references follow the same rule: a new generation that stops
+    // registering a run must not break earlier HTML's data requests.
+    WriteRun("r3", "sha-r3", "e3.log", "R3_EVIDENCE\n");
+    WriteIndex("r3", ("r3", "sha-r3"));
+    var switch3 = Activate(releaseNew, cache);
+    var retainedOldLog = await Get("/data/runs/r1/cases/c1/sample-0/e.log");
+    var newIndex = await Get("/data/index.json");
+    Check("H3: data refs of earlier HTML stay served across generations (atomic index switch)",
+        switch3.Code == 0 && retainedOldLog.Status == 200 && retainedOldLog.Body == "R1_EVIDENCE_V1\n" && newIndex.Body.Contains("\"r3\"") && !newIndex.Body.Contains("\"r1\""),
+        $"log=http {retainedOldLog.Status} indexLatest={newIndex.Body[..Math.Min(60, newIndex.Body.Length)]}");
     StopHost();
 }
 
