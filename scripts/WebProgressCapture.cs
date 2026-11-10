@@ -22,15 +22,24 @@ internal static unsafe class WebProgressCapture
     private static readonly Dictionary<(bool,int),BodyTag[]> AfterBodies=[];
     private static readonly Dictionary<(bool,int),HashSet<EntityTag>> Supports=[];
     private static readonly JsonArray Timings=[];
+    internal static string Context="";
+    private static readonly Dictionary<(bool,string),int> ContextCounts=[];
+    private static readonly Dictionary<string,int> ContextSteps=[];
     private const double ChordTolerance=.01;
-    internal static void Before(bool own,BodyTag body,EntityTag[]? selected=null,string operation="PK_BODY_fix_blends",BodyTag[]? tools=null)
+    internal static void Before(bool own,BodyTag body,EntityTag[]? selected=null,string operation="PK_BODY_fix_blends",BodyTag[]? tools=null,bool supportBody=false)
     {
         if(!Enabled)return;
         Observe(()=>
         {
             Directory.CreateDirectory(Output!);
             var ordinal=Ordinals[own]++;var side=own?"gm":"pk";
-            while(Steps.Count<=ordinal)Steps.Add((JsonNode)new JsonObject{["id"]=$"operation-{Steps.Count+1}",["title"]=operation,["gm"]=new JsonObject{["before"]=null,["after"]=null},["pk"]=new JsonObject{["before"]=null,["after"]=null}});
+            {
+                var contextKey=(own,Context+":"+operation);var occurrence=ContextCounts.GetValueOrDefault(contextKey);ContextCounts[contextKey]=occurrence+1;
+                var logicalKey=Context+":"+operation+":"+occurrence;
+                if(!ContextSteps.TryGetValue(logicalKey,out ordinal)){ordinal=Steps.Count;ContextSteps.Add(logicalKey,ordinal);}
+                Ordinals[own]=ordinal+1;
+            }
+            while(Steps.Count<=ordinal)Steps.Add((JsonNode)new JsonObject{["id"]=$"operation-{Steps.Count+1}",["title"]=(Context.Length>0?Context+" / ":"")+operation,["gm"]=new JsonObject{["before"]=null,["after"]=null},["pk"]=new JsonObject{["before"]=null,["after"]=null}});
             var support=new HashSet<int>();
             foreach(var edge in selected??[])
             {
@@ -39,7 +48,7 @@ internal static unsafe class WebProgressCapture
                 try{for(var i=0;i<n;i++){var face=faces[i];if(own)Guard(KernelRuntime.FinAskFace(faces[i],&face),"fin face");support.Add(face);}}finally{Free(own,faces);}
             }
             Supports[(own,ordinal)]=support;
-            var mesh=Mesh(own,body,selected??[],support,[],isBefore:true);BeforeMeshes[(own,ordinal)]=mesh;
+            var mesh=Mesh(own,body,selected??[],support,[],tool:supportBody,isBefore:true);BeforeMeshes[(own,ordinal)]=mesh;
             var path=$"meshes/{side}-{ordinal}-before.json";Write(path,mesh);
             Steps[ordinal]![side]!["before"]=path;
             // Tool snapshots retain their own IDs and are explicit extra input steps.
@@ -94,11 +103,13 @@ internal static unsafe class WebProgressCapture
                 tracks.Add((JsonNode)new JsonObject{["event"]=r.track,["originals"]=orig,["products"]=prod});
             }
             Steps[ordinal]![side]!["tracking"]=tracks;
+            var trackingRequested=Steps[ordinal]![side]?["apiParameters"]?["tracking"]?.GetValue<bool>();
+            Steps[ordinal]![side]!["semanticCoverage"]=new JsonObject{["status"]=blends.Length>0||tracking!=null&&trackingRequested!=false?"pass":"missing",["note"]=blends.Length>0?"New blend faces from API outputs; support incidence and replaced IDs retained.":tracking!=null&&trackingRequested!=false?"Original/product generic topology tracking copied before free.":"This oracle path returns no generic tracking. Exact ID deletion is known; other modification roles remain unknown, shown neutrally."};
             var afters=new JsonArray();var allIds=new HashSet<int>();
             for(var b=0;b<bodies.Length;b++)
             {
                 var support=Supports.GetValueOrDefault((own,ordinal))??[];
-                var mesh=Mesh(own,bodies[b],[],products.Count>0?products:support,blends);
+                var mesh=Mesh(own,bodies[b],[],products.Count>0?products:support,blends,roleKnown:blends.Length>0||tracking!=null&&trackingRequested!=false);
                 foreach(var item in mesh["faces"]!.AsArray().Concat(mesh["edges"]!.AsArray()))allIds.Add(item!["entityTag"]!.GetValue<int>());
                 var path=$"meshes/{side}-{ordinal}-after-{b}.json";Write(path,mesh);afters.Add((JsonNode?)JsonValue.Create(path));
             }
@@ -114,12 +125,29 @@ internal static unsafe class WebProgressCapture
                 }
                 Write($"meshes/{side}-{ordinal}-before.json",before);
             }
-            if(error==0)AfterBodies[(own,ordinal)]=bodies;
-            if(AfterBodies.ContainsKey((true,ordinal))&&AfterBodies.ContainsKey((false,ordinal)))Compare(ordinal);
+            if(error==0)
+            {
+                // Later modeling steps may delete/modify both producers' bodies.
+                // Retain independent PK snapshot copies for deferred paired checks.
+                var immutable=new int[bodies.Length];
+                for(var i=0;i<bodies.Length;i++)
+                {
+                    var copy=0;
+                    if(own){using var snapshot=ParasolidDisplayBridge.Create(bodies[i],ChordTolerance);Guard(PK_ENTITY_copy(snapshot.ParasolidBodyTag,&copy),"retain GM fresh XT snapshot");}
+                    else Guard(PK_ENTITY_copy(bodies[i],&copy),"retain PK snapshot");
+                    immutable[i]=copy;
+                }
+                AfterBodies[(own,ordinal)]=immutable;
+            }
+            if(AfterBodies.ContainsKey((true,ordinal))&&AfterBodies.ContainsKey((false,ordinal)))
+            {
+                try{Compare(ordinal);}
+                finally{foreach(var sideOwn in new[]{true,false}){foreach(var saved in AfterBodies[(sideOwn,ordinal)]){var tag=saved;PK_ENTITY_delete(1,&tag);}AfterBodies.Remove((sideOwn,ordinal));}}
+            }
             Flush();
         });
     }
-    private static JsonObject Mesh(bool own,BodyTag body,EntityTag[] selected,IEnumerable<EntityTag> modified,EntityTag[] blends,bool tool=false,bool isBefore=false)
+    private static JsonObject Mesh(bool own,BodyTag body,EntityTag[] selected,IEnumerable<EntityTag> modified,EntityTag[] blends,bool tool=false,bool isBefore=false,bool roleKnown=true)
     {
         using var display=own?ParasolidDisplayBridge.Create(body,ChordTolerance):ParasolidDisplayBridge.CreateParasolidSnapshot(body,ChordTolerance);
         var selectedSet=selected.ToHashSet();var changed=modified.ToHashSet();var newBlends=blends.ToHashSet();
@@ -131,13 +159,13 @@ internal static unsafe class WebProgressCapture
             var positions=new JsonArray();var normals=new JsonArray();var indices=new JsonArray();var index=0;
             foreach(var t in group){Vector(positions,t.A);Vector(positions,t.B);Vector(positions,t.C);Vector(normals,t.NormalA);Vector(normals,t.NormalB);Vector(normals,t.NormalC);indices.Add((JsonNode?)JsonValue.Create(index++));indices.Add((JsonNode?)JsonValue.Create(index++));indices.Add((JsonNode?)JsonValue.Create(index++));}
             var entity=group.First().Face;
-            faces.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["normals"]=normals,["indices"]=indices,["role"]=Role(entity)});
+            faces.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["normals"]=normals,["indices"]=indices,["role"]=Role(entity),["roleKnown"]=roleKnown});
         }
         foreach(var group in display.EdgeSegments.GroupBy(t=>t.Edge.EntityTag))
         {
             var positions=new JsonArray();var first=true;Vector3 previous=default;
             foreach(var segment in group){if(first||segment.A!=previous)Vector(positions,segment.A);Vector(positions,segment.B);previous=segment.B;first=false;}
-            var entity=group.First().Edge;edges.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["role"]=Role(entity)});
+            var entity=group.First().Edge;edges.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["role"]=Role(entity),["roleKnown"]=roleKnown});
         }
         return new JsonObject{["schemaVersion"]=1,["bodyId"]=(own?"gm:":"pk:")+body,["source"]=new JsonObject{["kernel"]=own?"GM":"PK",["geometryAuthor"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent-construction",["tessellator"]="Parasolid PK_TOPOL_facet / PK_GEOM_render_line",["commit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["chordTolerance"]=ChordTolerance,["freshXtReceive"]=own},["faces"]=faces,["edges"]=edges};
     }
@@ -147,7 +175,7 @@ internal static unsafe class WebProgressCapture
         AddCheck($"{ordinal}-body-count","Result body count",a.Length==b.Length?"pass":"fail",a.Length,b.Length,0,"count","");
         if(a.Length!=1||b.Length!=1)
         {AddCheck($"{ordinal}-correspondence","Multi-body correspondence","missing",null,null,null,"","No guessed body pairing; oracle log retains its own matching checks.");return;}
-        using var actual=ParasolidDisplayBridge.Create(a[0],ChordTolerance);var received=actual.ParasolidBodyTag;var reference=b[0];
+        var received=a[0];var reference=b[0];
         foreach(var pair in new[]{(Body:received,Own:true),(Body:reference,Own:false)})
         {
             var options=new PK_BODY_check_o_t{max_faults=100};int n=0;PK_check_fault_t* faults=null;Guard(PK_BODY_check(pair.Body,&options,&n,&faults),"BODY_check");
@@ -185,14 +213,88 @@ internal static unsafe class WebProgressCapture
         Write("capture.json",new JsonObject{["steps"]=Steps.DeepClone(),["checks"]=Checks.DeepClone(),["timings"]=Timings.DeepClone(),["captureErrors"]=Errors.DeepClone(),["pkVersion"]=$"{version.major_revision}.{version.minor_revision}.{version.build_number}",["sessionPrecision"]=precision});
     }
     private static void Observe(Action action)
-    {try{action();}catch(Exception e){Errors.Add((JsonNode?)JsonValue.Create(e.ToString()));Console.Error.WriteLine("WEB_EXPORT_ERROR "+e);Directory.CreateDirectory(Output!);File.WriteAllText(Path.Combine(Output!,"capture-errors.json"),Errors.ToJsonString());
+    {try{action();}catch(Exception e){Errors.Add((JsonNode?)JsonValue.Create(e.ToString()));Console.Error.WriteLine("WEB_EXPORT_ERROR "+e);Directory.CreateDirectory(Output!);File.WriteAllText(Path.Combine(Output!,"capture-errors.json"),Sanitize(Errors.ToJsonString()));
         AddCheck("capture-error-"+Errors.Count,"Snapshot or comparison could not complete","fail",null,null,null,"",e.GetType().Name+": "+e.Message);
         try{Flush();}catch(Exception io){File.WriteAllText(Path.Combine(Output!,"export-errors.json"),io.ToString());}}}
     private static void Write(string path,JsonNode node)
-    {var file=Path.Combine(Output!,path);Directory.CreateDirectory(Path.GetDirectoryName(file)!);File.WriteAllText(file+".tmp",node.ToJsonString());File.Move(file+".tmp",file,true);}
+    {var file=Path.Combine(Output!,path);Directory.CreateDirectory(Path.GetDirectoryName(file)!);File.WriteAllText(file+".tmp",Sanitize(node.ToJsonString()));File.Move(file+".tmp",file,true);}
+    private static string Sanitize(string value)
+    {
+        var root=Environment.GetEnvironmentVariable("GM_WEB_ROOT");if(!string.IsNullOrEmpty(root))value=value.Replace(root,".");
+        var home=Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);return string.IsNullOrEmpty(home)?value:value.Replace(home,"~");
+    }
     private static void Vector(JsonArray array,Vector3 v){array.Add((JsonNode?)JsonValue.Create(v.X));array.Add((JsonNode?)JsonValue.Create(v.Y));array.Add((JsonNode?)JsonValue.Create(v.Z));}
     private static string Id(bool own,DisplayEntity entity)=>(own?"gm:":"pk:")+entity.Kind.ToString().ToLowerInvariant()+":"+entity.EntityTag;
     private static JsonNode? Finite(double? value)=>value.HasValue&&double.IsFinite(value.Value)?JsonValue.Create(value.Value):null;
+    internal static void BlendParameters(bool own,PK_BODY_fix_blends_o_t fix,double radius,double markTolerance,string markApi="PK_EDGE_set_blend_constant",double? secondRange=null,EntityTag? designatedFace=null)
+    {
+        if(!Enabled)return;
+        Observe(()=>{Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=new JsonObject{["mark"]=new JsonObject{["name"]=markApi,["radius"]=markApi=="PK_EDGE_set_blend_constant"?JsonValue.Create(radius):null,["range0"]=markApi=="PK_EDGE_set_blend_constant"?null:JsonValue.Create(radius),["range1"]=secondRange,["designatedFace"]=designatedFace,["tolerance"]=markTolerance},["operation"]=new JsonObject{["name"]="PK_BODY_fix_blends",["o_t_version"]=fix.o_t_version,["update"]=fix.update,["tolerance"]=fix.tolerance,["local_check"]=fix.local_check==PK_LOGICAL_true},["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor; see source hash and binding revision."};Flush();});
+    }
+    internal static void BooleanParameters(bool own,PK_BODY_boolean_o_t options)
+    {
+        if(!Enabled)return;
+        Observe(()=>{Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=new JsonObject{["o_t_version"]=options.o_t_version,["function"]=options.function,["default_tol"]=options.default_tol,["max_tol"]=options.max_tol,["tracking"]=options.tracking==PK_LOGICAL_true,["tracking_type"]=options.tracking_type,["track_regions"]=options.track_regions,["merge_imprinted"]=options.merge_imprinted==PK_LOGICAL_true,["allow_disjoint"]=options.allow_disjoint==PK_LOGICAL_true,["fence"]=options.fence,["target_material_side"]=options.target_material_side,["tool_material_side"]=options.tool_material_side,["update"]=options.update,["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor."};Flush();});
+    }
+    internal static void BeforeSurfaces(bool own,EntityTag first,EntityTag second)
+    {
+        if(!Enabled)return;
+        Observe(()=>
+        {
+            var bodies=new int[2];
+            try
+            {
+                var inputs=new[]{first,second};
+                for(var i=0;i<2;i++)
+                {
+                    int copy=0,body=0;
+                    Guard(own?KernelRuntime.EntityCopy(inputs[i],&copy):PK_ENTITY_copy(inputs[i],&copy),"copy display input support");
+                    var box=new PK_UVBOX_t();box.param[0]=box.param[1]=-1;box.param[2]=box.param[3]=1;
+                    Guard(own?KernelRuntime.SurfMakeSheetBody(copy,*(ProjectGmKernel.Native.Generated.PK_UVBOX_s*)&box,&body):PK_SURF_make_sheet_body(copy,box,&body),"bounded input support display");
+                    bodies[i]=body;
+                }
+                Before(own,bodies[0],[],"PK_SURF_create_blend",[bodies[1]],true);
+                Steps[Ordinals[own]-1]![own?"gm":"pk"]!["inputDisplayBounds"]=new JsonObject{["uv"]=new JsonArray(-1,-1,1,1),["note"]="Real auxiliary sheet copies of the input supports, clipped for finite visualization only; original surface API inputs are not modified."};Flush();
+            }
+            finally{foreach(var item in bodies)if(item!=0){var body=item;if(own)KernelRuntime.EntityDelete(1,&body);else PK_ENTITY_delete(1,&body);}}
+        });
+    }
+    internal static void SurfaceAfter(bool own,BodyTag body,double ms)
+    {
+        if(!Enabled)return;int count=0;int* faces=null;
+        Guard(own?KernelRuntime.BodyAskFaces(body,&count,&faces):PK_BODY_ask_faces(body,&count,&faces),"output sheet face IDs");
+        try{Complete(own,[body],ms,0,0,new ReadOnlySpan<int>(faces,count).ToArray(),null);}finally{Free(own,faces);}
+    }
+    internal static void RecordBodyCheck(string stage,int count,PK_check_fault_t* faults)
+    {
+        if(!Enabled)return;
+        Observe(()=>
+        {
+            var details=new JsonArray();
+            for(var i=0;i<count;i++)
+            {
+                var cls=0;PK_ENTITY_ask_class(faults[i].entity_1,&cls);var support=0;var supportClass=0;
+                if(cls==PK_CLASS_face&&PK_FACE_ask_surf(faults[i].entity_1,&support)==0)PK_ENTITY_ask_class(support,&supportClass);
+                details.Add((JsonNode)new JsonObject{["state"]=faults[i].state,["entity1"]=faults[i].entity_1,["entity2"]=faults[i].entity_2,["entityClass"]=cls,["support"]=support,["supportClass"]=supportClass});
+            }
+            AddCheck("original-body-"+Checks.Count,stage+" full BODY_check",count==0?"pass":"fail",null,null,0,"faults",details.ToJsonString());
+            Checks[^1]!["stage"]=stage;Checks[^1]!["evaluatedKernel"]="PK";Checks[^1]!["faultCount"]=count;Checks[^1]!["faults"]=details;Flush();
+        });
+    }
+    internal static void RecordMass(string stage,double accuracy,double* reference,double* actual)
+    {
+        if(!Enabled)return;
+        Observe(()=>
+        {
+            for(var i=0;i<15;i++)
+            {
+                var delta=Math.Abs(actual[i]-reference[i])/(1+Math.Abs(reference[i]));
+                AddCheck("original-mass-"+Checks.Count,stage+" mass["+i+"]",double.IsFinite(delta)&&delta<1e-7?"pass":"fail",actual[i],reference[i],1e-7,i<2?"model³":i<5?"model":i<14?"model⁵":"model²","Original final point gate; accuracy="+accuracy.ToString("R",System.Globalization.CultureInfo.InvariantCulture));
+                Checks[^1]!["stage"]=stage;
+            }
+            Flush();
+        });
+    }
     internal static void FreeBlendTracking(bool own,int count,PK_FACE_array_t* unders,EntityTag* topols)
     {
         if(unders!=null){for(var i=0;i<count;i++)Free(own,unders[i].array);Free(own,unders);}Free(own,topols);

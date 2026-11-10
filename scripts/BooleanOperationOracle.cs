@@ -211,6 +211,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     }
     var o=new PK_BODY_boolean_o_t{function=function,tracking=WebProgressCapture.Enabled?PK_LOGICAL_true:PK_LOGICAL_false};
     WebProgressCapture.Before(own,target,[],"PK_BODY_boolean_2",new ReadOnlySpan<int>(tools,nt).ToArray());
+    WebProgressCapture.BooleanParameters(own,o);
     if(own)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;

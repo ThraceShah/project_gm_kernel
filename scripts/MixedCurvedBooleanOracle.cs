@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using ProjectGmKernel.Native.Geometry.Evaluation;
@@ -228,16 +229,18 @@ static unsafe int[] Boolean(bool own,int target,int[] tools,PK_boolean_function_
     }
     DumpSupports(own,target,tools);if(!own)foreach(var tool in tools)CheckBody(tool,"native tool");
     var options=new PK_BODY_boolean_o_t{function=function,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
-    Console.WriteLine($"BEGIN {(own?"self":"PK")} {label}, function={function}, tools={tools.Length}");var started=Stopwatch.GetTimestamp();int error;
+    WebProgressCapture.Before(own,target,[],"PK_BODY_boolean",tools);WebProgressCapture.BooleanParameters(own,options);
+    Console.WriteLine($"BEGIN {(own?"self":"PK")} {label}, function={function}, tools={tools.Length}");var started=Stopwatch.GetTimestamp();int error;double webMs=0;
     fixed(KernelRuntime.RegularBooleanStage* stage=&KernelRuntime.LastRegularBooleanStage)
     fixed(int* face=&KernelRuntime.LastRegularBooleanFace)
     fixed(int* other=&KernelRuntime.LastRegularBooleanOtherFace)
     {
         var stageAddress=(nint)stage;var faceAddress=(nint)face;var otherAddress=(nint)other;
         var progress=new Timer(_=>Console.WriteLine($"PROGRESS {(own?"self":"PK")} {label}, elapsed={Stopwatch.GetElapsedTime(started).TotalSeconds:F1}s, stage={*(KernelRuntime.RegularBooleanStage*)stageAddress}, face={Volatile.Read(ref *(int*)faceAddress)}, other={Volatile.Read(ref *(int*)otherAddress)}"),null,TimeSpan.FromSeconds(10),TimeSpan.FromSeconds(10));
-        try{fixed(int* input=tools)error=own?KernelRuntime.BodyBoolean(target,tools.Length,input,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(target,tools.Length,input,&options,&n,&bodies);}
+        try{var apiStarted=Stopwatch.GetTimestamp();fixed(int* input=tools)error=own?KernelRuntime.BodyBoolean(target,tools.Length,input,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(target,tools.Length,input,&options,&n,&bodies);webMs=Stopwatch.GetElapsedTime(apiStarted).TotalMilliseconds;}
         finally{progress.DisposeAsync().AsTask().GetAwaiter().GetResult();}
     }
+    WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
     Console.WriteLine($"TIME {(own?"self":"PK")} {label} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, other={KernelRuntime.LastRegularBooleanOtherFace}, sheet={KernelRuntime.LastSheetPartitionStage}");
     if(own&&ModelingPerformance.Enabled)PrintProfile();
     Check(error,label);

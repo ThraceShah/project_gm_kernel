@@ -62,6 +62,7 @@ static unsafe int[] Produce(bool managed,Fixture fixture,int function,out int st
     var target=Sphere(managed,fixture,false);var tool=Sphere(managed,fixture,true);var fa=FirstFace(managed,target);var fb=FirstFace(managed,tool);
     var options=new PK_BODY_boolean_o_t{function=function,tracking=PK_LOGICAL_true};var signature=new StringBuilder();int[] bodies;
     WebProgressCapture.Before(managed,target,[],"PK_BODY_boolean_2",[tool]);
+    WebProgressCapture.BooleanParameters(managed,options);
     if(managed)
     {
         var mo=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(options);M.PK_TOPOL_track_r_s tr=default;M.PK_boolean_r_s result=default;

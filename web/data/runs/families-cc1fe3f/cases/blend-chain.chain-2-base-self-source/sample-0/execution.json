@@ -1,0 +1,1 @@
+{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/BlendChainOracle.cs","-c","Release","-p:UseSharedCompilation=false","--","chain-2-base-self-source"],"logSha256":"a4ac0fb5ebae5dee70aadc6394853312dc04ee10f10ca0b878c55cde05eded1b"}

@@ -88,6 +88,7 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
     {
         // Preserve the oracle's tracking=false option: this GM curved path rejects tracking=true.
         WebProgressCapture.Before(own,target,[],"PK_BODY_boolean_2",new ReadOnlySpan<int>(tools,toolCount).ToArray());
+    WebProgressCapture.BooleanParameters(own,options);
         PK_TOPOL_track_r_t tracking=default;PK_boolean_r_t result=default;
         var started=System.Diagnostics.Stopwatch.GetTimestamp();
         var error=own?KernelRuntime.BodyBoolean2(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,(M.PK_TOPOL_track_r_s*)&tracking,(M.PK_boolean_r_s*)&result):PK_BODY_boolean_2(target,toolCount,tools,&options,&tracking,&result);

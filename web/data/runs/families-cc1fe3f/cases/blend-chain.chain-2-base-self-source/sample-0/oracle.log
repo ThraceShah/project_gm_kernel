@@ -1,0 +1,77 @@
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/BlendChainOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/BlendChainOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/GenerateFunctionCatalog.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/GenerateFunctionCatalog.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+ROUND 1 chain-2-base-self-source bound-cache=True spline-reuse=True
+TIME FixBlends own=True ms=1629.708
+fix own=True error=0 stage=Release rolling=Bind domain=Complete/131/192/Success classification=Read/0 sheet=RayIntersections
+web strict fresh XT: global=21921 local=21930 face_pairs=4
+  faces=964/662 diff=21949 entities=905/705 counts=3/27 values=0/0
+  faces=964/662 diff=21949 entities=903/703 counts=3/27 values=0/0
+  faces=913/660 diff=21949 entities=916/621 counts=3/27 values=0/0
+  faces=913/660 diff=21949 entities=918/620 counts=3/27 values=0/0
+  faces=909/712 diff=21949 entities=903/703 counts=3/27 values=0/0
+  faces=909/712 diff=21949 entities=916/621 counts=3/27 values=0/0
+  faces=971/651 diff=21949 entities=918/620 counts=3/27 values=0/0
+  faces=971/651 diff=21949 entities=905/705 counts=3/27 values=0/0
+TIME FixBlends own=False ms=71.771
+fix own=False error=0 stage=Release rolling=Bind domain=Complete/131/192/Success classification=Read/0 sheet=RayIntersections
+chain-2-base-self-source native full BODY_check: 0 faults
+chain-2-base-self-source received full BODY_check: 0 faults
+chain-2-base-self-source topology 0: native=2 own=2
+chain-2-base-self-source topology 1: native=2 own=2
+chain-2-base-self-source topology 2: native=8 own=8
+chain-2-base-self-source topology 3: native=18 own=18
+chain-2-base-self-source topology 4: native=12 own=12
+chain-2-base-self-source material regions: native=0:1,1:1, own=0:1,1:1
+chain-2-base-self-source compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=792/1074, class=500/500, int=3/27, value=0/0
+CHART face=0, diff=21949, entity=787/1075, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=809/1077, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=814/1078, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=787/1075, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=809/1077, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=814/1078, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=792/1074, class=500/500, int=3/27, value=0/0
+chain-2-base-self-source PK mass: volume=1.0250977819198717/1.0250977817129165, area=5.977972244063891/5.9779722432418785, max normalized residual=1.1780108194689722E-10
+TIME Boolean own=True ms=9175.746
+TIME Boolean own=False ms=7.019
+chain-2-base-self-source cut native full BODY_check: 0 faults
+chain-2-base-self-source cut received full BODY_check: 0 faults
+chain-2-base-self-source cut topology 0: native=2 own=2
+chain-2-base-self-source cut topology 1: native=2 own=2
+chain-2-base-self-source cut topology 2: native=8 own=8
+chain-2-base-self-source cut topology 3: native=18 own=18
+chain-2-base-self-source cut topology 4: native=12 own=12
+chain-2-base-self-source cut material regions: native=0:1,1:1, own=0:1,1:1
+chain-2-base-self-source cut compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1248/1501, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=792/1499, class=500/500, int=3/27, value=0/0
+CHART face=0, diff=21949, entity=787/1500, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=809/1503, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=814/1504, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=1227/1510, class=500/500, int=5/9, value=0/0
+CHART face=2, diff=21949, entity=787/1500, class=500/500, int=3/27, value=0/0
+CHART face=2, diff=21949, entity=809/1503, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=814/1504, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=792/1499, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=1248/1501, class=500/500, int=4/33, value=0/0
+CHART face=4, diff=21949, entity=1227/1510, class=500/500, int=5/9, value=0/0
+chain-2-base-self-source cut PK mass: volume=0.5649759025938826/0.5649759024109156, area=4.236492420294968/4.236492414863922, max normalized residual=1.0371533842446151E-09
+PASS chain-2-base-self-source
+
+STDERR

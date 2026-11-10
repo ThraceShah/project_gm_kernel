@@ -1,0 +1,1 @@
+{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/RegularCurvedBooleanOracle.cs","-c","Release","-p:UseSharedCompilation=false","--","block-15902"],"logSha256":"99a5698877a60781cf28b7493c572f5f25db680c3f22c270e18c01d2851ab2fd"}
