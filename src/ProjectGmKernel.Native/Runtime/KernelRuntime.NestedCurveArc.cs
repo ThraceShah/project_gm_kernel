@@ -106,6 +106,112 @@ internal static unsafe partial class KernelRuntime
         return Match(u0,u1,end.param[0])&&Match(v0,v1,end.param[1]);
     }
 
+    private readonly ref struct NestedBranchStationMap
+    {
+        private readonly ReadOnlySpan<double> _stations;
+        private readonly ReadOnlySpan<double> _parameters;
+
+        internal NestedBranchStationMap(ReadOnlySpan<double> stations, ReadOnlySpan<double> parameters)
+        {
+            _stations = stations;
+            _parameters = parameters;
+        }
+
+        internal int Count => _stations.Length;
+
+        internal bool TryMapOldToNew(double tOld, out double tNew)
+        {
+            tNew = 0;
+            if (!double.IsFinite(tOld) || _stations.Length < 2 || _parameters.Length < _stations.Length) return false;
+            if (tOld < _stations[0] || tOld > _stations[^1]) return false;
+            if (tOld == _stations[0]) { tNew = _parameters[0]; return true; }
+            if (tOld == _stations[^1]) { tNew = _parameters[_stations.Length - 1]; return true; }
+            for (var i = 0; i < _stations.Length - 1; i++)
+            {
+                var s0 = _stations[i];
+                var s1 = _stations[i + 1];
+                if (tOld >= s0 && tOld <= s1 && s1 > s0)
+                {
+                    var u = (tOld - s0) / (s1 - s0);
+                    tNew = _parameters[i] + u * (_parameters[i + 1] - _parameters[i]);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        internal bool TryMapNewToOld(double tNew, out double tOld)
+        {
+            tOld = 0;
+            if (!double.IsFinite(tNew) || _stations.Length < 2 || _parameters.Length < _stations.Length) return false;
+            if (tNew < _parameters[0] || tNew > _parameters[_stations.Length - 1]) return false;
+            if (tNew == _parameters[0]) { tOld = _stations[0]; return true; }
+            if (tNew == _parameters[_stations.Length - 1]) { tOld = _stations[^1]; return true; }
+            for (var i = 0; i < _stations.Length - 1; i++)
+            {
+                var p0 = _parameters[i];
+                var p1 = _parameters[i + 1];
+                if (tNew >= p0 && tNew <= p1 && p1 > p0)
+                {
+                    var u = (tNew - p0) / (p1 - p0);
+                    tOld = _stations[i] + u * (_stations[i + 1] - _stations[i]);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        internal bool CertifyBranchCoverage(
+            in NestedBlendProgram originalProgram, BufferOffset originalSpine,
+            in NestedBlendProgram compiledProgram, BufferOffset newSpine,
+            ReadOnlySpan<BlendChartInstruction> originalCharts,
+            double lower, double upper, double tolerance = 1e-7)
+        {
+            if (_stations.Length < 2 || _parameters.Length < _stations.Length) return false;
+            if (_stations[0] != lower || _stations[^1] != upper) return false;
+            for (var i = 0; i < _stations.Length - 1; i++)
+            {
+                if (!(_stations[i + 1] > _stations[i]) || !(_parameters[i + 1] > _parameters[i]))
+                    return false;
+            }
+            var prevP = _parameters[0];
+            Span<KernelVector3> origJet = stackalloc KernelVector3[2];
+            Span<KernelVector3> newJet = stackalloc KernelVector3[2];
+            Span<double> origUv = stackalloc double[4];
+            Span<double> newUv = stackalloc double[4];
+
+            for (var k = 0; k < originalCharts.Length; k++)
+            {
+                var tOld = originalCharts[k].Parameter;
+                if (tOld <= lower || tOld >= upper) continue;
+                if (!TryMapOldToNew(tOld, out var pNew) || !(pNew > prevP)) return false;
+                if (!TryMapNewToOld(pNew, out var tRecovered) || Math.Abs(tRecovered - tOld) > 1e-10) return false;
+
+                if (JointNestedBlendEvaluation.EvaluateSpine(originalProgram, originalSpine, tOld, 1, origJet, origUv) != AlgorithmStatus.Success)
+                    return false;
+                if (JointNestedBlendEvaluation.EvaluateSpine(compiledProgram, newSpine, pNew, 1, newJet, newUv) != AlgorithmStatus.Success)
+                    return false;
+
+                var diff = EvaluationMath.Sub(newJet[0], origJet[0]);
+                var tLenSq = EvaluationMath.Dot(newJet[1], newJet[1]);
+                if (tLenSq > 0)
+                {
+                    var pProj = Math.Clamp(pNew - EvaluationMath.Dot(diff, newJet[1]) / tLenSq, _parameters[0], _parameters[^1]);
+                    if (JointNestedBlendEvaluation.EvaluateSpine(compiledProgram, newSpine, pProj, 1, newJet, newUv) == AlgorithmStatus.Success)
+                        diff = EvaluationMath.Sub(newJet[0], origJet[0]);
+                }
+                var distSq = EvaluationMath.Dot(diff, diff);
+                if (distSq > tolerance * tolerance) return false;
+
+                var dotT = EvaluationMath.Dot(EvaluationMath.Unit(origJet[1]), EvaluationMath.Unit(newJet[1]));
+                if (!(dotT > 0.99)) return false;
+
+                prevP = pNew;
+            }
+            return true;
+        }
+    }
+
     private static bool TryCompactFiniteNestedIntersection(in CurveRecord record,in ICurveData data,
         SurfTag firstSupport,SurfTag secondSupport,double lower,double upper,out CurveTag curve)
     {
@@ -130,6 +236,7 @@ internal static unsafe partial class KernelRuntime
                 ||JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,upper,1,jetHi,uvHi)!=AlgorithmStatus.Success)return false;
             if(lower==charts[0].Parameter)jetLo[0]=charts[0].Position;
             if(upper==charts[^1].Parameter)jetHi[0]=charts[^1].Position;
+
             var tLo=EvaluationMath.Unit(jetLo[1]);var tMid=EvaluationMath.Unit(jetMid[1]);var tHi=EvaluationMath.Unit(jetHi[1]);
             var chord=EvaluationMath.Sub(jetHi[0],jetLo[0]);
             var chordLength=Math.Sqrt(EvaluationMath.Dot(chord,chord));
@@ -146,10 +253,10 @@ internal static unsafe partial class KernelRuntime
                 var blendSide=program.Surfaces[root.First].IsBlend?1:program.Surfaces[root.Second].IsBlend?3:-1;
                 var blendVSpan=blendSide>=0?Math.Abs(uvHi[blendSide]-uvLo[blendSide]):0;
                 var effectiveTurn=Math.Max(totalTurn,blendVSpan*(0.5*Math.PI));
-                var maxStep=span*Math.Clamp(0.33743/Math.Max(effectiveTurn,0.33743),0.1,0.5);
                 var rampStart=(lower-record.TMin)<=1e-3*(record.TMax-record.TMin)
                     &&(Surfaces[GetSurfaceSlotByTag(firstSupport)].Class==SurfaceClass.Cylinder
                         ||Surfaces[GetSurfaceSlotByTag(secondSupport)].Class==SurfaceClass.Cylinder);
+                var maxStep=span*Math.Clamp(0.33743/Math.Max(effectiveTurn,0.33743),0.1,0.5);
                 var step=rampStart?span*0.0005484304319:maxStep;
                 stations[count++]=lower;var cur=lower;
                 while(count<15)
@@ -201,8 +308,15 @@ internal static unsafe partial class KernelRuntime
                     Console.Error.WriteLine($"COMPACT_FAIL supports={firstSupport}/{secondSupport} count={count} status={compactStatus} range=[{lower:R},{upper:R}]");
                 return false;
             }
+            var compiled=compiler.View;
+            var compiledSpine=compiled.Spines[spine];
+            var compiledCharts=compiled.Charts.Slice(compiledSpine.ChartOffset,count);
+            Span<double> newParameters=stackalloc double[count];
+            for(var i=0;i<count;i++)newParameters[i]=compiledCharts[i].Parameter;
+            var branchMap=new NestedBranchStationMap(stations.Slice(0,count),newParameters);
+            if(!branchMap.CertifyBranchCoverage(program,data.ProgramSpine,compiled,spine,charts,lower,upper))return false;
             CurveTag result=0;
-            if(BindNestedBlendSpine(firstSupport,secondSupport,compiler.View,spine,&result,uv)!=0)return false;
+            if(BindNestedBlendSpine(firstSupport,secondSupport,compiled,spine,&result,uv)!=0)return false;
             curve=result;return true;
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}

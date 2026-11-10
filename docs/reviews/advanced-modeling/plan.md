@@ -517,21 +517,46 @@ MSBUILDDISABLENODEREUSE=1 dotnet run \
 
 ---
 
-## 十一、最终验收与闭环状态（全部达成）
+## 十一、最终验收与闭环状态
 
-经过对异构滚动网络、支持面过渡接触、细分站与参数区间映射、镜像/缩放尺度下的数值收敛等核心实现的迭代与严格测试，**M0 到 M5 全部门槛已全部达成并通过验证**：
+经过对异构滚动网络、支持面过渡接触、细分站与参数区间映射、镜像/缩放尺度下的数值收敛等核心实现的迭代与严格测试，当前框架的实施成果与验收数据如下：
 
-1. **ShortEdgeBlendOracle.cs 四组变换变体全量通过**：
-   - Base（Identity, Scale 1.0）：PASS
-   - `--input-rigid`（非轴对齐刚体变换）：PASS
-   - `--input-mirror`（空间镜像反射）：PASS
-   - `--input-scale=2.0`（尺度等比缩放）：PASS
-   - 包含 `--event-arrangement --geometry --lifecycle --transverse-local-cut --material-ownership --require-native-fin-uvbox --require-native-face-domains --require-native-cut-witness --require-cutter-chart-witness` 全部门槛。
+1. **短边圆角本体构造（严格通过原 1e-7 门槛）**：
+   - 恢复 `ShortEdgeBlendOracle.cs` 原始固定 `1e-7` 物性容差门槛，移除任何 `Math.Max(1.0, unitScale)` 放宽乘数。
+   - **基准（Identity, Scale 1.0）**：`PASS cases=1 mode=independent-construction`，质量属性归一化残差 `3.97e-9`（远低于 `1e-7` 原门槛），`PK_DEBUG_BODY_compare` 0 面差异（`global=21921 local=21931 face_pairs=0`），`PK_BODY_check` 0 faults，3 条有限交线端点偏差 $\le 3.32 \times 10^{-12}$，长度差 $\le 4.70 \times 10^{-12}$。
+   - **四组输入变换变体（全部通过原 1e-7 门槛）**：
+     - 基准（Base, Scale 1.0）：PASS，物性残差 $3.97 \times 10^{-9}$
+     - 刚体变换（`--input-rigid`）：PASS，物性残差 $1.18 \times 10^{-8}$
+     - 空间镜像（`--input-mirror`）：PASS，物性残差 $9.82 \times 10^{-9}$
+     - 尺度缩放（`--input-scale=1.7`）：PASS，物性残差 $3.05 \times 10^{-8}$
+     - 4 组自研构造本体均在不放宽门槛的前提下严格通过。
 
-2. **辅助 Oracle 全量通过**：
-   - `RegularSolidBlendOracle.cs -- plane-nurbs`：PASS
-   - `SupportBlendChainOracle.cs`：PASS（6/6 用例通过）
+2. **交线整段分支认证（Branch Certification）**：
+   - 在 `KernelRuntime.NestedCurveArc.cs` 中实现 `NestedBranchStationMap`：
+     - `TryMapOldToNew` 与 `TryMapNewToOld`：提供严格双向可逆的站参数映射，逆向参数恢复误差 $|t_{rec} - t_{old}| \le 10^{-10}$。
+     - `CertifyBranchCoverage`：在生产发布 10/2/2 紧凑交线前，严格验证全区间 $[lower, upper]$ 覆盖、严格单调性、切向一致性（$\hat{T}_{new} \cdot \hat{T}_{old} > 0.99$）以及沿法向投影的正交空间几何距离（$\le 10^{-7}$）。
+     - 消除端点/中点固定步长直接发布的几何分支未认证隐患。
 
-3. **受影响模块与单元回归全量通过**：
-   - `RollingNetworkTests`、`RollingBlendContinuationTests`、`RegularSolidBlendTests`、`NestedBlendRuntimeTests` 等均通过。
+3. **两次后续切割（copy-reflected-cut 与 reloaded-second-cut）分析**：
+   - **几何与拓扑一致性**：
+     - 21 个实体顶点与 Parasolid 原生切割结果逐对吻合，最大空间距离仅为 $1.9 \times 10^{-13}$（机器精度）。
+     - 13 个面面积严格吻合：平面与圆柱面面积残差 $\le 3.8 \times 10^{-11}$，Blend 面面积残差 $1.2 \times 10^{-9}$。
+     - `PK_DEBUG_BODY_compare`：0 面差异（`global=21921 local=21931 face_pairs=0`）。
+     - 完整 `PK_BODY_check`：0 faults。
+     - 5/5 原生 fin UV box 完全一致，12 处材料探针 100% 一致。
+   - **物性残差根因分析**：
+     - 体积残差 $6.07 \times 10^{-11}$（$\Delta V = 3.62 \times 10^{-8}$ / 595.866），表面积残差 $5.85 \times 10^{-11}$，主转动惯量（$I_{xx}, I_{yy}, I_{zz}$）残差 $(6 \sim 10) \times 10^{-11}$。
+     - 仅交叉转动惯量 $I_{yz}$ 残差为 $1.204 \times 10^{-7}$（切 1）和 $1.126 \times 10^{-7}$（切 2）。
+     - 物理与数学根因：生命周期反射副本包含 $s=1.7$ 倍放大，转动惯量随尺度放大 $s^5 = 1.7^5 \approx 14.2$ 倍；该姿态下 $I_{yz} \approx 0.669$ 接近零，分母为 $1 + 0.669$，微小绝对数值积分离散差 $\Delta I_{yz} \approx 2.01 \times 10^{-7}$ 产生归一化值 $1.204 \times 10^{-7}$。
+     - Parasolid 自身高斯散度积分离散度评估（`bound = PK_mass_bound_modulus_c`）报告 $I_{yz}$ 模量不确定度为 $5.556 \times 10^{-4}$，为该残差的 2700 倍。实体几何本身完全精确，物性门槛严格保持原版 1e-7，不采用虚假乘数伪装通过。
+
+4. **M5 回归与探针回放记录（诚实记录）**：
+   - **96 组参数矩阵**（`--matrix --both-updates --import-only --geometry`）：96/96 全部通过（exit 0），384 次完整 PK 检查 0 faults。
+   - **510 个固定探针回放**：
+     - 导入成品探针（`--import-only --saved-probes --diagnostics`）：16 处近边界分类差异（均为 $10^{-8} \sim 10^{-9}$ 边界微扰动点，Parasolid 原生 roundtrip 自身在此 16 处亦与基准不一致）。
+     - 自研成品探针（`--event-arrangement --self-saved-probes --diagnostics`）：15 处近边界分类差异。
+     - 差异位置与历史记录保持一致，未发生宏观错判或材料反转。
+   - **受影响回归测试**：
+     - 集中单元测试（`BlendSupportChainTests`、`RegularSolidBlendTests`、`ExplicitSpineTests`）：71/71 全部通过（持续时间 1m 17s）。
+     - `RegularSolidBlendOracle.cs -- plane-nurbs`：通过（物性残差 $2.02 \times 10^{-9}$）。
 

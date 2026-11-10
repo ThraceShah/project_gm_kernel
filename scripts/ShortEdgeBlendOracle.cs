@@ -245,7 +245,7 @@ using(host)unsafe
                     var reexport=Transmit(true,imported);File.WriteAllBytes(Path.Combine(output,name+"-native-fresh.x_t"),reexport);
                     var reloaded=Receive(false,reexport);CheckBody(reloaded,"native via managed");
                     ParasolidBodyCompare.AssertEquivalent(reference,reloaded,"native via managed");
-                    Mass(reference,reloaded,"native via managed",inputScale);
+                    Mass(reference,reloaded,"native via managed");
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(savedProbes)SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
@@ -271,7 +271,7 @@ using(host)unsafe
                     }
                     if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,"self-constructed-product",inputScale);
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
-                    try{Mass(reference,received,"self-constructed-product",inputScale);}
+                    try{Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
                     if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false);
                     if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true);
@@ -621,7 +621,7 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,name,unitScale);
         if(projected.HasValue)CheckProjectedMaterial(reference,own,received,projected.Value,name);
         var failures=0;
-        try{Mass(reference,received,name,unitScale);}
+        try{Mass(reference,received,name);}
         catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);failures++;}
         if(requireNativeFinBoxes)CompareNativeBlendFinBoxes(reference,received,name);
         return failures;
@@ -928,13 +928,12 @@ static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,
     Require(tested>0,label+" material probes with finite separation from both endpoints");
     Console.WriteLine($"MATERIAL {label} probes={tested} native/self/fresh agree on both sides of the short ICurves");
 }
-static unsafe void Mass(int reference,int actual,string label,double unitScale=1.0)
+static unsafe void Mass(int reference,int actual,string label)
 {
     var options=new PK_TOPOL_eval_mass_props_o_t();double* a=stackalloc double[15];double* b=stackalloc double[15];
     ReadOnlySpan<string> properties=["volume","mass","centroid.x","centroid.y","centroid.z","inertia.xx","inertia.xy","inertia.xz",
         "inertia.yx","inertia.yy","inertia.yz","inertia.zx","inertia.zy","inertia.zz","area"];
     var error=double.PositiveInfinity;var worst=0;
-    var tolerance=1e-7*Math.Max(1.0,unitScale);
     foreach(var accuracy in new[]{.99999999,.99999999999})
     {
         Check(PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+1,a+2,a+5,a+14),"reference mass");
@@ -947,10 +946,10 @@ static unsafe void Mass(int reference,int actual,string label,double unitScale=1
             error=Math.Max(error,residual);
         }
         Console.WriteLine($"MASS {label} accuracy={accuracy:R} volume={a[0]:R}/{b[0]:R} area={a[14]:R}/{b[14]:R} normalized15={error:R} worst={properties[worst]} points={a[worst]:R}/{b[worst]:R}");
-        if(error<tolerance)break;
+        if(error<1e-7)break;
     }
-    if(!(error<tolerance))ReportMassBounds(reference,actual,label,properties[worst],worst);
-    Require(error<tolerance,"mass mismatch");
+    if(!(error<1e-7))ReportMassBounds(reference,actual,label,properties[worst],worst);
+    Require(error<1e-7,"mass mismatch");
 }
 static unsafe void ReportMassBounds(int reference,int actual,string label,string worst,int index)
 {
