@@ -81,15 +81,27 @@ internal static class WebProgressScheduler
             || state["completed"] is not JsonObject completed || state["blocked"] is not JsonObject blocked || state["stale"] is not JsonObject stale)
             throw Bad("has corrupt queue collections");
         if (state["retired"] is not null && state["retired"] is not JsonObject) throw Bad("has corrupt retired collections");
-        if (state["quarantined"] is not null && state["quarantined"] is not JsonObject) throw Bad("has corrupt quarantined collections");
-        if (state["workingPaths"] is not null && state["workingPaths"] is not JsonArray) throw Bad("has corrupt workingPaths");
+        if (state["quarantined"] is not null)
+        {
+            if (state["quarantined"] is not JsonObject qObj) throw Bad("has corrupt quarantined collections");
+            foreach (var pair in qObj)
+                if (pair.Value is not JsonObject qEntry || !Str(qEntry["runId"], false) || !Str(qEntry["reason"], false) || !Str(qEntry["quarantinedAt"], false) || (qEntry["errors"] is not null && (qEntry["errors"] is not JsonArray qErrors || qErrors.Any(e => !Str(e, true)))))
+                    throw Bad("has corrupt quarantined entries");
+        }
+        if (state["workingPaths"] is not null)
+        {
+            if (state["workingPaths"] is not JsonArray wpArray) throw Bad("has corrupt workingPaths");
+            foreach (var item in wpArray)
+                if (!Str(item, true)) throw Bad("has non-string workingPaths elements");
+        }
         if (state["workingDiffHash"] is not null && !Str(state["workingDiffHash"], false)) throw Bad("has corrupt workingDiffHash");
         if (state["lastRunId"] is not null && !Str(state["lastRunId"], false)) throw Bad("has corrupt lastRunId");
         foreach (var item in pendingArray)
-            if (item is not JsonObject entry || !Str(entry["caseId"], true) || !Str(entry["reason"], true) || !Num(entry["attempts"], false) || !Str(entry["retryReason"], false) || !Str(entry["lastRunId"], false))
+            if (item is not JsonObject entry || !Str(entry["caseId"], true) || !Str(entry["reason"], true) || !Num(entry["attempts"], false) || !Str(entry["retryReason"], false) || !Str(entry["lastRunId"], false) || !Str(entry["entryHash"], false))
                 throw Bad("has corrupt pending entries");
         foreach (var item in batchArray)
-            if (item is not JsonObject batch || !Str(batch["runId"], true) || !Str(batch["status"], true) || !Num(batch["exitCode"], false))
+            if (item is not JsonObject batch || !Str(batch["runId"], true) || !Str(batch["status"], true) || !Num(batch["exitCode"], false)
+                || (batch["cases"] is not null && (batch["cases"] is not JsonArray bCases || bCases.Any(c => !Str(c, true)))))
                 throw Bad("has corrupt batch entries");
         foreach (var pair in completed)
             if (pair.Value is not JsonObject done || !Str(done["entryHash"], true) || !Str(done["runId"], true) || !Str(done["revision"], false) || !Str(done["status"], false) || !Num(done["attempts"], false) || !Num(done["batchIndex"], false) || !Str(done["completedAt"], false) || !Str(done["checkVersion"], false))
@@ -104,11 +116,22 @@ internal static class WebProgressScheduler
         {
             foreach (var pair in retObj)
             {
-                if (pair.Value is not JsonObject tomb || !Str(tomb["retiredAt"], false) || !Str(tomb["retireReason"], false) || tomb["records"] is not JsonArray recArray)
+                if (pair.Value is not JsonObject tomb || !Str(tomb["retiredAt"], false) || !Str(tomb["retireReason"], false)
+                    || !Str(tomb["invalidateReason"], false) || !Str(tomb["invalidateRevision"], false) || !Str(tomb["invalidatedAt"], false)
+                    || tomb["records"] is not JsonArray recArray)
                     throw Bad("has corrupt retired records");
                 foreach (var rec in recArray)
-                    if (rec is not JsonObject r || !Str(r["kind"], true) || r["record"] is not JsonObject)
+                {
+                    if (rec is not JsonObject r || !Str(r["kind"], true) || r["record"] is not JsonObject rObj)
                         throw Bad("has corrupt retired record entries");
+                    var rKind = r["kind"]!.GetValue<string>();
+                    if (rKind == "pending" && (!Str(rObj["caseId"], true) || !Str(rObj["reason"], true) || !Num(rObj["attempts"], false) || !Str(rObj["retryReason"], false) || !Str(rObj["lastRunId"], false) || !Str(rObj["entryHash"], false)))
+                        throw Bad("has corrupt retired pending record");
+                    if (rKind == "blocked" && (!Str(rObj["entryHash"], true) || !Num(rObj["attempts"], true) || !Str(rObj["retryReason"], true) || !Str(rObj["lastRunId"], false) || !Str(rObj["blockedAt"], false)))
+                        throw Bad("has corrupt retired blocked record");
+                    if (rKind == "stale" && (!Str(rObj["entryHash"], true) || !Str(rObj["runId"], true) || !Str(rObj["revision"], false) || !Str(rObj["status"], false) || !Str(rObj["markedAt"], false) || !Str(rObj["reason"], false)))
+                        throw Bad("has corrupt retired stale record");
+                }
             }
         }
         return state;
@@ -170,8 +193,28 @@ internal static class WebProgressScheduler
         foreach (var entry in entries)
         {
             var id = entry["id"]!.GetValue<string>();
-            if (!active.Contains(id)) continue;
             var hash = EntryHash(entry);
+            if (retired[id] is JsonObject tomb)
+            {
+                foreach (var rec in tomb["records"]!.AsArray().OfType<JsonObject>())
+                {
+                    if (rec["kind"]?.GetValue<string>() == "pending" && rec["record"] is JsonObject pendingRec)
+                    {
+                        var oldHash = pendingRec["entryHash"]?.GetValue<string>();
+                        if (oldHash != null && oldHash != hash)
+                        {
+                            pendingRec["reason"] = "recipe-change";
+                            pendingRec["attempts"] = 0;
+                            pendingRec["entryHash"] = hash;
+                        }
+                        else if (oldHash == null)
+                        {
+                            pendingRec["entryHash"] = hash;
+                        }
+                    }
+                }
+            }
+            if (!active.Contains(id)) continue;
             // Explicit transition priority: recipe changes act on each record
             // independently so stale display can never swallow a blocked park
             // (stale+blocked must still unblock and re-queue on recipe change).
@@ -183,12 +226,18 @@ internal static class WebProgressScheduler
                 moved["reason"] = "recipe-change";
                 stale[id] = moved;
                 completed.Remove(id);
-                if (pendingIds.Add(id)) pending.Add(Pending(id, "recipe-change"));
+                if (pendingIds.Add(id)) pending.Add(Pending(id, "recipe-change", hash));
             }
             if (blocked[id] is JsonObject bad && bad["entryHash"]!.GetValue<string>() != hash)
             {
                 blocked.Remove(id);
-                if (pendingIds.Add(id)) pending.Add(Pending(id, "recipe-change"));
+                if (pendingIds.Add(id))
+                {
+                    var item = Pending(id, "recipe-change", hash);
+                    if (bad["lastRunId"]?.GetValue<string>() is string lastRun) item["lastRunId"] = lastRun;
+                    if (bad["retryReason"]?.GetValue<string>() is string retry) item["retryReason"] = retry;
+                    pending.Add(item);
+                }
             }
             if (stale[id] is JsonObject old && old["entryHash"]!.GetValue<string>() != hash)
             {
@@ -198,9 +247,25 @@ internal static class WebProgressScheduler
                 {
                     item["reason"] = "recipe-change";
                     item["attempts"] = 0;
+                    item["entryHash"] = hash;
                 }
             }
-            if (!completed.ContainsKey(id) && !blocked.ContainsKey(id) && !pendingIds.Contains(id)) pending.Add(Pending(id, firstEnqueue ? "initial" : "new-recipe"));
+            var pendingItem = pending.OfType<JsonObject>().FirstOrDefault(p => p["caseId"]!.GetValue<string>() == id);
+            if (pendingItem != null)
+            {
+                var oldHash = pendingItem["entryHash"]?.GetValue<string>();
+                if (oldHash != null && oldHash != hash)
+                {
+                    pendingItem["reason"] = "recipe-change";
+                    pendingItem["attempts"] = 0;
+                    pendingItem["entryHash"] = hash;
+                }
+                else if (oldHash == null)
+                {
+                    pendingItem["entryHash"] = hash;
+                }
+            }
+            if (!completed.ContainsKey(id) && !blocked.ContainsKey(id) && !pendingIds.Contains(id)) pending.Add(Pending(id, firstEnqueue ? "initial" : "new-recipe", hash));
         }
     }
 
@@ -317,6 +382,7 @@ internal static class WebProgressScheduler
             // invalidation: the marker is preserved on its tombstone and
             // consumed on restore exactly like the active paths decide.
             MarkRetiredInvalidation(state, "source-change", newRevision, id);
+            var entryH = EntryHash(entry);
             if (completed[id] is JsonObject record)
             {
                 var moved = record.DeepClone().AsObject();
@@ -324,7 +390,7 @@ internal static class WebProgressScheduler
                 moved["reason"] = "source-change";
                 stale[id] = moved;
                 completed.Remove(id);
-                if (!pendingIds.Contains(id)) pending.Add(Pending(id, "affected"));
+                if (!pendingIds.Contains(id)) pending.Add(Pending(id, "affected", entryH));
             }
             else if (blocked.ContainsKey(id))
             {
@@ -332,7 +398,7 @@ internal static class WebProgressScheduler
                 blocked.Remove(id);
                 if (!pendingIds.Contains(id))
                 {
-                    var item = Pending(id, "affected");
+                    var item = Pending(id, "affected", entryH);
                     if (parked?["lastRunId"]?.GetValue<string>() is string lastRun) item["lastRunId"] = lastRun;
                     if (parked?["retryReason"]?.GetValue<string>() is string retry) item["retryReason"] = retry;
                     pending.Add(item);
@@ -343,6 +409,7 @@ internal static class WebProgressScheduler
                 var item = pending.First(p => p!["caseId"]!.GetValue<string>() == id)!;
                 if (item["reason"]!.GetValue<string>() is not ("affected" or "recipe-change")) item["reason"] = "affected";
                 item["attempts"] = 0;
+                item["entryHash"] = entryH;
             }
         }
         state["sourceRevision"] = newRevision;
@@ -426,6 +493,7 @@ internal static class WebProgressScheduler
                 item["attempts"] = attempts;
                 item["retryReason"] = "exporter-compile-or-contract-failure";
                 item["lastRunId"] = runId;
+                item["entryHash"] = entryHash;
                 if (attempts >= MaxAttempts)
                 {
                     pending.Remove(item);
@@ -684,7 +752,15 @@ internal static class WebProgressScheduler
 
     private static HashSet<string> PendingIds(JsonObject state) => state["pending"]!.AsArray().Select(p => p!["caseId"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
 
-    private static JsonObject Pending(string caseId, string reason) => new() { ["caseId"] = caseId, ["reason"] = reason, ["attempts"] = 0, ["retryReason"] = null };
+    private static JsonObject Pending(string caseId, string reason, string? entryHash = null) => new()
+    {
+        ["caseId"] = caseId,
+        ["reason"] = reason,
+        ["attempts"] = 0,
+        ["retryReason"] = null,
+        ["lastRunId"] = null,
+        ["entryHash"] = entryHash,
+    };
 
     private static string ClassifyPath(string path, HashSet<string> caseSources)
     {

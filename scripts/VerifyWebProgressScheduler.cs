@@ -736,6 +736,29 @@ for (var i = 0; i < 2; i++) WebProgressScheduler.RecordOutcome(s23, "blend.alpha
 WebProgressScheduler.MarkChanges(s23, ["src/Kernel.cs"], regAlpha2, "rev-new-active");
 var activePendingItem = s23["pending"]!.AsArray().OfType<JsonObject>().First(p => p["caseId"]!.GetValue<string>() == "blend.alpha");
 Assert(activePendingItem["attempts"]!.GetValue<int>() == 0 && activePendingItem["reason"]!.GetValue<string>() == "affected", "active pending with 2 prior attempts gets attempts reset to 0 upon source change");
+// (g) pure pending (failed 2 times, not yet blocked) retired -> recipe changed -> restored: attempts reset to 0 (review A-S3S5b)
+var s24 = WebProgressScheduler.NewState("rev-0", "h24", "test-registry-v1");
+var e24 = new JsonObject { ["id"] = "a", ["source"] = "scripts/Test.cs", ["meshAdapter"] = true, ["representative"] = false, ["suite"] = "s", ["parameters"] = new JsonObject { ["radius"] = 0.1 } };
+var reg24 = new JsonObject { ["cases"] = new JsonArray((JsonNode)e24) };
+WebProgressScheduler.Reconcile(s24, reg24, "h24", "test-registry-v1");
+for (var i = 0; i < 2; i++) WebProgressScheduler.RecordOutcome(s24, "a", "export-failure", "missing", "bad-24", "rev-0", WebProgressScheduler.EntryHash(e24), 0);
+WebProgressScheduler.Reconcile(s24, reg24, "h24", "test-registry-v1", _ => false);
+e24["parameters"]!["radius"] = 0.2;
+WebProgressScheduler.Reconcile(s24, reg24, "h24b", "test-registry-v1", _ => true);
+var restoredRecipePending = s24["pending"]!.AsArray().OfType<JsonObject>().First(p => p["caseId"]!.GetValue<string>() == "a");
+Assert(restoredRecipePending["attempts"]!.GetValue<int>() == 0 && restoredRecipePending["reason"]!.GetValue<string>() == "recipe-change", "pure pending retired then restored across recipe change gets attempts reset to 0 with recipe-change reason");
+WebProgressScheduler.RecordOutcome(s24, "a", "export-failure", "missing", "bad-24b", "rev-0", WebProgressScheduler.EntryHash(e24), 1);
+Assert(!s24["blocked"]!.AsObject().ContainsKey("a") && s24["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "a"), "first failure under changed recipe does not block case");
+// (h) pure pending retired then restored WITHOUT recipe change keeps its attempts
+var s25 = WebProgressScheduler.NewState("rev-0", "h25", "test-registry-v1");
+var e25 = new JsonObject { ["id"] = "a", ["source"] = "scripts/Test.cs", ["meshAdapter"] = true, ["representative"] = false, ["suite"] = "s", ["parameters"] = new JsonObject { ["radius"] = 0.1 } };
+var reg25 = new JsonObject { ["cases"] = new JsonArray((JsonNode)e25) };
+WebProgressScheduler.Reconcile(s25, reg25, "h25", "test-registry-v1");
+for (var i = 0; i < 2; i++) WebProgressScheduler.RecordOutcome(s25, "a", "export-failure", "missing", "bad-25", "rev-0", WebProgressScheduler.EntryHash(e25), 0);
+WebProgressScheduler.Reconcile(s25, reg25, "h25", "test-registry-v1", _ => false);
+WebProgressScheduler.Reconcile(s25, reg25, "h25", "test-registry-v1", _ => true);
+var restoredUnchangedPending = s25["pending"]!.AsArray().OfType<JsonObject>().First(p => p["caseId"]!.GetValue<string>() == "a");
+Assert(restoredUnchangedPending["attempts"]!.GetValue<int>() == 2, "restoring pure pending without recipe change preserves previous attempt count (does not clear attempts)");
 
 // ---- 24. typed state schema rejection (review S1-r2) ----
 var typedBase = WebProgressScheduler.NewState("r", "h", "v");
@@ -757,6 +780,9 @@ Typed("a scalar publish marker is rejected", s => s["publish"] = true);
 Typed("a string publish.pending marker is rejected as STATE_SCHEMA_INVALID", s => s["publish"]!["pending"] = "true");
 Typed("a numeric publish.pending marker is rejected as STATE_SCHEMA_INVALID", s => s["publish"]!["pending"] = 1);
 Typed("a numeric publish.lastError is rejected as STATE_SCHEMA_INVALID", s => s["publish"]!["lastError"] = 123);
+Typed("a non-string workingPaths element is rejected as STATE_SCHEMA_INVALID", s => s["workingPaths"] = new JsonArray(123));
+Typed("a non-string batch case element is rejected as STATE_SCHEMA_INVALID", s => s["batches"]!.AsArray().Add((JsonNode)new JsonObject { ["runId"] = "r1", ["status"] = "complete", ["cases"] = new JsonArray(123) }));
+Typed("a non-string pending entryHash is rejected as STATE_SCHEMA_INVALID", s => s["pending"]![0]!["entryHash"] = 123);
 Typed("a corrupt retired collection is rejected", s => s["retired"] = "bad");
 Typed("a corrupt retired record entry is rejected", s => s["retired"] = new JsonObject { ["a"] = new JsonObject { ["records"] = new JsonArray((JsonNode)new JsonObject { ["kind"] = 123 }) } });
 Typed("a mistyped pending caseId is rejected", s => s["pending"]![0]!["caseId"] = 123);

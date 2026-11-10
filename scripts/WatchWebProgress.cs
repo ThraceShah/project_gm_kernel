@@ -144,7 +144,7 @@ async Task<int?> RunOnce()
     }
     var previousRevision = state["sourceRevision"]?.GetValue<string>();
     var previousWorking = state["workingDiffHash"]?.GetValue<string>();
-    var previousWorkingPaths = state["workingPaths"]?.AsArray().Select(p => p!.GetValue<string>()).ToList() ?? [];
+    var previousWorkingPaths = state["workingPaths"]?.AsArray().OfType<JsonValue>().Where(v => v.TryGetValue<string>(out _)).Select(v => v.GetValue<string>()).ToList() ?? [];
     var sourceChanged = false;
     if (revision != previousRevision || registryHash != state["registryHash"]?.GetValue<string>() || workingDiffHash != previousWorking)
     {
