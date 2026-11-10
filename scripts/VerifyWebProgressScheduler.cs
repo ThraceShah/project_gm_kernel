@@ -318,6 +318,24 @@ var okPath = Path.Combine(root, "ok-state.json");
 WebProgressScheduler.Save(okPath, WebProgressScheduler.NewState("rev-0", "h", "v"));
 Assert(WebProgressScheduler.LoadState(okPath, out var noBackup) is not null && noBackup == null, "a valid v1 queue state loads without migration");
 
+// ---- 14. working-tree fingerprints cover staged content and reverse changes ----
+var wsStaged = WebProgressScheduler.WorkingState("", "M src/source.cs\n+// v2\n", "", "src/source.cs");
+var wsClean = WebProgressScheduler.WorkingState("", "", "", "");
+Assert(wsStaged.Hash != wsClean.Hash && wsStaged.Paths.SequenceEqual(new[] { "src/source.cs" }), "pure staged content changes the fingerprint and maps its path");
+var wsSame = WebProgressScheduler.WorkingState("", "M src/source.cs\n+// v2\n", "", "src/source.cs");
+Assert(wsStaged.Hash == wsSame.Hash, "identical staged content keeps a stable fingerprint");
+var wsMixed = WebProgressScheduler.WorkingState("M src/source.cs\n", "M src/a.cs\n", "src/source.cs", "src/a.cs\nsrc/b.cs");
+Assert(wsMixed.Paths.SequenceEqual(new[] { "src/a.cs", "src/b.cs", "src/source.cs" }), "staged and unstaged names union distinctly for mixed same-source changes");
+var mergedRevert = WebProgressScheduler.MergeChangePaths(["docs/x.md"], ["src/source.cs"], []);
+Assert(mergedRevert.Contains("src/source.cs") && mergedRevert.Contains("docs/x.md"), "reverting a dirty file keeps the previously dirty path in the impact set");
+var mergedRename = WebProgressScheduler.MergeChangePaths([], ["src/a.cs", "src/b.cs"], ["src/a.cs"]);
+Assert(mergedRename.Count == 2, "rename/delete reverses keep both names in the union");
+var state4 = WebProgressScheduler.NewState("rev-0", "h4", "test-registry-v1");
+WebProgressScheduler.Reconcile(state4, Registry(alpha), "h4", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(state4, "blend.alpha", "completed", "pass", "run-4", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.MarkChanges(state4, ["scripts/web-progress-registry.json.bak"], Registry(alpha), "rev-5");
+Assert(state4["completed"]!.AsObject().Count == 0 && state4["stale"]!.AsObject().ContainsKey("blend.alpha"), "registry carveout is exact-match only; adjacent kernel-affecting files invalidate conservatively");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;

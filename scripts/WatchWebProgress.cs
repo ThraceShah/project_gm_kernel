@@ -60,8 +60,14 @@ async Task<int?> RunOnce()
     var registryHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(registryText)));
     var registryVersion = registry["version"]?.GetValue<string>() ?? "unversioned";
     var revision = Run("git", ["rev-parse", "HEAD"]);
-    var workingDiff = Run("git", ["diff", "--no-ext-diff"]);
-    var workingDiffHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(workingDiff)));
+    // Content fingerprint and path impact mapping share the same two diff
+    // scopes (unstaged + staged, rename detection off so a rename maps both
+    // names): a pure staged change can never hide behind an empty worktree diff.
+    var unstagedDiff = Run("git", ["diff", "--no-ext-diff", "--no-renames"]);
+    var stagedDiff = Run("git", ["diff", "--no-ext-diff", "--no-renames", "--cached"]);
+    var unstagedNames = Run("git", ["diff", "--no-renames", "--name-only"]);
+    var stagedNames = Run("git", ["diff", "--no-renames", "--cached", "--name-only"]);
+    var (workingDiffHash, workingPaths) = WebProgressScheduler.WorkingState(unstagedDiff, stagedDiff, unstagedNames, stagedNames);
     JsonObject state;
     try
     {
@@ -100,17 +106,18 @@ async Task<int?> RunOnce()
     }
     var previousRevision = state["sourceRevision"]?.GetValue<string>();
     var previousWorking = state["workingDiffHash"]?.GetValue<string>();
+    var previousWorkingPaths = state["workingPaths"]?.AsArray().Select(p => p!.GetValue<string>()).ToList() ?? [];
     var sourceChanged = false;
     if (revision != previousRevision || registryHash != state["registryHash"]?.GetValue<string>() || workingDiffHash != previousWorking)
     {
         sourceChanged = true;
         var committedChanged = revision != previousRevision ? ChangedPaths(previousRevision) : new List<string>();
-        var workingChanged = workingDiffHash != previousWorking
-            ? Run("git", ["diff", "--name-only"]).Split('\n', StringSplitOptions.RemoveEmptyEntries).Concat(Run("git", ["diff", "--cached", "--name-only"]).Split('\n', StringSplitOptions.RemoveEmptyEntries)).ToList()
-            : new List<string>();
-        var changed = committedChanged.Concat(workingChanged).Distinct(StringComparer.Ordinal).ToList();
+        // Reverting or renaming a dirty file must also invalidate: the impact
+        // set is the union of the paths dirty before and after the change.
+        var changed = WebProgressScheduler.MergeChangePaths(committedChanged, previousWorkingPaths, workingPaths);
         WebProgressScheduler.MarkChanges(state, changed, registry, revision);
         state["workingDiffHash"] = workingDiffHash;
+        state["workingPaths"] = new JsonArray(workingPaths.Select(p => (JsonNode?)JsonValue.Create(p)).ToArray());
         Console.WriteLine("SOURCE_CHANGED revision=" + revision[..8] + " paths=" + changed.Count);
     }
     Func<JsonObject, bool> eligible = entry =>
@@ -250,7 +257,7 @@ List<string> ChangedPaths(string? previous)
     if (previous == null) return [];
     try
     {
-        var names = Run("git", ["diff", "--name-only", previous, "HEAD"]);
+        var names = Run("git", ["diff", "--no-renames", "--name-only", previous, "HEAD"]);
         return names.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
     }
     catch (IOException)

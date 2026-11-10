@@ -452,6 +452,22 @@ internal static class WebProgressScheduler
 
     internal static string Hash(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 
+    // Working-tree change fingerprint and impact paths. Both derive from the
+    // same two diff scopes (unstaged + staged, rename detection off so a rename
+    // maps both names) so the content fingerprint and the path impact mapping
+    // can never disagree; reverse changes (revert, rename/delete undo) are
+    // caught through the union of the previously and currently dirty paths.
+    internal static (string Hash, List<string> Paths) WorkingState(string unstagedDiff, string stagedDiff, string unstagedNames, string stagedNames)
+    {
+        var hash = Hash(unstagedDiff + "\n\u0000staged\u0000\n" + stagedDiff);
+        var paths = Split(unstagedNames).Concat(Split(stagedNames)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToList();
+        return (hash, paths);
+        static IEnumerable<string> Split(string names) => names.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    internal static List<string> MergeChangePaths(IEnumerable<string> committed, IEnumerable<string> previousWorking, IEnumerable<string> currentWorking)
+        => committed.Concat(previousWorking).Concat(currentWorking).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToList();
+
     private static HashSet<string> PendingIds(JsonObject state) => state["pending"]!.AsArray().Select(p => p!["caseId"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
 
     private static JsonObject Pending(string caseId, string reason) => new() { ["caseId"] = caseId, ["reason"] = reason, ["attempts"] = 0, ["retryReason"] = null };
@@ -459,7 +475,7 @@ internal static class WebProgressScheduler
     private static string ClassifyPath(string path, HashSet<string> caseSources)
     {
         if (path.StartsWith("docs/", StringComparison.Ordinal) || path.StartsWith("web/", StringComparison.Ordinal)) return "none";
-        if (path.StartsWith("scripts/web-progress-registry.json", StringComparison.Ordinal)) return "registry";
+        if (path == "scripts/web-progress-registry.json") return "registry";
         if (!path.Contains('/') && (path.EndsWith(".md", StringComparison.Ordinal) || path == "LICENSE")) return "none";
         if (path.StartsWith("src/", StringComparison.Ordinal) || path.StartsWith("third_party/", StringComparison.Ordinal)
             || path.StartsWith("tests/KernelTests/Fixtures/", StringComparison.Ordinal) || path == "download-parasolid.sh"
