@@ -80,6 +80,26 @@ internal static unsafe partial class KernelRuntime
             surfaces[index]=instruction;return AlgorithmStatus.Success;
         }
 
+        // A prefix of this program, used to publish the compiled spines while
+        // excluding verification spines appended after them.
+        internal readonly NestedBlendProgram Prefix(BufferCount spineCount,BufferCount chartCount)=>
+            new(surfaces[..ns],spines[..spineCount],charts[..chartCount],scalars[..nd],CommandScratch.Current.AvailableSpanOfDoubles());
+        internal readonly BufferCount SpineCount=>nc;
+        internal readonly BufferCount ChartCount=>nh;
+
+        // Append a stored chart spine on supports already compiled here. The
+        // caller must have certified those supports identical to the stored
+        // ones; the stored definition and CHART witnesses are copied exactly.
+        internal AlgorithmStatus CopyChartSpine(in NestedBlendProgram stored,BlendSpineIndex source,BlendSurfaceIndex a,BlendSurfaceIndex b,out BlendSpineIndex index)
+        {
+            index=-1;if(source<0||source>=stored.Spines.Length)return AlgorithmStatus.InvalidInput;
+            var definition=stored.Spines[source];if(SpineParameterMap.Explicit(definition))return AlgorithmStatus.Unsupported;
+            var original=stored.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+            if(nc==spines.Length||nh+original.Length>charts.Length)return AlgorithmStatus.OutputTooSmall;
+            index=nc++;spineTags[index]=0;definition.First=a;definition.Second=b;definition.ChartOffset=nh;spines[index]=definition;
+            original.CopyTo(charts[nh..]);nh+=original.Length;return AlgorithmStatus.Success;
+        }
+
         internal AlgorithmStatus Spine(CurveTag tag,out BlendSpineIndex index)
         {
             index=spineTags[..nc].IndexOf(tag);if(index>=0)return AlgorithmStatus.Success;
