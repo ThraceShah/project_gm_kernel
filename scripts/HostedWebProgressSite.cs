@@ -80,6 +80,8 @@ internal static class HostedWebProgressSite
         var runCount = 0;
         var referenceCount = 0;
         string? latest = null;
+        var registered = new HashSet<string>(StringComparer.Ordinal);
+        var referenced = new HashSet<string>(StringComparer.Ordinal);
         void Error(string message) => errors.Add((JsonNode?)JsonValue.Create(message));
         var runsRoot = Path.Combine(data, "runs");
         if (!Directory.Exists(data)) { Error("data root missing"); return Result(); }
@@ -94,7 +96,6 @@ internal static class HostedWebProgressSite
         if (index?["schemaVersion"]?.GetValue<int>() != 1) Error("index schemaVersion");
         latest = index?["latestRunId"]?.GetValue<string>();
         if (string.IsNullOrEmpty(latest)) Error("index latestRunId missing");
-        var registered = new HashSet<string>(StringComparer.Ordinal);
         foreach (var descriptor in index?["runs"]?.AsArray() ?? [])
         {
             var id = descriptor?["id"]?.GetValue<string>();
@@ -144,6 +145,9 @@ internal static class HostedWebProgressSite
                     return;
                 }
                 if (Path.GetExtension(target) is not (".json" or ".log")) Error(id + ": " + context + " non-public extension " + relative);
+                var referencedRelative = Path.GetRelativePath(runsRoot, target).Replace('\\', '/');
+                var referencedRun = referencedRelative.Split('/')[0];
+                if (referencedRun.Length > 0 && referencedRun != ".") referenced.Add(referencedRun);
             }
         }
         if (latest is not null && !registered.Contains(latest)) Error("latestRunId not registered: " + latest);
@@ -154,6 +158,8 @@ internal static class HostedWebProgressSite
             ["runs"] = runCount,
             ["references"] = referenceCount,
             ["latestRunId"] = latest,
+            ["runIds"] = new JsonArray(registered.Order().Select(r => (JsonNode?)JsonValue.Create(r)).ToArray()),
+            ["referencedRunIds"] = new JsonArray(referenced.Order().Select(r => (JsonNode?)JsonValue.Create(r)).ToArray()),
             ["errors"] = errors,
         };
     }
@@ -283,9 +289,13 @@ internal static class HostedWebProgressSite
         return new JsonObject { ["errors"] = errors, ["release"] = releaseId, ["files"] = expected.Count };
     }
 
-    // Atomic activation: validate release + full data closure first, then swap
-    // the single site.json pointer via tmp+rename. Refusals leave the previous
-    // activation serving untouched.
+    // Atomic activation: validate release + full data closure first, import the
+    // closure into the site-controlled immutable store, then swap the single
+    // site.json pointer via tmp+rename. Refusals leave the previous activation
+    // serving untouched. The activated data is pinned to a content-addressed
+    // generation (exact index bytes + per-run file hashes): later writes to the
+    // mutable source cache cannot become visible, and rollback re-activates the
+    // exact previous generation instead of re-reading "current latest".
     internal static JsonObject Activate(string siteRoot, string releaseId, string dataRoot, string statePath)
     {
         var release = VerifyRelease(siteRoot, releaseId);
@@ -294,24 +304,25 @@ internal static class HostedWebProgressSite
         if (data["errors"]!.AsArray().Count > 0) return Refused("ACTIVATE_REFUSED_DATA_INVALID", data);
         var contentHash = JsonNode.Parse(File.ReadAllText(Path.Combine(siteRoot, "ui-releases", releaseId + ".meta.json")))!["contentHash"]!.GetValue<string>();
         dataRoot = Path.GetFullPath(dataRoot);
+        var generation = EnsureGeneration(siteRoot, dataRoot, data);
         var active = new JsonObject
         {
             ["uiRelease"] = releaseId,
             ["uiHash"] = contentHash,
-            ["dataRoot"] = dataRoot,
+            ["generation"] = generation["id"]!.GetValue<string>(),
             ["dataRunId"] = data["latestRunId"]?.DeepClone(),
             ["dataSha"] = JsonNode.Parse(File.ReadAllText(Path.Combine(dataRoot, "index.json")))!["runs"]!.AsArray()
                 .First(r => r!["id"]!.GetValue<string>() == data["latestRunId"]!.GetValue<string>())!["commit"]!.GetValue<string>(),
+            ["dataRoot"] = dataRoot, // informational: the import source, never served
             ["activatedAt"] = DateTimeOffset.UtcNow.ToString("O"),
         };
         var previous = ReadJsonObject(Path.Combine(siteRoot, "site.json"));
         if (previous is not null
             && previous["uiRelease"]?.GetValue<string>() == releaseId
-            && previous["dataRoot"]?.GetValue<string>() == dataRoot
-            && previous["dataRunId"]?.GetValue<string>() == active["dataRunId"]?.GetValue<string>()
-            && previous["dataSha"]?.GetValue<string>() == active["dataSha"]?.GetValue<string>())
+            && previous["generation"]?.GetValue<string>() == active["generation"]?.GetValue<string>()
+            && previous["dataRunId"]?.GetValue<string>() == active["dataRunId"]?.GetValue<string>())
         {
-            Console.WriteLine("ACTIVATE_SKIP_SAME ui=" + releaseId + " run=" + active["dataRunId"]);
+            Console.WriteLine("ACTIVATE_SKIP_SAME ui=" + releaseId + " generation=" + active["generation"] + " run=" + active["dataRunId"]);
             return new JsonObject { ["status"] = "skip-same", ["active"] = active.DeepClone() };
         }
         WriteJsonAtomic(Path.Combine(siteRoot, "site.json"), active);
@@ -321,8 +332,8 @@ internal static class HostedWebProgressSite
         state["active"] = active.DeepClone();
         state["activationCount"] = (state["activationCount"]?.GetValue<int>() ?? 0) + 1;
         WriteJsonAtomic(statePath, state);
-        Console.WriteLine("ACTIVATED ui=" + releaseId + " run=" + active["dataRunId"] + " sha=" + active["dataSha"] + " dataRoot=" + dataRoot);
-        return new JsonObject { ["status"] = "activated", ["active"] = active, ["data"] = data };
+        Console.WriteLine("ACTIVATED ui=" + releaseId + " generation=" + active["generation"] + " run=" + active["dataRunId"] + " sha=" + active["dataSha"] + " source=" + dataRoot);
+        return new JsonObject { ["status"] = "activated", ["active"] = active, ["data"] = data, ["generation"] = generation };
         static JsonObject Refused(string status, JsonObject detail)
         {
             Console.Error.WriteLine(status + " " + detail.ToJsonString());
@@ -330,37 +341,154 @@ internal static class HostedWebProgressSite
         }
     }
 
-    // Rollback re-activates the previously active ui/data pair recorded in the
-    // activation state; both trees are retained by contract, so this needs no
-    // rebuild and no data regeneration.
+    // Imports the closure's run trees into the site-controlled content-addressed
+    // store and materializes the immutable generation record that binds the
+    // exact index bytes to every run's file hashes. Reuse rule: files are real
+    // copies (never links into the mutable source cache), keyed by SHA-256 and
+    // shared across generations; anything already stored is never modified or
+    // re-read from the source. Only this script writes the store (single
+    // trusted updater, tmp+rename, write-once).
+    internal static JsonObject EnsureGeneration(string siteRoot, string sourceDataRoot, JsonObject check)
+    {
+        var store = Path.Combine(siteRoot, "data-store");
+        var objects = Path.Combine(store, "objects");
+        var trees = Path.Combine(store, "trees");
+        if (!IsChainSafe(store)) throw new InvalidDataException("data-store chain contains symlinks");
+        Directory.CreateDirectory(objects);
+        Directory.CreateDirectory(trees);
+        var runsRoot = Path.Combine(sourceDataRoot, "runs");
+        var import = check["runIds"]!.AsArray().Select(r => r!.GetValue<string>())
+            .Concat(check["referencedRunIds"]!.AsArray().Select(r => r!.GetValue<string>()))
+            .Distinct(StringComparer.Ordinal).Order().ToArray();
+        var runs = new JsonObject();
+        foreach (var runId in import)
+        {
+            if (!IsSafeName(runId)) throw new InvalidDataException("unsafe run id " + runId);
+            var sourceDir = Path.Combine(runsRoot, runId);
+            if (!Directory.Exists(sourceDir)) throw new InvalidDataException("run tree missing " + runId);
+            if (!IsChainSafe(sourceDir) || HasReparsePoint(sourceDir)) throw new InvalidDataException("symlink inside run " + runId);
+            var map = new SortedDictionary<string, string>(StringComparer.Ordinal);
+            foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                var relative = Path.GetRelativePath(sourceDir, file).Replace('\\', '/');
+                if (!IsSafeRelativePath(relative)) throw new InvalidDataException("unsafe run file name " + runId + "/" + relative);
+                if (Path.GetExtension(file) is not (".json" or ".log")) throw new InvalidDataException("non-public extension in run " + runId + ": " + relative);
+                var sha = HashHex(File.ReadAllBytes(file));
+                var objectPath = Path.Combine(objects, sha);
+                if (!File.Exists(objectPath))
+                {
+                    var tmp = objectPath + ".tmp-" + Guid.NewGuid().ToString("N");
+                    File.Copy(file, tmp);
+                    File.Move(tmp, objectPath);
+                }
+                map[relative] = sha;
+            }
+            using var tree = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            foreach (var (relative, sha) in map)
+            {
+                tree.AppendData(System.Text.Encoding.UTF8.GetBytes(relative));
+                tree.AppendData(System.Text.Encoding.UTF8.GetBytes(sha));
+            }
+            var treeHash = Convert.ToHexString(tree.GetHashAndReset()).ToLowerInvariant();
+            var treeMeta = Path.Combine(trees, treeHash + ".json");
+            if (!File.Exists(treeMeta)) WriteJsonAtomic(treeMeta, new JsonObject
+            {
+                ["schemaVersion"] = 1,
+                ["treeHash"] = treeHash,
+                ["files"] = new JsonArray(map.Select(kv => (JsonNode?)new JsonArray(kv.Key, kv.Value)).ToArray()),
+            });
+            runs[runId] = treeHash;
+        }
+        var indexBytes = File.ReadAllBytes(Path.Combine(sourceDataRoot, "index.json"));
+        var indexSha = HashHex(indexBytes);
+        var identity = string.Join(",", runs.Select(kv => kv.Key + ":" + kv.Value));
+        var generationId = "gen-" + HashHex(System.Text.Encoding.UTF8.GetBytes(indexSha + "|" + identity))[..16];
+        if (!IsSafeName(generationId)) throw new InvalidDataException("derived generation id is unsafe");
+        var generations = Path.Combine(siteRoot, "generations");
+        Directory.CreateDirectory(generations);
+        if (!IsChainSafe(generations)) throw new InvalidDataException("generations root chain contains symlinks");
+        var generationDir = Path.Combine(generations, generationId);
+        var generationMeta = Path.Combine(generations, generationId + ".meta.json");
+        if (Directory.Exists(generationDir))
+        {
+            var existing = ReadJsonObject(generationMeta);
+            if (existing?["indexSha256"]?.GetValue<string>() == indexSha && File.Exists(Path.Combine(generationDir, "index.json")))
+            {
+                Console.WriteLine("GENERATION_CACHED " + generationId + " runs=" + runs.Count + " indexSha=" + indexSha[..16]);
+                return new JsonObject { ["id"] = generationId, ["indexSha256"] = indexSha, ["runs"] = runs };
+            }
+            Console.WriteLine("GENERATION_INCOMPLETE_REBUILDING " + generationId);
+            Directory.Delete(generationDir, true);
+        }
+        if (File.Exists(generationMeta)) File.Delete(generationMeta);
+        var staging = Path.Combine(generations, ".staging-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(staging);
+        try
+        {
+            File.WriteAllBytes(Path.Combine(staging, "index.json"), indexBytes);
+            // Commit boundary: metadata lands before the directory rename, so a
+            // complete generation directory always has its metadata.
+            WriteJsonAtomic(generationMeta, new JsonObject
+            {
+                ["schemaVersion"] = 1,
+                ["id"] = generationId,
+                ["createdAt"] = DateTimeOffset.UtcNow.ToString("O"),
+                ["indexSha256"] = indexSha,
+                ["sourceLatestRunId"] = check["latestRunId"]?.DeepClone(),
+                ["sourceDataRoot"] = sourceDataRoot,
+                ["runs"] = runs.DeepClone(),
+            });
+            Directory.Move(staging, generationDir);
+        }
+        finally { if (Directory.Exists(staging)) Directory.Delete(staging, true); }
+        Console.WriteLine("GENERATION_PREPARED " + generationId + " runs=" + runs.Count + " indexSha=" + indexSha[..16]);
+        return new JsonObject { ["id"] = generationId, ["indexSha256"] = indexSha, ["runs"] = runs };
+    }
+
+    // Rollback re-activates the exact previously active generation and UI
+    // release recorded in the activation state: same index bytes, same run
+    // file hashes, no re-resolution of "current latest" anywhere.
     internal static JsonObject Rollback(string siteRoot, string statePath)
     {
         var state = ReadJsonObject(statePath);
         var previous = state?["previous"] as JsonObject;
-        if (previous is null)
+        var releaseId = previous?["uiRelease"]?.GetValue<string>();
+        var generationId = previous?["generation"]?.GetValue<string>();
+        if (releaseId is null || generationId is null)
         {
-            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS activation state has no previous activation");
+            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS activation state has no previous ui/generation pair");
             return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
         }
-        var dataRoot = previous["dataRoot"]?.GetValue<string>();
-        var releaseId = previous["uiRelease"]?.GetValue<string>();
-        if (dataRoot is null || releaseId is null)
+        if (VerifyRelease(siteRoot, releaseId)["errors"]!.AsArray().Count > 0
+            || !File.Exists(Path.Combine(siteRoot, "generations", generationId + ".meta.json"))
+            || !File.Exists(Path.Combine(siteRoot, "generations", generationId, "index.json")))
         {
-            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous activation record incomplete");
+            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous release/generation is not retained");
             return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
         }
-        var result = Activate(siteRoot, releaseId, dataRoot, statePath);
-        if (result["status"]?.GetValue<string>() == "activated")
+        var current = ReadJsonObject(Path.Combine(siteRoot, "site.json"));
+        var restored = new JsonObject
         {
-            // Rollback swaps the history roles: the failed attempt can be retried.
-            var rolled = ReadJsonObject(statePath)!;
-            rolled["previous"] = state!["active"]?.DeepClone();
-            rolled["rollbackCount"] = (state["rollbackCount"]?.GetValue<int>() ?? 0) + 1;
-            WriteJsonAtomic(statePath, rolled);
-            Console.WriteLine("ROLLBACK_ACTIVATED ui=" + releaseId);
-        }
-        return result;
+            ["uiRelease"] = releaseId,
+            ["uiHash"] = previous!["uiHash"]?.DeepClone(),
+            ["generation"] = generationId,
+            ["dataRunId"] = previous["dataRunId"]?.DeepClone(),
+            ["dataSha"] = previous["dataSha"]?.DeepClone(),
+            ["dataRoot"] = previous["dataRoot"]?.DeepClone(),
+            ["activatedAt"] = DateTimeOffset.UtcNow.ToString("O"),
+        };
+        WriteJsonAtomic(Path.Combine(siteRoot, "site.json"), restored);
+        var updated = ReadJsonObject(statePath) ?? new JsonObject();
+        updated["schemaVersion"] = 1;
+        updated["previous"] = current is null ? null : current.DeepClone();
+        updated["active"] = restored.DeepClone();
+        updated["rollbackCount"] = (updated["rollbackCount"]?.GetValue<int>() ?? 0) + 1;
+        WriteJsonAtomic(statePath, updated);
+        Console.WriteLine("ROLLBACK_ACTIVATED ui=" + releaseId + " generation=" + generationId + " run=" + restored["dataRunId"]);
+        return new JsonObject { ["status"] = "activated", ["active"] = restored };
     }
+
+    internal static string HashHex(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
     internal static JsonObject? ReadJsonObject(string path)
     {

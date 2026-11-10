@@ -269,6 +269,24 @@ if (Wanted("H1"))
     var rolledHtml = await Get("/");
     Check("H1: rollback restores the exact previously active UI", rolledHtml.Body.Contains("OLD-HTML"), "");
 
+    // Same-runId content evolution: rewrite r1's manifest in the source cache,
+    // activate a new generation, then roll back — the old generation must serve
+    // the EXACT old manifest bytes captured with it.
+    var oldManifest = await Get("/data/runs/r1/manifest.json");
+    File.WriteAllText(Path.Combine(cache, "runs", "r1", "manifest.json"),
+        "{\"schemaVersion\":1,\"run\":{\"id\":\"r1\",\"commit\":\"sha-r1\"},\"cases\":[],\"REWRITTEN\":true}\n");
+    WriteIndex("r2", ("r1", "sha-r1"), ("r2", "sha-r2"));
+    var act3 = Activate(releaseOld, cache);
+    var rewritten = await Get("/data/runs/r1/manifest.json");
+    Check("H1: rewritten run content becomes visible only with its new generation",
+        act3.Code == 0 && rewritten.Body.Contains("REWRITTEN"), $"exit={act3.Code}");
+    var rolled2 = Rollback();
+    var restoredManifest = await Get("/data/runs/r1/manifest.json");
+    var restoredIndex = await Get("/data/index.json");
+    Check("H1: rollback after content evolution serves exact old run bytes",
+        rolled2.Code == 0 && Sha(restoredManifest.Bytes) == Sha(oldManifest.Bytes) && Sha(restoredIndex.Bytes) == Sha(r1IndexBytes),
+        $"manifestSha={Sha(restoredManifest.Bytes)[..16]} want={Sha(oldManifest.Bytes)[..16]}");
+
     // Source mutation after activation must not leak into serving.
     File.WriteAllText(Path.Combine(cache, "index.json"), "{\"schemaVersion\":1,\"latestRunId\":\"MUTATED\",\"runs\":[]}");
     File.AppendAllText(Path.Combine(cache, "runs", "r1", "cases", "c1", "sample-0", "e.log"), "MUTATED_SOURCE_BYTES\n");
@@ -283,17 +301,20 @@ if (Wanted("H1"))
     Check("H1: previously referenced run files stay byte-identical after later activations",
         oldMesh.Status == 200 && oldMesh.Body.Contains("r1"), $"http={oldMesh.Status}");
 
-    // Served data must be a controlled copy, never a link into the mutable source.
-    var storeRuns = Path.Combine(site, "data-store", "runs");
-    var copied = Directory.Exists(storeRuns);
+    // Served data must be controlled copies, never links into the mutable source.
+    var storeRoot = Path.Combine(site, "data-store");
+    var copied = Directory.Exists(storeRoot);
     var hardlinks = 0;
     if (copied)
     {
-        foreach (var file in Directory.EnumerateFiles(storeRuns, "*", SearchOption.AllDirectories))
+        var sourceFiles = Directory.EnumerateFiles(Path.Combine(cache, "runs"), "*", SearchOption.AllDirectories).ToArray();
+        foreach (var file in Directory.EnumerateFiles(storeRoot, "*", SearchOption.AllDirectories))
         {
-            var relative = Path.GetRelativePath(storeRuns, file).Replace('\\', '/');
-            var source = Path.Combine(cache, "runs", relative.Replace('/', Path.DirectorySeparatorChar));
-            if (File.Exists(source) && SameEntry(file, source)) hardlinks++;
+            var length = new FileInfo(file).Length;
+            foreach (var source in sourceFiles)
+            {
+                if (new FileInfo(source).Length == length && SameEntry(file, source)) { hardlinks++; break; }
+            }
         }
     }
     Check("H1: served run files are controlled copies, not hardlinks into the source", copied && hardlinks == 0,

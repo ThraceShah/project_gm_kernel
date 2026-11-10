@@ -28,12 +28,15 @@ internal static class SafeFiles
 
     /// <summary>
     /// Resolves and serves <paramref name="relative"/> under
-    /// <paramref name="root"/>. Returns true when a response was written.
+    /// <paramref name="root"/>. <paramref name="mimeName"/> optionally derives
+    /// the content type from the public URL name instead of the storage name
+    /// (the object store keys files by hash). Returns true when a response was
+    /// written.
     /// </summary>
-    internal static async Task<bool> ServeAsync(HttpContext context, string root, string relative, string cacheControl)
+    internal static async Task<bool> ServeAsync(HttpContext context, string root, string relative, string cacheControl, string? mimeName = null)
     {
         if (!SafePaths.TryResolve(root, relative, out var physical) || !File.Exists(physical)) return false;
-        if (!Types.TryGetContentType(physical, out var contentType)) return false; // unknown extensions are not public
+        if (!Types.TryGetContentType(mimeName ?? physical, out var contentType)) return false; // unknown extensions are not public
         var handle = OpenNoFollow(physical);
         if (handle is null || handle.IsInvalid)
         {

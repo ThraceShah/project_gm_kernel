@@ -130,9 +130,15 @@ app.Use(async (context, next) =>
         return;
     }
     var isData = probe == "/data" || probe.StartsWith("/data/", StringComparison.Ordinal);
-    var root = isData ? roots.DataRoot : roots.UiRoot;
-    var relative = isData ? probe["/data".Length..].TrimStart('/') : probe.TrimStart('/');
-    if (relative.Length == 0 || !SafePaths.TryResolve(root, relative, out _))
+    if (isData)
+    {
+        // Data resolution is authoritative in the /data branch below: it maps
+        // through the active generation's run hashes into the object store.
+        await next(context);
+        return;
+    }
+    var relative = probe.TrimStart('/');
+    if (relative.Length == 0 || !SafePaths.TryResolve(roots.UiRoot, relative, out _))
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
         await WriteTextAsync(context, "Not Found\n");
@@ -158,8 +164,9 @@ app.Map("/healthz", health =>
     });
 });
 
-// 5. Data root at /data: isolated branch, never falls through into the UI
-//    release, no directory index for /data itself.
+// 5. Data root at /data: the exact activated generation (index snapshot) plus
+//    the content-addressed store for run files; isolated branch that never
+//    falls through into the UI release and never serves directory indexes.
 app.Map("/data", dataBranch =>
 {
     dataBranch.Run(async context =>
@@ -167,12 +174,31 @@ app.Map("/data", dataBranch =>
         var roots = state.Current();
         if (roots is null) { context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable; await WriteTextAsync(context, "No active site\n"); return; }
         var relative = (context.Request.Path.Value ?? "").TrimStart('/');
-        if (relative.Length == 0) { context.Response.StatusCode = StatusCodes.Status404NotFound; await WriteTextAsync(context, "Not Found\n"); return; }
-        if (!await SafeFiles.ServeAsync(context, roots.DataRoot, relative, CacheControl(isData: true, context.Request.Path.Value ?? "", Path.GetFileName(relative))))
+        if (relative == "index.json")
         {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await WriteTextAsync(context, "Not Found\n");
+            if (await SafeFiles.ServeAsync(context, roots.GenerationDir, "index.json", "no-cache")) return;
         }
+        else if (relative.StartsWith("runs/", StringComparison.Ordinal))
+        {
+            var rest = relative["runs/".Length..];
+            var slash = rest.IndexOf('/');
+            if (slash > 0 && slash < rest.Length - 1)
+            {
+                var runId = rest[..slash];
+                var file = rest[(slash + 1)..];
+                if (SafePaths.IsSafeRequestPath("/" + runId + "/" + file)
+                    && roots.Store.TryResolveRunFile(runId, file, out var objectPath))
+                {
+                    // Hashed run assets are immutable per generation; the two
+                    // manifest views may evolve and always revalidate.
+                    var immutable = Path.GetFileName(file) is not ("manifest.json" or "collection-manifest.json" or "index.json");
+                    var cache = immutable ? "public, max-age=31536000, immutable" : "no-cache";
+                    if (await SafeFiles.ServeAsync(context, Path.GetDirectoryName(objectPath)!, Path.GetFileName(objectPath), cache, file)) return;
+                }
+            }
+        }
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        await WriteTextAsync(context, "Not Found\n");
     });
 });
 
