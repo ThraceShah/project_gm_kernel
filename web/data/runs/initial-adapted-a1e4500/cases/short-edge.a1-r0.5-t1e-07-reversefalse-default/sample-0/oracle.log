@@ -1,0 +1,61 @@
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/ShortEdgeBlendOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/ShortEdgeBlendOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+PK 38.0.150, precision=1E-08
+CASE a1-r0.5-t1E-07-reverseFalse-default
+CREATE STATUS 16401: 
+generated input full check: 0 faults
+fresh input full check: 0 faults
+fresh input: global=21921 local=21931 face_pairs=0
+FIX PK error=0 faces=2 fault=18391 edge=0 topol=0 stage=None network=None SSI=Discovery/NotRun/0/0 ms=6.595
+native fillet full check: 0 faults
+EDGE tag=406 class=3003 length=1.6647917874365648 precision=5E-09 range=[3.141592653589793,4.71238898038469]
+EDGE tag=400 class=3003 length=1.664791788174325 precision=5E-09 range=[3.141592653589793,4.71238898038469]
+EDGE tag=394 class=3003 length=0.7852893127430278 precision=5E-09 range=[5.497939437029719,7.068431177329454]
+EDGE tag=388 class=3001 length=4.001218199274989 precision=5E-09 range=[-3.9663177044021736,0.03490049487281529]
+EDGE tag=383 class=3004 length=7.614758983657562E-05 precision=5E-09 range=[0,7.614734823977114E-05]
+EDGE tag=366 class=3001 length=4.001218199274988 precision=5E-09 range=[-3.9226933315004664,0.078524867774522]
+EDGE tag=361 class=3004 length=7.614758983531458E-05 precision=5E-09 range=[0,7.614734823843692E-05]
+EDGE tag=123 class=3001 length=4 precision=5E-09 range=[0,4]
+EDGE tag=119 class=3001 length=4 precision=5E-09 range=[0,4]
+EDGE tag=114 class=3001 length=4.5 precision=5E-09 range=[0,4.5]
+EDGE tag=357 class=3001 length=4.5 precision=5E-09 range=[0.5,5]
+EDGE tag=352 class=3001 length=4.430255892708933 precision=5E-09 range=[0.49992384757819597,4.930179740287129]
+EDGE tag=96 class=3001 length=4.430255892708934 precision=5E-09 range=[0,4.430255892708934]
+EDGE tag=91 class=3001 length=4.930179740287129 precision=5E-09 range=[0,4.930179740287129]
+EDGE tag=87 class=3001 length=4.00060931217563 precision=5E-09 range=[0,4.00060931217563]
+EDGE tag=83 class=3002 length=1.5707963267948966 precision=5E-09 range=[0,1.5707963267948966]
+EDGE tag=79 class=3001 length=4 precision=5E-09 range=[0,4]
+EDGE tag=74 class=3001 length=4 precision=5E-09 range=[0,4]
+EDGE tag=70 class=3002 length=1.5707963267948966 precision=5E-09 range=[0,1.5707963267948966]
+EDGE tag=66 class=3001 length=4.00060931217563 precision=5E-09 range=[0,4.00060931217563]
+EDGE tag=62 class=3001 length=4.93017974028713 precision=5E-09 range=[0,4.93017974028713]
+EDGE tag=57 class=3001 length=5 precision=5E-09 range=[0,5]
+EDGE tag=307 class=3004 length=0.7852559095530753 precision=5E-09 range=[8.881784197001252E-16,0.7913398614987784]
+SHORTEST 7.614758983531458E-05, 7.614758983657562E-05, 0.7852559095530753, 0.7852893127430278
+XT ELLIPSE #4 [0]=Integer:153 [1]=Pointer:0 [2]=Pointer:1 [3]=Pointer:14 [4]=Pointer:0 [5]=Pointer:15 [6]=Character:+ [7]=Vector:(-1.5,-1.5,4) [8]=Vector:(0,0.707106781186548,0.707106781186548) [9]=Vector:(0,0.707106781186548,-0.707106781186548) [10]=Real:0.707106781186548 [11]=Real:0.5
+XT BLENDED_EDGE #12 [0]=Integer:152 [1]=Pointer:0 [2]=Pointer:139 [3]=Pointer:136 [4]=Pointer:3 [5]=Pointer:140 [6]=Character:+ [7]=Character:R [8]=Pointer:138 [9]=Pointer:136 [10]=Pointer:4 [11]=Real:-0.5 [12]=Real:-0.5 [13]=Real:1 [14]=Real:1 [15]=Pointer:0 [16]=Pointer:0 [17]=Pointer:137 [18]=Pointer:144
+XT LIMIT #126 [0]=Character:L [1]=Empty:0 [2]=Vector:(-1.499999667811986,-2.499999994201635,4.50007614662344)
+XT LIMIT #128 [0]=Character:L [1]=Empty:0 [2]=Vector:(-1.5,-2.5,4.5)
+XT LIMIT #137 [0]=Character:T [1]=Empty:0 [2]=Vector:(-2,-1.5,4)
+XT LIMIT #144 [0]=Character:T [1]=Empty:0 [2]=Vector:(-1,-1.5,4)
+XT LIMIT #152 [0]=Character:L [1]=Empty:0 [2]=Vector:(-1.5,-2,5)
+XT LIMIT #154 [0]=Character:L [1]=Empty:0 [2]=Vector:(-1.499999667811986,-2.00007614662344,4.99999999420164)
+XT ELLIPSE #160 [0]=Integer:117 [1]=Pointer:0 [2]=Pointer:159 [3]=Pointer:155 [4]=Pointer:156 [5]=Pointer:0 [6]=Character:+ [7]=Vector:(2.5,-1.930103576265175,4.430103576265175) [8]=Vector:(1,0,0) [9]=Vector:(0,-0.707106781186548,0.707106781186548) [10]=Real:0.500152316445525 [11]=Real:0.5
+XT ELLIPSE #156 [0]=Integer:121 [1]=Pointer:0 [2]=Pointer:19 [3]=Pointer:160 [4]=Pointer:20 [5]=Pointer:0 [6]=Character:- [7]=Vector:(-1.5,-1.5,4) [8]=Vector:(0,-0.894427190999916,-0.447213595499958) [9]=Vector:(0,0.447213595499958,-0.894427190999916) [10]=Real:1.118033988749894 [11]=Real:1
+XT ELLIPSE #20 [0]=Integer:125 [1]=Pointer:0 [2]=Pointer:7 [3]=Pointer:156 [4]=Pointer:14 [5]=Pointer:0 [6]=Character:+ [7]=Vector:(-1.5,-1.5,4) [8]=Vector:(0,-0.447213595499958,-0.894427190999916) [9]=Vector:(0,0.894427190999916,-0.447213595499958) [10]=Real:1.118033988749894 [11]=Real:1
+XT LIMIT #162 [0]=Character:L [1]=Empty:0 [2]=Vector:(-1.499999667811986,-2.499999994201635,4.50007614662344)
+XT LIMIT #164 [0]=Character:L [1]=Empty:0 [2]=Vector:(-1.49999966781202,-2.00007614662344,4.99999999420164)
+native via managed full check: 0 faults
+native via managed: global=21921 local=21931 face_pairs=0
+MASS native via managed accuracy=0.99999999 volume=121.31064762553417/121.31064762553422 area=142.80473617288533/142.80473617288536 normalized15=2.645861417350065E-14 worst=inertia.xy points=3.06179961198989/3.0617996119897826
+web strict fresh XT: global=21921 local=21931 face_pairs=0
+FIX self error=0 faces=2 fault=18391 edge=0 topol=0 stage=Network network=Publish SSI=Bind/Success/144/144 ms=16881.467
+managed fillet full check: 0 faults
+independent fillet: global=21921 local=21931 face_pairs=0
+FINITE ICurve independent fillet count=3 endpoint_max=3.317704005367006E-12 length_delta_max=4.695133171139787E-12 length_delta_seed_max=4.695133171139787E-12
+MASS self-constructed-product accuracy=0.99999999 volume=121.31064762553417/121.31064762363887 area=142.80473617288533/142.80473617195173 normalized15=3.965631146667176E-09 worst=inertia.yz points=-1.027852285305774/-1.0278522933474883
+PASS cases=1 mode=independent-construction
+
+STDERR

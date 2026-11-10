@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet run
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AssemblyName=BooleanOperationOracle
@@ -38,7 +39,7 @@ try
             foreach(var fixture in axialImprintOnly?["guarded-axial-imprint","guarded-axial-imprint-negative","guarded-axial-imprint-yside","guarded-axial-imprint-mapped","guarded-axial-imprint-axis-reversed"]:axialContactOnly?["guarded-axial-contact-outside","guarded-axial-contact-mapped"]:coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut","guarded-periodic-seam-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
-                var label=$"{fixture}-{mode}";count++;
+                var label=$"{fixture}-{mode}";if(!WebProgressCapture.Select(label))continue;count++;
                 try
                 {
                     var own=Produce(true,fixture,mode,out var ownStatus);var reference=Produce(false,fixture,mode,out var pkStatus);
@@ -64,7 +65,7 @@ try
                 }
                 catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
             }
-            foreach(var fixture in specialized?[]:new[]{"imprint","oblique-imprint","trim-keep","trim-remove","section-both","section-front","section-back","section-miss","section-coincident"})
+            foreach(var fixture in specialized||WebProgressCapture.Enabled?[]:new[]{"imprint","oblique-imprint","trim-keep","trim-remove","section-both","section-front","section-back","section-miss","section-coincident"})
             {
                 count++;
                 try
@@ -87,7 +88,7 @@ try
             // PK's default size box is [-500,500]^3. A 10000-unit fixture is
             // intentionally invalid on both producers, not a geometry failure
             // to suppress in the positive Boolean gate.
-            if(!specialized)try
+            if(!specialized&&!WebProgressCapture.Enabled)try
             {
                 count++;
                 var actual=ReceiveOracle(TransmitManaged(Block(true,10000,0,0,2,2,2,0)));
@@ -208,7 +209,8 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         tools[0]=Block(own,offset+(fixture=="two-tools"?-3:x),y,fixture is "nested" or "closed-cavity"?1:0,2,2,fixture is "two-tools" or "through-hole"?outer:2,fixture=="crossing-rotated"?.37:0);
         if(nt==2)tools[1]=Block(own,offset+3,0,0,2,2,outer,0);
     }
-    var o=new PK_BODY_boolean_o_t{function=function};
+    var o=new PK_BODY_boolean_o_t{function=function,tracking=WebProgressCapture.Enabled?PK_LOGICAL_true:PK_LOGICAL_false};
+    WebProgressCapture.Before(own,target,[],"PK_BODY_boolean_2",new ReadOnlySpan<int>(tools,nt).ToArray());
     if(own)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
@@ -259,7 +261,10 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
             };
             try
             {
+                var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();
                 var error=KernelRuntime.BodyBoolean2(target,nt,tools,&options,&tracking,&result);
+                var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
+                WebProgressCapture.BooleanAfter(true,error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,error,result.result,(PK_TOPOL_track_r_t*)&tracking);
                 Check(error,$"{fixture} Boolean at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}, curve {KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}");
                 var joined=certified.Where(published.Contains).GroupBy(x=>x.Event).Count(x=>x.Count()==3);
                 var publishedTransfers=transferredLines.Count(published.Contains);
@@ -298,14 +303,23 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
             }
             finally{KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;}
         }
-        else Check(KernelRuntime.BodyBoolean2(target,nt,tools,&options,&tracking,&result),"own Boolean");
+        else
+        {
+            var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();
+            var error=KernelRuntime.BodyBoolean2(target,nt,tools,&options,&tracking,&result);
+            var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
+            WebProgressCapture.BooleanAfter(true,error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,error,result.result,(PK_TOPOL_track_r_t*)&tracking);Check(error,"own Boolean");
+        }
         status=result.result;var bodies=new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray();
         Check(KernelRuntime.TopolTrackResultFree(&tracking),"own tracking free");Check(KernelRuntime.BooleanResultFree(&result),"own result free");return bodies;
     }
     else
     {
         PK_TOPOL_track_r_t tracking=default;PK_boolean_r_t result=default;
-        Check(PK_BODY_boolean_2(target,nt,tools,&o,&tracking,&result),"PK Boolean");
+        var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();
+        var error=PK_BODY_boolean_2(target,nt,tools,&o,&tracking,&result);
+        var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
+        WebProgressCapture.BooleanAfter(false,error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,error,result.result,&tracking);Check(error,"PK Boolean");
         status=result.result;var bodies=new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray();
         Check(PK_TOPOL_track_r_f(&tracking),"PK tracking free");Check(PK_boolean_r_f(&result),"PK result free");return bodies;
     }
