@@ -80,27 +80,54 @@ internal static class WebProgressScheduler
         File.Move(statePath + ".tmp", statePath, true);
     }
 
-    // Registry reconcile: adapted (meshAdapter) cases are the queue unit. New
-    // recipes (e.g. another worker extending the registry) are recognized and
-    // queued automatically; changed recipe definitions invalidate their old
-    // observation; removed recipes leave the pending queue. Unadapted
-    // registrations are never queued.
+    // Registry reconcile: adapted (meshAdapter) cases that pass the caller's
+    // selection are the queue unit. New recipes (e.g. another worker extending
+    // the registry) are recognized and queued automatically; changed recipe
+    // definitions invalidate their old observation; unadapted registrations
+    // are never queued. Records that leave the active adapted/selection set
+    // (registry removal, adapter withdrawal, narrowed --case/--suite/--family)
+    // are cleaned from the active maps into a retired history archive, so
+    // planning can never execute an unselected case and an unadapted id can
+    // never break planning. Old valid observations (completed) are never
+    // deleted; when a case becomes active again its retired pending/blocked/
+    // stale records are restored so unfinished work is re-queued accurately.
     internal static void Reconcile(JsonObject state, JsonObject registry, string registryHash, string registryVersion, Func<JsonObject, bool>? eligible = null)
     {
         state["registryHash"] = registryHash;
         state["registryVersion"] = registryVersion;
         var pending = state["pending"]!.AsArray();
-        var pendingIds = PendingIds(state);
         var completed = state["completed"]!.AsObject();
         var blocked = state["blocked"]!.AsObject();
         var stale = state["stale"]!.AsObject();
+        var retired = (state["retired"] ??= new JsonObject()).AsObject();
+        var entries = registry["cases"]!.AsArray().OfType<JsonObject>().ToList();
         var known = new HashSet<string>(StringComparer.Ordinal);
-        var firstEnqueue = state["batches"]!.AsArray().Count == 0 && completed.Count == 0;
-        foreach (var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
+        var active = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var entry in entries)
         {
             var id = entry["id"]!.GetValue<string>();
             known.Add(id);
-            if (entry["meshAdapter"]!.GetValue<bool>() != true || (eligible != null && !eligible(entry))) continue;
+            if (entry["meshAdapter"]!.GetValue<bool>() == true && (eligible == null || eligible(entry))) active.Add(id);
+        }
+        string RetireReason(string id) => !known.Contains(id) ? "removed" : active.Contains(id) ? "ineligible" : "unadapted";
+        for (var i = pending.Count - 1; i >= 0; i--)
+        {
+            var item = pending[i]!.AsObject();
+            var id = item["caseId"]!.GetValue<string>();
+            if (!active.Contains(id)) { Retire(retired, id, "pending", item, RetireReason(id)); pending.RemoveAt(i); }
+        }
+        foreach (var pair in blocked.ToList())
+            if (!active.Contains(pair.Key)) { Retire(retired, pair.Key, "blocked", pair.Value!.AsObject(), RetireReason(pair.Key)); blocked.Remove(pair.Key); }
+        foreach (var pair in stale.ToList())
+            if (!active.Contains(pair.Key)) { Retire(retired, pair.Key, "stale", pair.Value!.AsObject(), RetireReason(pair.Key)); stale.Remove(pair.Key); }
+        foreach (var pair in retired.ToList())
+            if (active.Contains(pair.Key) && !completed.ContainsKey(pair.Key)) Restore(state, retired, pair.Key);
+        var pendingIds = PendingIds(state);
+        var firstEnqueue = state["batches"]!.AsArray().Count == 0 && completed.Count == 0;
+        foreach (var entry in entries)
+        {
+            var id = entry["id"]!.GetValue<string>();
+            if (!active.Contains(id)) continue;
             var hash = EntryHash(entry);
             if (completed[id] is JsonObject record && record["entryHash"]!.GetValue<string>() != hash)
             {
@@ -120,8 +147,37 @@ internal static class WebProgressScheduler
             }
             else if (!completed.ContainsKey(id) && !blocked.ContainsKey(id) && !pendingIds.Contains(id)) pending.Add(Pending(id, firstEnqueue ? "initial" : "new-recipe"));
         }
-        for (var i = pending.Count - 1; i >= 0; i--)
-            if (!known.Contains(pending[i]!["caseId"]!.GetValue<string>())) pending.RemoveAt(i);
+    }
+
+    private static void Retire(JsonObject retired, string id, string kind, JsonObject record, string reason)
+    {
+        if (retired[id] is not JsonObject tomb)
+        {
+            tomb = new JsonObject { ["retiredAt"] = DateTimeOffset.UtcNow.ToString("O"), ["retireReason"] = reason, ["records"] = new JsonArray() };
+            retired[id] = tomb;
+        }
+        tomb["records"]!.AsArray().Add((JsonNode)new JsonObject { ["kind"] = kind, ["record"] = record.DeepClone() });
+    }
+
+    private static void Restore(JsonObject state, JsonObject retired, string id)
+    {
+        var tomb = retired[id]!.AsObject();
+        var pending = state["pending"]!.AsArray();
+        var pendingIds = PendingIds(state);
+        var blocked = state["blocked"]!.AsObject();
+        var stale = state["stale"]!.AsObject();
+        var records = tomb["records"]!.AsArray().OfType<JsonObject>().ToList();
+        // Blocked and stale restore first so a pending record can never
+        // coexist with a parked blocked record.
+        foreach (var raw in records)
+        {
+            var kind = raw["kind"]!.GetValue<string>();
+            if (kind == "stale") stale[id] = raw["record"]!.DeepClone().AsObject();
+            else if (kind == "blocked") blocked[id] = raw["record"]!.DeepClone().AsObject();
+        }
+        foreach (var raw in records)
+            if (raw["kind"]!.GetValue<string>() == "pending" && !pendingIds.Contains(id) && !blocked.ContainsKey(id)) pending.Add(raw["record"]!.DeepClone());
+        retired.Remove(id);
     }
 
     // Source-change impact mapping. Paths map to affected cases through the
@@ -193,7 +249,8 @@ internal static class WebProgressScheduler
         var entries = registry["cases"]!.AsArray().OfType<JsonObject>()
             .Where(c => c["meshAdapter"]!.GetValue<bool>() == true)
             .ToDictionary(c => c["id"]!.GetValue<string>(), StringComparer.Ordinal);
-        var pending = state["pending"]!.AsArray().OfType<JsonObject>().ToArray();
+        var pending = state["pending"]!.AsArray().OfType<JsonObject>()
+            .Where(p => entries.ContainsKey(p["caseId"]!.GetValue<string>())).ToArray();
         var affected = pending.Where(p => p["reason"]!.GetValue<string>() is "affected" or "recipe-change").Select(p => p["caseId"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
         List<string> Order(IEnumerable<string> ids)
         {

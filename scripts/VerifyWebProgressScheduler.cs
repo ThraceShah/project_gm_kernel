@@ -336,6 +336,46 @@ WebProgressScheduler.RecordOutcome(state4, "blend.alpha", "completed", "pass", "
 WebProgressScheduler.MarkChanges(state4, ["scripts/web-progress-registry.json.bak"], Registry(alpha), "rev-5");
 Assert(state4["completed"]!.AsObject().Count == 0 && state4["stale"]!.AsObject().ContainsKey("blend.alpha"), "registry carveout is exact-match only; adjacent kernel-affecting files invalidate conservatively");
 
+// ---- 15. eligibility sweep: records outside the active selection retire with history ----
+// (a) adapter withdrawal: no crash, nothing planned, history preserved
+var s5 = WebProgressScheduler.NewState("rev-0", "h5", "test-registry-v1");
+WebProgressScheduler.Reconcile(s5, Registry(alpha), "h5", "test-registry-v1");
+var alphaUnadapted = alpha.DeepClone().AsObject();
+alphaUnadapted["meshAdapter"] = false;
+var unadaptedRegistry = Registry(alphaUnadapted);
+WebProgressScheduler.Reconcile(s5, unadaptedRegistry, "h5b", "test-registry-v1");
+Assert(s5["pending"]!.AsArray().Count == 0, "adapter withdrawal cleans the pending queue instead of leaving unselected work");
+var s5Plan = WebProgressScheduler.PlanBatch(s5, unadaptedRegistry, 4);
+Assert(s5Plan.Count == 0, "an unadapted id can never be planned (was KeyNotFoundException)");
+Assert(s5["retired"]?["blend.alpha"]?["records"]?.AsArray().Count > 0, "withdrawn records are archived as history, not silently dropped");
+// (b) narrowed selection cannot execute excluded cases; completed observations survive
+var s6 = WebProgressScheduler.NewState("rev-0", "h6", "test-registry-v1");
+var bothRegistry = Registry(alpha, beta);
+WebProgressScheduler.Reconcile(s6, bothRegistry, "h6", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s6, "blend.alpha", "completed", "pass", "run-6", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.Reconcile(s6, bothRegistry, "h6", "test-registry-v1", e => e["id"]!.GetValue<string>() == "blend.alpha");
+Assert(s6["pending"]!.AsArray().Count == 0 && WebProgressScheduler.PlanBatch(s6, bothRegistry, 4).Count == 0, "narrowed selection neither keeps nor plans excluded pending cases");
+Assert(s6["completed"]!.AsObject().ContainsKey("blend.alpha"), "narrowed selection never deletes old valid observations");
+// (c) restoring the selection re-queues unfinished work with its history
+WebProgressScheduler.Reconcile(s6, bothRegistry, "h6", "test-registry-v1");
+var restored = s6["pending"]!.AsArray().OfType<JsonObject>().FirstOrDefault(p => p["caseId"]!.GetValue<string>() == "blend.beta");
+Assert(restored != null && restored["reason"]!.GetValue<string>() == "initial", "restoring the selection accurately re-queues the unfinished case with its original reason");
+// (d) blocked history survives a filter round-trip and stays parked
+var s7 = WebProgressScheduler.NewState("rev-0", "h7", "test-registry-v1");
+WebProgressScheduler.Reconcile(s7, Registry(beta), "h7", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s7, "blend.beta", "export-failure", "missing", "run-7", "rev-0", WebProgressScheduler.EntryHash(beta), 0);
+Assert(s7["blocked"]!.AsObject().ContainsKey("blend.beta"), "bounded retries park the broken case");
+WebProgressScheduler.Reconcile(s7, Registry(beta), "h7", "test-registry-v1", _ => false);
+WebProgressScheduler.Reconcile(s7, Registry(beta), "h7", "test-registry-v1");
+Assert(s7["blocked"]!.AsObject().ContainsKey("blend.beta") && s7["pending"]!.AsArray().Count == 0, "a parked broken case is restored parked (with attempts/lastRunId), not silently re-queued or lost");
+Assert(s7["blocked"]!["blend.beta"]!["lastRunId"]!.GetValue<string>() == "run-7", "the restored blocked record keeps its failure evidence reference");
+// (e) removed recipes retire their records but keep completed history
+var s8b = WebProgressScheduler.NewState("rev-0", "h8b", "test-registry-v1");
+WebProgressScheduler.Reconcile(s8b, Registry(alpha, beta), "h8b", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s8b, "blend.alpha", "completed", "pass", "run-8", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.Reconcile(s8b, Registry(beta), "h8c", "test-registry-v1");
+Assert(s8b["completed"]!.AsObject().ContainsKey("blend.alpha") && s8b["pending"]!.AsArray().Count == 1, "a removed recipe leaves the active queue while its completed observation is preserved");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;
