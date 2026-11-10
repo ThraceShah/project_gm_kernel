@@ -8,6 +8,8 @@ import { Box, SplitSquareVertical } from 'lucide-react';
 interface ViewportContainerProps {
   gmMesh: MeshData | null;
   pkMesh: MeshData | null;
+  gmError?: string | null;
+  pkError?: string | null;
   isLoading: boolean;
   cameraSync: boolean;
   resetTrigger: number;
@@ -16,6 +18,8 @@ interface ViewportContainerProps {
 export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   gmMesh,
   pkMesh,
+  gmError,
+  pkError,
   isLoading,
   cameraSync,
   resetTrigger,
@@ -83,6 +87,7 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             meshData={gmMesh}
             isLoading={isLoading}
             emptyMessage="GM 网格未就绪或未生成"
+            errorMessage={gmError}
             cameraSync={cameraSync}
             externalCameraState={leftSyncCam}
             onCameraChange={handleGmCamChange}
@@ -102,6 +107,7 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             meshData={pkMesh}
             isLoading={isLoading}
             emptyMessage="Parasolid 基准网格缺失"
+            errorMessage={pkError}
             cameraSync={cameraSync}
             externalCameraState={rightSyncCam}
             onCameraChange={handlePkCamChange}

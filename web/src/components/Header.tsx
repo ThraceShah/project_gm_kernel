@@ -92,8 +92,13 @@ export const Header: React.FC<HeaderProps> = ({
           {runMeta.host && (
             <>
               <div className="w-px h-3 bg-slate-300" />
-              <span className="truncate max-w-[150px]" title={runMeta.host}>
-                {runMeta.host}
+              <span
+                className="truncate max-w-[220px]"
+                title={typeof runMeta.host === 'object' ? JSON.stringify(runMeta.host) : String(runMeta.host)}
+              >
+                {typeof runMeta.host === 'object'
+                  ? `${(runMeta.host as any).cpu || ''} ${(runMeta.host as any).os || ''}`.trim() || 'Mac/Linux'
+                  : String(runMeta.host)}
               </span>
             </>
           )}
@@ -102,25 +107,27 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right: Controls & Actions */}
       <div className="flex items-center gap-2">
-        {/* Fixture Mode Alert / Toggle */}
-        <button
-          onClick={onToggleFixture}
-          title={isFixture ? '当前为 DEV FIXTURE 演练模式，点击尝试切换为真实数据' : '点击切换为 DEV FIXTURE 演练数据模式'}
-          className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded font-medium transition-colors border ${
-            isFixture
-              ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-              : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-          }`}
-        >
-          {isFixture ? (
-            <>
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-              <span>演练模式 (DEV FIXTURE)</span>
-            </>
-          ) : (
-            <span>真实基准数据模式</span>
-          )}
-        </button>
+        {/* Fixture Mode Toggle: Dev only, forbidden in prod */}
+        {import.meta.env.DEV && (
+          <button
+            onClick={onToggleFixture}
+            title={isFixture ? '当前为 DEV FIXTURE 演练模式，点击尝试切换为真实数据' : '点击切换为 DEV FIXTURE 演练数据模式'}
+            className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded font-medium transition-colors border ${
+              isFixture
+                ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+            }`}
+          >
+            {isFixture ? (
+              <>
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                <span>演练模式 (DEV FIXTURE)</span>
+              </>
+            ) : (
+              <span>真实基准数据模式</span>
+            )}
+          </button>
+        )}
 
         {/* Camera Sync Toggle */}
         <button

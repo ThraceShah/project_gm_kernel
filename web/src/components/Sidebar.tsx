@@ -198,6 +198,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           )}
 
+          {counts.diagnostic > 0 && (
+            <button
+              onClick={() => onStatusFilterChange('diagnostic')}
+              className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded border transition-colors ${
+                statusFilter === 'diagnostic'
+                  ? 'bg-sky-600 text-white border-sky-600 font-semibold'
+                  : 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100'
+              }`}
+            >
+              <AlertCircle className="w-3 h-3 text-sky-600" />
+              <span>诊断 {counts.diagnostic}</span>
+            </button>
+          )}
+
           {counts.timeout > 0 && (
             <button
               onClick={() => onStatusFilterChange('timeout')}

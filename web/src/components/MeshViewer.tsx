@@ -16,6 +16,7 @@ interface MeshViewerProps {
   meshData: MeshData | null;
   isLoading: boolean;
   emptyMessage?: string;
+  errorMessage?: string | null;
   cameraSync: boolean;
   externalCameraState?: CameraSyncState | null;
   onCameraChange?: (state: CameraSyncState) => void;
@@ -28,6 +29,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   meshData,
   isLoading,
   emptyMessage = '无几何数据',
+  errorMessage,
   cameraSync,
   externalCameraState,
   onCameraChange,
@@ -303,9 +305,13 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       {!isLoading && !meshData && (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none">
           <div className="bg-slate-800/90 border border-slate-700 rounded-lg p-4 max-w-xs shadow-lg">
-            <p className="text-xs font-medium text-slate-300 mb-1">{emptyMessage}</p>
+            <p className={`text-xs font-medium mb-1 ${errorMessage ? 'text-rose-400' : 'text-slate-300'}`}>
+              {errorMessage || emptyMessage}
+            </p>
             <p className="text-[11px] text-slate-400">
-              当前步骤未包含 {kernelName} 几何切片或该用例在此内核中执行失败/不支持。
+              {errorMessage
+                ? '几何切片请求异常或网络错误，旧网格已被清除'
+                : `当前步骤未包含 ${kernelName} 几何切片或该用例在此内核中执行失败/不支持。`}
             </p>
           </div>
         </div>

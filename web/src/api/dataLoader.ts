@@ -1,9 +1,4 @@
-import { IndexData, ManifestData, MeshData } from '../types/contract';
-import {
-  DEV_FIXTURE_INDEX,
-  DEV_FIXTURE_MANIFEST,
-  DEV_FIXTURE_MESHES,
-} from '../fixtures/devFixtures';
+import { IndexData, ManifestData, MeshData, StepMeshRef } from '../types/contract';
 
 export interface LoadResult<T> {
   data: T | null;
@@ -11,30 +6,58 @@ export interface LoadResult<T> {
   fromFixture: boolean;
 }
 
+export interface MeshLoadResult {
+  data: MeshData | null;
+  error: string | null;
+}
+
 // In-memory mesh cache
 const meshCache = new Map<string, MeshData>();
 
 /**
- * Determine if fixture mode is forced by URL or storage
+ * Determine if fixture mode is forced by URL
+ * Ignored completely in production builds.
  */
 export function isFixtureModeForced(): boolean {
+  if (!import.meta.env.DEV) return false;
   if (typeof window === 'undefined') return false;
   const params = new URLSearchParams(window.location.search);
   return params.get('fixture') === '1' || params.get('fixture') === 'true';
 }
 
 /**
+ * Lazily load DEV fixtures only in dev mode
+ */
+async function getDevFixtures() {
+  if (!import.meta.env.DEV) {
+    throw new Error('DEV Fixtures are disabled in production build');
+  }
+  return await import('../fixtures/devFixtures');
+}
+
+/**
  * Fetches index.json without cache
  */
-export async function fetchIndexData(useFixture = false): Promise<LoadResult<IndexData>> {
+export async function fetchIndexData(
+  useFixture = false,
+  signal?: AbortSignal
+): Promise<LoadResult<IndexData>> {
   if (useFixture) {
-    return { data: DEV_FIXTURE_INDEX, error: null, fromFixture: true };
+    if (!import.meta.env.DEV) {
+      return {
+        data: null,
+        error: '生产环境禁止加载 DEV FIXTURE 演练数据',
+        fromFixture: false,
+      };
+    }
+    const fixtures = await getDevFixtures();
+    return { data: fixtures.DEV_FIXTURE_INDEX, error: null, fromFixture: true };
   }
 
   try {
     const cacheBuster = `_t=${Date.now()}`;
     const url = `data/index.json?${cacheBuster}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal });
     if (!res.ok) {
       return {
         data: null,
@@ -45,6 +68,9 @@ export async function fetchIndexData(useFixture = false): Promise<LoadResult<Ind
     const json = (await res.json()) as IndexData;
     return { data: json, error: null, fromFixture: false };
   } catch (err) {
+    if ((err as Error)?.name === 'AbortError') {
+      return { data: null, error: 'Request aborted', fromFixture: false };
+    }
     return {
       data: null,
       error: err instanceof Error ? err.message : String(err),
@@ -58,17 +84,26 @@ export async function fetchIndexData(useFixture = false): Promise<LoadResult<Ind
  */
 export async function fetchManifestData(
   manifestRelPath: string,
-  fromFixture = false
+  fromFixture = false,
+  signal?: AbortSignal
 ): Promise<LoadResult<ManifestData>> {
   if (fromFixture) {
-    return { data: DEV_FIXTURE_MANIFEST, error: null, fromFixture: true };
+    if (!import.meta.env.DEV) {
+      return {
+        data: null,
+        error: '生产环境禁止加载 DEV FIXTURE',
+        fromFixture: false,
+      };
+    }
+    const fixtures = await getDevFixtures();
+    return { data: fixtures.DEV_FIXTURE_MANIFEST, error: null, fromFixture: true };
   }
 
   try {
     const cacheBuster = `_t=${Date.now()}`;
     // manifestRelPath is relative to data/, e.g. "runs/<id>/manifest.json"
     const url = `data/${manifestRelPath}?${cacheBuster}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal });
     if (!res.ok) {
       return {
         data: null,
@@ -79,6 +114,9 @@ export async function fetchManifestData(
     const json = (await res.json()) as ManifestData;
     return { data: json, error: null, fromFixture: false };
   } catch (err) {
+    if ((err as Error)?.name === 'AbortError') {
+      return { data: null, error: 'Request aborted', fromFixture: false };
+    }
     return {
       data: null,
       error: err instanceof Error ? err.message : String(err),
@@ -88,44 +126,110 @@ export async function fetchManifestData(
 }
 
 /**
- * Fetches mesh JSON for a case step
- * meshPath is relative to the directory containing manifest.json
+ * Fetches single mesh JSON
  */
 export async function fetchMeshData(
   manifestDir: string,
   meshRelPath: string | null,
-  fromFixture = false
-): Promise<MeshData | null> {
-  if (!meshRelPath) return null;
+  fromFixture = false,
+  signal?: AbortSignal
+): Promise<MeshLoadResult> {
+  if (!meshRelPath) return { data: null, error: null };
 
   const fullKey = `${fromFixture ? 'fixture:' : manifestDir + '/'}${meshRelPath}`;
   if (meshCache.has(fullKey)) {
-    return meshCache.get(fullKey)!;
+    return { data: meshCache.get(fullKey)!, error: null };
   }
 
   if (fromFixture) {
-    const fixtureMesh = DEV_FIXTURE_MESHES[meshRelPath];
+    if (!import.meta.env.DEV) {
+      return { data: null, error: '生产环境不支持演练网格' };
+    }
+    const fixtures = await getDevFixtures();
+    const fixtureMesh = fixtures.DEV_FIXTURE_MESHES[meshRelPath];
     if (fixtureMesh) {
       meshCache.set(fullKey, fixtureMesh);
-      return fixtureMesh;
+      return { data: fixtureMesh, error: null };
     }
-    return null;
+    return { data: null, error: `未找到演练网格: ${meshRelPath}` };
   }
 
   try {
     const cacheBuster = `_t=${Date.now()}`;
-    // manifestDir is e.g. "runs/run-123", so url is "data/runs/run-123/meshes/..."
     const url = `data/${manifestDir}/${meshRelPath}?${cacheBuster}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal });
     if (!res.ok) {
+      const errMsg = `HTTP ${res.status}: 网格文件未找到 (${url})`;
       console.warn(`[DataLoader] Failed to load mesh from ${url}: ${res.status}`);
-      return null;
+      return { data: null, error: errMsg };
     }
     const mesh = (await res.json()) as MeshData;
     meshCache.set(fullKey, mesh);
-    return mesh;
+    return { data: mesh, error: null };
   } catch (err) {
+    if ((err as Error)?.name === 'AbortError') {
+      return { data: null, error: 'Request aborted' };
+    }
+    const errMsg = err instanceof Error ? err.message : String(err);
     console.error(`[DataLoader] Error loading mesh ${meshRelPath}:`, err);
-    return null;
+    return { data: null, error: errMsg };
   }
+}
+
+/**
+ * Combine multiple meshes into one by merging faces and edges
+ */
+export function combineMeshes(primary: MeshData, additional: MeshData[]): MeshData {
+  if (!additional || additional.length === 0) return primary;
+  const faces = [...(primary.faces || [])];
+  const edges = [...(primary.edges || [])];
+  for (const m of additional) {
+    if (m?.faces) faces.push(...m.faces);
+    if (m?.edges) edges.push(...m.edges);
+  }
+  return {
+    ...primary,
+    faces,
+    edges,
+  };
+}
+
+/**
+ * Fetches step meshes, including primary before/after mesh and any tools meshes
+ */
+export async function fetchStepMeshes(
+  manifestDir: string,
+  stepRef: StepMeshRef | undefined,
+  subState: 'before' | 'after',
+  fromFixture = false,
+  signal?: AbortSignal
+): Promise<MeshLoadResult> {
+  if (!stepRef) return { data: null, error: null };
+
+  const primaryPath = subState === 'before' ? stepRef.before : stepRef.after;
+  if (!primaryPath) return { data: null, error: null };
+
+  const primaryRes = await fetchMeshData(manifestDir, primaryPath, fromFixture, signal);
+  if (primaryRes.error || !primaryRes.data) {
+    return primaryRes;
+  }
+
+  // If before state and tools exist, fetch tools and combine
+  if (subState === 'before' && stepRef.tools && stepRef.tools.length > 0) {
+    const toolResults = await Promise.all(
+      stepRef.tools.map((tPath) => fetchMeshData(manifestDir, tPath, fromFixture, signal))
+    );
+    const validTools: MeshData[] = [];
+    for (const tr of toolResults) {
+      if (tr.data) validTools.push(tr.data);
+    }
+    if (validTools.length > 0) {
+      return {
+        data: combineMeshes(primaryRes.data, validTools),
+        error: null,
+      };
+    }
+  }
+
+  return primaryRes;
 }

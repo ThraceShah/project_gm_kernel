@@ -23,10 +23,10 @@ export interface RunMetadata {
   commit: string;
   generatedAt: string;
   pkVersion?: string;
-  host?: string;
-  configuration?: string;
-  scope?: string;
-  provenance?: string;
+  host?: string | Record<string, unknown>;
+  configuration?: string | Record<string, unknown>;
+  scope?: string | Record<string, unknown>;
+  provenance?: string | Record<string, unknown>;
   [key: string]: unknown;
 }
 
@@ -48,6 +48,11 @@ export interface ApiCallInfo {
 export interface StepMeshRef {
   before: string | null; // relative to manifest dir, e.g. "meshes/c1_gm_before.json"
   after: string | null;  // relative to manifest dir, e.g. "meshes/c1_gm_after.json"
+  tools?: string[];
+  selectedEdgeTags?: number[];
+  tracking?: unknown[];
+  afterBodies?: string[];
+  blendTracking?: unknown[];
 }
 
 export interface StepData {
@@ -77,10 +82,10 @@ export interface PerformanceInfo {
   ratioGmOverPk: number | null; // smaller means GM is faster
   samples?: number | string | null;
   warmup?: number | string | null;
-  scope?: string | null;
+  scope?: string | Record<string, unknown> | null;
   correctnessQualified?: boolean | string | null;
-  host?: string | null;
-  configuration?: string | null;
+  host?: string | Record<string, unknown> | null;
+  configuration?: string | Record<string, unknown> | null;
   note?: string | null;
   [key: string]: unknown;
 }

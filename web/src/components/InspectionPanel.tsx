@@ -20,6 +20,7 @@ interface InspectionPanelProps {
 
 export const InspectionPanel: React.FC<InspectionPanelProps> = ({
   testCase,
+  manifestDir,
 }) => {
   const [activeTab, setActiveTab] = useState<'checks' | 'perf' | 'params' | 'evidence'>('checks');
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -125,7 +126,7 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
       {/* Tab Content Body */}
       {!isCollapsed && (
         <div className="h-64 overflow-y-auto">
-          {activeTab === 'checks' && <ChecksTable checks={testCase.checks} />}
+          {activeTab === 'checks' && <ChecksTable checks={testCase.checks} evidenceBaseDir={manifestDir} />}
           {activeTab === 'perf' && <PerformanceView perf={testCase.performance} />}
           {activeTab === 'params' && (
             <ApiParamView
@@ -142,18 +143,22 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
                 {testCase.evidence && testCase.evidence.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {testCase.evidence.map((ev, idx) => (
-                      <div
+                      <a
                         key={idx}
-                        className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs hover:bg-slate-100 transition-colors"
+                        href={`data/${manifestDir}/${ev.path}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs hover:bg-sky-50 hover:border-sky-300 transition-colors group"
+                        title={`打开证据文件: ${ev.path}`}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <FileText className="w-4 h-4 text-sky-600 flex-shrink-0" />
-                          <span className="font-medium text-slate-800 truncate">{ev.label}</span>
+                          <FileText className="w-4 h-4 text-sky-600 flex-shrink-0 group-hover:text-sky-700" />
+                          <span className="font-medium text-slate-800 group-hover:text-sky-900 truncate">{ev.label}</span>
                         </div>
-                        <span className="text-[11px] font-mono-code text-slate-400 truncate ml-2">
-                          {ev.path}
+                        <span className="text-[11px] font-mono-code text-slate-400 group-hover:text-sky-600 truncate ml-2">
+                          {ev.path} ↗
                         </span>
-                      </div>
+                      </a>
                     ))}
                   </div>
                 ) : (

@@ -14,7 +14,7 @@ if (!fs.existsSync(tempDocsDir)) {
   fs.mkdirSync(tempDocsDir, { recursive: true });
 }
 
-// 1. Simple static server for dist
+// Simple static server for dist
 const mimeTypes = {
   '.html': 'text/html',
   '.js': 'text/javascript',
@@ -52,7 +52,6 @@ function startServer(port = 8089) {
   });
 }
 
-// Chromium executable path
 const chromePath = '/home/thrace/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome';
 
 async function runSmokeTests() {
@@ -67,147 +66,108 @@ async function runSmokeTests() {
   });
 
   const errors = [];
-  const warnings = [];
 
   try {
     // ----------------------------------------------------
-    // Test 1: Empty state (Default mode without data/index.json)
+    // Test 1: Real Production Data Mode (Default /)
     // ----------------------------------------------------
-    console.log('[Test 1] Testing production mode without data/index.json (Waiting Screen)...');
+    console.log('[Test 1] Testing Real Production Data Mode (/)...');
     const page1 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     page1.on('pageerror', (err) => errors.push(`[Page 1 Error] ${err.message}`));
     page1.on('console', (msg) => {
-      // Ignore expected 404 on data/index.json during no-data probe
-      if (msg.type() === 'error' && !msg.text().includes('404')) {
-        errors.push(`[Page 1 Console Error] ${msg.text()}`);
-      }
+      if (msg.type() === 'error') errors.push(`[Page 1 Console Error] ${msg.text()}`);
     });
 
     await page1.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
-    await page1.waitForTimeout(500);
+    await page1.waitForTimeout(1000);
 
-    const emptyText = await page1.textContent('body');
-    if (!emptyText.includes('未检测到生产基线数据')) {
-      throw new Error('Test 1 Failed: Expected "未检测到生产基线数据" not found');
+    const body1 = await page1.textContent('body');
+    if (!body1.includes('GM Kernel vs Parasolid 对比工作台')) {
+      throw new Error('Test 1 Failed: Title not found');
     }
 
-    const noDataScreenshotPath = path.join(tempDocsDir, 'web_smoke_no_data.png');
-    await page1.screenshot({ path: noDataScreenshotPath });
-    console.log(`[Test 1] Passed! Screenshot saved to ${noDataScreenshotPath}`);
-    await page1.close();
-
-    // ----------------------------------------------------
-    // Test 2: Desktop Dev Fixture Mode
-    // ----------------------------------------------------
-    console.log('[Test 2] Testing Desktop Dev Fixture Mode (?fixture=1)...');
-    const page2 = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-    page2.on('pageerror', (err) => errors.push(`[Page 2 Error] ${err.message}`));
-    page2.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        // filter out harmless 404s if any
-        errors.push(`[Page 2 Console Error] ${msg.text()}`);
-      }
-    });
-
-    await page2.goto(`${baseUrl}/?fixture=1`, { waitUntil: 'networkidle' });
-    await page2.waitForTimeout(1000);
-
-    // Verify Title & Fixture Banner
-    const bodyContent = await page2.textContent('body');
-    if (!bodyContent.includes('GM Kernel vs Parasolid 对比工作台')) {
-      throw new Error('Test 2 Failed: Title not found');
-    }
-    if (!bodyContent.includes('DEV FIXTURE')) {
-      throw new Error('Test 2 Failed: Dev Fixture banner not found');
+    // Verify Real Run Metadata
+    if (!body1.includes('Current GM / real PK oracle data')) {
+      throw new Error('Test 1 Failed: Real run label not found');
     }
 
-    // Verify Case Counts
-    if (!bodyContent.includes('通过 2') || !bodyContent.includes('失败 1') || !bodyContent.includes('缺失 1')) {
-      throw new Error('Test 2 Failed: Expected status counters (通过 2, 失败 1, 缺失 1) not found');
+    // Verify Real Case Counts: 4 pass, 1 diagnostic, 205 missing, 204 unsupported (total 414)
+    if (!body1.includes('通过 4') || !body1.includes('缺失 205') || !body1.includes('不支持 204')) {
+      throw new Error('Test 1 Failed: Expected status counters (通过 4, 缺失 205, 不支持 204) not found');
     }
 
     // Verify WebGL Canvases
-    const canvases = await page2.$$('canvas');
-    if (canvases.length < 2) {
-      throw new Error(`Test 2 Failed: Expected at least 2 WebGL canvases for GM & PK, got ${canvases.length}`);
+    const canvases1 = await page1.$$('canvas');
+    if (canvases1.length < 2) {
+      throw new Error(`Test 1 Failed: Expected 2 WebGL canvases, got ${canvases1.length}`);
     }
 
-    // Take Desktop Workbench Screenshot
-    const desktopScreenshotPath = path.join(tempDocsDir, 'web_smoke_desktop_workbench.png');
-    await page2.screenshot({ path: desktopScreenshotPath });
-    console.log(`[Test 2] Main Workbench Screenshot saved to ${desktopScreenshotPath}`);
+    // Screenshot 1: Real Desktop Workbench
+    const realWorkbenchScreenshot = path.join(tempDocsDir, 'real_smoke_desktop_workbench.png');
+    await page1.screenshot({ path: realWorkbenchScreenshot });
+    console.log(`[Test 1] Real Desktop Workbench screenshot saved to ${realWorkbenchScreenshot}`);
 
-    // Test Step 2 Switching
-    console.log('[Test 2.1] Switching to Step 2...');
-    const step2Btn = await page2.waitForSelector('text=步骤 2: 滚球圆角曲面生成与裁剪收敛');
-    await step2Btn.click();
-    await page2.waitForTimeout(600);
-
-    // Verify Checks tab
-    console.log('[Test 2.2] Verifying Checks Tab...');
-    const checksText = await page2.textContent('body');
-    if (!checksText.includes('圆角曲面最大几何偏差') || !checksText.includes('PK_DEBUG_BODY_compare 全局结果')) {
-      throw new Error('Test 2.2 Failed: Acceptance check rows not found');
+    // Verify default selected case has checks
+    console.log('[Test 1.1] Verifying Checks Table for real case...');
+    const checksText = await page1.textContent('body');
+    if (!checksText.includes('逐项验收') || !checksText.includes('Full BODY_check GM fresh XT')) {
+      throw new Error('Test 1.1 Failed: Checks table rows not rendered');
     }
 
-    // Test Performance Tab
-    console.log('[Test 2.3] Clicking Performance Tab...');
-    const perfTab = await page2.waitForSelector('text=性能指标');
+    const realChecksScreenshot = path.join(tempDocsDir, 'real_smoke_desktop_checks.png');
+    await page1.screenshot({ path: realChecksScreenshot });
+    console.log(`[Test 1.1] Real Checks Screenshot saved to ${realChecksScreenshot}`);
+
+    // Verify Performance tab for real case
+    console.log('[Test 1.2] Verifying Performance metrics for real case...');
+    const perfTab = await page1.waitForSelector('text=性能指标');
     await perfTab.click();
-    await page2.waitForTimeout(400);
+    await page1.waitForTimeout(400);
 
-    const perfText = await page2.textContent('body');
-    if (!perfText.includes('0.42') || !perfText.includes('0.61') || !perfText.includes('0.69x')) {
-      throw new Error('Test 2.3 Failed: Performance metrics (0.42, 0.61, 0.69x) not found');
+    const perfText = await page1.textContent('body');
+    if (!perfText.includes('Apple M4') || !perfText.includes('GM Kernel 耗时') || !perfText.includes('正确性资格认证')) {
+      throw new Error('Test 1.2 Failed: Real performance metrics not rendered properly');
     }
 
-    // Test API & Parameters Tab
-    console.log('[Test 2.4] Clicking API & Parameters Tab...');
-    const apiTab = await page2.waitForSelector('text=API 与参数');
-    await apiTab.click();
-    await page2.waitForTimeout(400);
+    // Test Diagnostic case
+    console.log('[Test 1.3] Testing Diagnostic case regular-curved.block-subtract...');
+    const diagFilterBtn = await page1.waitForSelector('text=诊断 1');
+    await diagFilterBtn.click();
+    await page1.waitForTimeout(400);
 
-    const apiText = await page2.textContent('body');
-    if (!apiText.includes('GmBlendEngine.FixBlends') || !apiText.includes('PK_BODY_fix_blends')) {
-      throw new Error('Test 2.4 Failed: API names not found');
+    const diagCaseItem = await page1.waitForSelector('text=regular-curved.block-subtract');
+    await diagCaseItem.click();
+    await page1.waitForTimeout(800);
+
+    const diagText = await page1.textContent('body');
+    if (!diagText.includes('DIAGNOSTIC')) {
+      throw new Error('Test 1.3 Failed: Diagnostic status badge not found');
     }
 
-    // Test Missing PK Case
-    console.log('[Test 2.5] Testing Missing PK case...');
-    const missingCaseItem = await page2.waitForSelector('text=复杂导轨截面可变半径倒圆角');
-    await missingCaseItem.click();
-    await page2.waitForTimeout(600);
+    const realDiagScreenshot = path.join(tempDocsDir, 'real_smoke_desktop_diagnostic.png');
+    await page1.screenshot({ path: realDiagScreenshot });
+    console.log(`[Test 1.3] Real Diagnostic Screenshot saved to ${realDiagScreenshot}`);
 
-    const missingCaseText = await page2.textContent('body');
-    if (!missingCaseText.includes('Parasolid 基准网格缺失')) {
-      throw new Error('Test 2.5 Failed: Expected "Parasolid 基准网格缺失" overlay');
-    }
+    await page1.close();
 
-    // Take Inspection Details Screenshot
-    const inspectionScreenshotPath = path.join(tempDocsDir, 'web_smoke_desktop_inspection.png');
-    await page2.screenshot({ path: inspectionScreenshotPath });
-    console.log(`[Test 2] Inspection Screenshot saved to ${inspectionScreenshotPath}`);
+    // ----------------------------------------------------
+    // Test 2: Real Mobile Screen (390x844)
+    // ----------------------------------------------------
+    console.log('[Test 2] Testing Real Mobile Screen (390x844)...');
+    const page2 = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    page2.on('pageerror', (err) => errors.push(`[Page 2 Error] ${err.message}`));
+
+    await page2.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+    await page2.waitForTimeout(800);
+
+    const realMobileScreenshot = path.join(tempDocsDir, 'real_smoke_mobile_narrow.png');
+    await page2.screenshot({ path: realMobileScreenshot });
+    console.log(`[Test 2] Real Mobile Screenshot saved to ${realMobileScreenshot}`);
 
     await page2.close();
 
-    // ----------------------------------------------------
-    // Test 3: Narrow / Mobile Screen (390x844)
-    // ----------------------------------------------------
-    console.log('[Test 3] Testing Narrow / Mobile Screen (390x844)...');
-    const page3 = await browser.newPage({ viewport: { width: 390, height: 844 } });
-    page3.on('pageerror', (err) => errors.push(`[Page 3 Error] ${err.message}`));
-
-    await page3.goto(`${baseUrl}/?fixture=1`, { waitUntil: 'networkidle' });
-    await page3.waitForTimeout(800);
-
-    const mobileScreenshotPath = path.join(tempDocsDir, 'web_smoke_mobile_narrow.png');
-    await page3.screenshot({ path: mobileScreenshotPath });
-    console.log(`[Test 3] Mobile Screenshot saved to ${mobileScreenshotPath}`);
-
-    await page3.close();
-
     console.log('\n========================================');
-    console.log('✅ ALL SMOKE TESTS PASSED SUCCESSFULLY!');
+    console.log('✅ ALL REAL DATA SMOKE TESTS PASSED!');
     console.log(`Errors encountered: ${errors.length}`);
     if (errors.length > 0) {
       console.error('Errors:', errors);
@@ -215,7 +175,7 @@ async function runSmokeTests() {
     }
     console.log('========================================\n');
   } catch (err) {
-    console.error('❌ Smoke Test Failed:', err);
+    console.error('❌ Real Smoke Test Failed:', err);
     process.exitCode = 1;
   } finally {
     await browser.close();

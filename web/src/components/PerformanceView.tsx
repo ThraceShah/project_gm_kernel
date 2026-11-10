@@ -19,6 +19,35 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ perf }) => {
 
   const ratioInfo = formatRatio(perf.ratioGmOverPk);
 
+  const formatHost = (host: unknown): string => {
+    if (!host) return '-';
+    if (typeof host === 'string') return host;
+    if (typeof host === 'object' && host !== null) {
+      const h = host as Record<string, unknown>;
+      const parts = [];
+      if (h.cpu) parts.push(String(h.cpu));
+      if (h.architecture) parts.push(String(h.architecture));
+      if (h.os) parts.push(String(h.os));
+      if (h.sdk) parts.push(`SDK ${h.sdk}`);
+      return parts.join(' / ') || JSON.stringify(host);
+    }
+    return String(host);
+  };
+
+  const formatConfig = (config: unknown): string => {
+    if (!config) return '-';
+    if (typeof config === 'string') return config;
+    if (typeof config === 'object' && config !== null) {
+      const c = config as Record<string, unknown>;
+      const parts = [];
+      if (c.build) parts.push(String(c.build));
+      if (c.nativeAot !== undefined) parts.push(c.nativeAot ? 'NativeAOT' : 'Managed');
+      if (c.timing) parts.push(String(c.timing));
+      return parts.join(' | ') || JSON.stringify(config);
+    }
+    return String(config);
+  };
+
   return (
     <div className="p-4 space-y-4 select-text">
       {/* Top Metric Cards */}
@@ -109,15 +138,15 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ perf }) => {
           </div>
           <div className="flex justify-between py-1 border-b border-slate-100">
             <span className="text-slate-500">测试宿主机器:</span>
-            <span className="font-mono-code text-slate-700">{perf.host || '-'}</span>
+            <span className="font-mono-code text-slate-700">{formatHost(perf.host)}</span>
           </div>
           <div className="flex justify-between py-1 border-b border-slate-100">
             <span className="text-slate-500">编译/发布配置:</span>
-            <span className="font-mono-code text-slate-700">{perf.configuration || '-'}</span>
+            <span className="font-mono-code text-slate-700">{formatConfig(perf.configuration)}</span>
           </div>
           <div className="flex justify-between py-1">
             <span className="text-slate-500">基准测试范围 (Scope):</span>
-            <span className="text-slate-700">{perf.scope || '-'}</span>
+            <span className="text-slate-700">{typeof perf.scope === 'object' ? JSON.stringify(perf.scope) : (perf.scope || '-')}</span>
           </div>
         </div>
 

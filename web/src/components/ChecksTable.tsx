@@ -8,7 +8,7 @@ interface ChecksTableProps {
   evidenceBaseDir?: string;
 }
 
-export const ChecksTable: React.FC<ChecksTableProps> = ({ checks }) => {
+export const ChecksTable: React.FC<ChecksTableProps> = ({ checks, evidenceBaseDir }) => {
   if (!checks || checks.length === 0) {
     return (
       <div className="p-8 text-center text-slate-400 text-xs">
@@ -38,11 +38,14 @@ export const ChecksTable: React.FC<ChecksTableProps> = ({ checks }) => {
           {checks.map((chk) => {
             const st = formatStatus(chk.status);
 
-            const formatVal = (v: number | string | null | undefined) => {
+            const formatVal = (v: number | string | null | undefined | unknown) => {
               if (v === null || v === undefined) return <span className="text-slate-400 italic">null</span>;
               if (typeof v === 'number') {
                 if (Number.isInteger(v)) return v.toString();
                 return v.toFixed(6).replace(/\.?0+$/, '');
+              }
+              if (typeof v === 'object') {
+                return JSON.stringify(v);
               }
               return String(v);
             };
@@ -104,12 +107,25 @@ export const ChecksTable: React.FC<ChecksTableProps> = ({ checks }) => {
                 <td className="py-2.5 px-3 max-w-xs text-slate-600 text-[11px]">
                   {chk.note && <div className="leading-tight mb-1">{chk.note}</div>}
                   {chk.evidence && (
-                    <div className="flex items-center gap-1 text-sky-700 font-mono-code text-[10px]">
-                      <FileText className="w-3 h-3" />
-                      <span className="truncate" title={chk.evidence}>
-                        {chk.evidence}
-                      </span>
-                    </div>
+                    evidenceBaseDir ? (
+                      <a
+                        href={`data/${evidenceBaseDir}/${chk.evidence}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sky-700 hover:text-sky-900 hover:underline font-mono-code text-[10px]"
+                        title={`查看证据文件: ${chk.evidence}`}
+                      >
+                        <FileText className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate max-w-[180px]">{chk.evidence}</span>
+                      </a>
+                    ) : (
+                      <div className="flex items-center gap-1 text-sky-700 font-mono-code text-[10px]">
+                        <FileText className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate" title={chk.evidence}>
+                          {chk.evidence}
+                        </span>
+                      </div>
+                    )
                   )}
                 </td>
               </tr>
