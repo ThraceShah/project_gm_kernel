@@ -296,6 +296,15 @@ internal static class HostedWebProgressSite
     // generation (exact index bytes + per-run file hashes): later writes to the
     // mutable source cache cannot become visible, and rollback re-activates the
     // exact previous generation instead of re-reading "current latest".
+    //
+    // Commit protocol: site.json is the SINGLE authoritative commit point and
+    // carries everything needed for recovery (active pair, previous pair,
+    // activation count) in one atomic rename. activation-state.json is a
+    // derived mirror written best-effort AFTER the commit; a mirror failure is
+    // reported explicitly (never swallowed into a false claim), keeps exit 0
+    // because the activation itself committed, and is repaired on the next run
+    // (skip-same never masks the repair). Two file renames are NOT claimed to
+    // be one transaction; only the pointer is.
     internal static JsonObject Activate(string siteRoot, string releaseId, string dataRoot, string statePath)
     {
         var release = VerifyRelease(siteRoot, releaseId);
@@ -305,6 +314,8 @@ internal static class HostedWebProgressSite
         var contentHash = JsonNode.Parse(File.ReadAllText(Path.Combine(siteRoot, "ui-releases", releaseId + ".meta.json")))!["contentHash"]!.GetValue<string>();
         dataRoot = Path.GetFullPath(dataRoot);
         var generation = EnsureGeneration(siteRoot, dataRoot, data);
+        var pointerPath = Path.Combine(siteRoot, "site.json");
+        var current = ReadJsonObject(pointerPath);
         var active = new JsonObject
         {
             ["uiRelease"] = releaseId,
@@ -315,23 +326,20 @@ internal static class HostedWebProgressSite
                 .First(r => r!["id"]!.GetValue<string>() == data["latestRunId"]!.GetValue<string>())!["commit"]!.GetValue<string>(),
             ["dataRoot"] = dataRoot, // informational: the import source, never served
             ["activatedAt"] = DateTimeOffset.UtcNow.ToString("O"),
+            ["previous"] = current is null ? null : PairOf(current),
+            ["activationCount"] = (current?["activationCount"]?.GetValue<int>() ?? 0) + 1,
         };
-        var previous = ReadJsonObject(Path.Combine(siteRoot, "site.json"));
-        if (previous is not null
-            && previous["uiRelease"]?.GetValue<string>() == releaseId
-            && previous["generation"]?.GetValue<string>() == active["generation"]?.GetValue<string>()
-            && previous["dataRunId"]?.GetValue<string>() == active["dataRunId"]?.GetValue<string>())
+        if (current is not null
+            && current["uiRelease"]?.GetValue<string>() == releaseId
+            && current["generation"]?.GetValue<string>() == active["generation"]?.GetValue<string>()
+            && current["dataRunId"]?.GetValue<string>() == active["dataRunId"]?.GetValue<string>())
         {
-            Console.WriteLine("ACTIVATE_SKIP_SAME ui=" + releaseId + " generation=" + active["generation"] + " run=" + active["dataRunId"]);
+            var repaired = ReconcileMirror(statePath, current);
+            Console.WriteLine("ACTIVATE_SKIP_SAME ui=" + releaseId + " generation=" + active["generation"] + " run=" + active["dataRunId"] + (repaired ? " ACTIVATION_STATE_REPAIRED" : ""));
             return new JsonObject { ["status"] = "skip-same", ["active"] = active.DeepClone() };
         }
-        WriteJsonAtomic(Path.Combine(siteRoot, "site.json"), active);
-        var state = ReadJsonObject(statePath) ?? new JsonObject();
-        state["schemaVersion"] = 1;
-        state["previous"] = previous is null ? null : previous.DeepClone();
-        state["active"] = active.DeepClone();
-        state["activationCount"] = (state["activationCount"]?.GetValue<int>() ?? 0) + 1;
-        WriteJsonAtomic(statePath, state);
+        WriteJsonAtomic(pointerPath, active); // the single commit point
+        MirrorOrReport(statePath, active);
         Console.WriteLine("ACTIVATED ui=" + releaseId + " generation=" + active["generation"] + " run=" + active["dataRunId"] + " sha=" + active["dataSha"] + " source=" + dataRoot);
         return new JsonObject { ["status"] = "activated", ["active"] = active, ["data"] = data, ["generation"] = generation };
         static JsonObject Refused(string status, JsonObject detail)
@@ -446,17 +454,19 @@ internal static class HostedWebProgressSite
     }
 
     // Rollback re-activates the exact previously active generation and UI
-    // release recorded in the activation state: same index bytes, same run
-    // file hashes, no re-resolution of "current latest" anywhere.
+    // release recorded IN THE AUTHORITATIVE POINTER: same index bytes, same run
+    // file hashes, no re-resolution of "current latest" anywhere. Works even
+    // when the derived state mirror is broken or missing.
     internal static JsonObject Rollback(string siteRoot, string statePath)
     {
-        var state = ReadJsonObject(statePath);
-        var previous = state?["previous"] as JsonObject;
+        var pointerPath = Path.Combine(siteRoot, "site.json");
+        var current = ReadJsonObject(pointerPath);
+        var previous = current?["previous"] as JsonObject;
         var releaseId = previous?["uiRelease"]?.GetValue<string>();
         var generationId = previous?["generation"]?.GetValue<string>();
         if (releaseId is null || generationId is null)
         {
-            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS activation state has no previous ui/generation pair");
+            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS authoritative pointer has no previous ui/generation pair");
             return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
         }
         if (VerifyRelease(siteRoot, releaseId)["errors"]!.AsArray().Count > 0
@@ -466,7 +476,6 @@ internal static class HostedWebProgressSite
             Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous release/generation is not retained");
             return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
         }
-        var current = ReadJsonObject(Path.Combine(siteRoot, "site.json"));
         var restored = new JsonObject
         {
             ["uiRelease"] = releaseId,
@@ -476,17 +485,67 @@ internal static class HostedWebProgressSite
             ["dataSha"] = previous["dataSha"]?.DeepClone(),
             ["dataRoot"] = previous["dataRoot"]?.DeepClone(),
             ["activatedAt"] = DateTimeOffset.UtcNow.ToString("O"),
+            ["previous"] = current is null ? null : PairOf(current),
+            ["activationCount"] = (current?["activationCount"]?.GetValue<int>() ?? 0) + 1,
         };
-        WriteJsonAtomic(Path.Combine(siteRoot, "site.json"), restored);
-        var updated = ReadJsonObject(statePath) ?? new JsonObject();
-        updated["schemaVersion"] = 1;
-        updated["previous"] = current is null ? null : current.DeepClone();
-        updated["active"] = restored.DeepClone();
-        updated["rollbackCount"] = (updated["rollbackCount"]?.GetValue<int>() ?? 0) + 1;
-        WriteJsonAtomic(statePath, updated);
+        WriteJsonAtomic(pointerPath, restored); // the single commit point
+        MirrorOrReport(statePath, restored);
         Console.WriteLine("ROLLBACK_ACTIVATED ui=" + releaseId + " generation=" + generationId + " run=" + restored["dataRunId"]);
         return new JsonObject { ["status"] = "activated", ["active"] = restored };
     }
+
+    // The activation record that recovery needs: active pair + previous pair.
+    private static JsonObject PairOf(JsonObject pointer) => new()
+    {
+        ["uiRelease"] = pointer["uiRelease"]?.DeepClone(),
+        ["uiHash"] = pointer["uiHash"]?.DeepClone(),
+        ["generation"] = pointer["generation"]?.DeepClone(),
+        ["dataRunId"] = pointer["dataRunId"]?.DeepClone(),
+        ["dataSha"] = pointer["dataSha"]?.DeepClone(),
+        ["dataRoot"] = pointer["dataRoot"]?.DeepClone(),
+    };
+
+    // Best-effort derived mirror write; failures are reported, never swallowed
+    // into a false consistency claim (the pointer already committed).
+    private static void MirrorOrReport(string statePath, JsonObject pointer)
+    {
+        try
+        {
+            WriteJsonAtomic(statePath, MirrorOf(pointer));
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine("ACTIVATION_STATE_MIRROR_FAILED " + e.Message + " (site.json is authoritative; next run repairs the derived state)");
+        }
+    }
+
+    // Repairs the derived mirror from the authoritative pointer. Returns true
+    // when a repair was performed.
+    private static bool ReconcileMirror(string statePath, JsonObject pointer)
+    {
+        var mirror = ReadJsonObject(statePath);
+        var match = mirror?["active"]?["uiRelease"]?.GetValue<string>() == pointer["uiRelease"]?.GetValue<string>()
+            && mirror?["active"]?["generation"]?.GetValue<string>() == pointer["generation"]?.GetValue<string>();
+        if (match) return false;
+        try
+        {
+            WriteJsonAtomic(statePath, MirrorOf(pointer));
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine("ACTIVATION_STATE_MIRROR_FAILED " + e.Message + " (site.json is authoritative; next run repairs the derived state)");
+            return false;
+        }
+    }
+
+    private static JsonObject MirrorOf(JsonObject pointer) => new()
+    {
+        ["schemaVersion"] = 1,
+        ["active"] = PairOf(pointer),
+        ["previous"] = pointer["previous"] is null ? null : pointer["previous"]!.DeepClone(),
+        ["activationCount"] = pointer["activationCount"]?.DeepClone(),
+    };
 
     internal static string HashHex(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
