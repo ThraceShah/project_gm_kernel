@@ -4,7 +4,10 @@ internal static class WebProgressDataValidation
 {
     private static readonly HashSet<string> Statuses=["pass","fail","missing","unsupported","timeout","diagnostic"];
     private static readonly HashSet<string> Roles=["unchanged","selected","support","newBlend","modified","deleted"];
-    internal static JsonObject Validate(string data)
+    internal static JsonObject Validate(string data) => Validate(data, null);
+    // indexOverride validates a candidate destination index before it is
+    // atomically switched in, without weakening any check.
+    internal static JsonObject Validate(string data, JsonNode? indexOverride)
     {
         var errors=new JsonArray();var meshCount=0;var triangles=0;var caseCount=0;var seenMeshes=new HashSet<string>();
         // Errors are additionally attributed per run (runErrors) so callers can
@@ -55,8 +58,8 @@ internal static class WebProgressDataValidation
             }
         }
         var indexPath=Path.Combine(data,"index.json");
-        if(!File.Exists(indexPath)){Error("Missing index.json");return Result();}
-        var index=Read(indexPath);Fields(index,"schemaVersion generatedAt latestRunId runs","index");
+        if(indexOverride==null&&!File.Exists(indexPath)){Error("Missing index.json");return Result();}
+        var index=indexOverride??Read(indexPath);Fields(index,"schemaVersion generatedAt latestRunId runs","index");
         if(index?["schemaVersion"]?.GetValue<int>()!=1)Error("index schemaVersion");
         var runIds=new HashSet<string>();
         foreach(var descriptor in index?["runs"]?.AsArray()??[])

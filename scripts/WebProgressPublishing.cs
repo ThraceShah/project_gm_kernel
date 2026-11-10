@@ -9,6 +9,105 @@ internal static class WebProgressPublishing
     {
         var validation=WebProgressDataValidation.Validate(data);
         if(validation["errors"]!.AsArray().Count>0)throw new InvalidDataException(validation.ToJsonString());
+        CopyRun(data,runId,destination);
+        var input=JsonNode.Parse(File.ReadAllText(Path.Combine(data,"index.json")))!;
+        var descriptor=input["runs"]!.AsArray().FirstOrDefault(r=>r!["id"]!.GetValue<string>()==runId)?.DeepClone();
+        // A run without a validated index descriptor (quarantined bad or
+        // unconfirmed run) is copied as raw evidence only and must never
+        // enter the published index.
+        if(descriptor==null)return;
+        var indexPath=Path.Combine(destination,"index.json");
+        var index=File.Exists(indexPath)?JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject():new JsonObject{["schemaVersion"]=1,["runs"]=new JsonArray()};
+        var descriptors=index["runs"]!.AsArray();var previous=descriptors.FirstOrDefault(r=>r!["id"]!.GetValue<string>()==runId);if(previous!=null)descriptors.Remove(previous);descriptors.Insert(0,descriptor);
+        index["latestRunId"]=runId;index["generatedAt"]=DateTimeOffset.UtcNow.ToString("O");
+        File.WriteAllText(indexPath+".tmp",index.ToJsonString());File.Move(indexPath+".tmp",indexPath,true);
+    }
+
+    // Closure-aware publish for the accumulated aggregate view: every manifest
+    // the destination index retains must be self-consistent, so the complete
+    // reference closure of the indexed manifests is collected first, the whole
+    // destination is then validated and only then is its index switched
+    // atomically. Both a fresh destination and a retry after a failed publish
+    // are covered; any failure keeps the previous destination index untouched.
+    internal static void PublishClosure(string data,IReadOnlyList<string> seedRunIds,string? latestRunId,string destination)
+    {
+        var validation=WebProgressDataValidation.Validate(data);
+        if(validation["errors"]!.AsArray().Count>0)throw new InvalidDataException(validation.ToJsonString());
+        var sourceIndex=JsonNode.Parse(File.ReadAllText(Path.Combine(data,"index.json")))!.AsObject();
+        var validated=sourceIndex["runs"]!.AsArray().Select(r=>r!["id"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
+        var destIndexPath=Path.Combine(destination,"index.json");
+        var destIndex=File.Exists(destIndexPath)?JsonNode.Parse(File.ReadAllText(destIndexPath))!.AsObject():new JsonObject{["schemaVersion"]=1,["runs"]=new JsonArray()};
+        // Closure roots: validated seeds plus the destination's retained
+        // validated history (historical reference closure). Quarantined runs
+        // are never roots and never indexed; they can still be pulled in as
+        // raw evidence by an aggregate's failure-log reference.
+        var closure=new HashSet<string>(StringComparer.Ordinal);
+        var queue=new Queue<string>();
+        void Root(string id){if(validated.Contains(id)&&closure.Add(id))queue.Enqueue(id);}
+        foreach(var id in seedRunIds)Root(id);
+        foreach(var id in destIndex["runs"]!.AsArray().Select(r=>r!["id"]!.GetValue<string>()))Root(id);
+        while(queue.Count>0)
+            foreach(var reference in ReferencesOf(data,destination,queue.Dequeue()))
+                if(closure.Add(reference))queue.Enqueue(reference);
+        foreach(var id in closure)
+        {
+            if(Directory.Exists(Path.Combine(data,"runs",id)))CopyRun(data,id,destination);
+            else if(!Directory.Exists(Path.Combine(destination,"runs",id)))throw new InvalidDataException("PUBLISH_CLOSURE_MISSING referenced run "+id+" has no evidence in the source cache or the destination");
+        }
+        // Candidate index: only validated runs are listed (descriptor-less runs
+        // stay raw evidence), the current run leads and the rest keeps a stable
+        // seed-then-history order.
+        var runs=new JsonArray();
+        void AddDescriptor(string id)
+        {
+            var descriptor=sourceIndex["runs"]!.AsArray().FirstOrDefault(r=>r!["id"]!.GetValue<string>()==id)?.DeepClone();
+            if(descriptor!=null&&!runs.Any(r=>r!["id"]!.GetValue<string>()==id))runs.Add(descriptor);
+        }
+        if(latestRunId!=null)AddDescriptor(latestRunId);
+        foreach(var id in seedRunIds)AddDescriptor(id);
+        foreach(var id in closure.OrderBy(x=>x,StringComparer.Ordinal))AddDescriptor(id);
+        var latest=latestRunId!=null&&runs.Any(r=>r!["id"]!.GetValue<string>()==latestRunId)
+            ?(JsonNode)JsonValue.Create(latestRunId)!
+            :runs.Count>0?runs[0]!["id"]!.DeepClone()!:(JsonNode)JsonValue.Create("")!;
+        var candidate=new JsonObject{["schemaVersion"]=1,["generatedAt"]=DateTimeOffset.UtcNow.ToString("O"),["latestRunId"]=latest,["runs"]=runs};
+        File.WriteAllText(destIndexPath+".tmp",candidate.ToJsonString());
+        var check=WebProgressDataValidation.Validate(destination,candidate);
+        if(check["errors"]!.AsArray().Count>0)
+        {
+            File.Delete(destIndexPath+".tmp");
+            throw new InvalidDataException("PUBLISH_TARGET_INVALID "+check["errors"]!.ToJsonString());
+        }
+        File.Move(destIndexPath+".tmp",destIndexPath,true);
+    }
+
+    // Cross-run evidence references look like "../<runId>/..." inside manifests.
+    private static IEnumerable<string> ReferencesOf(string data,string destination,string runId)
+    {
+        foreach(var root in new[]{Path.Combine(data,"runs"),Path.Combine(destination,"runs")})
+        {
+            var manifest=Path.Combine(root,runId,"manifest.json");
+            if(!File.Exists(manifest))continue;
+            var seen=new HashSet<string>(StringComparer.Ordinal);
+            JsonNode? parsed;
+            try{parsed=JsonNode.Parse(File.ReadAllText(manifest));}catch(Exception){return [];}// quarantined raw evidence may be unparsable
+            Walk(parsed);
+            return seen;
+            void Walk(JsonNode? node)
+            {
+                if(node is JsonObject obj)foreach(var pair in obj)Walk(pair.Value);
+                else if(node is JsonArray array)foreach(var item in array)Walk(item);
+                else if(node is JsonValue value&&value.TryGetValue<string>(out var text)&&text.StartsWith("../",StringComparison.Ordinal))
+                {
+                    var segments=text[3..].Split('/');
+                    if(segments.Length>=2)seen.Add(segments[0]);
+                }
+            }
+        }
+        return [];
+    }
+
+    private static void CopyRun(string data,string runId,string destination)
+    {
         var source=Path.Combine(data,"runs",runId);var runs=Path.Combine(destination,"runs");Directory.CreateDirectory(runs);
         var final=Path.Combine(runs,runId);var staging=Path.Combine(runs,".staging-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(staging);
         try
@@ -28,17 +127,6 @@ internal static class WebProgressPublishing
                 Directory.Delete(staging,true);
             }
             else Directory.Move(staging,final);
-            var input=JsonNode.Parse(File.ReadAllText(Path.Combine(data,"index.json")))!;
-            var descriptor=input["runs"]!.AsArray().FirstOrDefault(r=>r!["id"]!.GetValue<string>()==runId)?.DeepClone();
-            // A run without a validated index descriptor (quarantined bad or
-            // unconfirmed run) is copied as raw evidence only and must never
-            // enter the published index.
-            if(descriptor==null)return;
-            var indexPath=Path.Combine(destination,"index.json");
-            var index=File.Exists(indexPath)?JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject():new JsonObject{["schemaVersion"]=1,["runs"]=new JsonArray()};
-            var descriptors=index["runs"]!.AsArray();var previous=descriptors.FirstOrDefault(r=>r!["id"]!.GetValue<string>()==runId);if(previous!=null)descriptors.Remove(previous);descriptors.Insert(0,descriptor);
-            index["latestRunId"]=runId;index["generatedAt"]=DateTimeOffset.UtcNow.ToString("O");
-            File.WriteAllText(indexPath+".tmp",index.ToJsonString());File.Move(indexPath+".tmp",indexPath,true);
         }
         finally{if(Directory.Exists(staging))Directory.Delete(staging,true);}
     }

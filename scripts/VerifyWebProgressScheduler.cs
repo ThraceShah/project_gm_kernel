@@ -492,6 +492,50 @@ var merged19b = WebProgressScheduler.BuildAggregate(raw19, Registry(alpha, beta)
 File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), merged19b.ToJsonString());
 Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0, "after the cause is resolved the next aggregate validates and the batch can advance");
 
+// ---- 20. publish closure: complete references, pre-validated target, atomic index ----
+var s7Dest = Path.Combine(root, "publish-dest");
+Directory.CreateDirectory(s7Dest);
+WebProgressPublishing.PublishClosure(dataRoot, ["run-1"], "run-1", s7Dest);
+Assert(Directory.Exists(Path.Combine(s7Dest, "runs", "run-0")) && Directory.Exists(Path.Combine(s7Dest, "runs", "run-1")), "the full reference closure is collected even when the referenced run is no longer a direct state record (was a subset publish)");
+Assert(WebProgressDataValidation.Validate(s7Dest)["errors"]!.AsArray().Count == 0, "a fresh destination validates clean (was 11 missing ../run-0 references)");
+var s7Index = JsonNode.Parse(File.ReadAllText(Path.Combine(s7Dest, "index.json")))!;
+Assert(s7Index["latestRunId"]!.GetValue<string>() == "run-1" && s7Index["runs"]!.AsArray().Count == 2, "the destination index switches atomically to the current run with its validated closure");
+// retry after failure covers the same closure and keeps the old index on error
+var s7Dest2 = Path.Combine(root, "publish-dest2");
+Directory.CreateDirectory(s7Dest2);
+WebProgressPublishing.PublishClosure(dataRoot, ["run-1"], "run-1", s7Dest2);
+var s7IndexBefore = File.ReadAllText(Path.Combine(s7Dest2, "index.json"));
+var s7BadRoot = Path.Combine(root, "publish-bad");
+WriteRun(s7BadRoot, "run-x", "rev-0", true, Entry("blend.alpha", "pass", "cases/blend.alpha/sample-0/meshes/m.json", "cases/blend.alpha/sample-0/oracle.log"));
+var xManifest = JsonNode.Parse(File.ReadAllText(Path.Combine(s7BadRoot, "runs", "run-x", "manifest.json")))!;
+xManifest["cases"]![0]!["evidence"]!.AsArray().Add((JsonNode)new JsonObject { ["label"] = "dangling", ["path"] = "../run-missing/cases/x/oracle.log" });
+File.WriteAllText(Path.Combine(s7BadRoot, "runs", "run-x", "manifest.json"), xManifest.ToJsonString());
+WriteIndex(s7BadRoot, "run-x");
+var s7Failed = false;
+try { WebProgressPublishing.PublishClosure(s7BadRoot, ["run-x"], "run-x", s7Dest2); } catch (InvalidDataException) { s7Failed = true; }
+Assert(s7Failed && File.ReadAllText(Path.Combine(s7Dest2, "index.json")) == s7IndexBefore, "a failed publish keeps the previous destination index untouched");
+File.AppendAllText(Path.Combine(s7Dest2, "runs", "run-0", "cases", "blend.alpha", "sample-0", "oracle.log"), "tamper");
+var s7Failed2 = false;
+try { WebProgressPublishing.PublishClosure(dataRoot, ["run-1"], "run-1", s7Dest2); } catch (IOException) { s7Failed2 = true; }
+Assert(s7Failed2 && File.ReadAllText(Path.Combine(s7Dest2, "index.json")) == s7IndexBefore, "immutable evidence tampering fails the publish without touching the index");
+// quarantined runs referenced only for failure logs are copied as evidence, never indexed
+var s7Root = Path.Combine(root, "publish-evidence");
+Directory.CreateDirectory(s7Root);
+WriteRun(s7Root, "agg", "rev-0", true, Entry("blend.alpha", "pass", "cases/blend.alpha/sample-0/meshes/m.json", "cases/blend.alpha/sample-0/oracle.log"));
+var aggManifest = JsonNode.Parse(File.ReadAllText(Path.Combine(s7Root, "runs", "agg", "manifest.json")))!;
+aggManifest["cases"]![0]!["evidence"]!.AsArray().Add((JsonNode)new JsonObject { ["label"] = "failure log", ["path"] = "../run-bad/cases/blend.beta/sample-0/oracle.log" });
+File.WriteAllText(Path.Combine(s7Root, "runs", "agg", "manifest.json"), aggManifest.ToJsonString());
+Directory.CreateDirectory(Path.Combine(s7Root, "runs", "run-bad", "cases", "blend.beta", "sample-0"));
+File.WriteAllText(Path.Combine(s7Root, "runs", "run-bad", "cases", "blend.beta", "sample-0", "oracle.log"), "failure log\n");
+File.WriteAllText(Path.Combine(s7Root, "runs", "run-bad", "manifest.json"), "{ quarantined raw evidence");
+WriteIndex(s7Root, "agg");
+var s7Dest3 = Path.Combine(root, "publish-evidence-dest");
+Directory.CreateDirectory(s7Dest3);
+WebProgressPublishing.PublishClosure(s7Root, ["agg", "run-bad"], "agg", s7Dest3);
+Assert(WebProgressDataValidation.Validate(s7Dest3)["errors"]!.AsArray().Count == 0, "evidence-only closure copies keep the destination self-consistent");
+Assert(File.Exists(Path.Combine(s7Dest3, "runs", "run-bad", "cases", "blend.beta", "sample-0", "oracle.log")), "blocked failure logs referenced by the aggregate reach the destination");
+Assert(!JsonNode.Parse(File.ReadAllText(Path.Combine(s7Dest3, "index.json")))!["runs"]!.AsArray().Any(r => r!["id"]!.GetValue<string>() == "run-bad"), "a quarantined run never enters the published index");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;

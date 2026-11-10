@@ -271,7 +271,10 @@ bool FinishPublish(JsonObject state)
             }
         var current = state["lastRunId"]?.GetValue<string>();
         if (current != null && Directory.Exists(Path.Combine(data, "runs", current))) { runIds.Remove(current); runIds.Add(current); }
-        foreach (var id in runIds) WebProgressPublishing.Publish(data, id, publishTo);
+        // Closure-aware publish: the complete reference closure of everything
+        // the destination index retains is collected and the target is
+        // pre-validated before its index switches atomically.
+        WebProgressPublishing.PublishClosure(data, runIds, current, publishTo);
         state["publish"]!["pending"] = false; state["publish"]!["lastError"] = null;
         Console.WriteLine("PUBLISHED_DATA " + Path.GetRelativePath(root, publishTo) + " runs=" + runIds.Count + " latest=" + current);
         return true;
