@@ -32,6 +32,40 @@ public static unsafe class ParasolidDisplayBridge
             binding=>XtWriter.IsCurrentDisplayBinding(binding,sessionGeneration,bodyGeneration));
     }
 
+    /// <summary>
+    /// Capture a real PK body without transferring ownership. Consume the immutable
+    /// buffers before changing the model; source entity tags are preserved exactly.
+    /// Both sessions must remain serialized by the caller, as with Create.
+    /// </summary>
+    public static DisplayBody CreateParasolidSnapshot(int body,double chordTolerance=1e-3)
+    {
+        if(!double.IsFinite(chordTolerance)||chordTolerance<=0)throw new ArgumentOutOfRangeException(nameof(chordTolerance));
+        lock(ParasolidGate)
+        {
+            var entities=new Dictionary<int,DisplayEntity>();
+            for(var kind=0;kind<3;kind++)
+            {
+                int count=0;int* tags=null;
+                Check(kind switch {0=>PK_BODY_ask_faces(body,&count,&tags),1=>PK_BODY_ask_edges(body,&count,&tags),_=>PK_BODY_ask_vertices(body,&count,&tags)},"ask snapshot entities");
+                try
+                {
+                    for(var i=0;i<count;i++)
+                    {
+                        int identifier=0;Check(PK_ENTITY_ask_identifier(tags[i],&identifier),"ask snapshot identifier");
+                        entities.Add(tags[i],new(body,tags[i],(DisplayEntityKind)kind,tags[i],identifier));
+                    }
+                }
+                finally {if(tags!=null)PK_MEMORY_free(tags);}
+            }
+            var triangles=Facet(body,entities,chordTolerance);var paths=RenderEdges(entities,chordTolerance);
+            var segments=new List<DisplaySegment>();
+            foreach(var pair in paths)for(var i=1;i<pair.Value.Count;i++)
+                if(pair.Value[i-1]!=pair.Value[i])segments.Add(new(pair.Value[i-1],pair.Value[i],entities[pair.Key]));
+            return new DisplayBody(body,body,0,string.Empty,entities,triangles,segments.ToArray(),paths,
+                entity=> {int identifier=0;return PK_ENTITY_ask_identifier(entity.EntityTag,&identifier)==0&&identifier==entity.Identifier;},false);
+        }
+    }
+
     /// <summary>Connect a body created through the independent NativeAOT C ABI.</summary>
     public static DisplayBody CreateFromNativeLibrary(string libraryPath,int body,double chordTolerance=1e-3)
     {
@@ -275,6 +309,7 @@ public sealed class DisplayBody:IDisposable
     private readonly Func<DisplayEntity,bool> validate;
     private readonly object lifetimeGate=new();
     private bool disposed;
+    private readonly bool ownsRemote;
     internal Action? ReleaseSource;
     public int BodyTag { get; }
     public int ParasolidBodyTag { get; }
@@ -286,9 +321,9 @@ public sealed class DisplayBody:IDisposable
     public IReadOnlyCollection<DisplayEntity> Entities=>entities.Values;
 
     internal DisplayBody(int body,int remoteBody,int partition,string text,Dictionary<int,DisplayEntity> entities,
-        DisplayTriangle[] triangles,DisplaySegment[] segments,Dictionary<int,List<Vector3>> paths,Func<DisplayEntity,bool> validate)
+        DisplayTriangle[] triangles,DisplaySegment[] segments,Dictionary<int,List<Vector3>> paths,Func<DisplayEntity,bool> validate,bool ownsRemote=true)
     {
-        BodyTag=body;ParasolidBodyTag=remoteBody;this.partition=partition;XtText=text;this.entities=entities;Triangles=triangles;EdgeSegments=segments;this.validate=validate;
+        this.ownsRemote=ownsRemote;BodyTag=body;ParasolidBodyTag=remoteBody;this.partition=partition;XtText=text;this.entities=entities;Triangles=triangles;EdgeSegments=segments;this.validate=validate;
         foreach(var triangle in triangles)
         {
             if(!Faces.TagFaces.TryGetValue(triangle.Face.EntityTag,out var face)) { face=new();face.SetColor(0.67,0.75,0.88,1.0);Faces.TagFaces.Add(triangle.Face.EntityTag,face); }
@@ -368,7 +403,7 @@ public sealed class DisplayBody:IDisposable
                     {
                         var options=new PK_PARTITION_delete_o_t();parasolid.PK_PARTITION_delete(partition,&options);
                     }
-                    else { var part=ParasolidBodyTag;parasolid.PK_ENTITY_delete(1,&part); }
+                    else if(ownsRemote) { var part=ParasolidBodyTag;parasolid.PK_ENTITY_delete(1,&part); }
                 }
             }
             finally

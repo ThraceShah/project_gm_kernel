@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -166,7 +167,7 @@ using(host)unsafe
         foreach(var radius in matrix?new[]{.25,.5,.6}:new[]{NumberOption(args,"--radius=",.5)})
         foreach(var tolerance in matrix?new[]{1e-7,1e-5}:new[]{NumberOption(args,"--tolerance=",1e-7)})
         foreach(var reverse in matrix?new[]{false,true}:new[]{args.Contains("--reverse-selection")})
-        foreach(var procedural in args.Contains("--both-updates")?new[]{false,true}:new[]{false})
+        foreach(var procedural in args.Contains("--both-updates")?new[]{false,true}:new[]{args.Contains("--web-procedural")})
         {
             var name=$"a{angle:R}-r{radius:R}-t{tolerance:R}-reverse{reverse}-"+(procedural?"v261":"default");
             if(floor!=0)name+=$"-floor{floor:R}";
@@ -1654,8 +1655,13 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
     var mark=new PK_EDGE_set_blend_constant_o_t();mark.properties.tolerance=1e-7*unitScale;int count;int* marked;
     fixed(int* selection=selected)Check(own?KernelRuntime.EdgeSetBlendConstant(selected.Length,selection,radius,(M.PK_EDGE_set_blend_constant_o_s*)&mark,&count,&marked):PK_EDGE_set_blend_constant(selected.Length,selection,radius,&mark,&count,&marked),"set blend");Free(own,marked);
     var fix=new PK_BODY_fix_blends_o_t{local_check=PK_LOGICAL_true,tolerance=tolerance};if(procedural)fix.update=PK_blend_edge_update_v261_c;
+    WebProgressCapture.Before(own,body,selected);
     int* made;int fault,edgeFault,topolFault;var started=Stopwatch.GetTimestamp();
-    var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&made,null,null,&fault,&edgeFault,&topolFault):PK_BODY_fix_blends(body,&fix,&count,&made,null,null,&fault,&edgeFault,&topolFault);
+    PK_FACE_array_t* webUnders=null;int* webTopols=null;
+    var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&made,WebProgressCapture.Enabled?(M.PK_FACE_array_s**)&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault):PK_BODY_fix_blends(body,&fix,&count,&made,WebProgressCapture.Enabled?&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault);
+    var webElapsed=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+    WebProgressCapture.After(own,body,webElapsed,error,count,made,fault,webUnders,webTopols);
+    WebProgressCapture.FreeBlendTracking(own,count,webUnders,webTopols);
     Console.WriteLine($"FIX {(own?"self":"PK")} error={error} faces={count} fault={fault} edge={edgeFault} topol={topolFault} stage={KernelRuntime.LastRegularBlendStage} network={KernelRuntime.LastRollingNetworkStage} SSI={KernelRuntime.LastGeneralIntersectionStage}/{KernelRuntime.LastGeneralIntersectionStatus}/{KernelRuntime.LastGeneralIntersectionNodes}/{KernelRuntime.LastGeneralIntersectionSegments} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
     if(own&&error!=0&&KernelRuntime.ForbidLegacyRegularBlendAssembly)
     {

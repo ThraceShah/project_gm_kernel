@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
@@ -197,8 +198,13 @@ static unsafe int Fillet(bool own,int body,double radius,bool concave=false)
     // Pin a comparable procedural representation. Modern default fixing fits
     // this case to a B-surface; v261 preserves the dependent rolling Blend.
     var fix=new PK_BODY_fix_blends_o_t{tolerance=1e-7,local_check=PK_LOGICAL_true,update=PK_blend_edge_update_v261_c};int* blends;int fault,fe,ft;
+    WebProgressCapture.Before(own,body,[selected]);
     var started=Stopwatch.GetTimestamp();
-    var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&blends,null,null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&count,&blends,null,null,&fault,&fe,&ft);
+    PK_FACE_array_t* webUnders=null;int* webTopols=null;
+    var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&blends,WebProgressCapture.Enabled?(M.PK_FACE_array_s**)&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&count,&blends,WebProgressCapture.Enabled?&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&fe,&ft);
+    var webElapsed=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+    WebProgressCapture.After(own,body,webElapsed,error,count,blends,fault,webUnders,webTopols);
+    WebProgressCapture.FreeBlendTracking(own,count,webUnders,webTopols);
     Console.WriteLine($"TIME {(own?"self":"PK")} BODY_fix_blends radius={radius:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");
     Console.WriteLine($"{(own?"own":"native")} fix error={error}, count={count}, fault={fault}, edge={fe}, topol={ft}");Check(error,"fix constant blend");
     try

@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet run
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AssemblyName=AnalyticBooleanOracle
@@ -28,7 +29,7 @@ try
             var failures=0;var count=0;
             foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})foreach(var fixture in cases)
             {
-                var label=fixture.Name+"-"+function;count++;
+                var label=fixture.Name+"-"+function;if(!WebProgressCapture.Select(label))continue;count++;
                 try
                 {
                     var own=Produce(true,fixture,function,out var ownStatus,out var ownIdentity);var expected=Produce(false,fixture,function,out var pkStatus,out var pkIdentity);
@@ -60,10 +61,15 @@ static unsafe int[] Produce(bool managed,Fixture fixture,int function,out int st
 {
     var target=Sphere(managed,fixture,false);var tool=Sphere(managed,fixture,true);var fa=FirstFace(managed,target);var fb=FirstFace(managed,tool);
     var options=new PK_BODY_boolean_o_t{function=function,tracking=PK_LOGICAL_true};var signature=new StringBuilder();int[] bodies;
+    WebProgressCapture.Before(managed,target,[],"PK_BODY_boolean_2",[tool]);
     if(managed)
     {
         var mo=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(options);M.PK_TOPOL_track_r_s tr=default;M.PK_boolean_r_s result=default;
-        Check(KernelRuntime.BodyBoolean2(target,1,&tool,&mo,&tr,&result),"self sphere Boolean");
+        var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();
+        var webError=KernelRuntime.BodyBoolean2(target,1,&tool,&mo,&tr,&result);
+        var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
+        WebProgressCapture.BooleanAfter(true,webError==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,webError,result.result,(PK_TOPOL_track_r_t*)&tr);
+        Check(webError,"self sphere Boolean");
         try
         {
             status=result.result;bodies=new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray();signature.Append(tr.n_track_records);
@@ -78,7 +84,12 @@ static unsafe int[] Produce(bool managed,Fixture fixture,int function,out int st
     }
     else
     {
-        PK_TOPOL_track_r_t tr=default;PK_boolean_r_t result=default;Check(PK_BODY_boolean_2(target,1,&tool,&options,&tr,&result),"PK sphere Boolean");
+        PK_TOPOL_track_r_t tr=default;PK_boolean_r_t result=default;
+        var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();
+        var webError=PK_BODY_boolean_2(target,1,&tool,&options,&tr,&result);
+        var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
+        WebProgressCapture.BooleanAfter(false,webError==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,webError,result.result,&tr);
+        Check(webError,"PK sphere Boolean");
         try
         {
             status=result.result;bodies=new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray();signature.Append(tr.n_track_records);
