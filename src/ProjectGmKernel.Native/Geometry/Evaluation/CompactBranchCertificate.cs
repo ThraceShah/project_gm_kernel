@@ -9,9 +9,12 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 /// rigorous interval upper bounds, not sampled estimates.</summary>
 internal struct CompactBranchReport
 {
-    /// <summary>Largest distance of the original branch from a compact chord.</summary>
+    /// <summary>Largest certified upper bound of the distance of the original
+    /// branch from a compact chord line.</summary>
     internal double ChordalBound;
-    /// <summary>Largest angle between the original tangent and a compact chord.</summary>
+    /// <summary>Diagnostic only: arccosine of the largest certified lower
+    /// bound of the tangent–chord cosine, by library acos. Not a certified
+    /// upper bound; the angular decision is the cosine test.</summary>
     internal double AngularBound;
     /// <summary>Upper bound of the spatial distance between the original root
     /// at a station and the compact root at its station parameter: the spatial
@@ -59,8 +62,10 @@ internal static partial class JointNestedBlendEvaluation
     /// same sense, and the published ends are within the link bound of the
     /// original ends. Since D·e&gt;0 holds on closed boxes including the
     /// ends, a complementary arc of a closed component cannot qualify.
-    /// Scalar bounds (mean-value radius, square roots, arccosine) are rounded
-    /// outward. Any uncertain, singular or unbounded box, or an exhausted
+    /// Scalar bounds (mean-value radius, distances, square roots, the
+    /// tangent–chord cosine and the Taylor upper bound of cos at the angular
+    /// limit) are rounded outward; the reported angle is diagnostic only.
+    /// Any uncertain, singular or unbounded box, or an exhausted
     /// depth/box budget, rejects the
     /// certificate. No conclusion is drawn from samples.
     /// </summary>
@@ -84,7 +89,11 @@ internal static partial class JointNestedBlendEvaluation
         if(a.First!=b.First||a.Second!=b.Second)return AlgorithmStatus.Unsupported;
         var originalCharts=Chart(program,original);var compactCharts=Chart(program,compact);
         if(compactCharts.Length<2||stations.Length!=compactCharts.Length)return AlgorithmStatus.InvalidInput;
-        if(!double.IsFinite(lower)||!double.IsFinite(upper)||!(upper>lower)||!(linkTolerance>=0))return AlgorithmStatus.InvalidInput;
+        if(!double.IsFinite(lower)||!double.IsFinite(upper)||!(upper>lower))return AlgorithmStatus.InvalidInput;
+        // Budgets are finite and non-negative; an angular budget is an angle
+        // in [0, π]. cos is even, so a negative angle would act as |angle|.
+        if(!(linkTolerance>=0)||!double.IsFinite(linkTolerance)||!(chordalLimit>=0)||!double.IsFinite(chordalLimit)
+            ||!(angularLimit>=0)||!(angularLimit<=Math.PI))return AlgorithmStatus.InvalidInput;
         if(stations[0]!=lower||stations[^1]!=upper||compactCharts[0].Parameter!=lower||!(compactCharts[^1].Parameter>=upper))return AlgorithmStatus.InvalidInput;
         if(lower<originalCharts[0].Parameter||upper>originalCharts[^1].Parameter)return AlgorithmStatus.InvalidInput;
         for(var i=0;i<stations.Length-1;i++)

@@ -322,4 +322,26 @@ public class CompactBranchCertificateTests
         for(var i=0;i<=cells;i++)result[i]=new(){Position=points[i],Parameter=parameters[i],Scale=i<cells?scales[i]:1,Chord=i<cells?chords[i]:default};
         return result;
     }
+
+    [Theory]
+    [InlineData(-.3,1.0,Link)]
+    [InlineData(double.NaN,1.0,Link)]
+    [InlineData(4.0,1.0,Link)]
+    [InlineData(.5,-1e-3,Link)]
+    [InlineData(.5,double.PositiveInfinity,Link)]
+    [InlineData(.5,double.NaN,Link)]
+    [InlineData(.5,1.0,-1e-10)]
+    [InlineData(.5,1.0,double.PositiveInfinity)]
+    public void InvalidBudgetsAreRejectedAtEntry(double angular,double chordal,double link)
+    {
+        var surfaces=Supports();var original=OriginalArc(1.2,24);
+        double[] stations=[original[2].Parameter,original[14].Parameter];
+        var points=Evaluate(surfaces,original,stations);var compact=Chart(points,Tangents(points),stations[0],stations[1]);
+        BlendSpineInstruction[] spines=[new(){First=0,Second=1,ChartOffset=0,ChartCount=original.Length},new(){First=0,Second=1,ChartOffset=original.Length,ChartCount=compact.Length}];
+        var program=new NestedBlendProgram(surfaces,spines,original.Concat(compact).ToArray());
+        Assert.Equal(AlgorithmStatus.InvalidInput,JointNestedBlendEvaluation.CertifyCompactBranch(program,0,1,stations,stations[0],stations[1],link,chordal,angular,out _));
+        // The same certificate with valid budgets succeeds, and the full π
+        // angular budget is a valid boundary value.
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.CertifyCompactBranch(program,0,1,stations,stations[0],stations[1],Link,1.0,Math.PI,out _));
+    }
 }
