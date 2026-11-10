@@ -376,6 +376,26 @@ WebProgressScheduler.RecordOutcome(s8b, "blend.alpha", "completed", "pass", "run
 WebProgressScheduler.Reconcile(s8b, Registry(beta), "h8c", "test-registry-v1");
 Assert(s8b["completed"]!.AsObject().ContainsKey("blend.alpha") && s8b["pending"]!.AsArray().Count == 1, "a removed recipe leaves the active queue while its completed observation is preserved");
 
+// ---- 16. stale+blocked coexistence: recipe/source changes still unblock and re-queue ----
+var s9 = WebProgressScheduler.NewState("rev-0", "h9", "test-registry-v1");
+var regAlpha = Registry(alpha);
+WebProgressScheduler.Reconcile(s9, regAlpha, "h9", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s9, "blend.alpha", "completed", "pass", "run-9", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.MarkChanges(s9, ["src/Changed.cs"], regAlpha, "rev-1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s9, "blend.alpha", "export-failure", "missing", "run-9b", "rev-1", WebProgressScheduler.EntryHash(alpha), 1);
+Assert(s9["blocked"]!.AsObject().ContainsKey("blend.alpha") && s9["stale"]!.AsObject().ContainsKey("blend.alpha") && s9["pending"]!.AsArray().Count == 0, "precondition: stale and blocked coexist with an empty queue");
+var alphaChanged = alpha.DeepClone().AsObject();
+alphaChanged["parameters"] = JsonNode.Parse("""{"radius":0.2}""");
+WebProgressScheduler.Reconcile(s9, Registry(alphaChanged), "h9b", "test-registry-v1");
+var unblocked = s9["pending"]!.AsArray().OfType<JsonObject>().FirstOrDefault(p => p["caseId"]!.GetValue<string>() == "blend.alpha");
+Assert(unblocked != null && unblocked["reason"]!.GetValue<string>() == "recipe-change" && unblocked["attempts"]!.GetValue<int>() == 0 && !s9["blocked"]!.AsObject().ContainsKey("blend.alpha"), "a recipe change with stale+blocked unblocks and re-queues the case for the new recipe (was permanently stuck)");
+Assert(s9["stale"]!["blend.alpha"]!["runId"]!.GetValue<string>() == "run-9" && s9["stale"]!["blend.alpha"]!["revision"]!.GetValue<string>() == "rev-0", "the stale display keeps the old measurement source and revision");
+var s10 = WebProgressScheduler.NewState("rev-0", "h10", "test-registry-v1");
+WebProgressScheduler.Reconcile(s10, regAlpha, "h10", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s10, "blend.alpha", "export-failure", "missing", "run-10", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.MarkChanges(s10, ["src/Changed.cs"], regAlpha, "rev-1");
+Assert(s10["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha" && p["reason"]!.GetValue<string>() == "affected") && !s10["blocked"]!.AsObject().ContainsKey("blend.alpha"), "a source change also unblocks a parked case and re-queues it as affected");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;

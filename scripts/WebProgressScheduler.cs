@@ -129,6 +129,9 @@ internal static class WebProgressScheduler
             var id = entry["id"]!.GetValue<string>();
             if (!active.Contains(id)) continue;
             var hash = EntryHash(entry);
+            // Explicit transition priority: recipe changes act on each record
+            // independently so stale display can never swallow a blocked park
+            // (stale+blocked must still unblock and re-queue on recipe change).
             if (completed[id] is JsonObject record && record["entryHash"]!.GetValue<string>() != hash)
             {
                 var moved = record.DeepClone().AsObject();
@@ -137,15 +140,15 @@ internal static class WebProgressScheduler
                 moved["reason"] = "recipe-change";
                 stale[id] = moved;
                 completed.Remove(id);
-                pending.Add(Pending(id, "recipe-change"));
+                if (pendingIds.Add(id)) pending.Add(Pending(id, "recipe-change"));
             }
-            else if (stale[id] is JsonObject old && old["entryHash"]!.GetValue<string>() != hash) old["entryHash"] = hash;
-            else if (blocked[id] is JsonObject bad && bad["entryHash"]!.GetValue<string>() != hash)
+            if (blocked[id] is JsonObject bad && bad["entryHash"]!.GetValue<string>() != hash)
             {
                 blocked.Remove(id);
-                pending.Add(Pending(id, "recipe-change"));
+                if (pendingIds.Add(id)) pending.Add(Pending(id, "recipe-change"));
             }
-            else if (!completed.ContainsKey(id) && !blocked.ContainsKey(id) && !pendingIds.Contains(id)) pending.Add(Pending(id, firstEnqueue ? "initial" : "new-recipe"));
+            if (stale[id] is JsonObject old && old["entryHash"]!.GetValue<string>() != hash) old["entryHash"] = hash;
+            if (!completed.ContainsKey(id) && !blocked.ContainsKey(id) && !pendingIds.Contains(id)) pending.Add(Pending(id, firstEnqueue ? "initial" : "new-recipe"));
         }
     }
 
