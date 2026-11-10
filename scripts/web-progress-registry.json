@@ -4208,7 +4208,8 @@
       "parameters": {
         "fixture": "coincident",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4226,7 +4227,8 @@
       "parameters": {
         "fixture": "coincident",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4244,7 +4246,8 @@
       "parameters": {
         "fixture": "coincident",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4262,7 +4265,8 @@
       "parameters": {
         "fixture": "overlap-two-axes",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4280,7 +4284,8 @@
       "parameters": {
         "fixture": "overlap-two-axes",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4298,7 +4303,8 @@
       "parameters": {
         "fixture": "overlap-two-axes",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4316,7 +4322,8 @@
       "parameters": {
         "fixture": "aligned",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4334,7 +4341,8 @@
       "parameters": {
         "fixture": "aligned",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4352,7 +4360,8 @@
       "parameters": {
         "fixture": "aligned",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4370,7 +4379,8 @@
       "parameters": {
         "fixture": "touching-face",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4388,7 +4398,8 @@
       "parameters": {
         "fixture": "touching-face",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4406,7 +4417,8 @@
       "parameters": {
         "fixture": "touching-face",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4424,7 +4436,8 @@
       "parameters": {
         "fixture": "disjoint",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4442,7 +4455,8 @@
       "parameters": {
         "fixture": "disjoint",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4460,7 +4474,8 @@
       "parameters": {
         "fixture": "disjoint",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4478,7 +4493,8 @@
       "parameters": {
         "fixture": "nested",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4496,7 +4512,8 @@
       "parameters": {
         "fixture": "nested",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4514,7 +4531,8 @@
       "parameters": {
         "fixture": "nested",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4532,7 +4550,8 @@
       "parameters": {
         "fixture": "crossing-rotated",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4550,7 +4569,8 @@
       "parameters": {
         "fixture": "crossing-rotated",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4568,7 +4588,8 @@
       "parameters": {
         "fixture": "crossing-rotated",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4586,7 +4607,8 @@
       "parameters": {
         "fixture": "translated-large",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4604,7 +4626,8 @@
       "parameters": {
         "fixture": "translated-large",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4622,7 +4645,8 @@
       "parameters": {
         "fixture": "translated-large",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4640,7 +4664,8 @@
       "parameters": {
         "fixture": "two-tools",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4658,7 +4683,8 @@
       "parameters": {
         "fixture": "two-tools",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4676,7 +4702,8 @@
       "parameters": {
         "fixture": "two-tools",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4694,7 +4721,8 @@
       "parameters": {
         "fixture": "closed-cavity",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4712,7 +4740,8 @@
       "parameters": {
         "fixture": "closed-cavity",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4730,7 +4759,8 @@
       "parameters": {
         "fixture": "closed-cavity",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4748,7 +4778,8 @@
       "parameters": {
         "fixture": "through-hole",
         "function": 15903,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4766,7 +4797,8 @@
       "parameters": {
         "fixture": "through-hole",
         "function": 15901,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -4784,7 +4816,8 @@
       "parameters": {
         "fixture": "through-hole",
         "function": 15902,
-        "defaultTolerance": 1e-05
+        "defaultTolerance": 1e-05,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5384,7 +5417,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5414,7 +5448,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5444,7 +5479,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5474,7 +5510,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5504,7 +5541,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5534,7 +5572,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5564,7 +5603,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5594,7 +5634,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5624,7 +5665,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5654,7 +5696,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5684,7 +5727,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5714,7 +5758,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5744,7 +5789,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5774,7 +5820,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5804,7 +5851,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5834,7 +5882,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5864,7 +5913,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5894,7 +5944,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5924,7 +5975,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5954,7 +6006,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -5984,7 +6037,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6014,7 +6068,8 @@
           0
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6044,7 +6099,8 @@
           0
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6074,7 +6130,8 @@
           0
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6104,7 +6161,8 @@
           -50
         ],
         "rotate": false,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6134,7 +6192,8 @@
           -50
         ],
         "rotate": false,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6164,7 +6223,8 @@
           -50
         ],
         "rotate": false,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6194,7 +6254,8 @@
           0
         ],
         "rotate": true,
-        "function": 15903
+        "function": 15903,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6224,7 +6285,8 @@
           0
         ],
         "rotate": true,
-        "function": 15901
+        "function": 15901,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6254,7 +6316,8 @@
           0
         ],
         "rotate": true,
-        "function": 15902
+        "function": 15902,
+        "tracking": true
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [],
@@ -6633,14 +6696,16 @@
         "fixture": "block",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "block-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "block-15903"
     },
     {
       "id": "regular-curved.block-intersect",
@@ -6653,14 +6718,16 @@
         "fixture": "block",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "block-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "block-15901"
     },
     {
       "id": "regular-curved.block-subtract",
@@ -6673,14 +6740,16 @@
         "fixture": "block",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "block-15902"
       ],
       "meshAdapter": true,
-      "representative": true
+      "representative": true,
+      "selector": "block-15902"
     },
     {
       "id": "regular-curved.nurbs-unite",
@@ -6693,14 +6762,16 @@
         "fixture": "nurbs",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "nurbs-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "nurbs-15903"
     },
     {
       "id": "regular-curved.nurbs-intersect",
@@ -6713,14 +6784,16 @@
         "fixture": "nurbs",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "nurbs-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "nurbs-15901"
     },
     {
       "id": "regular-curved.nurbs-subtract",
@@ -6733,14 +6806,16 @@
         "fixture": "nurbs",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "nurbs-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "nurbs-15902"
     },
     {
       "id": "regular-curved.closed-cut-unite",
@@ -6753,14 +6828,16 @@
         "fixture": "closed-cut",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "closed-cut-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "closed-cut-15903"
     },
     {
       "id": "regular-curved.closed-cut-intersect",
@@ -6773,14 +6850,16 @@
         "fixture": "closed-cut",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "closed-cut-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "closed-cut-15901"
     },
     {
       "id": "regular-curved.closed-cut-subtract",
@@ -6793,14 +6872,16 @@
         "fixture": "closed-cut",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "closed-cut-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "closed-cut-15902"
     },
     {
       "id": "regular-curved.disjoint-unite",
@@ -6813,14 +6894,16 @@
         "fixture": "disjoint",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "disjoint-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "disjoint-15903"
     },
     {
       "id": "regular-curved.disjoint-intersect",
@@ -6833,14 +6916,16 @@
         "fixture": "disjoint",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "disjoint-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "disjoint-15901"
     },
     {
       "id": "regular-curved.disjoint-subtract",
@@ -6853,14 +6938,16 @@
         "fixture": "disjoint",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "disjoint-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "disjoint-15902"
     },
     {
       "id": "regular-curved.enclosed-tool-unite",
@@ -6873,14 +6960,16 @@
         "fixture": "enclosed-tool",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "enclosed-tool-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "enclosed-tool-15903"
     },
     {
       "id": "regular-curved.enclosed-tool-intersect",
@@ -6893,14 +6982,16 @@
         "fixture": "enclosed-tool",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "enclosed-tool-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "enclosed-tool-15901"
     },
     {
       "id": "regular-curved.enclosed-tool-subtract",
@@ -6913,14 +7004,16 @@
         "fixture": "enclosed-tool",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "enclosed-tool-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "enclosed-tool-15902"
     },
     {
       "id": "regular-curved.enclosed-target-unite",
@@ -6933,14 +7026,16 @@
         "fixture": "enclosed-target",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "enclosed-target-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "enclosed-target-15903"
     },
     {
       "id": "regular-curved.enclosed-target-intersect",
@@ -6953,14 +7048,16 @@
         "fixture": "enclosed-target",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "enclosed-target-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "enclosed-target-15901"
     },
     {
       "id": "regular-curved.enclosed-target-subtract",
@@ -6973,14 +7070,16 @@
         "fixture": "enclosed-target",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "enclosed-target-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "enclosed-target-15902"
     },
     {
       "id": "regular-curved.two-tools-unite",
@@ -6993,14 +7092,16 @@
         "fixture": "two-tools",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "two-tools-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "two-tools-15903"
     },
     {
       "id": "regular-curved.two-tools-intersect",
@@ -7013,14 +7114,16 @@
         "fixture": "two-tools",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "two-tools-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "two-tools-15901"
     },
     {
       "id": "regular-curved.two-tools-subtract",
@@ -7033,14 +7136,16 @@
         "fixture": "two-tools",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "two-tools-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "two-tools-15902"
     },
     {
       "id": "regular-curved.mixed-disjoint-unite",
@@ -7053,14 +7158,16 @@
         "fixture": "mixed-disjoint",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "mixed-disjoint-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "mixed-disjoint-15903"
     },
     {
       "id": "regular-curved.mixed-disjoint-intersect",
@@ -7073,14 +7180,16 @@
         "fixture": "mixed-disjoint",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "mixed-disjoint-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "mixed-disjoint-15901"
     },
     {
       "id": "regular-curved.mixed-disjoint-subtract",
@@ -7093,14 +7202,16 @@
         "fixture": "mixed-disjoint",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "mixed-disjoint-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "mixed-disjoint-15902"
     },
     {
       "id": "regular-curved.continuous-unite",
@@ -7113,14 +7224,16 @@
         "fixture": "continuous",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "continuous-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "continuous-15903"
     },
     {
       "id": "regular-curved.continuous-intersect",
@@ -7133,14 +7246,16 @@
         "fixture": "continuous",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "continuous-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "continuous-15901"
     },
     {
       "id": "regular-curved.continuous-subtract",
@@ -7153,14 +7268,16 @@
         "fixture": "continuous",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "continuous-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "continuous-15902"
     },
     {
       "id": "regular-curved.reloaded-unite",
@@ -7173,14 +7290,16 @@
         "fixture": "reloaded",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "reloaded-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "reloaded-15903"
     },
     {
       "id": "regular-curved.reloaded-intersect",
@@ -7193,14 +7312,16 @@
         "fixture": "reloaded",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "reloaded-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "reloaded-15901"
     },
     {
       "id": "regular-curved.reloaded-subtract",
@@ -7213,14 +7334,16 @@
         "fixture": "reloaded",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "reloaded-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "reloaded-15902"
     },
     {
       "id": "regular-curved.reloaded-block-unite",
@@ -7233,14 +7356,16 @@
         "fixture": "reloaded-block",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "reloaded-block-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "reloaded-block-15903"
     },
     {
       "id": "regular-curved.reloaded-block-intersect",
@@ -7253,14 +7378,16 @@
         "fixture": "reloaded-block",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "reloaded-block-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "reloaded-block-15901"
     },
     {
       "id": "regular-curved.reloaded-block-subtract",
@@ -7273,14 +7400,16 @@
         "fixture": "reloaded-block",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "reloaded-block-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "reloaded-block-15902"
     },
     {
       "id": "regular-curved.same-domain-unite",
@@ -7293,14 +7422,16 @@
         "fixture": "same-domain",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-15903"
     },
     {
       "id": "regular-curved.same-domain-intersect",
@@ -7313,14 +7444,16 @@
         "fixture": "same-domain",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-15901"
     },
     {
       "id": "regular-curved.same-domain-subtract",
@@ -7333,14 +7466,16 @@
         "fixture": "same-domain",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-15902"
     },
     {
       "id": "regular-curved.same-domain-reloaded-unite",
@@ -7353,14 +7488,16 @@
         "fixture": "same-domain-reloaded",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-reloaded-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-reloaded-15903"
     },
     {
       "id": "regular-curved.same-domain-reloaded-intersect",
@@ -7373,14 +7510,16 @@
         "fixture": "same-domain-reloaded",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-reloaded-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-reloaded-15901"
     },
     {
       "id": "regular-curved.same-domain-reloaded-subtract",
@@ -7393,14 +7532,16 @@
         "fixture": "same-domain-reloaded",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-reloaded-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-reloaded-15902"
     },
     {
       "id": "regular-curved.same-domain-partial-unite",
@@ -7413,14 +7554,16 @@
         "fixture": "same-domain-partial",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-partial-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-partial-15903"
     },
     {
       "id": "regular-curved.same-domain-partial-intersect",
@@ -7433,14 +7576,16 @@
         "fixture": "same-domain-partial",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-partial-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-partial-15901"
     },
     {
       "id": "regular-curved.same-domain-partial-subtract",
@@ -7453,14 +7598,16 @@
         "fixture": "same-domain-partial",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-partial-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-partial-15902"
     },
     {
       "id": "regular-curved.same-domain-partial-reloaded-unite",
@@ -7473,14 +7620,16 @@
         "fixture": "same-domain-partial-reloaded",
         "function": 15903,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-partial-reloaded-15903"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-partial-reloaded-15903"
     },
     {
       "id": "regular-curved.same-domain-partial-reloaded-intersect",
@@ -7493,14 +7642,16 @@
         "fixture": "same-domain-partial-reloaded",
         "function": 15901,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-partial-reloaded-15901"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-partial-reloaded-15901"
     },
     {
       "id": "regular-curved.same-domain-partial-reloaded-subtract",
@@ -7513,14 +7664,16 @@
         "fixture": "same-domain-partial-reloaded",
         "function": 15902,
         "tolerance": 1e-05,
-        "scale": 1
+        "scale": 1,
+        "tracking": false
       },
       "api": "PK_BODY_boolean_2",
       "arguments": [
         "same-domain-partial-reloaded-15902"
       ],
       "meshAdapter": true,
-      "representative": false
+      "representative": false,
+      "selector": "same-domain-partial-reloaded-15902"
     },
     {
       "id": "mixed-curved.symmetric-unite",
