@@ -41,6 +41,8 @@
 
 当前前端已整合多批真实基准数据（来源分支 `origin/web/progress-data`，最新 commit `18e67aa`），根索引 `web/data/index.json` 含三份历史 run，UI 可切换并真实展示各自统计；非最新 run 在选择器中显式标注“·历史”，旧 SHA 结果不会被误读为已重验。
 
+持续刷新服务（见 3.4 节）在专用发布 checkout 中生成的 Linux run 会原子替换发布包数据；当前线上门户服务的最新 run 为 `20261110T191615Z-4e60884b`（源码 SHA `4e60884b`，Ubuntu 26.04 / AMD Ryzen 7 7840HS / .NET 10.0.302，14 pass / 3 fail / 330 missing / 116 展示/导出未适配，结论与 Mac run 一致）。仓库 `web/data/` 保留 Mac 历史 run 供追溯。
+
 ### 2.1 最新真实数据统计（Run `20261110T180347Z-90acd4a9`）
 - **对应内核 Commit**: `90acd4a9d7e766cdaa09e2ea4fb2cf7bf5d2aa45`（固定构建 SHA），17 代表用例约 442 秒跑完
 - **Parasolid Oracle 版本**: `38.0.150`
@@ -127,3 +129,12 @@ portalctl static \
 
 - **正式访问地址**: [https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/](https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/)
 - **门户主页收录**: [https://qingyu1-linux.tail77e06.ts.net/](https://qingyu1-linux.tail77e06.ts.net/) (已收录 `gm-kernel-progress`，状态在线)
+
+### 3.4 持续刷新与发布（gm-kernel-progress-refresh）
+
+用户级 systemd timer/service `gm-kernel-progress-refresh`（unit 模板来自 `scripts/systemd/`，部署方 drop-in 追加发布步骤）每 10 分钟检查并在专用 checkout 生成/发布，不在任何编辑/工作树中运行定时 git 变更：
+
+- **专用 checkout**: `code/project_gm_kernel-progress-publisher`（独立 clone，只 `git merge --ff-only origin/main`，脏树则拒绝；PKToy submodule 固定 pin，PK 库复用 ignored `third_party/parasolid`）。资源限制：CPU 200% / MemoryMax 12G / KillMode=control-group / TimeoutStartSec=25min，单用例 300s、总预算 1200s，串行 PK 进程。
+- **生成状态与发布状态分离**：watcher 状态（`watch-state.json`）仅在导出成功后推进，坏 run 不推进 state/index；发布状态（`publish-state.json`，由 `scripts/PublishWebProgressPortal.cs` 维护）独立记录 lastPublishedRunId/SHA，仅 portalctl 成功后写入；发布失败保留旧门户与已验证缓存，下轮直接重试发布而不重跑任何用例；同 SHA 重跑打印 `Source and registry unchanged` / `SITE_UNCHANGED` / `PUBLISH_SKIP_SAME_RUN`（秒级跳过）。
+- **原子发布**：PrepareWebProgressSite 校验后将 validated 缓存装入 `web/dist/data`，portalctl static 原子快照发布同一 slug；仅发布已验证包，脚本失败/超时保留既有门户版本。
+- **已知限制（诚实声明）**：timer 当前只执行 `--case representatives` 的 17 个代表用例（463 注册中的子集），其余 330 个 missing 用例**没有**自动入队/分批调度（registry 已含 cases/sourceCoverage 映射可供将来按新 main 变更优先排队，但队列调度器尚未实现）；结果按实际 scope 标注，不得以 17 代表用例冒充全项目验收；旧 SHA 结果在 UI 中显式标为历史。
