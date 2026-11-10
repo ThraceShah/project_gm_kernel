@@ -3,6 +3,7 @@
 #:property UseWebProgressScheduler=true
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using System.Diagnostics;
 
 // Offline scheduling contract tests over small controlled records: queue
 // semantics, fair rotation, source-change impact mapping with conservative
@@ -633,6 +634,37 @@ Directory.CreateSymbolicLink(destLink, Path.GetRelativePath(secBase, Path.Combin
 var destRefused = false;
 try { WebProgressPublishing.PublishClosure(secReal, ["run-1"], "run-1", destLink); } catch (IOException) { destRefused = true; }
 Assert(destRefused, "a destination root reached through a symlink is refused by the same contract");
+var saveRefused = false;
+try { WebProgressScheduler.Save(Path.Combine(destLink, "state.json"), WebProgressScheduler.NewState("r", "h", "v")); } catch (IOException) { saveRefused = true; }
+Assert(saveRefused, "WebProgressScheduler.Save refuses a state path reached through a symlink");
+var loadRefused = false;
+try { WebProgressScheduler.LoadState(Path.Combine(destLink, "state.json"), out _); } catch (InvalidDataException) { loadRefused = true; }
+Assert(loadRefused, "WebProgressScheduler.LoadState refuses a state path reached through a symlink as STATE_SCHEMA_INVALID");
+var bundleLinkPath = Path.Combine(destLink, "bundle");
+Assert(!WebProgressSafePath.IsSafeChain(bundleLinkPath, out _), "a bundle path inside a symlinked destination root is detected as unsafe before side effects");
+var outsideDir = Path.Combine(secBase, "outside-portal");
+var outsideBundle = Path.Combine(outsideDir, "bundle");
+Directory.CreateDirectory(outsideBundle);
+var outsideSentinel = Path.Combine(outsideBundle, "sentinel.log");
+File.WriteAllText(outsideSentinel, "SENTINEL_INTACT");
+var portalSymlink = Path.Combine(secBase, "portal-symlink");
+Directory.CreateSymbolicLink(portalSymlink, Path.GetRelativePath(secBase, outsideDir));
+var portalState = Path.Combine(portalSymlink, "state.json");
+var portalPsi = new ProcessStartInfo("dotnet")
+{
+    ArgumentList = { "run", "--no-cache", "--file", Path.Combine(scripts, "PublishWebProgressPortal.cs"), "--", "--state", portalState, "--portalctl", "true" },
+    WorkingDirectory = root,
+    RedirectStandardOutput = true,
+    RedirectStandardError = true,
+};
+portalPsi.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+using var portalP = Process.Start(portalPsi)!;
+var portalOut = portalP.StandardOutput.ReadToEnd();
+var portalErr = portalP.StandardError.ReadToEnd();
+portalP.WaitForExit();
+Assert(portalP.ExitCode != 0 && (portalOut + portalErr).Contains("PUBLISH_REFUSED symlink/reparse", StringComparison.Ordinal), "PublishWebProgressPortal refuses a symlinked state path before side effects");
+Assert(File.Exists(outsideSentinel) && File.ReadAllText(outsideSentinel) == "SENTINEL_INTACT", "outside sentinel file was preserved untouched");
+Assert(!File.Exists(Path.Combine(outsideDir, "state.json")), "outside state.json was not created");
 
 // ---- 23. retired records consume invalidations; restore re-queues accurately ----
 // (a) inactive + source change (review Extra S3/S5-r2), never planned while filtered
@@ -686,6 +718,24 @@ WebProgressScheduler.Reconcile(s21, regAlpha2, "h21", "test-registry-v1", _ => f
 WebProgressScheduler.MarkRetiredInvalidation(s21, "forced", "rev-9");
 WebProgressScheduler.Reconcile(s21, regAlpha2, "h21", "test-registry-v1", _ => true);
 Assert(s21["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha" && p["reason"]!.GetValue<string>() == "affected") && !s21["blocked"]!.AsObject().ContainsKey("blend.alpha"), "force during retirement lifts the park and re-queues");
+// (e) retired pending with prior failures resets attempts upon source invalidation (fresh attempt cycle)
+var s22 = WebProgressScheduler.NewState("rev-0", "h22", "test-registry-v1");
+WebProgressScheduler.Reconcile(s22, regAlpha2, "h22", "test-registry-v1");
+for (var i = 0; i < 2; i++) WebProgressScheduler.RecordOutcome(s22, "blend.alpha", "export-failure", "missing", "run-22", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.Reconcile(s22, regAlpha2, "h22", "test-registry-v1", _ => false);
+WebProgressScheduler.MarkRetiredInvalidation(s22, "source-change", "rev-new");
+WebProgressScheduler.Reconcile(s22, regAlpha2, "h22", "test-registry-v1", _ => true);
+var restoredItem = s22["pending"]!.AsArray().OfType<JsonObject>().First(p => p["caseId"]!.GetValue<string>() == "blend.alpha");
+Assert(restoredItem["attempts"]!.GetValue<int>() == 0 && restoredItem["reason"]!.GetValue<string>() == "affected", "retired pending with 2 prior attempts gets attempts reset to 0 upon source change");
+WebProgressScheduler.RecordOutcome(s22, "blend.alpha", "export-failure", "missing", "run-new-1", "rev-new", WebProgressScheduler.EntryHash(alpha), 0);
+Assert(!s22["blocked"]!.AsObject().ContainsKey("blend.alpha") && s22["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha"), "first failure under new source does not block case with reset attempts");
+// (f) active pending with prior failures resets attempts upon source change
+var s23 = WebProgressScheduler.NewState("rev-0", "h23", "test-registry-v1");
+WebProgressScheduler.Reconcile(s23, regAlpha2, "h23", "test-registry-v1");
+for (var i = 0; i < 2; i++) WebProgressScheduler.RecordOutcome(s23, "blend.alpha", "export-failure", "missing", "run-23", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.MarkChanges(s23, ["src/Kernel.cs"], regAlpha2, "rev-new-active");
+var activePendingItem = s23["pending"]!.AsArray().OfType<JsonObject>().First(p => p["caseId"]!.GetValue<string>() == "blend.alpha");
+Assert(activePendingItem["attempts"]!.GetValue<int>() == 0 && activePendingItem["reason"]!.GetValue<string>() == "affected", "active pending with 2 prior attempts gets attempts reset to 0 upon source change");
 
 // ---- 24. typed state schema rejection (review S1-r2) ----
 var typedBase = WebProgressScheduler.NewState("r", "h", "v");
@@ -704,6 +754,11 @@ void Typed(string label, Action<JsonObject> mutate)
 Typed("a mistyped scheduler scalar fails as STATE_SCHEMA_INVALID, not a cast crash (was exit 134)", s => s["scheduler"] = 123);
 Typed("a mistyped schemaVersion is rejected", s => s["schemaVersion"] = "1");
 Typed("a scalar publish marker is rejected", s => s["publish"] = true);
+Typed("a string publish.pending marker is rejected as STATE_SCHEMA_INVALID", s => s["publish"]!["pending"] = "true");
+Typed("a numeric publish.pending marker is rejected as STATE_SCHEMA_INVALID", s => s["publish"]!["pending"] = 1);
+Typed("a numeric publish.lastError is rejected as STATE_SCHEMA_INVALID", s => s["publish"]!["lastError"] = 123);
+Typed("a corrupt retired collection is rejected", s => s["retired"] = "bad");
+Typed("a corrupt retired record entry is rejected", s => s["retired"] = new JsonObject { ["a"] = new JsonObject { ["records"] = new JsonArray((JsonNode)new JsonObject { ["kind"] = 123 }) } });
 Typed("a mistyped pending caseId is rejected", s => s["pending"]![0]!["caseId"] = 123);
 Typed("a mistyped pending attempts is rejected", s => s["pending"]![0]!["attempts"] = "x");
 Typed("a batch without a run id or status is rejected", s => s["batches"]!.AsArray().Add((JsonNode)new JsonObject { ["index"] = 0 }));

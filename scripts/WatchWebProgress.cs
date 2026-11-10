@@ -139,6 +139,7 @@ async Task<int?> RunOnce()
         completed.Clear(); state["blocked"] = new JsonObject();
         WebProgressScheduler.MarkRetiredInvalidation(state, "forced", revision);
         foreach (var id in stale) if (!state["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == id.Key)) state["pending"]!.AsArray().Add((JsonNode)new JsonObject { ["caseId"] = id.Key, ["reason"] = "affected", ["attempts"] = 0, ["retryReason"] = null });
+        foreach (var p in state["pending"]!.AsArray().OfType<JsonObject>()) { p["reason"] = "affected"; p["attempts"] = 0; }
         Console.WriteLine("FORCE re-verification requested for all adapted cases.");
     }
     var previousRevision = state["sourceRevision"]?.GetValue<string>();
@@ -165,7 +166,7 @@ async Task<int?> RunOnce()
     var plan = WebProgressScheduler.PlanBatch(state, registry, batchSize);
     if (plan.Count == 0)
     {
-        if (state["publish"]!["pending"]?.GetValue<bool>() == true)
+        if (state["publish"]?["pending"] is JsonValue pv && pv.TryGetValue<bool>(out var publishPending) && publishPending)
         {
             var publishedRetry = FinishPublish(state);
             // The retry result is persisted in the same tick: success must not

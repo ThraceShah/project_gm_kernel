@@ -53,10 +53,12 @@ internal static class WebProgressScheduler
     internal static JsonObject? LoadState(string statePath, out string? legacyBackup)
     {
         legacyBackup = null;
+        InvalidDataException Bad(string message) => new("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " " + message + "; original file kept untouched at " + statePath);
+        if (!WebProgressSafePath.IsSafeChain(statePath, out var safeOffender)) throw Bad("symlink/reparse state path rejected " + safeOffender);
         JsonNode? node;
         try { node = JsonNode.Parse(File.ReadAllText(statePath)); }
-        catch (JsonException e) { throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " is not valid JSON (" + e.Message + "); original file kept untouched at " + statePath); }
-        if (node is not JsonObject state) throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " is not a JSON object; original file kept untouched at " + statePath);
+        catch (JsonException e) { throw Bad("is not valid JSON (" + e.Message + ")"); }
+        if (node is not JsonObject state) throw Bad("is not a JSON object");
         if (state["scheduler"] is null && state["fingerprint"] is JsonValue legacyFingerprint && legacyFingerprint.TryGetValue<string>(out _))
         {
             legacyBackup = statePath + ".legacy-" + DateTimeOffset.UtcNow.ToString("yyyyMMddTHHmmssfffZ") + ".bak";
@@ -66,18 +68,23 @@ internal static class WebProgressScheduler
         // Typed schema rejection: an unknown or mistyped scheduler/schemaVersion
         // and any container/record/scalar/null mismatch fails explicitly instead
         // of a silent reset or a late cast crash. Real IO errors still propagate.
-        InvalidDataException Bad(string message) => new("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " " + message + "; original file kept untouched at " + statePath);
         static bool Str(JsonNode? value, bool required) => value is JsonValue v && v.TryGetValue<string>(out _) || !required && value is null;
         static bool Num(JsonNode? value, bool required) => value is JsonValue v && v.TryGetValue<int>(out _) || !required && value is null;
+        static bool Bool(JsonNode? value, bool required) => value is JsonValue v && v.TryGetValue<bool>(out _) || !required && value is null;
         if (!Str(state["scheduler"], true) || state["scheduler"]!.GetValue<string>() != SchedulerName
             || !Num(state["schemaVersion"], true) || state["schemaVersion"]!.GetValue<int>() != 1)
             throw Bad("has an unknown or mistyped scheduler/schemaVersion");
         foreach (var key in new[] { "sourceRevision", "registryHash", "registryVersion", "updatedAt" })
             if (!Str(state[key], true)) throw Bad("misses or mistypes " + key);
-        if (state["publish"] is not JsonObject publish || publish["pending"] is not JsonValue
+        if (state["publish"] is not JsonObject publish || !Bool(publish["pending"], true) || !Str(publish["lastError"], false) || !Str(publish["lastErrorAt"], false)
             || state["pending"] is not JsonArray pendingArray || state["batches"] is not JsonArray batchArray
             || state["completed"] is not JsonObject completed || state["blocked"] is not JsonObject blocked || state["stale"] is not JsonObject stale)
             throw Bad("has corrupt queue collections");
+        if (state["retired"] is not null && state["retired"] is not JsonObject) throw Bad("has corrupt retired collections");
+        if (state["quarantined"] is not null && state["quarantined"] is not JsonObject) throw Bad("has corrupt quarantined collections");
+        if (state["workingPaths"] is not null && state["workingPaths"] is not JsonArray) throw Bad("has corrupt workingPaths");
+        if (state["workingDiffHash"] is not null && !Str(state["workingDiffHash"], false)) throw Bad("has corrupt workingDiffHash");
+        if (state["lastRunId"] is not null && !Str(state["lastRunId"], false)) throw Bad("has corrupt lastRunId");
         foreach (var item in pendingArray)
             if (item is not JsonObject entry || !Str(entry["caseId"], true) || !Str(entry["reason"], true) || !Num(entry["attempts"], false) || !Str(entry["retryReason"], false) || !Str(entry["lastRunId"], false))
                 throw Bad("has corrupt pending entries");
@@ -93,11 +100,24 @@ internal static class WebProgressScheduler
         foreach (var pair in stale)
             if (pair.Value is not JsonObject old || !Str(old["entryHash"], true) || !Str(old["runId"], true) || !Str(old["revision"], false) || !Str(old["status"], false) || !Str(old["markedAt"], false) || !Str(old["reason"], false))
                 throw Bad("has corrupt stale records");
+        if (state["retired"] is JsonObject retObj)
+        {
+            foreach (var pair in retObj)
+            {
+                if (pair.Value is not JsonObject tomb || !Str(tomb["retiredAt"], false) || !Str(tomb["retireReason"], false) || tomb["records"] is not JsonArray recArray)
+                    throw Bad("has corrupt retired records");
+                foreach (var rec in recArray)
+                    if (rec is not JsonObject r || !Str(r["kind"], true) || r["record"] is not JsonObject)
+                        throw Bad("has corrupt retired record entries");
+            }
+        }
         return state;
     }
 
     internal static void Save(string statePath, JsonObject state)
     {
+        if (!WebProgressSafePath.IsSafeChain(statePath, out var offending))
+            throw new IOException("Symlinks are not static data: " + offending);
         state["updatedAt"] = DateTimeOffset.UtcNow.ToString("O");
         File.WriteAllText(statePath + ".tmp", state.ToJsonString());
         File.Move(statePath + ".tmp", statePath, true);
@@ -170,7 +190,16 @@ internal static class WebProgressScheduler
                 blocked.Remove(id);
                 if (pendingIds.Add(id)) pending.Add(Pending(id, "recipe-change"));
             }
-            if (stale[id] is JsonObject old && old["entryHash"]!.GetValue<string>() != hash) old["entryHash"] = hash;
+            if (stale[id] is JsonObject old && old["entryHash"]!.GetValue<string>() != hash)
+            {
+                old["entryHash"] = hash;
+                var item = pending.OfType<JsonObject>().FirstOrDefault(p => p["caseId"]!.GetValue<string>() == id);
+                if (item != null)
+                {
+                    item["reason"] = "recipe-change";
+                    item["attempts"] = 0;
+                }
+            }
             if (!completed.ContainsKey(id) && !blocked.ContainsKey(id) && !pendingIds.Contains(id)) pending.Add(Pending(id, firstEnqueue ? "initial" : "new-recipe"));
         }
     }
@@ -239,7 +268,11 @@ internal static class WebProgressScheduler
                 if (parked?["retryReason"]?.GetValue<string>() is string retry) item["retryReason"] = retry;
                 pending.Add(item);
             }
-            else item["reason"] = "affected";
+            else
+            {
+                item["reason"] = "affected";
+                item["attempts"] = 0;
+            }
         }
         retired.Remove(id);
     }
@@ -295,13 +328,21 @@ internal static class WebProgressScheduler
             }
             else if (blocked.ContainsKey(id))
             {
+                var parked = blocked[id] as JsonObject;
                 blocked.Remove(id);
-                if (!pendingIds.Contains(id)) pending.Add(Pending(id, "affected"));
+                if (!pendingIds.Contains(id))
+                {
+                    var item = Pending(id, "affected");
+                    if (parked?["lastRunId"]?.GetValue<string>() is string lastRun) item["lastRunId"] = lastRun;
+                    if (parked?["retryReason"]?.GetValue<string>() is string retry) item["retryReason"] = retry;
+                    pending.Add(item);
+                }
             }
             else if (pendingIds.Contains(id))
             {
                 var item = pending.First(p => p!["caseId"]!.GetValue<string>() == id)!;
                 if (item["reason"]!.GetValue<string>() is not ("affected" or "recipe-change")) item["reason"] = "affected";
+                item["attempts"] = 0;
             }
         }
         state["sourceRevision"] = newRevision;

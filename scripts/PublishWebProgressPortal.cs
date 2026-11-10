@@ -35,6 +35,16 @@ var name = Option("--name", "GM Kernel vs Parasolid 对比工作台");
 var description = Option("--description", "GM 几何建模内核与 Parasolid 真实对比与工程指标追踪工作台");
 const long BundleBudgetBytes = 30L * 1024 * 1024; // portal hard limit is 32 MiB decoded
 
+// 0. Verify data, web, dist, statePath and bundle chains before any side effect.
+if (!WebProgressSafePath.IsSafeChain(data, out var dataOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse data root rejected " + dataOffender); return 1; }
+if (!WebProgressSafePath.IsSafeChain(web, out var webOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse web root rejected " + webOffender); return 1; }
+if (!WebProgressSafePath.IsSafeChain(dist, out var distOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse dist root rejected " + distOffender); return 1; }
+if (!WebProgressSafePath.IsSafeChain(statePath, out var stateOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse state path rejected " + stateOffender); return 1; }
+var stateDir = Path.GetDirectoryName(statePath)!;
+if (!WebProgressSafePath.IsSafeChain(stateDir, out var stateDirOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse state directory rejected " + stateDirOffender); return 1; }
+var bundle = Path.Combine(stateDir, "bundle");
+if (!WebProgressSafePath.IsSafeChain(bundle, out var bundleOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse bundle path rejected " + bundleOffender); return 1; }
+
 // 1. The validated data cache must carry a complete latest run.
 var dataIndex = Path.Combine(data, "index.json");
 if (!File.Exists(dataIndex)) { Console.Error.WriteLine("PUBLISH_REFUSED no validated data index: " + dataIndex); return 1; }
@@ -69,7 +79,6 @@ if (!File.Exists(Path.GetFullPath(manifestRel, Path.Combine(dist, "data"))))
 //    first. If the latest aggregate and its evidence alone exceed the budget,
 //    the publication is refused loudly with measured sizes instead of cutting
 //    cases or evidence.
-var bundle = Path.Combine(Path.GetDirectoryName(statePath)!, "bundle");
 if (Directory.Exists(bundle)) Directory.Delete(bundle, true);
 try { CopyTree(dist, bundle); }
 catch (IOException e) { Console.Error.WriteLine("PUBLISH_REFUSED " + e.Message); return 1; }
@@ -169,13 +178,16 @@ static void CopyTree(string source, string target)
     // Same canonical-root contract as the validator and the data publisher:
     // symlinks and other reparse points are not static data and must never be
     // followed into a bundle (root, ancestors, intermediate, leaf).
-    Directory.CreateDirectory(target);
     if (!WebProgressSafePath.IsSafeChain(source, out var rootOffender)) throw new IOException("Symlinks are not static data: " + rootOffender);
+    if (!WebProgressSafePath.IsSafeChain(target, out var targetOffender)) throw new IOException("Symlinks are not static data: " + targetOffender);
+    Directory.CreateDirectory(target);
     foreach (var entry in Directory.EnumerateFileSystemEntries(source))
     {
+        var targetEntry = Path.Combine(target, Path.GetFileName(entry));
         if (!WebProgressSafePath.IsSafeChain(entry, out var offender)) throw new IOException("Symlinks are not static data: " + offender);
-        if (Directory.Exists(entry)) CopyTree(entry, Path.Combine(target, Path.GetFileName(entry)));
-        else File.Copy(entry, Path.Combine(target, Path.GetFileName(entry)));
+        if (!WebProgressSafePath.IsSafeChain(targetEntry, out var targetEntryOffender)) throw new IOException("Symlinks are not static data: " + targetEntryOffender);
+        if (Directory.Exists(entry)) CopyTree(entry, targetEntry);
+        else File.Copy(entry, targetEntry, true);
     }
 }
 static long TreeSize(string root)
