@@ -617,9 +617,7 @@ internal static class HostedWebProgressSite
     private static bool ReconcileMirror(string statePath, JsonObject pointer)
     {
         var mirror = ReadJsonObject(statePath);
-        var match = mirror?["active"]?["uiRelease"]?.GetValue<string>() == pointer["uiRelease"]?.GetValue<string>()
-            && mirror?["active"]?["generation"]?.GetValue<string>() == pointer["generation"]?.GetValue<string>();
-        if (match) return false;
+        if (mirror is not null && JsonNode.DeepEquals(mirror, MirrorOf(pointer))) return false;
         try
         {
             WriteJsonAtomic(statePath, MirrorOf(pointer));
