@@ -1,0 +1,122 @@
+import React from 'react';
+import { CheckItem } from '../types/contract';
+import { formatStatus } from '../utils/formatters';
+import { CheckCircle2, XCircle, HelpCircle, AlertCircle, FileText } from 'lucide-react';
+
+interface ChecksTableProps {
+  checks: CheckItem[];
+  evidenceBaseDir?: string;
+}
+
+export const ChecksTable: React.FC<ChecksTableProps> = ({ checks }) => {
+  if (!checks || checks.length === 0) {
+    return (
+      <div className="p-8 text-center text-slate-400 text-xs">
+        <HelpCircle className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
+        <p>此用例尚未录入逐项验收检查数据</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full overflow-x-auto select-text">
+      <table className="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr className="bg-slate-100 text-slate-600 border-b border-slate-200">
+            <th className="py-2 px-3 font-semibold">状态</th>
+            <th className="py-2 px-3 font-semibold">检查项 (Label)</th>
+            <th className="py-2 px-3 font-semibold font-mono-code">GM 实测</th>
+            <th className="py-2 px-3 font-semibold font-mono-code">PK 基准</th>
+            <th className="py-2 px-3 font-semibold font-mono-code">绝对偏差</th>
+            <th className="py-2 px-3 font-semibold font-mono-code">相对偏差</th>
+            <th className="py-2 px-3 font-semibold font-mono-code">容差门限</th>
+            <th className="py-2 px-3 font-semibold">单位</th>
+            <th className="py-2 px-3 font-semibold">证据 / 备注</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {checks.map((chk) => {
+            const st = formatStatus(chk.status);
+
+            const formatVal = (v: number | string | null | undefined) => {
+              if (v === null || v === undefined) return <span className="text-slate-400 italic">null</span>;
+              if (typeof v === 'number') {
+                if (Number.isInteger(v)) return v.toString();
+                return v.toFixed(6).replace(/\.?0+$/, '');
+              }
+              return String(v);
+            };
+
+            return (
+              <tr key={chk.id} className="hover:bg-slate-50/80 transition-colors">
+                {/* Status */}
+                <td className="py-2.5 px-3 whitespace-nowrap">
+                  <span
+                    className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded font-medium ${st.bgLight} border`}
+                  >
+                    {chk.status === 'pass' && <CheckCircle2 className="w-3 h-3 text-emerald-600" />}
+                    {chk.status === 'fail' && <XCircle className="w-3 h-3 text-rose-600" />}
+                    {chk.status === 'missing' && <HelpCircle className="w-3 h-3 text-slate-500" />}
+                    {chk.status !== 'pass' && chk.status !== 'fail' && chk.status !== 'missing' && (
+                      <AlertCircle className="w-3 h-3 text-amber-600" />
+                    )}
+                    <span>{chk.status.toUpperCase()}</span>
+                  </span>
+                </td>
+
+                {/* Label */}
+                <td className="py-2.5 px-3 font-medium text-slate-800">
+                  <div className="leading-snug">{chk.label}</div>
+                  <div className="font-mono-code text-[10px] text-slate-400">{chk.id}</div>
+                </td>
+
+                {/* GM */}
+                <td className="py-2.5 px-3 font-mono-code text-slate-700 whitespace-nowrap">
+                  {formatVal(chk.gm)}
+                </td>
+
+                {/* PK */}
+                <td className="py-2.5 px-3 font-mono-code text-slate-700 whitespace-nowrap">
+                  {formatVal(chk.pk)}
+                </td>
+
+                {/* Abs Delta */}
+                <td className="py-2.5 px-3 font-mono-code text-slate-600 whitespace-nowrap">
+                  {formatVal(chk.absDelta)}
+                </td>
+
+                {/* Normalized Delta */}
+                <td className="py-2.5 px-3 font-mono-code text-slate-600 whitespace-nowrap">
+                  {formatVal(chk.normalizedDelta)}
+                </td>
+
+                {/* Threshold */}
+                <td className="py-2.5 px-3 font-mono-code text-slate-500 whitespace-nowrap">
+                  {chk.threshold !== null && chk.threshold !== undefined ? `≤ ${chk.threshold}` : '-'}
+                </td>
+
+                {/* Unit */}
+                <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap">
+                  {chk.unit || '-'}
+                </td>
+
+                {/* Note & Evidence */}
+                <td className="py-2.5 px-3 max-w-xs text-slate-600 text-[11px]">
+                  {chk.note && <div className="leading-tight mb-1">{chk.note}</div>}
+                  {chk.evidence && (
+                    <div className="flex items-center gap-1 text-sky-700 font-mono-code text-[10px]">
+                      <FileText className="w-3 h-3" />
+                      <span className="truncate" title={chk.evidence}>
+                        {chk.evidence}
+                      </span>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};

@@ -1,0 +1,160 @@
+/**
+ * Shared Data Contract for GM Kernel vs Parasolid Benchmark Workbench
+ * Strictly complies with the project contract definition.
+ */
+
+export interface IndexData {
+  schemaVersion: number;
+  generatedAt: string;
+  latestRunId: string;
+  runs: RunSummary[];
+}
+
+export interface RunSummary {
+  id: string;
+  commit: string;
+  generatedAt: string;
+  label: string;
+  manifest: string; // relative to data/ directory, e.g. "runs/<id>/manifest.json"
+}
+
+export interface RunMetadata {
+  id: string;
+  commit: string;
+  generatedAt: string;
+  pkVersion?: string;
+  host?: string;
+  configuration?: string;
+  scope?: string;
+  provenance?: string;
+  [key: string]: unknown;
+}
+
+export type CaseFamily = 'blend' | 'boolean';
+
+export type CaseStatus =
+  | 'pass'
+  | 'fail'
+  | 'missing'
+  | 'unsupported'
+  | 'timeout'
+  | 'diagnostic';
+
+export interface ApiCallInfo {
+  name: string;
+  parameters: Record<string, unknown>;
+}
+
+export interface StepMeshRef {
+  before: string | null; // relative to manifest dir, e.g. "meshes/c1_gm_before.json"
+  after: string | null;  // relative to manifest dir, e.g. "meshes/c1_gm_after.json"
+}
+
+export interface StepData {
+  id: string;
+  title: string;
+  gm: StepMeshRef;
+  pk: StepMeshRef;
+}
+
+export interface CheckItem {
+  id: string;
+  label: string;
+  status: 'pass' | 'fail' | 'missing' | string;
+  gm: number | string | null;
+  pk: number | string | null;
+  absDelta: number | null;
+  normalizedDelta: number | null;
+  threshold: number | null;
+  unit: string;
+  evidence: string | null;
+  note: string;
+}
+
+export interface PerformanceInfo {
+  gmMs: number | null;
+  pkMs: number | null;
+  ratioGmOverPk: number | null; // smaller means GM is faster
+  samples?: number | string | null;
+  warmup?: number | string | null;
+  scope?: string | null;
+  correctnessQualified?: boolean | string | null;
+  host?: string | null;
+  configuration?: string | null;
+  note?: string | null;
+  [key: string]: unknown;
+}
+
+export interface EvidenceItem {
+  label: string;
+  path: string; // relative to manifest dir
+}
+
+export interface CaseSource {
+  path: string;
+  revision: string;
+}
+
+export interface TestCase {
+  id: string;
+  title: string;
+  family: CaseFamily;
+  operation: string;
+  status: CaseStatus;
+  parameters: Record<string, unknown>;
+  apis: {
+    gm: ApiCallInfo;
+    pk: ApiCallInfo;
+  };
+  steps: StepData[];
+  checks: CheckItem[];
+  performance: PerformanceInfo;
+  evidence: EvidenceItem[];
+  notes: string[];
+  source: CaseSource;
+}
+
+export interface ManifestData {
+  schemaVersion: number;
+  run: RunMetadata;
+  cases: TestCase[];
+}
+
+export type EntityRole =
+  | 'unchanged'
+  | 'selected'
+  | 'support'
+  | 'newBlend'
+  | 'modified'
+  | 'deleted';
+
+export interface FaceData {
+  id: string;
+  positions: number[]; // Flat xyz: [x1, y1, z1, x2, y2, z2, ...]
+  normals?: number[];  // Optional flat xyz normals
+  indices: number[];    // Face-local 0-based triangle vertex indices
+  role: EntityRole;
+}
+
+export interface EdgeData {
+  id: string;
+  positions: number[]; // Sequential line segments: [x1, y1, z1, x2, y2, z2, ...]
+  role: EntityRole;
+}
+
+export interface MeshSource {
+  kernel: string;
+  geometryAuthor: string;
+  tessellator: string;
+  commit: string;
+  chordTolerance: number;
+  [key: string]: unknown;
+}
+
+export interface MeshData {
+  schemaVersion: number;
+  bodyId: string;
+  source: MeshSource;
+  faces: FaceData[];
+  edges: EdgeData[];
+}
