@@ -151,10 +151,63 @@ internal static unsafe partial class KernelRuntime
             }
             var built=OriginalChartParameterMap.Build(positions,tangents,baseParameter,baseScale,parameters,scales,chords,out _,out var failure);if(built!=AlgorithmStatus.Success)
             {if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"ICurve CHART map={failure} sense={sense} support_senses={surfaces[a].NormalSense}/{surfaces[b].NormalSense} first_direction={Dot(tangents[0],Sub(positions[1],positions[0])):R}");return built;}
+            if(angularError>=Math.PI)
+            {
+                var maxChordal=0.0;var maxAngular=0.0;
+                for(var i=0;i<count-1;i++)
+                {
+                    var d=Sub(positions[i+1],positions[i]);
+                    var len=Math.Sqrt(Dot(d,d));
+                    var turn=Math.Acos(Math.Clamp(Dot(tangents[i],tangents[i+1]),-1,1));
+                    maxAngular=Math.Max(maxAngular,turn);
+                    maxChordal=Math.Max(maxChordal,0.5*len*turn);
+                }
+                chordalError=Math.Max(maxChordal,1e-11);
+                angularError=Math.Max(maxAngular,1e-6);
+            }
             index=nc++;spineTags[index]=0;spines[index]=new(){First=a,Second=b,ChartOffset=nh,ChartCount=count,StartType=start,EndType=end,ChordalError=chordalError,AngularError=angularError,Sense=sense};
             for(var i=0;i<count;i++)
             {
                 var witness=charts[nh];witness.Position=positions[i];witness.Parameter=parameters[i];witness.Scale=i<count-1?scales[i]:1;witness.Chord=i<count-1?chords[i]:default;charts[nh++]=witness;
+            }
+            return AlgorithmStatus.Success;
+        }
+
+        internal AlgorithmStatus CompactChartSpine(BlendSurfaceIndex a,BlendSurfaceIndex b,scoped ReadOnlySpan<KernelVector3> positions,
+            double lower,double upper,out BlendSpineIndex index,KernelSense sense,scoped ReadOnlySpan<double> knownUv)
+        {
+            index=-1;var count=positions.Length;
+            var status=ChartSpine(a,b,positions,0,1,0,Math.PI,LimitType.Artificial,LimitType.Artificial,out index,sense,knownUv);
+            if(status!=AlgorithmStatus.Success)return status;
+            var offset=spines[index].ChartOffset;var rawSpan=charts[offset+count-1].Parameter;
+            if(!(rawSpan>0)||!double.IsFinite(rawSpan))return AlgorithmStatus.InvalidInput;
+            var baseScale=(upper-lower)/rawSpan;
+            if(!(baseScale>0)||!double.IsFinite(baseScale))return AlgorithmStatus.InvalidInput;
+            var tangents=NestedWorkspace<KernelVector3>(count);var parameters=NestedWorkspace<double>(count);
+            var scales=NestedWorkspace<double>(count-1);var chords=NestedWorkspace<KernelVector3>(count-1);
+            if(tangents.IsEmpty||parameters.IsEmpty||scales.IsEmpty||chords.IsEmpty)return AlgorithmStatus.WorkspaceTooSmall;
+            var program=View;
+            for(var i=0;i<count;i++)
+            {
+                var w=charts[offset+i];
+                status=ChartSupportWitness(program,a,surfaceTags[a],w.Position,w.FirstU,w.FirstV,out _,out var n0);if(status!=AlgorithmStatus.Success)return status;
+                status=ChartSupportWitness(program,b,surfaceTags[b],w.Position,w.SecondU,w.SecondV,out _,out var n1);if(status!=AlgorithmStatus.Success)return status;
+                tangents[i]=Unit(EvaluationMath.Cross(n0.Value,n1.Value));
+            }
+            for(var attempt=0;attempt<64;attempt++)
+            {
+                status=OriginalChartParameterMap.Build(positions,tangents,lower,baseScale,parameters,scales,chords,out _,out _);
+                if(status!=AlgorithmStatus.Success)return status;
+                if(parameters[count-1]>=upper)break;
+                baseScale=Math.BitIncrement(baseScale);
+            }
+            if(parameters[count-1]<upper)return AlgorithmStatus.NumericalFailure;
+            for(var i=0;i<count;i++)
+            {
+                ref var witness=ref charts[offset+i];
+                witness.Parameter=parameters[i];
+                witness.Scale=i<count-1?scales[i]:1;
+                witness.Chord=i<count-1?chords[i]:default;
             }
             return AlgorithmStatus.Success;
         }
@@ -187,7 +240,7 @@ internal static unsafe partial class KernelRuntime
                 var accuracy=JointNestedBlendEvaluation.ResidualAccuracy(program,index,positions[i]);
                 // A certified roundoff-sized displacement needs no repair.
                 // Use the upper bound so an uncertain root cannot qualify.
-                if(previous.Upper<=8*accuracy)continue;
+                if(previous.Upper<=16*accuracy)continue;
                 status=JointNestedBlendEvaluation.EvaluateSpine(program,index,t,0,point,contacts);
                 if(status!=AlgorithmStatus.Success)return status;
                 var corrected=(root-new IntervalVector(point[0])).Norm().Value;

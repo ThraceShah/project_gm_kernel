@@ -77,14 +77,31 @@ internal static unsafe partial class KernelRuntime
             var ellipse=EllipseDataPool[source.DataIndex];var scale=oa.Radius/a.Radius;
             var definition=new PK_ELLIPSE_sf_s{R1=ellipse.R1*scale,R2=ellipse.R2*scale};
             WriteVector(&definition.basis_set.location,Vector(ellipse.CenterX,ellipse.CenterY,ellipse.CenterZ));
-            WriteVector(&definition.basis_set.axis,Vector(ellipse.AxisX,ellipse.AxisY,ellipse.AxisZ));
-            WriteVector(&definition.basis_set.ref_direction,Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ));
+            var axis=Vector(ellipse.AxisX,ellipse.AxisY,ellipse.AxisZ);
+            var refDir=Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ);
+            WriteVector(&definition.basis_set.axis,axis);
+            WriteVector(&definition.basis_set.ref_direction,refDir);
             error=EllipseCreateImplementation(&definition,&spine);if(error!=0)return error;
+            Curves[GetCurveSlotByTag(spine)].Sense=source.Sense;
+            var center=Vector(ellipse.CenterX,ellipse.CenterY,ellipse.CenterZ);
+            var x=refDir;var y=ProfileCross(axis,x);
+            var dMid=Sub(jet[0],center);
+            var midParam=Math.Atan2(Dot(dMid,y)/definition.R2,Dot(dMid,x)/definition.R1);
             var perpendicular=ProfileCross(a.Axis,b.Axis);if(!ProfileNormalize(ref perpendicular))return ParasolidConstants.PK_ERROR_not_implemented;
-            var collapse=Add(Vector(ellipse.CenterX,ellipse.CenterY,ellipse.CenterZ),Scale(perpendicular,oa.Radius));var vector=new PK_VECTOR_s();WriteVector(&vector,collapse);double parameter;
-            error=CurveParameteriseVectorCore(spine,vector,&parameter);if(error!=0)return error;
-            lower=parameter+Math.PI*Math.Floor((first+(last-first)*.5-parameter)/Math.PI);upper=lower+Math.PI;
-            if(!OperationIntersection.InInterval(first,lower,upper)||!OperationIntersection.InInterval(last,lower,upper))return ParasolidConstants.PK_ERROR_not_implemented;
+            var collapse=Add(center,Scale(perpendicular,oa.Radius));
+            var dCollapse=Sub(collapse,center);
+            var parameter=Math.Atan2(Dot(dCollapse,y)/definition.R2,Dot(dCollapse,x)/definition.R1);
+            lower=parameter+Math.PI*Math.Floor((midParam-parameter)/Math.PI);upper=lower+Math.PI;
+            if(edge.StartVertex>=0&&edge.EndVertex>=0)
+            {
+                var v0=Points[GetPointSlotByTag(Vertices[edge.StartVertex].PointTag)].Position;
+                var v1=Points[GetPointSlotByTag(Vertices[edge.EndVertex].PointTag)].Position;
+                var d0=Sub(v0,center);var d1=Sub(v1,center);
+                var t0=Math.Atan2(Dot(d0,y)/definition.R2,Dot(d0,x)/definition.R1);
+                var t1=Math.Atan2(Dot(d1,y)/definition.R2,Dot(d1,x)/definition.R1);
+                t0+=Math.Tau*Math.Round((midParam-t0)/Math.Tau);t1+=Math.Tau*Math.Round((midParam-t1)/Math.Tau);
+                if(!OperationIntersection.InInterval(t0,lower,upper)||!OperationIntersection.InInterval(t1,lower,upper))return ParasolidConstants.PK_ERROR_not_implemented;
+            }
         }
         else return ParasolidConstants.PK_ERROR_not_implemented;
         Curves[GetCurveSlotByTag(spine)].Sense=source.Sense;

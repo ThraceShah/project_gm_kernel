@@ -252,7 +252,7 @@ internal static unsafe partial class KernelRuntime
                 var curve=e.Curve;
                 if(cloneBoundaryCurves)
                 {
-                    var copied=CloneBoundaryCurve(e.Curve,faces[firstFace[i]].Surface,secondFace[i]>=0?faces[secondFace[i]].Surface:0,out curve);
+                    var copied=CloneBoundaryCurve(e,faces[firstFace[i]].Surface,secondFace[i]>=0?faces[secondFace[i]].Surface:0,out curve);
                     if(copied!=0)return copied;
                 }
                 edgeSlots[i] = AddProfileEdge(body, curve, e.StartVertex < 0 ? -1 : vertexSlots[e.StartVertex],

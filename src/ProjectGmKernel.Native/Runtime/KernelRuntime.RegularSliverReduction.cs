@@ -24,7 +24,7 @@ internal static unsafe partial class KernelRuntime
         if(model.TangencyCount==0)return 0;
         // Reserve the rest of the working resolution for the projected
         // boundary reattachment and the two adjacent face representations.
-        var precision=model.Tolerance*.25;
+        var precision=model.Tolerance*.5;
         Span<ModelingCoedge> boundary=stackalloc ModelingCoedge[SheetEdgeLimit];
         Span<BufferOffset> involved=stackalloc BufferOffset[6];
         for(var f=0;f<model.NF;f++)

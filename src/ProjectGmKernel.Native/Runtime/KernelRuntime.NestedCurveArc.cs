@@ -105,4 +105,132 @@ internal static unsafe partial class KernelRuntime
             <=8*SmallLinearSolve.MachineEpsilon*Math.Max(Math.Abs(first),Math.Abs(original));
         return Match(u0,u1,end.param[0])&&Match(v0,v1,end.param[1]);
     }
+
+    private static bool TryCompactFiniteNestedIntersection(in CurveRecord record,in ICurveData data,
+        SurfTag firstSupport,SurfTag secondSupport,double lower,double upper,out CurveTag curve)
+    {
+        curve=0;
+        if(data.IsBlendContact!=0||data.ProgramBlock<=0||data.UvType!=IntersectionUvType.Both||data.ExtendedChartCount!=0
+            ||!(lower>=record.TMin&&upper<=record.TMax&&upper>lower))return false;
+        var checkpoint=CommandScratch.ThreadArenaOffset;
+        try
+        {
+            var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+            var root=program.Spines[data.ProgramSpine];
+            if(SpineParameterMap.Explicit(root)||program.Surfaces[root.First].IsBSpline||program.Surfaces[root.Second].IsBSpline)return false;
+            var charts=program.Charts.Slice(root.ChartOffset,root.ChartCount);
+            if(charts.Length<2)return false;
+            var trimmed=lower>record.TMin||upper<record.TMax;
+            if(!trimmed&&charts.Length<=12&&!HasChartUvPeriodJump(firstSupport,secondSupport,charts))return false;
+            var mid=0.5*(lower+upper);
+            Span<KernelVector3> jetLo=stackalloc KernelVector3[2],jetMid=stackalloc KernelVector3[2],jetHi=stackalloc KernelVector3[2];
+            Span<double> uvLo=stackalloc double[4],uvMid=stackalloc double[4],uvHi=stackalloc double[4];
+            if(JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,lower,1,jetLo,uvLo)!=AlgorithmStatus.Success
+                ||JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,mid,1,jetMid,uvMid)!=AlgorithmStatus.Success
+                ||JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,upper,1,jetHi,uvHi)!=AlgorithmStatus.Success)return false;
+            if(lower==charts[0].Parameter)jetLo[0]=charts[0].Position;
+            if(upper==charts[^1].Parameter)jetHi[0]=charts[^1].Position;
+            var tLo=EvaluationMath.Unit(jetLo[1]);var tMid=EvaluationMath.Unit(jetMid[1]);var tHi=EvaluationMath.Unit(jetHi[1]);
+            var chord=EvaluationMath.Sub(jetHi[0],jetLo[0]);
+            var chordLength=Math.Sqrt(EvaluationMath.Dot(chord,chord));
+            if(!(chordLength>0)||!double.IsFinite(chordLength))return false;
+            var totalTurn=Math.Acos(Math.Clamp(EvaluationMath.Dot(tLo,tMid),-1,1))+Math.Acos(Math.Clamp(EvaluationMath.Dot(tMid,tHi),-1,1));
+            Span<double> stations=stackalloc double[16];var count=0;
+            if(chordLength<=1e-3||totalTurn<=0.40)
+            {
+                stations[count++]=lower;stations[count++]=upper;
+            }
+            else
+            {
+                var span=upper-lower;
+                var blendSide=program.Surfaces[root.First].IsBlend?1:program.Surfaces[root.Second].IsBlend?3:-1;
+                var blendVSpan=blendSide>=0?Math.Abs(uvHi[blendSide]-uvLo[blendSide]):0;
+                var effectiveTurn=Math.Max(totalTurn,blendVSpan*(0.5*Math.PI));
+                var maxStep=span*Math.Clamp(0.33743/Math.Max(effectiveTurn,0.33743),0.1,0.5);
+                var rampStart=(lower-record.TMin)<=1e-3*(record.TMax-record.TMin)
+                    &&(Surfaces[GetSurfaceSlotByTag(firstSupport)].Class==SurfaceClass.Cylinder
+                        ||Surfaces[GetSurfaceSlotByTag(secondSupport)].Class==SurfaceClass.Cylinder);
+                var step=rampStart?span*0.0005484304319:maxStep;
+                stations[count++]=lower;var cur=lower;
+                while(count<15)
+                {
+                    var next=cur+Math.Min(step,maxStep);
+                    if(next>=upper-0.25*maxStep)break;
+                    stations[count++]=next;cur=next;step*=4.0;
+                }
+                stations[count++]=upper;
+            }
+            var positions=NestedWorkspace<KernelVector3>(count);var uv=NestedWorkspace<double>(4*count);
+            if(positions.Length!=count||uv.Length!=4*count)return false;
+            Span<KernelVector3> point=stackalloc KernelVector3[1];Span<double> contacts=stackalloc double[4];
+            var midIndex=0;var bestMidDist=double.PositiveInfinity;
+            for(var i=0;i<count;i++)
+            {
+                var d=Math.Abs(stations[i]-mid);if(d<bestMidDist){bestMidDist=d;midIndex=i;}
+                if(i==0){positions[0]=jetLo[0];uvLo.CopyTo(uv.Slice(0,4));}
+                else if(i==count-1){positions[count-1]=jetHi[0];uvHi.CopyTo(uv.Slice(4*(count-1),4));}
+                else
+                {
+                    if(JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,stations[i],0,point,contacts)!=AlgorithmStatus.Success)return false;
+                    positions[i]=point[0];contacts.CopyTo(uv.Slice(4*i,4));
+                }
+            }
+            var seedA=new PK_UV_s();seedA.param[0]=uvMid[0];seedA.param[1]=uvMid[1];
+            var seedB=new PK_UV_s();seedB.param[0]=uvMid[2];seedB.param[1]=uvMid[3];
+            UnwrapStationUv(firstSupport,secondSupport,seedA,seedB,uv,midIndex);
+            for(var i=midIndex-1;i>=0;i--)
+            {
+                var prevA=new PK_UV_s();prevA.param[0]=uv[4*(i+1)];prevA.param[1]=uv[4*(i+1)+1];
+                var prevB=new PK_UV_s();prevB.param[0]=uv[4*(i+1)+2];prevB.param[1]=uv[4*(i+1)+3];
+                UnwrapStationUv(firstSupport,secondSupport,prevA,prevB,uv,i);
+            }
+            for(var i=midIndex+1;i<count;i++)
+            {
+                var prevA=new PK_UV_s();prevA.param[0]=uv[4*(i-1)];prevA.param[1]=uv[4*(i-1)+1];
+                var prevB=new PK_UV_s();prevB.param[0]=uv[4*(i-1)+2];prevB.param[1]=uv[4*(i-1)+3];
+                UnwrapStationUv(firstSupport,secondSupport,prevA,prevB,uv,i);
+            }
+            var compiler=new NestedProgramCompiler();if(!compiler.Ready)return false;
+            if(compiler.Surface(firstSupport,out var firstIndex)!=AlgorithmStatus.Success)return false;
+            if(compiler.Surface(secondSupport,out var secondIndex)!=AlgorithmStatus.Success)return false;
+            var compactStatus=compiler.CompactChartSpine(firstIndex,secondIndex,positions,lower,upper,
+                out var spine,record.Sense,uv);
+            if(compactStatus!=AlgorithmStatus.Success)
+            {
+                if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")
+                    Console.Error.WriteLine($"COMPACT_FAIL supports={firstSupport}/{secondSupport} count={count} status={compactStatus} range=[{lower:R},{upper:R}]");
+                return false;
+            }
+            CurveTag result=0;
+            if(BindNestedBlendSpine(firstSupport,secondSupport,compiler.View,spine,&result,uv)!=0)return false;
+            curve=result;return true;
+        }
+        finally{CommandScratch.ThreadArenaOffset=checkpoint;}
+    }
+
+    private static void UnwrapStationUv(SurfTag first,SurfTag second,in PK_UV_s prevA,in PK_UV_s prevB,Span<double> uv,BufferOffset index)
+    {
+        var a=new PK_UV_s();a.param[0]=uv[4*index];a.param[1]=uv[4*index+1];
+        var b=new PK_UV_s();b.param[0]=uv[4*index+2];b.param[1]=uv[4*index+3];
+        UnwrapIntersectionParameters(first,prevA,ref a);
+        UnwrapIntersectionParameters(second,prevB,ref b);
+        uv[4*index]=a.param[0];uv[4*index+1]=a.param[1];uv[4*index+2]=b.param[0];uv[4*index+3]=b.param[1];
+    }
+
+    private static bool HasChartUvPeriodJump(SurfTag first,SurfTag second,ReadOnlySpan<BlendChartInstruction> charts)
+    {
+        var prevA=new PK_UV_s();prevA.param[0]=charts[0].FirstU;prevA.param[1]=charts[0].FirstV;
+        var prevB=new PK_UV_s();prevB.param[0]=charts[0].SecondU;prevB.param[1]=charts[0].SecondV;
+        for(var i=1;i<charts.Length;i++)
+        {
+            var a=new PK_UV_s();a.param[0]=charts[i].FirstU;a.param[1]=charts[i].FirstV;
+            var b=new PK_UV_s();b.param[0]=charts[i].SecondU;b.param[1]=charts[i].SecondV;
+            var ua=a;var ub=b;
+            UnwrapIntersectionParameters(first,prevA,ref ua);
+            UnwrapIntersectionParameters(second,prevB,ref ub);
+            if(ua.param[0]!=a.param[0]||ua.param[1]!=a.param[1]||ub.param[0]!=b.param[0]||ub.param[1]!=b.param[1])return true;
+            prevA=a;prevB=b;
+        }
+        return false;
+    }
 }

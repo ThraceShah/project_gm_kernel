@@ -32,8 +32,9 @@ internal static unsafe partial class KernelRuntime
         return error;
     }
 
-    private static int CloneBoundaryCurve(CurveTag source,SurfTag first,SurfTag second,out CurveTag clone)
+    private static int CloneBoundaryCurve(in ModelingEdge edge,SurfTag first,SurfTag second,out CurveTag clone)
     {
+        var source=edge.Curve;
         var record=Curves[GetCurveSlotByTag(source)];
         if(record.Class==CurveClass.ICurve&&first>0&&second>0)
         {
@@ -45,12 +46,17 @@ internal static unsafe partial class KernelRuntime
             var reverse=SameChart(data.Surface0Tag,second)&&SameChart(data.Surface1Tag,first);
             if(forward!=reverse||forward&&first==second)
             {
+                var s0=forward?first:second;
+                var s1=data.Surface1Tag!=data.Surface0Tag?(forward?second:first):s0;
+                if(edge.StartVertex>=0&&edge.EndVertex>=0&&edge.StartVertex!=edge.EndVertex
+                    &&TryCompactFiniteNestedIntersection(record,data,s0,s1,edge.Start,edge.End,out clone))
+                    return 0;
                 // Keep the native UV data and the compiled support equations
                 // unchanged. Attach their dependencies to the actual face
                 // uses, rather than to detached copies of the same charts.
                 var context=new EntityCopyContext{Pairs=stackalloc EntityCopyPair[3]};
-                context.Add(data.Surface0Tag,forward?first:second);
-                if(data.Surface1Tag!=data.Surface0Tag)context.Add(data.Surface1Tag,forward?second:first);
+                context.Add(data.Surface0Tag,s0);
+                if(data.Surface1Tag!=data.Surface0Tag)context.Add(data.Surface1Tag,s1);
                 return CloneEntity(source,ref context,0,out clone);
             }
         }

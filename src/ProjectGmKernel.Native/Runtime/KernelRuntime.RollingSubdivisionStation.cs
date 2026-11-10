@@ -39,7 +39,7 @@ internal static unsafe partial class KernelRuntime
             }
         }
         var station=lower+(upper-lower)*.5;
-        if(!(lower>band.SourceStart&&upper<band.SourceEnd&&upper>=lower)
+        if(!(lower>band.First&&upper<band.Last&&upper>=lower)
             ||upper-lower>128*SmallLinearSolve.MachineEpsilon*(1+Math.Abs(station)))return false;
         split.Station=station;split.StationLower=lower;split.StationUpper=upper;return true;
     }

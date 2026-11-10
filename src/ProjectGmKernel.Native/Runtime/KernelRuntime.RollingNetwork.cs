@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Intersection;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 using System.Runtime.InteropServices;
 
 namespace ProjectGmKernel.Native.Runtime;
@@ -97,17 +98,27 @@ internal static unsafe partial class KernelRuntime
         {
             var error=CreateAnalyticRollingCandidate(body,networkEdges[i],out var band);if(error!=0)return error;
             var sourceLower=double.PositiveInfinity;var sourceUpper=double.NegativeInfinity;
+            var spineLower=double.PositiveInfinity;var spineUpper=double.NegativeInfinity;
             for(var e=i;e<networkEdges.Length;e++)if(RollingComponent(groups,e)==i)
             {
                 var member=Edges[networkEdges[e]];
-                if(!TryProfileEdgeRange(member,out var lower,out var upper)
-                    ||!OperationIntersection.InInterval(lower,band.First,band.Last)||!OperationIntersection.InInterval(upper,band.First,band.Last))
+                if(!TryProfileEdgeRange(member,out var lower,out var upper))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                if(Curves[GetCurveSlotByTag(member.CurveTag)].Class==CurveClass.Ellipse)
+                {
+                    var data=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(band.Surface)].DataIndex];
+                    if(!TrySpineEdgeRange(data.SpineTag,member,band.First,band.Last,out var spLo,out var spHi)
+                        ||!OperationIntersection.InInterval(spLo,band.First,band.Last)||!OperationIntersection.InInterval(spHi,band.First,band.Last))
+                        return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    spineLower=Math.Min(spineLower,spLo);spineUpper=Math.Max(spineUpper,spHi);
+                }
+                else if(!OperationIntersection.InInterval(lower,band.First,band.Last)||!OperationIntersection.InInterval(upper,band.First,band.Last))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;
                 var positive=LocalSenseSign(Curves[GetCurveSlotByTag(member.CurveTag)].Sense)>0;
                 if(lower<sourceLower){sourceLower=lower;band.SourceFirst=positive?member.StartVertex:member.EndVertex;}
                 if(upper>sourceUpper){sourceUpper=upper;band.SourceLast=positive?member.EndVertex:member.StartVertex;}
             }
-            band.SourceStart=sourceLower;band.SourceEnd=sourceUpper;
+            band.SourceStart=double.IsFinite(spineLower)?spineLower:sourceLower;
+            band.SourceEnd=double.IsFinite(spineUpper)?spineUpper:sourceUpper;
             bandForGroup[i]=bandCount;candidates[bandCount++]=band;
             TraceRollingNetwork?.Invoke(new(){Stage=LastRollingNetworkStage,Source=band.Source,FirstSupport=band.FirstSupport,SecondSupport=band.SecondSupport,Surface=band.Surface,First=band.First,Last=band.Last});
         }
@@ -118,12 +129,14 @@ internal static unsafe partial class KernelRuntime
             var band=bands[split.Band];
             split.Station=split.StationLower=split.StationUpper=split.Parameter;
             if(Surfaces[GetSurfaceSlotByTag(band.Surface)].Class==SurfaceClass.BlendSurface
-                &&!TryEllipticSubdivisionStation(band,ref split))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                &&!TryEllipticSubdivisionStation(band,ref split))
+                return ParasolidConstants.PK_ERROR_cant_do_intersect;
             for(var previous=0;previous<i;previous++)if(subdivisions[previous].Band==split.Band)
             {
                 var other=subdivisions[previous];
                 if(!(other.Parameter<split.Parameter&&other.StationUpper<split.StationLower
-                    ||split.Parameter<other.Parameter&&split.StationUpper<other.StationLower))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    ||split.Parameter<other.Parameter&&split.StationUpper<other.StationLower))
+                    return ParasolidConstants.PK_ERROR_cant_do_intersect;
             }
         }
         Span<SheetCutCurve> cuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];
@@ -255,5 +268,26 @@ internal static unsafe partial class KernelRuntime
         var record=Curves[GetCurveSlotByTag(curve)];
         if(!TryAnalyticBlendContactMap(band.Surface,record,record.TMin,record.TMax,out _,out var shift,out var scale))return ParasolidConstants.PK_ERROR_cant_do_intersect;
         var a=(band.First-shift)/scale;var b=(band.Last-shift)/scale;first=Math.Min(a,b);last=Math.Max(a,b);return 0;
+    }
+
+    private static bool TrySpineEdgeRange(CurveTag spine,in EdgeRecord member,double first,double last,out double lower,out double upper)
+    {
+        lower=upper=0;
+        if(member.StartVertex<0||member.EndVertex<0)return false;
+        var p0=Points[GetPointSlotByTag(Vertices[member.StartVertex].PointTag)].Position;
+        var p1=Points[GetPointSlotByTag(Vertices[member.EndVertex].PointTag)].Position;
+        var spineSlot=GetCurveSlotByTag(spine);if(spineSlot<0)return false;
+        var spineCurve=Curves[spineSlot];if(spineCurve.Class!=CurveClass.Ellipse)return false;
+        var spineData=EllipseDataPool[spineCurve.DataIndex];
+        var center=Vector(spineData.CenterX,spineData.CenterY,spineData.CenterZ);
+        var x=Vector(spineData.RefDirX,spineData.RefDirY,spineData.RefDirZ);
+        var y=ProfileCross(Vector(spineData.AxisX,spineData.AxisY,spineData.AxisZ),x);
+        var d0=Sub(p0,center);var d1=Sub(p1,center);
+        var t0=Math.Atan2(Dot(d0,y)/spineData.R2,Dot(d0,x)/spineData.R1);
+        var t1=Math.Atan2(Dot(d1,y)/spineData.R2,Dot(d1,x)/spineData.R1);
+        var mid=first+(last-first)*.5;
+        t0+=Math.Tau*Math.Round((mid-t0)/Math.Tau);
+        t1+=Math.Tau*Math.Round((mid-t1)/Math.Tau);
+        lower=Math.Min(t0,t1);upper=Math.Max(t0,t1);return true;
     }
 }
