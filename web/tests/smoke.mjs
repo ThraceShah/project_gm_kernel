@@ -72,7 +72,7 @@ async function runSmokeTests() {
   console.log('[Smoke] Launching Chromium from:', chromePath);
   const browser = await chromium.launch({
     executablePath: chromePath,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--use-gl=swiftshader'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--use-gl=swiftshader', '--no-proxy-server'],
   });
 
   const errors = [];
