@@ -39,7 +39,7 @@ JSON、单写者（`<state>.lock` 文件级排它锁，跨进程已验证拒绝�
 - 排序：受影响（`affected`/`recipe-change`）先（representative 优先），再其余 representative，再其余按 suite 公平轮转；已完成 case 永不重复。
 - 结果分类：API 真实 `pass`/`fail`/`timeout`（含退出 134）都是**完成的有效观测**（完成并累计，fail 比率为空）；attempted 但无结构化捕获（导出器编译/契约失败）**不推进完成**——保留原始日志与旧有效展示，`attempts++`、`retryReason=exporter-compile-or-contract-failure`，最多 `MaxAttempts=3` 次后 `export-blocked` 暂停排队（不饿死整队）；源变更或 `--force` 后重新排队。批次级契约失败（`validation.json` errors 非空）整批不推进、有限重试；聚合校验失败回滚到原始清单且不推进。
 - `--force`：全部已适配 case 转 stale（`reason=forced`）重新排队，历史证据保留。
-- 同 SHA 队列未完时下一 timer 继续推进（**不因 fingerprint 相同而永久 skip**）；只有「无事可做」才输出 `Source and registry unchanged; queue complete; ...`。
+- 同 SHA 队列未完时下一 timer 继续推进（**不因 fingerprint 相同而永久 skip**）；只有「无事可做」才跳过：无变更时输出 `Source and registry unchanged; queue complete; ...`，有变更但不影响测量时输出 `Changes observed without measurement impact; queue complete; ...`。
 - 发布失败（`PUBLISH_FAILED`）保留有效 cache，`state.publish.pending` 使下一轮只重试发布、不重跑任何 case。
 
 ## 聚合视图口径（每轮发布最新聚合）
@@ -77,6 +77,28 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyWebProgressScheduler.c
 | 未适配不排队 | 队列只含 `meshAdapter=true`；聚合 `export-unadapted=116` 与 `not-run`/`stale`/内核能力结论分离 |
 | budget 不造成重复整批 | 未启动 case 保持 pending、已完成不重排（b002/b003 只推进剩余项） |
 | 数据契约 | `MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ValidateWebProgress.cs -- ../temp_docs/web-progress-scheduling/data` → `errors: []`（4 runs、1852 case 行、38 meshes）；`--self-test` 9 项仍通过；负例（跨 run 越界/悬空引用被拒）在单测内 |
+
+### commit 30c7b33 后的真实验证（保守失效、并发锁、UI/doc-only）
+
+- **保守失效 + 优先重验 + stale 展示**：提交使 tracked 源变更后，`logs/real-stale-run1.log` 显示 5 个已完成 case 全部转 stale（保守失效）并优先重验 2 个；该批聚合 `current=2 stale=3`——3 个 stale 条目保留旧几何/检查（`short-edge.standard-strict-lifecycle` 仍展示 5 steps/160 checks）、`status=missing` 不冒充通过、合同比率空、旧合格比率存 `stale.previousRatioGmOverPk`、`measurement.revision` 保持真实旧提交 `610e3ce8`（不伪标签新 SHA）。后续两批（`logs/real-stale-run1.log` 同系列）完成全部重验：`current=5 stale=0`，含 `short-edge.standard-strict-lifecycle` 在新提交下**再次真实 fail（exit 134）**。
+- **并发锁（真实）**：批次执行中并发启动第二个实例 → `SCHEDULER_LOCKED another watcher instance holds watch-state.json; this tick skipped.`（`logs/real-stale-run1.log`）。
+- **UI/doc-only 不伪造当前测量（真实）**：队列完成后单独修改 tracked 文档 → `SOURCE_CHANGED revision=30c7b33c paths=1`，映射为 none → 零失效（completed 保持原 revision、stale 空）、不重跑任何 oracle；恢复文档后 `paths=0` 再次 skip。
+- 受控坏导出序列在 commit 后重复验证：registry 追加 recipe 自动入队、参数变更转 `stale(reason=recipe-change)` 并重验、坏 case 重试用尽后 `export-blocked`、`export-retry` 分类带 attempts/retryReason（`logs/broken-run-*.log`、`logs/broken-state-midrun-7.json`）。
+
+### 复现命令（独立 checkout 集成后验收用）
+
+```sh
+# 调度契约单测（35 项，离线）
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyWebProgressScheduler.cs
+# 数据契约自检
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ValidateWebProgress.cs -- --self-test
+# 持久调度一轮（部署单元等价命令；--case all 后覆盖 347 已适配 case）
+MSBUILDDISABLENODEREUSE=1 DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_TieredCompilation=0 \
+  dotnet run --file scripts/WatchWebProgress.cs -- --once \
+  --state ../temp_docs/web-progress-publish/watch-state.json --registry web-progress-registry.json \
+  --case all --configuration Release --samples 1 --seconds 1200 --case-seconds 300 \
+  --output ../temp_docs/web-progress-publish/generated --publish-data-to ../temp_docs/web-progress-publish/data
+```
 
 真实 oracle 执行都在 `systemd-run --user --scope -p CPUQuota=200% -p MemoryMax=12G` 内串行进行，只跑了 2–3 个便宜 recipe + 1 个已知 fail recipe + 受控坏导出 fixture，没有全 347 重跑。
 

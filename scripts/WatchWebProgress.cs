@@ -79,8 +79,10 @@ async Task<int?> RunOnce()
     }
     var previousRevision = state["sourceRevision"]?.GetValue<string>();
     var previousWorking = state["workingDiffHash"]?.GetValue<string>();
+    var sourceChanged = false;
     if (revision != previousRevision || registryHash != state["registryHash"]?.GetValue<string>() || workingDiffHash != previousWorking)
     {
+        sourceChanged = true;
         var committedChanged = revision != previousRevision ? ChangedPaths(previousRevision) : new List<string>();
         var workingChanged = workingDiffHash != previousWorking
             ? Run("git", ["diff", "--name-only"]).Split('\n', StringSplitOptions.RemoveEmptyEntries).Concat(Run("git", ["diff", "--cached", "--name-only"]).Split('\n', StringSplitOptions.RemoveEmptyEntries)).ToList()
@@ -99,7 +101,7 @@ async Task<int?> RunOnce()
     if (plan.Count == 0)
     {
         if (state["publish"]!["pending"]?.GetValue<bool>() == true) return FinishPublish(state) ? 0 : 2;
-        Console.WriteLine("Source and registry unchanged; queue complete; retained current static data. pending=0 completed=" + state["completed"]!.AsObject().Count + " stale=" + state["stale"]!.AsObject().Count + " blocked=" + state["blocked"]!.AsObject().Count);
+        Console.WriteLine((sourceChanged ? "Changes observed without measurement impact; queue complete; " : "Source and registry unchanged; queue complete; ") + "retained current static data. pending=0 completed=" + state["completed"]!.AsObject().Count + " stale=" + state["stale"]!.AsObject().Count + " blocked=" + state["blocked"]!.AsObject().Count);
         WebProgressScheduler.Save(statePath, state);
         return null;
     }
