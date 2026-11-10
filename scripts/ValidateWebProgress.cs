@@ -25,6 +25,16 @@ if(args.Contains("--self-test"))
     WriteFixture();var destination=Path.Combine(root,"published");WebProgressPublishing.Publish(root,"test",destination);Console.WriteLine("PASS atomic safe-data publish");
     File.WriteAllText(Path.Combine(runDirectory,"forbidden.dll"),"test-only");
     try{WebProgressPublishing.Publish(root,"test",Path.Combine(root,"rejected"));throw new Exception("Publisher accepted binary extension");}catch(IOException){Console.WriteLine("PASS static allowlist rejects binaries");}finally{File.Delete(Path.Combine(runDirectory,"forbidden.dll"));}
+    // symlink/reparse escapes never validate and never enter static bundles
+    var outside=Path.GetFullPath(Path.Combine(root,"..","validator-tests-outside.log"));File.WriteAllText(outside,"outside public root");
+    File.CreateSymbolicLink(Path.Combine(runDirectory,"escape.log"),Path.GetRelativePath(runDirectory,outside));
+    c["evidence"]=new JsonArray((JsonNode)new JsonObject{["label"]="escaped",["path"]="escape.log"});Expect(false,"reject file symlink escape");
+    Directory.CreateSymbolicLink(Path.Combine(runDirectory,"linked"),Path.GetDirectoryName(outside)!);
+    File.WriteAllText(Path.Combine(root,"outside-link.log"),"outside public root");
+    c["evidence"]=new JsonArray((JsonNode)new JsonObject{["label"]="escaped",["path"]="linked/validator-tests-outside.log"});Expect(false,"reject directory symlink escape at intermediate component");
+    Directory.Delete(Path.Combine(runDirectory,"linked"));c["evidence"]=new JsonArray();WriteFixture();
+    try{WebProgressPublishing.Publish(root,"test",Path.Combine(root,"rejected-link"));throw new Exception("Publisher followed a symlink");}catch(IOException){Console.WriteLine("PASS static allowlist rejects symlinks");}
+    File.Delete(Path.Combine(runDirectory,"escape.log"));File.Delete(outside);File.Delete(Path.Combine(root,"outside-link.log"));
     return 0;
 }
 var data=Path.GetFullPath(args.Length>0?args[0]:"../web/data",directory);var result=WebProgressDataValidation.Validate(data);Console.WriteLine(result.ToJsonString());return result["errors"]!.AsArray().Count==0?0:1;

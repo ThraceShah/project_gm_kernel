@@ -536,6 +536,40 @@ Assert(WebProgressDataValidation.Validate(s7Dest3)["errors"]!.AsArray().Count ==
 Assert(File.Exists(Path.Combine(s7Dest3, "runs", "run-bad", "cases", "blend.beta", "sample-0", "oracle.log")), "blocked failure logs referenced by the aggregate reach the destination");
 Assert(!JsonNode.Parse(File.ReadAllText(Path.Combine(s7Dest3, "index.json")))!["runs"]!.AsArray().Any(r => r!["id"]!.GetValue<string>() == "run-bad"), "a quarantined run never enters the published index");
 
+// ---- 21. symlink/reparse escapes are rejected at every path component ----
+var symRoot = Path.Combine(root, "symlink");
+Directory.CreateDirectory(Path.Combine(symRoot, "runs", "run-1"));
+var outsideSecret = Path.Combine(root, "outside-secret.log");
+File.WriteAllText(outsideSecret, "outside public root");
+JsonObject SymManifest(string evidencePath)
+{
+    var entry = Entry("blend.alpha", "missing", "", "");
+    entry["evidence"] = new JsonArray((JsonNode)new JsonObject { ["label"] = "escaped", ["path"] = evidencePath });
+    return new JsonObject
+    {
+        ["schemaVersion"] = 1,
+        ["run"] = new JsonObject { ["id"] = "run-1", ["commit"] = "rev", ["generatedAt"] = DateTimeOffset.UtcNow.ToString("O"), ["pkVersion"] = "test", ["host"] = new JsonObject { ["os"] = "test-host" }, ["configuration"] = new JsonObject(), ["scope"] = new JsonObject(), ["provenance"] = new JsonObject() },
+        ["cases"] = new JsonArray((JsonNode)entry),
+    };
+}
+void SymCheck(string evidencePath, bool expectValid, string label)
+{
+    File.WriteAllText(Path.Combine(symRoot, "runs", "run-1", "manifest.json"), SymManifest(evidencePath).ToJsonString());
+    WriteIndex(symRoot, "run-1");
+    var result = WebProgressDataValidation.Validate(symRoot);
+    var errors = result["errors"]!.AsArray().Select(e => e!.GetValue<string>()).ToList();
+    Assert((errors.Count == 0) == expectValid, label + ": " + string.Join(" | ", errors));
+}
+File.CreateSymbolicLink(Path.Combine(symRoot, "runs", "external.log"), Path.GetRelativePath(Path.Combine(symRoot, "runs"), outsideSecret));
+SymCheck("../external.log", false, "a file symlink escaping the data root is rejected (review Probe S8 accepted it)");
+Directory.CreateSymbolicLink(Path.Combine(symRoot, "runs", "linked"), Path.GetFullPath(root));
+SymCheck("../linked/outside-secret.log", false, "a directory symlink escaping the data root is rejected at an intermediate component");
+Directory.CreateDirectory(Path.Combine(symRoot, "other"));
+File.WriteAllText(Path.Combine(symRoot, "other", "adjacent.log"), "adjacent\n");
+SymCheck("../../other/adjacent.log", false, "an adjacent-directory reference beyond the runs tree is rejected");
+File.WriteAllText(Path.Combine(symRoot, "runs", "external-real.log"), "inside\n");
+SymCheck("../external-real.log", true, "real files inside the runs tree still validate (contract not tightened beyond link escapes)");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;

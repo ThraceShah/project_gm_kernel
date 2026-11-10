@@ -70,7 +70,8 @@ if (!File.Exists(Path.GetFullPath(manifestRel, Path.Combine(dist, "data"))))
 //    cases or evidence.
 var bundle = Path.Combine(Path.GetDirectoryName(statePath)!, "bundle");
 if (Directory.Exists(bundle)) Directory.Delete(bundle, true);
-CopyTree(dist, bundle);
+try { CopyTree(dist, bundle); }
+catch (IOException e) { Console.Error.WriteLine("PUBLISH_REFUSED " + e.Message); return 1; }
 var bundleIndex = JsonNode.Parse(File.ReadAllText(Path.Combine(bundle, "data", "index.json")))!;
 var bundleRunsDir = Path.Combine(bundle, "data", "runs");
 var orderedRuns = bundleIndex["runs"]!.AsArray()
@@ -164,9 +165,15 @@ string Option(string optionName, string fallback) { var at = Array.IndexOf(args,
 static string ScriptPath([CallerFilePath] string path = "") => path;
 static void CopyTree(string source, string target)
 {
+    // Same contract as the data publisher: symlinks and other reparse points
+    // are not static data and must never be followed into a bundle.
     Directory.CreateDirectory(target);
-    foreach (var file in Directory.GetFiles(source)) File.Copy(file, Path.Combine(target, Path.GetFileName(file)));
-    foreach (var dir in Directory.GetDirectories(source)) CopyTree(dir, Path.Combine(target, Path.GetFileName(dir)));
+    foreach (var entry in Directory.EnumerateFileSystemEntries(source))
+    {
+        if ((File.GetAttributes(entry) & FileAttributes.ReparsePoint) != 0) throw new IOException("Symlinks are not static data: " + Path.GetFileName(entry));
+        if (Directory.Exists(entry)) CopyTree(entry, Path.Combine(target, Path.GetFileName(entry)));
+        else File.Copy(entry, Path.Combine(target, Path.GetFileName(entry)));
+    }
 }
 static long TreeSize(string root)
 {

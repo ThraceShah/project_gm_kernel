@@ -27,6 +27,17 @@ internal static class WebProgressDataValidation
             var underRoot=path.StartsWith(Path.GetFullPath(root)+Path.DirectorySeparatorChar,StringComparison.Ordinal);
             var underRuns=path.StartsWith(Path.GetFullPath(Path.Combine(data,"runs"))+Path.DirectorySeparatorChar,StringComparison.Ordinal);
             if((!underRoot&&!underRuns)||!File.Exists(path)){Error(context+": missing or escaping path "+relative);return null;}
+            // Security root: every component between the validated data root and
+            // the referenced file (including intermediate directories and the
+            // leaf) must be a real entry — symlink/reparse escapes are rejected
+            // so external files can never validate or enter static bundles.
+            var dataRoot=Path.GetFullPath(data);
+            var current=dataRoot;
+            foreach(var segment in Path.GetRelativePath(dataRoot,path).Split('/',Path.DirectorySeparatorChar,StringSplitOptions.RemoveEmptyEntries))
+            {
+                current=Path.Combine(current,segment);
+                if((File.GetAttributes(current)&FileAttributes.ReparsePoint)!=0){Error(context+": symlink/reparse escape rejected "+relative);return null;}
+            }
             return path;
         }
         JsonNode? Read(string path){try{return JsonNode.Parse(File.ReadAllText(path));}catch(Exception e){Error(Path.GetFileName(path)+": "+e.Message);return null;}}
