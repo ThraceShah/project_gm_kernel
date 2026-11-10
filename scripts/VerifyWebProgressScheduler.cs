@@ -467,30 +467,41 @@ var mergedQText = mergedQ.ToJsonString();
 Assert(!mergedQText.Contains("../run-bad/cases", StringComparison.Ordinal), "the aggregate never points at the quarantined run's meshes/manifests");
 Assert(mergedQ["cases"]![0]!["notes"]!.AsArray().Any(n => n!.GetValue<string>().Contains("证据隔离")), "the degraded stale display explains the quarantine explicitly");
 
-// ---- 19. aggregate-invalid recovery: rollback keeps a valid raw run, then the next batch advances ----
+// ---- 19. aggregate-invalid recovery and failure-log reference safety ----
 var qRoot2 = Path.Combine(root, "aggregate-recovery");
-Directory.CreateDirectory(Path.Combine(qRoot2, "runs", "run-19"));
+Directory.CreateDirectory(qRoot2);
+WriteRun(qRoot2, "run-old", "rev-0", true, Entry("blend.alpha", "pass", "cases/blend.alpha/sample-0/meshes/m.json", "cases/blend.alpha/sample-0/oracle.log"));
 var s16 = WebProgressScheduler.NewState("rev-0", "h16", "test-registry-v1");
 WebProgressScheduler.Reconcile(s16, Registry(alpha, beta), "h16", "test-registry-v1");
-for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s16, "blend.beta", "export-failure", "missing", "run-ghost", "rev-0", WebProgressScheduler.EntryHash(beta), 0);
-var raw19 = new JsonObject
+WebProgressScheduler.RecordOutcome(s16, "blend.alpha", "completed", "pass", "run-old", "rev-0", WebProgressScheduler.EntryHash(alpha), 0, "check-old");
+Directory.CreateDirectory(Path.Combine(qRoot2, "runs", "run-19"));
+JsonObject Raw19() => new()
 {
     ["schemaVersion"] = 1,
     ["run"] = new JsonObject { ["id"] = "run-19", ["commit"] = "rev-1", ["generatedAt"] = DateTimeOffset.UtcNow.ToString("O"), ["pkVersion"] = "test", ["host"] = new JsonObject { ["os"] = "test-host" }, ["configuration"] = new JsonObject(), ["scope"] = new JsonObject(), ["provenance"] = new JsonObject { ["checkVersion"] = "check-19" } },
     ["cases"] = new JsonArray((JsonNode)Entry("blend.alpha", "missing", "", ""), (JsonNode)Entry("blend.beta", "missing", "", "")),
 };
-var merged19 = WebProgressScheduler.BuildAggregate(raw19, Registry(alpha, beta), s16, qRoot2, "run-19", "rev-1", "check-19", 0, _ => null);
+JsonObject LoadOld(string id) => id == "run-old" ? JsonNode.Parse(File.ReadAllText(Path.Combine(qRoot2, "runs", "run-old", "collection-manifest.json")))!.AsObject() : null!;
+var raw19 = Raw19();
 File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "collection-manifest.json"), raw19.ToJsonString());
-File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), merged19.ToJsonString());
-WriteIndex(qRoot2, "run-19");
-Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count > 0, "an aggregate whose blocked evidence dangles is invalid and must roll back");
-File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), raw19.ToJsonString());
-Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0 && s16["completed"]!.AsObject().Count == 0, "rollback restores the raw manifest, nothing advances as completed");
-Directory.CreateDirectory(Path.Combine(qRoot2, "runs", "run-ghost", "cases", "blend.beta", "sample-0"));
-File.WriteAllText(Path.Combine(qRoot2, "runs", "run-ghost", "cases", "blend.beta", "sample-0", "oracle.log"), "failure log\n");
-var merged19b = WebProgressScheduler.BuildAggregate(raw19, Registry(alpha, beta), s16, qRoot2, "run-19", "rev-1", "check-19", 0, _ => null);
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), WebProgressScheduler.BuildAggregate(raw19, Registry(alpha, beta), s16, qRoot2, "run-19", "rev-1", "check-19", 1, LoadOld).ToJsonString());
+WriteIndex(qRoot2, "run-old", "run-19");
+Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0, "positive control: a normal accumulated aggregate validates");
+var merged19b = WebProgressScheduler.BuildAggregate(Raw19(), Registry(alpha, beta), s16, qRoot2, "run-19", "rev-1", "check-19", 1, LoadOld);
+merged19b["cases"]![1]!["evidence"] = new JsonArray((JsonNode)new JsonObject { ["label"] = "dangling", ["path"] = "../run-ghost/cases/blend.beta/sample-0/oracle.log" });
 File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), merged19b.ToJsonString());
-Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0, "after the cause is resolved the next aggregate validates and the batch can advance");
+var mergedErrors = WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().DeepClone().AsArray();
+Assert(mergedErrors.Count > 0, "an aggregate carrying a dangling reference is invalid and must roll back");
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), raw19.ToJsonString());
+Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0 && s16["completed"]!.AsObject().Count == 1, "rollback restores the raw manifest and nothing new advances");
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), WebProgressScheduler.BuildAggregate(Raw19(), Registry(alpha, beta), s16, qRoot2, "run-19", "rev-1", "check-19", 1, LoadOld).ToJsonString());
+Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0, "the next rebuilt aggregate validates and the batch can advance");
+var s17 = WebProgressScheduler.NewState("rev-0", "h17", "test-registry-v1");
+WebProgressScheduler.Reconcile(s17, Registry(alpha, beta), "h17", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s17, "blend.beta", "export-failure", "missing", "run-ghost", "rev-0", WebProgressScheduler.EntryHash(beta), 0);
+var merged17 = WebProgressScheduler.BuildAggregate(raw19, Registry(alpha, beta), s17, qRoot2, "run-19", "rev-1", "check-19", 1, LoadOld);
+Assert(!merged17.ToJsonString().Contains("../run-ghost", StringComparison.Ordinal), "a collector failure without logs never produces dangling failure-log evidence references");
+Assert(merged17["cases"]![1]!["caseProgress"]!["classification"]!.GetValue<string>() == "export-blocked", "the parked case still reports export-blocked without inventing evidence");
 
 // ---- 20. publish closure: complete references, pre-validated target, atomic index ----
 var s7Dest = Path.Combine(root, "publish-dest");
@@ -500,7 +511,6 @@ Assert(Directory.Exists(Path.Combine(s7Dest, "runs", "run-0")) && Directory.Exis
 Assert(WebProgressDataValidation.Validate(s7Dest)["errors"]!.AsArray().Count == 0, "a fresh destination validates clean (was 11 missing ../run-0 references)");
 var s7Index = JsonNode.Parse(File.ReadAllText(Path.Combine(s7Dest, "index.json")))!;
 Assert(s7Index["latestRunId"]!.GetValue<string>() == "run-1" && s7Index["runs"]!.AsArray().Count == 2, "the destination index switches atomically to the current run with its validated closure");
-// retry after failure covers the same closure and keeps the old index on error
 var s7Dest2 = Path.Combine(root, "publish-dest2");
 Directory.CreateDirectory(s7Dest2);
 WebProgressPublishing.PublishClosure(dataRoot, ["run-1"], "run-1", s7Dest2);
@@ -518,7 +528,6 @@ File.AppendAllText(Path.Combine(s7Dest2, "runs", "run-0", "cases", "blend.alpha"
 var s7Failed2 = false;
 try { WebProgressPublishing.PublishClosure(dataRoot, ["run-1"], "run-1", s7Dest2); } catch (IOException) { s7Failed2 = true; }
 Assert(s7Failed2 && File.ReadAllText(Path.Combine(s7Dest2, "index.json")) == s7IndexBefore, "immutable evidence tampering fails the publish without touching the index");
-// quarantined runs referenced only for failure logs are copied as evidence, never indexed
 var s7Root = Path.Combine(root, "publish-evidence");
 Directory.CreateDirectory(s7Root);
 WriteRun(s7Root, "agg", "rev-0", true, Entry("blend.alpha", "pass", "cases/blend.alpha/sample-0/meshes/m.json", "cases/blend.alpha/sample-0/oracle.log"));

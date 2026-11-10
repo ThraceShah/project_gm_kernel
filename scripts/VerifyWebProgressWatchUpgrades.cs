@@ -62,11 +62,16 @@ Git(fixture, "add", ".");
 Git(fixture, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "fixture");
 
 // One watcher tick: builds the fixture watcher, runs one bounded batch.
-(string Text, int Exit) Tick(string label)
+(string Text, int Exit) Tick(string label, params string[] extra)
 {
     var info = new ProcessStartInfo("dotnet") { WorkingDirectory = fixture, RedirectStandardOutput = true, RedirectStandardError = true };
-    foreach (var a in new[] { "run", "--file", "scripts/WatchWebProgress.cs", "--", "--once", "--state", "../state.json", "--registry", "registry.json", "--output", "../data", "--batch-size", "1", "--seconds", "30", "--case-seconds", "20", "--samples", "1" })
-        info.ArgumentList.Add(a);
+    var defaults = new[] { "run", "--file", "scripts/WatchWebProgress.cs", "--", "--once", "--state", "../state.json", "--registry", "registry.json", "--output", "../data", "--batch-size", "1", "--seconds", "30", "--case-seconds", "20", "--samples", "1" };
+    for (var i = 0; i < defaults.Length; i++)
+    {
+        if (defaults[i].StartsWith("--", StringComparison.Ordinal) && extra.Contains(defaults[i], StringComparer.Ordinal)) { i++; continue; }
+        info.ArgumentList.Add(defaults[i]);
+    }
+    foreach (var a in extra) info.ArgumentList.Add(a);
     info.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     using var p = Process.Start(info)!;
     var output = p.StandardOutput.ReadToEnd();
@@ -161,6 +166,33 @@ Assert(stateE["quarantined"]?[victimId] != null, "the tick-start sweep quarantin
 var indexE = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "data", "index.json")))!;
 Assert(!indexE["runs"]!.AsArray().Any(r => r!["id"]!.GetValue<string>() == victimId), "the poisoned run leaves the validated index so later batches can proceed");
 Assert(File.Exists(victimManifest), "the poisoned run's raw evidence is retained untouched");
+
+// ---- F. input errors are rejected before a batch; definite collector failures are bounded ----
+FreshState();
+var tickF0 = Tick("config-reject", "--samples", "0");
+Assert(tickF0.Exit == 2 && tickF0.Text.Contains("WATCH_CONFIG_INVALID", StringComparison.Ordinal), "invalid --samples is rejected before any batch starts (was swallowed as an interrupted round): " + tickF0.Exit);
+Assert(!Directory.Exists(Path.Combine(fixture, "data", "runs")) || Directory.GetDirectories(Path.Combine(fixture, "data", "runs")).Length == 0, "a config error creates no run and starts no batch");
+var refreshPath = Path.Combine(fixture, "scripts", "RefreshWebProgress.cs");
+var refreshOriginal = File.ReadAllText(refreshPath);
+File.WriteAllText(refreshPath, "this is not valid C# !!!\n");
+int StateAttempts()
+{
+    var state = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "state.json")))!;
+    var item = state["pending"]!.AsArray().OfType<JsonObject>().FirstOrDefault(p => p["caseId"]!.GetValue<string>() == "fake.alpha");
+    return item?["attempts"]?.GetValue<int>() ?? state["blocked"]!["fake.alpha"]?["attempts"]?.GetValue<int>() ?? 0;
+}
+var tickF1 = Tick("run-failed-1");
+Assert(tickF1.Exit == 2 && tickF1.Text.Contains("BATCH_RUN_FAILED", StringComparison.Ordinal) && StateAttempts() == 1, "a collector failing without a manifest burns a bounded attempt and exits non-zero (was exit 0 forever): " + tickF1.Exit + " attempts=" + StateAttempts());
+var tickF2 = Tick("run-failed-2");
+Assert(tickF2.Exit == 2 && StateAttempts() == 2, "the second definite failure keeps retrying bounded: attempts=" + StateAttempts());
+var tickF3 = Tick("run-failed-3");
+var stateF = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "state.json")))!;
+Assert(tickF3.Exit == 2 && stateF["blocked"]!.AsObject().ContainsKey("fake.alpha") && stateF["pending"]!.AsArray().Count == 0, "after the bounded retries the case parks instead of retrying forever: " + tickF3.Exit);
+File.WriteAllText(refreshPath, refreshOriginal);
+var tickF4 = Tick("run-failed-recovered");
+Assert(tickF4.Exit == 0 && tickF4.Text.Contains("RESULT fake.alpha", StringComparison.Ordinal), "restoring the collector re-verifies the affected case normally (tracked source change): " + tickF4.Exit);
+var tickF5 = Tick("run-failed-complete");
+Assert(tickF5.Exit == 0 && tickF5.Text.Contains("queue complete", StringComparison.Ordinal), "the queue then completes normally; failures were never declared success with exit 0: " + tickF5.Exit);
 
 if (failures.Count > 0)
 {

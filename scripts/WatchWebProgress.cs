@@ -33,6 +33,15 @@ var config = Option("--configuration", "Release");
 var samples = Option("--samples", "1");
 var seconds = Option("--seconds", "600");
 var caseSeconds = Option("--case-seconds", "120");
+// Input errors are rejected before any batch is started (the collector's own
+// budget/sample limits), never swallowed as a silent interrupted round.
+if (!int.TryParse(samples, out var samplesCount) || samplesCount < 1 || samplesCount > 31
+    || !int.TryParse(seconds, out var secondsCount) || secondsCount < 1
+    || !int.TryParse(caseSeconds, out var caseSecondsCount) || caseSecondsCount < 1)
+{
+    Console.Error.WriteLine("WATCH_CONFIG_INVALID positive integer --seconds/--case-seconds and --samples in 1..31 required; no batch started.");
+    return 2;
+}
 
 using var stop = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
@@ -171,20 +180,43 @@ async Task<int?> RunOnce()
     var info = new ProcessStartInfo("dotnet") { UseShellExecute = false, WorkingDirectory = root };
     foreach (var arg in new[] { "run", "--file", "scripts/RefreshWebProgress.cs", "--", "--registry", registryPath, "--case", string.Join(",", plan), "--run-id", runId, "--output", data, "--configuration", config, "--samples", samples, "--seconds", seconds, "--case-seconds", caseSeconds }) info.ArgumentList.Add(arg);
     info.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+    int exitCode;
     using (var process = Process.Start(info)!)
     {
-        try { await process.WaitForExitAsync(stop.Token); }
-        catch (OperationCanceledException) { process.Kill(true); await process.WaitForExitAsync(); Console.WriteLine("BATCH_INTERRUPTED " + runId); return 130; }
+        try { await process.WaitForExitAsync(stop.Token); exitCode = process.ExitCode; }
+        catch (OperationCanceledException)
+        {
+            process.Kill(true); await process.WaitForExitAsync();
+            batch["status"] = "interrupted"; batch["finishedAt"] = DateTimeOffset.UtcNow.ToString("O"); batch["exitCode"] = 130;
+            WebProgressScheduler.Save(statePath, state);
+            Console.WriteLine("BATCH_INTERRUPTED " + runId + " cancelled; partial evidence retained; unconfirmed cases stay pending.");
+            return 130;
+        }
     }
+    batch["exitCode"] = exitCode;
     var manifestPath = Path.Combine(run, "manifest.json");
     var manifest = File.Exists(manifestPath) ? JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject() : null;
     var finished = manifest?["run"]?["finishedAt"] != null;
     if (!finished)
     {
-        batch["status"] = "interrupted"; batch["finishedAt"] = DateTimeOffset.UtcNow.ToString("O");
+        batch["finishedAt"] = DateTimeOffset.UtcNow.ToString("O");
+        // External kill/cancel of the collector is a real interruption: partial
+        // evidence stays and unconfirmed cases re-run next tick. Any other
+        // non-zero exit with no finished manifest is a definite collector
+        // failure (bad input, compile/launch error): it burns bounded attempts
+        // and surfaces a non-zero watcher exit instead of looping forever.
+        if (exitCode is 137 or 143 or 130 || exitCode == 0)
+        {
+            batch["status"] = "interrupted";
+            WebProgressScheduler.Save(statePath, state);
+            Console.WriteLine("BATCH_INTERRUPTED " + runId + " exit=" + exitCode + " partial evidence retained; unconfirmed cases stay pending.");
+            return null;
+        }
+        batch["status"] = "run-failed";
+        foreach (var id in plan) WebProgressScheduler.RecordOutcome(state, id, "export-failure", "missing", runId, revision, EntryHashOf(registry, id), batchIndex);
         WebProgressScheduler.Save(statePath, state);
-        Console.WriteLine("BATCH_INTERRUPTED " + runId + " partial evidence retained; unconfirmed cases stay pending.");
-        return null;
+        Console.Error.WriteLine("BATCH_RUN_FAILED " + runId + " collector exit=" + exitCode + " without a finished manifest; bounded retries scheduled, queue continues.");
+        return 2;
     }
     var validation = JsonNode.Parse(File.ReadAllText(Path.Combine(run, "validation.json")))!;
     if (validation["errors"]!.AsArray().Count > 0)
@@ -241,7 +273,14 @@ async Task<int?> RunOnce()
         File.WriteAllText(manifestPath, manifest.ToJsonString());
         state = JsonNode.Parse(stateSnapshot)!.AsObject();
         var failedBatch = state["batches"]!.AsArray().OfType<JsonObject>().First(b => b["runId"]!.GetValue<string>() == runId);
-        failedBatch["status"] = "aggregate-invalid"; failedBatch["finishedAt"] = DateTimeOffset.UtcNow.ToString("O"); failedBatch["validationErrors"] = mergedValidation["errors"]!.DeepClone();
+        failedBatch["status"] = "aggregate-invalid"; failedBatch["finishedAt"] = DateTimeOffset.UtcNow.ToString("O"); failedBatch["exitCode"] = exitCode; failedBatch["validationErrors"] = mergedValidation["errors"]!.DeepClone();
+        // A stable aggregate-invalid must not retry forever: attempted cases
+        // burn bounded attempts (parking eventually) so the queue continues.
+        foreach (var id in plan)
+        {
+            var attempted = manifest!["cases"]!.AsArray().OfType<JsonObject>().FirstOrDefault(c => c["id"]!.GetValue<string>() == id)?["execution"]?["attempted"]?.GetValue<bool>() == true;
+            if (attempted) WebProgressScheduler.RecordOutcome(state, id, "export-failure", "missing", runId, revision, EntryHashOf(registry, id), batchIndex);
+        }
         WebProgressScheduler.Save(statePath, state);
         Console.Error.WriteLine("AGGREGATE_INVALID raw manifest restored; no case advanced. " + mergedValidation["errors"]!.ToJsonString());
         return 2;

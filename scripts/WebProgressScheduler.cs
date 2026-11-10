@@ -469,7 +469,8 @@ internal static class WebProgressScheduler
                 {
                     built["caseProgress"] = new JsonObject { ["classification"] = "export-blocked", ["pending"] = true, ["attempts"] = bad!["attempts"]?.DeepClone(), ["retryReason"] = bad["retryReason"]?.DeepClone() };
                     Note(built, "导出器编译/契约失败，未推进完成：" + bad["retryReason"]!.GetValue<string>() + "；已有限重试 " + bad["attempts"]!.GetValue<int>() + " 次并暂停排队（不阻塞其余 case），原始日志与旧有效展示保留，源变更或 --force 后重新排队。");
-                    if (bad["lastRunId"]?.GetValue<string>() is string lastRun) (built["evidence"] ??= new JsonArray()).AsArray().Add((JsonNode)new JsonObject { ["label"] = "导出失败原始日志（有限重试记录）", ["path"] = "../" + lastRun + "/cases/" + id + "/sample-0/oracle.log" });
+                    if (bad["lastRunId"]?.GetValue<string>() is string lastRun && File.Exists(Path.Combine(dataRoot, "runs", lastRun, "cases", id, "sample-0", "oracle.log")))
+                        (built["evidence"] ??= new JsonArray()).AsArray().Add((JsonNode)new JsonObject { ["label"] = "导出失败原始日志（有限重试记录）", ["path"] = "../" + lastRun + "/cases/" + id + "/sample-0/oracle.log" });
                     blockedCount++;
                 }
                 else
