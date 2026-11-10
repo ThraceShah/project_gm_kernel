@@ -181,11 +181,23 @@ internal static class HostedWebProgressSite
         var releaseId = "ui-" + contentHash[..16];
         if (!IsSafeName(releaseId)) throw new InvalidDataException("Derived release id is unsafe");
         var final = Path.Combine(releases, releaseId);
+        var metaPath = Path.Combine(releases, releaseId + ".meta.json");
+        // A cache hit requires the complete candidate: content directory plus
+        // verified metadata. A directory without valid metadata is an
+        // interrupted prepare; it can never have been activated (activation
+        // verifies the metadata) and is rebuilt idempotently here instead of
+        // requiring manual cache cleanup.
         if (Directory.Exists(final))
         {
-            Console.WriteLine("RELEASE_CACHED " + releaseId + " files=" + files.Count + " bytes=" + totalBytes);
-            return new JsonObject { ["release"] = releaseId, ["files"] = files.Count, ["bytes"] = totalBytes, ["contentHash"] = contentHash };
+            if (File.Exists(metaPath) && VerifyRelease(siteRoot, releaseId)["errors"]!.AsArray().Count == 0)
+            {
+                Console.WriteLine("RELEASE_CACHED " + releaseId + " files=" + files.Count + " bytes=" + totalBytes);
+                return new JsonObject { ["release"] = releaseId, ["files"] = files.Count, ["bytes"] = totalBytes, ["contentHash"] = contentHash };
+            }
+            Console.WriteLine("RELEASE_INCOMPLETE_REBUILDING " + releaseId);
+            Directory.Delete(final, true);
         }
+        if (File.Exists(metaPath)) File.Delete(metaPath);
         var staging = Path.Combine(releases, ".staging-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(staging);
         try
@@ -196,24 +208,28 @@ internal static class HostedWebProgressSite
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 File.Copy(Path.Combine(distDirectory, relative.Replace('/', Path.DirectorySeparatorChar)), target);
             }
+            // Commit boundary: the metadata is written (atomic tmp+rename)
+            // before the final directory rename, so every interruption window
+            // recovers on retry and the final directory never appears without
+            // its metadata.
+            var manifest = new JsonObject
+            {
+                ["schemaVersion"] = 1,
+                ["id"] = releaseId,
+                ["createdAt"] = DateTimeOffset.UtcNow.ToString("O"),
+                ["contentHash"] = contentHash,
+                ["bytes"] = totalBytes,
+                ["files"] = new JsonArray(files.Select(f => (JsonNode?)new JsonObject
+                {
+                    ["path"] = f.Key,
+                    ["bytes"] = f.Value.Bytes,
+                    ["sha256"] = f.Value.Hash,
+                }).ToArray()),
+            };
+            WriteJsonAtomic(metaPath, manifest);
             Directory.Move(staging, final);
         }
         finally { if (Directory.Exists(staging)) Directory.Delete(staging, true); }
-        var manifest = new JsonObject
-        {
-            ["schemaVersion"] = 1,
-            ["id"] = releaseId,
-            ["createdAt"] = DateTimeOffset.UtcNow.ToString("O"),
-            ["contentHash"] = contentHash,
-            ["bytes"] = totalBytes,
-            ["files"] = new JsonArray(files.Select(f => (JsonNode?)new JsonObject
-            {
-                ["path"] = f.Key,
-                ["bytes"] = f.Value.Bytes,
-                ["sha256"] = f.Value.Hash,
-            }).ToArray()),
-        };
-        File.WriteAllText(Path.Combine(releases, releaseId + ".meta.json"), manifest.ToJsonString());
         Console.WriteLine("RELEASE_PREPARED " + releaseId + " files=" + files.Count + " bytes=" + totalBytes);
         return new JsonObject { ["release"] = releaseId, ["files"] = files.Count, ["bytes"] = totalBytes, ["contentHash"] = contentHash };
     }
