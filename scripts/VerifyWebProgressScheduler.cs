@@ -289,6 +289,35 @@ bad2["cases"]![0]!["steps"]![0]!["gm"]!["before"] = "../run-0/cases/blend.alpha/
 File.WriteAllText(Path.Combine(badDir, "runs", "run-1", "manifest.json"), bad2.ToJsonString());
 Assert(WebProgressDataValidation.Validate(badDir)["errors"]!.AsArray().Count > 0, "dangling references into pruned or absent runs are rejected instead of silently dropped");
 
+// ---- 13. state schema upgrade: legacy fingerprint state is backed up and rebuilt; corrupt/unknown fail loudly ----
+var legacyPath = Path.Combine(root, "legacy-state.json");
+var legacyText = """{"fingerprint":"old","updatedAt":"now","commit":"old"}""";
+File.WriteAllText(legacyPath, legacyText);
+var loadedLegacy = WebProgressScheduler.LoadState(legacyPath, out var legacyBackup);
+Assert(loadedLegacy == null && legacyBackup != null && File.Exists(legacyBackup) && File.ReadAllText(legacyBackup!) == legacyText, "legacy fingerprint state is preserved as a backup and never read as a queue");
+Assert(File.Exists(legacyPath), "the legacy state file itself stays in place until the rebuilt queue is saved");
+var corruptPath = Path.Combine(root, "corrupt-state.json");
+var corruptText = """{"fingerprint":""";
+File.WriteAllText(corruptPath, corruptText);
+var corruptFailed = false;
+try { WebProgressScheduler.LoadState(corruptPath, out _); } catch (InvalidDataException) { corruptFailed = true; }
+Assert(corruptFailed && File.ReadAllText(corruptPath) == corruptText, "corrupt state JSON fails explicitly and keeps the original data untouched");
+var unknownPath = Path.Combine(root, "unknown-state.json");
+var unknownText = """{"scheduler":"other-scheduler-v1","schemaVersion":1}""";
+File.WriteAllText(unknownPath, unknownText);
+var unknownFailed = false;
+try { WebProgressScheduler.LoadState(unknownPath, out _); } catch (InvalidDataException) { unknownFailed = true; }
+Assert(unknownFailed && File.ReadAllText(unknownPath) == unknownText, "unknown state schemas fail explicitly instead of silently starting empty");
+var missingPath = Path.Combine(root, "missing-state.json");
+var missingText = """{"scheduler":"web-progress-scheduler-v1","schemaVersion":1,"sourceRevision":"r"}""";
+File.WriteAllText(missingPath, missingText);
+var missingFailed = false;
+try { WebProgressScheduler.LoadState(missingPath, out _); } catch (InvalidDataException) { missingFailed = true; }
+Assert(missingFailed, "a v1 state missing required queue collections fails explicitly");
+var okPath = Path.Combine(root, "ok-state.json");
+WebProgressScheduler.Save(okPath, WebProgressScheduler.NewState("rev-0", "h", "v"));
+Assert(WebProgressScheduler.LoadState(okPath, out var noBackup) is not null && noBackup == null, "a valid v1 queue state loads without migration");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;

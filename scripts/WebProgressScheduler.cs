@@ -43,7 +43,35 @@ internal static class WebProgressScheduler
         ["publish"] = new JsonObject { ["pending"] = false, ["lastError"] = null },
     };
 
-    internal static JsonObject LoadState(string statePath) => JsonNode.Parse(File.ReadAllText(statePath))!.AsObject();
+    // Load the durable queue state. The legacy watcher's fingerprint state
+    // ({fingerprint,updatedAt,commit}) is not a queue: it is preserved as a
+    // timestamped backup and the caller safely rebuilds a full queue (an old
+    // fingerprint is never treated as measured). Corrupt JSON or unknown
+    // schemas fail explicitly with the original file untouched — never
+    // silently treated as an empty queue.
+    internal static JsonObject? LoadState(string statePath, out string? legacyBackup)
+    {
+        legacyBackup = null;
+        var text = File.ReadAllText(statePath);
+        JsonNode? node;
+        try { node = JsonNode.Parse(text); }
+        catch (Exception e) { throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " is not valid JSON (" + e.Message + "); original file kept untouched at " + statePath); }
+        if (node is not JsonObject state) throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " is not a JSON object; original file kept untouched at " + statePath);
+        if (state["scheduler"] is null && state["fingerprint"] is not null)
+        {
+            legacyBackup = statePath + ".legacy-" + DateTimeOffset.UtcNow.ToString("yyyyMMddTHHmmssfffZ") + ".bak";
+            File.Copy(statePath, legacyBackup, false);
+            return null;
+        }
+        if (state["scheduler"]?.GetValue<string>() != SchedulerName || state["schemaVersion"]?.GetValue<int?>() != 1)
+            throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " has an unknown scheduler/schemaVersion; original file kept untouched at " + statePath);
+        foreach (var key in new[] { "sourceRevision", "registryHash", "registryVersion", "updatedAt", "publish" })
+            if (state[key] is null) throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " misses " + key + "; original file kept untouched at " + statePath);
+        if (state["pending"] is not JsonArray || state["batches"] is not JsonArray
+            || state["completed"] is not JsonObject || state["blocked"] is not JsonObject || state["stale"] is not JsonObject)
+            throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " has corrupt queue collections; original file kept untouched at " + statePath);
+        return state;
+    }
 
     internal static void Save(string statePath, JsonObject state)
     {

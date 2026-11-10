@@ -62,7 +62,28 @@ async Task<int?> RunOnce()
     var revision = Run("git", ["rev-parse", "HEAD"]);
     var workingDiff = Run("git", ["diff", "--no-ext-diff"]);
     var workingDiffHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(workingDiff)));
-    var state = File.Exists(statePath) ? WebProgressScheduler.LoadState(statePath) : WebProgressScheduler.NewState(revision, registryHash, registryVersion);
+    JsonObject state;
+    try
+    {
+        if (File.Exists(statePath))
+        {
+            // A legacy fingerprint-era watch state is rebuilt as a full adapted
+            // queue per the documented first-enable behavior; the original file
+            // is preserved as a timestamped backup first.
+            state = WebProgressScheduler.LoadState(statePath, out var legacyBackup);
+            if (state == null)
+            {
+                Console.WriteLine("STATE_LEGACY_REBUILT old fingerprint state preserved at " + legacyBackup + "; queue rebuilt with all adapted cases.");
+                state = WebProgressScheduler.NewState(revision, registryHash, registryVersion);
+            }
+        }
+        else state = WebProgressScheduler.NewState(revision, registryHash, registryVersion);
+    }
+    catch (InvalidDataException e)
+    {
+        Console.Error.WriteLine(e.Message);
+        return 2;
+    }
     WebProgressScheduler.RecoverInterrupted(state);
     if (args.Contains("--force"))
     {
