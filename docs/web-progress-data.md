@@ -33,7 +33,7 @@ Provenance pins the actual base commit, dirty state, working diff hash, per-sour
 
 ## Coverage and evidence limits
 
-`scripts/web-progress-registry.json` explicitly expands 414 named/default recipes, including the finite 96-case short-edge matrix. The first safe package executes five representatives and marks 205 adapted cases `missing` and 204 registrations `unsupported`. No whole-project completion percentage follows from those five successes. This finite default registry is not an exhaustive cross-product of unbounded transforms, radii, split stations, lifecycle/proof flags, all derivative samples or every unit-test parameter; its scope and limitations travel with every run. Unsupported adapters and later expansions remain visible.
+`scripts/web-progress-registry.json` explicitly expands 414 named/default recipes, including the finite 96-case short-edge matrix. The first safe package has five original oracle exits of 0, with four qualified passes and one diagnostic scope mismatch, and marks 205 adapted cases `missing` and 204 registrations `unsupported`. No whole-project completion percentage follows from those five successes. This finite default registry is not an exhaustive cross-product of unbounded transforms, radii, split stations, lifecycle/proof flags, all derivative samples or every unit-test parameter; its scope and limitations travel with every run. Unsupported adapters and later expansions remain visible.
 
 Historical source documents are not rewritten or treated as current passes. `docs/reviews/advanced-modeling/topology-event-framework-execution.md`, `docs/reviews/advanced-modeling/topology-event-framework-acceptance.md` and `docs/reviews/advanced-modeling/topology-event-framework-handoff.md` retain differing historical outcomes. The current main baseline is a1e4500; independent review also reports strict short-edge lifecycle/fresh-cut BODY_check and original inertia/probe failures under additional flags. Those flags require distinct recipes and fresh execution; the default short-edge success does not resolve them.
 
@@ -55,3 +55,11 @@ Registry v5 contains 463 finite recipes with 347 snapshot adapters and 116 unsup
 Boolean paths whose original options disable tracking retain those options. Their exact before/result IDs establish deletions, but a neutral `unchanged` display role with `roleKnown=false` is not proof that a face was untouched. `semanticCoverage.status=missing` explicitly records missing generic modification tracking. New blend faces always come from the returned blend IDs, not a curvature/color guess. Open surface blends use real auxiliary copies of bounded input support sheets (`[-1,-1,1,1]` UV display clip) and the actual output sheet; the visualization-only input bounds are labeled and do not modify API inputs.
 
 Original oracle acceptance and additional export gates are independent. For example the local block fillet oracle can exit 0 while the stricter web BODY_compare fails; its original exit check stays pass, the case fails the extra gate, and its ratio remains null. Raw differences/masks explain that distinction. Missing downstream registered stages keep null snapshots. Independent review at documentation revision `a3e9a489d17d374bb756fe65e6efb5407f1f896b` concerns implementation `a1e4500`; [that review](https://github.com/ThraceShah/project_gm_kernel/blob/a3e9a489d17d374bb756fe65e6efb5407f1f896b/docs/reviews/advanced-modeling/topology-event-framework-independent-review-a1e4500.md) is an explicitly separate host/source, not this Mac's execution or timing. Fixed replay differences from that source are not fabricated into a Mac run.
+
+A previously generated validated run can be published without executing modeling again:
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/PublishWebProgress.cs -- --source ../temp_docs/web-progress/current-data --run-id <exact-run-id> --destination ../web/data
+```
+
+The publisher performs the same complete contract validation and allowlist checks. It preserves original run/source metadata and never relabels copied results as a new execution.

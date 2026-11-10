@@ -580,7 +580,6 @@ static unsafe int Cut(bool own,int body,int tool)
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
     WebProgressCapture.Before(own,body,[],"PK_BODY_boolean",[tool]);
     WebProgressCapture.BooleanParameters(own,options);
-    WebProgressCapture.BlendParameters(own,fix,radius,mark.properties.tolerance);
     var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
     var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
     WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
@@ -1665,6 +1664,7 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
     var fix=new PK_BODY_fix_blends_o_t{local_check=PK_LOGICAL_true,tolerance=tolerance};if(procedural)fix.update=PK_blend_edge_update_v261_c;
     WebProgressCapture.Context="";
     WebProgressCapture.Before(own,body,selected);
+    WebProgressCapture.BlendParameters(own,fix,radius,mark.properties.tolerance);
     int* made;int fault,edgeFault,topolFault;var started=Stopwatch.GetTimestamp();
     PK_FACE_array_t* webUnders=null;int* webTopols=null;
     var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&made,WebProgressCapture.Enabled?(M.PK_FACE_array_s**)&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault):PK_BODY_fix_blends(body,&fix,&count,&made,WebProgressCapture.Enabled?&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault);

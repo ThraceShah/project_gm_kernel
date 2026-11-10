@@ -1,0 +1,1 @@
+{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/MixedAnalyticBooleanOracle.cs","-c","Release","-p:UseSharedCompilation=false","--","basic-15902"],"logSha256":"ff9ca995c51f6ec9d22c81c3d171ccc2862688b1d34e509792506f2867c639a9"}

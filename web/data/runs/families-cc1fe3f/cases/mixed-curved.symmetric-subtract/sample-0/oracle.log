@@ -1,0 +1,101 @@
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/MixedCurvedBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/MixedCurvedBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/GenerateFunctionCatalog.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/GenerateFunctionCatalog.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+CONFIG Release managed
+CASE symmetric-subtract: M1 fillet versus x>=.5 block (known manufacturing section)
+ITERATION 1/1, cold, bound-cache=True
+TIME PK BODY_fix_blends radius=0.1 ms=4.963, error=0
+native fix error=0, count=1, fault=18391, edge=0, topol=0
+native M1 source full BODY_check: 0 faults
+SUPPORT PK global=0, owner=0, face=111, surface=138, class=4006
+SUPPORT PK global=1, owner=0, face=106, surface=124, class=4001
+ PLANE origin=(0.5,0,0) axis=(-0,-1,-0)
+SUPPORT PK global=2, owner=0, face=101, surface=123, class=4001
+ PLANE origin=(0,0.5,0) axis=(-1,-0,-0)
+SUPPORT PK global=3, owner=0, face=96, surface=122, class=4001
+ PLANE origin=(0.5,1,0) axis=(0,1,0)
+SUPPORT PK global=4, owner=0, face=62, surface=112, class=4001
+ PLANE origin=(0.5,0.5,0) axis=(-0,-0,-1)
+SUPPORT PK global=5, owner=0, face=56, surface=121, class=4001
+ PLANE origin=(1,0.5,0) axis=(1,0,0)
+SUPPORT PK global=6, owner=0, face=146, surface=170, class=4007
+SUPPORT PK global=7, owner=1, face=281, surface=299, class=4001
+ PLANE origin=(1,0.5,1.9) axis=(0,0,1)
+SUPPORT PK global=8, owner=1, face=276, surface=294, class=4001
+ PLANE origin=(1,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT PK global=9, owner=1, face=271, surface=293, class=4001
+ PLANE origin=(0.5,0.5,-0.1) axis=(-1,-0,-0)
+SUPPORT PK global=10, owner=1, face=266, surface=292, class=4001
+ PLANE origin=(1,1.5,-0.1) axis=(0,1,0)
+SUPPORT PK global=11, owner=1, face=232, surface=282, class=4001
+ PLANE origin=(1,0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT PK global=12, owner=1, face=226, surface=291, class=4001
+ PLANE origin=(1.5,0.5,-0.1) axis=(1,0,0)
+native tool full BODY_check: 0 faults
+BEGIN PK symmetric-subtract, function=15902, tools=1
+TIME PK symmetric-subtract ms=9.373, error=0, stage=None, face=0, other=0, sheet=None
+symmetric-subtract native result 0 full BODY_check: 0 faults
+NATIVE READY symmetric-subtract results=1
+TIME self BODY_fix_blends radius=0.1 ms=1719.140, error=0
+own fix error=0, count=1, fault=18391, edge=0, topol=0
+SUPPORT self global=0, owner=0, face=32, surface=101, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-0,-1)
+SUPPORT self global=1, owner=0, face=38, surface=102, class=4006
+SUPPORT self global=2, owner=0, face=44, surface=103, class=4001
+ PLANE origin=(0,0,0) axis=(-0,-1,-0)
+SUPPORT self global=3, owner=0, face=50, surface=104, class=4001
+ PLANE origin=(1,0,0) axis=(1,0,0)
+SUPPORT self global=4, owner=0, face=56, surface=105, class=4001
+ PLANE origin=(1,1,0) axis=(0,1,0)
+SUPPORT self global=5, owner=0, face=62, surface=106, class=4001
+ PLANE origin=(0,1,0) axis=(-1,-0,-0)
+SUPPORT self global=6, owner=0, face=193, surface=107, class=4007
+SUPPORT self global=7, owner=1, face=255, surface=244, class=4001
+ PLANE origin=(0.5,-0.5,-0.1) axis=(-0,-0,-1)
+SUPPORT self global=8, owner=1, face=261, surface=245, class=4001
+ PLANE origin=(0.5,-0.5,1.9) axis=(0,0,1)
+SUPPORT self global=9, owner=1, face=267, surface=246, class=4001
+ PLANE origin=(0.5,-0.5,-0.1) axis=(-0,-1,-0)
+SUPPORT self global=10, owner=1, face=273, surface=247, class=4001
+ PLANE origin=(1.5,-0.5,-0.1) axis=(1,0,0)
+SUPPORT self global=11, owner=1, face=279, surface=248, class=4001
+ PLANE origin=(1.5,1.5,-0.1) axis=(0,1,0)
+SUPPORT self global=12, owner=1, face=285, surface=249, class=4001
+ PLANE origin=(0.5,1.5,-0.1) axis=(-1,-0,-0)
+BEGIN self symmetric-subtract, function=15902, tools=1
+web strict fresh XT: global=21921 local=21930 face_pairs=4
+  faces=612/1198 diff=21949 entities=599/1165 counts=4/33 values=0/0
+  faces=612/1198 diff=21949 entities=561/1163 counts=5/27 values=0/0
+  faces=610/1200 diff=21949 entities=552/1147 counts=5/27 values=0/0
+  faces=558/1208 diff=21949 entities=561/1163 counts=5/27 values=0/0
+  faces=558/1208 diff=21949 entities=552/1147 counts=5/27 values=0/0
+  faces=603/1213 diff=21949 entities=599/1165 counts=4/33 values=0/0
+TIME self symmetric-subtract ms=3605.237, error=0, stage=Publish, face=18, other=-1, sheet=RayIntersections
+symmetric-subtract received 0 full BODY_check: 0 faults
+symmetric-subtract result 0 topology 0: native=2 own=2
+symmetric-subtract result 0 topology 1: native=2 own=2
+symmetric-subtract result 0 topology 2: native=7 own=7
+symmetric-subtract result 0 topology 3: native=15 own=15
+symmetric-subtract result 0 topology 4: native=10 own=10
+symmetric-subtract result 0 material regions: native=0:1,1:1, own=0:1,1:1
+symmetric-subtract result 0 compare=21921/21930, face_pairs=4
+global diff=21940, entities=1/1
+global diff=21941, entities=7/7
+global diff=21943, entities=15/15
+global diff=21944, entities=0/0
+global diff=21946, entities=10/10
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=349/1307, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=210/1306, class=500/500, int=5/27, value=0/0
+CHART face=1, diff=21949, entity=188/1309, class=500/500, int=5/27, value=0/0
+CHART face=2, diff=21949, entity=210/1306, class=500/500, int=5/27, value=0/0
+CHART face=2, diff=21949, entity=188/1309, class=500/500, int=5/27, value=0/0
+CHART face=3, diff=21949, entity=349/1307, class=500/500, int=4/33, value=0/0
+symmetric-subtract result 0 PK mass: volume=0.5125488912006642/0.5125488901751184, area=4.037863891329698/4.037863881147942, max normalized residual=2.0210462415186295E-09
+PASS strict symmetric-subtract iteration=1
+TIME case symmetric-subtract ms=5758.677
+
+STDERR

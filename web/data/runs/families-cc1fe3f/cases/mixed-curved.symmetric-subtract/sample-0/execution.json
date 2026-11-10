@@ -1,0 +1,1 @@
+{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/MixedCurvedBooleanOracle.cs","-c","Release","-p:UseSharedCompilation=false","--","--worker","symmetric-subtract"],"logSha256":"0c40820da7218228abe5ae2f17168bd10bbbca35445426c044f04d4a47160059"}
